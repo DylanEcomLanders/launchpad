@@ -7,9 +7,11 @@ import {
   FileText,
   CalendarDays,
   Calculator,
+  Receipt,
   Home,
   Menu,
   X,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -37,7 +39,7 @@ const teamZones = [
 
 const navSections: NavSection[] = [
   {
-    title: "Ecomlanders",
+    title: "Project Management",
     items: [
       {
         label: "Project Doc Creation",
@@ -56,13 +58,35 @@ const navSections: NavSection[] = [
       },
     ],
   },
+  {
+    title: "Finance",
+    items: [
+      {
+        label: "Invoice Generator",
+        href: "/tools/invoice-generator",
+        icon: <Receipt size={16} />,
+      },
+      {
+        label: "Dev Hours",
+        href: "/tools/dev-hours",
+        icon: <Clock size={16} />,
+      },
+    ],
+  },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>(
+    () => Object.fromEntries(navSections.map((s) => [s.title, true]))
+  );
   const [now, setNow] = useState(() => new Date());
+
+  function toggleSection(title: string) {
+    setOpenSections((prev) => ({ ...prev, [title]: !prev[title] }));
+  }
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 60_000);
@@ -158,41 +182,47 @@ export function Sidebar() {
           {navSections.map((section) => (
             <div key={section.title} className="mb-4">
               {!collapsed && (
-                <div className="px-4 mb-1.5">
+                <button
+                  onClick={() => toggleSection(section.title)}
+                  className="flex items-center justify-between w-full px-4 mb-1.5 group"
+                >
                   <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6B6B6B]">
                     {section.title}
                   </span>
-                </div>
+                  <ChevronDown
+                    size={12}
+                    className={`text-[#AAAAAA] transition-transform duration-200 ${
+                      openSections[section.title] ? "" : "-rotate-90"
+                    }`}
+                  />
+                </button>
               )}
               {collapsed && (
                 <div className="mx-auto w-6 border-t border-[#E5E5E5] mb-2" />
               )}
-              <div className="px-2 space-y-0.5">
-                {section.items.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMobileOpen(false)}
-                    className={`
-                      flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm
-                      transition-colors duration-150
-                      ${pathname === item.href
-                        ? "bg-[#F0F0F0] font-medium"
-                        : "hover:bg-[#F5F5F5] text-[#6B6B6B]"
-                      }
-                    `}
-                    title={collapsed ? item.label : undefined}
-                  >
-                    {item.icon}
-                    {!collapsed && <span>{item.label}</span>}
-                  </Link>
-                ))}
-                {section.items.length === 0 && !collapsed && (
-                  <span className="block px-2.5 py-2 text-xs text-[#AAAAAA]">
-                    No tools yet
-                  </span>
-                )}
-              </div>
+              {(collapsed || openSections[section.title]) && (
+                <div className="px-2 space-y-0.5">
+                  {section.items.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`
+                        flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm
+                        transition-colors duration-150
+                        ${pathname === item.href
+                          ? "bg-[#F0F0F0] font-medium"
+                          : "hover:bg-[#F5F5F5] text-[#6B6B6B]"
+                        }
+                      `}
+                      title={collapsed ? item.label : undefined}
+                    >
+                      {item.icon}
+                      {!collapsed && <span>{item.label}</span>}
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </nav>

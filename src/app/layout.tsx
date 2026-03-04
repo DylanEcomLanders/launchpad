@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-import { Sidebar } from "@/components/sidebar";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -22,12 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="light">
       <body className={`${plusJakartaSans.variable} font-[family-name:var(--font-plus-jakarta)] antialiased bg-[#FAFAFA] text-[#0A0A0A]`}>
-        <div className="flex h-screen overflow-hidden">
-          <Sidebar />
-          <main className="flex-1 overflow-y-auto">
-            {children}
-          </main>
-        </div>
+        {children}
       </body>
     </html>
   );
