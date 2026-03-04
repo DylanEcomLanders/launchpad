@@ -7,6 +7,8 @@ import {
   ClipboardDocumentCheckIcon,
   ClockIcon,
   WalletIcon,
+  SignalIcon,
+  BeakerIcon,
 } from "@heroicons/react/24/solid";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 
@@ -67,6 +69,20 @@ const tools: ToolCard[] = [
     href: "/tools/expenses",
     icon: <WalletIcon className="size-5" />,
     section: "Finance",
+  },
+  {
+    name: "Upsell Scanner",
+    description: "Scan Slack for upsell signals from the last 24 hours",
+    href: "/tools/upsell-scanner",
+    icon: <SignalIcon className="size-5" />,
+    section: "Sales",
+  },
+  {
+    name: "CRO Audit",
+    description: "Upload designs for an AI-powered conversion rate analysis",
+    href: "/tools/cro-audit",
+    icon: <BeakerIcon className="size-5" />,
+    section: "CRO",
   },
 ];
 

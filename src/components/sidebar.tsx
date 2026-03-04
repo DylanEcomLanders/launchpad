@@ -17,6 +17,8 @@ import {
   ChevronRightIcon,
   ClockIcon,
   WalletIcon,
+  SignalIcon,
+  BeakerIcon,
 } from "@heroicons/react/24/solid";
 import { Logo, LogoMark } from "@/components/logo";
 
@@ -82,6 +84,26 @@ const navSections: NavSection[] = [
         label: "Expenses",
         href: "/tools/expenses",
         icon: <WalletIcon className="size-4" />,
+      },
+    ],
+  },
+  {
+    title: "Sales",
+    items: [
+      {
+        label: "Upsell Scanner",
+        href: "/tools/upsell-scanner",
+        icon: <SignalIcon className="size-4" />,
+      },
+    ],
+  },
+  {
+    title: "CRO",
+    items: [
+      {
+        label: "CRO Audit",
+        href: "/tools/cro-audit",
+        icon: <BeakerIcon className="size-4" />,
       },
     ],
   },
