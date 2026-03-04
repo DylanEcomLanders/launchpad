@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Plus, X, Loader2, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { PlusIcon, XMarkIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 import { supabase } from "@/lib/supabase";
 import { DEV_NAMES } from "@/lib/constants";
@@ -283,7 +284,7 @@ export default function DevHoursPage() {
                   }
                   className="p-1.5 rounded-md border border-[#E5E5E5] hover:bg-[#F0F0F0] transition-colors"
                 >
-                  <ChevronLeft size={16} />
+                  <ChevronLeftIcon className="size-4" />
                 </button>
                 <span className="text-sm font-semibold min-w-[160px] text-center">
                   {formatMonthLabel(filters.month)}
@@ -296,7 +297,7 @@ export default function DevHoursPage() {
                   disabled={filters.month >= currentMonth()}
                   className="p-1.5 rounded-md border border-[#E5E5E5] hover:bg-[#F0F0F0] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 >
-                  <ChevronRight size={16} />
+                  <ChevronRightIcon className="size-4" />
                 </button>
               </div>
 
@@ -382,7 +383,7 @@ export default function DevHoursPage() {
             <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5">
               {loading ? (
                 <div className="flex items-center justify-center py-4">
-                  <Loader2 size={20} className="animate-spin text-[#AAAAAA]" />
+                  <ArrowPathIcon className="size-5 animate-spin text-[#AAAAAA]" />
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
@@ -572,12 +573,12 @@ export default function DevHoursPage() {
               >
                 {submitting ? (
                   <>
-                    <Loader2 size={14} className="animate-spin" />
+                    <ArrowPathIcon className="size-3.5 animate-spin" />
                     Logging...
                   </>
                 ) : (
                   <>
-                    <Plus size={14} />
+                    <PlusIcon className="size-3.5" />
                     Log Hours
                   </>
                 )}
@@ -598,7 +599,7 @@ export default function DevHoursPage() {
 
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 size={24} className="animate-spin text-[#AAAAAA]" />
+                <ArrowPathIcon className="size-6 animate-spin text-[#AAAAAA]" />
               </div>
             ) : filtered.length === 0 ? (
               <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-8">
@@ -687,7 +688,7 @@ export default function DevHoursPage() {
                           }`}
                         >
                           {entry.invoiced && (
-                            <Check size={12} className="text-white" />
+                            <CheckIcon className="size-3 text-white" />
                           )}
                         </button>
                       </div>
@@ -695,7 +696,7 @@ export default function DevHoursPage() {
                         onClick={() => deleteEntry(entry.id)}
                         className="p-1 text-[#CCCCCC] hover:text-[#0A0A0A] transition-colors"
                       >
-                        <X size={14} />
+                        <XMarkIcon className="size-3.5" />
                       </button>
                     </div>
 
@@ -728,14 +729,14 @@ export default function DevHoursPage() {
                             }`}
                           >
                             {entry.invoiced && (
-                              <Check size={12} className="text-white" />
+                              <CheckIcon className="size-3 text-white" />
                             )}
                           </button>
                           <button
                             onClick={() => deleteEntry(entry.id)}
                             className="p-1 text-[#CCCCCC] hover:text-[#0A0A0A] transition-colors"
                           >
-                            <X size={14} />
+                            <XMarkIcon className="size-3.5" />
                           </button>
                         </div>
                       </div>

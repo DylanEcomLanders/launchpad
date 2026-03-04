@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Plus, X, Loader2 } from "lucide-react";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 import { PdfPreview } from "@/components/pdf-preview";
 import { InvoicePdfDocument } from "@/components/invoice-pdf-document";
@@ -407,7 +408,7 @@ export default function InvoiceGeneratorPage() {
                 disabled={!selectedDeliverable}
                 className="px-4 py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#2A2A2A] transition-colors disabled:opacity-30"
               >
-                <Plus size={16} />
+                <PlusIcon className="size-4" />
               </button>
             </div>
 
@@ -483,7 +484,7 @@ export default function InvoiceGeneratorPage() {
                       onClick={() => removeItem(item.id)}
                       className="p-1 text-[#AAAAAA] hover:text-red-500 transition-colors justify-self-center"
                     >
-                      <X size={14} />
+                      <XMarkIcon className="size-3.5" />
                     </button>
                   </div>
                 ))}
@@ -495,7 +496,7 @@ export default function InvoiceGeneratorPage() {
               onClick={addCustomItem}
               className="flex items-center gap-1.5 text-sm text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
             >
-              <Plus size={14} />
+              <PlusIcon className="size-3.5" />
               Add custom line item
             </button>
 
@@ -596,7 +597,7 @@ export default function InvoiceGeneratorPage() {
           >
             {generating ? (
               <>
-                <Loader2 size={16} className="animate-spin" />
+                <ArrowPathIcon className="size-4 animate-spin" />
                 Generating...
               </>
             ) : (

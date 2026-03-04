@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Loader2, Eye } from "lucide-react";
+import { EyeIcon } from "@heroicons/react/24/solid";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 import { projectTypes, type RoadmapFormData } from "@/lib/config";
 import {
@@ -344,12 +345,12 @@ export default function ProjectRoadmapPage() {
             >
               {generating ? (
                 <>
-                  <Loader2 size={16} className="animate-spin" />
+                  <ArrowPathIcon className="size-4 animate-spin" />
                   Generating...
                 </>
               ) : (
                 <>
-                  <Eye size={16} />
+                  <EyeIcon className="size-4" />
                   Generate Roadmap PDF
                 </>
               )}

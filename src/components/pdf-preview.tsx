@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { pdf, type DocumentProps } from "@react-pdf/renderer";
-import { FileDown, Loader2, Check } from "lucide-react";
+import { ArrowDownTrayIcon, CheckIcon } from "@heroicons/react/24/solid";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import type { ReactElement } from "react";
 
 interface PdfPreviewProps {
@@ -48,7 +49,7 @@ export function PdfPreview({
     <div className="bg-[#F0F0F0] border border-[#E5E5E5] rounded-lg p-8">
       <div className="flex items-start gap-4">
         <div className="p-2.5 bg-white rounded-md border border-[#E5E5E5]">
-          <Check size={20} className="text-[#0A0A0A]" />
+          <CheckIcon className="size-5 text-[#0A0A0A]" />
         </div>
         <div className="flex-1">
           <h3 className="text-sm font-semibold mb-1">{label} Ready</h3>
@@ -65,17 +66,17 @@ export function PdfPreview({
         >
           {downloading ? (
             <>
-              <Loader2 size={14} className="animate-spin" />
+              <ArrowPathIcon className="size-3.5 animate-spin" />
               Generating...
             </>
           ) : downloaded ? (
             <>
-              <Check size={14} />
+              <CheckIcon className="size-3.5" />
               Downloaded
             </>
           ) : (
             <>
-              <FileDown size={14} />
+              <ArrowDownTrayIcon className="size-3.5" />
               Download PDF
             </>
           )}

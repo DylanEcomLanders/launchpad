@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Lock } from "lucide-react";
+import { LockClosedIcon } from "@heroicons/react/24/solid";
 
 const STORAGE_KEY = "launchpad-auth";
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "ecomlanders2025";
@@ -40,7 +40,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
         <div className="w-full max-w-xs">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#F0F0F0] border border-[#E5E5E5] mb-4">
-              <Lock size={20} className="text-[#6B6B6B]" />
+              <LockClosedIcon className="size-5 text-[#6B6B6B]" />
             </div>
             <h1 className="text-lg font-semibold">Launchpad</h1>
             <p className="text-xs text-[#6B6B6B] mt-1">

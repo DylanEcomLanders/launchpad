@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Plus, Loader2, CheckCircle2 } from "lucide-react";
+import { PlusIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 import { supabase } from "@/lib/supabase";
 import { DEV_NAMES } from "@/lib/constants";
@@ -195,7 +196,7 @@ export default function LogHoursPage() {
         {/* Success banner */}
         {success && (
           <div className="mb-6 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-700 flex items-center gap-2">
-            <CheckCircle2 size={16} />
+            <CheckCircleIcon className="size-4" />
             Hours logged successfully
           </div>
         )}
@@ -345,12 +346,12 @@ export default function LogHoursPage() {
           >
             {submitting ? (
               <>
-                <Loader2 size={14} className="animate-spin" />
+                <ArrowPathIcon className="size-3.5 animate-spin" />
                 Logging...
               </>
             ) : (
               <>
-                <Plus size={14} />
+                <PlusIcon className="size-3.5" />
                 Log Hours
               </>
             )}

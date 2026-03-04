@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Plus, Loader2, Trash2 } from "lucide-react";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 import { supabase } from "@/lib/supabase";
 import type { Expense, ExpenseInsert } from "@/lib/types";
@@ -396,12 +397,12 @@ export default function ExpensesPage() {
               >
                 {submitting ? (
                   <>
-                    <Loader2 size={14} className="animate-spin" />
+                    <ArrowPathIcon className="size-3.5 animate-spin" />
                     Adding...
                   </>
                 ) : (
                   <>
-                    <Plus size={14} />
+                    <PlusIcon className="size-3.5" />
                     Add Expense
                   </>
                 )}
@@ -463,7 +464,7 @@ export default function ExpensesPage() {
 
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 size={20} className="animate-spin text-[#AAAAAA]" />
+                <ArrowPathIcon className="size-5 animate-spin text-[#AAAAAA]" />
               </div>
             ) : filtered.length === 0 ? (
               <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-8">
@@ -548,7 +549,7 @@ export default function ExpensesPage() {
                             className="p-1 text-[#AAAAAA] hover:text-red-500 transition-colors"
                             title="Delete"
                           >
-                            <Trash2 size={14} />
+                            <TrashIcon className="size-3.5" />
                           </button>
                         </div>
 
@@ -589,7 +590,7 @@ export default function ExpensesPage() {
                               onClick={() => handleDelete(expense.id)}
                               className="p-1 text-[#AAAAAA] hover:text-red-500 transition-colors"
                             >
-                              <Trash2 size={14} />
+                              <TrashIcon className="size-3.5" />
                             </button>
                           </div>
                         </div>

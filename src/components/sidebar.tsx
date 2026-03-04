@@ -4,19 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
-  FileText,
-  CalendarDays,
-  Calculator,
-  Receipt,
-  Home,
-  Menu,
-  X,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  Wallet,
-} from "lucide-react";
+  DocumentTextIcon,
+  CalendarDaysIcon,
+  CalculatorIcon,
+  ReceiptPercentIcon,
+  HomeIcon,
+  Bars3Icon,
+  XMarkIcon,
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ClockIcon,
+  WalletIcon,
+} from "@heroicons/react/24/solid";
 import { Logo, LogoMark } from "@/components/logo";
 
 interface NavItem {
@@ -45,17 +45,17 @@ const navSections: NavSection[] = [
       {
         label: "Project Doc Creation",
         href: "/tools/scope-generator",
-        icon: <FileText size={16} />,
+        icon: <DocumentTextIcon className="size-4" />,
       },
       {
         label: "Project Roadmap",
         href: "/tools/project-roadmap",
-        icon: <CalendarDays size={16} />,
+        icon: <CalendarDaysIcon className="size-4" />,
       },
       {
         label: "Price Calculator",
         href: "/tools/price-calculator",
-        icon: <Calculator size={16} />,
+        icon: <CalculatorIcon className="size-4" />,
       },
     ],
   },
@@ -65,17 +65,17 @@ const navSections: NavSection[] = [
       {
         label: "Invoice Generator",
         href: "/tools/invoice-generator",
-        icon: <Receipt size={16} />,
+        icon: <ReceiptPercentIcon className="size-4" />,
       },
       {
         label: "Dev Hours",
         href: "/tools/dev-hours",
-        icon: <Clock size={16} />,
+        icon: <ClockIcon className="size-4" />,
       },
       {
         label: "Expenses",
         href: "/tools/expenses",
-        icon: <Wallet size={16} />,
+        icon: <WalletIcon className="size-4" />,
       },
     ],
   },
@@ -107,7 +107,7 @@ export function Sidebar() {
         className="fixed top-4 left-4 z-50 p-2 rounded-md bg-white border border-[#E5E5E5] md:hidden"
         aria-label="Open menu"
       >
-        <Menu size={20} />
+        <Bars3Icon className="size-5" />
       </button>
 
       {/* Mobile overlay */}
@@ -150,7 +150,7 @@ export function Sidebar() {
             className="p-1 rounded md:hidden"
             aria-label="Close menu"
           >
-            <X size={18} />
+            <XMarkIcon className="size-[18px]" />
           </button>
 
           {/* Collapse toggle on desktop */}
@@ -159,7 +159,7 @@ export function Sidebar() {
             className="p-1 rounded hover:bg-[#F0F0F0] hidden md:block"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+            {collapsed ? <ChevronRightIcon className="size-3.5" /> : <ChevronLeftIcon className="size-3.5" />}
           </button>
         </div>
 
@@ -179,7 +179,7 @@ export function Sidebar() {
                 }
               `}
             >
-              <Home size={16} />
+              <HomeIcon className="size-4" />
               {!collapsed && <span>Home</span>}
             </Link>
           </div>
@@ -195,9 +195,8 @@ export function Sidebar() {
                   <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6B6B6B]">
                     {section.title}
                   </span>
-                  <ChevronDown
-                    size={12}
-                    className={`text-[#AAAAAA] transition-transform duration-200 ${
+                  <ChevronDownIcon
+                    className={`size-3 text-[#AAAAAA] transition-transform duration-200 ${
                       openSections[section.title] ? "" : "-rotate-90"
                     }`}
                   />
@@ -237,7 +236,7 @@ export function Sidebar() {
         {!collapsed && (
           <div className="px-4 py-3 border-t border-[#E5E5E5]">
             <div className="flex items-center gap-1.5 mb-2">
-              <Clock size={11} className="text-[#AAAAAA]" />
+              <ClockIcon className="size-3 text-[#AAAAAA]" />
               <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6B6B6B]">
                 Team
               </span>
@@ -266,7 +265,7 @@ export function Sidebar() {
         )}
         {collapsed && (
           <div className="py-3 border-t border-[#E5E5E5] flex justify-center">
-            <Clock size={14} className="text-[#AAAAAA]" />
+            <ClockIcon className="size-3.5 text-[#AAAAAA]" />
           </div>
         )}
 

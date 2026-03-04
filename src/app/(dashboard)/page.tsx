@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { FileText, CalendarDays, Calculator, Receipt, Clock, Wallet } from "lucide-react";
+import {
+  DocumentTextIcon,
+  CalendarDaysIcon,
+  CalculatorIcon,
+  ReceiptPercentIcon,
+  ClockIcon,
+  WalletIcon,
+} from "@heroicons/react/24/solid";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 
 interface ToolCard {
@@ -15,42 +22,42 @@ const tools: ToolCard[] = [
     name: "Project Doc Creation",
     description: "Generate branded scope documents and service agreements for client projects",
     href: "/tools/scope-generator",
-    icon: <FileText size={20} />,
+    icon: <DocumentTextIcon className="size-5" />,
     section: "Project Management",
   },
   {
     name: "Project Roadmap",
     description: "Generate branded project timeline PDFs with milestones and client touchpoints",
     href: "/tools/project-roadmap",
-    icon: <CalendarDays size={20} />,
+    icon: <CalendarDaysIcon className="size-5" />,
     section: "Project Management",
   },
   {
     name: "Price Calculator",
     description: "Calculate internal costs, client pricing, and margins for project deliverables",
     href: "/tools/price-calculator",
-    icon: <Calculator size={20} />,
+    icon: <CalculatorIcon className="size-5" />,
     section: "Project Management",
   },
   {
     name: "Invoice Generator",
     description: "Generate branded PDF invoices for client projects",
     href: "/tools/invoice-generator",
-    icon: <Receipt size={20} />,
+    icon: <ReceiptPercentIcon className="size-5" />,
     section: "Finance",
   },
   {
     name: "Dev Hours",
     description: "Log out-of-scope dev hours and track invoicing against clients",
     href: "/tools/dev-hours",
-    icon: <Clock size={20} />,
+    icon: <ClockIcon className="size-5" />,
     section: "Finance",
   },
   {
     name: "Expenses",
     description: "Track business expenses and flag what's needed",
     href: "/tools/expenses",
-    icon: <Wallet size={20} />,
+    icon: <WalletIcon className="size-5" />,
     section: "Finance",
   },
 ];

@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import {
-  Plus,
-  Trash2,
-  Loader2,
-  Eye,
-  ChevronDown,
-  FileDown,
-} from "lucide-react";
+  PlusIcon,
+  TrashIcon,
+  EyeIcon,
+  ChevronDownIcon,
+  ArrowDownTrayIcon,
+} from "@heroicons/react/24/solid";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 import {
   projectTypes,
@@ -367,7 +367,7 @@ export default function ScopeGeneratorPage() {
                 onClick={addDeliverable}
                 className="flex items-center gap-1.5 text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
               >
-                <Plus size={14} />
+                <PlusIcon className="size-3.5" />
                 Add row
               </button>
             </div>
@@ -406,7 +406,7 @@ export default function ScopeGeneratorPage() {
                     disabled={formData.deliverables.length <= 1}
                     className="p-2.5 text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   >
-                    <Trash2 size={14} />
+                    <TrashIcon className="size-3.5" />
                   </button>
                 </div>
               ))}
@@ -442,9 +442,8 @@ export default function ScopeGeneratorPage() {
                   Optional
                 </span>
               </div>
-              <ChevronDown
-                size={16}
-                className={`text-[#6B6B6B] transition-transform ${
+              <ChevronDownIcon
+                className={`size-4 text-[#6B6B6B] transition-transform ${
                   formData.showAgreement ? "rotate-180" : ""
                 }`}
               />
@@ -623,7 +622,7 @@ export default function ScopeGeneratorPage() {
                         onClick={addMilestone}
                         className="flex items-center gap-1.5 text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
                       >
-                        <Plus size={14} />
+                        <PlusIcon className="size-3.5" />
                         Add milestone
                       </button>
                     </div>
@@ -657,7 +656,7 @@ export default function ScopeGeneratorPage() {
                             disabled={ag.milestones.length <= 1}
                             className="p-2.5 text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                           >
-                            <Trash2 size={14} />
+                            <TrashIcon className="size-3.5" />
                           </button>
                         </div>
                       ))}
@@ -774,12 +773,12 @@ export default function ScopeGeneratorPage() {
             >
               {generatingScope ? (
                 <>
-                  <Loader2 size={16} className="animate-spin" />
+                  <ArrowPathIcon className="size-4 animate-spin" />
                   Generating...
                 </>
               ) : (
                 <>
-                  <Eye size={16} />
+                  <EyeIcon className="size-4" />
                   Generate Scope PDF
                 </>
               )}
@@ -793,12 +792,12 @@ export default function ScopeGeneratorPage() {
               >
                 {generatingAgreement ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" />
+                    <ArrowPathIcon className="size-4 animate-spin" />
                     Generating...
                   </>
                 ) : (
                   <>
-                    <Eye size={16} />
+                    <EyeIcon className="size-4" />
                     Generate Agreement PDF
                   </>
                 )}
@@ -815,12 +814,12 @@ export default function ScopeGeneratorPage() {
               >
                 {generatingScope && generatingAgreement ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" />
+                    <ArrowPathIcon className="size-4 animate-spin" />
                     Generating...
                   </>
                 ) : (
                   <>
-                    <Eye size={16} />
+                    <EyeIcon className="size-4" />
                     Generate Both
                   </>
                 )}
@@ -860,12 +859,12 @@ export default function ScopeGeneratorPage() {
               >
                 {downloadingAll ? (
                   <>
-                    <Loader2 size={14} className="animate-spin" />
+                    <ArrowPathIcon className="size-3.5 animate-spin" />
                     Downloading...
                   </>
                 ) : (
                   <>
-                    <FileDown size={14} />
+                    <ArrowDownTrayIcon className="size-3.5" />
                     Download All PDFs
                   </>
                 )}

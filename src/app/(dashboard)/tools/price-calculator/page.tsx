@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Minus, Plus } from "lucide-react";
+import { MinusIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 
 /* ── shared classes ── */
@@ -414,7 +414,7 @@ export default function PriceCalculatorPage() {
                                 className="p-1 rounded hover:bg-[#E5E5E5] text-[#AAAAAA] hover:text-[#6B6B6B] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                                 aria-label={`Decrease ${d.name} quantity`}
                               >
-                                <Minus size={12} />
+                                <MinusIcon className="size-3" />
                               </button>
                               <span
                                 className={`text-sm font-semibold tabular-nums w-5 text-center ${isActive ? "text-[#0A0A0A]" : "text-[#AAAAAA]"}`}
@@ -426,7 +426,7 @@ export default function PriceCalculatorPage() {
                                 className="p-1 rounded hover:bg-[#E5E5E5] text-[#AAAAAA] hover:text-[#6B6B6B] transition-colors"
                                 aria-label={`Increase ${d.name} quantity`}
                               >
-                                <Plus size={12} />
+                                <PlusIcon className="size-3" />
                               </button>
                             </div>
                           </div>
@@ -459,7 +459,7 @@ export default function PriceCalculatorPage() {
                                 className="p-1 rounded hover:bg-[#E5E5E5] text-[#AAAAAA] hover:text-[#6B6B6B] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                                 aria-label={`Decrease ${d.name} quantity`}
                               >
-                                <Minus size={14} />
+                                <MinusIcon className="size-3.5" />
                               </button>
                               <span
                                 className={`text-sm font-semibold tabular-nums w-5 text-center ${isActive ? "text-[#0A0A0A]" : "text-[#AAAAAA]"}`}
@@ -471,7 +471,7 @@ export default function PriceCalculatorPage() {
                                 className="p-1 rounded hover:bg-[#E5E5E5] text-[#AAAAAA] hover:text-[#6B6B6B] transition-colors"
                                 aria-label={`Increase ${d.name} quantity`}
                               >
-                                <Plus size={14} />
+                                <PlusIcon className="size-3.5" />
                               </button>
                             </div>
                           </div>
