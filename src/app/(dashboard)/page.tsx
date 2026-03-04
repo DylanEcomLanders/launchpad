@@ -4,6 +4,7 @@ import {
   CalendarDaysIcon,
   CalculatorIcon,
   ReceiptPercentIcon,
+  ClipboardDocumentCheckIcon,
   ClockIcon,
   WalletIcon,
 } from "@heroicons/react/24/solid";
@@ -37,6 +38,13 @@ const tools: ToolCard[] = [
     description: "Calculate internal costs, client pricing, and margins for project deliverables",
     href: "/tools/price-calculator",
     icon: <CalculatorIcon className="size-5" />,
+    section: "Project Management",
+  },
+  {
+    name: "QA Checklist",
+    description: "Interactive quality assurance checklist for client projects",
+    href: "/tools/qa-checklist",
+    icon: <ClipboardDocumentCheckIcon className="size-5" />,
     section: "Project Management",
   },
   {

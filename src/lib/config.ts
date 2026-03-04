@@ -128,3 +128,95 @@ export interface RoadmapFormData {
   devEndDate: string;
   phases: RoadmapPhase[];
 }
+
+/* ── QA Checklist types ── */
+
+export const qaCategories = [
+  "Functionality",
+  "Design & Visual QA",
+  "Performance",
+  "SEO",
+  "Content",
+  "Shopify-Specific",
+] as const;
+
+export type QACategory = (typeof qaCategories)[number];
+export type QAResult = "pass" | "fail" | "skip" | "";
+
+export interface QAItem {
+  id: string;
+  category: QACategory;
+  description: string;
+  result: QAResult;
+  notes: string;
+}
+
+export interface QAFormData {
+  projectName: string;
+  clientName: string;
+  projectType: ProjectType | "";
+  testerName: string;
+  testDate: string;
+  items: QAItem[];
+  summary: string;
+}
+
+export const defaultQAItems: Record<QACategory, string[]> = {
+  Functionality: [
+    "All links work (internal + external)",
+    "Forms submit correctly (contact, newsletter, etc.)",
+    "Cart add/remove/update works",
+    "Checkout flow completes end-to-end",
+    "Discount codes apply correctly",
+    "Search returns relevant results",
+    "Account login/register/reset works",
+    "404 page displays correctly",
+  ],
+  "Design & Visual QA": [
+    "Matches approved design files",
+    "Typography consistent (fonts, sizes, weights)",
+    "Spacing and padding consistent across pages",
+    "Images are high quality and correctly sized",
+    "Hover/active states on interactive elements",
+    "Animations and transitions are smooth",
+    "Favicon and touch icons set",
+  ],
+  Performance: [
+    "Page speed score ≥ 70 (mobile)",
+    "Page speed score ≥ 90 (desktop)",
+    "Images optimised (WebP, lazy loaded)",
+    "No render-blocking resources",
+    "First contentful paint < 2.5s",
+    "No layout shift issues",
+  ],
+  SEO: [
+    "All pages have unique meta titles",
+    "All pages have meta descriptions",
+    "Open Graph tags set (title, description, image)",
+    "Sitemap.xml exists and is valid",
+    "Robots.txt configured correctly",
+    "Canonical URLs set correctly",
+    "301 redirects in place (if migration)",
+    "Structured data / schema markup added",
+  ],
+  Content: [
+    "No placeholder or lorem ipsum text",
+    "Spelling and grammar checked",
+    "All images have alt text",
+    "Legal pages present (Privacy, Terms, Refund)",
+    "Contact information is correct",
+    "Currency and pricing displays correctly",
+  ],
+  "Shopify-Specific": [
+    "Theme settings are configured",
+    "Shopify Payments / gateway is live",
+    "Shipping rates configured correctly",
+    "Tax settings configured",
+    "Email notifications customised",
+    "Apps functioning correctly",
+    "Inventory tracking set up",
+    "Order confirmation flow works",
+    "Gift cards work (if applicable)",
+    "Collections and navigation correct",
+  ],
+};
