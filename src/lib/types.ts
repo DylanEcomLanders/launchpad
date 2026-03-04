@@ -36,3 +36,23 @@ export interface Filters {
   invoicedStatus: "all" | "invoiced" | "uninvoiced";
   month: string; // "YYYY-MM" format
 }
+
+export interface Expense {
+  id: string;
+  name: string;
+  category: string;
+  amount: number;
+  frequency: "monthly" | "yearly" | "one-off";
+  status: "needed" | "review" | "cut";
+  notes: string;
+  created_at: string;
+}
+
+export interface ExpenseInsert {
+  name: string;
+  category: string;
+  amount: number;
+  frequency: "monthly" | "yearly" | "one-off";
+  status: "needed" | "review" | "cut";
+  notes: string;
+}

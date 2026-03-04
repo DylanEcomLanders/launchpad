@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, CalendarDays, Calculator, Receipt, Clock } from "lucide-react";
+import { FileText, CalendarDays, Calculator, Receipt, Clock, Wallet } from "lucide-react";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 
 interface ToolCard {
@@ -44,6 +44,13 @@ const tools: ToolCard[] = [
     description: "Log out-of-scope dev hours and track invoicing against clients",
     href: "/tools/dev-hours",
     icon: <Clock size={20} />,
+    section: "Finance",
+  },
+  {
+    name: "Expenses",
+    description: "Track business expenses and flag what's needed",
+    href: "/tools/expenses",
+    icon: <Wallet size={20} />,
     section: "Finance",
   },
 ];

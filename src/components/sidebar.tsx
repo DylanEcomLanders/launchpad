@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  Wallet,
 } from "lucide-react";
 import { Logo, LogoMark } from "@/components/logo";
 
@@ -70,6 +71,11 @@ const navSections: NavSection[] = [
         label: "Dev Hours",
         href: "/tools/dev-hours",
         icon: <Clock size={16} />,
+      },
+      {
+        label: "Expenses",
+        href: "/tools/expenses",
+        icon: <Wallet size={16} />,
       },
     ],
   },
