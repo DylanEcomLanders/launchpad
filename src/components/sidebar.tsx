@@ -29,6 +29,7 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ReactNode;
+  wip?: boolean;
 }
 
 interface NavSection {
@@ -97,16 +98,19 @@ const navSections: NavSection[] = [
         label: "Store Intelligence",
         href: "/tools/store-intel",
         icon: <MagnifyingGlassIcon className="size-4" />,
+        wip: true,
       },
       {
         label: "Upsell Scanner",
         href: "/tools/upsell-scanner",
         icon: <SignalIcon className="size-4" />,
+        wip: true,
       },
       {
         label: "Proposals",
         href: "/tools/proposals",
         icon: <DocumentDuplicateIcon className="size-4" />,
+        wip: true,
       },
     ],
   },
@@ -117,6 +121,7 @@ const navSections: NavSection[] = [
         label: "CRO Audit",
         href: "/tools/cro-audit",
         icon: <BeakerIcon className="size-4" />,
+        wip: true,
       },
     ],
   },
@@ -127,6 +132,7 @@ const navSections: NavSection[] = [
         label: "Playbooks",
         href: "/tools/playbooks",
         icon: <BookOpenIcon className="size-4" />,
+        wip: true,
       },
     ],
   },
@@ -274,7 +280,16 @@ export function Sidebar() {
                       title={collapsed ? item.label : undefined}
                     >
                       {item.icon}
-                      {!collapsed && <span>{item.label}</span>}
+                      {!collapsed && (
+                        <span className="flex items-center gap-1.5">
+                          {item.label}
+                          {item.wip && (
+                            <span className="px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-amber-100 text-amber-600 rounded">
+                              WIP
+                            </span>
+                          )}
+                        </span>
+                      )}
                     </Link>
                   ))}
                 </div>

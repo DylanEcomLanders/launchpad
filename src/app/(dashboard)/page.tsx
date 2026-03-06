@@ -21,6 +21,7 @@ interface ToolCard {
   href: string;
   icon: React.ReactNode;
   section: string;
+  wip?: boolean;
 }
 
 const tools: ToolCard[] = [
@@ -79,6 +80,7 @@ const tools: ToolCard[] = [
     href: "/tools/store-intel",
     icon: <MagnifyingGlassIcon className="size-5" />,
     section: "Sales",
+    wip: true,
   },
   {
     name: "Upsell Scanner",
@@ -86,6 +88,7 @@ const tools: ToolCard[] = [
     href: "/tools/upsell-scanner",
     icon: <SignalIcon className="size-5" />,
     section: "Sales",
+    wip: true,
   },
   {
     name: "Proposals",
@@ -93,6 +96,7 @@ const tools: ToolCard[] = [
     href: "/tools/proposals",
     icon: <DocumentDuplicateIcon className="size-5" />,
     section: "Sales",
+    wip: true,
   },
   {
     name: "CRO Audit",
@@ -100,6 +104,7 @@ const tools: ToolCard[] = [
     href: "/tools/cro-audit",
     icon: <BeakerIcon className="size-5" />,
     section: "CRO",
+    wip: true,
   },
   {
     name: "Playbooks",
@@ -107,6 +112,7 @@ const tools: ToolCard[] = [
     href: "/tools/playbooks",
     icon: <BookOpenIcon className="size-5" />,
     section: "Training",
+    wip: true,
   },
 ];
 
@@ -158,7 +164,14 @@ function CardContent({ tool }: { tool: ToolCard }) {
         {tool.icon}
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="text-sm font-semibold mb-1">{tool.name}</h3>
+        <h3 className="text-sm font-semibold mb-1 flex items-center gap-1.5">
+          {tool.name}
+          {tool.wip && (
+            <span className="px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-amber-100 text-amber-600 rounded">
+              WIP
+            </span>
+          )}
+        </h3>
         <p className="text-xs text-[#6B6B6B] leading-relaxed">
           {tool.description}
         </p>
