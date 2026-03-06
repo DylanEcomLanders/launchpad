@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# launchpad reports (generated output)
+/launchpad-reports
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

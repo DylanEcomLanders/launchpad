@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
   DocumentTextIcon,
+  DocumentDuplicateIcon,
   CalendarDaysIcon,
   CalculatorIcon,
   ReceiptPercentIcon,
@@ -19,6 +20,8 @@ import {
   WalletIcon,
   SignalIcon,
   BeakerIcon,
+  MagnifyingGlassIcon,
+  BookOpenIcon,
 } from "@heroicons/react/24/solid";
 import { Logo, LogoMark } from "@/components/logo";
 
@@ -91,9 +94,19 @@ const navSections: NavSection[] = [
     title: "Sales",
     items: [
       {
+        label: "Store Intelligence",
+        href: "/tools/store-intel",
+        icon: <MagnifyingGlassIcon className="size-4" />,
+      },
+      {
         label: "Upsell Scanner",
         href: "/tools/upsell-scanner",
         icon: <SignalIcon className="size-4" />,
+      },
+      {
+        label: "Proposals",
+        href: "/tools/proposals",
+        icon: <DocumentDuplicateIcon className="size-4" />,
       },
     ],
   },
@@ -104,6 +117,16 @@ const navSections: NavSection[] = [
         label: "CRO Audit",
         href: "/tools/cro-audit",
         icon: <BeakerIcon className="size-4" />,
+      },
+    ],
+  },
+  {
+    title: "Training",
+    items: [
+      {
+        label: "Playbooks",
+        href: "/tools/playbooks",
+        icon: <BookOpenIcon className="size-4" />,
       },
     ],
   },

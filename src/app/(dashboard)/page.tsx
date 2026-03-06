@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   DocumentTextIcon,
+  DocumentDuplicateIcon,
   CalendarDaysIcon,
   CalculatorIcon,
   ReceiptPercentIcon,
@@ -9,6 +10,8 @@ import {
   WalletIcon,
   SignalIcon,
   BeakerIcon,
+  MagnifyingGlassIcon,
+  BookOpenIcon,
 } from "@heroicons/react/24/solid";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 
@@ -71,10 +74,24 @@ const tools: ToolCard[] = [
     section: "Finance",
   },
   {
+    name: "Store Intelligence",
+    description: "Analyse any Shopify store — products, tech stack, funnel leaks, and quick wins",
+    href: "/tools/store-intel",
+    icon: <MagnifyingGlassIcon className="size-5" />,
+    section: "Sales",
+  },
+  {
     name: "Upsell Scanner",
     description: "Scan Slack for upsell signals from the last 24 hours",
     href: "/tools/upsell-scanner",
     icon: <SignalIcon className="size-5" />,
+    section: "Sales",
+  },
+  {
+    name: "Proposals",
+    description: "Generate unique proposal links for clients — track views and conversions",
+    href: "/tools/proposals",
+    icon: <DocumentDuplicateIcon className="size-5" />,
     section: "Sales",
   },
   {
@@ -83,6 +100,13 @@ const tools: ToolCard[] = [
     href: "/tools/cro-audit",
     icon: <BeakerIcon className="size-5" />,
     section: "CRO",
+  },
+  {
+    name: "Playbooks",
+    description: "Interactive step-by-step training with knowledge checks — learn the Ecomlanders way",
+    href: "/tools/playbooks",
+    icon: <BookOpenIcon className="size-5" />,
+    section: "Training",
   },
 ];
 
