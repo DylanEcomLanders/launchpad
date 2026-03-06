@@ -10,6 +10,7 @@ import {
   WalletIcon,
   SignalIcon,
   BeakerIcon,
+  ChartBarIcon,
   MagnifyingGlassIcon,
   BookOpenIcon,
 } from "@heroicons/react/24/solid";
@@ -96,6 +97,14 @@ const tools: ToolCard[] = [
     href: "/tools/proposals",
     icon: <DocumentDuplicateIcon className="size-5" />,
     section: "Sales",
+    wip: true,
+  },
+  {
+    name: "CRO Test Monitor",
+    description: "Track live A/B tests across clients — CVR, RPV, AOV, stat sig, and weekly review checklists",
+    href: "/tools/cro-monitor",
+    icon: <ChartBarIcon className="size-5" />,
+    section: "CRO",
     wip: true,
   },
   {

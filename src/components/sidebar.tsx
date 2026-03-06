@@ -20,6 +20,7 @@ import {
   WalletIcon,
   SignalIcon,
   BeakerIcon,
+  ChartBarIcon,
   MagnifyingGlassIcon,
   BookOpenIcon,
 } from "@heroicons/react/24/solid";
@@ -117,6 +118,12 @@ const navSections: NavSection[] = [
   {
     title: "CRO",
     items: [
+      {
+        label: "CRO Test Monitor",
+        href: "/tools/cro-monitor",
+        icon: <ChartBarIcon className="size-4" />,
+        wip: true,
+      },
       {
         label: "CRO Audit",
         href: "/tools/cro-audit",
