@@ -25,22 +25,58 @@ const labelClass =
   "block text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-2";
 
 const smallInputClass =
-  "w-full px-2 py-1.5 bg-white border border-[#E5E5E5] rounded text-xs focus:outline-none focus:border-[#0A0A0A] transition-colors tabular-nums";
+  "w-full px-2.5 py-2 bg-white border border-[#E5E5E5] rounded-md text-xs focus:outline-none focus:border-[#0A0A0A] transition-colors tabular-nums";
 
 /* ── Status config ──────────────────────────────────────────────── */
 
 const statusConfig: Record<
   CroTestStatus,
-  { bg: string; text: string; dot: string; label: string }
+  { bg: string; text: string; dot: string; label: string; pulse?: boolean }
 > = {
-  live: { bg: "bg-green-50", text: "text-green-700", dot: "bg-green-500", label: "Live" },
-  paused: { bg: "bg-amber-50", text: "text-amber-700", dot: "bg-amber-500", label: "Paused" },
+  live: { bg: "bg-green-50", text: "text-green-700", dot: "bg-green-500", label: "Live", pulse: true },
+  paused: { bg: "bg-amber-50", text: "text-amber-700", dot: "bg-amber-400", label: "Paused" },
   winner: { bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-500", label: "Winner" },
-  loser: { bg: "bg-red-50", text: "text-red-700", dot: "bg-red-500", label: "Loser" },
+  loser: { bg: "bg-red-50", text: "text-red-700", dot: "bg-red-400", label: "Loser" },
   inconclusive: { bg: "bg-gray-50", text: "text-gray-600", dot: "bg-gray-400", label: "Inconclusive" },
 };
 
 const ALL_STATUSES: CroTestStatus[] = ["live", "paused", "winner", "loser", "inconclusive"];
+
+/* ── Swimlane config ────────────────────────────────────────────── */
+
+interface SwimlaneConfig {
+  title: string;
+  dot: string;
+  pulse: boolean;
+  emptyText: string;
+}
+
+const swimlaneConfig: Record<string, SwimlaneConfig> = {
+  attention: {
+    title: "Needs Attention",
+    dot: "bg-red-500",
+    pulse: true,
+    emptyText: "Nothing needs attention right now",
+  },
+  running: {
+    title: "Live & Running",
+    dot: "bg-green-500",
+    pulse: true,
+    emptyText: "No live tests running",
+  },
+  winners: {
+    title: "Winners",
+    dot: "bg-emerald-500",
+    pulse: false,
+    emptyText: "No winners yet",
+  },
+  losers: {
+    title: "Losers & Inconclusive",
+    dot: "bg-gray-400",
+    pulse: false,
+    emptyText: "No losers or inconclusive tests",
+  },
+};
 
 /* ── Weekly checklist items ─────────────────────────────────────── */
 
@@ -106,7 +142,7 @@ const DEMO_DATA: CroTest[] = [
     id: "demo-3",
     client_name: "Huel",
     test_name: "Subscription CTA Colour Change",
-    variant_name: "V1 — Green CTA → Orange CTA",
+    variant_name: "V1 — Green CTA to Orange CTA",
     hypothesis:
       "Switching the subscribe CTA from green to orange will improve click-through by 5%",
     status: "winner",
@@ -167,7 +203,7 @@ const DEMO_DATA: CroTest[] = [
     id: "demo-6",
     client_name: "REPRESENT",
     test_name: "Collection Page Social Proof Banners",
-    variant_name: 'V1 — "X people viewing" + Recent Purchases',
+    variant_name: "V1 — X people viewing + Recent Purchases",
     hypothesis: "Social proof messaging on collection pages will increase click-through to PDP",
     status: "loser",
     start_date: "2026-01-13",
@@ -284,7 +320,6 @@ function formatDateShort(dateStr: string): string {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
-/** Is a test "needs attention"? */
 function needsAttention(test: CroTest): boolean {
   if (test.status === "paused") return true;
   if (test.status === "live" && Number(test.stat_sig) >= 80) return true;
@@ -295,34 +330,45 @@ function needsAttention(test: CroTest): boolean {
 
 /* ── Sub-components ──────────────────────────────────────────────── */
 
+function PulseDot({ color, pulse = false, size = "sm" }: { color: string; pulse?: boolean; size?: "sm" | "md" }) {
+  const dims = size === "md" ? "w-2.5 h-2.5" : "w-2 h-2";
+  const ringDims = size === "md" ? "w-2.5 h-2.5" : "w-2 h-2";
+  return (
+    <span className={`relative inline-flex ${dims}`}>
+      {pulse && (
+        <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${color} opacity-40`} />
+      )}
+      <span className={`relative inline-flex rounded-full ${ringDims} ${color}`} />
+    </span>
+  );
+}
+
 function StatusBadge({ status }: { status: CroTestStatus }) {
   const sc = statusConfig[status];
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${sc.bg} ${sc.text}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider ${sc.bg} ${sc.text}`}
     >
-      <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
+      <PulseDot color={sc.dot} pulse={sc.pulse} />
       {sc.label}
     </span>
   );
 }
 
-function StatSigBar({ value, showLabel = true }: { value: number; showLabel?: boolean }) {
+function StatSigBar({ value }: { value: number }) {
   const pct = Math.min(100, Math.max(0, Number(value) || 0));
-  const color = pct >= 95 ? "bg-emerald-500" : pct >= 80 ? "bg-amber-500" : "bg-[#CCCCCC]";
+  const color = pct >= 95 ? "bg-emerald-500" : pct >= 80 ? "bg-amber-400" : "bg-[#D4D4D4]";
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex-1 h-1.5 bg-[#F0F0F0] rounded-full overflow-hidden">
+    <div className="flex items-center gap-3">
+      <div className="flex-1 h-2 bg-[#F0F0F0] rounded-full overflow-hidden">
         <div
-          className={`h-full ${color} transition-all duration-300 rounded-full`}
+          className={`h-full ${color} transition-all duration-500 rounded-full`}
           style={{ width: `${pct}%` }}
         />
       </div>
-      {showLabel && (
-        <span className="text-[10px] font-medium tabular-nums text-[#6B6B6B] w-8 text-right">
-          {pct.toFixed(0)}%
-        </span>
-      )}
+      <span className="text-[11px] font-semibold tabular-nums text-[#6B6B6B] w-10 text-right">
+        {pct.toFixed(0)}%
+      </span>
     </div>
   );
 }
@@ -346,16 +392,19 @@ function MetricRow({
     format === "currency" ? penceToPounds(v) : `${Number(v).toFixed(2)}%`;
 
   return (
-    <div className="flex items-center justify-between text-xs tabular-nums">
-      <span className="text-[#AAAAAA] uppercase tracking-wider text-[10px] w-10">{label}</span>
-      <div className="flex items-center gap-1.5">
-        <span className="text-[#6B6B6B]">{fmtVal(control)}</span>
-        <span className="text-[#CCCCCC]">→</span>
-        <span className="text-[#0A0A0A] font-medium">{fmtVal(variant)}</span>
+    <div className="flex items-center justify-between py-1">
+      <span className="text-[11px] text-[#AAAAAA] uppercase tracking-wider font-medium w-12">{label}</span>
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-[#999] tabular-nums">{fmtVal(control)}</span>
+        <svg width="12" height="8" viewBox="0 0 12 8" className="text-[#D4D4D4]">
+          <path d="M0 4h9M7 1l3 3-3 3" fill="none" stroke="currentColor" strokeWidth="1.2" />
+        </svg>
+        <span className="text-sm text-[#0A0A0A] font-semibold tabular-nums">{fmtVal(variant)}</span>
         {control > 0 && (
-          <span className={`text-[10px] font-medium ${color}`}>
-            {prefix}
-            {delta.value.toFixed(1)}%
+          <span className={`text-[11px] font-semibold tabular-nums px-1.5 py-0.5 rounded ${
+            delta.positive ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-500"
+          }`}>
+            {prefix}{delta.value.toFixed(1)}%
           </span>
         )}
       </div>
@@ -374,13 +423,13 @@ interface TimelineEvent {
 
 const eventConfig: Record<
   TimelineEvent["type"],
-  { dot: string; label: string; bg: string }
+  { dot: string; label: string; bg: string; text: string }
 > = {
-  started: { dot: "bg-blue-500", label: "Test started", bg: "bg-blue-50" },
-  winner: { dot: "bg-emerald-500", label: "Winner called", bg: "bg-emerald-50" },
-  loser: { dot: "bg-red-500", label: "Loser called", bg: "bg-red-50" },
-  paused: { dot: "bg-amber-500", label: "Test paused", bg: "bg-amber-50" },
-  approaching: { dot: "bg-amber-500", label: "Approaching sig", bg: "bg-amber-50" },
+  started: { dot: "bg-blue-500", label: "Started", bg: "bg-blue-50", text: "text-blue-700" },
+  winner: { dot: "bg-emerald-500", label: "Winner", bg: "bg-emerald-50", text: "text-emerald-700" },
+  loser: { dot: "bg-red-500", label: "Loser", bg: "bg-red-50", text: "text-red-700" },
+  paused: { dot: "bg-amber-400", label: "Paused", bg: "bg-amber-50", text: "text-amber-700" },
+  approaching: { dot: "bg-amber-400", label: "Near Sig", bg: "bg-amber-50", text: "text-amber-700" },
 };
 
 /* ════════════════════════════════════════════════════════════════════
@@ -388,13 +437,11 @@ const eventConfig: Record<
    ════════════════════════════════════════════════════════════════════ */
 
 export default function CroMonitorPage() {
-  /* ── Core data ─────────────────────────────────────────────────── */
   const [tests, setTests] = useState<CroTest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDemo, setIsDemo] = useState(false);
 
-  /* ── Add form ──────────────────────────────────────────────────── */
   const [showAddForm, setShowAddForm] = useState(false);
   const [form, setForm] = useState<CroTestInsert>({
     client_name: "",
@@ -405,15 +452,11 @@ export default function CroMonitorPage() {
   });
   const [submitting, setSubmitting] = useState(false);
 
-  /* ── Expanded test cards ─────────────────────────────────────────── */
   const [expandedTests, setExpandedTests] = useState<Record<string, boolean>>({});
   const [editForms, setEditForms] = useState<Record<string, Partial<CroTest>>>({});
 
-  /* ── Weekly checklist ──────────────────────────────────────────── */
   const [checklistTab, setChecklistTab] = useState<"monday" | "friday">("monday");
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
-
-  /* ── Timeline period ─────────────────────────────────────────────── */
   const [timelinePeriod, setTimelinePeriod] = useState<"week" | "month">("week");
 
   /* ── Data fetch ────────────────────────────────────────────────── */
@@ -447,11 +490,7 @@ export default function CroMonitorPage() {
     const weekKey = getWeekKey();
     const stored = localStorage.getItem(`cro-checklist-${weekKey}`);
     if (stored) {
-      try {
-        setCheckedItems(JSON.parse(stored));
-      } catch {
-        /* ignore */
-      }
+      try { setCheckedItems(JSON.parse(stored)); } catch { /* ignore */ }
     }
   }, []);
 
@@ -463,14 +502,12 @@ export default function CroMonitorPage() {
     });
   }
 
-  /* ── Unique clients for autocomplete ───────────────────────────── */
+  /* ── Derived data ──────────────────────────────────────────────── */
 
   const uniqueClients = useMemo(
     () => Array.from(new Set(tests.map((t) => t.client_name))).sort(),
     [tests]
   );
-
-  /* ── Summary stats ─────────────────────────────────────────────── */
 
   const summary = useMemo(() => {
     const live = tests.filter((t) => t.status === "live");
@@ -493,8 +530,6 @@ export default function CroMonitorPage() {
     };
   }, [tests]);
 
-  /* ── Swimlanes ─────────────────────────────────────────────────── */
-
   const swimlanes = useMemo(() => {
     const attention: CroTest[] = [];
     const running: CroTest[] = [];
@@ -511,19 +546,15 @@ export default function CroMonitorPage() {
       } else if (test.status === "live") {
         running.push(test);
       } else {
-        // paused already caught by needsAttention
         attention.push(test);
       }
     }
 
-    // Sort winners/losers by updated_at desc
     winners.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
     losers.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
 
     return { attention, running, winners, losers };
   }, [tests]);
-
-  /* ── Activity timeline ─────────────────────────────────────────── */
 
   const timelineEvents = useMemo(() => {
     const periodStart = timelinePeriod === "week" ? getWeekStart() : getMonthStart();
@@ -534,46 +565,19 @@ export default function CroMonitorPage() {
       const startDate = new Date(test.start_date + "T00:00:00");
       const updatedAt = new Date(test.updated_at);
 
-      // Test started in period
       if (startDate >= periodStart && startDate <= now) {
-        events.push({
-          date: test.start_date,
-          clientName: test.client_name,
-          testName: test.test_name,
-          type: "started",
-        });
+        events.push({ date: test.start_date, clientName: test.client_name, testName: test.test_name, type: "started" });
       }
 
-      // Status events (use updated_at)
       if (updatedAt >= periodStart && updatedAt <= now) {
         if (test.status === "winner") {
-          events.push({
-            date: test.updated_at,
-            clientName: test.client_name,
-            testName: test.test_name,
-            type: "winner",
-          });
+          events.push({ date: test.updated_at, clientName: test.client_name, testName: test.test_name, type: "winner" });
         } else if (test.status === "loser") {
-          events.push({
-            date: test.updated_at,
-            clientName: test.client_name,
-            testName: test.test_name,
-            type: "loser",
-          });
+          events.push({ date: test.updated_at, clientName: test.client_name, testName: test.test_name, type: "loser" });
         } else if (test.status === "paused") {
-          events.push({
-            date: test.updated_at,
-            clientName: test.client_name,
-            testName: test.test_name,
-            type: "paused",
-          });
+          events.push({ date: test.updated_at, clientName: test.client_name, testName: test.test_name, type: "paused" });
         } else if (test.status === "live" && Number(test.stat_sig) >= 80) {
-          events.push({
-            date: test.updated_at,
-            clientName: test.client_name,
-            testName: test.test_name,
-            type: "approaching",
-          });
+          events.push({ date: test.updated_at, clientName: test.client_name, testName: test.test_name, type: "approaching" });
         }
       }
     }
@@ -582,7 +586,7 @@ export default function CroMonitorPage() {
     return events;
   }, [tests, timelinePeriod]);
 
-  /* ── CRUD: Add test ────────────────────────────────────────────── */
+  /* ── CRUD ──────────────────────────────────────────────────────── */
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -597,14 +601,10 @@ export default function CroMonitorPage() {
       variant_name: form.variant_name.trim(),
       hypothesis: form.hypothesis.trim(),
       status: "live",
-      cvr_control: 0,
-      cvr_variant: 0,
-      rpv_control: 0,
-      rpv_variant: 0,
-      aov_control: 0,
-      aov_variant: 0,
-      stat_sig: 0,
-      sample_size: 0,
+      cvr_control: 0, cvr_variant: 0,
+      rpv_control: 0, rpv_variant: 0,
+      aov_control: 0, aov_variant: 0,
+      stat_sig: 0, sample_size: 0,
       notes: "",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -628,182 +628,127 @@ export default function CroMonitorPage() {
       setError(err.message);
     } else {
       setTests((prev) => prev.map((t) => (t.id === tempTest.id ? (data as CroTest) : t)));
-      setForm({
-        client_name: "",
-        test_name: "",
-        variant_name: "",
-        hypothesis: "",
-        start_date: todayStr(),
-      });
+      setForm({ client_name: "", test_name: "", variant_name: "", hypothesis: "", start_date: todayStr() });
       setShowAddForm(false);
     }
     setSubmitting(false);
   }
-
-  /* ── CRUD: Update test ─────────────────────────────────────────── */
 
   function startEdit(test: CroTest) {
     setExpandedTests((prev) => ({ ...prev, [test.id]: true }));
     setEditForms((prev) => ({
       ...prev,
       [test.id]: {
-        cvr_control: test.cvr_control,
-        cvr_variant: test.cvr_variant,
-        rpv_control: test.rpv_control,
-        rpv_variant: test.rpv_variant,
-        aov_control: test.aov_control,
-        aov_variant: test.aov_variant,
-        stat_sig: test.stat_sig,
-        sample_size: test.sample_size,
-        status: test.status,
-        notes: test.notes,
+        cvr_control: test.cvr_control, cvr_variant: test.cvr_variant,
+        rpv_control: test.rpv_control, rpv_variant: test.rpv_variant,
+        aov_control: test.aov_control, aov_variant: test.aov_variant,
+        stat_sig: test.stat_sig, sample_size: test.sample_size,
+        status: test.status, notes: test.notes,
       },
     }));
   }
 
   function cancelEdit(id: string) {
     setExpandedTests((prev) => ({ ...prev, [id]: false }));
-    setEditForms((prev) => {
-      const next = { ...prev };
-      delete next[id];
-      return next;
-    });
+    setEditForms((prev) => { const next = { ...prev }; delete next[id]; return next; });
   }
 
   function updateEditField(id: string, key: string, value: string | number) {
-    setEditForms((prev) => ({
-      ...prev,
-      [id]: { ...prev[id], [key]: value },
-    }));
+    setEditForms((prev) => ({ ...prev, [id]: { ...prev[id], [key]: value } }));
   }
 
   async function handleSave(testId: string) {
     const updates = editForms[testId];
     if (!updates) return;
-
     setTests((prev) => prev.map((t) => (t.id === testId ? { ...t, ...updates } : t)));
     setExpandedTests((prev) => ({ ...prev, [testId]: false }));
-
     const { error: err } = await supabase.from("cro_tests").update(updates).eq("id", testId);
-
-    if (err) {
-      setError(err.message);
-      fetchTests();
-    }
-    setEditForms((prev) => {
-      const next = { ...prev };
-      delete next[testId];
-      return next;
-    });
+    if (err) { setError(err.message); fetchTests(); }
+    setEditForms((prev) => { const next = { ...prev }; delete next[testId]; return next; });
   }
-
-  /* ── CRUD: Delete test ─────────────────────────────────────────── */
 
   async function handleDelete(testId: string) {
     const prev = tests;
     setTests((p) => p.filter((t) => t.id !== testId));
     cancelEdit(testId);
-
     const { error: err } = await supabase.from("cro_tests").delete().eq("id", testId);
-    if (err) {
-      setTests(prev);
-      setError(err.message);
-    }
+    if (err) { setTests(prev); setError(err.message); }
   }
 
-  /* ── Render helpers ────────────────────────────────────────────── */
+  /* ── Render: Test Card ─────────────────────────────────────────── */
 
   function renderTestCard(test: CroTest) {
     const isExpanded = expandedTests[test.id];
     const days = daysBetween(test.start_date);
     const hasMetrics =
-      Number(test.cvr_control) > 0 ||
-      Number(test.cvr_variant) > 0 ||
-      Number(test.rpv_control) > 0 ||
-      Number(test.rpv_variant) > 0;
+      Number(test.cvr_control) > 0 || Number(test.cvr_variant) > 0 ||
+      Number(test.rpv_control) > 0 || Number(test.rpv_variant) > 0;
 
     return (
-      <div
-        key={test.id}
-        className="bg-white border border-[#E5E5E5] rounded-lg overflow-hidden"
-      >
-        <div className="p-5">
-          {/* Top line: client · days · status */}
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2 text-[11px] text-[#AAAAAA]">
-              <span className="font-medium text-[#6B6B6B]">{test.client_name}</span>
-              <span>·</span>
-              <span>{days} days</span>
-              <span>·</span>
+      <div key={test.id} className="bg-white border border-[#E5E5E5] rounded-xl overflow-hidden hover:border-[#D0D0D0] transition-colors">
+        <div className="p-6">
+          {/* Header row */}
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="text-[11px] font-semibold text-[#6B6B6B] uppercase tracking-wider">
+                {test.client_name}
+              </span>
+              <span className="w-px h-3 bg-[#E5E5E5]" />
+              <span className="text-[11px] text-[#AAAAAA] tabular-nums">{days}d</span>
               <StatusBadge status={test.status} />
             </div>
             <button
               onClick={() => (isExpanded ? cancelEdit(test.id) : startEdit(test))}
-              className="p-1.5 text-[#CCCCCC] hover:text-[#0A0A0A] transition-colors rounded hover:bg-[#F0F0F0]"
+              className="p-2 -m-1 text-[#CCCCCC] hover:text-[#0A0A0A] transition-colors rounded-lg hover:bg-[#F5F5F5]"
             >
               <PencilSquareIcon className="size-4" />
             </button>
           </div>
 
-          {/* Test name */}
-          <h3 className="text-sm font-semibold mb-0.5">{test.test_name}</h3>
+          {/* Test name + variant */}
+          <h3 className="text-[15px] font-semibold leading-snug mb-1">{test.test_name}</h3>
           {test.variant_name && (
-            <p className="text-[11px] text-[#AAAAAA] mb-3">{test.variant_name}</p>
+            <p className="text-xs text-[#AAAAAA] mb-5">{test.variant_name}</p>
           )}
+          {!test.variant_name && <div className="mb-5" />}
 
           {/* Metrics */}
           {hasMetrics && (
-            <div className="space-y-1.5 mb-3">
-              <MetricRow
-                label="CVR"
-                control={test.cvr_control}
-                variant={test.cvr_variant}
-                format="pct"
-              />
-              <MetricRow
-                label="RPV"
-                control={test.rpv_control}
-                variant={test.rpv_variant}
-                format="currency"
-              />
-              <MetricRow
-                label="AOV"
-                control={test.aov_control}
-                variant={test.aov_variant}
-                format="currency"
-              />
+            <div className="border-t border-[#F0F0F0] pt-4 mb-4 space-y-0.5">
+              <MetricRow label="CVR" control={test.cvr_control} variant={test.cvr_variant} format="pct" />
+              <MetricRow label="RPV" control={test.rpv_control} variant={test.rpv_variant} format="currency" />
+              <MetricRow label="AOV" control={test.aov_control} variant={test.aov_variant} format="currency" />
             </div>
           )}
 
-          {/* Stat sig + sample size */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1">
-              <StatSigBar value={Number(test.stat_sig)} />
+          {/* Stat sig + sessions */}
+          <div className="border-t border-[#F0F0F0] pt-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] text-[#AAAAAA] uppercase tracking-wider font-semibold">Statistical Significance</span>
+              <span className="text-[11px] text-[#AAAAAA] tabular-nums">
+                {Number(test.sample_size).toLocaleString()} sessions
+              </span>
             </div>
-            <span className="text-[10px] text-[#AAAAAA] tabular-nums whitespace-nowrap">
-              {Number(test.sample_size).toLocaleString()} sessions
-            </span>
+            <StatSigBar value={Number(test.stat_sig)} />
           </div>
 
-          {/* Notes (if any, not editing) */}
+          {/* Notes */}
           {test.notes && !isExpanded && (
-            <p className="mt-2 text-[11px] text-[#AAAAAA] italic truncate">{test.notes}</p>
+            <p className="mt-4 text-xs text-[#999] leading-relaxed">{test.notes}</p>
           )}
         </div>
 
-        {/* Expanded edit panel */}
+        {/* Edit panel */}
         {isExpanded && editForms[test.id] && (
-          <div className="px-5 pb-5 pt-4 border-t border-[#F0F0F0] bg-[#FAFAFA] space-y-4">
-            {/* Hypothesis */}
+          <div className="px-6 pb-6 pt-5 border-t border-[#E5E5E5] bg-[#FAFAFA] space-y-5">
             {test.hypothesis && (
-              <div className="text-xs text-[#6B6B6B]">
+              <p className="text-xs text-[#6B6B6B] leading-relaxed">
                 <span className="font-semibold text-[#0A0A0A]">Hypothesis: </span>
                 {test.hypothesis}
-              </div>
+              </p>
             )}
 
-            {/* Metrics grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { key: "cvr_control", label: "CVR Control (%)", step: "0.01" },
                 { key: "cvr_variant", label: "CVR Variant (%)", step: "0.01" },
@@ -815,7 +760,7 @@ export default function CroMonitorPage() {
                 { key: "sample_size", label: "Sample Size", step: "1" },
               ].map((field) => (
                 <div key={field.key}>
-                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1.5">
                     {field.label}
                   </label>
                   <input
@@ -823,40 +768,29 @@ export default function CroMonitorPage() {
                     step={field.step}
                     min={field.key === "stat_sig" ? "0" : undefined}
                     max={field.key === "stat_sig" ? "100" : undefined}
-                    value={
-                      (editForms[test.id] as Record<string, number | undefined>)[field.key] ?? ""
-                    }
-                    onChange={(e) =>
-                      updateEditField(test.id, field.key, Number(e.target.value))
-                    }
+                    value={(editForms[test.id] as Record<string, number | undefined>)[field.key] ?? ""}
+                    onChange={(e) => updateEditField(test.id, field.key, Number(e.target.value))}
                     className={smallInputClass}
                   />
                 </div>
               ))}
             </div>
 
-            {/* Status + notes */}
-            <div className="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-4">
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
-                  Status
-                </label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1.5">Status</label>
                 <select
                   value={editForms[test.id].status ?? test.status}
                   onChange={(e) => updateEditField(test.id, "status", e.target.value)}
                   className={selectClass}
                 >
                   {ALL_STATUSES.map((s) => (
-                    <option key={s} value={s}>
-                      {statusConfig[s].label}
-                    </option>
+                    <option key={s} value={s}>{statusConfig[s].label}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
-                  Notes
-                </label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1.5">Notes</label>
                 <input
                   type="text"
                   value={editForms[test.id].notes ?? ""}
@@ -867,27 +801,24 @@ export default function CroMonitorPage() {
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3 pt-1">
               <button
                 onClick={() => handleSave(test.id)}
-                className="flex items-center gap-1.5 px-4 py-2 bg-[#0A0A0A] text-white text-xs font-medium rounded-md hover:bg-[#2A2A2A] transition-colors"
+                className="flex items-center gap-1.5 px-5 py-2.5 bg-[#0A0A0A] text-white text-xs font-medium rounded-lg hover:bg-[#2A2A2A] transition-colors"
               >
-                <CheckIcon className="size-3.5" />
-                Save
+                <CheckIcon className="size-3.5" /> Save
               </button>
               <button
                 onClick={() => cancelEdit(test.id)}
-                className="px-4 py-2 border border-[#E5E5E5] bg-white text-[#6B6B6B] text-xs font-medium rounded-md hover:bg-[#F5F5F5] transition-colors"
+                className="px-5 py-2.5 border border-[#E5E5E5] bg-white text-[#6B6B6B] text-xs font-medium rounded-lg hover:bg-[#F5F5F5] transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleDelete(test.id)}
-                className="ml-auto flex items-center gap-1 px-3 py-2 text-xs text-red-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                className="ml-auto flex items-center gap-1.5 px-4 py-2.5 text-xs text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
               >
-                <TrashIcon className="size-3.5" />
-                Delete
+                <TrashIcon className="size-3.5" /> Delete
               </button>
             </div>
           </div>
@@ -896,27 +827,25 @@ export default function CroMonitorPage() {
     );
   }
 
-  function renderSwimlane(
-    title: string,
-    emoji: string,
-    items: CroTest[],
-    emptyText: string
-  ) {
+  /* ── Render: Swimlane ──────────────────────────────────────────── */
+
+  function renderSwimlane(key: string, items: CroTest[]) {
+    const cfg = swimlaneConfig[key];
     return (
       <section>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-sm">{emoji}</span>
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B]">
-            {title}
-          </h2>
-          <span className="px-2 py-0.5 rounded-full bg-[#F0F0F0] text-[10px] font-semibold text-[#6B6B6B] tabular-nums">
+        <div className="flex items-center gap-3 mb-5">
+          <PulseDot color={cfg.dot} pulse={cfg.pulse} size="md" />
+          <h2 className="text-sm font-semibold text-[#0A0A0A]">{cfg.title}</h2>
+          <span className="px-2.5 py-0.5 rounded-full bg-[#F0F0F0] text-[11px] font-semibold text-[#6B6B6B] tabular-nums">
             {items.length}
           </span>
         </div>
         {items.length === 0 ? (
-          <p className="text-xs text-[#CCCCCC] italic py-4 text-center">{emptyText}</p>
+          <div className="border border-dashed border-[#E5E5E5] rounded-xl py-8 text-center">
+            <p className="text-sm text-[#CCCCCC]">{cfg.emptyText}</p>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {items.map((test) => renderTestCard(test))}
           </div>
         )}
@@ -931,84 +860,66 @@ export default function CroMonitorPage() {
       <DecorativeBlocks />
       <div className="relative z-10 max-w-5xl mx-auto px-6 md:px-12 py-16 md:py-24">
         {/* Header */}
-        <div className="mb-12">
+        <div className="mb-14">
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
             CRO Test Monitor
           </h1>
-          <p className="text-[#6B6B6B] text-sm">
+          <p className="text-[#999] text-sm">
             Track live A/B tests, review results, and maintain your weekly CRO cadence
           </p>
         </div>
 
         {/* Demo banner */}
         {isDemo && (
-          <div className="mb-6 px-4 py-3 bg-amber-50 border border-amber-200 rounded-md text-sm text-amber-700">
-            Showing demo data — run the SQL migration in Supabase to start tracking real
-            tests.
+          <div className="mb-8 px-5 py-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700">
+            Showing demo data — run the SQL migration in Supabase to start tracking real tests.
           </div>
         )}
 
         {/* Error */}
         {error && (
-          <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700 flex items-center justify-between">
+          <div className="mb-8 px-5 py-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 flex items-center justify-between">
             {error}
-            <button
-              onClick={() => setError(null)}
-              className="text-red-500 hover:text-red-700 text-xs font-medium"
-            >
-              Dismiss
-            </button>
+            <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700 text-xs font-medium">Dismiss</button>
           </div>
         )}
 
-        <div className="space-y-10">
-          {/* ── Summary Stats ───────────────────────────────────── */}
+        <div className="space-y-14">
+          {/* ── Overview Stats ────────────────────────────────────── */}
           <section>
-            <label className={labelClass}>Overview</label>
-            <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div>
-                  <div className="text-2xl font-bold tabular-nums">{summary.totalLive}</div>
-                  <div className="text-[11px] text-[#6B6B6B] uppercase tracking-wider mt-1">
-                    Live Tests
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { value: summary.totalLive, label: "Live Tests", color: "text-[#0A0A0A]", dot: "bg-green-500", pulse: true },
+                { value: summary.needsAttention, label: "Needs Attention", color: "text-amber-600", dot: "bg-red-500", pulse: true },
+                { value: summary.winnersThisMonth, label: "Winners This Month", color: "text-emerald-600", dot: "bg-emerald-500", pulse: false },
+                { value: summary.completed, label: "Tests Completed", color: "text-[#0A0A0A]", dot: "bg-gray-400", pulse: false },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="bg-white border border-[#E5E5E5] rounded-xl p-5 hover:border-[#D0D0D0] transition-colors"
+                >
+                  <div className="flex items-center gap-2 mb-3">
+                    <PulseDot color={stat.dot} pulse={stat.pulse} />
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA]">
+                      {stat.label}
+                    </span>
                   </div>
+                  <div className={`text-3xl font-bold tabular-nums ${stat.color}`}>{stat.value}</div>
                 </div>
-                <div>
-                  <div className="text-2xl font-bold tabular-nums text-amber-600">
-                    {summary.needsAttention}
-                  </div>
-                  <div className="text-[11px] text-[#6B6B6B] uppercase tracking-wider mt-1">
-                    Needs Attention
-                  </div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold tabular-nums text-emerald-600">
-                    {summary.winnersThisMonth}
-                  </div>
-                  <div className="text-[11px] text-[#6B6B6B] uppercase tracking-wider mt-1">
-                    Winners This Month
-                  </div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold tabular-nums">{summary.completed}</div>
-                  <div className="text-[11px] text-[#6B6B6B] uppercase tracking-wider mt-1">
-                    Tests Completed
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </section>
 
           {/* ── Activity Timeline ────────────────────────────────── */}
           <section>
-            <div className="flex items-center justify-between mb-3">
-              <label className={`${labelClass} mb-0`}>Activity</label>
-              <div className="inline-flex rounded-md border border-[#E5E5E5] bg-white p-0.5">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-sm font-semibold text-[#0A0A0A]">Activity</h2>
+              <div className="inline-flex rounded-lg border border-[#E5E5E5] bg-white p-0.5">
                 {(["week", "month"] as const).map((p) => (
                   <button
                     key={p}
                     onClick={() => setTimelinePeriod(p)}
-                    className={`px-3 py-1 text-xs font-medium rounded transition-colors capitalize ${
+                    className={`px-4 py-1.5 text-xs font-medium rounded-md transition-colors ${
                       timelinePeriod === p
                         ? "bg-[#0A0A0A] text-white"
                         : "text-[#6B6B6B] hover:text-[#0A0A0A]"
@@ -1020,41 +931,31 @@ export default function CroMonitorPage() {
               </div>
             </div>
 
-            <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg overflow-hidden">
+            <div className="bg-white border border-[#E5E5E5] rounded-xl overflow-hidden">
               {timelineEvents.length === 0 ? (
-                <p className="text-xs text-[#CCCCCC] italic py-6 text-center">
-                  No activity this {timelinePeriod}
-                </p>
+                <div className="py-10 text-center">
+                  <p className="text-sm text-[#CCCCCC]">No activity this {timelinePeriod}</p>
+                </div>
               ) : (
-                <div className="divide-y divide-[#E5E5E5]">
+                <div className="divide-y divide-[#F0F0F0]">
                   {timelineEvents.map((event, i) => {
                     const cfg = eventConfig[event.type];
                     return (
                       <div
                         key={`${event.type}-${event.testName}-${i}`}
-                        className="flex items-center gap-3 px-4 py-3"
+                        className="flex items-center gap-4 px-5 py-4 hover:bg-[#FAFAFA] transition-colors"
                       >
                         <span className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`} />
-                        <span className="text-[11px] text-[#AAAAAA] tabular-nums w-14 shrink-0">
+                        <span className="text-xs text-[#AAAAAA] tabular-nums w-16 shrink-0">
                           {formatDateShort(event.date)}
                         </span>
-                        <span className="text-xs text-[#6B6B6B] font-medium truncate">
+                        <span className="text-xs font-semibold text-[#6B6B6B] shrink-0">
                           {event.clientName}
                         </span>
                         <span className="text-xs text-[#0A0A0A] truncate flex-1">
                           {event.testName}
                         </span>
-                        <span
-                          className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full whitespace-nowrap ${cfg.bg} ${
-                            cfg.dot === "bg-emerald-500"
-                              ? "text-emerald-700"
-                              : cfg.dot === "bg-red-500"
-                                ? "text-red-700"
-                                : cfg.dot === "bg-amber-500"
-                                  ? "text-amber-700"
-                                  : "text-blue-700"
-                          }`}
-                        >
+                        <span className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full whitespace-nowrap ${cfg.bg} ${cfg.text}`}>
                           {cfg.label}
                         </span>
                       </div>
@@ -1065,109 +966,50 @@ export default function CroMonitorPage() {
             </div>
           </section>
 
-          {/* ── Add Test Button ───────────────────────────────────── */}
+          {/* ── Add Test ─────────────────────────────────────────── */}
           <div className="flex justify-end">
             <button
               onClick={() => setShowAddForm(!showAddForm)}
-              className="flex items-center gap-1.5 px-4 py-2 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#2A2A2A] transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-lg hover:bg-[#2A2A2A] transition-colors"
             >
-              {showAddForm ? (
-                <XMarkIcon className="size-4" />
-              ) : (
-                <PlusIcon className="size-4" />
-              )}
+              {showAddForm ? <XMarkIcon className="size-4" /> : <PlusIcon className="size-4" />}
               {showAddForm ? "Cancel" : "Add Test"}
             </button>
           </div>
 
-          {/* ── Add Form ────────────────────────────────────────── */}
           {showAddForm && (
-            <form
-              onSubmit={handleSubmit}
-              className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5 space-y-4"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="bg-white border border-[#E5E5E5] rounded-xl p-6 space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                   <label className={labelClass}>Client Name</label>
-                  <input
-                    type="text"
-                    value={form.client_name}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, client_name: e.target.value }))
-                    }
-                    placeholder="e.g. Gymshark"
-                    className={inputClass}
-                    list="cro-clients"
-                    required
-                  />
-                  <datalist id="cro-clients">
-                    {uniqueClients.map((c) => (
-                      <option key={c} value={c} />
-                    ))}
-                  </datalist>
+                  <input type="text" value={form.client_name} onChange={(e) => setForm((p) => ({ ...p, client_name: e.target.value }))} placeholder="e.g. Gymshark" className={inputClass} list="cro-clients" required />
+                  <datalist id="cro-clients">{uniqueClients.map((c) => <option key={c} value={c} />)}</datalist>
                 </div>
                 <div>
                   <label className={labelClass}>Test Name</label>
-                  <input
-                    type="text"
-                    value={form.test_name}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, test_name: e.target.value }))
-                    }
-                    placeholder="e.g. PDP Trust Badge Above Fold"
-                    className={inputClass}
-                    required
-                  />
+                  <input type="text" value={form.test_name} onChange={(e) => setForm((p) => ({ ...p, test_name: e.target.value }))} placeholder="e.g. PDP Trust Badge Above Fold" className={inputClass} required />
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <div>
                   <label className={labelClass}>Variant Name</label>
-                  <input
-                    type="text"
-                    value={form.variant_name}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, variant_name: e.target.value }))
-                    }
-                    placeholder="e.g. V1 — Badge + Reviews"
-                    className={inputClass}
-                  />
+                  <input type="text" value={form.variant_name} onChange={(e) => setForm((p) => ({ ...p, variant_name: e.target.value }))} placeholder="e.g. V1 — Badge + Reviews" className={inputClass} />
                 </div>
                 <div>
                   <label className={labelClass}>Start Date</label>
-                  <input
-                    type="date"
-                    value={form.start_date}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, start_date: e.target.value }))
-                    }
-                    className={inputClass}
-                    required
-                  />
+                  <input type="date" value={form.start_date} onChange={(e) => setForm((p) => ({ ...p, start_date: e.target.value }))} className={inputClass} required />
                 </div>
                 <div>
                   <label className={labelClass}>Hypothesis</label>
-                  <input
-                    type="text"
-                    value={form.hypothesis}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, hypothesis: e.target.value }))
-                    }
-                    placeholder="e.g. Trust badges increase CVR by 5%"
-                    className={inputClass}
-                  />
+                  <input type="text" value={form.hypothesis} onChange={(e) => setForm((p) => ({ ...p, hypothesis: e.target.value }))} placeholder="e.g. Trust badges increase CVR by 5%" className={inputClass} />
                 </div>
               </div>
               <button
                 type="submit"
                 disabled={submitting || !form.client_name.trim() || !form.test_name.trim()}
-                className="flex items-center gap-2 px-5 py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#2A2A2A] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-lg hover:bg-[#2A2A2A] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
-                {submitting ? (
-                  <ArrowPathIcon className="size-4 animate-spin" />
-                ) : (
-                  <PlusIcon className="size-4" />
-                )}
+                {submitting ? <ArrowPathIcon className="size-4 animate-spin" /> : <PlusIcon className="size-4" />}
                 Add Test
               </button>
             </form>
@@ -1175,99 +1017,68 @@ export default function CroMonitorPage() {
 
           {/* ── Swimlanes ────────────────────────────────────────── */}
           {loading ? (
-            <div className="flex items-center justify-center py-16">
-              <ArrowPathIcon className="size-5 animate-spin text-[#AAAAAA]" />
+            <div className="flex items-center justify-center py-20">
+              <ArrowPathIcon className="size-5 animate-spin text-[#CCCCCC]" />
             </div>
           ) : (
-            <div className="space-y-10">
-              {renderSwimlane(
-                "Needs Attention",
-                "🔴",
-                swimlanes.attention,
-                "Nothing needs attention right now"
-              )}
-              {renderSwimlane(
-                "Live & Running",
-                "🟢",
-                swimlanes.running,
-                "No live tests running"
-              )}
-              {renderSwimlane(
-                "Winners",
-                "🏆",
-                swimlanes.winners,
-                "No winners yet"
-              )}
-              {renderSwimlane(
-                "Losers & Inconclusive",
-                "❌",
-                swimlanes.losers,
-                "No losers or inconclusive tests"
-              )}
+            <div className="space-y-14">
+              {renderSwimlane("attention", swimlanes.attention)}
+              {renderSwimlane("running", swimlanes.running)}
+              {renderSwimlane("winners", swimlanes.winners)}
+              {renderSwimlane("losers", swimlanes.losers)}
             </div>
           )}
 
           {/* ── Weekly Checklist ──────────────────────────────────── */}
           <section>
-            <label className={labelClass}>Weekly Review</label>
-
-            {/* Tabs */}
-            <div className="inline-flex rounded-md border border-[#E5E5E5] bg-white p-0.5 mb-4">
-              <button
-                onClick={() => setChecklistTab("monday")}
-                className={`px-4 py-1.5 text-xs font-medium rounded transition-colors ${
-                  checklistTab === "monday"
-                    ? "bg-[#0A0A0A] text-white"
-                    : "text-[#6B6B6B] hover:text-[#0A0A0A]"
-                }`}
-              >
-                Monday — Launch Check
-              </button>
-              <button
-                onClick={() => setChecklistTab("friday")}
-                className={`px-4 py-1.5 text-xs font-medium rounded transition-colors ${
-                  checklistTab === "friday"
-                    ? "bg-[#0A0A0A] text-white"
-                    : "text-[#6B6B6B] hover:text-[#0A0A0A]"
-                }`}
-              >
-                Friday — Results Review
-              </button>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-sm font-semibold text-[#0A0A0A]">Weekly Review</h2>
+              <div className="inline-flex rounded-lg border border-[#E5E5E5] bg-white p-0.5">
+                <button
+                  onClick={() => setChecklistTab("monday")}
+                  className={`px-4 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                    checklistTab === "monday" ? "bg-[#0A0A0A] text-white" : "text-[#6B6B6B] hover:text-[#0A0A0A]"
+                  }`}
+                >
+                  Monday
+                </button>
+                <button
+                  onClick={() => setChecklistTab("friday")}
+                  className={`px-4 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                    checklistTab === "friday" ? "bg-[#0A0A0A] text-white" : "text-[#6B6B6B] hover:text-[#0A0A0A]"
+                  }`}
+                >
+                  Friday
+                </button>
+              </div>
             </div>
 
-            <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5 space-y-3">
-              {(checklistTab === "monday" ? MONDAY_CHECKS : FRIDAY_CHECKS).map(
-                (item, i) => {
-                  const key = `${checklistTab}-${i}`;
-                  const isChecked = !!checkedItems[key];
-
-                  return (
-                    <label
-                      key={key}
-                      className="flex items-center gap-3 cursor-pointer group"
+            <div className="bg-white border border-[#E5E5E5] rounded-xl p-6 space-y-4">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
+                {checklistTab === "monday" ? "Launch Check" : "Results Review"}
+              </p>
+              {(checklistTab === "monday" ? MONDAY_CHECKS : FRIDAY_CHECKS).map((item, i) => {
+                const key = `${checklistTab}-${i}`;
+                const isChecked = !!checkedItems[key];
+                return (
+                  <label key={key} className="flex items-center gap-4 cursor-pointer group py-1">
+                    <button
+                      type="button"
+                      onClick={() => toggleCheck(key)}
+                      className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all shrink-0 ${
+                        isChecked
+                          ? "bg-[#0A0A0A] border-[#0A0A0A]"
+                          : "border-[#D4D4D4] bg-white group-hover:border-[#999]"
+                      }`}
                     >
-                      <button
-                        type="button"
-                        onClick={() => toggleCheck(key)}
-                        className={`w-5 h-5 rounded border flex items-center justify-center transition-colors shrink-0 ${
-                          isChecked
-                            ? "bg-[#0A0A0A] border-[#0A0A0A]"
-                            : "border-[#CCCCCC] bg-white group-hover:border-[#0A0A0A]"
-                        }`}
-                      >
-                        {isChecked && <CheckIcon className="size-3 text-white" />}
-                      </button>
-                      <span
-                        className={`text-sm transition-colors ${
-                          isChecked ? "line-through text-[#AAAAAA]" : "text-[#0A0A0A]"
-                        }`}
-                      >
-                        {item}
-                      </span>
-                    </label>
-                  );
-                }
-              )}
+                      {isChecked && <CheckIcon className="size-3 text-white" />}
+                    </button>
+                    <span className={`text-sm transition-colors ${isChecked ? "line-through text-[#CCCCCC]" : "text-[#333]"}`}>
+                      {item}
+                    </span>
+                  </label>
+                );
+              })}
             </div>
           </section>
         </div>
