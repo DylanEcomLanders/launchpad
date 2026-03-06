@@ -56,6 +56,171 @@ const FRIDAY_CHECKS = [
   "Brief next test to team",
 ];
 
+/* ── Demo data (used when cro_tests table doesn't exist yet) ───── */
+
+const DEMO_DATA: CroTest[] = [
+  {
+    id: "demo-1",
+    client_name: "Gymshark",
+    test_name: "PDP Trust Badges Above Fold",
+    variant_name: "V1 — Badges + Star Rating",
+    hypothesis: "Adding trust badges and star ratings above fold will increase CVR by 8%",
+    status: "live",
+    start_date: "2026-02-18",
+    cvr_control: 3.21,
+    cvr_variant: 3.85,
+    rpv_control: 245,
+    rpv_variant: 312,
+    aov_control: 6500,
+    aov_variant: 6720,
+    stat_sig: 87,
+    sample_size: 14320,
+    notes: "Tracking well — expect 95% sig by next Friday",
+    created_at: "2026-02-18T10:00:00Z",
+    updated_at: "2026-03-05T14:30:00Z",
+  },
+  {
+    id: "demo-2",
+    client_name: "Gymshark",
+    test_name: "Cart Drawer Upsell Module",
+    variant_name: "V1 — Recommended Products Carousel",
+    hypothesis: "Adding a recommended products carousel in the cart drawer will increase AOV by 12%",
+    status: "live",
+    start_date: "2026-02-24",
+    cvr_control: 4.10,
+    cvr_variant: 4.05,
+    rpv_control: 380,
+    rpv_variant: 435,
+    aov_control: 7200,
+    aov_variant: 8150,
+    stat_sig: 62,
+    sample_size: 8540,
+    notes: "CVR neutral but AOV uplift looking strong",
+    created_at: "2026-02-24T09:00:00Z",
+    updated_at: "2026-03-04T16:00:00Z",
+  },
+  {
+    id: "demo-3",
+    client_name: "Huel",
+    test_name: "Subscription CTA Colour Change",
+    variant_name: "V1 — Green CTA → Orange CTA",
+    hypothesis: "Switching the subscribe CTA from green to orange will improve click-through by 5%",
+    status: "winner",
+    start_date: "2026-01-20",
+    cvr_control: 2.45,
+    cvr_variant: 3.12,
+    rpv_control: 190,
+    rpv_variant: 248,
+    aov_control: 5400,
+    aov_variant: 5520,
+    stat_sig: 97,
+    sample_size: 32100,
+    notes: "Winner — deployed to 100% on 28 Feb. +27% CVR uplift",
+    created_at: "2026-01-20T10:00:00Z",
+    updated_at: "2026-02-28T11:00:00Z",
+  },
+  {
+    id: "demo-4",
+    client_name: "Huel",
+    test_name: "PLP Quick-Add Buttons",
+    variant_name: "V1 — Add to Cart on Hover",
+    hypothesis: "Quick-add on PLP cards will reduce funnel friction and increase CVR by 6%",
+    status: "live",
+    start_date: "2026-02-28",
+    cvr_control: 1.88,
+    cvr_variant: 2.15,
+    rpv_control: 155,
+    rpv_variant: 178,
+    aov_control: 4800,
+    aov_variant: 4910,
+    stat_sig: 41,
+    sample_size: 4200,
+    notes: "Only 6 days in — need more traffic",
+    created_at: "2026-02-28T09:00:00Z",
+    updated_at: "2026-03-05T10:00:00Z",
+  },
+  {
+    id: "demo-5",
+    client_name: "REPRESENT",
+    test_name: "Sticky ATC Bar on Mobile PDP",
+    variant_name: "V1 — Fixed Bottom Bar with Price",
+    hypothesis: "Sticky add-to-cart on mobile will catch users who scroll past the main CTA",
+    status: "live",
+    start_date: "2026-02-10",
+    cvr_control: 2.90,
+    cvr_variant: 3.48,
+    rpv_control: 410,
+    rpv_variant: 502,
+    aov_control: 12500,
+    aov_variant: 12800,
+    stat_sig: 92,
+    sample_size: 19800,
+    notes: "Very close to sig — hold until Friday",
+    created_at: "2026-02-10T10:00:00Z",
+    updated_at: "2026-03-05T15:00:00Z",
+  },
+  {
+    id: "demo-6",
+    client_name: "REPRESENT",
+    test_name: "Collection Page Social Proof Banners",
+    variant_name: "V1 — \"X people viewing\" + Recent Purchases",
+    hypothesis: "Social proof messaging on collection pages will increase click-through to PDP",
+    status: "loser",
+    start_date: "2026-01-13",
+    cvr_control: 3.15,
+    cvr_variant: 2.88,
+    rpv_control: 445,
+    rpv_variant: 398,
+    aov_control: 12200,
+    aov_variant: 11900,
+    stat_sig: 96,
+    sample_size: 28500,
+    notes: "Negative impact — likely felt spammy on premium brand. Rolled back",
+    created_at: "2026-01-13T10:00:00Z",
+    updated_at: "2026-02-15T09:00:00Z",
+  },
+  {
+    id: "demo-7",
+    client_name: "Castore",
+    test_name: "Free Shipping Progress Bar in Cart",
+    variant_name: "V1 — Animated Bar + Threshold Message",
+    hypothesis: "Showing progress toward free shipping will increase AOV by pushing add-ons",
+    status: "live",
+    start_date: "2026-03-01",
+    cvr_control: 3.55,
+    cvr_variant: 3.60,
+    rpv_control: 320,
+    rpv_variant: 385,
+    aov_control: 8900,
+    aov_variant: 10200,
+    stat_sig: 34,
+    sample_size: 3100,
+    notes: "Early days but AOV trend is very positive",
+    created_at: "2026-03-01T10:00:00Z",
+    updated_at: "2026-03-05T12:00:00Z",
+  },
+  {
+    id: "demo-8",
+    client_name: "Castore",
+    test_name: "Homepage Hero Personalisation",
+    variant_name: "V1 — Sport-specific hero based on browse history",
+    hypothesis: "Personalised hero banners will improve homepage CVR by 10%",
+    status: "paused",
+    start_date: "2026-02-05",
+    cvr_control: 1.20,
+    cvr_variant: 1.35,
+    rpv_control: 110,
+    rpv_variant: 128,
+    aov_control: 7500,
+    aov_variant: 7600,
+    stat_sig: 55,
+    sample_size: 11200,
+    notes: "Paused — tracking script broke after theme update, fixing this week",
+    created_at: "2026-02-05T10:00:00Z",
+    updated_at: "2026-03-03T14:00:00Z",
+  },
+];
+
 /* ── Helpers ─────────────────────────────────────────────────────── */
 
 function uid() {
@@ -208,6 +373,8 @@ export default function CroMonitorPage() {
 
   /* ── Data fetch ────────────────────────────────────────────────── */
 
+  const [isDemo, setIsDemo] = useState(false);
+
   const fetchTests = useCallback(async () => {
     const { data, error: err } = await supabase
       .from("cro_tests")
@@ -216,9 +383,13 @@ export default function CroMonitorPage() {
       .order("created_at", { ascending: false });
 
     if (err) {
-      setError(err.message);
+      // Table doesn't exist yet — show demo data
+      setTests(DEMO_DATA);
+      setIsDemo(true);
+      setError(null);
     } else {
       setTests((data as CroTest[]) || []);
+      setIsDemo(false);
       setError(null);
     }
     setLoading(false);
@@ -436,6 +607,13 @@ export default function CroMonitorPage() {
             Monitor live A/B tests across all clients with weekly review cadence
           </p>
         </div>
+
+        {/* Demo banner */}
+        {isDemo && (
+          <div className="mb-6 px-4 py-3 bg-amber-50 border border-amber-200 rounded-md text-sm text-amber-700">
+            Showing demo data — run the SQL migration in Supabase to start tracking real tests.
+          </div>
+        )}
 
         {/* Error */}
         {error && (
