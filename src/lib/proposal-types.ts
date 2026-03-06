@@ -14,6 +14,7 @@ export interface Proposal {
   order_total_cents: number | null;
   shopify_order_id: string | null;
   created_at: string;
+  trashed_at: string | null;
 }
 
 export interface SelectedService {

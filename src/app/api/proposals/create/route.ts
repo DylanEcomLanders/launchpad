@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 
 // NOTE: Run this SQL in Supabase Dashboard → SQL Editor if not yet done:
 // ALTER TABLE proposals ADD COLUMN IF NOT EXISTS tier INTEGER NOT NULL DEFAULT 1;
+// ALTER TABLE proposals ADD COLUMN IF NOT EXISTS trashed_at TIMESTAMPTZ DEFAULT NULL;
 
 export async function POST(request: Request) {
   const body = await request.json();
