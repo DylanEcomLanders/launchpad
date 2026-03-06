@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   PlusIcon,
   XMarkIcon,
-  ChevronDownIcon,
   PencilSquareIcon,
   CheckIcon,
   TrashIcon,
@@ -30,12 +29,15 @@ const smallInputClass =
 
 /* ── Status config ──────────────────────────────────────────────── */
 
-const statusConfig: Record<CroTestStatus, { bg: string; text: string; dot: string; label: string }> = {
-  live:         { bg: "bg-green-50",   text: "text-green-700",   dot: "bg-green-500",   label: "Live" },
-  paused:       { bg: "bg-amber-50",   text: "text-amber-700",   dot: "bg-amber-500",   label: "Paused" },
-  winner:       { bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-500", label: "Winner" },
-  loser:        { bg: "bg-red-50",     text: "text-red-700",     dot: "bg-red-500",     label: "Loser" },
-  inconclusive: { bg: "bg-gray-50",    text: "text-gray-600",    dot: "bg-gray-400",    label: "Inconclusive" },
+const statusConfig: Record<
+  CroTestStatus,
+  { bg: string; text: string; dot: string; label: string }
+> = {
+  live: { bg: "bg-green-50", text: "text-green-700", dot: "bg-green-500", label: "Live" },
+  paused: { bg: "bg-amber-50", text: "text-amber-700", dot: "bg-amber-500", label: "Paused" },
+  winner: { bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-500", label: "Winner" },
+  loser: { bg: "bg-red-50", text: "text-red-700", dot: "bg-red-500", label: "Loser" },
+  inconclusive: { bg: "bg-gray-50", text: "text-gray-600", dot: "bg-gray-400", label: "Inconclusive" },
 };
 
 const ALL_STATUSES: CroTestStatus[] = ["live", "paused", "winner", "loser", "inconclusive"];
@@ -84,10 +86,11 @@ const DEMO_DATA: CroTest[] = [
     client_name: "Gymshark",
     test_name: "Cart Drawer Upsell Module",
     variant_name: "V1 — Recommended Products Carousel",
-    hypothesis: "Adding a recommended products carousel in the cart drawer will increase AOV by 12%",
+    hypothesis:
+      "Adding a recommended products carousel in the cart drawer will increase AOV by 12%",
     status: "live",
     start_date: "2026-02-24",
-    cvr_control: 4.10,
+    cvr_control: 4.1,
     cvr_variant: 4.05,
     rpv_control: 380,
     rpv_variant: 435,
@@ -104,7 +107,8 @@ const DEMO_DATA: CroTest[] = [
     client_name: "Huel",
     test_name: "Subscription CTA Colour Change",
     variant_name: "V1 — Green CTA → Orange CTA",
-    hypothesis: "Switching the subscribe CTA from green to orange will improve click-through by 5%",
+    hypothesis:
+      "Switching the subscribe CTA from green to orange will improve click-through by 5%",
     status: "winner",
     start_date: "2026-01-20",
     cvr_control: 2.45,
@@ -147,7 +151,7 @@ const DEMO_DATA: CroTest[] = [
     hypothesis: "Sticky add-to-cart on mobile will catch users who scroll past the main CTA",
     status: "live",
     start_date: "2026-02-10",
-    cvr_control: 2.90,
+    cvr_control: 2.9,
     cvr_variant: 3.48,
     rpv_control: 410,
     rpv_variant: 502,
@@ -163,7 +167,7 @@ const DEMO_DATA: CroTest[] = [
     id: "demo-6",
     client_name: "REPRESENT",
     test_name: "Collection Page Social Proof Banners",
-    variant_name: "V1 — \"X people viewing\" + Recent Purchases",
+    variant_name: 'V1 — "X people viewing" + Recent Purchases',
     hypothesis: "Social proof messaging on collection pages will increase click-through to PDP",
     status: "loser",
     start_date: "2026-01-13",
@@ -188,7 +192,7 @@ const DEMO_DATA: CroTest[] = [
     status: "live",
     start_date: "2026-03-01",
     cvr_control: 3.55,
-    cvr_variant: 3.60,
+    cvr_variant: 3.6,
     rpv_control: 320,
     rpv_variant: 385,
     aov_control: 8900,
@@ -207,7 +211,7 @@ const DEMO_DATA: CroTest[] = [
     hypothesis: "Personalised hero banners will improve homepage CVR by 10%",
     status: "paused",
     start_date: "2026-02-05",
-    cvr_control: 1.20,
+    cvr_control: 1.2,
     cvr_variant: 1.35,
     rpv_control: 110,
     rpv_variant: 128,
@@ -259,6 +263,36 @@ function getWeekKey(date: Date = new Date()): string {
   return d.toISOString().split("T")[0];
 }
 
+function getWeekStart(): Date {
+  const d = new Date();
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  d.setDate(diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function getMonthStart(): Date {
+  const d = new Date();
+  d.setDate(1);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function formatDateShort(dateStr: string): string {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+
+/** Is a test "needs attention"? */
+function needsAttention(test: CroTest): boolean {
+  if (test.status === "paused") return true;
+  if (test.status === "live" && Number(test.stat_sig) >= 80) return true;
+  if (test.status === "live" && daysBetween(test.start_date) > 30 && Number(test.stat_sig) < 50)
+    return true;
+  return false;
+}
+
 /* ── Sub-components ──────────────────────────────────────────────── */
 
 function StatusBadge({ status }: { status: CroTestStatus }) {
@@ -273,10 +307,9 @@ function StatusBadge({ status }: { status: CroTestStatus }) {
   );
 }
 
-function StatSigBar({ value }: { value: number }) {
+function StatSigBar({ value, showLabel = true }: { value: number; showLabel?: boolean }) {
   const pct = Math.min(100, Math.max(0, Number(value) || 0));
-  const color =
-    pct >= 95 ? "bg-emerald-500" : pct >= 80 ? "bg-amber-500" : "bg-[#CCCCCC]";
+  const color = pct >= 95 ? "bg-emerald-500" : pct >= 80 ? "bg-amber-500" : "bg-[#CCCCCC]";
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-1.5 bg-[#F0F0F0] rounded-full overflow-hidden">
@@ -285,18 +318,22 @@ function StatSigBar({ value }: { value: number }) {
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="text-[10px] font-medium tabular-nums text-[#6B6B6B] w-8 text-right">
-        {pct.toFixed(0)}%
-      </span>
+      {showLabel && (
+        <span className="text-[10px] font-medium tabular-nums text-[#6B6B6B] w-8 text-right">
+          {pct.toFixed(0)}%
+        </span>
+      )}
     </div>
   );
 }
 
-function MetricCell({
+function MetricRow({
+  label,
   control,
   variant,
   format,
 }: {
+  label: string;
   control: number;
   variant: number;
   format: "pct" | "currency";
@@ -305,36 +342,46 @@ function MetricCell({
   const prefix = delta.positive ? "+" : "-";
   const color = delta.positive ? "text-emerald-600" : "text-red-500";
 
-  if (format === "currency") {
-    return (
-      <div className="text-xs tabular-nums leading-tight">
-        <span className="text-[#6B6B6B]">{penceToPounds(control)}</span>
-        <span className="mx-0.5 text-[#CCCCCC]">/</span>
-        <span className="text-[#0A0A0A]">{penceToPounds(variant)}</span>
+  const fmtVal = (v: number) =>
+    format === "currency" ? penceToPounds(v) : `${Number(v).toFixed(2)}%`;
+
+  return (
+    <div className="flex items-center justify-between text-xs tabular-nums">
+      <span className="text-[#AAAAAA] uppercase tracking-wider text-[10px] w-10">{label}</span>
+      <div className="flex items-center gap-1.5">
+        <span className="text-[#6B6B6B]">{fmtVal(control)}</span>
+        <span className="text-[#CCCCCC]">→</span>
+        <span className="text-[#0A0A0A] font-medium">{fmtVal(variant)}</span>
         {control > 0 && (
-          <span className={`ml-1 text-[10px] ${color}`}>
+          <span className={`text-[10px] font-medium ${color}`}>
             {prefix}
             {delta.value.toFixed(1)}%
           </span>
         )}
       </div>
-    );
-  }
-
-  return (
-    <div className="text-xs tabular-nums leading-tight">
-      <span className="text-[#6B6B6B]">{Number(control).toFixed(2)}%</span>
-      <span className="mx-0.5 text-[#CCCCCC]">/</span>
-      <span className="text-[#0A0A0A]">{Number(variant).toFixed(2)}%</span>
-      {control > 0 && (
-        <span className={`ml-1 text-[10px] ${color}`}>
-          {prefix}
-          {delta.value.toFixed(1)}%
-        </span>
-      )}
     </div>
   );
 }
+
+/* ── Activity timeline event types ───────────────────────────────── */
+
+interface TimelineEvent {
+  date: string;
+  clientName: string;
+  testName: string;
+  type: "started" | "winner" | "loser" | "paused" | "approaching";
+}
+
+const eventConfig: Record<
+  TimelineEvent["type"],
+  { dot: string; label: string; bg: string }
+> = {
+  started: { dot: "bg-blue-500", label: "Test started", bg: "bg-blue-50" },
+  winner: { dot: "bg-emerald-500", label: "Winner called", bg: "bg-emerald-50" },
+  loser: { dot: "bg-red-500", label: "Loser called", bg: "bg-red-50" },
+  paused: { dot: "bg-amber-500", label: "Test paused", bg: "bg-amber-50" },
+  approaching: { dot: "bg-amber-500", label: "Approaching sig", bg: "bg-amber-50" },
+};
 
 /* ════════════════════════════════════════════════════════════════════
    MAIN COMPONENT
@@ -345,6 +392,7 @@ export default function CroMonitorPage() {
   const [tests, setTests] = useState<CroTest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDemo, setIsDemo] = useState(false);
 
   /* ── Add form ──────────────────────────────────────────────────── */
   const [showAddForm, setShowAddForm] = useState(false);
@@ -357,13 +405,7 @@ export default function CroMonitorPage() {
   });
   const [submitting, setSubmitting] = useState(false);
 
-  /* ── Filter ────────────────────────────────────────────────────── */
-  const [statusFilter, setStatusFilter] = useState<"all" | "live" | "completed">("all");
-
-  /* ── Collapsible client sections ───────────────────────────────── */
-  const [openClients, setOpenClients] = useState<Record<string, boolean>>({});
-
-  /* ── Expanded test rows ────────────────────────────────────────── */
+  /* ── Expanded test cards ─────────────────────────────────────────── */
   const [expandedTests, setExpandedTests] = useState<Record<string, boolean>>({});
   const [editForms, setEditForms] = useState<Record<string, Partial<CroTest>>>({});
 
@@ -371,9 +413,10 @@ export default function CroMonitorPage() {
   const [checklistTab, setChecklistTab] = useState<"monday" | "friday">("monday");
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
 
-  /* ── Data fetch ────────────────────────────────────────────────── */
+  /* ── Timeline period ─────────────────────────────────────────────── */
+  const [timelinePeriod, setTimelinePeriod] = useState<"week" | "month">("week");
 
-  const [isDemo, setIsDemo] = useState(false);
+  /* ── Data fetch ────────────────────────────────────────────────── */
 
   const fetchTests = useCallback(async () => {
     const { data, error: err } = await supabase
@@ -383,7 +426,6 @@ export default function CroMonitorPage() {
       .order("created_at", { ascending: false });
 
     if (err) {
-      // Table doesn't exist yet — show demo data
       setTests(DEMO_DATA);
       setIsDemo(true);
       setError(null);
@@ -421,35 +463,6 @@ export default function CroMonitorPage() {
     });
   }
 
-  /* ── Default client sections open ──────────────────────────────── */
-
-  const clientGroups = useMemo(() => {
-    const filtered = tests.filter((t) => {
-      if (statusFilter === "live") return t.status === "live" || t.status === "paused";
-      if (statusFilter === "completed")
-        return t.status === "winner" || t.status === "loser" || t.status === "inconclusive";
-      return true;
-    });
-
-    const groups: Record<string, CroTest[]> = {};
-    for (const test of filtered) {
-      if (!groups[test.client_name]) groups[test.client_name] = [];
-      groups[test.client_name].push(test);
-    }
-    return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
-  }, [tests, statusFilter]);
-
-  // Auto-open new clients
-  useEffect(() => {
-    setOpenClients((prev) => {
-      const next = { ...prev };
-      for (const [client] of clientGroups) {
-        if (!(client in next)) next[client] = true;
-      }
-      return next;
-    });
-  }, [clientGroups]);
-
   /* ── Unique clients for autocomplete ───────────────────────────── */
 
   const uniqueClients = useMemo(
@@ -461,13 +474,113 @@ export default function CroMonitorPage() {
 
   const summary = useMemo(() => {
     const live = tests.filter((t) => t.status === "live");
-    const approaching = live.filter((t) => Number(t.stat_sig) >= 80 && Number(t.stat_sig) < 95);
-    const avgDays =
-      live.length > 0
-        ? Math.round(live.reduce((s, t) => s + daysBetween(t.start_date), 0) / live.length)
-        : 0;
-    return { totalLive: live.length, approachingSig: approaching.length, avgDays };
+    const attention = tests.filter(needsAttention);
+    const now = new Date();
+    const winnersThisMonth = tests.filter(
+      (t) =>
+        t.status === "winner" &&
+        new Date(t.updated_at).getMonth() === now.getMonth() &&
+        new Date(t.updated_at).getFullYear() === now.getFullYear()
+    );
+    const completed = tests.filter(
+      (t) => t.status === "winner" || t.status === "loser" || t.status === "inconclusive"
+    );
+    return {
+      totalLive: live.length,
+      needsAttention: attention.length,
+      winnersThisMonth: winnersThisMonth.length,
+      completed: completed.length,
+    };
   }, [tests]);
+
+  /* ── Swimlanes ─────────────────────────────────────────────────── */
+
+  const swimlanes = useMemo(() => {
+    const attention: CroTest[] = [];
+    const running: CroTest[] = [];
+    const winners: CroTest[] = [];
+    const losers: CroTest[] = [];
+
+    for (const test of tests) {
+      if (test.status === "winner") {
+        winners.push(test);
+      } else if (test.status === "loser" || test.status === "inconclusive") {
+        losers.push(test);
+      } else if (needsAttention(test)) {
+        attention.push(test);
+      } else if (test.status === "live") {
+        running.push(test);
+      } else {
+        // paused already caught by needsAttention
+        attention.push(test);
+      }
+    }
+
+    // Sort winners/losers by updated_at desc
+    winners.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+    losers.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+
+    return { attention, running, winners, losers };
+  }, [tests]);
+
+  /* ── Activity timeline ─────────────────────────────────────────── */
+
+  const timelineEvents = useMemo(() => {
+    const periodStart = timelinePeriod === "week" ? getWeekStart() : getMonthStart();
+    const now = new Date();
+    const events: TimelineEvent[] = [];
+
+    for (const test of tests) {
+      const startDate = new Date(test.start_date + "T00:00:00");
+      const updatedAt = new Date(test.updated_at);
+
+      // Test started in period
+      if (startDate >= periodStart && startDate <= now) {
+        events.push({
+          date: test.start_date,
+          clientName: test.client_name,
+          testName: test.test_name,
+          type: "started",
+        });
+      }
+
+      // Status events (use updated_at)
+      if (updatedAt >= periodStart && updatedAt <= now) {
+        if (test.status === "winner") {
+          events.push({
+            date: test.updated_at,
+            clientName: test.client_name,
+            testName: test.test_name,
+            type: "winner",
+          });
+        } else if (test.status === "loser") {
+          events.push({
+            date: test.updated_at,
+            clientName: test.client_name,
+            testName: test.test_name,
+            type: "loser",
+          });
+        } else if (test.status === "paused") {
+          events.push({
+            date: test.updated_at,
+            clientName: test.client_name,
+            testName: test.test_name,
+            type: "paused",
+          });
+        } else if (test.status === "live" && Number(test.stat_sig) >= 80) {
+          events.push({
+            date: test.updated_at,
+            clientName: test.client_name,
+            testName: test.test_name,
+            type: "approaching",
+          });
+        }
+      }
+    }
+
+    events.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return events;
+  }, [tests, timelinePeriod]);
 
   /* ── CRUD: Add test ────────────────────────────────────────────── */
 
@@ -515,7 +628,13 @@ export default function CroMonitorPage() {
       setError(err.message);
     } else {
       setTests((prev) => prev.map((t) => (t.id === tempTest.id ? (data as CroTest) : t)));
-      setForm({ client_name: "", test_name: "", variant_name: "", hypothesis: "", start_date: todayStr() });
+      setForm({
+        client_name: "",
+        test_name: "",
+        variant_name: "",
+        hypothesis: "",
+        start_date: todayStr(),
+      });
       setShowAddForm(false);
     }
     setSubmitting(false);
@@ -592,6 +711,219 @@ export default function CroMonitorPage() {
     }
   }
 
+  /* ── Render helpers ────────────────────────────────────────────── */
+
+  function renderTestCard(test: CroTest) {
+    const isExpanded = expandedTests[test.id];
+    const days = daysBetween(test.start_date);
+    const hasMetrics =
+      Number(test.cvr_control) > 0 ||
+      Number(test.cvr_variant) > 0 ||
+      Number(test.rpv_control) > 0 ||
+      Number(test.rpv_variant) > 0;
+
+    return (
+      <div
+        key={test.id}
+        className="bg-white border border-[#E5E5E5] rounded-lg overflow-hidden"
+      >
+        <div className="p-5">
+          {/* Top line: client · days · status */}
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2 text-[11px] text-[#AAAAAA]">
+              <span className="font-medium text-[#6B6B6B]">{test.client_name}</span>
+              <span>·</span>
+              <span>{days} days</span>
+              <span>·</span>
+              <StatusBadge status={test.status} />
+            </div>
+            <button
+              onClick={() => (isExpanded ? cancelEdit(test.id) : startEdit(test))}
+              className="p-1.5 text-[#CCCCCC] hover:text-[#0A0A0A] transition-colors rounded hover:bg-[#F0F0F0]"
+            >
+              <PencilSquareIcon className="size-4" />
+            </button>
+          </div>
+
+          {/* Test name */}
+          <h3 className="text-sm font-semibold mb-0.5">{test.test_name}</h3>
+          {test.variant_name && (
+            <p className="text-[11px] text-[#AAAAAA] mb-3">{test.variant_name}</p>
+          )}
+
+          {/* Metrics */}
+          {hasMetrics && (
+            <div className="space-y-1.5 mb-3">
+              <MetricRow
+                label="CVR"
+                control={test.cvr_control}
+                variant={test.cvr_variant}
+                format="pct"
+              />
+              <MetricRow
+                label="RPV"
+                control={test.rpv_control}
+                variant={test.rpv_variant}
+                format="currency"
+              />
+              <MetricRow
+                label="AOV"
+                control={test.aov_control}
+                variant={test.aov_variant}
+                format="currency"
+              />
+            </div>
+          )}
+
+          {/* Stat sig + sample size */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <StatSigBar value={Number(test.stat_sig)} />
+            </div>
+            <span className="text-[10px] text-[#AAAAAA] tabular-nums whitespace-nowrap">
+              {Number(test.sample_size).toLocaleString()} sessions
+            </span>
+          </div>
+
+          {/* Notes (if any, not editing) */}
+          {test.notes && !isExpanded && (
+            <p className="mt-2 text-[11px] text-[#AAAAAA] italic truncate">{test.notes}</p>
+          )}
+        </div>
+
+        {/* Expanded edit panel */}
+        {isExpanded && editForms[test.id] && (
+          <div className="px-5 pb-5 pt-4 border-t border-[#F0F0F0] bg-[#FAFAFA] space-y-4">
+            {/* Hypothesis */}
+            {test.hypothesis && (
+              <div className="text-xs text-[#6B6B6B]">
+                <span className="font-semibold text-[#0A0A0A]">Hypothesis: </span>
+                {test.hypothesis}
+              </div>
+            )}
+
+            {/* Metrics grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { key: "cvr_control", label: "CVR Control (%)", step: "0.01" },
+                { key: "cvr_variant", label: "CVR Variant (%)", step: "0.01" },
+                { key: "rpv_control", label: "RPV Control (p)", step: "1" },
+                { key: "rpv_variant", label: "RPV Variant (p)", step: "1" },
+                { key: "aov_control", label: "AOV Control (p)", step: "1" },
+                { key: "aov_variant", label: "AOV Variant (p)", step: "1" },
+                { key: "stat_sig", label: "Stat Sig (%)", step: "0.1" },
+                { key: "sample_size", label: "Sample Size", step: "1" },
+              ].map((field) => (
+                <div key={field.key}>
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
+                    {field.label}
+                  </label>
+                  <input
+                    type="number"
+                    step={field.step}
+                    min={field.key === "stat_sig" ? "0" : undefined}
+                    max={field.key === "stat_sig" ? "100" : undefined}
+                    value={
+                      (editForms[test.id] as Record<string, number | undefined>)[field.key] ?? ""
+                    }
+                    onChange={(e) =>
+                      updateEditField(test.id, field.key, Number(e.target.value))
+                    }
+                    className={smallInputClass}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Status + notes */}
+            <div className="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-3">
+              <div>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
+                  Status
+                </label>
+                <select
+                  value={editForms[test.id].status ?? test.status}
+                  onChange={(e) => updateEditField(test.id, "status", e.target.value)}
+                  className={selectClass}
+                >
+                  {ALL_STATUSES.map((s) => (
+                    <option key={s} value={s}>
+                      {statusConfig[s].label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
+                  Notes
+                </label>
+                <input
+                  type="text"
+                  value={editForms[test.id].notes ?? ""}
+                  onChange={(e) => updateEditField(test.id, "notes", e.target.value)}
+                  placeholder="Freeform notes..."
+                  className={smallInputClass}
+                />
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleSave(test.id)}
+                className="flex items-center gap-1.5 px-4 py-2 bg-[#0A0A0A] text-white text-xs font-medium rounded-md hover:bg-[#2A2A2A] transition-colors"
+              >
+                <CheckIcon className="size-3.5" />
+                Save
+              </button>
+              <button
+                onClick={() => cancelEdit(test.id)}
+                className="px-4 py-2 border border-[#E5E5E5] bg-white text-[#6B6B6B] text-xs font-medium rounded-md hover:bg-[#F5F5F5] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(test.id)}
+                className="ml-auto flex items-center gap-1 px-3 py-2 text-xs text-red-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+              >
+                <TrashIcon className="size-3.5" />
+                Delete
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  function renderSwimlane(
+    title: string,
+    emoji: string,
+    items: CroTest[],
+    emptyText: string
+  ) {
+    return (
+      <section>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-sm">{emoji}</span>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B]">
+            {title}
+          </h2>
+          <span className="px-2 py-0.5 rounded-full bg-[#F0F0F0] text-[10px] font-semibold text-[#6B6B6B] tabular-nums">
+            {items.length}
+          </span>
+        </div>
+        {items.length === 0 ? (
+          <p className="text-xs text-[#CCCCCC] italic py-4 text-center">{emptyText}</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {items.map((test) => renderTestCard(test))}
+          </div>
+        )}
+      </section>
+    );
+  }
+
   /* ── Render ────────────────────────────────────────────────────── */
 
   return (
@@ -604,14 +936,15 @@ export default function CroMonitorPage() {
             CRO Test Monitor
           </h1>
           <p className="text-[#6B6B6B] text-sm">
-            Monitor live A/B tests across all clients with weekly review cadence
+            Track live A/B tests, review results, and maintain your weekly CRO cadence
           </p>
         </div>
 
         {/* Demo banner */}
         {isDemo && (
           <div className="mb-6 px-4 py-3 bg-amber-50 border border-amber-200 rounded-md text-sm text-amber-700">
-            Showing demo data — run the SQL migration in Supabase to start tracking real tests.
+            Showing demo data — run the SQL migration in Supabase to start tracking real
+            tests.
           </div>
         )}
 
@@ -619,18 +952,21 @@ export default function CroMonitorPage() {
         {error && (
           <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700 flex items-center justify-between">
             {error}
-            <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700 text-xs font-medium">
+            <button
+              onClick={() => setError(null)}
+              className="text-red-500 hover:text-red-700 text-xs font-medium"
+            >
               Dismiss
             </button>
           </div>
         )}
 
-        <div className="space-y-8">
+        <div className="space-y-10">
           {/* ── Summary Stats ───────────────────────────────────── */}
           <section>
-            <label className={labelClass}>Dashboard</label>
+            <label className={labelClass}>Overview</label>
             <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5">
-              <div className="grid grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div>
                   <div className="text-2xl font-bold tabular-nums">{summary.totalLive}</div>
                   <div className="text-[11px] text-[#6B6B6B] uppercase tracking-wider mt-1">
@@ -638,46 +974,108 @@ export default function CroMonitorPage() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold tabular-nums">{summary.approachingSig}</div>
+                  <div className="text-2xl font-bold tabular-nums text-amber-600">
+                    {summary.needsAttention}
+                  </div>
                   <div className="text-[11px] text-[#6B6B6B] uppercase tracking-wider mt-1">
-                    Approaching Sig
+                    Needs Attention
                   </div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold tabular-nums">
-                    {summary.avgDays}
-                    <span className="text-sm font-normal text-[#6B6B6B] ml-1">days</span>
+                  <div className="text-2xl font-bold tabular-nums text-emerald-600">
+                    {summary.winnersThisMonth}
                   </div>
                   <div className="text-[11px] text-[#6B6B6B] uppercase tracking-wider mt-1">
-                    Avg Run Time
+                    Winners This Month
+                  </div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold tabular-nums">{summary.completed}</div>
+                  <div className="text-[11px] text-[#6B6B6B] uppercase tracking-wider mt-1">
+                    Tests Completed
                   </div>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* ── Filters + Add ───────────────────────────────────── */}
-          <div className="flex items-center justify-between">
-            <div className="inline-flex rounded-md border border-[#E5E5E5] bg-white p-0.5">
-              {(["all", "live", "completed"] as const).map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setStatusFilter(f)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded transition-colors capitalize ${
-                    statusFilter === f
-                      ? "bg-[#0A0A0A] text-white"
-                      : "text-[#6B6B6B] hover:text-[#0A0A0A]"
-                  }`}
-                >
-                  {f}
-                </button>
-              ))}
+          {/* ── Activity Timeline ────────────────────────────────── */}
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <label className={`${labelClass} mb-0`}>Activity</label>
+              <div className="inline-flex rounded-md border border-[#E5E5E5] bg-white p-0.5">
+                {(["week", "month"] as const).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setTimelinePeriod(p)}
+                    className={`px-3 py-1 text-xs font-medium rounded transition-colors capitalize ${
+                      timelinePeriod === p
+                        ? "bg-[#0A0A0A] text-white"
+                        : "text-[#6B6B6B] hover:text-[#0A0A0A]"
+                    }`}
+                  >
+                    This {p}
+                  </button>
+                ))}
+              </div>
             </div>
+
+            <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg overflow-hidden">
+              {timelineEvents.length === 0 ? (
+                <p className="text-xs text-[#CCCCCC] italic py-6 text-center">
+                  No activity this {timelinePeriod}
+                </p>
+              ) : (
+                <div className="divide-y divide-[#E5E5E5]">
+                  {timelineEvents.map((event, i) => {
+                    const cfg = eventConfig[event.type];
+                    return (
+                      <div
+                        key={`${event.type}-${event.testName}-${i}`}
+                        className="flex items-center gap-3 px-4 py-3"
+                      >
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`} />
+                        <span className="text-[11px] text-[#AAAAAA] tabular-nums w-14 shrink-0">
+                          {formatDateShort(event.date)}
+                        </span>
+                        <span className="text-xs text-[#6B6B6B] font-medium truncate">
+                          {event.clientName}
+                        </span>
+                        <span className="text-xs text-[#0A0A0A] truncate flex-1">
+                          {event.testName}
+                        </span>
+                        <span
+                          className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full whitespace-nowrap ${cfg.bg} ${
+                            cfg.dot === "bg-emerald-500"
+                              ? "text-emerald-700"
+                              : cfg.dot === "bg-red-500"
+                                ? "text-red-700"
+                                : cfg.dot === "bg-amber-500"
+                                  ? "text-amber-700"
+                                  : "text-blue-700"
+                          }`}
+                        >
+                          {cfg.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* ── Add Test Button ───────────────────────────────────── */}
+          <div className="flex justify-end">
             <button
               onClick={() => setShowAddForm(!showAddForm)}
               className="flex items-center gap-1.5 px-4 py-2 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#2A2A2A] transition-colors"
             >
-              {showAddForm ? <XMarkIcon className="size-4" /> : <PlusIcon className="size-4" />}
+              {showAddForm ? (
+                <XMarkIcon className="size-4" />
+              ) : (
+                <PlusIcon className="size-4" />
+              )}
               {showAddForm ? "Cancel" : "Add Test"}
             </button>
           </div>
@@ -694,7 +1092,9 @@ export default function CroMonitorPage() {
                   <input
                     type="text"
                     value={form.client_name}
-                    onChange={(e) => setForm((p) => ({ ...p, client_name: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, client_name: e.target.value }))
+                    }
                     placeholder="e.g. Gymshark"
                     className={inputClass}
                     list="cro-clients"
@@ -711,7 +1111,9 @@ export default function CroMonitorPage() {
                   <input
                     type="text"
                     value={form.test_name}
-                    onChange={(e) => setForm((p) => ({ ...p, test_name: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, test_name: e.target.value }))
+                    }
                     placeholder="e.g. PDP Trust Badge Above Fold"
                     className={inputClass}
                     required
@@ -724,7 +1126,9 @@ export default function CroMonitorPage() {
                   <input
                     type="text"
                     value={form.variant_name}
-                    onChange={(e) => setForm((p) => ({ ...p, variant_name: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, variant_name: e.target.value }))
+                    }
                     placeholder="e.g. V1 — Badge + Reviews"
                     className={inputClass}
                   />
@@ -734,7 +1138,9 @@ export default function CroMonitorPage() {
                   <input
                     type="date"
                     value={form.start_date}
-                    onChange={(e) => setForm((p) => ({ ...p, start_date: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, start_date: e.target.value }))
+                    }
                     className={inputClass}
                     required
                   />
@@ -744,7 +1150,9 @@ export default function CroMonitorPage() {
                   <input
                     type="text"
                     value={form.hypothesis}
-                    onChange={(e) => setForm((p) => ({ ...p, hypothesis: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, hypothesis: e.target.value }))
+                    }
                     placeholder="e.g. Trust badges increase CVR by 5%"
                     className={inputClass}
                   />
@@ -755,317 +1163,48 @@ export default function CroMonitorPage() {
                 disabled={submitting || !form.client_name.trim() || !form.test_name.trim()}
                 className="flex items-center gap-2 px-5 py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#2A2A2A] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
-                {submitting ? <ArrowPathIcon className="size-4 animate-spin" /> : <PlusIcon className="size-4" />}
+                {submitting ? (
+                  <ArrowPathIcon className="size-4 animate-spin" />
+                ) : (
+                  <PlusIcon className="size-4" />
+                )}
                 Add Test
               </button>
             </form>
           )}
 
-          {/* ── Client Sections ──────────────────────────────────── */}
+          {/* ── Swimlanes ────────────────────────────────────────── */}
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <ArrowPathIcon className="size-5 animate-spin text-[#AAAAAA]" />
             </div>
-          ) : clientGroups.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-sm text-[#AAAAAA]">
-                {tests.length === 0
-                  ? "No tests yet. Add your first one above."
-                  : "No tests match the current filter."}
-              </p>
-            </div>
           ) : (
-            clientGroups.map(([clientName, clientTests]) => {
-              const isOpen = openClients[clientName] !== false;
-
-              return (
-                <section key={clientName}>
-                  {/* Client header */}
-                  <button
-                    onClick={() =>
-                      setOpenClients((prev) => ({ ...prev, [clientName]: !isOpen }))
-                    }
-                    className="w-full flex items-center justify-between px-4 py-3 bg-white border border-[#E5E5E5] rounded-lg hover:bg-[#FAFAFA] transition-colors"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold">{clientName}</span>
-                      <span className="px-2 py-0.5 rounded-full bg-[#F0F0F0] text-[10px] font-semibold text-[#6B6B6B]">
-                        {clientTests.length} {clientTests.length === 1 ? "test" : "tests"}
-                      </span>
-                    </div>
-                    <ChevronDownIcon
-                      className={`size-4 text-[#AAAAAA] transition-transform duration-200 ${
-                        isOpen ? "" : "-rotate-90"
-                      }`}
-                    />
-                  </button>
-
-                  {/* Tests within client */}
-                  {isOpen && (
-                    <div className="mt-1 border border-[#E5E5E5] rounded-lg overflow-hidden bg-white">
-                      {/* Desktop table header */}
-                      <div className="hidden md:grid grid-cols-[1fr_80px_50px_130px_130px_130px_100px_36px] gap-2 px-4 py-2.5 bg-[#F5F5F5] border-b border-[#E5E5E5] text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA]">
-                        <div>Test</div>
-                        <div className="text-center">Status</div>
-                        <div className="text-center">Days</div>
-                        <div>CVR</div>
-                        <div>RPV</div>
-                        <div>AOV</div>
-                        <div>Stat Sig</div>
-                        <div />
-                      </div>
-
-                      {clientTests.map((test) => (
-                        <div key={test.id} className="border-b border-[#F0F0F0] last:border-b-0">
-                          {/* Desktop row */}
-                          <div className="hidden md:grid grid-cols-[1fr_80px_50px_130px_130px_130px_100px_36px] gap-2 items-center px-4 py-3 hover:bg-[#FAFAFA] transition-colors">
-                            <div>
-                              <div className="text-sm font-medium truncate">{test.test_name}</div>
-                              {test.variant_name && (
-                                <div className="text-[11px] text-[#AAAAAA] truncate">
-                                  {test.variant_name}
-                                </div>
-                              )}
-                            </div>
-                            <div className="text-center">
-                              <StatusBadge status={test.status} />
-                            </div>
-                            <div className="text-center text-xs tabular-nums text-[#6B6B6B]">
-                              {daysBetween(test.start_date)}
-                            </div>
-                            <MetricCell control={test.cvr_control} variant={test.cvr_variant} format="pct" />
-                            <MetricCell control={test.rpv_control} variant={test.rpv_variant} format="currency" />
-                            <MetricCell control={test.aov_control} variant={test.aov_variant} format="currency" />
-                            <StatSigBar value={Number(test.stat_sig)} />
-                            <button
-                              onClick={() =>
-                                expandedTests[test.id] ? cancelEdit(test.id) : startEdit(test)
-                              }
-                              className="p-1.5 text-[#CCCCCC] hover:text-[#0A0A0A] transition-colors rounded hover:bg-[#F0F0F0]"
-                            >
-                              <PencilSquareIcon className="size-4" />
-                            </button>
-                          </div>
-
-                          {/* Mobile card */}
-                          <div className="md:hidden p-4 space-y-2">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <div className="text-sm font-medium">{test.test_name}</div>
-                                {test.variant_name && (
-                                  <div className="text-[11px] text-[#AAAAAA]">{test.variant_name}</div>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <StatusBadge status={test.status} />
-                                <button
-                                  onClick={() =>
-                                    expandedTests[test.id] ? cancelEdit(test.id) : startEdit(test)
-                                  }
-                                  className="p-1 text-[#CCCCCC] hover:text-[#0A0A0A]"
-                                >
-                                  <PencilSquareIcon className="size-4" />
-                                </button>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-4 text-[11px] text-[#AAAAAA]">
-                              <span>{daysBetween(test.start_date)} days</span>
-                              <span>Sample: {test.sample_size.toLocaleString()}</span>
-                            </div>
-                            <div className="grid grid-cols-3 gap-3 text-[10px]">
-                              <div>
-                                <div className="text-[#AAAAAA] uppercase tracking-wider mb-0.5">CVR</div>
-                                <MetricCell control={test.cvr_control} variant={test.cvr_variant} format="pct" />
-                              </div>
-                              <div>
-                                <div className="text-[#AAAAAA] uppercase tracking-wider mb-0.5">RPV</div>
-                                <MetricCell control={test.rpv_control} variant={test.rpv_variant} format="currency" />
-                              </div>
-                              <div>
-                                <div className="text-[#AAAAAA] uppercase tracking-wider mb-0.5">AOV</div>
-                                <MetricCell control={test.aov_control} variant={test.aov_variant} format="currency" />
-                              </div>
-                            </div>
-                            <StatSigBar value={Number(test.stat_sig)} />
-                          </div>
-
-                          {/* Expanded edit panel */}
-                          {expandedTests[test.id] && editForms[test.id] && (
-                            <div className="px-4 pb-4 pt-3 border-t border-[#F0F0F0] bg-[#FAFAFA] space-y-4">
-                              {/* Hypothesis */}
-                              {test.hypothesis && (
-                                <div className="text-xs text-[#6B6B6B]">
-                                  <span className="font-semibold text-[#0A0A0A]">Hypothesis: </span>
-                                  {test.hypothesis}
-                                </div>
-                              )}
-
-                              {/* Metrics grid */}
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                <div>
-                                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
-                                    CVR Control (%)
-                                  </label>
-                                  <input
-                                    type="number"
-                                    step="0.01"
-                                    value={editForms[test.id].cvr_control ?? ""}
-                                    onChange={(e) => updateEditField(test.id, "cvr_control", Number(e.target.value))}
-                                    className={smallInputClass}
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
-                                    CVR Variant (%)
-                                  </label>
-                                  <input
-                                    type="number"
-                                    step="0.01"
-                                    value={editForms[test.id].cvr_variant ?? ""}
-                                    onChange={(e) => updateEditField(test.id, "cvr_variant", Number(e.target.value))}
-                                    className={smallInputClass}
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
-                                    RPV Control (p)
-                                  </label>
-                                  <input
-                                    type="number"
-                                    step="1"
-                                    value={editForms[test.id].rpv_control ?? ""}
-                                    onChange={(e) => updateEditField(test.id, "rpv_control", Number(e.target.value))}
-                                    className={smallInputClass}
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
-                                    RPV Variant (p)
-                                  </label>
-                                  <input
-                                    type="number"
-                                    step="1"
-                                    value={editForms[test.id].rpv_variant ?? ""}
-                                    onChange={(e) => updateEditField(test.id, "rpv_variant", Number(e.target.value))}
-                                    className={smallInputClass}
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
-                                    AOV Control (p)
-                                  </label>
-                                  <input
-                                    type="number"
-                                    step="1"
-                                    value={editForms[test.id].aov_control ?? ""}
-                                    onChange={(e) => updateEditField(test.id, "aov_control", Number(e.target.value))}
-                                    className={smallInputClass}
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
-                                    AOV Variant (p)
-                                  </label>
-                                  <input
-                                    type="number"
-                                    step="1"
-                                    value={editForms[test.id].aov_variant ?? ""}
-                                    onChange={(e) => updateEditField(test.id, "aov_variant", Number(e.target.value))}
-                                    className={smallInputClass}
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
-                                    Stat Sig (%)
-                                  </label>
-                                  <input
-                                    type="number"
-                                    step="0.1"
-                                    min="0"
-                                    max="100"
-                                    value={editForms[test.id].stat_sig ?? ""}
-                                    onChange={(e) => updateEditField(test.id, "stat_sig", Number(e.target.value))}
-                                    className={smallInputClass}
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
-                                    Sample Size
-                                  </label>
-                                  <input
-                                    type="number"
-                                    step="1"
-                                    value={editForms[test.id].sample_size ?? ""}
-                                    onChange={(e) => updateEditField(test.id, "sample_size", Number(e.target.value))}
-                                    className={smallInputClass}
-                                  />
-                                </div>
-                              </div>
-
-                              {/* Status + notes row */}
-                              <div className="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-3">
-                                <div>
-                                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
-                                    Status
-                                  </label>
-                                  <select
-                                    value={editForms[test.id].status ?? test.status}
-                                    onChange={(e) => updateEditField(test.id, "status", e.target.value)}
-                                    className={selectClass}
-                                  >
-                                    {ALL_STATUSES.map((s) => (
-                                      <option key={s} value={s}>
-                                        {statusConfig[s].label}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </div>
-                                <div>
-                                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
-                                    Notes
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={editForms[test.id].notes ?? ""}
-                                    onChange={(e) => updateEditField(test.id, "notes", e.target.value)}
-                                    placeholder="Freeform notes..."
-                                    className={smallInputClass}
-                                  />
-                                </div>
-                              </div>
-
-                              {/* Actions */}
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => handleSave(test.id)}
-                                  className="flex items-center gap-1.5 px-4 py-2 bg-[#0A0A0A] text-white text-xs font-medium rounded-md hover:bg-[#2A2A2A] transition-colors"
-                                >
-                                  <CheckIcon className="size-3.5" />
-                                  Save
-                                </button>
-                                <button
-                                  onClick={() => cancelEdit(test.id)}
-                                  className="px-4 py-2 border border-[#E5E5E5] bg-white text-[#6B6B6B] text-xs font-medium rounded-md hover:bg-[#F5F5F5] transition-colors"
-                                >
-                                  Cancel
-                                </button>
-                                <button
-                                  onClick={() => handleDelete(test.id)}
-                                  className="ml-auto flex items-center gap-1 px-3 py-2 text-xs text-red-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                                >
-                                  <TrashIcon className="size-3.5" />
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </section>
-              );
-            })
+            <div className="space-y-10">
+              {renderSwimlane(
+                "Needs Attention",
+                "🔴",
+                swimlanes.attention,
+                "Nothing needs attention right now"
+              )}
+              {renderSwimlane(
+                "Live & Running",
+                "🟢",
+                swimlanes.running,
+                "No live tests running"
+              )}
+              {renderSwimlane(
+                "Winners",
+                "🏆",
+                swimlanes.winners,
+                "No winners yet"
+              )}
+              {renderSwimlane(
+                "Losers & Inconclusive",
+                "❌",
+                swimlanes.losers,
+                "No losers or inconclusive tests"
+              )}
+            </div>
           )}
 
           {/* ── Weekly Checklist ──────────────────────────────────── */}
