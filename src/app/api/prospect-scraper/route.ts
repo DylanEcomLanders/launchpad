@@ -190,53 +190,57 @@ async function serperSearch(
 ): Promise<string[]> {
   const urls: string[] = [];
   const seenDomains = new Set<string>();
+  const pages = Math.ceil(maxResults / 10);
 
-  // Serper supports up to 100 results per request via num parameter
-  const num = Math.min(maxResults, 100);
+  for (let page = 0; page < pages; page++) {
+    try {
+      const res = await fetch("https://google.serper.dev/search", {
+        method: "POST",
+        headers: {
+          "X-API-KEY": apiKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          q: `"powered by Shopify" ${keyword}`,
+          num: 10,
+          ...(page > 0 ? { page: page + 1 } : {}),
+        }),
+      });
 
-  try {
-    const res = await fetch("https://google.serper.dev/search", {
-      method: "POST",
-      headers: {
-        "X-API-KEY": apiKey,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        q: `"powered by Shopify" ${keyword}`,
-        num,
-      }),
-    });
-
-    if (!res.ok) {
-      if (res.status === 429) {
-        throw new Error("RATE_LIMITED");
+      if (!res.ok) {
+        if (res.status === 429) {
+          throw new Error("RATE_LIMITED");
+        }
+        const errBody = await res.text().catch(() => "");
+        throw new Error(`Serper API error: ${res.status} ${errBody}`);
       }
-      throw new Error(`Serper API error: ${res.status}`);
+
+      const data = await res.json();
+      const organic = (data as Record<string, unknown[]>).organic || [];
+
+      for (const item of organic as Array<Record<string, string>>) {
+        const link = item.link;
+        if (!link) continue;
+
+        const domain = getBaseDomain(link);
+        if (seenDomains.has(domain)) continue;
+        seenDomains.add(domain);
+
+        try {
+          const u = new URL(link);
+          urls.push(`${u.protocol}//${u.hostname}`);
+        } catch {
+          urls.push(link);
+        }
+      }
+
+      if (urls.length >= maxResults) break;
+    } catch (err) {
+      if (err instanceof Error && err.message === "RATE_LIMITED") throw err;
+      throw err;
     }
 
-    const data = await res.json();
-    const organic = (data as Record<string, unknown[]>).organic || [];
-
-    for (const item of organic as Array<Record<string, string>>) {
-      const link = item.link;
-      if (!link) continue;
-
-      // Dedupe by domain
-      const domain = getBaseDomain(link);
-      if (seenDomains.has(domain)) continue;
-      seenDomains.add(domain);
-
-      // Get base URL (strip paths like /products/xxx)
-      try {
-        const u = new URL(link);
-        urls.push(`${u.protocol}//${u.hostname}`);
-      } catch {
-        urls.push(link);
-      }
-    }
-  } catch (err) {
-    if (err instanceof Error && err.message === "RATE_LIMITED") throw err;
-    throw err;
+    if (page < pages - 1) await delay(200);
   }
 
   return urls.slice(0, maxResults);
