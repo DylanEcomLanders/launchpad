@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { PlusIcon, XMarkIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, XMarkIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, LinkIcon } from "@heroicons/react/24/solid";
+import { ArrowPathIcon, ClipboardDocumentCheckIcon } from "@heroicons/react/24/outline";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 import { supabase } from "@/lib/supabase";
 import { DEV_NAMES } from "@/lib/constants";
@@ -66,6 +66,7 @@ export default function DevHoursPage() {
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   /* ── Form state ── */
   const [form, setForm] = useState<TimeEntryInsert>({
@@ -250,12 +251,42 @@ export default function DevHoursPage() {
       <div className="relative z-10 max-w-4xl mx-auto px-6 md:px-12 py-16 md:py-24">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
-            Dev Hours
-          </h1>
-          <p className="text-[#6B6B6B]">
-            Log out-of-scope dev hours and track invoicing against clients
-          </p>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
+                Dev Hours
+              </h1>
+              <p className="text-[#6B6B6B]">
+                Log out-of-scope dev hours and track invoicing against clients
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const url = `${window.location.origin}/tools/log-hours`;
+                navigator.clipboard.writeText(url);
+                setLinkCopied(true);
+                setTimeout(() => setLinkCopied(false), 2000);
+              }}
+              className={`shrink-0 flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-md border transition-all duration-200 ${
+                linkCopied
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                  : "bg-white border-[#E5E5E5] text-[#6B6B6B] hover:border-[#CCCCCC] hover:text-[#0A0A0A]"
+              }`}
+            >
+              {linkCopied ? (
+                <>
+                  <ClipboardDocumentCheckIcon className="size-4" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <LinkIcon className="size-4" />
+                  Copy dev link
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Error banner */}
