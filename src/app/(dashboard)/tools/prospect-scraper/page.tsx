@@ -293,36 +293,26 @@ export default function ProspectScraperPage() {
         {missingKeys && (
           <div className="mb-8 bg-amber-50 border border-amber-200 rounded-lg p-5">
             <h3 className="text-sm font-semibold text-amber-800 mb-2">
-              Google API Keys Required
+              Serper API Key Required
             </h3>
             <p className="text-sm text-amber-700 mb-3">
-              This tool uses Google Custom Search API to find Shopify stores.
-              Add these environment variables:
+              This tool uses Serper.dev (Google Search API) to find Shopify
+              stores. Add this environment variable:
             </p>
-            <div className="bg-amber-100/50 rounded-md p-3 font-mono text-xs text-amber-800 space-y-1">
-              <p>GOOGLE_CSE_API_KEY=your_google_api_key</p>
-              <p>GOOGLE_CSE_ID=your_custom_search_engine_id</p>
+            <div className="bg-amber-100/50 rounded-md p-3 font-mono text-xs text-amber-800">
+              <p>SERPER_API_KEY=your_serper_api_key</p>
             </div>
             <p className="text-xs text-amber-600 mt-3">
-              Get your API key from{" "}
+              Sign up free at{" "}
               <a
-                href="https://console.cloud.google.com/apis/credentials"
+                href="https://serper.dev"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="underline"
               >
-                Google Cloud Console
+                serper.dev
               </a>{" "}
-              and create a Custom Search Engine at{" "}
-              <a
-                href="https://programmablesearchengine.google.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline"
-              >
-                programmablesearchengine.google.com
-              </a>
-              . Free tier: 100 queries/day.
+              — 2,500 free queries included.
             </p>
           </div>
         )}

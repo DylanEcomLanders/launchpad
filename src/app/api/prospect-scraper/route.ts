@@ -181,59 +181,62 @@ function extractSocialLinks(html: string): { platform: string; url: string }[] {
   return links;
 }
 
-// ── Google Custom Search ────────────────────────────────────────
+// ── Serper.dev Search ───────────────────────────────────────────
 
-async function googleSearch(
+async function serperSearch(
   keyword: string,
   maxResults: number,
-  apiKey: string,
-  cseId: string
+  apiKey: string
 ): Promise<string[]> {
   const urls: string[] = [];
   const seenDomains = new Set<string>();
-  const pages = Math.ceil(maxResults / 10);
 
-  for (let page = 0; page < pages; page++) {
-    const start = page * 10 + 1;
-    const query = encodeURIComponent(`"powered by Shopify" ${keyword}`);
-    const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cseId}&q=${query}&start=${start}&num=10`;
+  // Serper supports up to 100 results per request via num parameter
+  const num = Math.min(maxResults, 100);
 
-    try {
-      const res = await fetch(url);
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        if (res.status === 429 || (err as Record<string, unknown>)?.error?.toString().includes("quota")) {
-          throw new Error("RATE_LIMITED");
-        }
-        throw new Error(`Google API error: ${res.status}`);
+  try {
+    const res = await fetch("https://google.serper.dev/search", {
+      method: "POST",
+      headers: {
+        "X-API-KEY": apiKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        q: `"powered by Shopify" ${keyword}`,
+        num,
+      }),
+    });
+
+    if (!res.ok) {
+      if (res.status === 429) {
+        throw new Error("RATE_LIMITED");
       }
-
-      const data = await res.json();
-      const items = (data as Record<string, unknown[]>).items || [];
-
-      for (const item of items as Array<Record<string, string>>) {
-        const link = item.link;
-        if (!link) continue;
-
-        // Dedupe by domain
-        const domain = getBaseDomain(link);
-        if (seenDomains.has(domain)) continue;
-        seenDomains.add(domain);
-
-        // Get base URL (strip paths like /products/xxx)
-        try {
-          const u = new URL(link);
-          urls.push(`${u.protocol}//${u.hostname}`);
-        } catch {
-          urls.push(link);
-        }
-      }
-    } catch (err) {
-      if (err instanceof Error && err.message === "RATE_LIMITED") throw err;
-      // Skip this page of results on other errors
+      throw new Error(`Serper API error: ${res.status}`);
     }
 
-    if (page < pages - 1) await delay(200);
+    const data = await res.json();
+    const organic = (data as Record<string, unknown[]>).organic || [];
+
+    for (const item of organic as Array<Record<string, string>>) {
+      const link = item.link;
+      if (!link) continue;
+
+      // Dedupe by domain
+      const domain = getBaseDomain(link);
+      if (seenDomains.has(domain)) continue;
+      seenDomains.add(domain);
+
+      // Get base URL (strip paths like /products/xxx)
+      try {
+        const u = new URL(link);
+        urls.push(`${u.protocol}//${u.hostname}`);
+      } catch {
+        urls.push(link);
+      }
+    }
+  } catch (err) {
+    if (err instanceof Error && err.message === "RATE_LIMITED") throw err;
+    throw err;
   }
 
   return urls.slice(0, maxResults);
@@ -404,10 +407,9 @@ async function enrichStore(storeUrl: string): Promise<Prospect> {
 // ── Route handler ───────────────────────────────────────────────
 
 export async function POST(request: Request) {
-  const apiKey = process.env.GOOGLE_CSE_API_KEY;
-  const cseId = process.env.GOOGLE_CSE_ID;
+  const serperKey = process.env.SERPER_API_KEY;
 
-  if (!apiKey || !cseId) {
+  if (!serperKey) {
     return new Response(
       JSON.stringify({
         type: "error",
@@ -454,7 +456,7 @@ export async function POST(request: Request) {
 
         let urls: string[];
         try {
-          urls = await googleSearch(keyword, maxResults, apiKey, cseId);
+          urls = await serperSearch(keyword, maxResults, serperKey);
         } catch (err) {
           if (
             err instanceof Error &&
@@ -463,7 +465,7 @@ export async function POST(request: Request) {
             send({
               type: "error",
               message:
-                "Google API daily limit reached (100/day on free tier). Try again tomorrow or upgrade your API key.",
+                "Serper API rate limit reached. Try again later or check your plan at serper.dev.",
             });
             controller.close();
             return;
