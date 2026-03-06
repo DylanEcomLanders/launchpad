@@ -14,6 +14,7 @@ import {
   MagnifyingGlassIcon,
   BookOpenIcon,
   PaperAirplaneIcon,
+  UserGroupIcon,
 } from "@heroicons/react/24/solid";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 
@@ -105,6 +106,14 @@ const tools: ToolCard[] = [
     description: "Generate personalised cold emails, follow-ups, Loom scripts, and LinkedIn DMs for prospects",
     href: "/tools/outreach",
     icon: <PaperAirplaneIcon className="size-5" />,
+    section: "Sales",
+    wip: true,
+  },
+  {
+    name: "Prospect Scraper",
+    description: "Discover Shopify stores by niche, enrich with contacts and store data, export CSV for outreach",
+    href: "/tools/prospect-scraper",
+    icon: <UserGroupIcon className="size-5" />,
     section: "Sales",
     wip: true,
   },

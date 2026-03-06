@@ -24,6 +24,7 @@ import {
   MagnifyingGlassIcon,
   BookOpenIcon,
   PaperAirplaneIcon,
+  UserGroupIcon,
 } from "@heroicons/react/24/solid";
 import { Logo, LogoMark } from "@/components/logo";
 
@@ -118,6 +119,12 @@ const navSections: NavSection[] = [
         label: "Outreach Generator",
         href: "/tools/outreach",
         icon: <PaperAirplaneIcon className="size-4" />,
+        wip: true,
+      },
+      {
+        label: "Prospect Scraper",
+        href: "/tools/prospect-scraper",
+        icon: <UserGroupIcon className="size-4" />,
         wip: true,
       },
     ],
