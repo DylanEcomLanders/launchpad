@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { PlusIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
+import { Logo } from "@/components/logo";
 import { supabase } from "@/lib/supabase";
 import { DEV_NAMES } from "@/lib/constants";
 import type { TimeEntry, TimeEntryInsert } from "@/lib/types";
@@ -170,6 +171,11 @@ export default function LogHoursPage() {
     <div className="relative min-h-screen">
       <DecorativeBlocks />
       <div className="relative z-10 max-w-xl mx-auto px-6 py-16 md:py-24">
+        {/* Logo */}
+        <div className="flex justify-center mb-8">
+          <Logo height={18} className="text-[#0A0A0A]" />
+        </div>
+
         {/* Header */}
         <div className="mb-10 text-center">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
