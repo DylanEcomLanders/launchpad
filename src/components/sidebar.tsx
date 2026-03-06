@@ -95,7 +95,7 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: "Sales",
+    title: "Work in Progress",
     items: [
       {
         label: "Store Intelligence",
@@ -127,11 +127,6 @@ const navSections: NavSection[] = [
         icon: <UserGroupIcon className="size-4" />,
         wip: true,
       },
-    ],
-  },
-  {
-    title: "CRO",
-    items: [
       {
         label: "CRO Test Monitor",
         href: "/tools/cro-monitor",
@@ -144,11 +139,6 @@ const navSections: NavSection[] = [
         icon: <BeakerIcon className="size-4" />,
         wip: true,
       },
-    ],
-  },
-  {
-    title: "Training",
-    items: [
       {
         label: "Playbooks",
         href: "/tools/playbooks",
@@ -164,7 +154,7 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(
-    () => Object.fromEntries(navSections.map((s) => [s.title, true]))
+    () => Object.fromEntries(navSections.map((s) => [s.title, s.title !== "Work in Progress"]))
   );
   const [now, setNow] = useState(() => new Date());
 

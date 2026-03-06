@@ -82,7 +82,7 @@ const tools: ToolCard[] = [
     description: "Analyse any Shopify store — products, tech stack, funnel leaks, and quick wins",
     href: "/tools/store-intel",
     icon: <MagnifyingGlassIcon className="size-5" />,
-    section: "Sales",
+    section: "Coming Soon",
     wip: true,
   },
   {
@@ -90,7 +90,7 @@ const tools: ToolCard[] = [
     description: "Scan Slack for upsell signals from the last 24 hours",
     href: "/tools/upsell-scanner",
     icon: <SignalIcon className="size-5" />,
-    section: "Sales",
+    section: "Coming Soon",
     wip: true,
   },
   {
@@ -98,7 +98,7 @@ const tools: ToolCard[] = [
     description: "Generate unique proposal links for clients — track views and conversions",
     href: "/tools/proposals",
     icon: <DocumentDuplicateIcon className="size-5" />,
-    section: "Sales",
+    section: "Coming Soon",
     wip: true,
   },
   {
@@ -106,7 +106,7 @@ const tools: ToolCard[] = [
     description: "Generate personalised cold emails, follow-ups, Loom scripts, and LinkedIn DMs for prospects",
     href: "/tools/outreach",
     icon: <PaperAirplaneIcon className="size-5" />,
-    section: "Sales",
+    section: "Coming Soon",
     wip: true,
   },
   {
@@ -114,7 +114,7 @@ const tools: ToolCard[] = [
     description: "Discover Shopify stores by niche, enrich with contacts and store data, export CSV for outreach",
     href: "/tools/prospect-scraper",
     icon: <UserGroupIcon className="size-5" />,
-    section: "Sales",
+    section: "Coming Soon",
     wip: true,
   },
   {
@@ -122,7 +122,7 @@ const tools: ToolCard[] = [
     description: "Track live A/B tests across clients — CVR, RPV, AOV, stat sig, and weekly review checklists",
     href: "/tools/cro-monitor",
     icon: <ChartBarIcon className="size-5" />,
-    section: "CRO",
+    section: "Coming Soon",
     wip: true,
   },
   {
@@ -130,7 +130,7 @@ const tools: ToolCard[] = [
     description: "Upload designs for an AI-powered conversion rate analysis",
     href: "/tools/cro-audit",
     icon: <BeakerIcon className="size-5" />,
-    section: "CRO",
+    section: "Coming Soon",
     wip: true,
   },
   {
@@ -138,7 +138,7 @@ const tools: ToolCard[] = [
     description: "Interactive step-by-step training with knowledge checks — learn the Ecomlanders way",
     href: "/tools/playbooks",
     icon: <BookOpenIcon className="size-5" />,
-    section: "Training",
+    section: "Coming Soon",
     wip: true,
   },
 ];
