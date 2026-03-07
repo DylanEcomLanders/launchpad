@@ -25,6 +25,7 @@ import {
   BookOpenIcon,
   PaperAirplaneIcon,
   UserGroupIcon,
+  RocketLaunchIcon,
 } from "@heroicons/react/24/solid";
 import { Logo, LogoMark } from "@/components/logo";
 
@@ -52,6 +53,11 @@ const navSections: NavSection[] = [
   {
     title: "Project Management",
     items: [
+      {
+        label: "Project Kickoff",
+        href: "/tools/project-kickoff",
+        icon: <RocketLaunchIcon className="size-4" />,
+      },
       {
         label: "Project Doc Creation",
         href: "/tools/scope-generator",

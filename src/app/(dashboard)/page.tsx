@@ -15,6 +15,7 @@ import {
   BookOpenIcon,
   PaperAirplaneIcon,
   UserGroupIcon,
+  RocketLaunchIcon,
 } from "@heroicons/react/24/solid";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 
@@ -28,6 +29,13 @@ interface ToolCard {
 }
 
 const tools: ToolCard[] = [
+  {
+    name: "Project Kickoff",
+    description: "One form — scope doc, roadmap, agreement, kickoff email, and Slack brief all in one go",
+    href: "/tools/project-kickoff",
+    icon: <RocketLaunchIcon className="size-5" />,
+    section: "Project Management",
+  },
   {
     name: "Project Doc Creation",
     description: "Generate branded scope documents and service agreements for client projects",
