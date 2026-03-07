@@ -1,11 +1,23 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const plusJakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
+});
+
+const articulatCF = localFont({
+  src: [
+    { path: "../fonts/ArticulatCF-Regular.otf", weight: "400", style: "normal" },
+    { path: "../fonts/ArticulatCF-Medium.otf", weight: "500", style: "normal" },
+    { path: "../fonts/ArticulatCF-DemiBold.otf", weight: "600", style: "normal" },
+    { path: "../fonts/ArticulatCF-Bold.otf", weight: "700", style: "normal" },
+  ],
+  variable: "--font-articulat",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -19,8 +31,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="light">
-      <body className={`${plusJakartaSans.variable} font-[family-name:var(--font-plus-jakarta)] antialiased bg-[#FAFAFA] text-[#0A0A0A]`}>
+    <html lang="en" className={`light ${inter.variable} ${articulatCF.variable}`}>
+      <body className="font-body antialiased bg-[#FAFAFA] text-[#0A0A0A]">
         {children}
       </body>
     </html>

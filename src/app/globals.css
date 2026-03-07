@@ -10,13 +10,21 @@
   --color-hover: #2A2A2A;
   --color-accent: #D2F34C;
   --color-accent-hover: #C4E438;
-  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-heading: var(--font-inter), "Inter", system-ui, sans-serif;
+  --font-body: var(--font-articulat), "Articulat CF", system-ui, sans-serif;
 }
 
 body {
   background: var(--color-background);
   color: var(--color-foreground);
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
+  letter-spacing: -0.2px;
+}
+
+/* Headings use Inter with tighter tracking */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.5px;
 }
 
 /* Mobile drawer slide-up animation */
