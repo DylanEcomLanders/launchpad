@@ -10,36 +10,12 @@ import {
 } from "@heroicons/react/24/solid";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
-
-// ── Types ───────────────────────────────────────────────────────
-
-interface SocialLink {
-  platform: string;
-  url: string;
-}
-
-interface Prospect {
-  url: string;
-  brandName: string;
-  isShopify: boolean;
-  emails: string[];
-  socialLinks: SocialLink[];
-  productCount: number;
-  priceRange: { min: number; max: number } | null;
-  apps: string[];
-  hasReviews: boolean;
-  hasSubscriptions: boolean;
-  hasBNPL: boolean;
-  revenueScore: number;
-  crawlError?: string;
-}
+import { inputClass } from "@/lib/form-styles";
+import type { Prospect, SocialLink } from "@/lib/types";
 
 type MaxResults = 10 | 20 | 30;
 
 // ── Constants ───────────────────────────────────────────────────
-
-const inputClass =
-  "w-full px-3 py-2.5 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors placeholder:text-[#CCCCCC]";
 
 const maxResultsOptions: MaxResults[] = [10, 20, 30];
 

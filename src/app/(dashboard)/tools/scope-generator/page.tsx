@@ -25,6 +25,7 @@ import { AgreementPdfDocument } from "@/components/agreement-pdf-document";
 import { PdfPreview } from "@/components/pdf-preview";
 import { SignaturePad } from "@/components/signature-pad";
 import { pdf } from "@react-pdf/renderer";
+import { inputClass, selectClass, labelClass, textareaClass } from "@/lib/form-styles";
 
 const emptyDeliverable = (): Deliverable => ({
   description: "",
@@ -68,16 +69,6 @@ function clientSlug(name: string): string {
     .replace(/-+/g, "-")
     .toLowerCase();
 }
-
-/* ── shared input classes ── */
-const inputClass =
-  "w-full px-3 py-2.5 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors placeholder:text-[#CCCCCC]";
-const selectClass =
-  "w-full px-3 py-2.5 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors appearance-none";
-const textareaClass =
-  "w-full px-3 py-2.5 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors resize-none placeholder:text-[#CCCCCC]";
-const labelClass =
-  "block text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-2";
 
 export default function ScopeGeneratorPage() {
   const [formData, setFormData] = useState<GeneratorFormData>({

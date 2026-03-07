@@ -30,6 +30,7 @@ import { SignaturePad } from "@/components/signature-pad";
 import { computeAllPhases, computeDesignDevDays } from "@/lib/roadmap-defaults";
 import { pdf, type DocumentProps } from "@react-pdf/renderer";
 import type { ReactElement } from "react";
+import { inputClass, selectClass, labelClass, textareaClass } from "@/lib/form-styles";
 
 /* ── Helpers ── */
 
@@ -79,14 +80,6 @@ function formatLongDate(dateStr: string): string {
 }
 
 /* ── Shared CSS classes ── */
-const inputClass =
-  "w-full px-3 py-2.5 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors placeholder:text-[#CCCCCC]";
-const selectClass =
-  "w-full px-3 py-2.5 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors appearance-none";
-const textareaClass =
-  "w-full px-3 py-2.5 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors resize-none placeholder:text-[#CCCCCC]";
-const labelClass =
-  "block text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-2";
 const sectionHeadingClass =
   "text-xs font-semibold uppercase tracking-wider text-[#6B6B6B]";
 

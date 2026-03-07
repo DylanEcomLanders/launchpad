@@ -20,6 +20,7 @@ import {
 } from "@/lib/config";
 import { QaReportPdfDocument } from "@/components/qa-report-pdf-document";
 import { PdfPreview } from "@/components/pdf-preview";
+import { inputClass, labelClass } from "@/lib/form-styles";
 
 let nextId = 1;
 function uid() {
@@ -42,10 +43,6 @@ function nextResult(current: QAResult): QAResult {
   const i = resultCycle.indexOf(current);
   return resultCycle[(i + 1) % resultCycle.length];
 }
-
-const inputClass =
-  "w-full px-3 py-2.5 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors placeholder:text-[#CCCCCC]";
-const labelClass = "block text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-2";
 
 export default function QAChecklistPage() {
   const [formData, setFormData] = useState<QAFormData>({

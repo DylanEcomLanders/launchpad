@@ -7,14 +7,8 @@ import { DecorativeBlocks } from "@/components/decorative-blocks";
 import { PdfPreview } from "@/components/pdf-preview";
 import { InvoicePdfDocument } from "@/components/invoice-pdf-document";
 import { paymentTerms, type PaymentTerm } from "@/lib/config";
-
-/* ── Shared classes ── */
-const inputClass =
-  "w-full px-3 py-2.5 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors placeholder:text-[#CCCCCC]";
-const selectClass =
-  "w-full px-3 py-2.5 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors appearance-none";
-const labelClass =
-  "block text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-2";
+import { inputClass, selectClass, labelClass } from "@/lib/form-styles";
+import { formatGBP } from "@/lib/formatters";
 
 /* ── Tier pricing data (client-facing only) ── */
 type Tier = 1 | 2;
@@ -72,13 +66,6 @@ const deliverableCategories = [
   "CRO Retainer",
   "Additional Services",
 ] as const;
-
-/* ── Currency formatter ── */
-const fmt = new Intl.NumberFormat("en-GB", {
-  style: "currency",
-  currency: "GBP",
-  minimumFractionDigits: 2,
-});
 
 /* ── Types ── */
 interface InvoiceLineItem {
@@ -397,7 +384,7 @@ export default function InvoiceGeneratorPage() {
                       .filter((d) => d.category === cat)
                       .map((d) => (
                         <option key={d.name} value={d.name}>
-                          {d.name} — {fmt.format(tier === 1 ? d.tier1Price : d.tier2Price)}
+                          {d.name} — {formatGBP(tier === 1 ? d.tier1Price : d.tier2Price)}
                         </option>
                       ))}
                   </optgroup>
@@ -470,13 +457,13 @@ export default function InvoiceGeneratorPage() {
                       />
                     ) : (
                       <span className="text-sm text-right text-[#6B6B6B]">
-                        {fmt.format(item.unitPrice)}
+                        {formatGBP(item.unitPrice)}
                       </span>
                     )}
 
                     {/* Amount */}
                     <span className="text-sm font-medium text-right">
-                      {fmt.format(item.quantity * item.unitPrice)}
+                      {formatGBP(item.quantity * item.unitPrice)}
                     </span>
 
                     {/* Remove */}
@@ -505,7 +492,7 @@ export default function InvoiceGeneratorPage() {
               <div className="mt-6 border-t border-[#E5E5E5] pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-[#6B6B6B]">Subtotal</span>
-                  <span className="font-medium">{fmt.format(subtotal)}</span>
+                  <span className="font-medium">{formatGBP(subtotal)}</span>
                 </div>
 
                 {/* VAT toggle */}
@@ -519,12 +506,12 @@ export default function InvoiceGeneratorPage() {
                     />
                     VAT (20%)
                   </label>
-                  <span className="font-medium">{fmt.format(vat)}</span>
+                  <span className="font-medium">{formatGBP(vat)}</span>
                 </div>
 
                 <div className="flex justify-between text-sm pt-2 border-t border-[#E5E5E5]">
                   <span className="font-semibold">Total</span>
-                  <span className="font-bold text-base">{fmt.format(total)}</span>
+                  <span className="font-bold text-base">{formatGBP(total)}</span>
                 </div>
               </div>
             )}
@@ -613,7 +600,7 @@ export default function InvoiceGeneratorPage() {
                 filename={`${invoiceNumber}-${clientName.replace(/\s+/g, "-") || "Invoice"}.pdf`}
                 label="Invoice"
                 description={`Invoice ${invoiceNumber} for ${clientName || "client"}`}
-                details={`${items.length} line item${items.length !== 1 ? "s" : ""} · Total: ${fmt.format(total)}`}
+                details={`${items.length} line item${items.length !== 1 ? "s" : ""} · Total: ${formatGBP(total)}`}
               />
             </div>
           )}

@@ -3,10 +3,7 @@
 import { useState, useMemo } from "react";
 import { MinusIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
-
-/* ── shared classes ── */
-const labelClass =
-  "block text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-2";
+import { labelClass } from "@/lib/form-styles";
 
 /* ── Types ── */
 type Tier = 1 | 2;

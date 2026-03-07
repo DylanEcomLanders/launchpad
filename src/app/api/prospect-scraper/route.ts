@@ -1,70 +1,11 @@
 import * as cheerio from "cheerio";
+import { KNOWN_APPS, REVIEW_APPS, SUBSCRIPTION_APPS, BNPL_APPS } from "@/data/known-apps";
+import type { Prospect } from "@/lib/types";
 
 // ── Config ──────────────────────────────────────────────────────
 
 const FETCH_TIMEOUT = 8000;
 const CRAWL_DELAY = 500;
-
-// ── Known Apps (reused from store-intel) ─────────────────────────
-
-const KNOWN_APPS: Record<string, { name: string; type: string }> = {
-  intelligems: { name: "Intelligems", type: "Price Testing" },
-  rebuy: { name: "Rebuy", type: "Upsells" },
-  reconvert: { name: "ReConvert", type: "Post-Purchase" },
-  klaviyo: { name: "Klaviyo", type: "Email & SMS" },
-  "judge.me": { name: "Judge.me", type: "Reviews" },
-  judgeme: { name: "Judge.me", type: "Reviews" },
-  loox: { name: "Loox", type: "Photo Reviews" },
-  stamped: { name: "Stamped.io", type: "Reviews" },
-  yotpo: { name: "Yotpo", type: "Reviews & Loyalty" },
-  okendo: { name: "Okendo", type: "Reviews" },
-  hotjar: { name: "Hotjar", type: "Heatmaps" },
-  "lucky-orange": { name: "Lucky Orange", type: "Heatmaps" },
-  luckyorange: { name: "Lucky Orange", type: "Heatmaps" },
-  optimizely: { name: "Optimizely", type: "A/B Testing" },
-  vwo: { name: "VWO", type: "A/B Testing" },
-  bold: { name: "Bold Commerce", type: "Upsells / Bundles" },
-  zipify: { name: "Zipify", type: "Landing Pages" },
-  recharge: { name: "ReCharge", type: "Subscriptions" },
-  skio: { name: "Skio", type: "Subscriptions" },
-  afterpay: { name: "Afterpay", type: "BNPL" },
-  klarna: { name: "Klarna", type: "BNPL" },
-  attentive: { name: "Attentive", type: "SMS" },
-  postscript: { name: "Postscript", type: "SMS" },
-  gorgias: { name: "Gorgias", type: "Support" },
-  privy: { name: "Privy", type: "Pop-ups" },
-  justuno: { name: "Justuno", type: "Pop-ups" },
-  smile: { name: "Smile.io", type: "Loyalty" },
-  triplewhale: { name: "Triple Whale", type: "Analytics" },
-  "triple-whale": { name: "Triple Whale", type: "Analytics" },
-  elevar: { name: "Elevar", type: "Tracking" },
-  shogun: { name: "Shogun", type: "Page Builder" },
-  gempages: { name: "GemPages", type: "Page Builder" },
-  pagefly: { name: "PageFly", type: "Page Builder" },
-  vitals: { name: "Vitals", type: "All-in-One" },
-};
-
-const REVIEW_APPS = ["Judge.me", "Loox", "Stamped.io", "Yotpo", "Okendo"];
-const SUBSCRIPTION_APPS = ["ReCharge", "Skio"];
-const BNPL_APPS = ["Afterpay", "Klarna"];
-
-// ── Types ───────────────────────────────────────────────────────
-
-interface Prospect {
-  url: string;
-  brandName: string;
-  isShopify: boolean;
-  emails: string[];
-  socialLinks: { platform: string; url: string }[];
-  productCount: number;
-  priceRange: { min: number; max: number } | null;
-  apps: string[];
-  hasReviews: boolean;
-  hasSubscriptions: boolean;
-  hasBNPL: boolean;
-  revenueScore: number;
-  crawlError?: string;
-}
 
 type StreamEvent =
   | { type: "searching"; keyword: string }

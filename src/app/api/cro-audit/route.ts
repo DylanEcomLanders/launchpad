@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import type { AuditSection, AuditResult } from "@/lib/types";
+export type { AuditSection, AuditResult };
 
 // ── Config ──────────────────────────────────────────────────────────
 
@@ -63,22 +65,6 @@ interface AuditRequest {
     sessions?: string;
   };
   additionalContext?: string;
-}
-
-export interface AuditSection {
-  title: string;
-  analysis: string;
-  rating: "strong" | "moderate" | "weak";
-}
-
-export interface AuditResult {
-  verdict: {
-    winner: "variant" | "control" | "mixed";
-    summary: string;
-  };
-  sections: AuditSection[];
-  quickWins: string[];
-  predictedImpact: string;
 }
 
 // ── Route Handler ───────────────────────────────────────────────────

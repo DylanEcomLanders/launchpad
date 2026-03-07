@@ -9,12 +9,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 import { DEMO_PORTALS, type PortalData } from "@/lib/portal-types";
-
-/* ── Shared classes ── */
-const inputClass =
-  "w-full px-3 py-2.5 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors placeholder:text-[#CCCCCC]";
-const labelClass =
-  "block text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-2";
+import { inputClass, labelClass } from "@/lib/form-styles";
 
 function phaseStatusDot(status: string) {
   switch (status) {

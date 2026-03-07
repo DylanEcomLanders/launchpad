@@ -12,21 +12,9 @@ import type {
   DashboardMetrics,
   Filters,
 } from "@/lib/types";
-
-/* ── Shared classes ── */
-const inputClass =
-  "w-full px-3 py-2.5 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors placeholder:text-[#CCCCCC]";
-const selectClass =
-  "w-full px-3 py-2.5 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors appearance-none";
-const labelClass =
-  "block text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-2";
-
-/* ── Currency formatter ── */
-const fmt = new Intl.NumberFormat("en-GB", {
-  style: "currency",
-  currency: "GBP",
-  minimumFractionDigits: 2,
-});
+import { inputClass, selectClass, labelClass } from "@/lib/form-styles";
+import { formatGBP } from "@/lib/formatters";
+import { uid } from "@/lib/utils";
 
 function todayStr() {
   return new Date().toISOString().split("T")[0];
@@ -55,10 +43,6 @@ function formatDisplayDate(iso: string) {
     month: "short",
     year: "numeric",
   });
-}
-
-function uid() {
-  return "temp-" + Math.random().toString(36).slice(2, 9);
 }
 
 export default function DevHoursPage() {
@@ -431,7 +415,7 @@ export default function DevHoursPage() {
                       Internal Cost
                     </p>
                     <p className="text-lg font-semibold tabular-nums text-[#0A0A0A]">
-                      {fmt.format(metrics.internalCost)}
+                      {formatGBP(metrics.internalCost)}
                     </p>
                   </div>
                   <div>
@@ -439,7 +423,7 @@ export default function DevHoursPage() {
                       Client Billable
                     </p>
                     <p className="text-lg font-semibold tabular-nums text-[#0A0A0A]">
-                      {fmt.format(metrics.clientBillable)}
+                      {formatGBP(metrics.clientBillable)}
                     </p>
                   </div>
                   <div>
@@ -447,7 +431,7 @@ export default function DevHoursPage() {
                       Invoiced
                     </p>
                     <p className="text-lg font-semibold tabular-nums text-[#15803D]">
-                      {fmt.format(metrics.invoicedAmount)}
+                      {formatGBP(metrics.invoicedAmount)}
                     </p>
                   </div>
                   <div>
@@ -461,7 +445,7 @@ export default function DevHoursPage() {
                           : "text-[#0A0A0A]"
                       }`}
                     >
-                      {fmt.format(metrics.uninvoicedAmount)}
+                      {formatGBP(metrics.uninvoicedAmount)}
                     </p>
                   </div>
                   <div>
@@ -469,7 +453,7 @@ export default function DevHoursPage() {
                       Margin
                     </p>
                     <p className="text-lg font-semibold tabular-nums text-[#0A0A0A]">
-                      {fmt.format(metrics.margin)}
+                      {formatGBP(metrics.margin)}
                     </p>
                   </div>
                 </div>
@@ -697,12 +681,12 @@ export default function DevHoursPage() {
                         {Number(entry.hours).toFixed(1)}
                       </span>
                       <span className="text-sm font-medium tabular-nums text-right text-[#0A0A0A]">
-                        {fmt.format(
+                        {formatGBP(
                           Number(entry.hours) * Number(entry.client_rate)
                         )}
                       </span>
                       <span className="text-xs tabular-nums text-right text-[#AAAAAA]">
-                        {fmt.format(
+                        {formatGBP(
                           Number(entry.hours) * Number(entry.dev_rate)
                         )}
                       </span>
@@ -781,7 +765,7 @@ export default function DevHoursPage() {
                             {Number(entry.hours).toFixed(1)}h
                           </span>
                           <span className="text-xs text-[#AAAAAA] ml-2">
-                            {fmt.format(
+                            {formatGBP(
                               Number(entry.hours) * Number(entry.client_rate)
                             )}
                           </span>

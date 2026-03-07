@@ -2,13 +2,8 @@
 
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import { PdfLogo, formatDate, shared as s } from "@/lib/pdf-shared";
+import { formatGBP } from "@/lib/formatters";
 import type { InvoiceData } from "@/app/(dashboard)/tools/invoice-generator/page";
-
-const fmt = new Intl.NumberFormat("en-GB", {
-  style: "currency",
-  currency: "GBP",
-  minimumFractionDigits: 2,
-});
 
 const inv = StyleSheet.create({
   page: {
@@ -276,10 +271,10 @@ export function InvoicePdfDocument({ data }: { data: InvoiceData }) {
               <Text style={[inv.tdText, inv.colDesc]}>{item.name}</Text>
               <Text style={[inv.tdMuted, inv.colQty]}>{item.quantity}</Text>
               <Text style={[inv.tdMuted, inv.colPrice]}>
-                {fmt.format(item.unitPrice)}
+                {formatGBP(item.unitPrice)}
               </Text>
               <Text style={[inv.tdText, inv.colAmount]}>
-                {fmt.format(item.quantity * item.unitPrice)}
+                {formatGBP(item.quantity * item.unitPrice)}
               </Text>
             </View>
           ))}
@@ -289,17 +284,17 @@ export function InvoicePdfDocument({ data }: { data: InvoiceData }) {
         <View style={inv.totalsSection}>
           <View style={inv.totalsRow}>
             <Text style={inv.totalsLabel}>Subtotal</Text>
-            <Text style={inv.totalsValue}>{fmt.format(subtotal)}</Text>
+            <Text style={inv.totalsValue}>{formatGBP(subtotal)}</Text>
           </View>
           {data.includeVat && (
             <View style={inv.totalsRow}>
               <Text style={inv.totalsLabel}>VAT (20%)</Text>
-              <Text style={inv.totalsValue}>{fmt.format(vat)}</Text>
+              <Text style={inv.totalsValue}>{formatGBP(vat)}</Text>
             </View>
           )}
           <View style={inv.totalsFinalRow}>
             <Text style={inv.totalsFinalLabel}>Total</Text>
-            <Text style={inv.totalsFinalValue}>{fmt.format(total)}</Text>
+            <Text style={inv.totalsFinalValue}>{formatGBP(total)}</Text>
           </View>
         </View>
 

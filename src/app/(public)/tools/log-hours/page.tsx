@@ -8,11 +8,8 @@ import { Logo } from "@/components/logo";
 import { supabase } from "@/lib/supabase";
 import { DEV_NAMES } from "@/lib/constants";
 import type { TimeEntry, TimeEntryInsert } from "@/lib/types";
-
-const inputClass =
-  "w-full px-3 py-2.5 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors placeholder:text-[#CCCCCC]";
-const selectClass =
-  "w-full px-3 py-2.5 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors appearance-none";
+import { inputClass, selectClass } from "@/lib/form-styles";
+import { uid } from "@/lib/utils";
 
 function todayStr() {
   return new Date().toISOString().split("T")[0];
@@ -38,10 +35,6 @@ function formatMonthLabel(ym: string) {
     month: "long",
     year: "numeric",
   });
-}
-
-function uid() {
-  return "temp-" + Math.random().toString(36).slice(2, 9);
 }
 
 export default function LogHoursPage() {

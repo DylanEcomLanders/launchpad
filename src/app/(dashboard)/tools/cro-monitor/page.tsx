@@ -12,17 +12,10 @@ import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 import { supabase } from "@/lib/supabase";
 import type { CroTest, CroTestInsert, CroTestStatus } from "@/lib/types";
+import { inputClass, selectClass, labelClass } from "@/lib/form-styles";
+import { uid } from "@/lib/utils";
 
 /* ── Shared classes ─────────────────────────────────────────────── */
-
-const inputClass =
-  "w-full px-3 py-2.5 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors placeholder:text-[#CCCCCC]";
-
-const selectClass =
-  "w-full px-3 py-2.5 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors";
-
-const labelClass =
-  "block text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-2";
 
 const smallInputClass =
   "w-full px-2.5 py-2 bg-white border border-[#E5E5E5] rounded-md text-xs focus:outline-none focus:border-[#0A0A0A] transition-colors tabular-nums";
@@ -262,10 +255,6 @@ const DEMO_DATA: CroTest[] = [
 ];
 
 /* ── Helpers ─────────────────────────────────────────────────────── */
-
-function uid() {
-  return "temp-" + Math.random().toString(36).slice(2, 9);
-}
 
 function todayStr() {
   return new Date().toISOString().split("T")[0];

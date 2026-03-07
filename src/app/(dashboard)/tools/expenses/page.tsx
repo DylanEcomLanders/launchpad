@@ -6,9 +6,9 @@ import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 import { supabase } from "@/lib/supabase";
 import type { Expense, ExpenseInsert } from "@/lib/types";
-
-const inputClass =
-  "w-full px-3 py-2.5 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors placeholder:text-[#CCCCCC]";
+import { inputClass } from "@/lib/form-styles";
+import { formatGBP } from "@/lib/formatters";
+import { uid } from "@/lib/utils";
 
 const frequencies = ["monthly", "yearly", "one-off"] as const;
 const statuses = ["needed", "review", "cut"] as const;
@@ -18,16 +18,6 @@ const statusColors: Record<string, { bg: string; text: string; dot: string }> = 
   review: { bg: "bg-amber-50", text: "text-amber-700", dot: "bg-amber-500" },
   cut: { bg: "bg-red-50", text: "text-red-700", dot: "bg-red-500" },
 };
-
-const fmt = new Intl.NumberFormat("en-GB", {
-  style: "currency",
-  currency: "GBP",
-  minimumFractionDigits: 2,
-});
-
-function uid() {
-  return "temp-" + Math.random().toString(36).slice(2, 9);
-}
 
 function monthlyEquivalent(amount: number, frequency: string): number {
   if (frequency === "monthly") return amount;
@@ -231,7 +221,7 @@ export default function ExpensesPage() {
                     Monthly Total
                   </p>
                   <p className="text-lg font-semibold tabular-nums">
-                    {fmt.format(summary.monthlyTotal)}
+                    {formatGBP(summary.monthlyTotal)}
                   </p>
                 </div>
                 <div>
@@ -239,7 +229,7 @@ export default function ExpensesPage() {
                     Yearly Total
                   </p>
                   <p className="text-lg font-semibold tabular-nums">
-                    {fmt.format(summary.yearlyTotal)}
+                    {formatGBP(summary.yearlyTotal)}
                   </p>
                 </div>
                 <div>
@@ -526,11 +516,11 @@ export default function ExpensesPage() {
                           </span>
                           <div className="text-right">
                             <span className={`text-sm font-semibold tabular-nums ${isCut ? "line-through" : ""}`}>
-                              {fmt.format(Number(expense.amount))}
+                              {formatGBP(Number(expense.amount))}
                             </span>
                             {expense.frequency === "yearly" && (
                               <p className="text-[10px] text-[#AAAAAA] tabular-nums">
-                                {fmt.format(Number(expense.amount) / 12)}/mo
+                                {formatGBP(Number(expense.amount) / 12)}/mo
                               </p>
                             )}
                           </div>
@@ -567,7 +557,7 @@ export default function ExpensesPage() {
                               )}
                             </div>
                             <span className={`text-sm font-semibold tabular-nums shrink-0 ${isCut ? "line-through" : ""}`}>
-                              {fmt.format(Number(expense.amount))}
+                              {formatGBP(Number(expense.amount))}
                               <span className="text-[10px] text-[#AAAAAA] font-normal">
                                 /{expense.frequency === "yearly" ? "yr" : expense.frequency === "monthly" ? "mo" : ""}
                               </span>

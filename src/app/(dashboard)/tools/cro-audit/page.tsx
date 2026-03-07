@@ -9,24 +9,8 @@ import {
   CheckCircleIcon,
   LightBulbIcon,
 } from "@heroicons/react/24/solid";
-
-// ── Types ───────────────────────────────────────────────────────────
-
-interface AuditSection {
-  title: string;
-  analysis: string;
-  rating: "strong" | "moderate" | "weak";
-}
-
-interface AuditResult {
-  verdict: {
-    winner: "variant" | "control" | "mixed";
-    summary: string;
-  };
-  sections: AuditSection[];
-  quickWins: string[];
-  predictedImpact: string;
-}
+import { inputClass, selectClass, labelClass } from "@/lib/form-styles";
+import type { AuditSection, AuditResult } from "@/lib/types";
 
 const PAGE_TYPES = [
   "PDP",
@@ -36,15 +20,6 @@ const PAGE_TYPES = [
   "Advertorial",
   "Other",
 ];
-
-// ── Shared classes ──────────────────────────────────────────────────
-
-const inputClass =
-  "w-full px-3 py-2.5 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors placeholder:text-[#CCCCCC]";
-const selectClass =
-  "w-full px-3 py-2.5 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors appearance-none";
-const labelClass =
-  "block text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-2";
 
 // ── Page ────────────────────────────────────────────────────────────
 

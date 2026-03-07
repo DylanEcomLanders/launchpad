@@ -89,3 +89,44 @@ export interface CroTestInsert {
   hypothesis: string;
   start_date: string;
 }
+
+// ── Prospect Scraper ────────────────────────────────────────────
+
+export interface SocialLink {
+  platform: string;
+  url: string;
+}
+
+export interface Prospect {
+  url: string;
+  brandName: string;
+  isShopify: boolean;
+  emails: string[];
+  socialLinks: SocialLink[];
+  productCount: number;
+  priceRange: { min: number; max: number } | null;
+  apps: string[];
+  hasReviews: boolean;
+  hasSubscriptions: boolean;
+  hasBNPL: boolean;
+  revenueScore: number;
+  crawlError?: string;
+}
+
+// ── CRO Audit ───────────────────────────────────────────────────
+
+export interface AuditSection {
+  title: string;
+  analysis: string;
+  rating: "strong" | "moderate" | "weak";
+}
+
+export interface AuditResult {
+  verdict: {
+    winner: "variant" | "control" | "mixed";
+    summary: string;
+  };
+  sections: AuditSection[];
+  quickWins: string[];
+  predictedImpact: string;
+}
