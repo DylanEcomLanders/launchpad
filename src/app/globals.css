@@ -31,6 +31,22 @@ body {
   animation: slideUp 0.3s ease-out;
 }
 
+/* Fade in for portal tab transitions */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out;
+}
+
 /* Ensure light theme only */
 @media (prefers-color-scheme: dark) {
   :root {

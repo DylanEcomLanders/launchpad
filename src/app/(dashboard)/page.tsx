@@ -16,6 +16,7 @@ import {
   PaperAirplaneIcon,
   UserGroupIcon,
   RocketLaunchIcon,
+  GlobeAltIcon,
 } from "@heroicons/react/24/solid";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 
@@ -62,6 +63,13 @@ const tools: ToolCard[] = [
     description: "Interactive quality assurance checklist for client projects",
     href: "/tools/qa-checklist",
     icon: <ClipboardDocumentCheckIcon className="size-5" />,
+    section: "Project Management",
+  },
+  {
+    name: "Client Portal",
+    description: "Client-facing project portals — status, timelines, deliverables, and documents in one place",
+    href: "/tools/client-portal",
+    icon: <GlobeAltIcon className="size-5" />,
     section: "Project Management",
   },
   {

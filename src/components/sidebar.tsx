@@ -26,6 +26,7 @@ import {
   PaperAirplaneIcon,
   UserGroupIcon,
   RocketLaunchIcon,
+  GlobeAltIcon,
 } from "@heroicons/react/24/solid";
 import { Logo, LogoMark } from "@/components/logo";
 
@@ -77,6 +78,11 @@ const navSections: NavSection[] = [
         label: "QA Checklist",
         href: "/tools/qa-checklist",
         icon: <ClipboardDocumentCheckIcon className="size-4" />,
+      },
+      {
+        label: "Client Portal",
+        href: "/tools/client-portal",
+        icon: <GlobeAltIcon className="size-4" />,
       },
     ],
   },
