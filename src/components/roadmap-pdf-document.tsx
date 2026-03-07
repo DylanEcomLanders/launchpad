@@ -14,6 +14,7 @@ import { PdfLogo, formatDate, shared as s } from "@/lib/pdf-shared";
 import {
   defaultPhaseDescriptions,
   computePhaseTouchpoints,
+  phaseDuration,
 } from "@/lib/roadmap-defaults";
 import { ecomlanders } from "@/lib/agreement-terms";
 
@@ -23,12 +24,6 @@ function formatShortDate(dateStr: string): string {
   if (!dateStr) return "—";
   const d = new Date(dateStr + "T00:00:00");
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-}
-
-function daysBetween(start: string, end: string): number {
-  const a = new Date(start + "T00:00:00").getTime();
-  const b = new Date(end + "T00:00:00").getTime();
-  return Math.max(1, Math.round((b - a) / (1000 * 60 * 60 * 24)));
 }
 
 /* ── Colours for the 6 Gantt bars (monochromatic, dark → light) ── */
@@ -347,7 +342,7 @@ export function RoadmapPdfDocument({ data }: { data: RoadmapFormData }) {
             </Text>
           </View>
           <View style={s.timelineItem}>
-            <Text style={s.timelineLabel}>Project End</Text>
+            <Text style={s.timelineLabel}>Estimated Project End</Text>
             <Text style={s.timelineValue}>
               {formatDate(
                 data.phases[data.phases.length - 1]?.endDate ||
@@ -545,9 +540,7 @@ export function RoadmapPdfDocument({ data }: { data: RoadmapFormData }) {
           {chunk.map((phase) => {
             const globalIdx = data.phases.indexOf(phase);
             const isPoint = phase.startDate === phase.endDate;
-            const duration = isPoint
-              ? 0
-              : daysBetween(phase.startDate, phase.endDate);
+            const duration = phaseDuration(phase);
             const defaults = defaultPhaseDescriptions[phase.name];
             const touchpoints = phaseTouchpoints[globalIdx];
 

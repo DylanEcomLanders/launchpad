@@ -27,7 +27,7 @@ import { AgreementPdfDocument } from "@/components/agreement-pdf-document";
 import { RoadmapPdfDocument } from "@/components/roadmap-pdf-document";
 import { PdfPreview } from "@/components/pdf-preview";
 import { SignaturePad } from "@/components/signature-pad";
-import { computeAllPhases } from "@/lib/roadmap-defaults";
+import { computeAllPhases, timelinePresets } from "@/lib/roadmap-defaults";
 import { pdf, type DocumentProps } from "@react-pdf/renderer";
 import type { ReactElement } from "react";
 
@@ -106,8 +106,7 @@ export default function ProjectKickoffPage() {
 
   /* Timeline */
   const [kickoffDate, setKickoffDate] = useState("");
-  const [designEndDate, setDesignEndDate] = useState("");
-  const [devEndDate, setDevEndDate] = useState("");
+  const [presetKey, setPresetKey] = useState("");
 
   /* Agreement (optional) */
   const [showAgreement, setShowAgreement] = useState(false);
@@ -120,11 +119,20 @@ export default function ProjectKickoffPage() {
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedSlack, setCopiedSlack] = useState(false);
 
+  /* ── Resolve preset ── */
+  const preset = timelinePresets.find((p) => p.key === presetKey);
+
   /* ── Computed phases ── */
   const phases = useMemo(() => {
-    if (!kickoffDate || !designEndDate || !devEndDate) return [];
-    return computeAllPhases(kickoffDate, designEndDate, devEndDate);
-  }, [kickoffDate, designEndDate, devEndDate]);
+    if (!kickoffDate || !preset) return [];
+    return computeAllPhases(kickoffDate, preset.designDays, preset.devDays);
+  }, [kickoffDate, preset]);
+
+  /* ── Derived dates from phases ── */
+  const designEndDate =
+    phases.find((p) => p.name === "Design")?.endDate || "";
+  const devEndDate =
+    phases.find((p) => p.name === "Development")?.endDate || "";
 
   /* ── Derived data shapes for PDF components ── */
   const scopeFormData: GeneratorFormData = useMemo(
@@ -207,8 +215,7 @@ export default function ProjectKickoffPage() {
     projectType &&
     projectOverview.trim() &&
     kickoffDate &&
-    designEndDate &&
-    devEndDate &&
+    presetKey &&
     validDeliverables.length > 0;
 
   const isAgreementValid =
@@ -459,7 +466,7 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
           <div className="pt-6 border-t border-[#E5E5E5]">
             <p className={`${sectionHeadingClass} mb-4`}>Timeline</p>
             <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className={labelClass}>Kickoff Date</label>
                   <input
@@ -470,22 +477,17 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>Design End</label>
-                  <input
-                    type="date"
-                    value={designEndDate}
-                    onChange={(e) => { setDesignEndDate(e.target.value); setShowOutputs(false); }}
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Dev End</label>
-                  <input
-                    type="date"
-                    value={devEndDate}
-                    onChange={(e) => { setDevEndDate(e.target.value); setShowOutputs(false); }}
-                    className={inputClass}
-                  />
+                  <label className={labelClass}>Timeline</label>
+                  <select
+                    value={presetKey}
+                    onChange={(e) => { setPresetKey(e.target.value); setShowOutputs(false); }}
+                    className={selectClass}
+                  >
+                    <option value="">Select timeline...</option>
+                    {timelinePresets.map((p) => (
+                      <option key={p.key} value={p.key}>{p.label}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -493,7 +495,7 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
               {phases.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-[#E5E5E5]">
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-2">
-                    Auto-computed Roadmap
+                    Auto-computed Roadmap (business days only)
                   </p>
                   <div className="flex flex-wrap gap-x-4 gap-y-1">
                     {phases.map((phase) => {

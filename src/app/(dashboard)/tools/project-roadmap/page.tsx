@@ -8,7 +8,8 @@ import { projectTypes, type RoadmapFormData } from "@/lib/config";
 import {
   computeAllPhases,
   computePhaseTouchpoints,
-  addDays,
+  phaseDuration,
+  timelinePresets,
 } from "@/lib/roadmap-defaults";
 import { RoadmapPdfDocument } from "@/components/roadmap-pdf-document";
 import { PdfPreview } from "@/components/pdf-preview";
@@ -41,21 +42,14 @@ function formatShortDate(dateStr: string): string {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
-function daysBetween(start: string, end: string): number {
-  const a = new Date(start + "T00:00:00").getTime();
-  const b = new Date(end + "T00:00:00").getTime();
-  return Math.max(1, Math.round((b - a) / (1000 * 60 * 60 * 24)));
-}
-
 export default function ProjectRoadmapPage() {
-  /* ── Core form state (3 key dates + client info) ── */
+  /* ── Core form state ── */
   const [clientName, setClientName] = useState("");
   const [projectType, setProjectType] = useState<
     RoadmapFormData["projectType"]
   >("");
   const [kickoffDate, setKickoffDate] = useState("");
-  const [designEndDate, setDesignEndDate] = useState("");
-  const [devEndDate, setDevEndDate] = useState("");
+  const [presetKey, setPresetKey] = useState("");
 
   /* ── Per-phase notes ── */
   const [phaseNotes, setPhaseNotes] = useState<Record<string, string>>({});
@@ -63,17 +57,21 @@ export default function ProjectRoadmapPage() {
   const [generating, setGenerating] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
-  /* ── Compute phases from the 3 dates ── */
-  const phases = useMemo(() => {
-    if (!kickoffDate || !designEndDate || !devEndDate) return [];
-    return computeAllPhases(kickoffDate, designEndDate, devEndDate);
-  }, [kickoffDate, designEndDate, devEndDate]);
+  /* ── Resolve preset ── */
+  const preset = timelinePresets.find((p) => p.key === presetKey);
 
-  /* ── Launch date for display ── */
-  const launchDate = useMemo(() => {
-    if (!devEndDate) return null;
-    return addDays(devEndDate, 1);
-  }, [devEndDate]);
+  /* ── Compute phases ── */
+  const phases = useMemo(() => {
+    if (!kickoffDate || !preset) return [];
+    return computeAllPhases(kickoffDate, preset.designDays, preset.devDays);
+  }, [kickoffDate, preset]);
+
+  /* ── Derived dates from phases ── */
+  const designEndDate =
+    phases.find((p) => p.name === "Design")?.endDate || "";
+  const devEndDate =
+    phases.find((p) => p.name === "Development")?.endDate || "";
+  const launchDate = phases.find((p) => p.name === "Launch")?.startDate || "";
 
   /* ── Merge phases with user notes ── */
   const mergedPhases = useMemo(() => {
@@ -86,11 +84,7 @@ export default function ProjectRoadmapPage() {
 
   /* ── Validation ── */
   const isFormValid =
-    clientName.trim() &&
-    projectType &&
-    kickoffDate &&
-    designEndDate &&
-    devEndDate;
+    clientName.trim() && projectType && kickoffDate && presetKey;
 
   /* ── Generation ── */
   const handleGenerate = async () => {
@@ -175,13 +169,13 @@ export default function ProjectRoadmapPage() {
             </div>
           </div>
 
-          {/* Key Dates — the 3 manual inputs */}
+          {/* Timeline — kickoff date + preset */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-4">
-              Key Dates
+              Timeline
             </label>
             <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5 space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className={labelClass}>Kickoff Date</label>
                   <input
@@ -195,28 +189,22 @@ export default function ProjectRoadmapPage() {
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>Design End Date</label>
-                  <input
-                    type="date"
-                    value={designEndDate}
+                  <label className={labelClass}>Timeline</label>
+                  <select
+                    value={presetKey}
                     onChange={(e) => {
-                      setDesignEndDate(e.target.value);
+                      setPresetKey(e.target.value);
                       setShowPreview(false);
                     }}
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Dev End Date</label>
-                  <input
-                    type="date"
-                    value={devEndDate}
-                    onChange={(e) => {
-                      setDevEndDate(e.target.value);
-                      setShowPreview(false);
-                    }}
-                    className={inputClass}
-                  />
+                    className={selectClass}
+                  >
+                    <option value="">Select timeline...</option>
+                    {timelinePresets.map((p) => (
+                      <option key={p.key} value={p.key}>
+                        {p.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -224,12 +212,13 @@ export default function ProjectRoadmapPage() {
               {phases.length > 0 && (
                 <div className="pt-4 border-t border-[#E5E5E5]">
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-3">
-                    Computed Timeline
+                    Computed Timeline (business days only)
                   </p>
                   <div className="space-y-2">
                     {phases.map((phase, i) => {
                       const isPoint = phase.startDate === phase.endDate;
                       const touchpoints = computePhaseTouchpoints(phase);
+                      const dur = phaseDuration(phase);
                       return (
                         <div
                           key={phase.name}
@@ -245,9 +234,9 @@ export default function ProjectRoadmapPage() {
                             {isPoint
                               ? formatShortDate(phase.startDate)
                               : `${formatShortDate(phase.startDate)} → ${formatShortDate(phase.endDate)}`}
-                            {!isPoint && (
+                            {dur > 0 && (
                               <span className="text-[#AAAAAA] ml-1">
-                                ({daysBetween(phase.startDate, phase.endDate)}d)
+                                ({dur}d)
                               </span>
                             )}
                           </span>
@@ -280,6 +269,7 @@ export default function ProjectRoadmapPage() {
               <div className="space-y-4">
                 {phases.map((phase, i) => {
                   const isPoint = phase.startDate === phase.endDate;
+                  const dur = phaseDuration(phase);
 
                   return (
                     <div
@@ -298,6 +288,11 @@ export default function ProjectRoadmapPage() {
                           {isPoint
                             ? formatShortDate(phase.startDate)
                             : `${formatShortDate(phase.startDate)} → ${formatShortDate(phase.endDate)}`}
+                          {dur > 0 && (
+                            <span className="text-[#AAAAAA] ml-1">
+                              ({dur}d)
+                            </span>
+                          )}
                         </span>
                         {isPoint && (
                           <span className="text-[10px] font-medium uppercase tracking-wider text-[#AAAAAA] bg-white px-1.5 py-0.5 rounded border border-[#E5E5E5]">
