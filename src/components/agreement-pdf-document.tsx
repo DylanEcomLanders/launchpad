@@ -384,7 +384,7 @@ export function AgreementPdfDocument({ data }: { data: GeneratorFormData }) {
             <Text style={s.timelineValue}>{formatDate(data.startDate)}</Text>
           </View>
           <View style={s.timelineItem}>
-            <Text style={s.timelineLabel}>Project End</Text>
+            <Text style={s.timelineLabel}>Estimated Project End</Text>
             <Text style={s.timelineValue}>{formatDate(data.endDate)}</Text>
           </View>
         </View>

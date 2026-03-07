@@ -71,7 +71,7 @@ export function ScopePdfDocument({ data }: { data: ScopeFormData }) {
             <Text style={s.timelineValue}>{formatDate(data.startDate)}</Text>
           </View>
           <View style={s.timelineItem}>
-            <Text style={s.timelineLabel}>End Date</Text>
+            <Text style={s.timelineLabel}>Estimated End Date</Text>
             <Text style={s.timelineValue}>{formatDate(data.endDate)}</Text>
           </View>
         </View>
