@@ -4,19 +4,19 @@ import { useState } from "react";
 import type {
   PortalData,
   PortalPhase,
-  PortalDeliverable,
   PortalDocument,
+  PortalTestResult,
   PhaseStatus,
 } from "@/lib/portal-types";
 
 /* ── Tab type ── */
-type Tab = "overview" | "timeline" | "deliverables" | "documents";
+type Tab = "overview" | "timeline" | "scope" | "results";
 
 const tabs: { key: Tab; label: string }[] = [
   { key: "overview", label: "Overview" },
   { key: "timeline", label: "Timeline" },
-  { key: "deliverables", label: "Deliverables" },
-  { key: "documents", label: "Documents" },
+  { key: "scope", label: "Scope" },
+  { key: "results", label: "Results" },
 ];
 
 /* ── SVG Progress Ring ── */
@@ -49,7 +49,7 @@ function ProgressRing({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#D2F34C"
+          stroke="#0A0A0A"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
@@ -76,7 +76,7 @@ function phaseStatusIcon(status: PhaseStatus, size: "sm" | "md" = "md") {
   switch (status) {
     case "complete":
       return (
-        <span className={`inline-flex items-center justify-center ${s} rounded-full bg-accent text-[#0A0A0A]`}>
+        <span className={`inline-flex items-center justify-center ${s} rounded-full bg-accent text-white`}>
           <svg className={check} viewBox="0 0 12 12" fill="none">
             <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -95,100 +95,54 @@ function phaseStatusIcon(status: PhaseStatus, size: "sm" | "md" = "md") {
   }
 }
 
-function deliverableStatusBadge(status: PortalDeliverable["status"]) {
-  switch (status) {
-    case "complete":
-      return (
-        <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-[#0A0A0A] text-white rounded-full">
-          Done
-        </span>
-      );
-    case "in-progress":
-      return (
-        <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider border border-[#0A0A0A] text-[#0A0A0A] rounded-full">
-          Active
-        </span>
-      );
-    case "not-started":
-      return (
-        <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-[#F5F5F5] text-[#AAAAAA] rounded-full">
-          Queued
-        </span>
-      );
-  }
-}
-
 /* ── Main Component ── */
 
 export function PortalView({ portal }: { portal: PortalData }) {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
 
-  const totalTasks = portal.phases.reduce((s, p) => s + p.tasks, 0);
-  const completedTasks = portal.phases.reduce((s, p) => s + p.completed, 0);
-
   return (
     <div>
-      {/* ── Dark Hero ── */}
-      <div className="bg-[#0A0A0A] text-white">
-        <div className="max-w-3xl mx-auto px-6 md:px-12 pt-12 pb-14 md:pt-16 md:pb-18">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#666666] mb-4">
+      {/* ── Header ── */}
+      <div className="border-b border-[#E5E5E5]">
+        <div className="max-w-3xl mx-auto px-6 md:px-12 pt-10 pb-8 md:pt-12 md:pb-10">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#AAAAAA] mb-3">
             Client Portal
           </p>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">
             {portal.clientName}
           </h1>
-          <p className="text-[#888888] text-lg">{portal.projectType}</p>
-        </div>
-      </div>
+          <p className="text-sm text-[#999999]">
+            Start date: {portal.phases[0]?.dates}
+          </p>
 
-      {/* ── Horizontal timeline bar ── */}
-      <div className="bg-[#0A0A0A] border-b border-[#222222]">
-        <div className="max-w-3xl mx-auto px-6 md:px-12 pb-8">
-          <div className="flex items-center gap-0">
-            {portal.phases.map((phase, i) => {
-              const isLast = i === portal.phases.length - 1;
-              return (
-                <div key={phase.name} className="flex items-center flex-1 min-w-0">
-                  {/* Dot */}
-                  <div className="flex flex-col items-center gap-1.5 shrink-0">
-                    <div
-                      className={`size-3 rounded-full border-2 transition-all ${
-                        phase.status === "complete"
-                          ? "bg-accent border-accent"
-                          : phase.status === "in-progress"
-                          ? "bg-transparent border-accent"
-                          : "bg-transparent border-[#444444]"
-                      }`}
-                    >
-                      {phase.status === "in-progress" && (
-                        <span className="block size-full rounded-full bg-accent/40 animate-pulse" />
-                      )}
-                    </div>
-                    <span
-                      className={`text-[9px] font-medium tracking-wide whitespace-nowrap ${
-                        phase.status === "complete" || phase.status === "in-progress"
-                          ? "text-[#AAAAAA]"
-                          : "text-[#555555]"
-                      }`}
-                    >
-                      {phase.name}
-                    </span>
-                  </div>
-                  {/* Connector line */}
-                  {!isLast && (
-                    <div className="flex-1 h-px mx-1.5 mb-5">
-                      <div
-                        className={`h-full ${
-                          phase.status === "complete"
-                            ? "bg-accent/60"
-                            : "bg-[#333333]"
-                        }`}
-                      />
-                    </div>
-                  )}
+          {/* Progress track with phase labels */}
+          <div className="mt-8">
+            <div className="flex gap-1">
+              {portal.phases.map((phase) => (
+                <div key={phase.name} className="flex-1 min-w-0">
+                  <div
+                    className={`h-1 rounded-full mb-2 ${
+                      phase.status === "complete"
+                        ? "bg-emerald-400"
+                        : phase.status === "in-progress"
+                        ? "bg-[#0A0A0A]"
+                        : "bg-[#E5E5E5]"
+                    }`}
+                  />
+                  <p
+                    className={`text-[10px] font-medium truncate ${
+                      phase.status === "in-progress"
+                        ? "text-[#0A0A0A]"
+                        : phase.status === "complete"
+                        ? "text-[#999999]"
+                        : "text-[#CCCCCC]"
+                    }`}
+                  >
+                    {phase.name}
+                  </p>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -196,15 +150,15 @@ export function PortalView({ portal }: { portal: PortalData }) {
       {/* ── Content ── */}
       <div className="max-w-3xl mx-auto px-6 md:px-12 py-10 md:py-14">
         {/* Tabs */}
-        <div className="mb-10">
-          <div className="inline-flex bg-[#F5F5F5] rounded-full p-1 gap-0.5">
+        <div className="mb-10 -mx-6 px-6 md:mx-0 md:px-0 overflow-x-auto">
+          <div className="inline-flex bg-[#F5F5F5] rounded-md p-1 gap-0.5 min-w-max">
             {tabs.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`px-5 py-2 text-sm font-medium rounded-full transition-all duration-200 ${
+                className={`px-3.5 md:px-5 py-2 text-sm font-medium rounded transition-all duration-200 whitespace-nowrap ${
                   activeTab === tab.key
-                    ? "bg-accent text-[#0A0A0A] shadow-sm"
+                    ? "bg-accent text-white shadow-sm"
                     : "text-[#6B6B6B] hover:text-[#0A0A0A]"
                 }`}
               >
@@ -216,23 +170,10 @@ export function PortalView({ portal }: { portal: PortalData }) {
 
         {/* Tab content */}
         <div key={activeTab} className="animate-fadeIn">
-          {activeTab === "overview" && (
-            <OverviewTab
-              portal={portal}
-              totalTasks={totalTasks}
-              completedTasks={completedTasks}
-            />
-          )}
+          {activeTab === "overview" && <OverviewTab portal={portal} />}
           {activeTab === "timeline" && <TimelineTab phases={portal.phases} />}
-          {activeTab === "deliverables" && (
-            <DeliverablesTab
-              deliverables={portal.deliverables}
-              phases={portal.phases}
-            />
-          )}
-          {activeTab === "documents" && (
-            <DocumentsTab documents={portal.documents} />
-          )}
+          {activeTab === "scope" && <ScopeTab scope={portal.scope} documents={portal.documents} />}
+          {activeTab === "results" && <ResultsTab results={portal.results} />}
         </div>
       </div>
     </div>
@@ -241,91 +182,85 @@ export function PortalView({ portal }: { portal: PortalData }) {
 
 /* ── Overview Tab ── */
 
-function OverviewTab({
-  portal,
-  totalTasks,
-  completedTasks,
-}: {
-  portal: PortalData;
-  totalTasks: number;
-  completedTasks: number;
-}) {
+function OverviewTab({ portal }: { portal: PortalData }) {
+  const currentPhase = portal.phases.find((p) => p.status === "in-progress");
+
   return (
-    <div className="space-y-10">
-      {/* Progress + current phase */}
-      <div className="flex items-center gap-8 md:gap-12">
-        <ProgressRing progress={portal.progress} />
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-1">
-            Current Phase
+    <div className="space-y-12">
+      {/* Status + Next Touchpoint — the two things clients care about most */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* Current status card */}
+        <div className="border border-[#E5E5E5] rounded-lg p-6">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-3">
+            Current Status
           </p>
-          <p className="text-2xl font-bold tracking-tight mb-1">
+          <p className="text-xl font-bold tracking-tight mb-1">
             {portal.currentPhase}
           </p>
-          <p className="text-sm text-[#6B6B6B]">
-            {completedTasks} of {totalTasks} deliverables complete
+          {currentPhase && (
+            <p className="text-sm text-[#6B6B6B] leading-relaxed">
+              {currentPhase.description}
+            </p>
+          )}
+        </div>
+
+        {/* Next touchpoint card */}
+        <div className="border border-[#E5E5E5] rounded-lg p-6 bg-[#FAFAFA]">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-3">
+            Next Touchpoint
+          </p>
+          <p className="text-xl font-bold tracking-tight mb-1">
+            {portal.nextTouchpoint.date}
+          </p>
+          <p className="text-sm text-[#6B6B6B] leading-relaxed">
+            {portal.nextTouchpoint.description}
           </p>
         </div>
       </div>
 
-      {/* Stats row */}
-      <div className="grid grid-cols-3 gap-px bg-[#E5E5E5] rounded-lg overflow-hidden">
-        {[
-          { value: portal.phases.length, label: "Phases" },
-          { value: totalTasks, label: "Deliverables" },
-          { value: portal.documents.length, label: "Documents" },
-        ].map((stat) => (
-          <div key={stat.label} className="bg-white p-5 text-center">
-            <p className="text-3xl font-bold tracking-tight mb-0.5">
-              {stat.value}
-            </p>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA]">
-              {stat.label}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* Phase list */}
+      {/* Project journey */}
       <div>
         <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-5">
-          Phase Breakdown
+          Project Journey
         </h3>
-        <div className="space-y-0 divide-y divide-[#F0F0F0]">
-          {portal.phases.map((phase, i) => {
-            const pct = phase.tasks > 0 ? Math.round((phase.completed / phase.tasks) * 100) : 0;
-            return (
-              <div
-                key={phase.name}
-                className="flex items-center gap-4 py-3.5 group"
-              >
-                {phaseStatusIcon(phase.status)}
-                <span className="text-[#CCCCCC] text-xs font-bold tabular-nums w-5">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <span
-                  className={`text-sm font-medium flex-1 ${
-                    phase.status === "upcoming" ? "text-[#BBBBBB]" : ""
-                  }`}
-                >
-                  {phase.name}
-                </span>
-                {/* Mini progress */}
-                <div className="w-16 h-1 bg-[#F0F0F0] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-accent rounded-full"
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-                <span className="text-xs text-[#AAAAAA] tabular-nums w-8 text-right">
-                  {pct}%
-                </span>
-                <span className="text-xs text-[#CCCCCC] w-28 text-right">
-                  {phase.dates}
-                </span>
+        <div className="border border-[#E5E5E5] rounded-lg divide-y divide-[#F0F0F0]">
+          {portal.phases.map((phase) => (
+            <div key={phase.name} className="flex items-start gap-4 p-4">
+              <div className="pt-0.5">
+                {phaseStatusIcon(phase.status, "sm")}
               </div>
-            );
-          })}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-4">
+                  <span className={`text-sm font-medium ${phase.status === "upcoming" ? "text-[#BBBBBB]" : ""}`}>
+                    {phase.name}
+                  </span>
+                  <span className="text-xs text-[#AAAAAA] shrink-0">
+                    {phase.dates}
+                  </span>
+                </div>
+                <p className={`text-xs mt-0.5 leading-relaxed ${phase.status === "upcoming" ? "text-[#CCCCCC]" : "text-[#999999]"}`}>
+                  {phase.description}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* What we're building */}
+      <div>
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-5">
+          What We&apos;re Building
+        </h3>
+        <div className="border border-[#E5E5E5] rounded-lg p-5">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+            {portal.scope.map((item, i) => (
+              <div key={i} className="flex items-center gap-2.5 py-1">
+                <span className="size-1 rounded-full bg-[#CCCCCC] shrink-0" />
+                <span className="text-sm text-[#6B6B6B]">{item}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -351,21 +286,21 @@ function TimelineTab({ phases }: { phases: PortalPhase[] }) {
               {/* Node */}
               <div className="relative z-10 shrink-0 pt-1">
                 <div
-                  className={`size-[23px] rounded-full border-[2.5px] flex items-center justify-center transition-all ${
+                  className={`size-[23px] rounded-full border-2 flex items-center justify-center transition-all ${
                     isComplete
-                      ? "border-accent bg-accent"
+                      ? "border-emerald-400 bg-white"
                       : isActive
-                      ? "border-accent bg-white"
+                      ? "border-[#0A0A0A] bg-white"
                       : "border-[#D4D4D4] bg-white"
                   }`}
                 >
                   {isComplete && (
-                    <svg className="size-3 text-[#0A0A0A]" viewBox="0 0 12 12" fill="none">
+                    <svg className="size-3 text-emerald-400" viewBox="0 0 12 12" fill="none">
                       <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   )}
                   {isActive && (
-                    <span className="size-2 rounded-full bg-accent animate-pulse" />
+                    <span className="size-2 rounded-full bg-[#0A0A0A] animate-pulse" />
                   )}
                 </div>
               </div>
@@ -374,42 +309,44 @@ function TimelineTab({ phases }: { phases: PortalPhase[] }) {
               <div
                 className={`flex-1 rounded-lg p-5 transition-all ${
                   isActive
-                    ? "bg-[#0A0A0A] text-white"
+                    ? "ring-1 ring-[#0A0A0A] bg-white"
+                    : isComplete
+                    ? "ring-1 ring-emerald-300 bg-white"
                     : "bg-[#FAFAFA]"
                 }`}
               >
-                <div className="flex items-start justify-between mb-3">
+                <div className="flex items-start justify-between mb-2">
                   <div>
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className={`text-xs font-bold tabular-nums ${isActive ? "text-[#666666]" : "text-[#CCCCCC]"}`}>
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <h3 className="text-sm font-bold">{phase.name}</h3>
+                      <h3 className={`text-sm font-bold ${!isComplete && !isActive ? "text-[#BBBBBB]" : ""}`}>{phase.name}</h3>
                       {isActive && (
-                        <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-accent text-[#0A0A0A] rounded-full">
+                        <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-[#0A0A0A] text-white rounded-full">
                           Current
                         </span>
                       )}
                     </div>
-                    <p className={`text-xs ${isActive ? "text-[#888888]" : "text-[#AAAAAA]"}`}>
+                    <p className="text-xs text-[#AAAAAA]">
                       {phase.dates}
                     </p>
                   </div>
-                  <span className={`text-lg font-bold tabular-nums ${isActive ? "text-white" : ""}`}>
-                    {pct}%
-                  </span>
                 </div>
 
-                {/* Progress bar */}
-                <div className={`h-1.5 rounded-full overflow-hidden ${isActive ? "bg-[#333333]" : "bg-[#E5E5E5]"}`}>
-                  <div
-                    className={`h-full rounded-full transition-all duration-700 ${isActive ? "bg-accent" : "bg-accent"}`}
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-                <p className={`text-[11px] mt-2 ${isActive ? "text-[#666666]" : "text-[#AAAAAA]"}`}>
-                  {phase.completed} of {phase.tasks} tasks
+                {/* Phase description */}
+                <p className={`text-sm leading-relaxed ${(isComplete || isActive) ? "text-[#6B6B6B]" : "text-[#BBBBBB]"} ${pct > 0 ? "mb-3" : ""}`}>
+                  {phase.description}
                 </p>
+
+                {/* Progress bar — only show if there's progress */}
+                {pct > 0 && (
+                  <div className="h-1 rounded-full overflow-hidden bg-[#EBEBEB]">
+                    <div
+                      className={`h-full rounded-full transition-all duration-700 ${
+                        isComplete ? "bg-emerald-400" : "bg-[#0A0A0A]"
+                      }`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -419,168 +356,274 @@ function TimelineTab({ phases }: { phases: PortalPhase[] }) {
   );
 }
 
-/* ── Deliverables Tab ── */
+/* ── Scope Tab (merged with Documents) ── */
 
-function DeliverablesTab({
-  deliverables,
-  phases,
-}: {
-  deliverables: PortalDeliverable[];
-  phases: PortalPhase[];
-}) {
-  const phaseNames = phases.map((p) => p.name);
+const typeLabels: Record<string, string> = {
+  Roadmap: "RDM",
+  Scope: "SCP",
+  Agreement: "AGR",
+  "QA Checklist": "QA",
+  Other: "DOC",
+};
+
+function ScopeTab({ scope, documents }: { scope: string[]; documents: PortalDocument[] }) {
+  const [selected, setSelected] = useState<PortalDocument | null>(null);
 
   return (
-    <div className="space-y-10">
-      {phaseNames.map((phaseName) => {
-        const items = deliverables.filter((d) => d.phase === phaseName);
-        if (items.length === 0) return null;
-
-        const phase = phases.find((p) => p.name === phaseName)!;
-        const pct = phase.tasks > 0 ? Math.round((phase.completed / phase.tasks) * 100) : 0;
-
-        return (
-          <div key={phaseName}>
-            {/* Phase header */}
-            <div className="flex items-center gap-3 mb-4">
-              {phaseStatusIcon(phase.status, "sm")}
-              <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#6B6B6B]">
-                {phaseName}
-              </h3>
-              <div className="flex-1 h-px bg-[#F0F0F0]" />
-              <span className="text-[11px] font-bold text-[#AAAAAA] tabular-nums">
-                {phase.completed}/{phase.tasks}
-              </span>
-            </div>
-
-            {/* Items */}
-            <div className="space-y-0 divide-y divide-[#F5F5F5]">
-              {items.map((item, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3.5 py-3 group hover:bg-[#FAFAFA] -mx-3 px-3 rounded transition-colors"
-                >
-                  {/* Checkbox */}
-                  <span
-                    className={`inline-flex items-center justify-center size-[18px] rounded-full border-[1.5px] shrink-0 transition-all ${
-                      item.status === "complete"
-                        ? "bg-accent border-accent"
-                        : "border-[#D4D4D4]"
-                    }`}
-                  >
-                    {item.status === "complete" && (
-                      <svg className="size-2.5 text-[#0A0A0A]" viewBox="0 0 12 12" fill="none">
-                        <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    )}
-                  </span>
-
-                  {/* Task name */}
-                  <span
-                    className={`flex-1 text-sm ${
-                      item.status === "complete"
-                        ? "text-[#BBBBBB] line-through decoration-[#DDDDDD]"
-                        : ""
-                    }`}
-                  >
-                    {item.name}
-                  </span>
-
-                  {/* Assignee */}
-                  <span className="inline-flex items-center justify-center size-6 rounded-full bg-[#0A0A0A] text-[10px] font-bold text-white shrink-0">
-                    {item.assignee}
-                  </span>
-
-                  {/* Status badge */}
-                  {deliverableStatusBadge(item.status)}
-                </div>
-              ))}
-            </div>
+    <div className="space-y-12">
+      {/* Scope items */}
+      <div>
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-5">
+          What&apos;s Included
+        </h3>
+        <div className="border border-[#E5E5E5] rounded-lg p-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
+            {scope.map((item, i) => (
+              <div key={i} className="flex items-center gap-2.5 py-1">
+                <span className="size-1 rounded-full bg-[#CCCCCC] shrink-0" />
+                <span className="text-sm text-[#6B6B6B]">{item}</span>
+              </div>
+            ))}
           </div>
-        );
-      })}
+        </div>
+      </div>
+
+      {/* Documents */}
+      <div>
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-5">
+          Key Documents
+        </h3>
+        {documents.length === 0 ? (
+          <p className="text-sm text-[#AAAAAA]">No documents yet</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {documents.map((doc, i) => (
+              <button
+                key={i}
+                onClick={() => setSelected(doc)}
+                className="group text-left border border-[#E5E5E5] rounded-lg p-5 hover:border-[#0A0A0A] hover:shadow-sm transition-all duration-200"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="shrink-0 size-10 rounded-lg bg-[#0A0A0A] text-white flex items-center justify-center text-[10px] font-bold tracking-wider">
+                    {typeLabels[doc.type] || "DOC"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold mb-1.5 truncate">
+                      {doc.name}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-medium text-[#AAAAAA] uppercase tracking-wider">
+                        {doc.type}
+                      </span>
+                      <span className="text-[#E5E5E5]">&middot;</span>
+                      <span className="text-[10px] text-[#AAAAAA]">
+                        {doc.date}
+                      </span>
+                    </div>
+                  </div>
+                  <svg
+                    className="size-4 text-[#CCCCCC] group-hover:text-[#0A0A0A] group-hover:translate-x-0.5 transition-all shrink-0 mt-0.5"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <path d="M6 3l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Document preview modal */}
+      {selected && (
+        <DocumentPreview doc={selected} onClose={() => setSelected(null)} />
+      )}
     </div>
   );
 }
 
-/* ── Documents Tab ── */
+/* ── Results Tab ── */
 
-function DocumentsTab({ documents }: { documents: PortalDocument[] }) {
-  const [toast, setToast] = useState("");
-
-  function handleClick(doc: PortalDocument) {
-    setToast(`Download coming soon`);
-    setTimeout(() => setToast(""), 2500);
+function ResultsTab({ results }: { results: PortalTestResult[] }) {
+  if (results.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F5F5F5] mb-4">
+          <svg className="size-5 text-[#AAAAAA]" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M2 3.75A.75.75 0 012.75 3h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 3.75zm0 4.167a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75zm0 4.166a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75zm0 4.167a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75z" clipRule="evenodd" />
+          </svg>
+        </div>
+        <p className="text-sm text-[#999999] mb-1">No tests yet</p>
+        <p className="text-xs text-[#CCCCCC]">Results will appear here once testing begins</p>
+      </div>
+    );
   }
 
-  const typeLabels: Record<string, string> = {
-    Roadmap: "RDM",
-    Scope: "SCP",
-    Agreement: "AGR",
-    "QA Checklist": "QA",
-    Other: "DOC",
+  const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
+    running: { label: "Running", color: "text-blue-600", bg: "bg-blue-50" },
+    winner: { label: "Winner", color: "text-emerald-600", bg: "bg-emerald-50" },
+    loser: { label: "No lift", color: "text-red-500", bg: "bg-red-50" },
+    scheduled: { label: "Scheduled", color: "text-[#999999]", bg: "bg-[#F5F5F5]" },
   };
 
   return (
-    <div>
-      {documents.length === 0 ? (
-        <div className="text-center py-20">
-          <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F5F5F5] mb-4">
-            <svg className="size-5 text-[#AAAAAA]" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <p className="text-sm text-[#AAAAAA]">No documents yet</p>
+    <div className="space-y-10">
+      {/* Summary */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="border border-[#E5E5E5] rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-2">Active Tests</p>
+          <p className="text-2xl font-bold tracking-tight">{results.filter(r => r.status === "running").length}</p>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {documents.map((doc, i) => (
-            <button
-              key={i}
-              onClick={() => handleClick(doc)}
-              className="group text-left border border-[#E5E5E5] rounded-lg p-5 hover:border-accent hover:shadow-sm transition-all duration-200"
-            >
-              <div className="flex items-start gap-4">
-                {/* Type badge */}
-                <div className="shrink-0 size-10 rounded-lg bg-[#0A0A0A] text-white flex items-center justify-center text-[10px] font-bold tracking-wider">
-                  {typeLabels[doc.type] || "DOC"}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold mb-1.5 truncate group-hover:text-[#0A0A0A]">
-                    {doc.name}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-medium text-[#AAAAAA] uppercase tracking-wider">
-                      {doc.type}
-                    </span>
-                    <span className="text-[#E5E5E5]">&middot;</span>
-                    <span className="text-[10px] text-[#AAAAAA]">
-                      {doc.date}
-                    </span>
-                  </div>
-                </div>
-                {/* Arrow */}
-                <svg
-                  className="size-4 text-[#CCCCCC] group-hover:text-[#0A0A0A] group-hover:translate-x-0.5 transition-all shrink-0 mt-0.5"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <path d="M6 3l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-            </button>
-          ))}
+        <div className="border border-[#E5E5E5] rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-2">Winners</p>
+          <p className="text-2xl font-bold tracking-tight text-emerald-500">{results.filter(r => r.status === "winner").length}</p>
         </div>
-      )}
+        <div className="border border-[#E5E5E5] rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-2">Scheduled</p>
+          <p className="text-2xl font-bold tracking-tight">{results.filter(r => r.status === "scheduled").length}</p>
+        </div>
+      </div>
 
-      {/* Toast */}
-      {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-full shadow-xl z-50 animate-fadeIn">
-          {toast}
+      {/* Test list */}
+      <div>
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-5">
+          All Tests
+        </h3>
+        <div className="border border-[#E5E5E5] rounded-lg divide-y divide-[#F0F0F0]">
+          {results.map((test, i) => {
+            const config = statusConfig[test.status];
+            return (
+              <div key={i} className="flex items-center gap-4 p-4">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium mb-0.5">{test.name}</p>
+                  <p className="text-xs text-[#999999]">
+                    {test.metric} · Started {test.startDate}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  {test.lift && (
+                    <span className="text-sm font-semibold text-emerald-500">{test.lift}</span>
+                  )}
+                  <span className={`px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full ${config.color} ${config.bg}`}>
+                    {config.label}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      )}
+      </div>
+    </div>
+  );
+}
+
+/* ── Document Preview Modal ── */
+
+function DocumentPreview({
+  doc,
+  onClose,
+}: {
+  doc: PortalDocument;
+  onClose: () => void;
+}) {
+  const [toast, setToast] = useState("");
+
+  function handleDownload() {
+    setToast("Download coming soon — documents will be linked when your portal goes live");
+    setTimeout(() => setToast(""), 3000);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+
+      {/* Modal */}
+      <div className="relative w-full max-w-lg bg-white rounded-xl shadow-2xl animate-fadeIn">
+        {/* Header */}
+        <div className="flex items-start justify-between p-6 border-b border-[#F0F0F0]">
+          <div className="flex items-start gap-4">
+            <div className="shrink-0 size-12 rounded-lg bg-[#0A0A0A] text-white flex items-center justify-center text-[11px] font-bold tracking-wider">
+              {typeLabels[doc.type] || "DOC"}
+            </div>
+            <div>
+              <h3 className="text-base font-bold mb-1">{doc.name}</h3>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[#AAAAAA] uppercase tracking-wider font-medium">
+                  {doc.type}
+                </span>
+                <span className="text-[#E5E5E5]">&middot;</span>
+                <span className="text-xs text-[#AAAAAA]">{doc.date}</span>
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-[#F5F5F5] transition-colors text-[#AAAAAA] hover:text-[#0A0A0A]"
+          >
+            <svg className="size-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Document preview placeholder */}
+        <div className="p-6">
+          <div className="border border-[#E5E5E5] rounded-lg bg-[#FAFAFA] p-8 mb-6">
+            {/* Simulated document lines */}
+            <div className="space-y-4">
+              <div className="h-3 bg-[#E5E5E5] rounded w-2/3" />
+              <div className="space-y-2">
+                <div className="h-2 bg-[#EBEBEB] rounded w-full" />
+                <div className="h-2 bg-[#EBEBEB] rounded w-5/6" />
+                <div className="h-2 bg-[#EBEBEB] rounded w-4/6" />
+              </div>
+              <div className="h-px bg-[#E5E5E5]" />
+              <div className="space-y-2">
+                <div className="h-2 bg-[#EBEBEB] rounded w-full" />
+                <div className="h-2 bg-[#EBEBEB] rounded w-3/4" />
+                <div className="h-2 bg-[#EBEBEB] rounded w-5/6" />
+                <div className="h-2 bg-[#EBEBEB] rounded w-2/3" />
+              </div>
+              <div className="h-px bg-[#E5E5E5]" />
+              <div className="space-y-2">
+                <div className="h-2 bg-[#EBEBEB] rounded w-full" />
+                <div className="h-2 bg-[#EBEBEB] rounded w-4/5" />
+              </div>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleDownload}
+              className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-lg hover:bg-[#2A2A2A] transition-colors"
+            >
+              <svg className="size-4" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z" />
+                <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" />
+              </svg>
+              Download PDF
+            </button>
+            <button
+              onClick={onClose}
+              className="px-5 py-3 text-sm font-medium text-[#6B6B6B] border border-[#E5E5E5] rounded-lg hover:bg-[#F5F5F5] transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+
+        {/* Toast */}
+        {toast && (
+          <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 px-5 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-full shadow-xl whitespace-nowrap animate-fadeIn">
+            {toast}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

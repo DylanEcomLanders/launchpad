@@ -7,6 +7,7 @@ export interface PortalPhase {
   name: string;
   status: PhaseStatus;
   dates: string;
+  description: string;
   tasks: number;
   completed: number;
 }
@@ -24,15 +25,26 @@ export interface PortalDocument {
   date: string;
 }
 
+export interface PortalTestResult {
+  name: string;
+  status: "running" | "winner" | "loser" | "scheduled";
+  metric: string;
+  lift?: string;
+  startDate: string;
+}
+
 export interface PortalData {
   token: string;
   clientName: string;
   projectType: string;
   currentPhase: string;
   progress: number;
+  nextTouchpoint: { date: string; description: string };
   phases: PortalPhase[];
+  scope: string[];
   deliverables: PortalDeliverable[];
   documents: PortalDocument[];
+  results: PortalTestResult[];
   createdAt: string;
   viewCount: number;
 }
@@ -48,13 +60,27 @@ export const DEMO_PORTALS: PortalData[] = [
     progress: 26,
     createdAt: "2026-03-03",
     viewCount: 12,
+    nextTouchpoint: {
+      date: "13 Mar",
+      description: "Design review — we'll walk you through all mockups for feedback",
+    },
+    scope: [
+      "Homepage",
+      "Product page (PDP)",
+      "Collection page",
+      "Landing page",
+      "Mobile responsive pass",
+      "App integrations",
+      "Cross-browser QA",
+      "Post-launch support (30 days)",
+    ],
     phases: [
-      { name: "Kickoff", status: "complete", dates: "3 Mar", tasks: 3, completed: 3 },
-      { name: "Design", status: "in-progress", dates: "4 Mar – 13 Mar", tasks: 5, completed: 2 },
-      { name: "Revision", status: "upcoming", dates: "16 Mar – 19 Mar", tasks: 2, completed: 0 },
-      { name: "Development", status: "upcoming", dates: "20 Mar – 31 Mar", tasks: 6, completed: 0 },
-      { name: "Launch", status: "upcoming", dates: "1 Apr", tasks: 2, completed: 0 },
-      { name: "30-Day Support", status: "upcoming", dates: "1 Apr – 1 May", tasks: 1, completed: 0 },
+      { name: "Kickoff", status: "complete", dates: "3 Mar", description: "Discovery call, brand asset collection, and technical requirements documentation", tasks: 3, completed: 3 },
+      { name: "Design", status: "in-progress", dates: "4 Mar – 13 Mar", description: "Wireframes and high-fidelity mockups for all key pages including mobile responsive designs", tasks: 5, completed: 2 },
+      { name: "Revision", status: "upcoming", dates: "16 Mar – 19 Mar", description: "Design feedback round and final sign-off before development begins", tasks: 2, completed: 0 },
+      { name: "Development", status: "upcoming", dates: "20 Mar – 31 Mar", description: "Full build of all pages, app integrations, and cross-browser quality assurance", tasks: 6, completed: 0 },
+      { name: "Launch", status: "upcoming", dates: "1 Apr", description: "DNS configuration, deployment, and post-launch smoke testing", tasks: 2, completed: 0 },
+      { name: "30-Day Support", status: "upcoming", dates: "1 Apr – 1 May", description: "Ongoing monitoring and support to ensure everything runs smoothly", tasks: 1, completed: 0 },
     ],
     deliverables: [
       { name: "Discovery & stakeholder interview", phase: "Kickoff", status: "complete", assignee: "DE" },
@@ -82,6 +108,7 @@ export const DEMO_PORTALS: PortalData[] = [
       { name: "Nutribloom – Scope of Work", type: "Scope", date: "3 Mar 2026" },
       { name: "Nutribloom – Service Agreement", type: "Agreement", date: "3 Mar 2026" },
     ],
+    results: [],
   },
   {
     token: "demo-peakform",
@@ -91,13 +118,28 @@ export const DEMO_PORTALS: PortalData[] = [
     progress: 62,
     createdAt: "2026-02-10",
     viewCount: 34,
+    nextTouchpoint: {
+      date: "12 Mar",
+      description: "Development progress update — homepage and PDP preview ready for review",
+    },
+    scope: [
+      "Homepage",
+      "Product page (PDP)",
+      "Collection page",
+      "About page",
+      "Blog template",
+      "Mobile responsive pass",
+      "App migrations",
+      "Cross-browser QA",
+      "Post-launch support (30 days)",
+    ],
     phases: [
-      { name: "Kickoff", status: "complete", dates: "10 Feb", tasks: 3, completed: 3 },
-      { name: "Design", status: "complete", dates: "11 Feb – 24 Feb", tasks: 6, completed: 6 },
-      { name: "Revision", status: "complete", dates: "25 Feb – 28 Feb", tasks: 2, completed: 2 },
-      { name: "Development", status: "in-progress", dates: "3 Mar – 18 Mar", tasks: 8, completed: 4 },
-      { name: "Launch", status: "upcoming", dates: "19 Mar", tasks: 2, completed: 0 },
-      { name: "30-Day Support", status: "upcoming", dates: "19 Mar – 18 Apr", tasks: 1, completed: 0 },
+      { name: "Kickoff", status: "complete", dates: "10 Feb", description: "Discovery workshop, competitor analysis, and technical audit", tasks: 3, completed: 3 },
+      { name: "Design", status: "complete", dates: "11 Feb – 24 Feb", description: "Full wireframe and mockup suite across all page templates including mobile", tasks: 6, completed: 6 },
+      { name: "Revision", status: "complete", dates: "25 Feb – 28 Feb", description: "Design revision round and final client sign-off", tasks: 2, completed: 2 },
+      { name: "Development", status: "in-progress", dates: "3 Mar – 18 Mar", description: "Theme build, page development, app migrations, and cross-browser QA", tasks: 8, completed: 4 },
+      { name: "Launch", status: "upcoming", dates: "19 Mar", description: "DNS configuration, deployment, and post-launch smoke testing", tasks: 2, completed: 0 },
+      { name: "30-Day Support", status: "upcoming", dates: "19 Mar – 18 Apr", description: "Ongoing monitoring and support to ensure everything runs smoothly", tasks: 1, completed: 0 },
     ],
     deliverables: [
       { name: "Discovery & brand workshop", phase: "Kickoff", status: "complete", assignee: "DE" },
@@ -128,6 +170,12 @@ export const DEMO_PORTALS: PortalData[] = [
       { name: "PeakForm – Scope of Work", type: "Scope", date: "10 Feb 2026" },
       { name: "PeakForm – Service Agreement", type: "Agreement", date: "10 Feb 2026" },
       { name: "PeakForm – QA Checklist", type: "QA Checklist", date: "5 Mar 2026" },
+    ],
+    results: [
+      { name: "Homepage hero CTA copy test", status: "running", metric: "Add-to-cart rate", startDate: "5 Mar" },
+      { name: "PDP image gallery layout", status: "winner", metric: "Conversion rate", lift: "+12.4%", startDate: "28 Feb" },
+      { name: "Collection page filter position", status: "running", metric: "Collection click-through", startDate: "3 Mar" },
+      { name: "Sticky add-to-cart bar", status: "scheduled", metric: "Add-to-cart rate", startDate: "12 Mar" },
     ],
   },
 ];

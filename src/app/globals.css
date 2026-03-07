@@ -8,8 +8,10 @@
   --color-border: #E5E5E5;
   --color-muted: #6B6B6B;
   --color-hover: #2A2A2A;
-  --color-accent: #D2F34C;
-  --color-accent-hover: #C4E438;
+  --color-accent: #0A0A0A;
+  --color-accent-hover: #2A2A2A;
+  --color-accent-light: #F5F5F5;
+  --color-accent-muted: #999999;
   --font-heading: var(--font-inter), "Inter", system-ui, sans-serif;
   --font-body: var(--font-articulat), "Articulat CF", system-ui, sans-serif;
 }

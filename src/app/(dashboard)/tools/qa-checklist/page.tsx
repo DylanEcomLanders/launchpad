@@ -408,7 +408,7 @@ export default function QAChecklistPage() {
                         <button
                           type="button"
                           onClick={() => addCustomItem(category)}
-                          className="px-3 py-1.5 bg-[#0A0A0A] text-white text-xs font-medium rounded hover:bg-accent hover:text-[#0A0A0A] transition-colors"
+                          className="px-3 py-1.5 bg-[#0A0A0A] text-white text-xs font-medium rounded hover:bg-accent-hover transition-colors"
                         >
                           Add
                         </button>
@@ -457,7 +457,7 @@ export default function QAChecklistPage() {
           <button
             onClick={handleGenerate}
             disabled={!isFormValid || generating}
-            className="flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent hover:text-[#0A0A0A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {generating ? (
               <>

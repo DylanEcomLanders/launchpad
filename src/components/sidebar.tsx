@@ -27,6 +27,9 @@ import {
   UserGroupIcon,
   RocketLaunchIcon,
   GlobeAltIcon,
+  FunnelIcon,
+  ArrowsRightLeftIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/solid";
 import { Logo, LogoMark } from "@/components/logo";
 
@@ -55,19 +58,9 @@ const navSections: NavSection[] = [
     title: "Project Management",
     items: [
       {
-        label: "Project Kickoff",
+        label: "Project Setup",
         href: "/tools/project-kickoff",
         icon: <RocketLaunchIcon className="size-4" />,
-      },
-      {
-        label: "Project Doc Creation",
-        href: "/tools/scope-generator",
-        icon: <DocumentTextIcon className="size-4" />,
-      },
-      {
-        label: "Project Roadmap",
-        href: "/tools/project-roadmap",
-        icon: <CalendarDaysIcon className="size-4" />,
       },
       {
         label: "Price Calculator",
@@ -78,11 +71,6 @@ const navSections: NavSection[] = [
         label: "QA Checklist",
         href: "/tools/qa-checklist",
         icon: <ClipboardDocumentCheckIcon className="size-4" />,
-      },
-      {
-        label: "Client Portal",
-        href: "/tools/client-portal",
-        icon: <GlobeAltIcon className="size-4" />,
       },
     ],
   },
@@ -109,6 +97,30 @@ const navSections: NavSection[] = [
   {
     title: "Work in Progress",
     items: [
+      {
+        label: "Funnel Planner",
+        href: "/tools/funnel-planner",
+        icon: <FunnelIcon className="size-4" />,
+        wip: true,
+      },
+      {
+        label: "Content Repurposer",
+        href: "/tools/content-repurposer",
+        icon: <ArrowsRightLeftIcon className="size-4" />,
+        wip: true,
+      },
+      {
+        label: "Hook Generator",
+        href: "/tools/hook-generator",
+        icon: <SparklesIcon className="size-4" />,
+        wip: true,
+      },
+      {
+        label: "Client Portal",
+        href: "/tools/client-portal",
+        icon: <GlobeAltIcon className="size-4" />,
+        wip: true,
+      },
       {
         label: "Store Intelligence",
         href: "/tools/store-intel",
@@ -254,13 +266,13 @@ export function Sidebar() {
                 flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm
                 transition-colors duration-150
                 ${pathname === "/"
-                  ? "bg-[#F0F0F0] font-medium border-l-2 border-accent"
-                  : "hover:bg-[#F5F5F5] text-[#6B6B6B] border-l-2 border-transparent"
+                  ? "bg-accent-light text-accent font-medium border-l-2 border-accent"
+                  : "hover:bg-[#F7F7F8] text-[#6B6B6B] border-l-2 border-transparent"
                 }
               `}
             >
               <HomeIcon className="size-4" />
-              {!collapsed && <span>Home</span>}
+              {!collapsed && <span>Pulse</span>}
             </Link>
           </div>
 

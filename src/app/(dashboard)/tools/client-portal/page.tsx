@@ -3,27 +3,31 @@
 import { useState } from "react";
 import {
   ClipboardDocumentIcon,
-  ArrowTopRightOnSquareIcon,
   EyeIcon,
   LockClosedIcon,
 } from "@heroicons/react/24/solid";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
-import { DEMO_PORTALS, type PortalData } from "@/lib/portal-types";
+import { DEMO_PORTALS, type PortalData, type PortalDocument } from "@/lib/portal-types";
 import { inputClass, labelClass } from "@/lib/form-styles";
 
-function phaseStatusDot(status: string) {
-  switch (status) {
-    case "complete":
-      return <span className="size-2 rounded-full bg-accent inline-block" />;
-    case "in-progress":
-      return <span className="size-2 rounded-full bg-accent inline-block animate-pulse" />;
-    default:
-      return <span className="size-2 rounded-full bg-[#E5E5E5] inline-block" />;
-  }
+const typeLabels: Record<string, string> = {
+  Roadmap: "RDM",
+  Scope: "SCP",
+  Agreement: "AGR",
+  "QA Checklist": "QA",
+  Other: "DOC",
+};
+
+function getEndDate(portal: PortalData): string {
+  const last = portal.phases[portal.phases.length - 1];
+  if (!last) return "";
+  const parts = last.dates.split(" – ");
+  return parts[parts.length - 1];
 }
 
 export default function ClientPortalPage() {
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
+  const [selectedDoc, setSelectedDoc] = useState<PortalDocument | null>(null);
 
   function copyLink(token: string) {
     const url = `${window.location.origin}/portal/${token}`;
@@ -64,6 +68,7 @@ export default function ClientPortalPage() {
                 copiedToken={copiedToken}
                 onCopyLink={copyLink}
                 onPreview={openPreview}
+                onDocClick={setSelectedDoc}
               />
             ))}
           </div>
@@ -122,7 +127,7 @@ export default function ClientPortalPage() {
               <div>
                 <label className={labelClass}>Visible Sections</label>
                 <div className="flex flex-wrap gap-3">
-                  {["Overview", "Timeline", "Deliverables", "Documents"].map(
+                  {["Overview", "Timeline", "Scope", "Results"].map(
                     (s) => (
                       <label
                         key={s}
@@ -145,6 +150,11 @@ export default function ClientPortalPage() {
           </div>
         </div>
       </div>
+
+      {/* Document preview modal */}
+      {selectedDoc && (
+        <DocumentPreview doc={selectedDoc} onClose={() => setSelectedDoc(null)} />
+      )}
     </div>
   );
 }
@@ -156,16 +166,21 @@ function PortalCard({
   copiedToken,
   onCopyLink,
   onPreview,
+  onDocClick,
 }: {
   portal: PortalData;
   copiedToken: string | null;
   onCopyLink: (token: string) => void;
   onPreview: (token: string) => void;
+  onDocClick: (doc: PortalDocument) => void;
 }) {
+  const startDate = portal.phases[0]?.dates;
+  const endDate = getEndDate(portal);
+
   return (
     <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+      {/* Top row: info + actions */}
       <div className="flex items-start justify-between gap-4">
-        {/* Left: info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="text-sm font-semibold">{portal.clientName}</h3>
@@ -173,39 +188,62 @@ function PortalCard({
               Demo
             </span>
           </div>
-          <p className="text-xs text-[#6B6B6B] mb-3">{portal.projectType}</p>
-
-          {/* Phase + progress */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5">
-              {phaseStatusDot(
-                portal.phases.find((p) => p.name === portal.currentPhase)
-                  ?.status || "upcoming"
-              )}
-              <span className="text-xs font-medium">{portal.currentPhase}</span>
-            </div>
-
-            <div className="flex items-center gap-2 flex-1 max-w-[200px]">
-              <div className="flex-1 h-1.5 bg-[#F0F0F0] rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-accent rounded-full"
-                  style={{ width: `${portal.progress}%` }}
-                />
-              </div>
-              <span className="text-[10px] text-[#AAAAAA] tabular-nums">
-                {portal.progress}%
-              </span>
-            </div>
-          </div>
+          <p className="text-xs text-[#6B6B6B] mb-1">{portal.projectType}</p>
+          <p className="text-[11px] text-[#AAAAAA]">
+            Start: {startDate} · End: {endDate}
+          </p>
         </div>
 
-        {/* Right: stats + actions */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 text-xs text-[#AAAAAA] mr-2">
-            <EyeIcon className="size-3" />
-            <span className="tabular-nums">{portal.viewCount}</span>
-          </div>
+        <div className="flex items-center gap-1 text-xs text-[#AAAAAA]">
+          <EyeIcon className="size-3" />
+          <span className="tabular-nums">{portal.viewCount}</span>
+        </div>
+      </div>
 
+      {/* Phase progress track */}
+      <div className="mt-4 flex items-center gap-3">
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className={`size-2 rounded-full inline-block ${
+            portal.phases.find((p) => p.name === portal.currentPhase)?.status === "in-progress"
+              ? "bg-[#0A0A0A] animate-pulse"
+              : "bg-[#0A0A0A]"
+          }`} />
+          <span className="text-xs font-medium">{portal.currentPhase}</span>
+        </div>
+        <div className="flex gap-1 flex-1">
+          {portal.phases.map((phase) => (
+            <div
+              key={phase.name}
+              className={`h-1 rounded-full flex-1 ${
+                phase.status === "complete"
+                  ? "bg-emerald-400"
+                  : phase.status === "in-progress"
+                  ? "bg-[#0A0A0A]"
+                  : "bg-[#E5E5E5]"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Documents + Actions */}
+      <div className="mt-4 pt-4 border-t border-[#F0F0F0] flex items-center justify-between gap-4">
+        {/* Clickable document badges */}
+        <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
+          {portal.documents.map((doc, i) => (
+            <button
+              key={i}
+              onClick={() => onDocClick(doc)}
+              className="inline-flex items-center gap-1.5 px-2 py-1 text-[11px] bg-[#FAFAFA] border border-[#E5E5E5] rounded hover:border-[#0A0A0A] hover:bg-white transition-colors"
+            >
+              <span className="font-semibold text-[#6B6B6B]">{typeLabels[doc.type] || "DOC"}</span>
+              <span className="text-[#AAAAAA]">{doc.type}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => onCopyLink(portal.token)}
             className="p-2 rounded-md hover:bg-[#F0F0F0] transition-colors text-[#6B6B6B] hover:text-[#0A0A0A]"
@@ -216,10 +254,12 @@ function PortalCard({
 
           <button
             onClick={() => onPreview(portal.token)}
-            className="p-2 rounded-md hover:bg-[#F0F0F0] transition-colors text-[#6B6B6B] hover:text-[#0A0A0A]"
-            title="Open portal preview"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0A0A0A] text-white text-xs font-medium rounded-md hover:bg-[#2A2A2A] transition-colors"
           >
-            <ArrowTopRightOnSquareIcon className="size-4" />
+            Open Portal
+            <svg className="size-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </button>
         </div>
       </div>
@@ -230,26 +270,113 @@ function PortalCard({
           Link copied to clipboard
         </div>
       )}
+    </div>
+  );
+}
 
-      {/* Documents summary */}
-      {portal.documents.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-[#F0F0F0]">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-2">
-            Documents ({portal.documents.length})
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {portal.documents.map((doc, i) => (
-              <span
-                key={i}
-                className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-[#FAFAFA] border border-[#E5E5E5] rounded"
-              >
-                <span className="text-xs">{doc.type === "Roadmap" ? "📅" : doc.type === "Scope" ? "📋" : doc.type === "Agreement" ? "📝" : doc.type === "QA Checklist" ? "✅" : "📄"}</span>
-                {doc.type}
-              </span>
-            ))}
+/* ── Document Preview Modal ── */
+
+function DocumentPreview({
+  doc,
+  onClose,
+}: {
+  doc: PortalDocument;
+  onClose: () => void;
+}) {
+  const [toast, setToast] = useState("");
+
+  function handleDownload() {
+    setToast("Download coming soon — documents will be linked when your portal goes live");
+    setTimeout(() => setToast(""), 3000);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+
+      {/* Modal */}
+      <div className="relative w-full max-w-lg bg-white rounded-xl shadow-2xl animate-fadeIn">
+        {/* Header */}
+        <div className="flex items-start justify-between p-6 border-b border-[#F0F0F0]">
+          <div className="flex items-start gap-4">
+            <div className="shrink-0 size-12 rounded-lg bg-[#0A0A0A] text-white flex items-center justify-center text-[11px] font-bold tracking-wider">
+              {typeLabels[doc.type] || "DOC"}
+            </div>
+            <div>
+              <h3 className="text-base font-bold mb-1">{doc.name}</h3>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[#AAAAAA] uppercase tracking-wider font-medium">
+                  {doc.type}
+                </span>
+                <span className="text-[#E5E5E5]">&middot;</span>
+                <span className="text-xs text-[#AAAAAA]">{doc.date}</span>
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-[#F5F5F5] transition-colors text-[#AAAAAA] hover:text-[#0A0A0A]"
+          >
+            <svg className="size-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Document preview placeholder */}
+        <div className="p-6">
+          <div className="border border-[#E5E5E5] rounded-lg bg-[#FAFAFA] p-8 mb-6">
+            <div className="space-y-4">
+              <div className="h-3 bg-[#E5E5E5] rounded w-2/3" />
+              <div className="space-y-2">
+                <div className="h-2 bg-[#EBEBEB] rounded w-full" />
+                <div className="h-2 bg-[#EBEBEB] rounded w-5/6" />
+                <div className="h-2 bg-[#EBEBEB] rounded w-4/6" />
+              </div>
+              <div className="h-px bg-[#E5E5E5]" />
+              <div className="space-y-2">
+                <div className="h-2 bg-[#EBEBEB] rounded w-full" />
+                <div className="h-2 bg-[#EBEBEB] rounded w-3/4" />
+                <div className="h-2 bg-[#EBEBEB] rounded w-5/6" />
+                <div className="h-2 bg-[#EBEBEB] rounded w-2/3" />
+              </div>
+              <div className="h-px bg-[#E5E5E5]" />
+              <div className="space-y-2">
+                <div className="h-2 bg-[#EBEBEB] rounded w-full" />
+                <div className="h-2 bg-[#EBEBEB] rounded w-4/5" />
+              </div>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleDownload}
+              className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-lg hover:bg-[#2A2A2A] transition-colors"
+            >
+              <svg className="size-4" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z" />
+                <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" />
+              </svg>
+              Download PDF
+            </button>
+            <button
+              onClick={onClose}
+              className="px-5 py-3 text-sm font-medium text-[#6B6B6B] border border-[#E5E5E5] rounded-lg hover:bg-[#F5F5F5] transition-colors"
+            >
+              Close
+            </button>
           </div>
         </div>
-      )}
+
+        {/* Toast */}
+        {toast && (
+          <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 px-5 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-full shadow-xl whitespace-nowrap animate-fadeIn">
+            {toast}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

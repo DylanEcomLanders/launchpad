@@ -393,7 +393,7 @@ export default function InvoiceGeneratorPage() {
               <button
                 onClick={addDeliverable}
                 disabled={!selectedDeliverable}
-                className="px-4 py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent hover:text-[#0A0A0A] transition-colors disabled:opacity-30"
+                className="px-4 py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-30"
               >
                 <PlusIcon className="size-4" />
               </button>
@@ -580,7 +580,7 @@ export default function InvoiceGeneratorPage() {
           <button
             onClick={handleGenerate}
             disabled={!canGenerate || generating}
-            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent hover:text-[#0A0A0A] transition-colors disabled:opacity-30"
+            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-30"
           >
             {generating ? (
               <>

@@ -1,15 +1,20 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import dynamic from "next/dynamic";
 import {
   PlusIcon,
   TrashIcon,
-  ChevronDownIcon,
   RocketLaunchIcon,
   ClipboardDocumentIcon,
   CheckIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/solid";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
+
+/* ── Lazy-loaded standalone generators for modal popups ── */
+const ScopeGeneratorPage = dynamic(() => import("../scope-generator/page"), { ssr: false });
+const ProjectRoadmapPage = dynamic(() => import("../project-roadmap/page"), { ssr: false });
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 import {
   projectTypes,
@@ -100,9 +105,11 @@ export default function ProjectKickoffPage() {
   /* Timeline */
   const [kickoffDate, setKickoffDate] = useState("");
 
-  /* Agreement (optional) */
-  const [showAgreement, setShowAgreement] = useState(false);
+  /* Agreement */
   const [agreement, setAgreement] = useState<AgreementDetails>(emptyAgreement());
+
+  /* Modal state for quick-link popups */
+  const [activeModal, setActiveModal] = useState<"scope" | "roadmap" | "agreement" | null>(null);
 
   /* Generation state */
   const [generating, setGenerating] = useState(false);
@@ -110,6 +117,19 @@ export default function ProjectKickoffPage() {
   const [downloadingAll, setDownloadingAll] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedSlack, setCopiedSlack] = useState(false);
+
+  /* ── Close modal on Escape ── */
+  const closeModal = useCallback(() => setActiveModal(null), []);
+  useEffect(() => {
+    if (!activeModal) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") closeModal(); };
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [activeModal, closeModal]);
 
   /* ── Auto-compute design/dev days from deliverable types ── */
   const deliverableTypesList = useMemo(
@@ -133,6 +153,30 @@ export default function ProjectKickoffPage() {
   const devEndDate =
     phases.find((p) => p.name === "Development")?.endDate || "";
 
+  /* ── Validation ── */
+  const validDeliverables = deliverables.filter((d) => d.description.trim());
+  const hasDeliverableTypes = deliverables.some((d) => d.type !== "");
+  const isFormValid =
+    clientName.trim() &&
+    projectType &&
+    projectOverview.trim() &&
+    kickoffDate &&
+    hasDeliverableTypes &&
+    validDeliverables.length > 0;
+
+  const isAgreementValid =
+    isFormValid &&
+    agreement.clientLegalName &&
+    agreement.clientContactName &&
+    agreement.clientContactEmail &&
+    agreement.clientAddress &&
+    agreement.paymentStructure &&
+    agreement.paymentTerm &&
+    (agreement.paymentStructure !== "Fixed Project Fee" || agreement.totalFee) &&
+    (agreement.paymentStructure !== "Monthly Retainer" || agreement.monthlyFee) &&
+    (agreement.paymentStructure !== "Milestone-Based" ||
+      agreement.milestones.some((m) => m.description.trim() && m.amount.trim()));
+
   /* ── Derived data shapes for PDF components ── */
   const scopeFormData: GeneratorFormData = useMemo(
     () => ({
@@ -143,14 +187,14 @@ export default function ProjectKickoffPage() {
       endDate: devEndDate,
       deliverables,
       additionalNotes,
-      showAgreement,
+      showAgreement: isAgreementValid,
       agreement: {
         ...agreement,
         agreementStartDate: agreement.agreementStartDate || kickoffDate,
         agreementEndDate: agreement.agreementEndDate || devEndDate,
       },
     }),
-    [clientName, projectType, projectOverview, kickoffDate, devEndDate, deliverables, additionalNotes, showAgreement, agreement]
+    [clientName, projectType, projectOverview, kickoffDate, devEndDate, deliverables, additionalNotes, isAgreementValid, agreement]
   );
 
   const roadmapFormData: RoadmapFormData = useMemo(
@@ -207,30 +251,6 @@ export default function ProjectKickoffPage() {
     updateAgreementField("milestones", agreement.milestones.filter((_, i) => i !== index));
   };
 
-  /* ── Validation ── */
-  const validDeliverables = deliverables.filter((d) => d.description.trim());
-  const hasDeliverableTypes = deliverables.some((d) => d.type !== "");
-  const isFormValid =
-    clientName.trim() &&
-    projectType &&
-    projectOverview.trim() &&
-    kickoffDate &&
-    hasDeliverableTypes &&
-    validDeliverables.length > 0;
-
-  const isAgreementValid =
-    isFormValid &&
-    agreement.clientLegalName &&
-    agreement.clientContactName &&
-    agreement.clientContactEmail &&
-    agreement.clientAddress &&
-    agreement.paymentStructure &&
-    agreement.paymentTerm &&
-    (agreement.paymentStructure !== "Fixed Project Fee" || agreement.totalFee) &&
-    (agreement.paymentStructure !== "Monthly Retainer" || agreement.monthlyFee) &&
-    (agreement.paymentStructure !== "Milestone-Based" ||
-      agreement.milestones.some((m) => m.description.trim() && m.amount.trim()));
-
   /* ── Generate kickoff pack ── */
   const handleGenerate = async () => {
     if (!isFormValid) return;
@@ -252,7 +272,7 @@ export default function ProjectKickoffPage() {
         { doc: <RoadmapPdfDocument data={roadmapFormData} />, name: `${slug}-roadmap-${date}.pdf` },
       ];
 
-      if (showAgreement && isAgreementValid) {
+      if (isAgreementValid) {
         downloads.push({
           doc: <AgreementPdfDocument data={scopeFormData} />,
           name: `${slug}-agreement-${date}.pdf`,
@@ -286,9 +306,9 @@ export default function ProjectKickoffPage() {
       .join("\n");
 
     const feeText =
-      showAgreement && agreement.paymentStructure === "Fixed Project Fee" && agreement.totalFee
+      agreement.paymentStructure === "Fixed Project Fee" && agreement.totalFee
         ? `\nProject Investment: ${agreement.totalFee}`
-        : showAgreement && agreement.paymentStructure === "Monthly Retainer" && agreement.monthlyFee
+        : agreement.paymentStructure === "Monthly Retainer" && agreement.monthlyFee
           ? `\nMonthly Retainer: ${agreement.monthlyFee}`
           : "";
 
@@ -314,7 +334,7 @@ We'll be in touch shortly with your project documents. In the meantime, if you h
 
 Speak soon,
 ${agreement.signerName || "The Ecomlanders Team"}`;
-  }, [isFormValid, clientName, projectType, projectOverview, validDeliverables, kickoffDate, designEndDate, devEndDate, showAgreement, agreement]);
+  }, [isFormValid, clientName, projectType, projectOverview, validDeliverables, kickoffDate, designEndDate, devEndDate, agreement]);
 
   /* ── Slack brief text ── */
   const slackBrief = useMemo(() => {
@@ -355,11 +375,40 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
-            Project Kickoff
+            Project Setup
           </h1>
-          <p className="text-[#6B6B6B]">
+          <p className="text-[#6B6B6B] mb-4">
             Fill in the details once, get your scope doc, roadmap, agreement, kickoff email, and Slack brief
           </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setActiveModal("scope")}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#6B6B6B] bg-[#F5F5F5] border border-[#E5E5E5] rounded-md hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-colors"
+            >
+              Scope Doc Only
+              <svg className="size-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setActiveModal("roadmap")}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#6B6B6B] bg-[#F5F5F5] border border-[#E5E5E5] rounded-md hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-colors"
+            >
+              Roadmap Only
+              <svg className="size-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setActiveModal("agreement")}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#6B6B6B] bg-[#F5F5F5] border border-[#E5E5E5] rounded-md hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-colors"
+            >
+              Agreement Only
+              <svg className="size-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div className="space-y-8">
@@ -507,237 +556,222 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
             </div>
           </div>
 
-          {/* ── Section 4: Agreement (collapsible) ── */}
+          {/* ── Section 4: Agreement ── */}
           <div className="pt-6 border-t border-[#E5E5E5]">
-            <button
-              type="button"
-              onClick={() => { setShowAgreement(!showAgreement); setShowOutputs(false); }}
-              className="flex items-center justify-between w-full text-left"
-            >
+            <p className={`${sectionHeadingClass} mb-6`}>Agreement Details</p>
+            <div className="space-y-6">
               <div>
-                <span className={sectionHeadingClass}>Agreement Details</span>
-                <span className="ml-2 text-[10px] text-[#AAAAAA]">Optional</span>
+                <label className={labelClass}>Client Legal Name</label>
+                <input
+                  type="text"
+                  value={agreement.clientLegalName}
+                  onChange={(e) => updateAgreementField("clientLegalName", e.target.value)}
+                  placeholder="Full legal entity name..."
+                  className={inputClass}
+                />
               </div>
-              <ChevronDownIcon
-                className={`size-4 text-[#6B6B6B] transition-transform ${showAgreement ? "rotate-180" : ""}`}
-              />
-            </button>
 
-            {showAgreement && (
-              <div className="mt-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className={labelClass}>Client Legal Name</label>
+                  <label className={labelClass}>Contact Name</label>
                   <input
                     type="text"
-                    value={agreement.clientLegalName}
-                    onChange={(e) => updateAgreementField("clientLegalName", e.target.value)}
-                    placeholder="Full legal entity name..."
+                    value={agreement.clientContactName}
+                    onChange={(e) => updateAgreementField("clientContactName", e.target.value)}
+                    placeholder="Primary contact..."
                     className={inputClass}
                   />
                 </div>
+                <div>
+                  <label className={labelClass}>Contact Email</label>
+                  <input
+                    type="email"
+                    value={agreement.clientContactEmail}
+                    onChange={(e) => updateAgreementField("clientContactEmail", e.target.value)}
+                    placeholder="contact@company.com"
+                    className={inputClass}
+                  />
+                </div>
+              </div>
 
+              <div>
+                <label className={labelClass}>Client Address</label>
+                <textarea
+                  value={agreement.clientAddress}
+                  onChange={(e) => updateAgreementField("clientAddress", e.target.value)}
+                  placeholder="Full business address..."
+                  rows={2}
+                  className={textareaClass}
+                />
+              </div>
+
+              <div>
+                <label className={labelClass}>Payment Structure</label>
+                <select
+                  value={agreement.paymentStructure}
+                  onChange={(e) => updateAgreementField("paymentStructure", e.target.value as AgreementDetails["paymentStructure"])}
+                  className={selectClass}
+                >
+                  <option value="">Select structure...</option>
+                  {paymentStructures.map((ps) => (
+                    <option key={ps} value={ps}>{ps}</option>
+                  ))}
+                </select>
+              </div>
+
+              {agreement.paymentStructure === "Fixed Project Fee" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className={labelClass}>Contact Name</label>
+                    <label className={labelClass}>Total Fee</label>
                     <input
                       type="text"
-                      value={agreement.clientContactName}
-                      onChange={(e) => updateAgreementField("clientContactName", e.target.value)}
-                      placeholder="Primary contact..."
+                      value={agreement.totalFee}
+                      onChange={(e) => updateAgreementField("totalFee", e.target.value)}
+                      placeholder="e.g. £5,000"
                       className={inputClass}
                     />
                   </div>
                   <div>
-                    <label className={labelClass}>Contact Email</label>
-                    <input
-                      type="email"
-                      value={agreement.clientContactEmail}
-                      onChange={(e) => updateAgreementField("clientContactEmail", e.target.value)}
-                      placeholder="contact@company.com"
-                      className={inputClass}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className={labelClass}>Client Address</label>
-                  <textarea
-                    value={agreement.clientAddress}
-                    onChange={(e) => updateAgreementField("clientAddress", e.target.value)}
-                    placeholder="Full business address..."
-                    rows={2}
-                    className={textareaClass}
-                  />
-                </div>
-
-                <div>
-                  <label className={labelClass}>Payment Structure</label>
-                  <select
-                    value={agreement.paymentStructure}
-                    onChange={(e) => updateAgreementField("paymentStructure", e.target.value as AgreementDetails["paymentStructure"])}
-                    className={selectClass}
-                  >
-                    <option value="">Select structure...</option>
-                    {paymentStructures.map((ps) => (
-                      <option key={ps} value={ps}>{ps}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {agreement.paymentStructure === "Fixed Project Fee" && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className={labelClass}>Total Fee</label>
-                      <input
-                        type="text"
-                        value={agreement.totalFee}
-                        onChange={(e) => updateAgreementField("totalFee", e.target.value)}
-                        placeholder="e.g. £5,000"
-                        className={inputClass}
-                      />
-                    </div>
-                    <div>
-                      <label className={labelClass}>Deposit</label>
-                      <input
-                        type="text"
-                        value={agreement.deposit}
-                        onChange={(e) => updateAgreementField("deposit", e.target.value)}
-                        placeholder="e.g. £2,500"
-                        className={inputClass}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {agreement.paymentStructure === "Monthly Retainer" && (
-                  <div>
-                    <label className={labelClass}>Monthly Fee</label>
+                    <label className={labelClass}>Deposit</label>
                     <input
                       type="text"
-                      value={agreement.monthlyFee}
-                      onChange={(e) => updateAgreementField("monthlyFee", e.target.value)}
-                      placeholder="e.g. £2,500/month"
+                      value={agreement.deposit}
+                      onChange={(e) => updateAgreementField("deposit", e.target.value)}
+                      placeholder="e.g. £2,500"
                       className={inputClass}
                     />
                   </div>
-                )}
-
-                {agreement.paymentStructure === "Milestone-Based" && (
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <label className={sectionHeadingClass}>Milestones</label>
-                      <button
-                        onClick={addMilestone}
-                        className="flex items-center gap-1.5 text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
-                      >
-                        <PlusIcon className="size-3.5" />
-                        Add milestone
-                      </button>
-                    </div>
-                    <div className="space-y-3">
-                      {agreement.milestones.map((m, i) => (
-                        <div key={i} className="grid grid-cols-[1fr_120px_36px] gap-3 items-start">
-                          <input
-                            type="text"
-                            value={m.description}
-                            onChange={(e) => updateMilestone(i, "description", e.target.value)}
-                            placeholder="Milestone description..."
-                            className={inputClass}
-                          />
-                          <input
-                            type="text"
-                            value={m.amount}
-                            onChange={(e) => updateMilestone(i, "amount", e.target.value)}
-                            placeholder="Amount..."
-                            className={inputClass}
-                          />
-                          <button
-                            onClick={() => removeMilestone(i)}
-                            disabled={agreement.milestones.length <= 1}
-                            className="p-2.5 text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                          >
-                            <TrashIcon className="size-3.5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <label className={labelClass}>Payment Terms</label>
-                  <select
-                    value={agreement.paymentTerm}
-                    onChange={(e) => updateAgreementField("paymentTerm", e.target.value as AgreementDetails["paymentTerm"])}
-                    className={selectClass}
-                  >
-                    <option value="">Select terms...</option>
-                    {paymentTerms.map((pt) => (
-                      <option key={pt} value={pt}>{pt}</option>
-                    ))}
-                  </select>
                 </div>
+              )}
 
+              {agreement.paymentStructure === "Monthly Retainer" && (
                 <div>
-                  <label className={labelClass}>Notice Period</label>
+                  <label className={labelClass}>Monthly Fee</label>
                   <input
                     type="text"
-                    value={agreement.noticePeriod}
-                    onChange={(e) => updateAgreementField("noticePeriod", e.target.value)}
-                    placeholder="e.g. 30 days"
+                    value={agreement.monthlyFee}
+                    onChange={(e) => updateAgreementField("monthlyFee", e.target.value)}
+                    placeholder="e.g. £2,500/month"
                     className={inputClass}
                   />
                 </div>
+              )}
 
+              {agreement.paymentStructure === "Milestone-Based" && (
                 <div>
-                  <label className={labelClass}>Additional Terms</label>
-                  <textarea
-                    value={agreement.additionalTerms}
-                    onChange={(e) => updateAgreementField("additionalTerms", e.target.value)}
-                    placeholder="Any custom terms or conditions..."
-                    rows={3}
-                    className={textareaClass}
+                  <div className="flex items-center justify-between mb-4">
+                    <label className={sectionHeadingClass}>Milestones</label>
+                    <button
+                      onClick={addMilestone}
+                      className="flex items-center gap-1.5 text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
+                    >
+                      <PlusIcon className="size-3.5" />
+                      Add milestone
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    {agreement.milestones.map((m, i) => (
+                      <div key={i} className="grid grid-cols-[1fr_120px_36px] gap-3 items-start">
+                        <input
+                          type="text"
+                          value={m.description}
+                          onChange={(e) => updateMilestone(i, "description", e.target.value)}
+                          placeholder="Milestone description..."
+                          className={inputClass}
+                        />
+                        <input
+                          type="text"
+                          value={m.amount}
+                          onChange={(e) => updateMilestone(i, "amount", e.target.value)}
+                          placeholder="Amount..."
+                          className={inputClass}
+                        />
+                        <button
+                          onClick={() => removeMilestone(i)}
+                          disabled={agreement.milestones.length <= 1}
+                          className="p-2.5 text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          <TrashIcon className="size-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className={labelClass}>Payment Terms</label>
+                <select
+                  value={agreement.paymentTerm}
+                  onChange={(e) => updateAgreementField("paymentTerm", e.target.value as AgreementDetails["paymentTerm"])}
+                  className={selectClass}
+                >
+                  <option value="">Select terms...</option>
+                  {paymentTerms.map((pt) => (
+                    <option key={pt} value={pt}>{pt}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className={labelClass}>Notice Period</label>
+                <input
+                  type="text"
+                  value={agreement.noticePeriod}
+                  onChange={(e) => updateAgreementField("noticePeriod", e.target.value)}
+                  placeholder="e.g. 30 days"
+                  className={inputClass}
+                />
+              </div>
+
+              <div>
+                <label className={labelClass}>Additional Terms</label>
+                <textarea
+                  value={agreement.additionalTerms}
+                  onChange={(e) => updateAgreementField("additionalTerms", e.target.value)}
+                  placeholder="Any custom terms or conditions..."
+                  rows={3}
+                  className={textareaClass}
+                />
+              </div>
+
+              <SignaturePad
+                value={agreement.signature}
+                onChange={(dataUrl) => updateAgreementField("signature", dataUrl)}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className={labelClass}>Your Name</label>
+                  <input
+                    type="text"
+                    value={agreement.signerName}
+                    onChange={(e) => updateAgreementField("signerName", e.target.value)}
+                    placeholder="Printed name..."
+                    className={inputClass}
                   />
                 </div>
-
-                <SignaturePad
-                  value={agreement.signature}
-                  onChange={(dataUrl) => updateAgreementField("signature", dataUrl)}
-                />
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div>
-                    <label className={labelClass}>Your Name</label>
-                    <input
-                      type="text"
-                      value={agreement.signerName}
-                      onChange={(e) => updateAgreementField("signerName", e.target.value)}
-                      placeholder="Printed name..."
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Title</label>
-                    <input
-                      type="text"
-                      value={agreement.signerTitle}
-                      onChange={(e) => updateAgreementField("signerTitle", e.target.value)}
-                      placeholder="e.g. Director"
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Date Signed</label>
-                    <input
-                      type="date"
-                      value={agreement.signerDate}
-                      onChange={(e) => updateAgreementField("signerDate", e.target.value)}
-                      className={inputClass}
-                    />
-                  </div>
+                <div>
+                  <label className={labelClass}>Title</label>
+                  <input
+                    type="text"
+                    value={agreement.signerTitle}
+                    onChange={(e) => updateAgreementField("signerTitle", e.target.value)}
+                    placeholder="e.g. Director"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Date Signed</label>
+                  <input
+                    type="date"
+                    value={agreement.signerDate}
+                    onChange={(e) => updateAgreementField("signerDate", e.target.value)}
+                    className={inputClass}
+                  />
                 </div>
               </div>
-            )}
+            </div>
           </div>
 
           {/* ── Generate Button ── */}
@@ -745,7 +779,7 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
             <button
               onClick={handleGenerate}
               disabled={!isFormValid || generating}
-              className="flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent hover:text-[#0A0A0A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {generating ? (
                 <>
@@ -770,7 +804,7 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
               <button
                 onClick={handleDownloadAll}
                 disabled={downloadingAll}
-                className="flex items-center gap-2 px-4 py-2 bg-[#0A0A0A] text-white text-xs font-medium rounded-md hover:bg-accent hover:text-[#0A0A0A] transition-colors disabled:opacity-40"
+                className="flex items-center gap-2 px-4 py-2 bg-[#0A0A0A] text-white text-xs font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40"
               >
                 {downloadingAll ? (
                   <>
@@ -803,7 +837,7 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
               details={`${phases.length} phases · ${formatShortDate(kickoffDate)} → ${formatShortDate(devEndDate)}`}
             />
 
-            {showAgreement && isAgreementValid && (
+            {isAgreementValid && (
               <PdfPreview
                 document={<AgreementPdfDocument data={scopeFormData} />}
                 filename={`${slug}-agreement-${date}.pdf`}
@@ -855,6 +889,48 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
           </div>
         )}
       </div>
+
+      {/* ── Quick-link Modal Overlay ── */}
+      {activeModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm overflow-y-auto"
+          onClick={closeModal}
+        >
+          <div className="min-h-full flex justify-center py-6 px-4">
+            <div
+              className="w-full max-w-4xl bg-white rounded-xl shadow-2xl relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={closeModal}
+                className="sticky top-4 float-right mr-4 mt-4 z-20 p-2 rounded-full bg-white border border-[#E5E5E5] shadow-sm hover:bg-[#F5F5F5] transition-colors"
+                aria-label="Close"
+              >
+                <XMarkIcon className="size-4" />
+              </button>
+              {/* Modal header matching the doc type */}
+              <div className="relative z-10 max-w-3xl mx-auto px-6 md:px-12 pt-12">
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
+                  {activeModal === "scope" && "Scope Document"}
+                  {activeModal === "roadmap" && "Project Roadmap"}
+                  {activeModal === "agreement" && "Service Agreement"}
+                </h1>
+                <p className="text-[#6B6B6B]">
+                  {activeModal === "scope" && "Generate a branded scope document for your client project"}
+                  {activeModal === "roadmap" && "Generate a branded project timeline PDF for your client"}
+                  {activeModal === "agreement" && "Generate a service agreement for your client project"}
+                </p>
+              </div>
+              {/* Embedded page with its header + decorative blocks hidden, top padding reduced */}
+              <div className="[&_.mb-12]:hidden [&_.pointer-events-none]:hidden [&>div>div:nth-child(2)]:!pt-4 [&>div]:min-h-0 [&>div]:rounded-xl overflow-hidden">
+                {activeModal === "scope" && <ScopeGeneratorPage />}
+                {activeModal === "agreement" && <ScopeGeneratorPage agreementAlwaysOpen />}
+                {activeModal === "roadmap" && <ProjectRoadmapPage />}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

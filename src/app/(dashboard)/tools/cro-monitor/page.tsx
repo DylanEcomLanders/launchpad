@@ -793,7 +793,7 @@ export default function CroMonitorPage() {
             <div className="flex items-center gap-3 pt-1">
               <button
                 onClick={() => handleSave(test.id)}
-                className="flex items-center gap-1.5 px-5 py-2.5 bg-[#0A0A0A] text-white text-xs font-medium rounded-lg hover:bg-accent hover:text-[#0A0A0A] transition-colors"
+                className="flex items-center gap-1.5 px-5 py-2.5 bg-[#0A0A0A] text-white text-xs font-medium rounded-lg hover:bg-accent-hover transition-colors"
               >
                 <CheckIcon className="size-3.5" /> Save
               </button>
@@ -959,7 +959,7 @@ export default function CroMonitorPage() {
           <div className="flex justify-end">
             <button
               onClick={() => setShowAddForm(!showAddForm)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-lg hover:bg-accent hover:text-[#0A0A0A] transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-lg hover:bg-accent-hover transition-colors"
             >
               {showAddForm ? <XMarkIcon className="size-4" /> : <PlusIcon className="size-4" />}
               {showAddForm ? "Cancel" : "Add Test"}
@@ -996,7 +996,7 @@ export default function CroMonitorPage() {
               <button
                 type="submit"
                 disabled={submitting || !form.client_name.trim() || !form.test_name.trim()}
-                className="flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-lg hover:bg-accent hover:text-[#0A0A0A] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-lg hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 {submitting ? <ArrowPathIcon className="size-4 animate-spin" /> : <PlusIcon className="size-4" />}
                 Add Test

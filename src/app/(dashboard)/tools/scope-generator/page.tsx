@@ -70,7 +70,7 @@ function clientSlug(name: string): string {
     .toLowerCase();
 }
 
-export default function ScopeGeneratorPage() {
+export default function ScopeGeneratorPage({ agreementAlwaysOpen = false }: { agreementAlwaysOpen?: boolean } = {}) {
   const [formData, setFormData] = useState<GeneratorFormData>({
     clientName: "",
     projectType: "",
@@ -79,7 +79,7 @@ export default function ScopeGeneratorPage() {
     endDate: "",
     deliverables: [emptyDeliverable(), emptyDeliverable(), emptyDeliverable()],
     additionalNotes: "",
-    showAgreement: false,
+    showAgreement: agreementAlwaysOpen,
     agreement: emptyAgreement(),
   });
 
@@ -416,31 +416,38 @@ export default function ScopeGeneratorPage() {
             />
           </div>
 
-          {/* ── Agreement Details (collapsible) ── */}
+          {/* ── Agreement Details ── */}
           <div className="pt-4 border-t border-[#E5E5E5]">
-            <button
-              type="button"
-              onClick={() =>
-                updateField("showAgreement", !formData.showAgreement)
-              }
-              className="flex items-center justify-between w-full text-left"
-            >
-              <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B]">
-                  Agreement Details
-                </span>
-                <span className="ml-2 text-[10px] text-[#AAAAAA]">
-                  Optional
-                </span>
-              </div>
-              <ChevronDownIcon
-                className={`size-4 text-[#6B6B6B] transition-transform ${
-                  formData.showAgreement ? "rotate-180" : ""
-                }`}
-              />
-            </button>
+            {!agreementAlwaysOpen && (
+              <button
+                type="button"
+                onClick={() =>
+                  updateField("showAgreement", !formData.showAgreement)
+                }
+                className="flex items-center justify-between w-full text-left"
+              >
+                <div>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B]">
+                    Agreement Details
+                  </span>
+                  <span className="ml-2 text-[10px] text-[#AAAAAA]">
+                    Optional
+                  </span>
+                </div>
+                <ChevronDownIcon
+                  className={`size-4 text-[#6B6B6B] transition-transform ${
+                    formData.showAgreement ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+            )}
+            {agreementAlwaysOpen && (
+              <p className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-2">
+                Agreement Details
+              </p>
+            )}
 
-            {formData.showAgreement && (
+            {(agreementAlwaysOpen || formData.showAgreement) && (
               <div className="mt-6 space-y-6">
                 {/* Client legal name */}
                 <div>
@@ -757,29 +764,31 @@ export default function ScopeGeneratorPage() {
 
           {/* ── Generate Buttons ── */}
           <div className="pt-4 flex flex-wrap gap-3">
-            <button
-              onClick={handleGenerateScope}
-              disabled={!isFormValid || generatingScope}
-              className="flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent hover:text-[#0A0A0A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {generatingScope ? (
-                <>
-                  <ArrowPathIcon className="size-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <EyeIcon className="size-4" />
-                  Generate Scope PDF
-                </>
-              )}
-            </button>
+            {!agreementAlwaysOpen && (
+              <button
+                onClick={handleGenerateScope}
+                disabled={!isFormValid || generatingScope}
+                className="flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {generatingScope ? (
+                  <>
+                    <ArrowPathIcon className="size-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <EyeIcon className="size-4" />
+                    Generate Scope PDF
+                  </>
+                )}
+              </button>
+            )}
 
             {formData.showAgreement && (
               <button
                 onClick={handleGenerateAgreement}
                 disabled={!isAgreementValid || generatingAgreement}
-                className="flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent hover:text-[#0A0A0A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {generatingAgreement ? (
                   <>
@@ -795,7 +804,7 @@ export default function ScopeGeneratorPage() {
               </button>
             )}
 
-            {formData.showAgreement && (
+            {!agreementAlwaysOpen && formData.showAgreement && (
               <button
                 onClick={handleGenerateBoth}
                 disabled={
