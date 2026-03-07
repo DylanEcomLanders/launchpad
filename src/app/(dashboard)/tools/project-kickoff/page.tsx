@@ -27,7 +27,7 @@ import { AgreementPdfDocument } from "@/components/agreement-pdf-document";
 import { RoadmapPdfDocument } from "@/components/roadmap-pdf-document";
 import { PdfPreview } from "@/components/pdf-preview";
 import { SignaturePad } from "@/components/signature-pad";
-import { computeAllPhases, timelinePresets } from "@/lib/roadmap-defaults";
+import { computeAllPhases, computeDesignDevDays } from "@/lib/roadmap-defaults";
 import { pdf, type DocumentProps } from "@react-pdf/renderer";
 import type { ReactElement } from "react";
 
@@ -106,7 +106,6 @@ export default function ProjectKickoffPage() {
 
   /* Timeline */
   const [kickoffDate, setKickoffDate] = useState("");
-  const [presetKey, setPresetKey] = useState("");
 
   /* Agreement (optional) */
   const [showAgreement, setShowAgreement] = useState(false);
@@ -119,14 +118,21 @@ export default function ProjectKickoffPage() {
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedSlack, setCopiedSlack] = useState(false);
 
-  /* ── Resolve preset ── */
-  const preset = timelinePresets.find((p) => p.key === presetKey);
+  /* ── Auto-compute design/dev days from deliverable types ── */
+  const deliverableTypesList = useMemo(
+    () => deliverables.map((d) => d.type),
+    [deliverables]
+  );
+  const { designDays, devDays } = useMemo(
+    () => computeDesignDevDays(deliverableTypesList),
+    [deliverableTypesList]
+  );
 
   /* ── Computed phases ── */
   const phases = useMemo(() => {
-    if (!kickoffDate || !preset) return [];
-    return computeAllPhases(kickoffDate, preset.designDays, preset.devDays);
-  }, [kickoffDate, preset]);
+    if (!kickoffDate || designDays === 0) return [];
+    return computeAllPhases(kickoffDate, designDays, devDays);
+  }, [kickoffDate, designDays, devDays]);
 
   /* ── Derived dates from phases ── */
   const designEndDate =
@@ -210,12 +216,13 @@ export default function ProjectKickoffPage() {
 
   /* ── Validation ── */
   const validDeliverables = deliverables.filter((d) => d.description.trim());
+  const hasDeliverableTypes = deliverables.some((d) => d.type !== "");
   const isFormValid =
     clientName.trim() &&
     projectType &&
     projectOverview.trim() &&
     kickoffDate &&
-    presetKey &&
+    hasDeliverableTypes &&
     validDeliverables.length > 0;
 
   const isAgreementValid =
@@ -466,50 +473,42 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
           <div className="pt-6 border-t border-[#E5E5E5]">
             <p className={`${sectionHeadingClass} mb-4`}>Timeline</p>
             <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className={labelClass}>Kickoff Date</label>
-                  <input
-                    type="date"
-                    value={kickoffDate}
-                    onChange={(e) => { setKickoffDate(e.target.value); setShowOutputs(false); }}
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Timeline</label>
-                  <select
-                    value={presetKey}
-                    onChange={(e) => { setPresetKey(e.target.value); setShowOutputs(false); }}
-                    className={selectClass}
-                  >
-                    <option value="">Select timeline...</option>
-                    {timelinePresets.map((p) => (
-                      <option key={p.key} value={p.key}>{p.label}</option>
-                    ))}
-                  </select>
-                </div>
+              <div>
+                <label className={labelClass}>Kickoff Date</label>
+                <input
+                  type="date"
+                  value={kickoffDate}
+                  onChange={(e) => { setKickoffDate(e.target.value); setShowOutputs(false); }}
+                  className={`${inputClass} max-w-xs`}
+                />
               </div>
 
-              {/* Quick timeline summary */}
-              {phases.length > 0 && (
+              {/* Auto-computed summary */}
+              {hasDeliverableTypes && (
                 <div className="mt-4 pt-4 border-t border-[#E5E5E5]">
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-2">
-                    Auto-computed Roadmap (business days only)
+                    Computed from deliverables
                   </p>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1">
-                    {phases.map((phase) => {
-                      const isPoint = phase.startDate === phase.endDate;
-                      return (
-                        <span key={phase.name} className="text-[11px] text-[#6B6B6B]">
-                          <span className="font-semibold text-[#0A0A0A]">{phase.name}</span>{" "}
-                          {isPoint
-                            ? formatShortDate(phase.startDate)
-                            : `${formatShortDate(phase.startDate)} → ${formatShortDate(phase.endDate)}`}
-                        </span>
-                      );
-                    })}
-                  </div>
+                  <p className="text-xs text-[#6B6B6B] mb-3">
+                    Design: <span className="font-semibold text-[#0A0A0A]">{designDays}d</span>
+                    <span className="mx-2 text-[#CCCCCC]">·</span>
+                    Development: <span className="font-semibold text-[#0A0A0A]">{devDays}d</span>
+                  </p>
+                  {phases.length > 0 && (
+                    <div className="flex flex-wrap gap-x-4 gap-y-1">
+                      {phases.map((phase) => {
+                        const isPoint = phase.startDate === phase.endDate;
+                        return (
+                          <span key={phase.name} className="text-[11px] text-[#6B6B6B]">
+                            <span className="font-semibold text-[#0A0A0A]">{phase.name}</span>{" "}
+                            {isPoint
+                              ? formatShortDate(phase.startDate)
+                              : `${formatShortDate(phase.startDate)} → ${formatShortDate(phase.endDate)}`}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

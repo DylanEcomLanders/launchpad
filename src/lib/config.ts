@@ -29,9 +29,28 @@ export const projectTypes = [
 
 export type ProjectType = (typeof projectTypes)[number];
 
-export const deliverableTypes = ["Landing Page", "Performance Test", "Support"] as const;
+export const deliverableTypes = [
+  "PDP (Product Page)",
+  "Collection Page",
+  "Landing Page",
+  "Homepage",
+  "Advertorial",
+  "About / Header / Blog",
+] as const;
 
 export type DeliverableType = (typeof deliverableTypes)[number];
+
+export const deliverableTimeEstimates: Record<
+  DeliverableType,
+  { designDays: number; devDays: number }
+> = {
+  "PDP (Product Page)": { designDays: 4, devDays: 4 },
+  "Collection Page": { designDays: 2, devDays: 2 },
+  "Landing Page": { designDays: 4, devDays: 4 },
+  Homepage: { designDays: 4, devDays: 4 },
+  Advertorial: { designDays: 2, devDays: 2 },
+  "About / Header / Blog": { designDays: 1, devDays: 1 },
+};
 
 export interface Deliverable {
   description: string;

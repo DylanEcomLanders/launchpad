@@ -1,7 +1,9 @@
 import {
   roadmapPhaseNames,
+  deliverableTimeEstimates,
   type RoadmapPhaseName,
   type RoadmapPhase,
+  type DeliverableType,
 } from "./config";
 
 /* ── Touchpoint type ── */
@@ -11,25 +13,42 @@ export interface Touchpoint {
   date: string;
 }
 
-/* ── Timeline presets ── */
+/* ── Deliverable-based timeline computation ── */
 
-export interface TimelinePreset {
-  key: string;
-  label: string;
-  designDays: number; // business days
-  devDays: number; // business days
+/**
+ * Compute design & dev day totals from deliverable types.
+ *
+ * Uses sqrt(n) compression: work is built in parallel so
+ * total = rawDays / sqrt(count), rounded up.
+ *
+ * Example (PDP = 4d each):
+ *   1 PDP → 4 / √1 = 4
+ *   2 PDP → 8 / √2 = 6
+ *   3 PDP → 12 / √3 = 7
+ */
+export function computeDesignDevDays(
+  types: (DeliverableType | "")[]
+): { designDays: number; devDays: number } {
+  const valid = types.filter(
+    (t): t is DeliverableType => t !== "" && t in deliverableTimeEstimates
+  );
+  if (valid.length === 0) return { designDays: 0, devDays: 0 };
+
+  const rawDesign = valid.reduce(
+    (sum, t) => sum + deliverableTimeEstimates[t].designDays,
+    0
+  );
+  const rawDev = valid.reduce(
+    (sum, t) => sum + deliverableTimeEstimates[t].devDays,
+    0
+  );
+  const count = valid.length;
+
+  return {
+    designDays: Math.max(1, Math.ceil(rawDesign / Math.sqrt(count))),
+    devDays: Math.max(1, Math.ceil(rawDev / Math.sqrt(count))),
+  };
 }
-
-export const timelinePresets: TimelinePreset[] = [
-  { key: "standard", label: "Standard (4 weeks)", designDays: 5, devDays: 5 },
-  { key: "extended", label: "Extended (6 weeks)", designDays: 10, devDays: 10 },
-  {
-    key: "full-rebuild",
-    label: "Full Rebuild (8 weeks)",
-    designDays: 15,
-    devDays: 15,
-  },
-];
 
 const REVISION_BUSINESS_DAYS = 4;
 

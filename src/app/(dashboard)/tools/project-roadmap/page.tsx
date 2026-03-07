@@ -4,12 +4,21 @@ import { useState, useMemo } from "react";
 import { EyeIcon } from "@heroicons/react/24/solid";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
-import { projectTypes, type RoadmapFormData } from "@/lib/config";
+import {
+  PlusIcon,
+  TrashIcon,
+} from "@heroicons/react/24/solid";
+import {
+  projectTypes,
+  deliverableTypes,
+  type RoadmapFormData,
+  type DeliverableType,
+} from "@/lib/config";
 import {
   computeAllPhases,
+  computeDesignDevDays,
   computePhaseTouchpoints,
   phaseDuration,
-  timelinePresets,
 } from "@/lib/roadmap-defaults";
 import { RoadmapPdfDocument } from "@/components/roadmap-pdf-document";
 import { PdfPreview } from "@/components/pdf-preview";
@@ -49,7 +58,7 @@ export default function ProjectRoadmapPage() {
     RoadmapFormData["projectType"]
   >("");
   const [kickoffDate, setKickoffDate] = useState("");
-  const [presetKey, setPresetKey] = useState("");
+  const [selectedTypes, setSelectedTypes] = useState<(DeliverableType | "")[]>([""]);
 
   /* ── Per-phase notes ── */
   const [phaseNotes, setPhaseNotes] = useState<Record<string, string>>({});
@@ -57,14 +66,17 @@ export default function ProjectRoadmapPage() {
   const [generating, setGenerating] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
-  /* ── Resolve preset ── */
-  const preset = timelinePresets.find((p) => p.key === presetKey);
+  /* ── Auto-compute design/dev days from deliverables ── */
+  const { designDays, devDays } = useMemo(
+    () => computeDesignDevDays(selectedTypes),
+    [selectedTypes]
+  );
 
   /* ── Compute phases ── */
   const phases = useMemo(() => {
-    if (!kickoffDate || !preset) return [];
-    return computeAllPhases(kickoffDate, preset.designDays, preset.devDays);
-  }, [kickoffDate, preset]);
+    if (!kickoffDate || designDays === 0) return [];
+    return computeAllPhases(kickoffDate, designDays, devDays);
+  }, [kickoffDate, designDays, devDays]);
 
   /* ── Derived dates from phases ── */
   const designEndDate =
@@ -82,9 +94,29 @@ export default function ProjectRoadmapPage() {
     });
   }, [phases, phaseNotes]);
 
+  /* ── Deliverable helpers ── */
+  const updateType = (index: number, value: string) => {
+    const updated = [...selectedTypes];
+    updated[index] = value as DeliverableType | "";
+    setSelectedTypes(updated);
+    setShowPreview(false);
+  };
+
+  const addType = () => {
+    setSelectedTypes([...selectedTypes, ""]);
+    setShowPreview(false);
+  };
+
+  const removeType = (index: number) => {
+    if (selectedTypes.length <= 1) return;
+    setSelectedTypes(selectedTypes.filter((_, i) => i !== index));
+    setShowPreview(false);
+  };
+
   /* ── Validation ── */
+  const hasDeliverables = selectedTypes.some((t) => t !== "");
   const isFormValid =
-    clientName.trim() && projectType && kickoffDate && presetKey;
+    clientName.trim() && projectType && kickoffDate && hasDeliverables;
 
   /* ── Generation ── */
   const handleGenerate = async () => {
@@ -169,44 +201,77 @@ export default function ProjectRoadmapPage() {
             </div>
           </div>
 
-          {/* Timeline — kickoff date + preset */}
+          {/* Deliverables */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B6B6B]">
+                Deliverables
+              </label>
+              <button
+                onClick={addType}
+                className="flex items-center gap-1.5 text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
+              >
+                <PlusIcon className="size-3.5" />
+                Add row
+              </button>
+            </div>
+            <div className="space-y-3">
+              {selectedTypes.map((t, i) => (
+                <div key={i} className="grid grid-cols-[1fr_36px] gap-3 items-start">
+                  <select
+                    value={t}
+                    onChange={(e) => updateType(i, e.target.value)}
+                    className={selectClass}
+                  >
+                    <option value="">Select deliverable...</option>
+                    {deliverableTypes.map((dt) => (
+                      <option key={dt} value={dt}>{dt}</option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={() => removeType(i)}
+                    disabled={selectedTypes.length <= 1}
+                    className="p-2.5 text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <TrashIcon className="size-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Timeline */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-4">
               Timeline
             </label>
             <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5 space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className={labelClass}>Kickoff Date</label>
-                  <input
-                    type="date"
-                    value={kickoffDate}
-                    onChange={(e) => {
-                      setKickoffDate(e.target.value);
-                      setShowPreview(false);
-                    }}
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Timeline</label>
-                  <select
-                    value={presetKey}
-                    onChange={(e) => {
-                      setPresetKey(e.target.value);
-                      setShowPreview(false);
-                    }}
-                    className={selectClass}
-                  >
-                    <option value="">Select timeline...</option>
-                    {timelinePresets.map((p) => (
-                      <option key={p.key} value={p.key}>
-                        {p.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              <div>
+                <label className={labelClass}>Kickoff Date</label>
+                <input
+                  type="date"
+                  value={kickoffDate}
+                  onChange={(e) => {
+                    setKickoffDate(e.target.value);
+                    setShowPreview(false);
+                  }}
+                  className={`${inputClass} max-w-xs`}
+                />
               </div>
+
+              {/* Auto-computed summary */}
+              {hasDeliverables && (
+                <div className="pt-4 border-t border-[#E5E5E5]">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-2">
+                    Computed from deliverables
+                  </p>
+                  <p className="text-xs text-[#6B6B6B]">
+                    Design: <span className="font-semibold text-[#0A0A0A]">{designDays}d</span>
+                    <span className="mx-2 text-[#CCCCCC]">·</span>
+                    Development: <span className="font-semibold text-[#0A0A0A]">{devDays}d</span>
+                  </p>
+                </div>
+              )}
 
               {/* Auto-computed timeline summary */}
               {phases.length > 0 && (
