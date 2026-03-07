@@ -62,7 +62,7 @@ export function PdfPreview({
         <button
           onClick={handleDownload}
           disabled={downloading}
-          className="flex items-center gap-2 px-5 py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#2A2A2A] transition-colors disabled:opacity-40"
+          className="flex items-center gap-2 px-5 py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent hover:text-[#0A0A0A] transition-colors disabled:opacity-40"
         >
           {downloading ? (
             <>

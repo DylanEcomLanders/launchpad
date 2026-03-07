@@ -254,8 +254,8 @@ export function Sidebar() {
                 flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm
                 transition-colors duration-150
                 ${pathname === "/"
-                  ? "bg-[#F0F0F0] font-medium"
-                  : "hover:bg-[#F5F5F5] text-[#6B6B6B]"
+                  ? "bg-[#F0F0F0] font-medium border-l-2 border-accent"
+                  : "hover:bg-[#F5F5F5] text-[#6B6B6B] border-l-2 border-transparent"
                 }
               `}
             >
@@ -296,8 +296,8 @@ export function Sidebar() {
                         flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm
                         transition-colors duration-150
                         ${pathname === item.href
-                          ? "bg-[#F0F0F0] font-medium"
-                          : "hover:bg-[#F5F5F5] text-[#6B6B6B]"
+                          ? "bg-[#F0F0F0] font-medium border-l-2 border-accent"
+                          : "hover:bg-[#F5F5F5] text-[#6B6B6B] border-l-2 border-transparent"
                         }
                       `}
                       title={collapsed ? item.label : undefined}

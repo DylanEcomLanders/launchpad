@@ -187,7 +187,7 @@ export default function HomePage() {
                   <Link
                     key={tool.name}
                     href={tool.href}
-                    className="group relative bg-[#F0F0F0] border border-[#E5E5E5] rounded-lg p-6 transition-all duration-200 hover:border-[#CCCCCC] hover:bg-[#EBEBEB] cursor-pointer"
+                    className="group relative bg-[#F0F0F0] border border-[#E5E5E5] rounded-lg p-6 transition-all duration-200 hover:border-accent hover:bg-[#EBEBEB] cursor-pointer"
                   >
                     <CardContent tool={tool} />
                   </Link>
@@ -203,7 +203,7 @@ export default function HomePage() {
 function CardContent({ tool }: { tool: ToolCard }) {
   return (
     <div className="flex items-start gap-4">
-      <div className="p-2.5 bg-white rounded-md border border-[#E5E5E5]">
+      <div className="p-2.5 bg-white rounded-md border border-[#E5E5E5] group-hover:border-accent group-hover:bg-accent/10 transition-colors duration-200">
         {tool.icon}
       </div>
       <div className="flex-1 min-w-0">

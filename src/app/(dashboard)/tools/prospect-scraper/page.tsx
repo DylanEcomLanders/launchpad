@@ -375,7 +375,7 @@ export default function ProspectScraperPage() {
             type="button"
             onClick={handleSearch}
             disabled={!canSearch}
-            className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#2A2A2A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent hover:text-[#0A0A0A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>
@@ -447,7 +447,7 @@ export default function ProspectScraperPage() {
                   type="button"
                   onClick={exportCsv}
                   disabled={selectedCount === 0}
-                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md bg-[#0A0A0A] text-white hover:bg-[#2A2A2A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md bg-[#0A0A0A] text-white hover:bg-accent hover:text-[#0A0A0A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <ArrowDownTrayIcon className="size-3" />
                   Export CSV

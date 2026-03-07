@@ -314,7 +314,7 @@ export default function ProposalsPage() {
                 <button
                   type="submit"
                   disabled={generating || !clientName.trim()}
-                  className="w-full md:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#2A2A2A] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-full md:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent hover:text-[#0A0A0A] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   {generating ? (
                     <ArrowPathIcon className="size-4 animate-spin" />

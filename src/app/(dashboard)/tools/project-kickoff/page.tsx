@@ -752,7 +752,7 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
             <button
               onClick={handleGenerate}
               disabled={!isFormValid || generating}
-              className="flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#2A2A2A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent hover:text-[#0A0A0A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {generating ? (
                 <>
@@ -777,7 +777,7 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
               <button
                 onClick={handleDownloadAll}
                 disabled={downloadingAll}
-                className="flex items-center gap-2 px-4 py-2 bg-[#0A0A0A] text-white text-xs font-medium rounded-md hover:bg-[#2A2A2A] transition-colors disabled:opacity-40"
+                className="flex items-center gap-2 px-4 py-2 bg-[#0A0A0A] text-white text-xs font-medium rounded-md hover:bg-accent hover:text-[#0A0A0A] transition-colors disabled:opacity-40"
               >
                 {downloadingAll ? (
                   <>

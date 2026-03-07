@@ -49,7 +49,7 @@ function ProgressRing({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#0A0A0A"
+          stroke="#D2F34C"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
@@ -76,7 +76,7 @@ function phaseStatusIcon(status: PhaseStatus, size: "sm" | "md" = "md") {
   switch (status) {
     case "complete":
       return (
-        <span className={`inline-flex items-center justify-center ${s} rounded-full bg-[#0A0A0A] text-white`}>
+        <span className={`inline-flex items-center justify-center ${s} rounded-full bg-accent text-[#0A0A0A]`}>
           <svg className={check} viewBox="0 0 12 12" fill="none">
             <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -84,8 +84,8 @@ function phaseStatusIcon(status: PhaseStatus, size: "sm" | "md" = "md") {
       );
     case "in-progress":
       return (
-        <span className={`inline-flex items-center justify-center ${s} rounded-full border-2 border-[#0A0A0A]`}>
-          <span className={`${inner} rounded-full bg-[#0A0A0A] animate-pulse`} />
+        <span className={`inline-flex items-center justify-center ${s} rounded-full border-2 border-accent`}>
+          <span className={`${inner} rounded-full bg-accent animate-pulse`} />
         </span>
       );
     case "upcoming":
@@ -154,14 +154,14 @@ export function PortalView({ portal }: { portal: PortalData }) {
                     <div
                       className={`size-3 rounded-full border-2 transition-all ${
                         phase.status === "complete"
-                          ? "bg-white border-white"
+                          ? "bg-accent border-accent"
                           : phase.status === "in-progress"
-                          ? "bg-transparent border-white"
+                          ? "bg-transparent border-accent"
                           : "bg-transparent border-[#444444]"
                       }`}
                     >
                       {phase.status === "in-progress" && (
-                        <span className="block size-full rounded-full bg-white/40 animate-pulse" />
+                        <span className="block size-full rounded-full bg-accent/40 animate-pulse" />
                       )}
                     </div>
                     <span
@@ -180,7 +180,7 @@ export function PortalView({ portal }: { portal: PortalData }) {
                       <div
                         className={`h-full ${
                           phase.status === "complete"
-                            ? "bg-white/60"
+                            ? "bg-accent/60"
                             : "bg-[#333333]"
                         }`}
                       />
@@ -204,7 +204,7 @@ export function PortalView({ portal }: { portal: PortalData }) {
                 onClick={() => setActiveTab(tab.key)}
                 className={`px-5 py-2 text-sm font-medium rounded-full transition-all duration-200 ${
                   activeTab === tab.key
-                    ? "bg-[#0A0A0A] text-white shadow-sm"
+                    ? "bg-accent text-[#0A0A0A] shadow-sm"
                     : "text-[#6B6B6B] hover:text-[#0A0A0A]"
                 }`}
               >
@@ -313,7 +313,7 @@ function OverviewTab({
                 {/* Mini progress */}
                 <div className="w-16 h-1 bg-[#F0F0F0] rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#0A0A0A] rounded-full"
+                    className="h-full bg-accent rounded-full"
                     style={{ width: `${pct}%` }}
                   />
                 </div>
@@ -353,19 +353,19 @@ function TimelineTab({ phases }: { phases: PortalPhase[] }) {
                 <div
                   className={`size-[23px] rounded-full border-[2.5px] flex items-center justify-center transition-all ${
                     isComplete
-                      ? "border-[#0A0A0A] bg-[#0A0A0A]"
+                      ? "border-accent bg-accent"
                       : isActive
-                      ? "border-[#0A0A0A] bg-white"
+                      ? "border-accent bg-white"
                       : "border-[#D4D4D4] bg-white"
                   }`}
                 >
                   {isComplete && (
-                    <svg className="size-3 text-white" viewBox="0 0 12 12" fill="none">
+                    <svg className="size-3 text-[#0A0A0A]" viewBox="0 0 12 12" fill="none">
                       <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   )}
                   {isActive && (
-                    <span className="size-2 rounded-full bg-[#0A0A0A] animate-pulse" />
+                    <span className="size-2 rounded-full bg-accent animate-pulse" />
                   )}
                 </div>
               </div>
@@ -386,7 +386,7 @@ function TimelineTab({ phases }: { phases: PortalPhase[] }) {
                       </span>
                       <h3 className="text-sm font-bold">{phase.name}</h3>
                       {isActive && (
-                        <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-white text-[#0A0A0A] rounded-full">
+                        <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-accent text-[#0A0A0A] rounded-full">
                           Current
                         </span>
                       )}
@@ -403,7 +403,7 @@ function TimelineTab({ phases }: { phases: PortalPhase[] }) {
                 {/* Progress bar */}
                 <div className={`h-1.5 rounded-full overflow-hidden ${isActive ? "bg-[#333333]" : "bg-[#E5E5E5]"}`}>
                   <div
-                    className={`h-full rounded-full transition-all duration-700 ${isActive ? "bg-white" : "bg-[#0A0A0A]"}`}
+                    className={`h-full rounded-full transition-all duration-700 ${isActive ? "bg-accent" : "bg-accent"}`}
                     style={{ width: `${pct}%` }}
                   />
                 </div>
@@ -464,12 +464,12 @@ function DeliverablesTab({
                   <span
                     className={`inline-flex items-center justify-center size-[18px] rounded-full border-[1.5px] shrink-0 transition-all ${
                       item.status === "complete"
-                        ? "bg-[#0A0A0A] border-[#0A0A0A]"
+                        ? "bg-accent border-accent"
                         : "border-[#D4D4D4]"
                     }`}
                   >
                     {item.status === "complete" && (
-                      <svg className="size-2.5 text-white" viewBox="0 0 12 12" fill="none">
+                      <svg className="size-2.5 text-[#0A0A0A]" viewBox="0 0 12 12" fill="none">
                         <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     )}
@@ -538,7 +538,7 @@ function DocumentsTab({ documents }: { documents: PortalDocument[] }) {
             <button
               key={i}
               onClick={() => handleClick(doc)}
-              className="group text-left border border-[#E5E5E5] rounded-lg p-5 hover:border-[#0A0A0A] hover:shadow-sm transition-all duration-200"
+              className="group text-left border border-[#E5E5E5] rounded-lg p-5 hover:border-accent hover:shadow-sm transition-all duration-200"
             >
               <div className="flex items-start gap-4">
                 {/* Type badge */}

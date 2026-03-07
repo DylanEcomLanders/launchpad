@@ -254,7 +254,7 @@ export default function OutreachPage() {
             type="button"
             onClick={generate}
             disabled={!canSubmit}
-            className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#2A2A2A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent hover:text-[#0A0A0A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>
@@ -328,7 +328,7 @@ export default function OutreachPage() {
                 className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md border transition-all duration-200 ${
                   copiedAll
                     ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                    : "bg-[#0A0A0A] border-[#0A0A0A] text-white hover:bg-[#2A2A2A]"
+                    : "bg-[#0A0A0A] border-[#0A0A0A] text-white hover:bg-accent hover:text-[#0A0A0A]"
                 }`}
               >
                 {copiedAll ? (

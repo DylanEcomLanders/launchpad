@@ -393,7 +393,7 @@ export default function ExpensesPage() {
               <button
                 type="submit"
                 disabled={submitting || !form.name.trim() || form.amount <= 0}
-                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#2A2A2A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent hover:text-[#0A0A0A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {submitting ? (
                   <>

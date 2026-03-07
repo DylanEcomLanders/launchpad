@@ -769,7 +769,7 @@ export default function ScopeGeneratorPage() {
             <button
               onClick={handleGenerateScope}
               disabled={!isFormValid || generatingScope}
-              className="flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#2A2A2A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent hover:text-[#0A0A0A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {generatingScope ? (
                 <>
@@ -788,7 +788,7 @@ export default function ScopeGeneratorPage() {
               <button
                 onClick={handleGenerateAgreement}
                 disabled={!isAgreementValid || generatingAgreement}
-                className="flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#2A2A2A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent hover:text-[#0A0A0A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {generatingAgreement ? (
                   <>

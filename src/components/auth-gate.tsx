@@ -68,7 +68,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
             )}
             <button
               type="submit"
-              className="w-full px-4 py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#2A2A2A] transition-colors"
+              className="w-full px-4 py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent hover:text-[#0A0A0A] transition-colors"
             >
               Continue
             </button>

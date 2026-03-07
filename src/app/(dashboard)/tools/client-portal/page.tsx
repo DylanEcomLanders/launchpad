@@ -19,9 +19,9 @@ const labelClass =
 function phaseStatusDot(status: string) {
   switch (status) {
     case "complete":
-      return <span className="size-2 rounded-full bg-[#0A0A0A] inline-block" />;
+      return <span className="size-2 rounded-full bg-accent inline-block" />;
     case "in-progress":
-      return <span className="size-2 rounded-full bg-amber-500 inline-block animate-pulse" />;
+      return <span className="size-2 rounded-full bg-accent inline-block animate-pulse" />;
     default:
       return <span className="size-2 rounded-full bg-[#E5E5E5] inline-block" />;
   }
@@ -193,7 +193,7 @@ function PortalCard({
             <div className="flex items-center gap-2 flex-1 max-w-[200px]">
               <div className="flex-1 h-1.5 bg-[#F0F0F0] rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[#0A0A0A] rounded-full"
+                  className="h-full bg-accent rounded-full"
                   style={{ width: `${portal.progress}%` }}
                 />
               </div>
