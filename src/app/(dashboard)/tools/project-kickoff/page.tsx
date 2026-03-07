@@ -187,7 +187,7 @@ export default function ProjectKickoffPage() {
       endDate: devEndDate,
       deliverables,
       additionalNotes,
-      showAgreement: isAgreementValid,
+      showAgreement: !!isAgreementValid,
       agreement: {
         ...agreement,
         agreementStartDate: agreement.agreementStartDate || kickoffDate,
