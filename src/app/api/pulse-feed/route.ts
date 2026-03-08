@@ -18,6 +18,11 @@ const STATUS_KEYWORDS = [
 ];
 
 const CHANNEL_NAME_FILTERS = ["external", "internal"];
+const CONCURRENCY = 5;
+const MAX_CHANNELS = 30; // Cap to stay within Slack rate limits
+
+// Allow up to 60s on Vercel Pro (10s on Hobby)
+export const maxDuration = 60;
 
 // ── Route Handler ───────────────────────────────────────────────
 
@@ -48,52 +53,31 @@ export async function GET(request: Request) {
       } satisfies PulseFeedResponse);
     }
 
-    // Step 2: Fetch history from each channel
+    // Step 2: Fetch history from channels in parallel batches
     const oldest = getOldestTimestamp(hours);
     const allMessages: RawMessage[] = [];
 
-    for (const channel of channels) {
-      try {
-        const res = await slack.conversations.history({
-          channel: channel.id,
-          oldest,
-          limit: 50,
-          inclusive: true,
-        });
-
-        const messages = res.messages || [];
-        for (const m of messages) {
-          // Skip bot messages, join/leave, and empty messages
-          if (m.subtype && m.subtype !== "file_share") continue;
-          if (!m.text?.trim()) continue;
-
-          allMessages.push({
-            text: m.text || "",
-            user_id: m.user || "",
-            channel_id: channel.id,
-            channel_name: channel.name,
-            channel_type: classifyChannel(channel.name),
-            ts: m.ts || "",
-          });
+    for (let i = 0; i < channels.length; i += CONCURRENCY) {
+      const batch = channels.slice(i, i + CONCURRENCY);
+      const results = await Promise.allSettled(
+        batch.map((channel) => fetchChannelMessages(slack, channel, oldest))
+      );
+      for (const result of results) {
+        if (result.status === "fulfilled") {
+          allMessages.push(...result.value);
         }
-
-        await sleep(200);
-      } catch {
-        // Skip failed channels but keep going
       }
     }
 
-    // Step 3: Resolve user IDs to display names
-    const userNames = await resolveUserNames(
-      slack,
-      [...new Set(allMessages.map((m) => m.user_id).filter(Boolean))]
-    );
-
-    // Step 4: Build feed items, sorted newest first
+    // Step 3: Sort, slice, then resolve only the user IDs we need
     const sorted = allMessages.sort((a, b) => parseFloat(b.ts) - parseFloat(a.ts));
     const total = sorted.length;
     const sliced = sorted.slice(0, limit);
 
+    const uniqueUserIds = [...new Set(sliced.map((m) => m.user_id).filter(Boolean))];
+    const userNames = await resolveUserNames(slack, uniqueUserIds);
+
+    // Step 4: Build feed items
     const items: PulseFeedItem[] = sliced.map((m) => ({
       id: `${m.channel_id}-${m.ts}`,
       timestamp: slackTsToISO(m.ts),
@@ -136,7 +120,7 @@ interface RawMessage {
 // ── Channel Discovery ───────────────────────────────────────────
 
 async function getMatchingChannels(slack: WebClient): Promise<SlackChannel[]> {
-  const matched: SlackChannel[] = [];
+  const matched: { id: string; name: string; created: number }[] = [];
   let cursor: string | undefined;
 
   do {
@@ -151,15 +135,52 @@ async function getMatchingChannels(slack: WebClient): Promise<SlackChannel[]> {
     for (const ch of channels) {
       const name = ch.name || "";
       if (CHANNEL_NAME_FILTERS.some((f) => name.includes(f))) {
-        matched.push({ id: ch.id || "", name });
+        matched.push({ id: ch.id || "", name, created: ch.created || 0 });
       }
     }
 
     cursor = res.response_metadata?.next_cursor || undefined;
-    if (cursor) await sleep(200);
   } while (cursor);
 
-  return matched;
+  // Sort newest channels first (more likely to be active), cap total
+  return matched
+    .sort((a, b) => b.created - a.created)
+    .slice(0, MAX_CHANNELS)
+    .map(({ id, name }) => ({ id, name }));
+}
+
+// ── Channel History ─────────────────────────────────────────────
+
+async function fetchChannelMessages(
+  slack: WebClient,
+  channel: SlackChannel,
+  oldest: string
+): Promise<RawMessage[]> {
+  const res = await slack.conversations.history({
+    channel: channel.id,
+    oldest,
+    limit: 20,
+    inclusive: true,
+  });
+
+  const messages = res.messages || [];
+  const result: RawMessage[] = [];
+
+  for (const m of messages) {
+    if (m.subtype && m.subtype !== "file_share") continue;
+    if (!m.text?.trim()) continue;
+
+    result.push({
+      text: m.text || "",
+      user_id: m.user || "",
+      channel_id: channel.id,
+      channel_name: channel.name,
+      channel_type: classifyChannel(channel.name),
+      ts: m.ts || "",
+    });
+  }
+
+  return result;
 }
 
 // ── User Resolution ─────────────────────────────────────────────
@@ -170,17 +191,25 @@ async function resolveUserNames(
 ): Promise<Map<string, string>> {
   const names = new Map<string, string>();
 
-  for (const uid of userIds) {
-    try {
-      const res = await slack.users.info({ user: uid });
-      const user = res.user;
-      names.set(
-        uid,
-        user?.profile?.display_name || user?.real_name || user?.name || uid
-      );
-      await sleep(100);
-    } catch {
-      names.set(uid, uid);
+  // Resolve in parallel batches of 10
+  for (let i = 0; i < userIds.length; i += 10) {
+    const batch = userIds.slice(i, i + 10);
+    const results = await Promise.allSettled(
+      batch.map(async (uid) => {
+        const res = await slack.users.info({ user: uid });
+        const user = res.user;
+        return {
+          uid,
+          name: user?.profile?.display_name || user?.real_name || user?.name || uid,
+        };
+      })
+    );
+    for (const result of results) {
+      if (result.status === "fulfilled") {
+        names.set(result.value.uid, result.value.name);
+      } else {
+        // Can't extract uid from rejected promise, skip
+      }
     }
   }
 
@@ -211,7 +240,6 @@ function slackTsToISO(ts: string): string {
 }
 
 function truncate(text: string, max: number): string {
-  // Clean Slack formatting
   const cleaned = text
     .replace(/<@[A-Z0-9]+>/g, "@user")
     .replace(/<#[A-Z0-9]+\|([^>]+)>/g, "#$1")
@@ -220,8 +248,4 @@ function truncate(text: string, max: number): string {
     .trim();
   if (cleaned.length <= max) return cleaned;
   return cleaned.slice(0, max).trim() + "…";
-}
-
-function sleep(ms: number) {
-  return new Promise((r) => setTimeout(r, ms));
 }
