@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { LockClosedIcon } from "@heroicons/react/24/solid";
 
 const STORAGE_KEY = "launchpad-auth";
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "ecomlanders2025";
+const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD ?? "";
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const [authed, setAuthed] = useState(false);
