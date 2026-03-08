@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { MinusIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { ClipboardDocumentIcon, ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 import { labelClass } from "@/lib/form-styles";
 
@@ -130,6 +131,7 @@ function getInternalCost(d: PricedDeliverable, activeRoles: Set<Role>): number {
 export default function PriceCalculatorPage() {
   const [tier, setTier] = useState<Tier>(1);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [copiedTier, setCopiedTier] = useState<number | null>(null);
   const [activeRoles, setActiveRoles] = useState<Set<Role>>(
     new Set(["dev", "designer", "juniorDesigner"])
   );
@@ -265,6 +267,34 @@ export default function PriceCalculatorPage() {
             Select deliverables and quantities to calculate project costs and
             margins
           </p>
+          {/* Share Price List Links */}
+          <div className="flex flex-wrap items-center gap-3 mt-4">
+            <span className="text-xs font-medium text-[#AAAAAA]">Share price list:</span>
+            {[1, 2].map((t) => (
+              <div key={t} className="flex items-center gap-1">
+                <button
+                  onClick={() => {
+                    const url = `${window.location.origin}/pricing/tier-${t}`;
+                    navigator.clipboard.writeText(url);
+                    setCopiedTier(t);
+                    setTimeout(() => setCopiedTier(null), 2000);
+                  }}
+                  className="flex items-center gap-1 text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
+                >
+                  <ClipboardDocumentIcon className="size-3.5" />
+                  {copiedTier === t ? "Copied!" : `Tier ${t}`}
+                </button>
+                <a
+                  href={`/pricing/tier-${t}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
+                >
+                  <ArrowTopRightOnSquareIcon className="size-3.5" />
+                </a>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="space-y-8">
