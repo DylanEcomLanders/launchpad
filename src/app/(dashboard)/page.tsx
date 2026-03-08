@@ -100,7 +100,7 @@ export default function PulseDashboard() {
         <div className="flex items-start justify-between mb-8">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">
-              Pulse
+              Mission Control
             </h1>
             <p className="text-sm text-[#6B6B6B]">
               Mission control for the Ecomlanders team
@@ -130,7 +130,7 @@ export default function PulseDashboard() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <h2 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B]">
-                Pulse Feed
+                Feed
               </h2>
               {feedTotal > 0 && (
                 <span className="text-[10px] font-bold bg-[#F0F0F0] text-[#6B6B6B] px-1.5 py-0.5 rounded">

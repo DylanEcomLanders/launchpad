@@ -272,7 +272,7 @@ export function Sidebar() {
               `}
             >
               <HomeIcon className="size-4" />
-              {!collapsed && <span>Pulse</span>}
+              {!collapsed && <span>Mission Control</span>}
             </Link>
           </div>
 
