@@ -30,6 +30,7 @@ import {
   FunnelIcon,
   ArrowsRightLeftIcon,
   SparklesIcon,
+  BanknotesIcon,
 } from "@heroicons/react/24/solid";
 import { Logo, LogoMark } from "@/components/logo";
 
@@ -76,6 +77,11 @@ const navSections: NavSection[] = [
         label: "Portfolio",
         href: "/tools/portfolio",
         icon: <GlobeAltIcon className="size-4" />,
+      },
+      {
+        label: "Price Lists",
+        href: "/tools/price-lists",
+        icon: <BanknotesIcon className="size-4" />,
       },
     ],
   },
