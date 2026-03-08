@@ -31,6 +31,7 @@ import {
   ArrowsRightLeftIcon,
   SparklesIcon,
   BanknotesIcon,
+  ChatBubbleLeftEllipsisIcon,
 } from "@heroicons/react/24/solid";
 import { Logo, LogoMark } from "@/components/logo";
 
@@ -82,6 +83,11 @@ const navSections: NavSection[] = [
         label: "Price Lists",
         href: "/tools/price-lists",
         icon: <BanknotesIcon className="size-4" />,
+      },
+      {
+        label: "Feedback",
+        href: "/tools/feedback",
+        icon: <ChatBubbleLeftEllipsisIcon className="size-4" />,
       },
     ],
   },
