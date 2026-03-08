@@ -72,6 +72,11 @@ const navSections: NavSection[] = [
         href: "/tools/qa-checklist",
         icon: <ClipboardDocumentCheckIcon className="size-4" />,
       },
+      {
+        label: "Portfolio",
+        href: "/tools/portfolio",
+        icon: <GlobeAltIcon className="size-4" />,
+      },
     ],
   },
   {
