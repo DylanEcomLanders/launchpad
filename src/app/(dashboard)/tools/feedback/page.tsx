@@ -60,12 +60,10 @@ export default function FeedbackDashboard() {
       ? (submissions.reduce((sum, s) => sum + fn(s), 0) / submissions.length).toFixed(1)
       : "—";
 
-  const recommendRate =
+  const avgRecommend =
     submissions.length > 0
-      ? Math.round(
-          (submissions.filter((s) => s.would_recommend).length / submissions.length) * 100
-        )
-      : 0;
+      ? (submissions.reduce((sum, s) => sum + s.recommend_score, 0) / submissions.length).toFixed(1)
+      : "—";
 
   return (
     <div className="relative min-h-screen">
@@ -133,9 +131,9 @@ export default function FeedbackDashboard() {
             </div>
             <div className="bg-white border border-[#E5E5E5] rounded-lg p-4">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
-                Would Recommend
+                Avg Recommend
               </p>
-              <p className="text-xl font-bold text-[#0A0A0A]">{recommendRate}%</p>
+              <p className="text-xl font-bold text-[#0A0A0A]">{avgRecommend}/10</p>
             </div>
           </div>
         )}
@@ -213,8 +211,8 @@ export default function FeedbackDashboard() {
                     </div>
                     <div>
                       <p className="text-[10px] uppercase tracking-wider text-[#AAAAAA] mb-0.5">Recommend</p>
-                      <p className={`text-xs font-semibold ${sub.would_recommend ? "text-[#15803D]" : "text-[#AAAAAA]"}`}>
-                        {sub.would_recommend ? "Yes" : "No"}
+                      <p className={`text-xs font-semibold ${sub.recommend_score >= 8 ? "text-[#15803D]" : sub.recommend_score >= 5 ? "text-[#0A0A0A]" : "text-[#DC2626]"}`}>
+                        {sub.recommend_score}/10
                       </p>
                     </div>
                   </div>

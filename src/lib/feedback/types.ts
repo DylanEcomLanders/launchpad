@@ -5,7 +5,7 @@ export interface FeedbackSubmission {
   rating: number; // 1–5
   quality: number; // 1–5
   communication: number; // 1–5
-  would_recommend: boolean;
+  recommend_score: number; // 1–10
   testimonial: string;
   improvements: string;
   submitted_at: string;

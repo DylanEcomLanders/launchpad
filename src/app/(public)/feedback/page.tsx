@@ -55,14 +55,14 @@ export default function FeedbackPage() {
   const [rating, setRating] = useState(0);
   const [quality, setQuality] = useState(0);
   const [communication, setCommunication] = useState(0);
-  const [wouldRecommend, setWouldRecommend] = useState<boolean | null>(null);
+  const [recommendScore, setRecommendScore] = useState(0);
   const [testimonial, setTestimonial] = useState("");
   const [improvements, setImprovements] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const canSubmit =
-    clientName.trim() && rating > 0 && quality > 0 && communication > 0 && wouldRecommend !== null;
+    clientName.trim() && rating > 0 && quality > 0 && communication > 0 && recommendScore > 0;
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
@@ -74,7 +74,7 @@ export default function FeedbackPage() {
         rating,
         quality,
         communication,
-        would_recommend: wouldRecommend!,
+        recommend_score: recommendScore,
         testimonial: testimonial.trim(),
         improvements: improvements.trim(),
       });
@@ -166,27 +166,25 @@ export default function FeedbackPage() {
             <StarRating label="Communication *" value={communication} onChange={setCommunication} />
           </div>
 
-          {/* Would Recommend */}
+          {/* Recommend Score */}
           <div>
-            <p className="text-sm font-medium text-[#0A0A0A] mb-3">
-              Would you recommend us to others? *
+            <p className="text-sm font-medium text-[#0A0A0A] mb-1">
+              How likely are you to recommend us? *
             </p>
-            <div className="flex gap-3">
-              {[
-                { value: true, label: "Yes, definitely" },
-                { value: false, label: "Not right now" },
-              ].map(({ value, label }) => (
+            <p className="text-xs text-[#AAAAAA] mb-3">1 = not likely, 10 = extremely likely</p>
+            <div className="flex gap-1.5">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                 <button
-                  key={String(value)}
+                  key={n}
                   type="button"
-                  onClick={() => setWouldRecommend(value)}
-                  className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-lg border-2 transition-all ${
-                    wouldRecommend === value
+                  onClick={() => setRecommendScore(n)}
+                  className={`flex-1 py-2.5 text-sm font-medium rounded-lg border-2 transition-all ${
+                    recommendScore === n
                       ? "border-[#0A0A0A] bg-[#0A0A0A] text-white"
                       : "border-[#E5E5E5] text-[#6B6B6B] hover:border-[#CCCCCC]"
                   }`}
                 >
-                  {label}
+                  {n}
                 </button>
               ))}
             </div>
