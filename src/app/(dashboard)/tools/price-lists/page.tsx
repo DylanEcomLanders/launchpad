@@ -66,42 +66,41 @@ export default function PriceListsPage() {
                 key={slug}
                 className="bg-white border border-[#E5E5E5] rounded-lg p-5"
               >
-                <div className="flex items-start justify-between gap-4 mb-3">
-                  <div>
-                    <h2 className="text-sm font-semibold text-[#0A0A0A]">
-                      {label}
-                    </h2>
-                    <p className="text-xs text-[#AAAAAA] mt-0.5">
-                      {description}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      onClick={() => copyLink(slug)}
-                      className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-[#0A0A0A] text-white rounded-md hover:bg-[#2A2A2A] transition-colors"
-                    >
-                      {isCopied ? (
-                        <>
-                          <CheckIcon className="size-3.5" />
-                          Copied!
-                        </>
-                      ) : (
-                        <>
-                          <ClipboardDocumentIcon className="size-3.5" />
-                          Copy Link
-                        </>
-                      )}
-                    </button>
-                    <a
-                      href={`/pricing/${slug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium border border-[#E5E5E5] rounded-md text-[#6B6B6B] hover:text-[#0A0A0A] hover:border-[#CCCCCC] transition-colors"
-                    >
-                      <ArrowTopRightOnSquareIcon className="size-3.5" />
-                      Preview
-                    </a>
-                  </div>
+                <div className="mb-4">
+                  <h2 className="text-lg font-semibold text-[#0A0A0A]">
+                    {label}
+                  </h2>
+                  <p className="text-sm text-[#6B6B6B] mt-0.5">
+                    {description}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 mb-4">
+                  <button
+                    onClick={() => copyLink(slug)}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium bg-[#0A0A0A] text-white rounded-lg hover:bg-[#2A2A2A] transition-colors"
+                  >
+                    {isCopied ? (
+                      <>
+                        <CheckIcon className="size-4" />
+                        Copied to clipboard!
+                      </>
+                    ) : (
+                      <>
+                        <ClipboardDocumentIcon className="size-4" />
+                        Copy Share Link
+                      </>
+                    )}
+                  </button>
+                  <a
+                    href={`/pricing/${slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium border border-[#E5E5E5] rounded-lg text-[#0A0A0A] hover:bg-[#F5F5F5] transition-colors"
+                  >
+                    <ArrowTopRightOnSquareIcon className="size-4" />
+                    Preview Page
+                  </a>
                 </div>
 
                 {/* Quick price overview */}
