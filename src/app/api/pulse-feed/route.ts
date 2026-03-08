@@ -4,18 +4,33 @@ import type { PulseFeedItem, PulseFeedResponse, FeedItemType } from "@/lib/pulse
 
 // ── Config ──────────────────────────────────────────────────────
 
-const STATUS_KEYWORDS = [
-  "launched",
-  "live",
-  "shipped",
-  "deployed",
-  "completed",
-  "milestone",
-  "done",
-  "released",
-  "pushed",
-  "merged",
-];
+// Signals that make a message worth surfacing
+const SIGNALS = {
+  status: [
+    "launched", "live", "shipped", "deployed", "completed",
+    "milestone", "done", "released", "pushed", "merged",
+    "went live", "gone live", "all done", "signed off",
+  ],
+  chase: [
+    "any update", "when will", "eta", "timeline", "waiting on",
+    "chasing", "follow up", "following up", "heard back",
+    "checking in", "just checking", "where are we", "how long",
+    "still waiting", "any progress", "asap",
+  ],
+  blocker: [
+    "bug", "broken", "issue", "error", "not working", "down",
+    "blocked", "blocker", "urgent", "critical", "fix",
+    "can't access", "wrong", "failing", "crashed",
+  ],
+  request: [
+    "can you", "could you", "can we", "need to", "need you",
+    "please", "would you", "help with", "looking for",
+    "requesting", "approve", "sign off", "review",
+  ],
+};
+
+const ALL_SIGNAL_PHRASES = Object.values(SIGNALS).flat();
+const MIN_MESSAGE_LENGTH = 15; // Filter out "ok", "thanks", "👍" etc.
 
 const CHANNEL_NAME_FILTERS = ["external", "internal"];
 const CONCURRENCY = 5;
@@ -82,7 +97,7 @@ export async function GET(request: Request) {
       id: `${m.channel_id}-${m.ts}`,
       timestamp: slackTsToISO(m.ts),
       channel_name: m.channel_name,
-      channel_type: detectStatusOverride(m.text, m.channel_type),
+      channel_type: classifySignalType(m.text, m.channel_type),
       author: userNames.get(m.user_id) || "Unknown",
       message: truncate(m.text, 200),
       permalink: `https://slack.com/archives/${m.channel_id}/p${m.ts.replace(".", "")}`,
@@ -170,8 +185,13 @@ async function fetchChannelMessages(
     if (m.subtype && m.subtype !== "file_share") continue;
     if (!m.text?.trim()) continue;
 
+    const text = m.text || "";
+
+    // Only surface messages that carry a signal
+    if (!isSignalMessage(text)) continue;
+
     result.push({
-      text: m.text || "",
+      text,
       user_id: m.user || "",
       channel_id: channel.id,
       channel_name: channel.name,
@@ -223,9 +243,21 @@ function classifyChannel(name: string): FeedItemType {
   return "internal";
 }
 
-function detectStatusOverride(text: string, base: FeedItemType): FeedItemType {
+function isSignalMessage(text: string): boolean {
+  if (text.length < MIN_MESSAGE_LENGTH) return false;
   const lower = text.toLowerCase();
-  if (STATUS_KEYWORDS.some((kw) => lower.includes(kw))) return "status";
+  // Questions are always interesting
+  if (lower.includes("?")) return true;
+  return ALL_SIGNAL_PHRASES.some((phrase) => lower.includes(phrase));
+}
+
+function classifySignalType(text: string, base: FeedItemType): FeedItemType {
+  const lower = text.toLowerCase();
+  // Check in priority order — most specific first
+  if (SIGNALS.blocker.some((kw) => lower.includes(kw))) return "blocker";
+  if (SIGNALS.chase.some((kw) => lower.includes(kw))) return "chase";
+  if (SIGNALS.status.some((kw) => lower.includes(kw))) return "status";
+  if (SIGNALS.request.some((kw) => lower.includes(kw))) return "request";
   return base;
 }
 

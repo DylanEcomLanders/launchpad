@@ -61,6 +61,9 @@ const feedTypeConfig: Record<FeedItemType, { border: string; badge: string; labe
   client: { border: "border-l-blue-500", badge: "bg-blue-50 text-blue-600", label: "Client" },
   internal: { border: "border-l-[#0A0A0A]", badge: "bg-gray-100 text-gray-600", label: "Internal" },
   status: { border: "border-l-emerald-500", badge: "bg-emerald-50 text-emerald-600", label: "Status" },
+  chase: { border: "border-l-amber-500", badge: "bg-amber-50 text-amber-600", label: "Chase" },
+  blocker: { border: "border-l-red-500", badge: "bg-red-50 text-red-600", label: "Blocker" },
+  request: { border: "border-l-violet-500", badge: "bg-violet-50 text-violet-600", label: "Request" },
 };
 
 // ── Empty Form ──────────────────────────────────────────────────

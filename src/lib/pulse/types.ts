@@ -18,7 +18,7 @@ export type ActiveProjectInsert = Omit<ActiveProject, "id" | "created_at" | "upd
 
 // ── Pulse Feed ──────────────────────────────────────────────────
 
-export type FeedItemType = "client" | "internal" | "status";
+export type FeedItemType = "client" | "internal" | "status" | "chase" | "blocker" | "request";
 
 export interface PulseFeedItem {
   id: string;
