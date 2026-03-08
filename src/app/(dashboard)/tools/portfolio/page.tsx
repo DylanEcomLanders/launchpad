@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   PlusIcon,
-  PencilSquareIcon,
   TrashIcon,
   XMarkIcon,
   CheckIcon,
@@ -14,49 +13,23 @@ import {
 } from "@heroicons/react/24/outline";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 import { inputClass, labelClass } from "@/lib/form-styles";
-import {
-  getClients,
-  addClient,
-  updateClient,
-  deleteClient,
-  slugify,
-} from "@/lib/portfolio/data";
-import type {
-  PortfolioClient,
-  PortfolioClientInsert,
-  PortfolioPage,
-} from "@/lib/portfolio/types";
-
-// ── Empty Form ──────────────────────────────────────────────────
-
-const emptyForm: PortfolioClientInsert = {
-  slug: "",
-  client_name: "",
-  project_type: "",
-  description: "",
-  live_url: "",
-  pages: [],
-};
-
-function uid(): string {
-  return Math.random().toString(36).slice(2, 10);
-}
-
-// ── Page Component ──────────────────────────────────────────────
+import { getTabs, saveTabs, createTab } from "@/lib/portfolio/data";
+import type { PortfolioTab } from "@/lib/portfolio/types";
 
 export default function PortfolioManager() {
-  const [clients, setClients] = useState<PortfolioClient[]>([]);
+  const [tabs, setTabs] = useState<PortfolioTab[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [label, setLabel] = useState("");
+  const [figmaUrl, setFigmaUrl] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<PortfolioClientInsert>({ ...emptyForm });
-  const [copied, setCopied] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
-  const loadClients = useCallback(async () => {
+  const loadTabs = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getClients();
-      setClients(data);
+      const data = await getTabs();
+      setTabs(data.sort((a, b) => a.order - b.order));
     } catch {
       // Silent fail
     } finally {
@@ -65,92 +38,71 @@ export default function PortfolioManager() {
   }, []);
 
   useEffect(() => {
-    loadClients();
-  }, [loadClients]);
+    loadTabs();
+  }, [loadTabs]);
 
-  // ── CRUD ────────────────────────────────────────────────────
+  // ── Add / Edit ─────────────────────────────────────────────────
 
   const handleSubmit = async () => {
-    if (!form.client_name.trim()) return;
-    const slug = form.slug || slugify(form.client_name);
-    const payload = { ...form, slug };
+    if (!label.trim() || !figmaUrl.trim()) return;
 
+    let updated: PortfolioTab[];
     if (editingId) {
-      await updateClient(editingId, payload);
+      updated = tabs.map((t) =>
+        t.id === editingId ? { ...t, label: label.trim(), figma_url: figmaUrl.trim() } : t
+      );
     } else {
-      await addClient(payload);
+      const tab = createTab(label.trim(), figmaUrl.trim(), tabs.length);
+      updated = [...tabs, tab];
     }
-    setForm({ ...emptyForm });
-    setEditingId(null);
-    setShowForm(false);
-    loadClients();
+
+    await saveTabs(updated);
+    setTabs(updated.sort((a, b) => a.order - b.order));
+    handleCancel();
   };
 
-  const handleEdit = (c: PortfolioClient) => {
-    setForm({
-      slug: c.slug,
-      client_name: c.client_name,
-      project_type: c.project_type,
-      description: c.description,
-      live_url: c.live_url,
-      pages: c.pages,
-    });
-    setEditingId(c.id);
+  const handleEdit = (tab: PortfolioTab) => {
+    setLabel(tab.label);
+    setFigmaUrl(tab.figma_url);
+    setEditingId(tab.id);
     setShowForm(true);
   };
 
   const handleDelete = async (id: string) => {
-    await deleteClient(id);
-    loadClients();
+    const updated = tabs
+      .filter((t) => t.id !== id)
+      .map((t, i) => ({ ...t, order: i }));
+    await saveTabs(updated);
+    setTabs(updated);
   };
 
   const handleCancel = () => {
-    setForm({ ...emptyForm });
+    setLabel("");
+    setFigmaUrl("");
     setEditingId(null);
     setShowForm(false);
   };
 
-  const handleCopyLink = (slug: string) => {
-    const url = `${window.location.origin}/portfolio/${slug}`;
+  const handleCopyLink = () => {
+    const url = `${window.location.origin}/portfolio`;
     navigator.clipboard.writeText(url);
-    setCopied(slug);
-    setTimeout(() => setCopied(null), 2000);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  // ── Page Management ─────────────────────────────────────────
+  // ── Reorder ────────────────────────────────────────────────────
 
-  const addPage = () => {
-    setForm((f) => ({
-      ...f,
-      pages: [...f.pages, { id: uid(), label: "", figma_embed_url: "", order: f.pages.length }],
-    }));
-  };
-
-  const updatePage = (pageId: string, updates: Partial<PortfolioPage>) => {
-    setForm((f) => ({
-      ...f,
-      pages: f.pages.map((p) => (p.id === pageId ? { ...p, ...updates } : p)),
-    }));
-  };
-
-  const removePage = (pageId: string) => {
-    setForm((f) => ({
-      ...f,
-      pages: f.pages.filter((p) => p.id !== pageId).map((p, i) => ({ ...p, order: i })),
-    }));
-  };
-
-  const movePage = (pageId: string, direction: "up" | "down") => {
-    setForm((f) => {
-      const pages = [...f.pages].sort((a, b) => a.order - b.order);
-      const idx = pages.findIndex((p) => p.id === pageId);
-      if (direction === "up" && idx > 0) {
-        [pages[idx], pages[idx - 1]] = [pages[idx - 1], pages[idx]];
-      } else if (direction === "down" && idx < pages.length - 1) {
-        [pages[idx], pages[idx + 1]] = [pages[idx + 1], pages[idx]];
-      }
-      return { ...f, pages: pages.map((p, i) => ({ ...p, order: i })) };
-    });
+  const moveTab = async (id: string, direction: "up" | "down") => {
+    const sorted = [...tabs].sort((a, b) => a.order - b.order);
+    const idx = sorted.findIndex((t) => t.id === id);
+    if (direction === "up" && idx > 0) {
+      [sorted[idx], sorted[idx - 1]] = [sorted[idx - 1], sorted[idx]];
+    } else if (direction === "down" && idx < sorted.length - 1) {
+      [sorted[idx], sorted[idx + 1]] = [sorted[idx + 1], sorted[idx]];
+    }
+    const updated = sorted.map((t, i) => ({ ...t, order: i }));
+    await saveTabs(updated);
+    setTabs(updated);
   };
 
   return (
@@ -163,20 +115,39 @@ export default function PortfolioManager() {
             Portfolio
           </h1>
           <p className="text-[#6B6B6B]">
-            Manage client showcases with embedded Figma designs. Each client gets a shareable public link.
+            Manage the tabs on your shareable portfolio page. Each tab embeds a Figma design.
           </p>
         </div>
 
-        {/* Add Button */}
+        {/* Link + Add */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B]">
-            Clients
-            {clients.length > 0 && (
-              <span className="ml-2 text-[10px] font-bold bg-[#F0F0F0] text-[#6B6B6B] px-1.5 py-0.5 rounded">
-                {clients.length}
-              </span>
-            )}
-          </h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B]">
+              Tabs
+              {tabs.length > 0 && (
+                <span className="ml-2 text-[10px] font-bold bg-[#F0F0F0] text-[#6B6B6B] px-1.5 py-0.5 rounded">
+                  {tabs.length}
+                </span>
+              )}
+            </h2>
+            <button
+              onClick={handleCopyLink}
+              className="flex items-center gap-1 text-[11px] font-medium text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
+              title="Copy portfolio link"
+            >
+              <ClipboardDocumentIcon className="size-3.5" />
+              {copied ? "Copied!" : "Copy Link"}
+            </button>
+            <a
+              href="/portfolio"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-[11px] font-medium text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
+            >
+              <ArrowTopRightOnSquareIcon className="size-3.5" />
+              Preview
+            </a>
+          </div>
           <button
             onClick={() => {
               handleCancel();
@@ -185,7 +156,7 @@ export default function PortfolioManager() {
             className="flex items-center gap-1 text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
           >
             <PlusIcon className="size-3.5" />
-            Add Client
+            Add Tab
           </button>
         </div>
 
@@ -194,7 +165,7 @@ export default function PortfolioManager() {
           <div className="bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg p-5 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold">
-                {editingId ? "Edit Client" : "Add Client"}
+                {editingId ? "Edit Tab" : "Add Tab"}
               </h3>
               <button onClick={handleCancel} className="text-[#AAAAAA] hover:text-[#0A0A0A]">
                 <XMarkIcon className="size-4" />
@@ -202,240 +173,117 @@ export default function PortfolioManager() {
             </div>
 
             <div className="space-y-4">
-              {/* Client Details */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-4">
                 <div>
-                  <label className={labelClass}>Client Name *</label>
+                  <label className={labelClass}>Tab Label *</label>
                   <input
                     type="text"
-                    value={form.client_name}
-                    onChange={(e) => {
-                      const name = e.target.value;
-                      setForm((f) => ({
-                        ...f,
-                        client_name: name,
-                        slug: editingId ? f.slug : slugify(name),
-                      }));
-                    }}
-                    placeholder="e.g., Nutribloom"
+                    value={label}
+                    onChange={(e) => setLabel(e.target.value)}
+                    placeholder="e.g., Homepage"
                     className={inputClass}
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>URL Slug</label>
+                  <label className={labelClass}>Figma URL *</label>
                   <input
                     type="text"
-                    value={form.slug}
-                    onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
-                    placeholder="auto-generated"
+                    value={figmaUrl}
+                    onChange={(e) => setFigmaUrl(e.target.value)}
+                    placeholder="Paste Figma file or frame URL"
                     className={inputClass}
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className={labelClass}>Project Type</label>
-                  <input
-                    type="text"
-                    value={form.project_type}
-                    onChange={(e) => setForm((f) => ({ ...f, project_type: e.target.value }))}
-                    placeholder="e.g., Full Build"
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Live Store URL</label>
-                  <input
-                    type="text"
-                    value={form.live_url}
-                    onChange={(e) => setForm((f) => ({ ...f, live_url: e.target.value }))}
-                    placeholder="e.g., nutribloom.com"
-                    className={inputClass}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className={labelClass}>Description</label>
-                <input
-                  type="text"
-                  value={form.description}
-                  onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                  placeholder="Short project description"
-                  className={inputClass}
-                />
-              </div>
-
-              {/* Pages */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className={labelClass + " mb-0"}>Page Tabs</label>
-                  <button
-                    onClick={addPage}
-                    className="flex items-center gap-1 text-[11px] font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
-                  >
-                    <PlusIcon className="size-3" />
-                    Add Tab
-                  </button>
-                </div>
-
-                {form.pages.length === 0 && (
-                  <p className="text-xs text-[#AAAAAA] py-3">
-                    No tabs yet. Add tabs with Figma links for each page design.
-                  </p>
-                )}
-
-                <div className="space-y-2">
-                  {[...form.pages]
-                    .sort((a, b) => a.order - b.order)
-                    .map((page, i) => (
-                      <div
-                        key={page.id}
-                        className="flex items-start gap-2 bg-white border border-[#E5E5E5] rounded-md p-3"
-                      >
-                        <div className="flex flex-col gap-0.5 mt-1">
-                          <button
-                            onClick={() => movePage(page.id, "up")}
-                            disabled={i === 0}
-                            className="text-[#AAAAAA] hover:text-[#0A0A0A] disabled:opacity-20 transition-colors"
-                          >
-                            <ArrowUpIcon className="size-3" />
-                          </button>
-                          <button
-                            onClick={() => movePage(page.id, "down")}
-                            disabled={i === form.pages.length - 1}
-                            className="text-[#AAAAAA] hover:text-[#0A0A0A] disabled:opacity-20 transition-colors"
-                          >
-                            <ArrowDownIcon className="size-3" />
-                          </button>
-                        </div>
-                        <div className="flex-1 grid grid-cols-1 md:grid-cols-[140px_1fr] gap-2">
-                          <input
-                            type="text"
-                            value={page.label}
-                            onChange={(e) => updatePage(page.id, { label: e.target.value })}
-                            placeholder="Tab label"
-                            className={inputClass}
-                          />
-                          <input
-                            type="text"
-                            value={page.figma_embed_url}
-                            onChange={(e) => updatePage(page.id, { figma_embed_url: e.target.value })}
-                            placeholder="Figma file/frame URL"
-                            className={inputClass}
-                          />
-                        </div>
-                        <button
-                          onClick={() => removePage(page.id)}
-                          className="mt-2 text-[#AAAAAA] hover:text-red-400 transition-colors"
-                        >
-                          <TrashIcon className="size-3.5" />
-                        </button>
-                      </div>
-                    ))}
-                </div>
-              </div>
-
-              {/* Submit */}
               <button
                 onClick={handleSubmit}
-                disabled={!form.client_name.trim()}
+                disabled={!label.trim() || !figmaUrl.trim()}
                 className="flex items-center gap-1.5 px-4 py-2 bg-[#0A0A0A] text-white text-xs font-medium rounded-md hover:bg-[#2A2A2A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <CheckIcon className="size-3.5" />
-                {editingId ? "Save Changes" : "Add Client"}
+                {editingId ? "Save Changes" : "Add Tab"}
               </button>
             </div>
           </div>
         )}
 
-        {/* Client List */}
-        <div className="space-y-3">
+        {/* Tab List */}
+        <div className="space-y-2">
           {loading && (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="bg-white border border-[#E5E5E5] rounded-lg p-4 animate-pulse">
                   <div className="h-4 bg-[#F0F0F0] rounded w-1/3 mb-2" />
-                  <div className="h-3 bg-[#F0F0F0] rounded w-1/2" />
+                  <div className="h-3 bg-[#F0F0F0] rounded w-2/3" />
                 </div>
               ))}
             </div>
           )}
 
-          {!loading && clients.length === 0 && !showForm && (
+          {!loading && tabs.length === 0 && !showForm && (
             <div className="bg-white border border-dashed border-[#E5E5E5] rounded-lg p-8 text-center">
-              <p className="text-xs text-[#AAAAAA] mb-2">No portfolio clients yet</p>
+              <p className="text-xs text-[#AAAAAA] mb-2">No portfolio tabs yet</p>
               <button
                 onClick={() => setShowForm(true)}
                 className="text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
               >
-                + Add your first client
+                + Add your first tab
               </button>
             </div>
           )}
 
           {!loading &&
-            clients.map((c) => (
+            tabs.map((tab, i) => (
               <div
-                key={c.id}
-                className="bg-white border border-[#E5E5E5] rounded-lg p-4 group"
+                key={tab.id}
+                className="bg-white border border-[#E5E5E5] rounded-lg p-4 flex items-center gap-3"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <h3 className="text-sm font-semibold text-[#0A0A0A] truncate">
-                        {c.client_name}
-                      </h3>
-                      {c.project_type && (
-                        <span className="text-[10px] font-medium bg-[#F0F0F0] text-[#6B6B6B] px-1.5 py-0.5 rounded shrink-0">
-                          {c.project_type}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3 text-xs text-[#AAAAAA]">
-                      <span>/portfolio/{c.slug}</span>
-                      <span>{c.pages.length} {c.pages.length === 1 ? "page" : "pages"}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      onClick={() => handleCopyLink(c.slug)}
-                      className="p-1.5 text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
-                      title="Copy link"
-                    >
-                      <ClipboardDocumentIcon className="size-3.5" />
-                    </button>
-                    <a
-                      href={`/portfolio/${c.slug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-1.5 text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
-                      title="Preview"
-                    >
-                      <ArrowTopRightOnSquareIcon className="size-3.5" />
-                    </a>
-                    <button
-                      onClick={() => handleEdit(c)}
-                      className="p-1.5 text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
-                      title="Edit"
-                    >
-                      <PencilSquareIcon className="size-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(c.id)}
-                      className="p-1.5 text-[#AAAAAA] hover:text-red-400 transition-colors"
-                      title="Delete"
-                    >
-                      <TrashIcon className="size-3.5" />
-                    </button>
-                  </div>
+                {/* Reorder */}
+                <div className="flex flex-col gap-0.5">
+                  <button
+                    onClick={() => moveTab(tab.id, "up")}
+                    disabled={i === 0}
+                    className="text-[#AAAAAA] hover:text-[#0A0A0A] disabled:opacity-20 transition-colors"
+                  >
+                    <ArrowUpIcon className="size-3" />
+                  </button>
+                  <button
+                    onClick={() => moveTab(tab.id, "down")}
+                    disabled={i === tabs.length - 1}
+                    className="text-[#AAAAAA] hover:text-[#0A0A0A] disabled:opacity-20 transition-colors"
+                  >
+                    <ArrowDownIcon className="size-3" />
+                  </button>
                 </div>
 
-                {copied === c.slug && (
-                  <p className="text-[11px] text-emerald-600 font-medium mt-1">Link copied!</p>
-                )}
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-semibold text-[#0A0A0A] truncate">
+                    {tab.label}
+                  </h3>
+                  <p className="text-xs text-[#AAAAAA] truncate">
+                    {tab.figma_url}
+                  </p>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    onClick={() => handleEdit(tab)}
+                    className="p-1.5 text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors text-xs font-medium"
+                    title="Edit"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(tab.id)}
+                    className="p-1.5 text-[#AAAAAA] hover:text-red-400 transition-colors"
+                    title="Delete"
+                  >
+                    <TrashIcon className="size-3.5" />
+                  </button>
+                </div>
               </div>
             ))}
         </div>
