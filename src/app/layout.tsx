@@ -23,6 +23,7 @@ const articulatCF = localFont({
 export const metadata: Metadata = {
   title: "Launchpad — Ecomlanders",
   description: "Internal tools for the Ecomlanders team",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 };
 
 export default function RootLayout({
