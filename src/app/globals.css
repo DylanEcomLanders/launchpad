@@ -16,6 +16,10 @@
   --font-body: var(--font-articulat), "Articulat CF", system-ui, sans-serif;
 }
 
+html, body {
+  overflow-x: hidden;
+}
+
 body {
   background: var(--color-background);
   color: var(--color-foreground);
