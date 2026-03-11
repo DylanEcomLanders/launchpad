@@ -522,7 +522,7 @@ function StoreResults({ result }: { result: StoreIntelResult }) {
               <CubeIcon className="size-4 text-[#6B6B6B]" />
               <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B]">Price Analysis</h3>
             </div>
-            <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
               <div>
                 <p className="text-[10px] text-[#AAAAAA] uppercase">Range</p>
                 <p className="font-medium tabular-nums">

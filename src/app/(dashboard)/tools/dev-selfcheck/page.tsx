@@ -192,7 +192,7 @@ export default function DevSelfCheckPage() {
         </div>
 
         {/* Stats Bar */}
-        <div className="grid grid-cols-4 gap-3 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
           <div className="bg-white border border-[#E5E5E5] rounded-lg p-3 text-center">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">Pass Rate</p>
             <p className={`text-xl font-bold ${passRate >= 90 ? "text-emerald-500" : passRate >= 70 ? "text-amber-500" : stats.checked === 0 ? "text-[#CCCCCC]" : "text-red-500"}`}>

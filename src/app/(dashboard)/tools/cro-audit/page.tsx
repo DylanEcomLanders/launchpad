@@ -271,7 +271,7 @@ export default function CroAuditPage() {
           <VerdictBanner verdict={result.verdict} impact={result.predictedImpact} />
 
           {/* Side-by-side thumbnails */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-wider text-[#6B6B6B] mb-2">
                 Control

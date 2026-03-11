@@ -868,7 +868,7 @@ export default function ProspectScraperPage() {
         {tab === "saved" && (
           <>
             {/* Stats */}
-            <div className="grid grid-cols-4 gap-3 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
               <div className="bg-white border border-[#E5E5E5] rounded-lg p-3 text-center">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">Total</p>
                 <p className="text-xl font-bold">{savedStats.total}</p>
