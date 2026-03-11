@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import type {
   PortalData,
   PortalInsert,
@@ -135,9 +135,17 @@ export async function seedDemoPortal(): Promise<PortalData> {
       created_at: createdAt,
     };
 
-    try {
-      await supabase.from("portal_updates").insert(row);
-    } catch {
+    let saved = false;
+    if (isSupabaseConfigured()) {
+      try {
+        const { error } = await supabase.from("portal_updates").insert(row);
+        if (error) throw error;
+        saved = true;
+      } catch {
+        // ignore
+      }
+    }
+    if (!saved) {
       const stored = localStorage.getItem(LS_UPDATES);
       const all: PortalUpdate[] = stored ? JSON.parse(stored) : [];
       all.unshift(row);
@@ -157,50 +165,59 @@ function uid(): string {
 // ═══════════════════════════════════════════════════════════════════
 
 export async function getPortals(): Promise<PortalData[]> {
-  try {
-    const { data, error } = await supabase
-      .from("client_portals")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (error) throw error;
-    return (data ?? []).map(mapPortalRow);
-  } catch {
-    if (typeof window === "undefined") return [];
-    const stored = localStorage.getItem(LS_PORTALS);
-    return stored ? JSON.parse(stored) : [];
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from("client_portals")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []).map(mapPortalRow);
+    } catch {
+      // fall through to localStorage
+    }
   }
+  if (typeof window === "undefined") return [];
+  const stored = localStorage.getItem(LS_PORTALS);
+  return stored ? JSON.parse(stored) : [];
 }
 
 export async function getPortalById(id: string): Promise<PortalData | null> {
-  try {
-    const { data, error } = await supabase
-      .from("client_portals")
-      .select("*")
-      .eq("id", id)
-      .single();
-    if (error) throw error;
-    return data ? mapPortalRow(data) : null;
-  } catch {
-    if (typeof window === "undefined") return null;
-    const all = await getPortals();
-    return all.find((p) => p.id === id) ?? null;
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from("client_portals")
+        .select("*")
+        .eq("id", id)
+        .single();
+      if (error) throw error;
+      return data ? mapPortalRow(data) : null;
+    } catch {
+      // fall through to localStorage
+    }
   }
+  if (typeof window === "undefined") return null;
+  const all = await getPortals();
+  return all.find((p) => p.id === id) ?? null;
 }
 
 export async function getPortalByToken(token: string): Promise<PortalData | null> {
-  try {
-    const { data, error } = await supabase
-      .from("client_portals")
-      .select("*")
-      .eq("token", token)
-      .single();
-    if (error) throw error;
-    return data ? mapPortalRow(data) : null;
-  } catch {
-    if (typeof window === "undefined") return null;
-    const all = await getPortals();
-    return all.find((p) => p.token === token) ?? null;
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from("client_portals")
+        .select("*")
+        .eq("token", token)
+        .single();
+      if (error) throw error;
+      return data ? mapPortalRow(data) : null;
+    } catch {
+      // fall through to localStorage
+    }
   }
+  if (typeof window === "undefined") return null;
+  const all = await getPortals();
+  return all.find((p) => p.token === token) ?? null;
 }
 
 export async function createPortal(input: PortalInsert): Promise<PortalData> {
@@ -228,53 +245,64 @@ export async function createPortal(input: PortalInsert): Promise<PortalData> {
     view_count: 0,
   };
 
-  try {
-    const { data, error } = await supabase
-      .from("client_portals")
-      .insert(row)
-      .select()
-      .single();
-    if (error) throw error;
-    return mapPortalRow(data);
-  } catch {
-    const portal = row as PortalData;
-    const existing = await getPortals();
-    existing.unshift(portal);
-    localStorage.setItem(LS_PORTALS, JSON.stringify(existing));
-    return portal;
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from("client_portals")
+        .insert(row)
+        .select()
+        .single();
+      if (error) throw error;
+      return mapPortalRow(data);
+    } catch {
+      // fall through to localStorage
+    }
   }
+  const portal = row as PortalData;
+  const existing = await getPortals();
+  existing.unshift(portal);
+  localStorage.setItem(LS_PORTALS, JSON.stringify(existing));
+  return portal;
 }
 
 export async function updatePortal(
   id: string,
   updates: Partial<PortalInsert>
 ): Promise<void> {
-  try {
-    const { error } = await supabase
-      .from("client_portals")
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq("id", id);
-    if (error) throw error;
-  } catch {
-    const all = await getPortals();
-    const updated = all.map((p) =>
-      p.id === id ? { ...p, ...updates, updated_at: new Date().toISOString() } : p
-    );
-    localStorage.setItem(LS_PORTALS, JSON.stringify(updated));
+  if (isSupabaseConfigured()) {
+    try {
+      const { error } = await supabase
+        .from("client_portals")
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw error;
+      return;
+    } catch {
+      // fall through to localStorage
+    }
   }
+  const all = await getPortals();
+  const updated = all.map((p) =>
+    p.id === id ? { ...p, ...updates, updated_at: new Date().toISOString() } : p
+  );
+  localStorage.setItem(LS_PORTALS, JSON.stringify(updated));
 }
 
 export async function deletePortal(id: string): Promise<void> {
-  try {
-    const { error } = await supabase
-      .from("client_portals")
-      .delete()
-      .eq("id", id);
-    if (error) throw error;
-  } catch {
-    const all = await getPortals();
-    localStorage.setItem(LS_PORTALS, JSON.stringify(all.filter((p) => p.id !== id)));
+  if (isSupabaseConfigured()) {
+    try {
+      const { error } = await supabase
+        .from("client_portals")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+      return;
+    } catch {
+      // fall through to localStorage
+    }
   }
+  const all = await getPortals();
+  localStorage.setItem(LS_PORTALS, JSON.stringify(all.filter((p) => p.id !== id)));
 }
 
 export async function incrementViewCount(token: string): Promise<void> {
@@ -325,20 +353,23 @@ function mapPortalRow(row: any): PortalData {
 // ═══════════════════════════════════════════════════════════════════
 
 export async function getUpdates(portalId: string): Promise<PortalUpdate[]> {
-  try {
-    const { data, error } = await supabase
-      .from("portal_updates")
-      .select("*")
-      .eq("portal_id", portalId)
-      .order("created_at", { ascending: false });
-    if (error) throw error;
-    return data ?? [];
-  } catch {
-    if (typeof window === "undefined") return [];
-    const stored = localStorage.getItem(LS_UPDATES);
-    const all: PortalUpdate[] = stored ? JSON.parse(stored) : [];
-    return all.filter((u) => u.portal_id === portalId);
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from("portal_updates")
+        .select("*")
+        .eq("portal_id", portalId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    } catch {
+      // fall through to localStorage
+    }
   }
+  if (typeof window === "undefined") return [];
+  const stored = localStorage.getItem(LS_UPDATES);
+  const all: PortalUpdate[] = stored ? JSON.parse(stored) : [];
+  return all.filter((u) => u.portal_id === portalId);
 }
 
 export async function addUpdate(input: PortalUpdateInsert): Promise<PortalUpdate> {
@@ -346,21 +377,24 @@ export async function addUpdate(input: PortalUpdateInsert): Promise<PortalUpdate
   const now = new Date().toISOString();
   const row = { ...input, id, created_at: now };
 
-  try {
-    const { data, error } = await supabase
-      .from("portal_updates")
-      .insert(row)
-      .select()
-      .single();
-    if (error) throw error;
-    return data;
-  } catch {
-    const stored = localStorage.getItem(LS_UPDATES);
-    const all: PortalUpdate[] = stored ? JSON.parse(stored) : [];
-    all.unshift(row);
-    localStorage.setItem(LS_UPDATES, JSON.stringify(all));
-    return row;
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from("portal_updates")
+        .insert(row)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch {
+      // fall through to localStorage
+    }
   }
+  const stored = localStorage.getItem(LS_UPDATES);
+  const all: PortalUpdate[] = stored ? JSON.parse(stored) : [];
+  all.unshift(row);
+  localStorage.setItem(LS_UPDATES, JSON.stringify(all));
+  return row;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -368,20 +402,23 @@ export async function addUpdate(input: PortalUpdateInsert): Promise<PortalUpdate
 // ═══════════════════════════════════════════════════════════════════
 
 export async function getApprovals(portalId: string): Promise<PortalApproval[]> {
-  try {
-    const { data, error } = await supabase
-      .from("portal_approvals")
-      .select("*")
-      .eq("portal_id", portalId)
-      .order("approved_at", { ascending: false });
-    if (error) throw error;
-    return data ?? [];
-  } catch {
-    if (typeof window === "undefined") return [];
-    const stored = localStorage.getItem(LS_APPROVALS);
-    const all: PortalApproval[] = stored ? JSON.parse(stored) : [];
-    return all.filter((a) => a.portal_id === portalId);
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from("portal_approvals")
+        .select("*")
+        .eq("portal_id", portalId)
+        .order("approved_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    } catch {
+      // fall through to localStorage
+    }
   }
+  if (typeof window === "undefined") return [];
+  const stored = localStorage.getItem(LS_APPROVALS);
+  const all: PortalApproval[] = stored ? JSON.parse(stored) : [];
+  return all.filter((a) => a.portal_id === portalId);
 }
 
 export async function addApproval(input: PortalApprovalInsert): Promise<PortalApproval> {
@@ -389,19 +426,22 @@ export async function addApproval(input: PortalApprovalInsert): Promise<PortalAp
   const now = new Date().toISOString();
   const row: PortalApproval = { ...input, id, approved_at: now };
 
-  try {
-    const { data, error } = await supabase
-      .from("portal_approvals")
-      .insert(row)
-      .select()
-      .single();
-    if (error) throw error;
-    return data;
-  } catch {
-    const stored = localStorage.getItem(LS_APPROVALS);
-    const all: PortalApproval[] = stored ? JSON.parse(stored) : [];
-    all.unshift(row);
-    localStorage.setItem(LS_APPROVALS, JSON.stringify(all));
-    return row;
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from("portal_approvals")
+        .insert(row)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch {
+      // fall through to localStorage
+    }
   }
+  const stored = localStorage.getItem(LS_APPROVALS);
+  const all: PortalApproval[] = stored ? JSON.parse(stored) : [];
+  all.unshift(row);
+  localStorage.setItem(LS_APPROVALS, JSON.stringify(all));
+  return row;
 }
