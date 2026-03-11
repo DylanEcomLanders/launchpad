@@ -20,6 +20,7 @@ interface OutreachRequest {
   findings: string;
   outreachType: OutreachType;
   tone: ToneType;
+  previousMessages?: { outreachType: string; body: string }[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────
@@ -278,7 +279,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { brandName, contactName, storeUrl, findings, outreachType, tone } =
+  const { brandName, contactName, storeUrl, findings, outreachType, tone, previousMessages } =
     body;
 
   if (!brandName?.trim()) {
@@ -331,6 +332,21 @@ export async function POST(request: Request) {
     messageParts.push(`\n## STORE CRAWL FINDINGS\n${storeContext}`);
   }
   messageParts.push(`\n## KEY FINDINGS / PAIN POINTS\n${findings.trim()}`);
+  // Include previous messages for sequence continuity
+  if (previousMessages && previousMessages.length > 0) {
+    messageParts.push(`\n## PREVIOUS MESSAGES IN THIS SEQUENCE`);
+    messageParts.push(`The following messages have already been sent. Your new message should:`);
+    messageParts.push(`- Reference different angles/pain points than previous messages`);
+    messageParts.push(`- Build on the relationship naturally — don't repeat yourself`);
+    messageParts.push(`- Feel like a natural continuation of the conversation\n`);
+    for (let i = 0; i < previousMessages.length; i++) {
+      const pm = previousMessages[i];
+      messageParts.push(`--- Step ${i + 1} (${pm.outreachType.replace(/-/g, " ")}) ---`);
+      messageParts.push(pm.body);
+      messageParts.push("");
+    }
+  }
+
   messageParts.push(
     `\nGenerate a ${outreachType.replace(/-/g, " ")} with a ${tone} tone.`
   );

@@ -1,19 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   PaperAirplaneIcon,
   ClipboardDocumentIcon,
   CheckIcon,
+  ListBulletIcon,
+  TrashIcon,
+  PlusIcon,
 } from "@heroicons/react/24/solid";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
-import { inputClass, labelClass } from "@/lib/form-styles";
+import { inputClass, labelClass, selectClass } from "@/lib/form-styles";
+import type { OutreachStep, OutreachType, ToneType } from "@/lib/outreach/types";
+import { createSequence, getSequences, deleteSequence } from "@/lib/outreach/data";
+import type { OutreachSequence } from "@/lib/outreach/types";
 
 // ── Types ───────────────────────────────────────────────────────
-
-type OutreachType = "cold-email" | "follow-up" | "loom-script" | "linkedin-dm";
-type ToneType = "professional" | "casual" | "direct";
 
 interface OutreachResult {
   outreachType: OutreachType;
@@ -40,9 +43,25 @@ const tones: { value: ToneType; label: string }[] = [
   { value: "direct", label: "Direct" },
 ];
 
+type Mode = "single" | "sequence";
+
+const DEFAULT_SEQUENCE_STEPS: Pick<OutreachStep, "day" | "outreachType" | "tone">[] = [
+  { day: 0, outreachType: "cold-email", tone: "casual" },
+  { day: 3, outreachType: "follow-up", tone: "casual" },
+  { day: 7, outreachType: "linkedin-dm", tone: "direct" },
+];
+
+let nextStepId = 1;
+function stepUid() {
+  return `step-${nextStepId++}`;
+}
+
 // ── Component ───────────────────────────────────────────────────
 
 export default function OutreachPage() {
+  // Mode
+  const [mode, setMode] = useState<Mode>("single");
+
   // Form state
   const [brandName, setBrandName] = useState("");
   const [contactName, setContactName] = useState("");
@@ -50,19 +69,61 @@ export default function OutreachPage() {
   const [findings, setFindings] = useState("");
   const [outreachType, setOutreachType] = useState<OutreachType>("cold-email");
   const [tone, setTone] = useState<ToneType>("casual");
+  const [prefilled, setPrefilled] = useState(false);
 
-  // Result state
+  // Single mode result state
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
   const [result, setResult] = useState<OutreachResult | null>(null);
   const [error, setError] = useState("");
 
+  // Read prefill data from prospect scraper
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("outreach-prefill");
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (data.brandName) setBrandName(data.brandName);
+        if (data.contactName) setContactName(data.contactName);
+        if (data.storeUrl) setStoreUrl(data.storeUrl);
+        if (data.findings) setFindings(data.findings);
+        setPrefilled(true);
+        sessionStorage.removeItem("outreach-prefill");
+      }
+    } catch {
+      // Ignore parse errors
+    }
+  }, []);
+
   // Copy state
   const [copiedAll, setCopiedAll] = useState(false);
   const [copiedSubject, setCopiedSubject] = useState(false);
 
-  const canSubmit =
-    brandName.trim() && findings.trim() && !loading;
+  // Sequence mode state
+  const [seqSteps, setSeqSteps] = useState<OutreachStep[]>(() =>
+    DEFAULT_SEQUENCE_STEPS.map((s) => ({
+      id: stepUid(),
+      ...s,
+      subjectLine: null,
+      body: "",
+      generated: false,
+    }))
+  );
+  const [seqLoading, setSeqLoading] = useState(false);
+  const [seqProgress, setSeqProgress] = useState("");
+  const [seqError, setSeqError] = useState("");
+  const [savedSequences, setSavedSequences] = useState<OutreachSequence[]>([]);
+  const [showSaved, setShowSaved] = useState(false);
+
+  // Load saved sequences
+  useEffect(() => {
+    getSequences().then(setSavedSequences).catch(() => {});
+  }, []);
+
+  const canSubmit = brandName.trim() && findings.trim() && !loading;
+  const canGenerateSequence = brandName.trim() && findings.trim() && !seqLoading && seqSteps.length > 0;
+
+  // ── Single mode functions ──────────────────────────────────────
 
   async function generate() {
     setLoading(true);
@@ -120,8 +181,143 @@ export default function OutreachPage() {
     setTimeout(() => setCopiedSubject(false), 2000);
   }
 
+  // ── Sequence mode functions ────────────────────────────────────
+
+  function addStep() {
+    const lastDay = seqSteps.length > 0 ? seqSteps[seqSteps.length - 1].day : 0;
+    setSeqSteps((prev) => [
+      ...prev,
+      {
+        id: stepUid(),
+        day: lastDay + 4,
+        outreachType: "follow-up",
+        tone: "casual",
+        subjectLine: null,
+        body: "",
+        generated: false,
+      },
+    ]);
+  }
+
+  function removeStep(id: string) {
+    setSeqSteps((prev) => prev.filter((s) => s.id !== id));
+  }
+
+  function updateStep(id: string, updates: Partial<OutreachStep>) {
+    setSeqSteps((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, ...updates } : s))
+    );
+  }
+
+  async function generateAllSteps() {
+    setSeqLoading(true);
+    setSeqError("");
+
+    // Reset all steps
+    setSeqSteps((prev) =>
+      prev.map((s) => ({ ...s, body: "", subjectLine: null, generated: false }))
+    );
+
+    const generatedMessages: { outreachType: string; body: string }[] = [];
+
+    for (let i = 0; i < seqSteps.length; i++) {
+      const step = seqSteps[i];
+      setSeqProgress(`Generating step ${i + 1} of ${seqSteps.length}...`);
+
+      try {
+        const res = await fetch("/api/outreach", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            brandName: brandName.trim(),
+            contactName: contactName.trim() || undefined,
+            storeUrl: storeUrl.trim() || undefined,
+            findings: findings.trim(),
+            outreachType: step.outreachType,
+            tone: step.tone,
+            previousMessages: generatedMessages.length > 0 ? generatedMessages : undefined,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Generation failed");
+
+        const result = data as OutreachResult;
+
+        // Update step with generated content
+        setSeqSteps((prev) =>
+          prev.map((s) =>
+            s.id === step.id
+              ? { ...s, body: result.body, subjectLine: result.subjectLine || null, generated: true }
+              : s
+          )
+        );
+
+        // Track for continuity
+        generatedMessages.push({
+          outreachType: step.outreachType,
+          body: result.body,
+        });
+      } catch (err) {
+        setSeqError(
+          `Failed at step ${i + 1}: ${err instanceof Error ? err.message : "Unknown error"}`
+        );
+        break;
+      }
+    }
+
+    setSeqLoading(false);
+    setSeqProgress("");
+  }
+
+  async function saveSequence() {
+    const seq = await createSequence({
+      brand_name: brandName.trim(),
+      store_url: storeUrl.trim(),
+      contact_name: contactName.trim(),
+      findings: findings.trim(),
+      steps: seqSteps,
+    });
+    setSavedSequences((prev) => [seq, ...prev]);
+  }
+
+  async function handleDeleteSequence(id: string) {
+    await deleteSequence(id);
+    setSavedSequences((prev) => prev.filter((s) => s.id !== id));
+  }
+
+  function loadSequence(seq: OutreachSequence) {
+    setBrandName(seq.brand_name);
+    setStoreUrl(seq.store_url);
+    setContactName(seq.contact_name);
+    setFindings(seq.findings);
+    setSeqSteps(seq.steps);
+    setShowSaved(false);
+  }
+
+  function copyStep(step: OutreachStep) {
+    let text = "";
+    if (step.subjectLine) text += `Subject: ${step.subjectLine}\n\n`;
+    text += step.body;
+    navigator.clipboard.writeText(text);
+  }
+
+  function copyFullSequence() {
+    const parts = seqSteps
+      .filter((s) => s.generated)
+      .map((s, i) => {
+        const typeLabel = outreachTypes.find((t) => t.value === s.outreachType)?.label || s.outreachType;
+        let text = `═══ Step ${i + 1}: ${typeLabel} (Day ${s.day}) ═══\n`;
+        if (s.subjectLine) text += `Subject: ${s.subjectLine}\n\n`;
+        text += s.body;
+        return text;
+      });
+    navigator.clipboard.writeText(parts.join("\n\n"));
+  }
+
   const hasSubject =
     outreachType === "cold-email" || outreachType === "follow-up";
+  const allGenerated = seqSteps.length > 0 && seqSteps.every((s) => s.generated);
 
   return (
     <div className="relative min-h-screen">
@@ -137,12 +333,42 @@ export default function OutreachPage() {
           </p>
         </div>
 
+        {/* Mode toggle */}
+        <div className="flex items-center gap-1 mb-8 bg-[#F5F5F5] rounded-lg p-1 w-fit">
+          <button
+            onClick={() => setMode("single")}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              mode === "single"
+                ? "bg-white text-[#0A0A0A] shadow-sm"
+                : "text-[#6B6B6B] hover:text-[#0A0A0A]"
+            }`}
+          >
+            <span className="flex items-center gap-1.5">
+              <PaperAirplaneIcon className="size-3.5" />
+              Single
+            </span>
+          </button>
+          <button
+            onClick={() => setMode("sequence")}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              mode === "sequence"
+                ? "bg-white text-[#0A0A0A] shadow-sm"
+                : "text-[#6B6B6B] hover:text-[#0A0A0A]"
+            }`}
+          >
+            <span className="flex items-center gap-1.5">
+              <ListBulletIcon className="size-3.5" />
+              Sequence
+            </span>
+          </button>
+        </div>
+
         {/* Error */}
-        {error && (
+        {(error || seqError) && (
           <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-            {error}
+            {error || seqError}
             <button
-              onClick={() => setError("")}
+              onClick={() => { setError(""); setSeqError(""); }}
               className="ml-3 text-red-500 hover:text-red-700"
             >
               Dismiss
@@ -150,7 +376,15 @@ export default function OutreachPage() {
           </div>
         )}
 
-        {/* Input Form */}
+        {/* Prefill banner */}
+        {prefilled && (
+          <div className="mb-6 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700 flex items-center justify-between">
+            <span>Pre-filled from Prospect Scraper — review and generate.</span>
+            <button onClick={() => setPrefilled(false)} className="text-blue-500 hover:text-blue-700 text-xs font-medium">Dismiss</button>
+          </div>
+        )}
+
+        {/* ═══ Shared Input Form ═══ */}
         <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5 space-y-5 mb-10">
           {/* Brand + Contact */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -203,71 +437,227 @@ export default function OutreachPage() {
             />
           </div>
 
-          {/* Outreach Type */}
-          <div>
-            <label className={labelClass}>Outreach Type</label>
-            <div className="inline-flex rounded-md border border-[#E5E5E5] bg-white p-0.5">
-              {outreachTypes.map((t) => (
-                <button
-                  key={t.value}
-                  type="button"
-                  onClick={() => setOutreachType(t.value)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
-                    outreachType === t.value
-                      ? "bg-[#0A0A0A] text-white"
-                      : "text-[#6B6B6B] hover:text-[#0A0A0A]"
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* ── Single-mode controls ── */}
+          {mode === "single" && (
+            <>
+              {/* Outreach Type */}
+              <div>
+                <label className={labelClass}>Outreach Type</label>
+                <div className="inline-flex rounded-md border border-[#E5E5E5] bg-white p-0.5">
+                  {outreachTypes.map((t) => (
+                    <button
+                      key={t.value}
+                      type="button"
+                      onClick={() => setOutreachType(t.value)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
+                        outreachType === t.value
+                          ? "bg-[#0A0A0A] text-white"
+                          : "text-[#6B6B6B] hover:text-[#0A0A0A]"
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-          {/* Tone */}
-          <div>
-            <label className={labelClass}>Tone</label>
-            <div className="inline-flex rounded-md border border-[#E5E5E5] bg-white p-0.5">
-              {tones.map((t) => (
-                <button
-                  key={t.value}
-                  type="button"
-                  onClick={() => setTone(t.value)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
-                    tone === t.value
-                      ? "bg-[#0A0A0A] text-white"
-                      : "text-[#6B6B6B] hover:text-[#0A0A0A]"
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-          </div>
+              {/* Tone */}
+              <div>
+                <label className={labelClass}>Tone</label>
+                <div className="inline-flex rounded-md border border-[#E5E5E5] bg-white p-0.5">
+                  {tones.map((t) => (
+                    <button
+                      key={t.value}
+                      type="button"
+                      onClick={() => setTone(t.value)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
+                        tone === t.value
+                          ? "bg-[#0A0A0A] text-white"
+                          : "text-[#6B6B6B] hover:text-[#0A0A0A]"
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-          {/* Generate button */}
-          <button
-            type="button"
-            onClick={generate}
-            disabled={!canSubmit}
-            className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <>
-                <ArrowPathIcon className="size-4 animate-spin" />
-                {status || "Generating..."}
-              </>
-            ) : (
-              <>
-                <PaperAirplaneIcon className="size-4" />
-                Generate Outreach
-              </>
-            )}
-          </button>
+              {/* Generate button */}
+              <button
+                type="button"
+                onClick={generate}
+                disabled={!canSubmit}
+                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <>
+                    <ArrowPathIcon className="size-4 animate-spin" />
+                    {status || "Generating..."}
+                  </>
+                ) : (
+                  <>
+                    <PaperAirplaneIcon className="size-4" />
+                    Generate Outreach
+                  </>
+                )}
+              </button>
+            </>
+          )}
+
+          {/* ── Sequence-mode controls ── */}
+          {mode === "sequence" && (
+            <>
+              {/* Step timeline */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <label className={labelClass}>Sequence Steps</label>
+                  {savedSequences.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowSaved(!showSaved)}
+                      className="text-xs text-[#6B6B6B] hover:text-[#0A0A0A] underline"
+                    >
+                      {showSaved ? "Hide saved" : `Saved (${savedSequences.length})`}
+                    </button>
+                  )}
+                </div>
+
+                {/* Saved sequences drawer */}
+                {showSaved && savedSequences.length > 0 && (
+                  <div className="mb-4 bg-white border border-[#E5E5E5] rounded-lg divide-y divide-[#F0F0F0]">
+                    {savedSequences.map((seq) => (
+                      <div key={seq.id} className="px-4 py-3 flex items-center justify-between">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">{seq.brand_name}</p>
+                          <p className="text-[10px] text-[#AAAAAA]">
+                            {seq.steps.length} steps · {new Date(seq.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            onClick={() => loadSequence(seq)}
+                            className="px-2.5 py-1 text-[10px] font-semibold bg-[#F0F0F0] text-[#6B6B6B] rounded-md hover:bg-[#E5E5E5] transition-colors"
+                          >
+                            Load
+                          </button>
+                          <button
+                            onClick={() => handleDeleteSequence(seq.id)}
+                            className="p-1 text-[#CCCCCC] hover:text-red-400 transition-colors"
+                          >
+                            <TrashIcon className="size-3" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  {seqSteps.map((step, i) => {
+                    const typeLabel = outreachTypes.find((t) => t.value === step.outreachType)?.label || step.outreachType;
+                    return (
+                      <div key={step.id} className="flex items-center gap-3 bg-white rounded-lg border border-[#E5E5E5] px-4 py-3">
+                        {/* Step number + timeline dot */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          <div className={`size-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                            step.generated
+                              ? "bg-emerald-100 text-emerald-600"
+                              : "bg-[#F0F0F0] text-[#999999]"
+                          }`}>
+                            {step.generated ? "✓" : i + 1}
+                          </div>
+                        </div>
+
+                        {/* Day */}
+                        <div className="shrink-0">
+                          <label className="text-[9px] font-semibold uppercase tracking-wider text-[#AAAAAA] block mb-0.5">Day</label>
+                          <input
+                            type="number"
+                            value={step.day}
+                            onChange={(e) => updateStep(step.id, { day: parseInt(e.target.value) || 0 })}
+                            className="w-14 px-2 py-1 text-xs border border-[#E5E5E5] rounded-md focus:outline-none focus:border-[#999999] text-center"
+                            min={0}
+                          />
+                        </div>
+
+                        {/* Type */}
+                        <div className="flex-1 min-w-0">
+                          <label className="text-[9px] font-semibold uppercase tracking-wider text-[#AAAAAA] block mb-0.5">Type</label>
+                          <select
+                            value={step.outreachType}
+                            onChange={(e) => updateStep(step.id, { outreachType: e.target.value as OutreachType })}
+                            className="w-full px-2 py-1 text-xs border border-[#E5E5E5] rounded-md bg-white focus:outline-none focus:border-[#999999]"
+                          >
+                            {outreachTypes.map((t) => (
+                              <option key={t.value} value={t.value}>{t.label}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Tone */}
+                        <div className="flex-1 min-w-0">
+                          <label className="text-[9px] font-semibold uppercase tracking-wider text-[#AAAAAA] block mb-0.5">Tone</label>
+                          <select
+                            value={step.tone}
+                            onChange={(e) => updateStep(step.id, { tone: e.target.value as ToneType })}
+                            className="w-full px-2 py-1 text-xs border border-[#E5E5E5] rounded-md bg-white focus:outline-none focus:border-[#999999]"
+                          >
+                            {tones.map((t) => (
+                              <option key={t.value} value={t.value}>{t.label}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Remove */}
+                        {seqSteps.length > 1 && (
+                          <button
+                            onClick={() => removeStep(step.id)}
+                            className="p-1 text-[#CCCCCC] hover:text-red-400 transition-colors mt-3"
+                          >
+                            <TrashIcon className="size-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {/* Add step button */}
+                  <button
+                    type="button"
+                    onClick={addStep}
+                    className="flex items-center gap-1.5 px-4 py-2 text-xs text-[#AAAAAA] hover:text-[#6B6B6B] transition-colors w-full justify-center border border-dashed border-[#E5E5E5] rounded-lg hover:border-[#CCCCCC]"
+                  >
+                    <PlusIcon className="size-3" />
+                    Add Step
+                  </button>
+                </div>
+              </div>
+
+              {/* Generate All button */}
+              <button
+                type="button"
+                onClick={generateAllSteps}
+                disabled={!canGenerateSequence}
+                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {seqLoading ? (
+                  <>
+                    <ArrowPathIcon className="size-4 animate-spin" />
+                    {seqProgress || "Generating sequence..."}
+                  </>
+                ) : (
+                  <>
+                    <ListBulletIcon className="size-4" />
+                    Generate All Steps
+                  </>
+                )}
+              </button>
+            </>
+          )}
         </div>
 
-        {/* Results */}
-        {result && (
+        {/* ═══ Single Mode Results ═══ */}
+        {mode === "single" && result && (
           <div className="space-y-4">
             {/* Subject line */}
             {hasSubject && result.subjectLine && (
@@ -347,6 +737,104 @@ export default function OutreachPage() {
               >
                 <ArrowPathIcon className="size-3.5" />
                 Regenerate
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ═══ Sequence Mode Results ═══ */}
+        {mode === "sequence" && seqSteps.some((s) => s.generated) && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm font-semibold">Generated Sequence</h2>
+              <div className="flex items-center gap-2">
+                {allGenerated && (
+                  <button
+                    onClick={saveSequence}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#F0F0F0] text-[#6B6B6B] rounded-md hover:bg-[#E5E5E5] transition-colors"
+                  >
+                    Save Sequence
+                  </button>
+                )}
+                <button
+                  onClick={copyFullSequence}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#0A0A0A] text-white rounded-md hover:bg-accent-hover transition-colors"
+                >
+                  <ClipboardDocumentIcon className="size-3" />
+                  Copy All
+                </button>
+              </div>
+            </div>
+
+            {/* Timeline */}
+            <div className="relative">
+              {/* Timeline line */}
+              <div className="absolute left-[19px] top-8 bottom-4 w-px bg-[#E5E5E5]" />
+
+              <div className="space-y-4">
+                {seqSteps.map((step, i) => {
+                  const typeLabel = outreachTypes.find((t) => t.value === step.outreachType)?.label || step.outreachType;
+                  const hasStepSubject = step.outreachType === "cold-email" || step.outreachType === "follow-up";
+
+                  if (!step.generated) return null;
+
+                  return (
+                    <div key={step.id} className="relative pl-12">
+                      {/* Timeline dot */}
+                      <div className="absolute left-[11px] top-4 size-[18px] rounded-full bg-emerald-100 border-2 border-emerald-400 flex items-center justify-center">
+                        <CheckIcon className="size-2.5 text-emerald-600" />
+                      </div>
+
+                      <div className="bg-white border border-[#E5E5E5] rounded-lg overflow-hidden">
+                        {/* Step header */}
+                        <div className="flex items-center justify-between px-5 py-3 bg-[#FAFAFA] border-b border-[#F0F0F0]">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold">Step {i + 1}</span>
+                            <span className="px-2 py-0.5 text-[10px] font-medium bg-[#F0F0F0] text-[#6B6B6B] rounded-full">
+                              {typeLabel}
+                            </span>
+                            <span className="text-[10px] text-[#AAAAAA]">
+                              Day {step.day}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => copyStep(step)}
+                            className="p-1.5 text-[#CCCCCC] hover:text-[#6B6B6B] transition-colors"
+                            title="Copy this step"
+                          >
+                            <ClipboardDocumentIcon className="size-3.5" />
+                          </button>
+                        </div>
+
+                        {/* Subject line */}
+                        {hasStepSubject && step.subjectLine && (
+                          <div className="px-5 py-2.5 border-b border-[#F0F0F0] bg-[#FAFAFA]">
+                            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAAAAA]">Subject: </span>
+                            <span className="text-xs font-semibold">{step.subjectLine}</span>
+                          </div>
+                        )}
+
+                        {/* Body */}
+                        <div className="px-5 py-4">
+                          <MarkdownRenderer content={step.body} />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Regenerate all */}
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={generateAllSteps}
+                disabled={seqLoading}
+                className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md border border-[#E5E5E5] bg-white text-[#6B6B6B] hover:border-[#CCCCCC] hover:text-[#0A0A0A] transition-colors disabled:opacity-40"
+              >
+                <ArrowPathIcon className="size-3.5" />
+                Regenerate All
               </button>
             </div>
           </div>

@@ -18,6 +18,12 @@ export interface ServicePricing {
   interval?: string; // "month" for retainers
 }
 
+export interface VolumeDiscount {
+  minQty: number; // quantity threshold to unlock this tier
+  amount: number; // pence per unit at this tier
+  label: string; // e.g. "£85/ad"
+}
+
 export interface ServiceOption {
   id: string;
   name: string;
@@ -27,7 +33,10 @@ export interface ServiceOption {
   modes: ServiceMode[];
   recommended?: boolean;
   isAddOn?: boolean;
-  maxQuantity?: number; // for quantity-selectable services (if needed)
+  minQuantity?: number; // minimum selectable quantity (e.g. 5 for ads)
+  maxQuantity?: number; // for quantity-selectable services
+  unitLabel?: string; // e.g. "ad", "email" — for display: "5 × £100/ad"
+  volumeDiscounts?: VolumeDiscount[]; // ordered by minQty ascending
   pricing: Partial<Record<ServiceMode, ServicePricing>>;
 }
 
@@ -234,62 +243,48 @@ export const services: ServiceOption[] = [
   // Bolt onto any project or retainer to extend output.
 
   {
-    id: "static-ads-5",
-    name: "5 Static Ads",
+    id: "static-ads",
+    name: "Static Ads",
     category: "additional",
-    description: "Five custom-designed static ad creatives.",
+    description: "Custom-designed static ad creatives — priced per ad.",
     features: [],
     modes: ["one-off"],
     isAddOn: true,
+    minQuantity: 5,
+    maxQuantity: 50,
+    unitLabel: "ad",
+    volumeDiscounts: [
+      { minQty: 10, amount: 8500, label: "£85/ad" },
+      { minQty: 20, amount: 7500, label: "£75/ad" },
+      { minQty: 35, amount: 6500, label: "£65/ad" },
+    ],
     pricing: {
       "one-off": {
-        tier1: { amount: 50000, label: "£500" },
-        tier2: { amount: 62500, label: "£625" },
+        tier1: { amount: 10000, label: "£100/ad" },
+        tier2: { amount: 10000, label: "£100/ad" },
       },
     },
   },
   {
-    id: "static-ads-10",
-    name: "10 Static Ads",
+    id: "email-designs",
+    name: "Email Designs",
     category: "additional",
-    description: "Ten custom-designed static ad creatives.",
+    description: "Branded email templates designed to convert — priced per email.",
     features: [],
     modes: ["one-off"],
     isAddOn: true,
+    minQuantity: 10,
+    maxQuantity: 50,
+    unitLabel: "email",
+    volumeDiscounts: [
+      { minQty: 20, amount: 6500, label: "£65/email" },
+      { minQty: 30, amount: 5500, label: "£55/email" },
+      { minQty: 40, amount: 4500, label: "£45/email" },
+    ],
     pricing: {
       "one-off": {
-        tier1: { amount: 85000, label: "£850" },
-        tier2: { amount: 105000, label: "£1,050" },
-      },
-    },
-  },
-  {
-    id: "email-designs-10",
-    name: "10 Email Designs",
-    category: "additional",
-    description: "Ten branded email templates designed to convert.",
-    features: [],
-    modes: ["one-off"],
-    isAddOn: true,
-    pricing: {
-      "one-off": {
-        tier1: { amount: 75000, label: "£750" },
-        tier2: { amount: 99900, label: "£999" },
-      },
-    },
-  },
-  {
-    id: "email-designs-20",
-    name: "20 Email Designs",
-    category: "additional",
-    description: "Twenty branded email templates designed to convert.",
-    features: [],
-    modes: ["one-off"],
-    isAddOn: true,
-    pricing: {
-      "one-off": {
-        tier1: { amount: 150000, label: "£1,500" },
-        tier2: { amount: 179900, label: "£1,799" },
+        tier1: { amount: 7500, label: "£75/email" },
+        tier2: { amount: 7500, label: "£75/email" },
       },
     },
   },
@@ -496,6 +491,43 @@ export function getPrice(
   tier: ClientTier
 ): TierPricing {
   return tier === 1 ? pricing.tier1 : pricing.tier2;
+}
+
+/** Resolve per-unit price taking volume discounts into account.
+ *  Returns the effective unit price (pence), its label, and whether it's discounted. */
+export function getUnitPriceForQuantity(
+  service: ServiceOption,
+  baseAmount: number,
+  qty: number
+): { amount: number; label: string; discounted: boolean; nextTier?: VolumeDiscount } {
+  if (!service.volumeDiscounts?.length) {
+    return { amount: baseAmount, label: "", discounted: false };
+  }
+  let effectiveAmount = baseAmount;
+  let effectiveLabel = "";
+  let discounted = false;
+  let nextTier: VolumeDiscount | undefined;
+
+  for (let i = 0; i < service.volumeDiscounts.length; i++) {
+    const tier = service.volumeDiscounts[i];
+    if (qty >= tier.minQty) {
+      effectiveAmount = tier.amount;
+      effectiveLabel = tier.label;
+      discounted = true;
+      nextTier = service.volumeDiscounts[i + 1]; // peek at next tier
+    } else {
+      // This tier hasn't been reached yet — it IS the next tier
+      if (!nextTier) nextTier = tier;
+      break;
+    }
+  }
+
+  // If we've unlocked the last tier, there's no next tier
+  if (discounted && !service.volumeDiscounts.find((t) => t.minQty > qty)) {
+    nextTier = undefined;
+  }
+
+  return { amount: effectiveAmount, label: effectiveLabel, discounted, nextTier };
 }
 
 export function formatGBP(pence: number): string {

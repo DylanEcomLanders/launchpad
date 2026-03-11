@@ -18,6 +18,7 @@ import {
   serviceCategories,
   retainerBuildDiscount,
   getPrice,
+  getUnitPriceForQuantity,
   formatGBP,
 } from "@/data/services";
 import type { Proposal } from "@/lib/proposal-types";
@@ -97,7 +98,13 @@ export function ProposalBuilder({
       const service = services.find((s) => s.id === id)!;
       const pricing = service.pricing[sel.mode];
       const tierPrice = pricing ? getPrice(pricing, tier) : null;
-      const baseAmount = tierPrice?.amount ?? 0;
+      let baseAmount = tierPrice?.amount ?? 0;
+
+      // Apply volume discounts for per-unit services
+      const volumeResult = getUnitPriceForQuantity(service, baseAmount, sel.quantity);
+      if (volumeResult.discounted) {
+        baseAmount = volumeResult.amount;
+      }
 
       // Apply retainer discount to build services
       const discount =
@@ -108,7 +115,7 @@ export function ProposalBuilder({
         discount > 0 ? Math.round(baseAmount * (1 - discount)) : baseAmount;
 
       const lineTotal = amount * sel.quantity;
-      const baseLineTotal = baseAmount * sel.quantity;
+      const baseLineTotal = (tierPrice?.amount ?? 0) * sel.quantity; // always use original base for savings display
       return { service, sel, lineTotal, baseLineTotal, discount };
     });
   }, [selections, services, tier, activeRetainerDiscount]);
@@ -130,7 +137,7 @@ export function ProposalBuilder({
         ...prev,
         [service.id]: {
           mode: service.modes[0],
-          quantity: 1,
+          quantity: service.minQuantity ?? 1,
         },
       };
     });
@@ -202,8 +209,7 @@ export function ProposalBuilder({
           Hey {proposal.client_name}
         </h1>
         <p className="text-base md:text-lg text-[#6B6B6B] max-w-2xl">
-          Choose the services that fit your goals. Mix and match one-off
-          builds with ongoing retainers to create your perfect package.
+          Choose your services, get your price.
         </p>
         <div className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 bg-[#EFF6FF] border border-[#BFDBFE] rounded-lg">
           <span className="text-sm font-medium text-[#1E40AF]">
@@ -313,19 +319,63 @@ export function ProposalBuilder({
         </div>
       </div>
 
-      {/* Mobile: Floating summary button */}
+      {/* Mobile: Persistent summary bar */}
       {itemCount > 0 && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-[#E5E5E5] z-40">
-          <button
-            onClick={() => setDrawerOpen(true)}
-            className="w-full flex items-center justify-between px-5 py-3.5 bg-[#2563EB] text-white rounded-xl font-medium text-sm hover:bg-[#1D4ED8] transition-colors"
-          >
-            <span className="flex items-center gap-2">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E5E5] z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+          {/* Scrollable item list */}
+          <div className="max-h-[30vh] overflow-y-auto px-4 pt-3 pb-2 space-y-1.5">
+            {selectedItems.map(({ service, sel, lineTotal, baseLineTotal, discount }) => (
+              <div
+                key={service.id}
+                className="flex items-center justify-between text-xs"
+              >
+                <span className="text-[#0A0A0A] truncate mr-3">
+                  {service.name}
+                  {sel.quantity > 1 && (
+                    <span className="text-[#AAAAAA]"> &times;{sel.quantity}</span>
+                  )}
+                </span>
+                {discount > 0 ? (
+                  <span className="text-[#15803D] font-semibold tabular-nums shrink-0">
+                    {formatGBP(lineTotal)}
+                  </span>
+                ) : (
+                  <span className="font-semibold tabular-nums shrink-0">
+                    {formatGBP(lineTotal)}
+                  </span>
+                )}
+              </div>
+            ))}
+            {/* Savings */}
+            {(() => {
+              const totalSaved = selectedItems.reduce(
+                (sum, i) => sum + (i.baseLineTotal - i.lineTotal),
+                0
+              );
+              return totalSaved > 0 ? (
+                <div className="flex items-center gap-1.5 text-[10px] text-[#15803D] font-medium pt-1">
+                  <TagIcon className="size-3 shrink-0" />
+                  Saving {formatGBP(totalSaved)}
+                </div>
+              ) : null;
+            })()}
+          </div>
+
+          {/* Total + CTA */}
+          <div className="px-4 pb-4 pt-2 border-t border-[#F0F0F0]">
+            <div className="flex items-center justify-between mb-2.5">
+              <span className="text-sm font-semibold text-[#0A0A0A]">Total</span>
+              <span className="text-lg font-bold text-[#0A0A0A]">{formatGBP(totalPence)}</span>
+            </div>
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#2563EB] text-white rounded-xl font-medium text-sm hover:bg-[#1D4ED8] transition-colors"
+            >
               <ShoppingCartIcon className="size-4" />
-              View Summary ({itemCount} {itemCount === 1 ? "item" : "items"})
-            </span>
-            <span className="font-semibold">{formatGBP(totalPence)}</span>
-          </button>
+              Proceed to Checkout
+              <ChevronRightIcon className="size-4" />
+            </button>
+          </div>
         </div>
       )}
 
@@ -369,8 +419,8 @@ export function ProposalBuilder({
         </div>
       )}
 
-      {/* Bottom spacer for mobile floating button */}
-      {itemCount > 0 && <div className="lg:hidden h-20" />}
+      {/* Bottom spacer for mobile persistent summary bar */}
+      {itemCount > 0 && <div className="lg:hidden h-48" />}
     </div>
   );
 }
@@ -478,9 +528,16 @@ function ServiceCard({
             </span>
           </div>
         ) : (
-          <span className="text-lg font-bold text-[#0A0A0A]">
-            {tierPrice?.label ?? "—"}
-          </span>
+          <div>
+            <span className="text-lg font-bold text-[#0A0A0A]">
+              {tierPrice?.label ?? "—"}
+            </span>
+            {service.minQuantity && service.minQuantity > 1 && (
+              <span className="block text-[10px] text-[#AAAAAA]">
+                min {service.minQuantity} {service.unitLabel ? `${service.unitLabel}s` : ""}
+              </span>
+            )}
+          </div>
         )}
 
         {/* Mode toggle (only if both modes) */}
@@ -507,47 +564,76 @@ function ServiceCard({
       </div>
 
       {/* Quantity stepper (for services with maxQuantity) */}
-      {isSelected && service.maxQuantity && service.maxQuantity > 1 && (
-        <div
-          className="mt-3 flex items-center gap-3 pt-3 border-t border-[#E5E5E5]"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <span className="text-xs font-medium text-[#6B6B6B]">
-            Quantity:
-          </span>
-          <div className="inline-flex items-center gap-0 rounded-md border border-[#E5E5E5] bg-white">
-            <button
-              onClick={() =>
-                onSetQuantity(Math.max(1, (selection?.quantity ?? 1) - 1))
-              }
-              disabled={(selection?.quantity ?? 1) <= 1}
-              className="px-2.5 py-1.5 text-[#6B6B6B] hover:text-[#0A0A0A] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-            >
-              <MinusIcon className="size-3" />
-            </button>
-            <span className="px-3 py-1.5 text-sm font-semibold tabular-nums border-x border-[#E5E5E5]">
-              {selection?.quantity ?? 1}
-            </span>
-            <button
-              onClick={() =>
-                onSetQuantity(
-                  Math.min(
-                    service.maxQuantity!,
-                    (selection?.quantity ?? 1) + 1
-                  )
-                )
-              }
-              disabled={(selection?.quantity ?? 1) >= service.maxQuantity!}
-              className="px-2.5 py-1.5 text-[#6B6B6B] hover:text-[#0A0A0A] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-            >
-              <PlusIcon className="size-3" />
-            </button>
+      {isSelected && service.maxQuantity && service.maxQuantity > 1 && (() => {
+        const minQty = service.minQuantity ?? 1;
+        const qty = selection?.quantity ?? minQty;
+        const baseUnitPrice = tierPrice?.amount ?? 0;
+        const volResult = getUnitPriceForQuantity(service, baseUnitPrice, qty);
+        const effectiveUnit = volResult.discounted ? volResult.amount : baseUnitPrice;
+        const effectiveLabel = volResult.discounted ? volResult.label : tierPrice?.label ?? "";
+        const lineTotal = effectiveUnit * qty;
+        const baseLine = baseUnitPrice * qty;
+        const saving = baseLine - lineTotal;
+
+        return (
+          <div
+            className="mt-3 pt-3 border-t border-[#E5E5E5] space-y-1.5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-medium text-[#6B6B6B]">
+                  Qty:
+                </span>
+                <div className="inline-flex items-center gap-0 rounded-md border border-[#E5E5E5] bg-white">
+                  <button
+                    onClick={() => onSetQuantity(Math.max(minQty, qty - 1))}
+                    disabled={qty <= minQty}
+                    className="px-2.5 py-1.5 text-[#6B6B6B] hover:text-[#0A0A0A] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <MinusIcon className="size-3" />
+                  </button>
+                  <span className="px-3 py-1.5 text-sm font-semibold tabular-nums border-x border-[#E5E5E5]">
+                    {qty}
+                  </span>
+                  <button
+                    onClick={() =>
+                      onSetQuantity(Math.min(service.maxQuantity!, qty + 1))
+                    }
+                    disabled={qty >= service.maxQuantity!}
+                    className="px-2.5 py-1.5 text-[#6B6B6B] hover:text-[#0A0A0A] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <PlusIcon className="size-3" />
+                  </button>
+                </div>
+                {minQty > 1 && (
+                  <span className="text-[10px] text-[#AAAAAA]">
+                    min {minQty}
+                  </span>
+                )}
+              </div>
+              <div className="text-right">
+                {service.unitLabel && (
+                  <span className="text-xs font-semibold text-[#0A0A0A] tabular-nums">
+                    {qty} &times; {effectiveLabel} = {formatGBP(lineTotal)}
+                  </span>
+                )}
+                {saving > 0 && (
+                  <span className="block text-[10px] font-medium text-[#15803D]">
+                    Saving {formatGBP(saving)}
+                  </span>
+                )}
+              </div>
+            </div>
+            {/* Next discount tier nudge */}
+            {volResult.nextTier && (
+              <p className="text-[10px] text-[#AAAAAA] ml-10">
+                Order {volResult.nextTier.minQty}+ for {volResult.nextTier.label}
+              </p>
+            )}
           </div>
-          <span className="text-xs text-[#AAAAAA]">
-            max {service.maxQuantity}
-          </span>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

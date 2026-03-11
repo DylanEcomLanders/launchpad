@@ -39,7 +39,7 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ReactNode;
-  wip?: boolean;
+  step?: number;
 }
 
 interface NavSection {
@@ -57,23 +57,95 @@ const teamZones = [
 
 const navSections: NavSection[] = [
   {
-    title: "Project Management",
+    title: "Win the Client",
     items: [
       {
-        label: "Project Setup",
-        href: "/tools/project-kickoff",
-        icon: <RocketLaunchIcon className="size-4" />,
+        label: "Prospect Scraper",
+        href: "/tools/prospect-scraper",
+        icon: <UserGroupIcon className="size-4" />,
+        step: 1,
+      },
+      {
+        label: "Store Intelligence",
+        href: "/tools/store-intel",
+        icon: <MagnifyingGlassIcon className="size-4" />,
+        step: 2,
+      },
+      {
+        label: "Outreach Generator",
+        href: "/tools/outreach",
+        icon: <PaperAirplaneIcon className="size-4" />,
+        step: 3,
+      },
+      {
+        label: "Proposals",
+        href: "/tools/proposals",
+        icon: <DocumentDuplicateIcon className="size-4" />,
+        step: 4,
       },
       {
         label: "Price Calculator",
         href: "/tools/price-calculator",
         icon: <CalculatorIcon className="size-4" />,
+        step: 5,
+      },
+    ],
+  },
+  {
+    title: "Deliver the Project",
+    items: [
+      {
+        label: "Project Setup",
+        href: "/tools/project-kickoff",
+        icon: <RocketLaunchIcon className="size-4" />,
+        step: 1,
+      },
+      {
+        label: "Dev Self-Check",
+        href: "/tools/dev-selfcheck",
+        icon: <BeakerIcon className="size-4" />,
+        step: 2,
       },
       {
         label: "QA Checklist",
         href: "/tools/qa-checklist",
         icon: <ClipboardDocumentCheckIcon className="size-4" />,
+        step: 3,
       },
+      {
+        label: "Client Portal",
+        href: "/tools/client-portal",
+        icon: <GlobeAltIcon className="size-4" />,
+        step: 4,
+      },
+    ],
+  },
+  {
+    title: "Get Paid",
+    items: [
+      {
+        label: "Dev Hours",
+        href: "/tools/dev-hours",
+        icon: <ClockIcon className="size-4" />,
+        step: 1,
+      },
+      {
+        label: "Invoice Generator",
+        href: "/tools/invoice-generator",
+        icon: <ReceiptPercentIcon className="size-4" />,
+        step: 2,
+      },
+      {
+        label: "Expenses",
+        href: "/tools/expenses",
+        icon: <WalletIcon className="size-4" />,
+        step: 3,
+      },
+    ],
+  },
+  {
+    title: "Toolbox",
+    items: [
       {
         label: "Portfolio",
         href: "/tools/portfolio",
@@ -89,102 +161,40 @@ const navSections: NavSection[] = [
         href: "/tools/feedback",
         icon: <ChatBubbleLeftEllipsisIcon className="size-4" />,
       },
-    ],
-  },
-  {
-    title: "Finance",
-    items: [
-      {
-        label: "Invoice Generator",
-        href: "/tools/invoice-generator",
-        icon: <ReceiptPercentIcon className="size-4" />,
-      },
-      {
-        label: "Dev Hours",
-        href: "/tools/dev-hours",
-        icon: <ClockIcon className="size-4" />,
-      },
-      {
-        label: "Expenses",
-        href: "/tools/expenses",
-        icon: <WalletIcon className="size-4" />,
-      },
-    ],
-  },
-  {
-    title: "Work in Progress",
-    items: [
       {
         label: "Funnel Planner",
         href: "/tools/funnel-planner",
         icon: <FunnelIcon className="size-4" />,
-        wip: true,
       },
       {
         label: "Content Repurposer",
         href: "/tools/content-repurposer",
         icon: <ArrowsRightLeftIcon className="size-4" />,
-        wip: true,
       },
       {
         label: "Hook Generator",
         href: "/tools/hook-generator",
         icon: <SparklesIcon className="size-4" />,
-        wip: true,
-      },
-      {
-        label: "Client Portal",
-        href: "/tools/client-portal",
-        icon: <GlobeAltIcon className="size-4" />,
-        wip: true,
-      },
-      {
-        label: "Store Intelligence",
-        href: "/tools/store-intel",
-        icon: <MagnifyingGlassIcon className="size-4" />,
-        wip: true,
       },
       {
         label: "Upsell Scanner",
         href: "/tools/upsell-scanner",
         icon: <SignalIcon className="size-4" />,
-        wip: true,
-      },
-      {
-        label: "Proposals",
-        href: "/tools/proposals",
-        icon: <DocumentDuplicateIcon className="size-4" />,
-        wip: true,
-      },
-      {
-        label: "Outreach Generator",
-        href: "/tools/outreach",
-        icon: <PaperAirplaneIcon className="size-4" />,
-        wip: true,
-      },
-      {
-        label: "Prospect Scraper",
-        href: "/tools/prospect-scraper",
-        icon: <UserGroupIcon className="size-4" />,
-        wip: true,
       },
       {
         label: "CRO Test Monitor",
         href: "/tools/cro-monitor",
         icon: <ChartBarIcon className="size-4" />,
-        wip: true,
       },
       {
         label: "CRO Audit",
         href: "/tools/cro-audit",
         icon: <BeakerIcon className="size-4" />,
-        wip: true,
       },
       {
         label: "Playbooks",
         href: "/tools/playbooks",
         icon: <BookOpenIcon className="size-4" />,
-        wip: true,
       },
     ],
   },
@@ -195,7 +205,7 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(
-    () => Object.fromEntries(navSections.map((s) => [s.title, s.title !== "Work in Progress"]))
+    () => Object.fromEntries(navSections.map((s) => [s.title, s.title !== "Toolbox"]))
   );
   const [now, setNow] = useState(() => new Date());
 
@@ -331,17 +341,13 @@ export function Sidebar() {
                       `}
                       title={collapsed ? item.label : undefined}
                     >
-                      {item.icon}
-                      {!collapsed && (
-                        <span className="flex items-center gap-1.5">
-                          {item.label}
-                          {item.wip && (
-                            <span className="px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-amber-100 text-amber-600 rounded">
-                              WIP
-                            </span>
-                          )}
+                      {!collapsed && item.step && (
+                        <span className="text-[#AAAAAA] text-[10px] font-mono w-3 shrink-0">
+                          {item.step}.
                         </span>
                       )}
+                      {item.icon}
+                      {!collapsed && <span>{item.label}</span>}
                     </Link>
                   ))}
                 </div>

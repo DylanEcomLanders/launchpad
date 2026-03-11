@@ -1,44 +1,85 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
+  PlusIcon,
+  TrashIcon,
+  XMarkIcon,
+  CheckIcon,
   ClipboardDocumentIcon,
   EyeIcon,
-  LockClosedIcon,
-} from "@heroicons/react/24/solid";
+  ArrowTopRightOnSquareIcon,
+} from "@heroicons/react/24/outline";
+import Link from "next/link";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
-import { DEMO_PORTALS, type PortalData, type PortalDocument } from "@/lib/portal-types";
 import { inputClass, labelClass } from "@/lib/form-styles";
-
-const typeLabels: Record<string, string> = {
-  Roadmap: "RDM",
-  Scope: "SCP",
-  Agreement: "AGR",
-  "QA Checklist": "QA",
-  Other: "DOC",
-};
-
-function getEndDate(portal: PortalData): string {
-  const last = portal.phases[portal.phases.length - 1];
-  if (!last) return "";
-  const parts = last.dates.split(" – ");
-  return parts[parts.length - 1];
-}
+import { getPortals, createPortal, deletePortal, seedDemoPortal } from "@/lib/portal/data";
+import type { PortalData } from "@/lib/portal/types";
 
 export default function ClientPortalPage() {
+  const [portals, setPortals] = useState<PortalData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [clientName, setClientName] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
+  const [projectType, setProjectType] = useState("");
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
-  const [selectedDoc, setSelectedDoc] = useState<PortalDocument | null>(null);
 
-  function copyLink(token: string) {
+  const loadPortals = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await getPortals();
+      setPortals(data);
+    } catch {
+      // Silent fail
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadPortals();
+  }, [loadPortals]);
+
+  const handleCreate = async () => {
+    if (!clientName.trim()) return;
+    await createPortal({
+      client_name: clientName.trim(),
+      client_email: clientEmail.trim(),
+      project_type: projectType.trim() || "Full Page Build",
+      current_phase: "",
+      progress: 0,
+      next_touchpoint: { date: "", description: "" },
+      phases: [],
+      scope: [],
+      deliverables: [],
+      documents: [],
+      results: [],
+      wins: [],
+    });
+    setClientName("");
+    setClientEmail("");
+    setProjectType("");
+    setShowForm(false);
+    loadPortals();
+  };
+
+  const handleSeedDemo = async () => {
+    await seedDemoPortal();
+    loadPortals();
+  };
+
+  const handleDelete = async (id: string) => {
+    await deletePortal(id);
+    setPortals((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const copyLink = (token: string) => {
     const url = `${window.location.origin}/portal/${token}`;
     navigator.clipboard.writeText(url);
     setCopiedToken(token);
     setTimeout(() => setCopiedToken(null), 2000);
-  }
-
-  function openPreview(token: string) {
-    window.open(`/portal/${token}`, "_blank");
-  }
+  };
 
   return (
     <div className="relative min-h-screen">
@@ -50,332 +91,241 @@ export default function ClientPortalPage() {
             Client Portal
           </h1>
           <p className="text-[#6B6B6B]">
-            Manage client-facing project portals — share status, timelines, and
-            documents
+            Manage client-facing project portals — share status, updates, and
+            collect approvals
           </p>
         </div>
 
-        {/* Active Portals */}
-        <div className="mb-12">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-4">
+        {/* Actions */}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B]">
             Active Portals
+            {portals.length > 0 && (
+              <span className="ml-2 text-[10px] font-bold bg-[#F0F0F0] text-[#6B6B6B] px-1.5 py-0.5 rounded">
+                {portals.length}
+              </span>
+            )}
           </h2>
-          <div className="space-y-4">
-            {DEMO_PORTALS.map((portal) => (
-              <PortalCard
-                key={portal.token}
-                portal={portal}
-                copiedToken={copiedToken}
-                onCopyLink={copyLink}
-                onPreview={openPreview}
-                onDocClick={setSelectedDoc}
-              />
-            ))}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleSeedDemo}
+              className="text-xs font-medium text-[#AAAAAA] hover:text-[#2563EB] transition-colors"
+            >
+              Seed Demo
+            </button>
+            <button
+              onClick={() => setShowForm(true)}
+              className="flex items-center gap-1 text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
+            >
+              <PlusIcon className="size-3.5" />
+              New Portal
+            </button>
           </div>
         </div>
 
-        {/* Create Portal (disabled/placeholder) */}
-        <div>
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-4">
-            Create New Portal
-          </h2>
-          <div className="relative bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-6 overflow-hidden">
-            {/* Disabled overlay */}
-            <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-10 flex items-center justify-center">
-              <div className="text-center">
-                <LockClosedIcon className="size-5 text-[#AAAAAA] mx-auto mb-2" />
-                <p className="text-sm font-medium text-[#6B6B6B]">
-                  Connect ClickUp to create live portals
-                </p>
-                <p className="text-xs text-[#AAAAAA] mt-1">
-                  Coming soon — add your ClickUp API token to enable
-                </p>
-              </div>
+        {/* Create Form */}
+        {showForm && (
+          <div className="bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg p-5 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold">Create Portal</h3>
+              <button
+                onClick={() => setShowForm(false)}
+                className="text-[#AAAAAA] hover:text-[#0A0A0A]"
+              >
+                <XMarkIcon className="size-4" />
+              </button>
             </div>
 
-            {/* Form preview (behind overlay) */}
-            <div className="space-y-5 opacity-60 pointer-events-none">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className={labelClass}>Client Name</label>
+                  <label className={labelClass}>Client Name *</label>
                   <input
                     type="text"
-                    placeholder="Client name..."
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                    placeholder="e.g., Nutribloom"
                     className={inputClass}
-                    disabled
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>Project Type</label>
+                  <label className={labelClass}>Client Email</label>
                   <input
-                    type="text"
-                    placeholder="Full Page Build"
+                    type="email"
+                    value={clientEmail}
+                    onChange={(e) => setClientEmail(e.target.value)}
+                    placeholder="client@example.com"
                     className={inputClass}
-                    disabled
                   />
                 </div>
               </div>
               <div>
-                <label className={labelClass}>ClickUp List ID</label>
+                <label className={labelClass}>Project Type</label>
                 <input
                   type="text"
-                  placeholder="Paste ClickUp list ID..."
+                  value={projectType}
+                  onChange={(e) => setProjectType(e.target.value)}
+                  placeholder="Full Page Build"
                   className={inputClass}
-                  disabled
                 />
               </div>
-              <div>
-                <label className={labelClass}>Visible Sections</label>
-                <div className="flex flex-wrap gap-3">
-                  {["Overview", "Timeline", "Scope", "Results"].map(
-                    (s) => (
-                      <label
-                        key={s}
-                        className="flex items-center gap-2 text-sm text-[#6B6B6B]"
-                      >
-                        <input type="checkbox" checked disabled className="rounded" />
-                        {s}
-                      </label>
-                    )
-                  )}
-                </div>
-              </div>
+
               <button
-                disabled
-                className="px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md opacity-40 cursor-not-allowed"
+                onClick={handleCreate}
+                disabled={!clientName.trim()}
+                className="flex items-center gap-1.5 px-4 py-2 bg-[#0A0A0A] text-white text-xs font-medium rounded-md hover:bg-[#2A2A2A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
+                <CheckIcon className="size-3.5" />
                 Create Portal
               </button>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Document preview modal */}
-      {selectedDoc && (
-        <DocumentPreview doc={selectedDoc} onClose={() => setSelectedDoc(null)} />
-      )}
-    </div>
-  );
-}
-
-/* ── Portal Card ── */
-
-function PortalCard({
-  portal,
-  copiedToken,
-  onCopyLink,
-  onPreview,
-  onDocClick,
-}: {
-  portal: PortalData;
-  copiedToken: string | null;
-  onCopyLink: (token: string) => void;
-  onPreview: (token: string) => void;
-  onDocClick: (doc: PortalDocument) => void;
-}) {
-  const startDate = portal.phases[0]?.dates;
-  const endDate = getEndDate(portal);
-
-  return (
-    <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-      {/* Top row: info + actions */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-sm font-semibold">{portal.clientName}</h3>
-            <span className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-[#F0F0F0] text-[#6B6B6B] rounded">
-              Demo
-            </span>
-          </div>
-          <p className="text-xs text-[#6B6B6B] mb-1">{portal.projectType}</p>
-          <p className="text-[11px] text-[#AAAAAA]">
-            Start: {startDate} · End: {endDate}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-1 text-xs text-[#AAAAAA]">
-          <EyeIcon className="size-3" />
-          <span className="tabular-nums">{portal.viewCount}</span>
-        </div>
-      </div>
-
-      {/* Phase progress track */}
-      <div className="mt-4 flex items-center gap-3">
-        <div className="flex items-center gap-1.5 shrink-0">
-          <span className={`size-2 rounded-full inline-block ${
-            portal.phases.find((p) => p.name === portal.currentPhase)?.status === "in-progress"
-              ? "bg-[#0A0A0A] animate-pulse"
-              : "bg-[#0A0A0A]"
-          }`} />
-          <span className="text-xs font-medium">{portal.currentPhase}</span>
-        </div>
-        <div className="flex gap-1 flex-1">
-          {portal.phases.map((phase) => (
-            <div
-              key={phase.name}
-              className={`h-1 rounded-full flex-1 ${
-                phase.status === "complete"
-                  ? "bg-emerald-400"
-                  : phase.status === "in-progress"
-                  ? "bg-[#0A0A0A]"
-                  : "bg-[#E5E5E5]"
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Documents + Actions */}
-      <div className="mt-4 pt-4 border-t border-[#F0F0F0] flex items-center justify-between gap-4">
-        {/* Clickable document badges */}
-        <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
-          {portal.documents.map((doc, i) => (
-            <button
-              key={i}
-              onClick={() => onDocClick(doc)}
-              className="inline-flex items-center gap-1.5 px-2 py-1 text-[11px] bg-[#FAFAFA] border border-[#E5E5E5] rounded hover:border-[#0A0A0A] hover:bg-white transition-colors"
-            >
-              <span className="font-semibold text-[#6B6B6B]">{typeLabels[doc.type] || "DOC"}</span>
-              <span className="text-[#AAAAAA]">{doc.type}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={() => onCopyLink(portal.token)}
-            className="p-2 rounded-md hover:bg-[#F0F0F0] transition-colors text-[#6B6B6B] hover:text-[#0A0A0A]"
-            title="Copy portal link"
-          >
-            <ClipboardDocumentIcon className="size-4" />
-          </button>
-
-          <button
-            onClick={() => onPreview(portal.token)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0A0A0A] text-white text-xs font-medium rounded-md hover:bg-[#2A2A2A] transition-colors"
-          >
-            Open Portal
-            <svg className="size-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      {/* Copied toast inline */}
-      {copiedToken === portal.token && (
-        <div className="mt-3 text-xs text-[#6B6B6B] bg-[#F5F5F5] px-3 py-1.5 rounded">
-          Link copied to clipboard
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ── Document Preview Modal ── */
-
-function DocumentPreview({
-  doc,
-  onClose,
-}: {
-  doc: PortalDocument;
-  onClose: () => void;
-}) {
-  const [toast, setToast] = useState("");
-
-  function handleDownload() {
-    setToast("Download coming soon — documents will be linked when your portal goes live");
-    setTimeout(() => setToast(""), 3000);
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-
-      {/* Modal */}
-      <div className="relative w-full max-w-lg bg-white rounded-xl shadow-2xl animate-fadeIn">
-        {/* Header */}
-        <div className="flex items-start justify-between p-6 border-b border-[#F0F0F0]">
-          <div className="flex items-start gap-4">
-            <div className="shrink-0 size-12 rounded-lg bg-[#0A0A0A] text-white flex items-center justify-center text-[11px] font-bold tracking-wider">
-              {typeLabels[doc.type] || "DOC"}
-            </div>
-            <div>
-              <h3 className="text-base font-bold mb-1">{doc.name}</h3>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-[#AAAAAA] uppercase tracking-wider font-medium">
-                  {doc.type}
-                </span>
-                <span className="text-[#E5E5E5]">&middot;</span>
-                <span className="text-xs text-[#AAAAAA]">{doc.date}</span>
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-md hover:bg-[#F5F5F5] transition-colors text-[#AAAAAA] hover:text-[#0A0A0A]"
-          >
-            <svg className="size-5" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Document preview placeholder */}
-        <div className="p-6">
-          <div className="border border-[#E5E5E5] rounded-lg bg-[#FAFAFA] p-8 mb-6">
-            <div className="space-y-4">
-              <div className="h-3 bg-[#E5E5E5] rounded w-2/3" />
-              <div className="space-y-2">
-                <div className="h-2 bg-[#EBEBEB] rounded w-full" />
-                <div className="h-2 bg-[#EBEBEB] rounded w-5/6" />
-                <div className="h-2 bg-[#EBEBEB] rounded w-4/6" />
-              </div>
-              <div className="h-px bg-[#E5E5E5]" />
-              <div className="space-y-2">
-                <div className="h-2 bg-[#EBEBEB] rounded w-full" />
-                <div className="h-2 bg-[#EBEBEB] rounded w-3/4" />
-                <div className="h-2 bg-[#EBEBEB] rounded w-5/6" />
-                <div className="h-2 bg-[#EBEBEB] rounded w-2/3" />
-              </div>
-              <div className="h-px bg-[#E5E5E5]" />
-              <div className="space-y-2">
-                <div className="h-2 bg-[#EBEBEB] rounded w-full" />
-                <div className="h-2 bg-[#EBEBEB] rounded w-4/5" />
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleDownload}
-              className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-lg hover:bg-[#2A2A2A] transition-colors"
-            >
-              <svg className="size-4" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z" />
-                <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" />
-              </svg>
-              Download PDF
-            </button>
-            <button
-              onClick={onClose}
-              className="px-5 py-3 text-sm font-medium text-[#6B6B6B] border border-[#E5E5E5] rounded-lg hover:bg-[#F5F5F5] transition-colors"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-
-        {/* Toast */}
-        {toast && (
-          <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 px-5 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-full shadow-xl whitespace-nowrap animate-fadeIn">
-            {toast}
-          </div>
         )}
+
+        {/* Portal List */}
+        <div className="space-y-4">
+          {loading && (
+            <div className="space-y-4">
+              {[1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="bg-white border border-[#E5E5E5] rounded-lg p-5 animate-pulse"
+                >
+                  <div className="h-4 bg-[#F0F0F0] rounded w-1/3 mb-2" />
+                  <div className="h-3 bg-[#F0F0F0] rounded w-2/3 mb-4" />
+                  <div className="h-1 bg-[#F0F0F0] rounded w-full" />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!loading && portals.length === 0 && !showForm && (
+            <div className="bg-white border border-dashed border-[#E5E5E5] rounded-lg p-8 text-center">
+              <p className="text-xs text-[#AAAAAA] mb-3">No portals yet</p>
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
+                >
+                  + Create your first portal
+                </button>
+                <span className="text-[10px] text-[#E5E5E5]">or</span>
+                <button
+                  onClick={handleSeedDemo}
+                  className="text-xs font-medium text-[#2563EB] hover:text-[#1D4ED8] transition-colors"
+                >
+                  Seed demo portal
+                </button>
+              </div>
+            </div>
+          )}
+
+          {!loading &&
+            portals.map((portal) => (
+              <div
+                key={portal.id}
+                className="bg-white border border-[#E5E5E5] rounded-lg p-5"
+              >
+                {/* Top row */}
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-sm font-semibold">
+                        {portal.client_name}
+                      </h3>
+                      {portal.current_phase && (
+                        <span className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-[#F0F0F0] text-[#6B6B6B] rounded">
+                          {portal.current_phase}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-[#6B6B6B]">
+                      {portal.project_type || "No project type set"}
+                    </p>
+                    {portal.client_email && (
+                      <p className="text-[11px] text-[#AAAAAA] mt-0.5">
+                        {portal.client_email}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1 text-xs text-[#AAAAAA]">
+                    <EyeIcon className="size-3" />
+                    <span className="tabular-nums">{portal.view_count}</span>
+                  </div>
+                </div>
+
+                {/* Phase progress */}
+                {portal.phases.length > 0 && (
+                  <div className="mt-4 flex gap-1">
+                    {portal.phases.map((phase) => (
+                      <div
+                        key={phase.id}
+                        className={`h-1 rounded-full flex-1 ${
+                          phase.status === "complete"
+                            ? "bg-emerald-400"
+                            : phase.status === "in-progress"
+                            ? "bg-[#0A0A0A]"
+                            : "bg-[#E5E5E5]"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="mt-4 pt-4 border-t border-[#F0F0F0] flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => copyLink(portal.token)}
+                      className="flex items-center gap-1 text-[11px] font-medium text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
+                    >
+                      <ClipboardDocumentIcon className="size-3.5" />
+                      {copiedToken === portal.token ? "Copied!" : "Copy Link"}
+                    </button>
+                    <a
+                      href={`/portal/${portal.token}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-[11px] font-medium text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
+                    >
+                      <ArrowTopRightOnSquareIcon className="size-3.5" />
+                      Preview
+                    </a>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/tools/client-portal/${portal.id}`}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0A0A0A] text-white text-xs font-medium rounded-md hover:bg-[#2A2A2A] transition-colors"
+                    >
+                      Manage
+                      <svg
+                        className="size-3.5"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                      >
+                        <path
+                          d="M3 8h10M9 4l4 4-4 4"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(portal.id)}
+                      className="p-1.5 text-[#AAAAAA] hover:text-red-400 transition-colors"
+                      title="Delete portal"
+                    >
+                      <TrashIcon className="size-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+        </div>
       </div>
     </div>
   );

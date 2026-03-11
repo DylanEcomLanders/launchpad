@@ -2,13 +2,14 @@
 
 import { useState, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { CheckIcon, SparklesIcon } from "@heroicons/react/24/solid";
+import { CheckIcon, SparklesIcon, PlusIcon, MinusIcon } from "@heroicons/react/24/solid";
 import { Logo } from "@/components/logo";
 import {
   services as allServices,
   serviceCategories,
   retainerBuildDiscount,
   getPrice,
+  getUnitPriceForQuantity,
   formatGBP,
   type ServiceOption,
   type ClientTier,
@@ -32,10 +33,13 @@ const categoryOrder = ["builds", "cro", "additional"] as const;
 
 /* ── Component ───────────────────────────────────────────────── */
 
+// Track which services are selected + their quantity (for per-unit services)
+type SelectionMap = Record<string, number>; // id → quantity
+
 export default function PricingPage() {
   const params = useParams();
   const tier = parseTier(params.tier as string);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [selections, setSelections] = useState<SelectionMap>({});
 
   if (!tier) {
     return (
@@ -45,13 +49,23 @@ export default function PricingPage() {
     );
   }
 
+  // Backwards-compatible set for simple checks
+  const selected = new Set(Object.keys(selections));
+
   const toggle = (id: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
+    setSelections((prev) => {
+      if (prev[id] !== undefined) {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      }
+      const svc = services.find((s) => s.id === id);
+      return { ...prev, [id]: svc?.minQuantity ?? 1 };
     });
+  };
+
+  const setQuantity = (id: string, qty: number) => {
+    setSelections((prev) => ({ ...prev, [id]: qty }));
   };
 
   /* ── Retainer discount ─────────────────────────────────────── */
@@ -82,9 +96,9 @@ export default function PricingPage() {
       let oneOff = 0;
       let recurring = 0;
       let discount = 0;
-      const items: { service: ServiceOption; price: number; isRecurring: boolean; originalPrice?: number }[] = [];
+      const items: { service: ServiceOption; price: number; quantity: number; isRecurring: boolean; originalPrice?: number; volumeSaving?: number }[] = [];
 
-      for (const id of selected) {
+      for (const [id, qty] of Object.entries(selections)) {
         const svc = services.find((s) => s.id === id);
         if (!svc) continue;
 
@@ -93,28 +107,47 @@ export default function PricingPage() {
         if (!pricing) continue;
 
         const tierPrice = getPrice(pricing, tier);
-        let amount = tierPrice.amount;
-        let originalAmount: number | undefined;
+        let baseUnitAmount = tierPrice.amount;
+        let unitAmount = baseUnitAmount;
+        let originalUnit: number | undefined;
         const isRecurring = !!pricing.interval;
+
+        // Apply volume discounts for per-unit services
+        const volumeResult = getUnitPriceForQuantity(svc, baseUnitAmount, qty);
+        if (volumeResult.discounted) {
+          unitAmount = volumeResult.amount;
+        }
+
+        // Track volume saving (base vs discounted, before retainer)
+        const volumeSaving = volumeResult.discounted ? (baseUnitAmount - unitAmount) * qty : 0;
 
         // Apply retainer discount to builds
         if (svc.category === "builds" && activeRetainerDiscount > 0) {
-          originalAmount = amount;
-          amount = Math.round(amount * (1 - activeRetainerDiscount));
-          discount += originalAmount - amount;
+          originalUnit = unitAmount;
+          unitAmount = Math.round(unitAmount * (1 - activeRetainerDiscount));
+          discount += (originalUnit - unitAmount) * qty;
         }
+
+        const lineTotal = unitAmount * qty;
 
         if (isRecurring) {
-          recurring += amount;
+          recurring += lineTotal;
         } else {
-          oneOff += amount;
+          oneOff += lineTotal;
         }
 
-        items.push({ service: svc, price: amount, isRecurring, originalPrice: originalAmount });
+        items.push({
+          service: svc,
+          price: lineTotal,
+          quantity: qty,
+          isRecurring,
+          originalPrice: originalUnit ? originalUnit * qty : undefined,
+          volumeSaving,
+        });
       }
 
       return { oneOffTotal: oneOff, recurringTotal: recurring, totalDiscount: discount, selectedItems: items };
-    }, [selected, tier, activeRetainerDiscount]);
+    }, [selections, tier, activeRetainerDiscount]);
 
   const hasSelection = selected.size > 0;
 
@@ -141,7 +174,7 @@ export default function PricingPage() {
           Pricing &amp; Packages
         </h1>
         <p className="text-sm text-[#6B6B6B]">
-          Shopify CRO &amp; landing page services by Ecomlanders
+          Choose your services, get your price.
         </p>
       </div>
 
@@ -279,42 +312,116 @@ export default function PricingPage() {
                 if (!pricing) return null;
                 const tierPrice = getPrice(pricing, tier);
                 const isSelected = selected.has(svc.id);
+                const hasQuantity = svc.maxQuantity && svc.maxQuantity > 1;
+                const minQty = svc.minQuantity ?? 1;
+                const qty = selections[svc.id] ?? minQty;
 
                 return (
-                  <button
+                  <div
                     key={svc.id}
-                    onClick={() => toggle(svc.id)}
-                    className={`w-full text-left px-5 py-3.5 flex items-center justify-between gap-4 transition-colors ${
-                      isSelected ? "bg-white" : "hover:bg-white/60"
-                    }`}
+                    className={`transition-colors ${isSelected ? "bg-white" : "hover:bg-white/60"}`}
                   >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div
-                        className={`size-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
-                          isSelected
-                            ? "bg-[#0A0A0A] border-[#0A0A0A]"
-                            : "border-[#CCCCCC]"
-                        }`}
-                      >
-                        {isSelected && (
-                          <CheckIcon className="size-2.5 text-white" />
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <span className="text-sm font-medium text-[#0A0A0A] block truncate">
-                          {svc.name}
-                        </span>
-                        {svc.description && (
-                          <span className="text-xs text-[#AAAAAA] block truncate">
-                            {svc.description}
+                    <button
+                      onClick={() => toggle(svc.id)}
+                      className="w-full text-left px-5 py-3.5 flex items-center justify-between gap-4"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div
+                          className={`size-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+                            isSelected
+                              ? "bg-[#0A0A0A] border-[#0A0A0A]"
+                              : "border-[#CCCCCC]"
+                          }`}
+                        >
+                          {isSelected && (
+                            <CheckIcon className="size-2.5 text-white" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-sm font-medium text-[#0A0A0A] block truncate">
+                            {svc.name}
                           </span>
-                        )}
+                          {svc.description && (
+                            <span className="text-xs text-[#AAAAAA] block truncate">
+                              {svc.description}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <span className="text-sm font-semibold text-[#0A0A0A] tabular-nums shrink-0">
-                      {formatGBP(tierPrice.amount)}
-                    </span>
-                  </button>
+                      <span className="text-sm font-semibold text-[#0A0A0A] tabular-nums shrink-0">
+                        {tierPrice.label}
+                      </span>
+                    </button>
+
+                    {/* Volume discount tiers preview */}
+                    {!isSelected && svc.volumeDiscounts && svc.volumeDiscounts.length > 0 && (
+                      <div className="px-5 pb-2 ml-7 flex items-center gap-3 flex-wrap">
+                        {svc.volumeDiscounts.map((vd) => (
+                          <span key={vd.minQty} className="text-[10px] text-[#AAAAAA]">
+                            {vd.minQty}+: <span className="font-semibold text-[#15803D]">{vd.label}</span>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Quantity stepper for per-unit services */}
+                    {isSelected && hasQuantity && (() => {
+                      const volResult = getUnitPriceForQuantity(svc, tierPrice.amount, qty);
+                      const effectiveUnit = volResult.discounted ? volResult.amount : tierPrice.amount;
+                      const effectiveLabel = volResult.discounted ? volResult.label : tierPrice.label;
+                      const lineTotal = effectiveUnit * qty;
+                      const baseLine = tierPrice.amount * qty;
+                      const saving = baseLine - lineTotal;
+
+                      return (
+                        <div className="px-5 pb-3.5 ml-7 space-y-1.5">
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs font-medium text-[#6B6B6B]">Qty:</span>
+                              <div className="inline-flex items-center rounded-md border border-[#E5E5E5] bg-white">
+                                <button
+                                  onClick={() => setQuantity(svc.id, Math.max(minQty, qty - 1))}
+                                  disabled={qty <= minQty}
+                                  className="px-2 py-1 text-[#6B6B6B] hover:text-[#0A0A0A] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                >
+                                  <MinusIcon className="size-3" />
+                                </button>
+                                <span className="px-3 py-1 text-sm font-semibold tabular-nums border-x border-[#E5E5E5]">
+                                  {qty}
+                                </span>
+                                <button
+                                  onClick={() => setQuantity(svc.id, Math.min(svc.maxQuantity!, qty + 1))}
+                                  disabled={qty >= svc.maxQuantity!}
+                                  className="px-2 py-1 text-[#6B6B6B] hover:text-[#0A0A0A] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                >
+                                  <PlusIcon className="size-3" />
+                                </button>
+                              </div>
+                              {minQty > 1 && (
+                                <span className="text-[10px] text-[#AAAAAA]">min {minQty}</span>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <span className="text-sm font-semibold text-[#0A0A0A] tabular-nums">
+                                {qty} &times; {effectiveLabel || tierPrice.label} = {formatGBP(lineTotal)}
+                              </span>
+                              {saving > 0 && (
+                                <span className="block text-[10px] font-medium text-[#15803D]">
+                                  Saving {formatGBP(saving)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          {/* Next discount tier nudge */}
+                          {volResult.nextTier && (
+                            <p className="text-[10px] text-[#AAAAAA] ml-10">
+                              Order {volResult.nextTier.minQty}+ for {volResult.nextTier.label}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
                 );
               })}
             </div>
@@ -322,13 +429,49 @@ export default function PricingPage() {
         )}
       </div>
 
-      {/* Sticky Summary Bar */}
-      {hasSelection && (
-        <div className="sticky bottom-0 bg-white border-t border-[#E5E5E5] shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
-          <div className="px-6 md:px-12 py-4">
-            {/* Expandable line items */}
-            <details className="group">
-              <summary className="flex items-center justify-between cursor-pointer list-none">
+      {/* Persistent Sticky Summary Bar — always visible */}
+      <div className="sticky bottom-0 bg-white border-t border-[#E5E5E5] shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+        <div className="px-6 md:px-12 py-4">
+          {hasSelection ? (
+            <>
+              {/* Line items */}
+              <div className="max-h-[30vh] overflow-y-auto space-y-1.5 mb-3">
+                {selectedItems.map(({ service, price, quantity, isRecurring, originalPrice, volumeSaving }) => (
+                  <div key={service.id}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-[#6B6B6B]">
+                        {service.name}
+                        {quantity > 1 && <span className="text-[#AAAAAA]"> &times;{quantity}</span>}
+                      </span>
+                      <div className="flex items-baseline gap-2">
+                        {originalPrice && (
+                          <span className="text-xs line-through text-[#AAAAAA] tabular-nums">
+                            {formatGBP(originalPrice)}
+                          </span>
+                        )}
+                        <span className="text-xs font-semibold text-[#0A0A0A] tabular-nums">
+                          {formatGBP(price)}
+                          {isRecurring && "/mo"}
+                        </span>
+                      </div>
+                    </div>
+                    {(volumeSaving ?? 0) > 0 && (
+                      <p className="text-[10px] font-medium text-[#15803D] text-right">
+                        Volume discount: -{formatGBP(volumeSaving!)}
+                      </p>
+                    )}
+                  </div>
+                ))}
+                {totalDiscount > 0 && (
+                  <div className="flex items-center justify-between text-xs text-[#15803D]">
+                    <span>Retainer discount</span>
+                    <span className="font-semibold">-{formatGBP(totalDiscount)}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Total */}
+              <div className="border-t border-[#E5E5E5] pt-3 flex items-center justify-between">
                 <span className="text-xs font-medium text-[#6B6B6B]">
                   {selected.size} {selected.size === 1 ? "service" : "services"} selected
                 </span>
@@ -345,36 +488,20 @@ export default function PricingPage() {
                     </span>
                   )}
                 </div>
-              </summary>
-
-              <div className="mt-3 pt-3 border-t border-[#E5E5E5] space-y-2">
-                {selectedItems.map(({ service, price, isRecurring, originalPrice }) => (
-                  <div key={service.id} className="flex items-center justify-between">
-                    <span className="text-xs text-[#6B6B6B]">{service.name}</span>
-                    <div className="flex items-baseline gap-2">
-                      {originalPrice && (
-                        <span className="text-xs line-through text-[#AAAAAA] tabular-nums">
-                          {formatGBP(originalPrice)}
-                        </span>
-                      )}
-                      <span className="text-xs font-semibold text-[#0A0A0A] tabular-nums">
-                        {formatGBP(price)}
-                        {isRecurring && "/mo"}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-                {totalDiscount > 0 && (
-                  <div className="flex items-center justify-between text-xs text-[#15803D]">
-                    <span>Retainer discount</span>
-                    <span className="font-semibold">-{formatGBP(totalDiscount)}</span>
-                  </div>
-                )}
               </div>
-            </details>
-          </div>
+            </>
+          ) : (
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-[#AAAAAA]">
+                Select services above to build your package
+              </span>
+              <span className="text-lg font-bold text-[#AAAAAA] tabular-nums">
+                {formatGBP(0)}
+              </span>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Footer */}
       <footer className="border-t border-[#F0F0F0] px-6 md:px-12 py-6 text-center mt-auto">

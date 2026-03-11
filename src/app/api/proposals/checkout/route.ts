@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServiceById, getPrice, retainerBuildDiscount } from "@/data/services";
+import { getServiceById, getPrice, getUnitPriceForQuantity, retainerBuildDiscount } from "@/data/services";
 import type { ServiceMode, ClientTier } from "@/data/services";
 
 // ── Create Shopify Draft Order from proposal selections ─────────
@@ -73,6 +73,12 @@ export async function POST(request: Request) {
       // Resolve tier-specific pricing
       const tierPrice = getPrice(pricing, tier);
       let amountPence = tierPrice.amount;
+
+      // Apply volume discounts for per-unit services
+      const volumeResult = getUnitPriceForQuantity(service, amountPence, sel.quantity);
+      if (volumeResult.discounted) {
+        amountPence = volumeResult.amount;
+      }
 
       // Apply retainer discount to build-category services
       if (service.category === "builds" && buildDiscount > 0) {

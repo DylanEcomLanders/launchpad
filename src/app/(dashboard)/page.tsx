@@ -3,14 +3,9 @@
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 import {
-  CalculatorIcon,
-  ReceiptPercentIcon,
-  ClipboardDocumentCheckIcon,
-  ClockIcon,
-  WalletIcon,
-  RocketLaunchIcon,
   ArrowPathIcon,
   ExclamationTriangleIcon,
+  ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 import {
@@ -19,15 +14,39 @@ import {
   type FeedItemType,
 } from "@/lib/pulse/types";
 
-// ── Quick Actions Config ────────────────────────────────────────
+// ── Workflows Config ────────────────────────────────────────────
 
-const quickActions = [
-  { label: "Project Setup", href: "/tools/project-kickoff", icon: RocketLaunchIcon },
-  { label: "Price Calc", href: "/tools/price-calculator", icon: CalculatorIcon },
-  { label: "QA Checklist", href: "/tools/qa-checklist", icon: ClipboardDocumentCheckIcon },
-  { label: "Invoices", href: "/tools/invoice-generator", icon: ReceiptPercentIcon },
-  { label: "Dev Hours", href: "/tools/dev-hours", icon: ClockIcon },
-  { label: "Expenses", href: "/tools/expenses", icon: WalletIcon },
+const workflows = [
+  {
+    title: "Win the Client",
+    subtitle: "Find → Research → Reach out → Propose → Price",
+    steps: [
+      { label: "Find prospects", href: "/tools/prospect-scraper" },
+      { label: "Research their store", href: "/tools/store-intel" },
+      { label: "Send outreach", href: "/tools/outreach" },
+      { label: "Write proposal", href: "/tools/proposals" },
+      { label: "Calculate price", href: "/tools/price-calculator" },
+    ],
+  },
+  {
+    title: "Deliver the Project",
+    subtitle: "Setup → Build → Check → QA → Ship",
+    steps: [
+      { label: "Kick off project", href: "/tools/project-kickoff" },
+      { label: "Dev self-check", href: "/tools/dev-selfcheck" },
+      { label: "QA checklist", href: "/tools/qa-checklist" },
+      { label: "Client portal", href: "/tools/client-portal" },
+    ],
+  },
+  {
+    title: "Get Paid",
+    subtitle: "Log hours → Invoice → Track expenses",
+    steps: [
+      { label: "Log dev hours", href: "/tools/dev-hours" },
+      { label: "Generate invoice", href: "/tools/invoice-generator" },
+      { label: "Track expenses", href: "/tools/expenses" },
+    ],
+  },
 ];
 
 // ── Feed Type Config ────────────────────────────────────────────
@@ -111,17 +130,34 @@ export default function PulseDashboard() {
           </span>
         </div>
 
-        {/* Quick Actions */}
-        <div className="flex flex-wrap gap-2 mb-10">
-          {quickActions.map((a) => (
-            <Link
-              key={a.href}
-              href={a.href}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#E5E5E5] rounded-md text-xs font-medium text-[#6B6B6B] hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-colors"
+        {/* Workflow Lanes */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+          {workflows.map((wf) => (
+            <div
+              key={wf.title}
+              className="bg-white border border-[#E5E5E5] rounded-lg p-5"
             >
-              <a.icon className="size-3.5" />
-              {a.label}
-            </Link>
+              <h2 className="text-sm font-semibold text-[#0A0A0A] mb-0.5">
+                {wf.title}
+              </h2>
+              <p className="text-[11px] text-[#AAAAAA] mb-4">{wf.subtitle}</p>
+              <ol className="space-y-1">
+                {wf.steps.map((step, i) => (
+                  <li key={step.href}>
+                    <Link
+                      href={step.href}
+                      className="flex items-center gap-2 px-2 py-1.5 -mx-2 rounded-md text-sm text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#0A0A0A] transition-colors group"
+                    >
+                      <span className="text-[10px] font-mono text-[#AAAAAA] w-3 shrink-0">
+                        {i + 1}.
+                      </span>
+                      <span className="flex-1">{step.label}</span>
+                      <ChevronRightIcon className="size-3 text-[#CCCCCC] opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            </div>
           ))}
         </div>
 

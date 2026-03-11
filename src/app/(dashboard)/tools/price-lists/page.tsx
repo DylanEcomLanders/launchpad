@@ -161,23 +161,41 @@ export default function PriceListsPage() {
                 if (!pricing) return null;
                 const t1 = getPrice(pricing, 1);
                 const t2 = getPrice(pricing, 2);
+                const hasUnit = svc.unitLabel && svc.minQuantity;
+                const hasVolume = svc.volumeDiscounts && svc.volumeDiscounts.length > 0;
 
                 return (
                   <div
                     key={svc.id}
-                    className="px-4 py-2.5 flex items-center justify-between gap-4"
+                    className="px-4 py-2.5"
                   >
-                    <span className="text-xs text-[#6B6B6B] truncate">
-                      {svc.name}
-                    </span>
-                    <div className="flex items-center gap-4 shrink-0">
-                      <span className="text-xs tabular-nums text-[#AAAAAA]">
-                        T1: <span className="font-semibold text-[#0A0A0A]">{formatGBP(t1.amount)}</span>
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-xs text-[#6B6B6B] truncate">
+                        {svc.name}
+                        {hasUnit && (
+                          <span className="text-[10px] text-[#AAAAAA] ml-1">
+                            (min {svc.minQuantity})
+                          </span>
+                        )}
                       </span>
-                      <span className="text-xs tabular-nums text-[#AAAAAA]">
-                        T2: <span className="font-semibold text-[#0A0A0A]">{formatGBP(t2.amount)}</span>
-                      </span>
+                      <div className="flex items-center gap-4 shrink-0">
+                        <span className="text-xs tabular-nums text-[#AAAAAA]">
+                          T1: <span className="font-semibold text-[#0A0A0A]">{t1.label}</span>
+                        </span>
+                        <span className="text-xs tabular-nums text-[#AAAAAA]">
+                          T2: <span className="font-semibold text-[#0A0A0A]">{t2.label}</span>
+                        </span>
+                      </div>
                     </div>
+                    {hasVolume && (
+                      <div className="flex items-center gap-3 mt-1 ml-0 flex-wrap">
+                        {svc.volumeDiscounts!.map((vd) => (
+                          <span key={vd.minQty} className="text-[10px] text-[#AAAAAA]">
+                            {vd.minQty}+: <span className="font-semibold text-[#15803D]">{vd.label}</span>
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 );
               })}

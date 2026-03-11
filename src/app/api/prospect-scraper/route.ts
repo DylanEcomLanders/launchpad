@@ -367,7 +367,7 @@ export async function POST(request: Request) {
     );
   }
 
-  let body: { keyword?: string; maxResults?: number };
+  let body: { prompt?: string; keyword?: string; maxResults?: number };
   try {
     body = await request.json();
   } catch {
@@ -377,10 +377,11 @@ export async function POST(request: Request) {
     );
   }
 
-  const keyword = body.keyword?.trim();
+  // Accept "prompt" (new) or "keyword" (legacy) — prompt takes priority
+  const keyword = (body.prompt ?? body.keyword)?.trim();
   if (!keyword) {
     return new Response(
-      JSON.stringify({ type: "error", message: "Keyword is required" }),
+      JSON.stringify({ type: "error", message: "Search prompt is required" }),
       { status: 400, headers: { "Content-Type": "application/json" } }
     );
   }
@@ -422,7 +423,7 @@ export async function POST(request: Request) {
           send({
             type: "error",
             message:
-              "No results found for this keyword. Try a broader search term.",
+              "No results found for this prompt. Try broader or different search terms.",
           });
           controller.close();
           return;

@@ -6,18 +6,15 @@ import type {
   PortalPhase,
   PortalDocument,
   PortalTestResult,
+  PortalWin,
+  PortalUpdate,
+  PortalApproval,
   PhaseStatus,
-} from "@/lib/portal-types";
+} from "@/lib/portal/types";
+import { toLoomEmbed } from "@/lib/portal/loom";
 
 /* ── Tab type ── */
-type Tab = "overview" | "timeline" | "scope" | "results";
-
-const tabs: { key: Tab; label: string }[] = [
-  { key: "overview", label: "Overview" },
-  { key: "timeline", label: "Timeline" },
-  { key: "scope", label: "Scope" },
-  { key: "results", label: "Results" },
-];
+type Tab = "overview" | "timeline" | "updates" | "scope" | "wins" | "results";
 
 /* ── SVG Progress Ring ── */
 function ProgressRing({
@@ -97,8 +94,66 @@ function phaseStatusIcon(status: PhaseStatus, size: "sm" | "md" = "md") {
 
 /* ── Main Component ── */
 
-export function PortalView({ portal }: { portal: PortalData }) {
+export function PortalView({
+  portal,
+  updates = [],
+  approvals = [],
+}: {
+  portal: PortalData;
+  updates?: PortalUpdate[];
+  approvals?: PortalApproval[];
+}) {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const [localApprovals, setLocalApprovals] = useState<PortalApproval[]>(approvals);
+
+  const tabs: { key: Tab; label: string }[] = [
+    { key: "overview", label: "Overview" },
+    { key: "timeline", label: "Timeline" },
+    ...(updates.length > 0 ? [{ key: "updates" as Tab, label: "Updates" }] : []),
+    { key: "scope", label: "Scope" },
+    ...(portal.wins && portal.wins.length > 0 ? [{ key: "wins" as Tab, label: "Wins" }] : []),
+    { key: "results", label: "Results" },
+  ];
+
+  const handleApprove = async (
+    approvalType: "deliverable" | "phase",
+    referenceId: string,
+    comment: string = ""
+  ) => {
+    try {
+      const res = await fetch("/api/portal/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: portal.token,
+          approvalType,
+          referenceId,
+          approvedBy: portal.client_name || "Client",
+          comment,
+        }),
+      });
+      const data = await res.json();
+      if (data.approved || data.already_approved) {
+        const newApproval: PortalApproval = {
+          id: data.approval?.id || data.id || crypto.randomUUID(),
+          portal_id: portal.id,
+          approval_type: approvalType,
+          reference_id: referenceId,
+          approved_by: portal.client_name || "Client",
+          comment,
+          approved_at: new Date().toISOString(),
+        };
+        setLocalApprovals((prev) => [...prev, newApproval]);
+      }
+    } catch {
+      // Silent — could add toast
+    }
+  };
+
+  const isApproved = (type: "deliverable" | "phase", refId: string) =>
+    localApprovals.some(
+      (a) => a.approval_type === type && a.reference_id === refId
+    );
 
   return (
     <div>
@@ -109,41 +164,43 @@ export function PortalView({ portal }: { portal: PortalData }) {
             Client Portal
           </p>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">
-            {portal.clientName}
+            {portal.client_name}
           </h1>
           <p className="text-sm text-[#999999]">
             Start date: {portal.phases[0]?.dates}
           </p>
 
           {/* Progress track with phase labels */}
-          <div className="mt-8">
-            <div className="flex gap-1">
-              {portal.phases.map((phase) => (
-                <div key={phase.name} className="flex-1 min-w-0">
-                  <div
-                    className={`h-1 rounded-full mb-2 ${
-                      phase.status === "complete"
-                        ? "bg-emerald-400"
-                        : phase.status === "in-progress"
-                        ? "bg-[#0A0A0A]"
-                        : "bg-[#E5E5E5]"
-                    }`}
-                  />
-                  <p
-                    className={`text-[10px] font-medium truncate ${
-                      phase.status === "in-progress"
-                        ? "text-[#0A0A0A]"
-                        : phase.status === "complete"
-                        ? "text-[#999999]"
-                        : "text-[#CCCCCC]"
-                    }`}
-                  >
-                    {phase.name}
-                  </p>
-                </div>
-              ))}
+          {portal.phases.length > 0 && (
+            <div className="mt-8">
+              <div className="flex gap-1">
+                {portal.phases.map((phase) => (
+                  <div key={phase.id || phase.name} className="flex-1 min-w-0">
+                    <div
+                      className={`h-1 rounded-full mb-2 ${
+                        phase.status === "complete"
+                          ? "bg-emerald-400"
+                          : phase.status === "in-progress"
+                          ? "bg-[#0A0A0A]"
+                          : "bg-[#E5E5E5]"
+                      }`}
+                    />
+                    <p
+                      className={`text-[10px] font-medium truncate ${
+                        phase.status === "in-progress"
+                          ? "text-[#0A0A0A]"
+                          : phase.status === "complete"
+                          ? "text-[#999999]"
+                          : "text-[#CCCCCC]"
+                      }`}
+                    >
+                      {phase.name}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -170,9 +227,34 @@ export function PortalView({ portal }: { portal: PortalData }) {
 
         {/* Tab content */}
         <div key={activeTab} className="animate-fadeIn">
-          {activeTab === "overview" && <OverviewTab portal={portal} />}
-          {activeTab === "timeline" && <TimelineTab phases={portal.phases} />}
-          {activeTab === "scope" && <ScopeTab scope={portal.scope} documents={portal.documents} />}
+          {activeTab === "overview" && (
+            <OverviewTab
+              portal={portal}
+              approvals={localApprovals}
+              onApprove={handleApprove}
+              isApproved={isApproved}
+            />
+          )}
+          {activeTab === "timeline" && (
+            <TimelineTab
+              phases={portal.phases}
+              approvals={localApprovals}
+              onApprove={handleApprove}
+              isApproved={isApproved}
+            />
+          )}
+          {activeTab === "updates" && <UpdatesTab updates={updates} />}
+          {activeTab === "scope" && (
+            <ScopeTab
+              scope={portal.scope}
+              documents={portal.documents}
+              deliverables={portal.deliverables}
+              approvals={localApprovals}
+              onApprove={handleApprove}
+              isApproved={isApproved}
+            />
+          )}
+          {activeTab === "wins" && <WinsTab wins={portal.wins || []} />}
           {activeTab === "results" && <ResultsTab results={portal.results} />}
         </div>
       </div>
@@ -182,20 +264,29 @@ export function PortalView({ portal }: { portal: PortalData }) {
 
 /* ── Overview Tab ── */
 
-function OverviewTab({ portal }: { portal: PortalData }) {
+function OverviewTab({
+  portal,
+  approvals,
+  onApprove,
+  isApproved,
+}: {
+  portal: PortalData;
+  approvals: PortalApproval[];
+  onApprove: (type: "deliverable" | "phase", refId: string, comment?: string) => void;
+  isApproved: (type: "deliverable" | "phase", refId: string) => boolean;
+}) {
   const currentPhase = portal.phases.find((p) => p.status === "in-progress");
 
   return (
     <div className="space-y-12">
-      {/* Status + Next Touchpoint — the two things clients care about most */}
+      {/* Status + Next Touchpoint */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {/* Current status card */}
         <div className="border border-[#E5E5E5] rounded-lg p-6">
           <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-3">
             Current Status
           </p>
           <p className="text-xl font-bold tracking-tight mb-1">
-            {portal.currentPhase}
+            {portal.current_phase}
           </p>
           {currentPhase && (
             <p className="text-sm text-[#6B6B6B] leading-relaxed">
@@ -204,16 +295,15 @@ function OverviewTab({ portal }: { portal: PortalData }) {
           )}
         </div>
 
-        {/* Next touchpoint card */}
         <div className="border border-[#E5E5E5] rounded-lg p-6 bg-[#FAFAFA]">
           <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-3">
             Next Touchpoint
           </p>
           <p className="text-xl font-bold tracking-tight mb-1">
-            {portal.nextTouchpoint.date}
+            {portal.next_touchpoint?.date || "—"}
           </p>
           <p className="text-sm text-[#6B6B6B] leading-relaxed">
-            {portal.nextTouchpoint.description}
+            {portal.next_touchpoint?.description || "No touchpoint scheduled"}
           </p>
         </div>
       </div>
@@ -224,26 +314,44 @@ function OverviewTab({ portal }: { portal: PortalData }) {
           Project Journey
         </h3>
         <div className="border border-[#E5E5E5] rounded-lg divide-y divide-[#F0F0F0]">
-          {portal.phases.map((phase) => (
-            <div key={phase.name} className="flex items-start gap-4 p-4">
-              <div className="pt-0.5">
-                {phaseStatusIcon(phase.status, "sm")}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-4">
-                  <span className={`text-sm font-medium ${phase.status === "upcoming" ? "text-[#BBBBBB]" : ""}`}>
-                    {phase.name}
-                  </span>
-                  <span className="text-xs text-[#AAAAAA] shrink-0">
-                    {phase.dates}
-                  </span>
+          {portal.phases.map((phase) => {
+            const phaseApproved = isApproved("phase", phase.id);
+            return (
+              <div key={phase.id || phase.name} className="flex items-start gap-4 p-4">
+                <div className="pt-0.5">
+                  {phaseApproved ? (
+                    <span className="inline-flex items-center justify-center size-4 rounded-full bg-emerald-500 text-white">
+                      <svg className="size-2.5" viewBox="0 0 12 12" fill="none">
+                        <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </span>
+                  ) : (
+                    phaseStatusIcon(phase.status, "sm")
+                  )}
                 </div>
-                <p className={`text-xs mt-0.5 leading-relaxed ${phase.status === "upcoming" ? "text-[#CCCCCC]" : "text-[#999999]"}`}>
-                  {phase.description}
-                </p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm font-medium ${phase.status === "upcoming" ? "text-[#BBBBBB]" : ""}`}>
+                        {phase.name}
+                      </span>
+                      {phaseApproved && (
+                        <span className="text-[9px] font-semibold uppercase tracking-wider text-emerald-500">
+                          Signed off
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs text-[#AAAAAA] shrink-0">
+                      {phase.dates}
+                    </span>
+                  </div>
+                  <p className={`text-xs mt-0.5 leading-relaxed ${phase.status === "upcoming" ? "text-[#CCCCCC]" : "text-[#999999]"}`}>
+                    {phase.description}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -269,37 +377,50 @@ function OverviewTab({ portal }: { portal: PortalData }) {
 
 /* ── Timeline Tab ── */
 
-function TimelineTab({ phases }: { phases: PortalPhase[] }) {
+function TimelineTab({
+  phases,
+  approvals,
+  onApprove,
+  isApproved,
+}: {
+  phases: PortalPhase[];
+  approvals: PortalApproval[];
+  onApprove: (type: "deliverable" | "phase", refId: string, comment?: string) => void;
+  isApproved: (type: "deliverable" | "phase", refId: string) => boolean;
+}) {
   return (
     <div className="relative">
       {/* Vertical line */}
       <div className="absolute left-[11px] top-4 bottom-4 w-px bg-[#E5E5E5]" />
 
       <div className="space-y-0">
-        {phases.map((phase, i) => {
+        {phases.map((phase) => {
           const isActive = phase.status === "in-progress";
           const isComplete = phase.status === "complete";
           const pct = phase.tasks > 0 ? Math.round((phase.completed / phase.tasks) * 100) : 0;
+          const phaseApproved = isApproved("phase", phase.id);
 
           return (
-            <div key={phase.name} className="relative flex gap-5 pb-8 last:pb-0">
+            <div key={phase.id || phase.name} className="relative flex gap-5 pb-8 last:pb-0">
               {/* Node */}
               <div className="relative z-10 shrink-0 pt-1">
                 <div
                   className={`size-[23px] rounded-full border-2 flex items-center justify-center transition-all ${
-                    isComplete
+                    phaseApproved
+                      ? "border-emerald-400 bg-emerald-50"
+                      : isComplete
                       ? "border-emerald-400 bg-white"
                       : isActive
                       ? "border-[#0A0A0A] bg-white"
                       : "border-[#D4D4D4] bg-white"
                   }`}
                 >
-                  {isComplete && (
+                  {(isComplete || phaseApproved) && (
                     <svg className="size-3 text-emerald-400" viewBox="0 0 12 12" fill="none">
                       <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   )}
-                  {isActive && (
+                  {isActive && !phaseApproved && (
                     <span className="size-2 rounded-full bg-[#0A0A0A] animate-pulse" />
                   )}
                 </div>
@@ -319,9 +440,14 @@ function TimelineTab({ phases }: { phases: PortalPhase[] }) {
                   <div>
                     <div className="flex items-center gap-2 mb-0.5">
                       <h3 className={`text-sm font-bold ${!isComplete && !isActive ? "text-[#BBBBBB]" : ""}`}>{phase.name}</h3>
-                      {isActive && (
+                      {isActive && !phaseApproved && (
                         <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-[#0A0A0A] text-white rounded-full">
                           Current
+                        </span>
+                      )}
+                      {phaseApproved && (
+                        <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-600 rounded-full">
+                          Signed Off
                         </span>
                       )}
                     </div>
@@ -331,12 +457,11 @@ function TimelineTab({ phases }: { phases: PortalPhase[] }) {
                   </div>
                 </div>
 
-                {/* Phase description */}
                 <p className={`text-sm leading-relaxed ${(isComplete || isActive) ? "text-[#6B6B6B]" : "text-[#BBBBBB]"} ${pct > 0 ? "mb-3" : ""}`}>
                   {phase.description}
                 </p>
 
-                {/* Progress bar — only show if there's progress */}
+                {/* Progress bar */}
                 {pct > 0 && (
                   <div className="h-1 rounded-full overflow-hidden bg-[#EBEBEB]">
                     <div
@@ -344,6 +469,16 @@ function TimelineTab({ phases }: { phases: PortalPhase[] }) {
                         isComplete ? "bg-emerald-400" : "bg-[#0A0A0A]"
                       }`}
                       style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                )}
+
+                {/* Phase sign-off button */}
+                {(isComplete || isActive) && !phaseApproved && (
+                  <div className="mt-4 pt-3 border-t border-[#F0F0F0]">
+                    <ApproveButton
+                      label="Sign off on this phase"
+                      onApprove={(comment) => onApprove("phase", phase.id, comment)}
                     />
                   </div>
                 )}
@@ -356,7 +491,68 @@ function TimelineTab({ phases }: { phases: PortalPhase[] }) {
   );
 }
 
-/* ── Scope Tab (merged with Documents) ── */
+/* ── Updates Tab ── */
+
+function UpdatesTab({ updates }: { updates: PortalUpdate[] }) {
+  if (updates.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F5F5F5] mb-4">
+          <svg className="size-5 text-[#AAAAAA]" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M2 3a1 1 0 00-1 1v1a1 1 0 001 1h16a1 1 0 001-1V4a1 1 0 00-1-1H2zM2 7.5h16l-.811 7.71a2 2 0 01-1.99 1.79H4.802a2 2 0 01-1.99-1.79L2 7.5z" />
+          </svg>
+        </div>
+        <p className="text-sm text-[#999999] mb-1">No updates yet</p>
+        <p className="text-xs text-[#CCCCCC]">
+          Video updates from the team will appear here
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {updates.map((update) => (
+        <div key={update.id} className="border border-[#E5E5E5] rounded-lg overflow-hidden">
+          {/* Video embed */}
+          {toLoomEmbed(update.loom_url) && (
+            <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+              <iframe
+                src={toLoomEmbed(update.loom_url) || ""}
+                className="absolute inset-0 w-full h-full"
+                allowFullScreen
+              />
+            </div>
+          )}
+
+          {/* Info */}
+          <div className="p-5">
+            <div className="flex items-start justify-between gap-3 mb-1">
+              <h3 className="text-base font-bold">{update.title}</h3>
+              <p className="text-xs text-[#AAAAAA] shrink-0">
+                {new Date(update.created_at).toLocaleDateString("en-GB", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </p>
+            </div>
+            {update.description && (
+              <p className="text-sm text-[#6B6B6B] leading-relaxed">
+                {update.description}
+              </p>
+            )}
+            <p className="text-[11px] text-[#AAAAAA] mt-2">
+              Posted by {update.posted_by}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Scope Tab (merged with Documents + Deliverables) ── */
 
 const typeLabels: Record<string, string> = {
   Roadmap: "RDM",
@@ -366,36 +562,139 @@ const typeLabels: Record<string, string> = {
   Other: "DOC",
 };
 
-function ScopeTab({ scope, documents }: { scope: string[]; documents: PortalDocument[] }) {
+function ScopeTab({
+  scope,
+  documents,
+  deliverables,
+  approvals,
+  onApprove,
+  isApproved,
+}: {
+  scope: string[];
+  documents: PortalDocument[];
+  deliverables: PortalData["deliverables"];
+  approvals: PortalApproval[];
+  onApprove: (type: "deliverable" | "phase", refId: string, comment?: string) => void;
+  isApproved: (type: "deliverable" | "phase", refId: string) => boolean;
+}) {
   const [selected, setSelected] = useState<PortalDocument | null>(null);
+
+  // Group deliverables by phase
+  const phaseGroups = deliverables.reduce((acc, del) => {
+    const phase = del.phase || "Other";
+    if (!acc[phase]) acc[phase] = [];
+    acc[phase].push(del);
+    return acc;
+  }, {} as Record<string, typeof deliverables>);
 
   return (
     <div className="space-y-12">
       {/* Scope items */}
-      <div>
-        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-5">
-          What&apos;s Included
-        </h3>
-        <div className="border border-[#E5E5E5] rounded-lg p-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
-            {scope.map((item, i) => (
-              <div key={i} className="flex items-center gap-2.5 py-1">
-                <span className="size-1 rounded-full bg-[#CCCCCC] shrink-0" />
-                <span className="text-sm text-[#6B6B6B]">{item}</span>
+      {scope.length > 0 && (
+        <div>
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-5">
+            What&apos;s Included
+          </h3>
+          <div className="border border-[#E5E5E5] rounded-lg p-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
+              {scope.map((item, i) => (
+                <div key={i} className="flex items-center gap-2.5 py-1">
+                  <span className="size-1 rounded-full bg-[#CCCCCC] shrink-0" />
+                  <span className="text-sm text-[#6B6B6B]">{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Deliverables with approval */}
+      {deliverables.length > 0 && (
+        <div>
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-5">
+            Deliverables
+          </h3>
+          <div className="space-y-6">
+            {Object.entries(phaseGroups).map(([phaseName, dels]) => (
+              <div key={phaseName}>
+                <p className="text-xs font-semibold text-[#6B6B6B] mb-2">
+                  {phaseName}
+                </p>
+                <div className="border border-[#E5E5E5] rounded-lg divide-y divide-[#F0F0F0]">
+                  {dels.map((del) => {
+                    const approved = isApproved("deliverable", del.id);
+                    return (
+                      <div
+                        key={del.id}
+                        className="flex items-center gap-3 p-3"
+                      >
+                        {approved ? (
+                          <span className="size-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                            <svg
+                              className="size-3 text-emerald-600"
+                              viewBox="0 0 12 12"
+                              fill="none"
+                            >
+                              <path
+                                d="M2.5 6L5 8.5L9.5 3.5"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </span>
+                        ) : (
+                          <span
+                            className={`size-2 rounded-full shrink-0 ${
+                              del.status === "complete"
+                                ? "bg-emerald-400"
+                                : del.status === "in-progress"
+                                ? "bg-blue-400"
+                                : "bg-[#D4D4D4]"
+                            }`}
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p
+                            className={`text-sm font-medium ${
+                              approved ? "text-[#999999]" : ""
+                            }`}
+                          >
+                            {del.name}
+                          </p>
+                          <p className="text-[11px] text-[#AAAAAA]">
+                            {del.assignee}
+                            {approved && " · Approved"}
+                          </p>
+                        </div>
+                        {(del.status === "complete" ||
+                          del.status === "in-progress") &&
+                          !approved && (
+                            <ApproveButton
+                              label="Approve"
+                              compact
+                              onApprove={(comment) =>
+                                onApprove("deliverable", del.id, comment)
+                              }
+                            />
+                          )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      )}
 
       {/* Documents */}
-      <div>
-        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-5">
-          Key Documents
-        </h3>
-        {documents.length === 0 ? (
-          <p className="text-sm text-[#AAAAAA]">No documents yet</p>
-        ) : (
+      {documents.length > 0 && (
+        <div>
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-5">
+            Key Documents
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {documents.map((doc, i) => (
               <button
@@ -434,13 +733,89 @@ function ScopeTab({ scope, documents }: { scope: string[]; documents: PortalDocu
               </button>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Document preview modal */}
       {selected && (
         <DocumentPreview doc={selected} onClose={() => setSelected(null)} />
       )}
+    </div>
+  );
+}
+
+/* ── Results Tab ── */
+
+/* ── Wins Tab ── */
+
+function WinsTab({ wins }: { wins: PortalWin[] }) {
+  if (wins.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F5F5F5] mb-4">
+          <svg className="size-5 text-[#AAAAAA]" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clipRule="evenodd" />
+          </svg>
+        </div>
+        <p className="text-sm text-[#999999] mb-1">No wins recorded yet</p>
+        <p className="text-xs text-[#CCCCCC]">Results and milestones will appear here</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-10">
+      {/* Summary stats */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="border border-[#E5E5E5] rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-2">Total Wins</p>
+          <p className="text-2xl font-bold tracking-tight text-emerald-500">{wins.length}</p>
+        </div>
+        <div className="border border-[#E5E5E5] rounded-lg p-5 col-span-1 md:col-span-2">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-2">Latest Win</p>
+          <p className="text-sm font-semibold">{wins[0]?.title}</p>
+          <p className="text-xs text-emerald-500 font-semibold mt-0.5">{wins[0]?.lift}</p>
+        </div>
+      </div>
+
+      {/* Win cards */}
+      <div>
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-5">
+          All Wins
+        </h3>
+        <div className="space-y-4">
+          {wins.map((win) => (
+            <div key={win.id} className="border border-[#E5E5E5] rounded-lg p-5">
+              <div className="flex items-start justify-between gap-4 mb-3">
+                <div>
+                  <h4 className="text-sm font-semibold mb-0.5">{win.title}</h4>
+                  <p className="text-xs text-[#999999]">{win.metric} · {win.date}</p>
+                </div>
+                <span className="shrink-0 px-2.5 py-1 text-xs font-bold text-emerald-600 bg-emerald-50 rounded-full">
+                  {win.lift}
+                </span>
+              </div>
+              {/* Before → After bar */}
+              <div className="flex items-center gap-3 mb-3">
+                <div className="flex-1 bg-[#F5F5F5] rounded-lg p-3 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">Before</p>
+                  <p className="text-lg font-bold text-[#999999]">{win.before}</p>
+                </div>
+                <svg className="size-5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638l-3.96-4.158a.75.75 0 111.085-1.034l5.25 5.5a.75.75 0 010 1.034l-5.25 5.5a.75.75 0 01-1.085-1.034l3.96-4.158H3.75A.75.75 0 013 10z" clipRule="evenodd" />
+                </svg>
+                <div className="flex-1 bg-emerald-50 border border-emerald-100 rounded-lg p-3 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 mb-1">After</p>
+                  <p className="text-lg font-bold text-emerald-600">{win.after}</p>
+                </div>
+              </div>
+              {win.description && (
+                <p className="text-xs text-[#999999] leading-relaxed">{win.description}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -520,6 +895,74 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
   );
 }
 
+/* ── Approve Button ── */
+
+function ApproveButton({
+  label,
+  onApprove,
+  compact = false,
+}: {
+  label: string;
+  onApprove: (comment: string) => void;
+  compact?: boolean;
+}) {
+  const [showComment, setShowComment] = useState(false);
+  const [comment, setComment] = useState("");
+
+  if (showComment) {
+    return (
+      <div className={compact ? "flex items-center gap-1.5" : "space-y-2"}>
+        <input
+          type="text"
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="Add a note (optional)"
+          className={`px-2 py-1 text-xs border border-[#E5E5E5] rounded ${compact ? "w-32" : "w-full"}`}
+          autoFocus
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              onApprove(comment);
+              setShowComment(false);
+            }
+            if (e.key === "Escape") setShowComment(false);
+          }}
+        />
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => {
+              onApprove(comment);
+              setShowComment(false);
+            }}
+            className="px-2 py-1 text-[10px] font-semibold bg-emerald-500 text-white rounded hover:bg-emerald-600 transition-colors"
+          >
+            Confirm
+          </button>
+          <button
+            onClick={() => setShowComment(false)}
+            className="px-2 py-1 text-[10px] font-semibold text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => setShowComment(true)}
+      className={`inline-flex items-center gap-1 font-semibold text-emerald-500 hover:text-emerald-600 transition-colors ${
+        compact ? "text-[10px] px-2 py-1 border border-emerald-200 rounded" : "text-xs"
+      }`}
+    >
+      <svg className="size-3" viewBox="0 0 12 12" fill="none">
+        <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      {label}
+    </button>
+  );
+}
+
 /* ── Document Preview Modal ── */
 
 function DocumentPreview({
@@ -573,7 +1016,6 @@ function DocumentPreview({
         {/* Document preview placeholder */}
         <div className="p-6">
           <div className="border border-[#E5E5E5] rounded-lg bg-[#FAFAFA] p-8 mb-6">
-            {/* Simulated document lines */}
             <div className="space-y-4">
               <div className="h-3 bg-[#E5E5E5] rounded w-2/3" />
               <div className="space-y-2">
