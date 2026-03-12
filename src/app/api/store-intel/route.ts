@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import * as cheerio from "cheerio";
 import { KNOWN_APPS } from "@/data/known-apps";
+import type { Finding, StoreIntelResult, PageAuditResult } from "@/lib/store-intel/types";
 
 // ── Config ──────────────────────────────────────────────────────
 
@@ -19,102 +20,78 @@ const KNOWN_THEMES = [
   "sense","spotlight","studio","taste",
 ];
 
+const JSON_SCHEMA = `{
+  "summary": "2-3 sentence executive summary of the brand's situation and biggest opportunities",
+  "funnelMaturity": 5,
+  "findings": [
+    {
+      "category": "cro_gaps",
+      "severity": "high",
+      "title": "Short actionable title",
+      "description": "2-3 sentences. Be specific — reference actual data from the crawl. Make it actionable.",
+      "page": "Homepage"
+    }
+  ]
+}`;
+
 const SYSTEM_PROMPT = `You are a senior CRO strategist at Ecomlanders, a Shopify CRO and landing page agency with 8 years of experience in DTC ecommerce. You specialise in conversion rate optimisation, funnel architecture, offer communication, and user psychology.
 
-You have been given data from a brand's Shopify store. Your job is to produce a comprehensive intelligence brief that identifies gaps, leaks, and opportunities.
+You have been given data from a brand's Shopify store. Your job is to identify gaps, leaks, and opportunities — categorised into actionable findings.
 
-Analyse the data and produce a structured brief covering the following sections:
+Respond with ONLY valid JSON matching this schema — no markdown, no commentary, no code fences:
 
-## 1. BRAND OVERVIEW
-- What they sell, price positioning, target market inference
-- Product catalogue size and complexity
-- Current tech stack and sophistication level
-- Overall impression of their funnel maturity (1-10 scale with justification)
+${JSON_SCHEMA}
 
-## 2. FUNNEL LEAK ANALYSIS
-For each key page type (homepage, collection, PDP, landing pages), identify:
-- Missing persuasion elements (social proof, urgency, objection handling, guarantee)
-- Offer communication clarity — is the value proposition immediately clear?
-- Information hierarchy issues
-- Mobile experience red flags
-- Specific friction points
+Category definitions:
+- "cro_gaps": Missing conversion elements — weak CTAs, no social proof, poor offer communication, missing urgency/scarcity, no objection handling, funnel leaks
+- "quick_wins": Easy fixes implementable in 1-2 weeks — high ROI for minimal effort
+- "dev_issues": Technical problems — script bloat, missing meta tags, performance issues, tech stack concerns, broken elements, SEO gaps
+- "ux_content": Information hierarchy problems, copy issues, layout problems, mobile UX gaps, poor content structure
+- "strategic": Bigger 30-90 day opportunities — new pages to build, funnel restructuring, A/B test ideas, repositioning, AOV plays
 
-## 3. OFFER STRATEGY GAPS
-- Current offer angles being used
-- Missing offer angles that would likely perform for this product category
-- AOV opportunities: products that should be bundled, upsells not being presented
-- Pricing psychology: are they using anchoring, decoy pricing, tiered offers?
-- Compare-at-price usage: are they leveraging perceived value?
+Rules:
+- Produce 15-25 findings total, well distributed across categories
+- EVERY finding must reference specific data from the crawl — never be vague or generic
+- Do NOT pad with generic CRO advice. Every insight must be derived from this brand's actual data
+- severity: "high" = directly impacting conversion right now, "medium" = meaningful improvement opportunity, "low" = nice-to-have optimisation
+- Always include the "page" field identifying which page or area (e.g., "Homepage", "PDP", "Collection pages", "All pages", "Checkout flow")
+- funnelMaturity: 1-10 integer with 1 being very basic and 10 being world-class`;
 
-## 4. COMPETITIVE POSITIONING
-- How differentiated is their messaging from generic DTC?
-- Are they competing on price or value?
-- Positioning gaps
+const PAGE_AUDIT_PROMPT = `You are a senior CRO strategist and UX designer at Ecomlanders, a Shopify CRO and landing page agency. A designer on the team is about to start work on a page redesign. Your job is to audit the current page and produce categorised findings.
 
-## 5. QUICK WINS (implement in 1-2 weeks)
-List 5-8 specific, actionable changes. Be specific — not "improve your hero section" but reference actual data from the crawl.
+You have been given detailed HTML analysis data from a single page.
 
-## 6. STRATEGIC RECOMMENDATIONS (30-90 day roadmap)
-Prioritised list of larger initiatives:
-- New pages to build
-- Funnel restructuring recommendations
-- Testing hypotheses ranked by expected impact
-- Tech stack recommendations
+Respond with ONLY valid JSON matching this schema — no markdown, no commentary, no code fences:
 
-## 7. REVENUE IMPACT MODELLING
-- Current likely conversion rate range (based on funnel maturity)
-- Realistic CR improvement from quick wins
-- Realistic CR improvement from strategic recommendations
+{
+  "summary": "2-3 sentence assessment of this page's effectiveness and biggest opportunities",
+  "effectivenessScore": 5,
+  "findings": [
+    {
+      "category": "cro_gaps",
+      "severity": "high",
+      "title": "Short actionable title",
+      "description": "2-3 sentences referencing actual page elements. Make it actionable for the designer.",
+      "page": "Above the Fold"
+    }
+  ]
+}
 
-Format the output as a clean, professional brief using markdown. Use specific data points — never be vague. Every recommendation must reference something specific you found.
+Category definitions:
+- "cro_gaps": Missing conversion/persuasion elements — weak value prop, no social proof, missing trust signals, no urgency
+- "quick_wins": Easy design fixes the team can implement quickly — high impact, low effort
+- "dev_issues": Technical problems on this page — script bloat, SEO issues, performance, broken elements
+- "ux_content": Copy issues (headlines, CTAs, microcopy), information hierarchy, content structure, mobile UX gaps
+- "strategic": Bigger redesign opportunities — section restructuring, new content blocks to add, A/B test ideas
 
-Do NOT pad with generic CRO advice. Every insight must be derived from this brand's actual data.`;
+Rules:
+- Produce 10-18 findings, well distributed across categories
+- EVERY finding must reference specific elements found on the page — never generic advice
+- severity: "high" = critical for conversion, "medium" = meaningful improvement, "low" = nice-to-have
+- "page" field should identify the section (e.g., "Above the Fold", "Product Info", "Social Proof Section", "Footer", "Mobile View")
+- effectivenessScore: 1-10 integer`;
 
-const PAGE_AUDIT_PROMPT = `You are a senior CRO strategist and UX designer at Ecomlanders, a Shopify CRO and landing page agency. A designer on the team is about to start work on a page redesign. Your job is to audit the current page and give them a clear, actionable brief.
-
-You have been given detailed HTML analysis data from a single page. Analyse it and produce a structured audit covering:
-
-## PAGE OVERVIEW
-- What type of page this is (PDP, collection, homepage, landing page, etc.)
-- Who it's targeting and what the intent is
-- Overall effectiveness score (1-10 with justification)
-
-## ABOVE THE FOLD
-- What's currently there and what's missing
-- Is the value proposition immediately clear?
-- CTA visibility and copy assessment
-- Hero content effectiveness
-
-## CONTENT HIERARCHY
-- Is information structured in the right order?
-- What should be moved up or down?
-- Are key selling points buried?
-
-## PERSUASION ELEMENTS
-For each of the following, state whether it's present, missing, or weak — and give a specific recommendation:
-- Social proof (reviews, testimonials, UGC)
-- Trust signals (badges, guarantees, security)
-- Urgency / scarcity
-- Objection handling (FAQs, returns info)
-- Risk reversal (money-back guarantee, free returns)
-
-## DESIGN QUICK WINS
-List 5-8 specific, actionable changes the designer should implement. Be very specific — reference actual elements found on the page. Format each as:
-1. **Title of change** — What to do and why it matters.
-
-## MOBILE CONSIDERATIONS
-- Specific mobile UX issues to watch for
-- Touch target sizing, scroll depth concerns
-- Sticky elements to add/remove
-
-## COPY RECOMMENDATIONS
-- Headlines that need rewriting (with suggested alternatives)
-- CTA copy improvements
-- Missing microcopy (shipping info, guarantee text near ATC, etc.)
-
-Format as a clean, professional brief using markdown. Every recommendation must reference something specific from the page data. Do NOT pad with generic advice.`;
-
-// ── Types ───────────────────────────────────────────────────────
+// ── Internal Types (crawl-only) ──────────────────────────────────
 
 interface StoreIntelRequest {
   storeUrl: string;
@@ -153,52 +130,12 @@ interface TechStack {
   isCustomTheme: boolean;
 }
 
-interface ProductAnalysis {
+interface ProductAnalysisInternal {
   totalProducts: number;
   priceRange: { min: number; max: number; median: number; average: number };
   discounting: { count: number; percent: string; avgDiscount: string };
   productTypes: Record<string, number>;
   multiVariantPercent: string;
-}
-
-export interface StoreIntelResult {
-  brand: string;
-  storeUrl: string;
-  products: number;
-  collections: number;
-  pagesCrawled: number;
-  appsDetected: string[];
-  theme: string;
-  funnelMaturity: number | null;
-  brief: string;
-  productAnalysis: ProductAnalysis | null;
-  quickWins: string[];
-}
-
-export interface PageAuditResult {
-  mode: "page";
-  pageUrl: string;
-  pageType: string;
-  title: string;
-  appsDetected: string[];
-  theme: string;
-  effectivenessScore: number | null;
-  brief: string;
-  quickWins: string[];
-  elements: {
-    h1: string;
-    heroText: string;
-    ctaCount: number;
-    ctas: string[];
-    imageCount: number;
-    scriptCount: number;
-    wordCount: number;
-    headingStructure: string[];
-    persuasionElements: Record<string, boolean>;
-    forms: number;
-    videos: number;
-    links: { internal: number; external: number };
-  };
 }
 
 // ── Helpers ─────────────────────────────────────────────────────
@@ -413,7 +350,7 @@ function detectTechStack(pages: PageData[]): TechStack {
   };
 }
 
-function analyseProducts(products: ProductData[]): ProductAnalysis | null {
+function analyseProducts(products: ProductData[]): ProductAnalysisInternal | null {
   if (!products.length) return null;
   const prices = products
     .map((p) => parseFloat(p.variants?.[0]?.price || "0"))
@@ -656,7 +593,7 @@ function buildDataPrompt(
   collections: CollectionData[],
   pages: PageData[],
   techStack: TechStack,
-  productAnalysis: ProductAnalysis | null
+  productAnalysis: ProductAnalysisInternal | null
 ): string {
   const parts: string[] = [];
   parts.push(`# BRAND: ${brand}\n# STORE: ${storeUrl}\n`);
@@ -722,6 +659,50 @@ function buildDataPrompt(
   return parts.join("\n");
 }
 
+// ── JSON response parser ────────────────────────────────────────
+
+function parseJsonResponse(raw: string): {
+  summary: string;
+  funnelMaturity?: number;
+  effectivenessScore?: number;
+  findings: Finding[];
+} {
+  // Strip code fences if Claude wraps in ```json ... ```
+  let text = raw.trim();
+  text = text.replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```\s*$/i, "").trim();
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    // Try to extract JSON between first { and last }
+    const start = text.indexOf("{");
+    const end = text.lastIndexOf("}");
+    if (start !== -1 && end > start) {
+      try {
+        return JSON.parse(text.slice(start, end + 1));
+      } catch {
+        // Fall through
+      }
+    }
+
+    // Complete fallback — return raw text as a single finding
+    return {
+      summary: "Analysis complete but structured parsing failed.",
+      funnelMaturity: 0,
+      effectivenessScore: 0,
+      findings: [
+        {
+          category: "strategic",
+          severity: "medium",
+          title: "Raw Analysis Output",
+          description: raw.slice(0, 500),
+          page: "All",
+        },
+      ],
+    };
+  }
+}
+
 // ── Route Handler ───────────────────────────────────────────────
 
 export async function POST(request: Request) {
@@ -753,25 +734,11 @@ export async function POST(request: Request) {
         model: MODEL,
         max_tokens: MAX_TOKENS,
         system: PAGE_AUDIT_PROMPT,
-        messages: [{ role: "user", content: `Audit this page and produce the design brief.\n\n${prompt}` }],
+        messages: [{ role: "user", content: `Audit this page and produce categorised findings.\n\n${prompt}` }],
       });
 
-      const brief = res.content[0]?.type === "text" ? res.content[0].text : "";
-
-      // Extract effectiveness score
-      const scoreMatch = brief.match(/(?:effectiveness|overall)\s*(?:score)?[:\s]*(\d+)(?:\s*\/\s*10)?/i);
-      const effectivenessScore = scoreMatch ? parseInt(scoreMatch[1]) : null;
-
-      // Extract quick wins
-      const qwSection = brief.match(/##\s*DESIGN QUICK WINS.*?\n([\s\S]*?)(?=##\s*(?:MOBILE|COPY)|$)/i);
-      const quickWins: string[] = [];
-      if (qwSection) {
-        const items = qwSection[1].split(/\n(?=\d+\.\s)/).filter((s) => /^\d+\.\s/.test(s.trim()));
-        items.slice(0, 8).forEach((item) => {
-          const firstLine = item.split("\n")[0].replace(/^\d+\.\s*/, "").replace(/\*\*/g, "").trim();
-          if (firstLine) quickWins.push(firstLine);
-        });
-      }
+      const rawText = res.content[0]?.type === "text" ? res.content[0].text : "{}";
+      const parsed = parseJsonResponse(rawText);
 
       const result: PageAuditResult = {
         mode: "page",
@@ -780,9 +747,9 @@ export async function POST(request: Request) {
         title: data.title,
         appsDetected: data.apps.map((a) => `${a.name} (${a.type})`),
         theme: `${data.theme}${data.isCustomTheme ? " — Custom" : ""}`,
-        effectivenessScore,
-        brief,
-        quickWins,
+        summary: parsed.summary || "Analysis complete.",
+        effectivenessScore: parsed.effectivenessScore ?? parsed.funnelMaturity ?? 0,
+        findings: parsed.findings || [],
         elements: {
           h1: data.h1,
           heroText: data.heroText,
@@ -834,25 +801,11 @@ export async function POST(request: Request) {
       model: MODEL,
       max_tokens: MAX_TOKENS,
       system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: `Analyse this brand and produce the intelligence brief.\n\n${dataPrompt}` }],
+      messages: [{ role: "user", content: `Analyse this brand and produce categorised findings.\n\n${dataPrompt}` }],
     });
 
-    const brief = res.content[0]?.type === "text" ? res.content[0].text : "";
-
-    // Extract funnel maturity
-    const maturityMatch = brief.match(/(?:funnel\s*maturity|maturity\s*(?:score|rating))[:\s]*(\d+)(?:\s*\/\s*10)?/i);
-    const funnelMaturity = maturityMatch ? parseInt(maturityMatch[1]) : null;
-
-    // Extract quick wins — split by numbered items and grab title line
-    const qwSection = brief.match(/##\s*5\..*?QUICK WINS.*?\n([\s\S]*?)(?=##\s*6\.|$)/i);
-    const quickWins: string[] = [];
-    if (qwSection) {
-      const items = qwSection[1].split(/\n(?=\d+\.\s)/).filter((s) => /^\d+\.\s/.test(s.trim()));
-      items.slice(0, 8).forEach((item) => {
-        const firstLine = item.split("\n")[0].replace(/^\d+\.\s*/, "").replace(/\*\*/g, "").trim();
-        if (firstLine) quickWins.push(firstLine);
-      });
-    }
+    const rawText = res.content[0]?.type === "text" ? res.content[0].text : "{}";
+    const parsed = parseJsonResponse(rawText);
 
     const result: StoreIntelResult = {
       brand,
@@ -862,10 +815,10 @@ export async function POST(request: Request) {
       pagesCrawled: cleanPages.length,
       appsDetected: techStack.apps.map((a) => `${a.name} (${a.type})`),
       theme: `${techStack.theme}${techStack.isCustomTheme ? " — Custom" : ""}`,
-      funnelMaturity,
-      brief,
+      summary: parsed.summary || "Analysis complete.",
+      funnelMaturity: parsed.funnelMaturity ?? 0,
+      findings: parsed.findings || [],
       productAnalysis,
-      quickWins,
     };
 
     return NextResponse.json(result);

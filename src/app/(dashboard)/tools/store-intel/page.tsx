@@ -10,74 +10,35 @@ import {
   DocumentMagnifyingGlassIcon,
   CpuChipIcon,
   SwatchIcon,
-  BoltIcon,
   ChartBarIcon,
-  LightBulbIcon,
-  CheckCircleIcon,
+  ChevronDownIcon,
+  ClipboardDocumentIcon,
+  ArrowDownTrayIcon,
   DocumentTextIcon,
   EyeIcon,
-  LinkIcon,
   ChatBubbleBottomCenterTextIcon,
   HandThumbUpIcon,
   HandThumbDownIcon,
-  DevicePhoneMobileIcon,
 } from "@heroicons/react/24/solid";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 import { inputClass, labelClass } from "@/lib/form-styles";
-
-// ── Types ───────────────────────────────────────────────────────
-
-type Mode = "store" | "page";
-
-interface ProductAnalysis {
-  totalProducts: number;
-  priceRange: { min: number; max: number; median: number; average: number };
-  discounting: { count: number; percent: string; avgDiscount: string };
-  productTypes: Record<string, number>;
-  multiVariantPercent: string;
-}
-
-interface StoreIntelResult {
-  brand: string;
-  storeUrl: string;
-  products: number;
-  collections: number;
-  pagesCrawled: number;
-  appsDetected: string[];
-  theme: string;
-  funnelMaturity: number | null;
-  brief: string;
-  productAnalysis: ProductAnalysis | null;
-  quickWins: string[];
-}
-
-interface PageAuditResult {
-  mode: "page";
-  pageUrl: string;
-  pageType: string;
-  title: string;
-  appsDetected: string[];
-  theme: string;
-  effectivenessScore: number | null;
-  brief: string;
-  quickWins: string[];
-  elements: {
-    h1: string;
-    heroText: string;
-    ctaCount: number;
-    ctas: string[];
-    imageCount: number;
-    scriptCount: number;
-    wordCount: number;
-    headingStructure: string[];
-    persuasionElements: Record<string, boolean>;
-    forms: number;
-    videos: number;
-    links: { internal: number; external: number };
-  };
-}
+import type {
+  StoreIntelResult,
+  PageAuditResult,
+  Finding,
+  FindingCategory,
+} from "@/lib/store-intel/types";
+import {
+  CATEGORY_ORDER,
+  CATEGORY_META,
+  SEVERITY_META,
+  generateMarkdownReport,
+  generateFindingsText,
+} from "@/lib/store-intel/types";
 
 // ── Component ───────────────────────────────────────────────────
+
+type Mode = "store" | "page";
 
 export default function StoreIntelPage() {
   const [mode, setMode] = useState<Mode>("store");
@@ -110,13 +71,13 @@ export default function StoreIntelPage() {
         setProgress((prev) => {
           if (mode === "page") {
             if (prev.includes("Crawling")) return "Detecting tech stack and persuasion elements...";
-            if (prev.includes("Detecting")) return "Running AI page audit with Claude...";
-            return "Generating design brief...";
+            if (prev.includes("Detecting")) return "Running AI audit with Claude...";
+            return "Generating findings...";
           }
           if (prev.includes("Crawling")) return "Analysing products and collections...";
           if (prev.includes("products")) return "Detecting tech stack and apps...";
           if (prev.includes("tech")) return "Running AI analysis with Claude...";
-          return "Generating intelligence brief...";
+          return "Generating findings...";
         });
       }, 6000);
 
@@ -162,10 +123,10 @@ export default function StoreIntelPage() {
         {/* Header */}
         <div className="mb-10">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
-            Store Intelligence
+            Audit Machine
           </h1>
           <p className="text-[#6B6B6B] text-sm">
-            Analyse any Shopify store or audit a single page for design quick wins
+            Analyse any Shopify store or audit a single page — get categorised, actionable findings
           </p>
         </div>
 
@@ -308,9 +269,8 @@ function PageAuditResults({ result }: { result: PageAuditResult }) {
             icon={<ChartBarIcon className="size-3.5" />}
             label="Effectiveness"
             value={result.effectivenessScore ? `${result.effectivenessScore}/10` : "—"}
-            highlight={result.effectivenessScore !== null}
             color={
-              result.effectivenessScore !== null
+              result.effectivenessScore
                 ? result.effectivenessScore >= 7
                   ? "text-emerald-700"
                   : result.effectivenessScore >= 4
@@ -325,9 +285,8 @@ function PageAuditResults({ result }: { result: PageAuditResult }) {
         </div>
       </div>
 
-      {/* Two-col: Persuasion Elements + CTAs/Tech */}
+      {/* Two-col: Persuasion + CTAs/Tech */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Persuasion Elements */}
         <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-3">
             Persuasion Elements
@@ -348,9 +307,7 @@ function PageAuditResults({ result }: { result: PageAuditResult }) {
           </div>
         </div>
 
-        {/* CTAs + Tech */}
         <div className="space-y-4">
-          {/* CTAs Found */}
           <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-3">
               CTAs Found
@@ -358,10 +315,7 @@ function PageAuditResults({ result }: { result: PageAuditResult }) {
             {result.elements.ctas.length > 0 ? (
               <div className="flex flex-wrap gap-1.5">
                 {result.elements.ctas.map((cta, i) => (
-                  <span
-                    key={i}
-                    className="inline-flex items-center px-2.5 py-1 bg-white border border-[#E5E5E5] rounded text-xs text-[#3A3A3A]"
-                  >
+                  <span key={i} className="inline-flex items-center px-2.5 py-1 bg-white border border-[#E5E5E5] rounded text-xs text-[#3A3A3A]">
                     {cta}
                   </span>
                 ))}
@@ -371,7 +325,6 @@ function PageAuditResults({ result }: { result: PageAuditResult }) {
             )}
           </div>
 
-          {/* Tech */}
           <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5">
             <div className="flex items-center gap-2 mb-3">
               <SwatchIcon className="size-4 text-[#6B6B6B]" />
@@ -381,10 +334,7 @@ function PageAuditResults({ result }: { result: PageAuditResult }) {
             {result.appsDetected.length > 0 ? (
               <div className="flex flex-wrap gap-1.5">
                 {result.appsDetected.map((app) => (
-                  <span
-                    key={app}
-                    className="inline-flex items-center px-2 py-0.5 bg-white border border-[#E5E5E5] rounded text-[11px] text-[#3A3A3A]"
-                  >
+                  <span key={app} className="inline-flex items-center px-2 py-0.5 bg-white border border-[#E5E5E5] rounded text-[11px] text-[#3A3A3A]">
                     {app}
                   </span>
                 ))}
@@ -396,68 +346,16 @@ function PageAuditResults({ result }: { result: PageAuditResult }) {
         </div>
       </div>
 
-      {/* Page Stats Row */}
-      <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-3">Page Stats</h3>
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-          <MiniStat label="Scripts" value={String(result.elements.scriptCount)} />
-          <MiniStat label="Forms" value={String(result.elements.forms)} />
-          <MiniStat label="Videos" value={String(result.elements.videos)} />
-          <MiniStat label="Internal Links" value={String(result.elements.links.internal)} />
-          <MiniStat label="External Links" value={String(result.elements.links.external)} />
-          <MiniStat label="Headings" value={String(result.elements.headingStructure.length)} />
-        </div>
-      </div>
-
-      {/* Quick Wins */}
-      {result.quickWins.length > 0 && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <BoltIcon className="size-4 text-emerald-700" />
-            <h3 className="text-sm font-semibold text-emerald-900">Design Quick Wins</h3>
-          </div>
-          <div className="space-y-2">
-            {result.quickWins.map((win, i) => (
-              <div key={i} className="flex items-start gap-2">
-                <CheckCircleIcon className="size-4 text-emerald-500 mt-0.5 shrink-0" />
-                <p className="text-sm text-emerald-900">{win}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Full Brief */}
-      <div className="bg-white border border-[#E5E5E5] rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <LightBulbIcon className="size-4 text-[#6B6B6B]" />
-            <h3 className="text-sm font-semibold">Full Page Audit Brief</h3>
-          </div>
-          <button
-            onClick={() => {
-              const blob = new Blob([result.brief], { type: "text/markdown" });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = `page-audit-${new Date().toISOString().slice(0, 10)}.md`;
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
-            className="text-xs text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
-          >
-            Download .md
-          </button>
-        </div>
-        <div className="prose prose-sm max-w-none prose-headings:text-[#0A0A0A] prose-headings:font-semibold prose-p:text-[#3A3A3A] prose-li:text-[#3A3A3A] prose-strong:text-[#0A0A0A]">
-          <MarkdownRenderer content={result.brief} />
-        </div>
-      </div>
+      {/* Summary + Findings */}
+      <SummaryCard summary={result.summary} />
+      <FindingsSummaryStrip findings={result.findings} />
+      <FindingsByCategory findings={result.findings} />
+      <ExportBar result={result} />
     </div>
   );
 }
 
-// ── Store Results (existing) ────────────────────────────────────
+// ── Store Results ───────────────────────────────────────────────
 
 function StoreResults({ result }: { result: StoreIntelResult }) {
   return (
@@ -478,9 +376,8 @@ function StoreResults({ result }: { result: StoreIntelResult }) {
             icon={<ChartBarIcon className="size-3.5" />}
             label="Funnel Maturity"
             value={result.funnelMaturity ? `${result.funnelMaturity}/10` : "—"}
-            highlight={result.funnelMaturity !== null}
             color={
-              result.funnelMaturity !== null
+              result.funnelMaturity
                 ? result.funnelMaturity >= 7
                   ? "text-emerald-700"
                   : result.funnelMaturity >= 4
@@ -503,10 +400,7 @@ function StoreResults({ result }: { result: StoreIntelResult }) {
           {result.appsDetected.length > 0 ? (
             <div className="flex flex-wrap gap-1.5">
               {result.appsDetected.map((app) => (
-                <span
-                  key={app}
-                  className="inline-flex items-center px-2 py-0.5 bg-white border border-[#E5E5E5] rounded text-[11px] text-[#3A3A3A]"
-                >
+                <span key={app} className="inline-flex items-center px-2 py-0.5 bg-white border border-[#E5E5E5] rounded text-[11px] text-[#3A3A3A]">
                   {app}
                 </span>
               ))}
@@ -546,50 +440,193 @@ function StoreResults({ result }: { result: StoreIntelResult }) {
         )}
       </div>
 
-      {/* Quick Wins */}
-      {result.quickWins.length > 0 && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <BoltIcon className="size-4 text-emerald-700" />
-            <h3 className="text-sm font-semibold text-emerald-900">Quick Wins</h3>
-          </div>
-          <div className="space-y-2">
-            {result.quickWins.map((win, i) => (
-              <div key={i} className="flex items-start gap-2">
-                <CheckCircleIcon className="size-4 text-emerald-500 mt-0.5 shrink-0" />
-                <p className="text-sm text-emerald-900">{win}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Summary + Findings */}
+      <SummaryCard summary={result.summary} />
+      <FindingsSummaryStrip findings={result.findings} />
+      <FindingsByCategory findings={result.findings} />
+      <ExportBar result={result} />
+    </div>
+  );
+}
 
-      {/* Full Brief */}
-      <div className="bg-white border border-[#E5E5E5] rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <LightBulbIcon className="size-4 text-[#6B6B6B]" />
-            <h3 className="text-sm font-semibold">Full Intelligence Brief</h3>
+// ── Summary Card ────────────────────────────────────────────────
+
+function SummaryCard({ summary }: { summary: string }) {
+  return (
+    <div className="bg-[#F9F9F9] border border-[#E5E5E5] rounded-lg p-5">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-2">Executive Summary</p>
+      <p className="text-sm text-[#3A3A3A] leading-relaxed">{summary}</p>
+    </div>
+  );
+}
+
+// ── Findings Summary Strip ──────────────────────────────────────
+
+function FindingsSummaryStrip({ findings }: { findings: Finding[] }) {
+  const grouped = groupByCategory(findings);
+  const highCount = findings.filter((f) => f.severity === "high").length;
+
+  return (
+    <div className="flex flex-wrap items-center gap-4 bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg px-5 py-3">
+      {CATEGORY_ORDER.map((cat) => {
+        const count = grouped[cat]?.length || 0;
+        if (!count) return null;
+        const meta = CATEGORY_META[cat];
+        return (
+          <div key={cat} className="flex items-center gap-1.5">
+            <span className={`size-2 rounded-full ${meta.dot}`} />
+            <span className="text-xs font-semibold tabular-nums">{count}</span>
+            <span className="text-xs text-[#6B6B6B]">{meta.label}</span>
           </div>
-          <button
-            onClick={() => {
-              const blob = new Blob([result.brief], { type: "text/markdown" });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = `${result.brand.toLowerCase().replace(/\s+/g, "-")}-brief.md`;
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
-            className="text-xs text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
-          >
-            Download .md
-          </button>
-        </div>
-        <div className="prose prose-sm max-w-none prose-headings:text-[#0A0A0A] prose-headings:font-semibold prose-p:text-[#3A3A3A] prose-li:text-[#3A3A3A] prose-strong:text-[#0A0A0A]">
-          <MarkdownRenderer content={result.brief} />
-        </div>
+        );
+      })}
+      <div className="ml-auto flex items-center gap-1.5">
+        <span className="text-xs text-[#AAAAAA]">{findings.length} total</span>
+        {highCount > 0 && (
+          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-red-100 text-red-700">
+            {highCount} critical
+          </span>
+        )}
       </div>
+    </div>
+  );
+}
+
+// ── Findings by Category ────────────────────────────────────────
+
+function FindingsByCategory({ findings }: { findings: Finding[] }) {
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const grouped = groupByCategory(findings);
+
+  function toggle(cat: string) {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat);
+      else next.add(cat);
+      return next;
+    });
+  }
+
+  // Sort findings: high → medium → low
+  const severityOrder = { high: 0, medium: 1, low: 2 };
+
+  return (
+    <div className="space-y-4">
+      {CATEGORY_ORDER.map((cat) => {
+        const catFindings = grouped[cat];
+        if (!catFindings?.length) return null;
+        const meta = CATEGORY_META[cat];
+        const isCollapsed = collapsed.has(cat);
+        const sorted = [...catFindings].sort(
+          (a, b) => severityOrder[a.severity] - severityOrder[b.severity]
+        );
+
+        return (
+          <div
+            key={cat}
+            className={`bg-white border border-[#E5E5E5] border-l-4 ${meta.border} rounded-lg overflow-hidden`}
+          >
+            {/* Category Header */}
+            <button
+              onClick={() => toggle(cat)}
+              className={`w-full flex items-center justify-between px-5 py-3.5 text-left ${meta.bg} hover:brightness-95 transition-all`}
+            >
+              <span className="text-sm font-semibold text-[#0A0A0A]">
+                {meta.label}
+              </span>
+              <div className="flex items-center gap-2">
+                <span className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full ${meta.pillBg} ${meta.text}`}>
+                  {catFindings.length} {catFindings.length === 1 ? "finding" : "findings"}
+                </span>
+                <ChevronDownIcon
+                  className={`size-4 text-[#6B6B6B] transition-transform duration-200 ${
+                    isCollapsed ? "-rotate-90" : ""
+                  }`}
+                />
+              </div>
+            </button>
+
+            {/* Finding Cards */}
+            {!isCollapsed && (
+              <div className="px-5 py-4 space-y-3">
+                {sorted.map((finding, i) => (
+                  <FindingCard key={i} finding={finding} />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Finding Card ────────────────────────────────────────────────
+
+function FindingCard({ finding }: { finding: Finding }) {
+  const sev = SEVERITY_META[finding.severity];
+
+  return (
+    <div className="bg-[#F7F7F8] border border-[#E5E5E5] rounded-md p-4">
+      <div className="flex items-center gap-2 mb-2">
+        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${sev.pillBg} ${sev.text}`}>
+          {sev.label}
+        </span>
+        {finding.page && (
+          <span className="text-[10px] px-2 py-0.5 bg-[#E5E5E5] rounded text-[#6B6B6B]">
+            {finding.page}
+          </span>
+        )}
+      </div>
+      <h4 className="text-sm font-semibold text-[#0A0A0A] mb-1">{finding.title}</h4>
+      <p className="text-xs text-[#3A3A3A] leading-relaxed">{finding.description}</p>
+    </div>
+  );
+}
+
+// ── Export Bar ───────────────────────────────────────────────────
+
+function ExportBar({ result }: { result: StoreIntelResult | PageAuditResult }) {
+  const [copied, setCopied] = useState(false);
+
+  function copyFindings() {
+    const text = generateFindingsText(result.findings);
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  function downloadReport() {
+    const md = generateMarkdownReport(result);
+    const isStore = !("mode" in result);
+    const name = isStore
+      ? (result as StoreIntelResult).brand.toLowerCase().replace(/\s+/g, "-")
+      : "page-audit";
+    const blob = new Blob([md], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${name}-intel-${new Date().toISOString().slice(0, 10)}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <div className="flex items-center gap-3 pt-2">
+      <button
+        onClick={copyFindings}
+        className="flex items-center gap-2 px-4 py-2 bg-[#F5F5F5] border border-[#E5E5E5] rounded-md text-xs font-medium text-[#3A3A3A] hover:bg-[#EBEBEB] transition-colors"
+      >
+        <ClipboardDocumentIcon className="size-3.5" />
+        {copied ? "Copied!" : "Copy Findings"}
+      </button>
+      <button
+        onClick={downloadReport}
+        className="flex items-center gap-2 px-4 py-2 bg-[#F5F5F5] border border-[#E5E5E5] rounded-md text-xs font-medium text-[#3A3A3A] hover:bg-[#EBEBEB] transition-colors"
+      >
+        <ArrowDownTrayIcon className="size-3.5" />
+        Download .md
+      </button>
     </div>
   );
 }
@@ -600,13 +637,11 @@ function StatBox({
   icon,
   label,
   value,
-  highlight,
   color,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
-  highlight?: boolean;
   color?: string;
 }) {
   return (
@@ -615,40 +650,20 @@ function StatBox({
         <span className="text-[#AAAAAA]">{icon}</span>
         <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA]">{label}</p>
       </div>
-      <p className={`text-lg font-semibold tabular-nums ${color || ""} ${highlight ? "" : ""}`}>
+      <p className={`text-lg font-semibold tabular-nums ${color || ""}`}>
         {value}
       </p>
     </div>
   );
 }
 
-function MiniStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-[10px] text-[#AAAAAA] uppercase">{label}</p>
-      <p className="text-sm font-semibold tabular-nums">{value}</p>
-    </div>
-  );
-}
+// ── Helpers ──────────────────────────────────────────────────────
 
-function MarkdownRenderer({ content }: { content: string }) {
-  const html = content
-    .replace(/^### (.*$)/gm, '<h3 class="text-base font-semibold mt-6 mb-2">$1</h3>')
-    .replace(/^## (.*$)/gm, '<h2 class="text-lg font-bold mt-8 mb-3 pb-2 border-b border-[#E5E5E5]">$1</h2>')
-    .replace(/^# (.*$)/gm, '<h1 class="text-xl font-bold mt-8 mb-3">$1</h1>')
-    .replace(/\*\*\*(.*?)\*\*\*/g, "<strong><em>$1</em></strong>")
-    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.*?)\*/g, "<em>$1</em>")
-    .replace(/^- (.*$)/gm, '<li class="ml-4 list-disc text-sm leading-relaxed">$1</li>')
-    .replace(/^\d+\. (.*$)/gm, '<li class="ml-4 list-decimal text-sm leading-relaxed">$1</li>')
-    .replace(/\n\n/g, '</p><p class="text-sm leading-relaxed mb-3">')
-    .replace(/\n/g, "<br/>");
-
-  return (
-    <div
-      dangerouslySetInnerHTML={{
-        __html: `<p class="text-sm leading-relaxed mb-3">${html}</p>`,
-      }}
-    />
-  );
+function groupByCategory(findings: Finding[]): Partial<Record<FindingCategory, Finding[]>> {
+  const map: Partial<Record<FindingCategory, Finding[]>> = {};
+  for (const f of findings) {
+    if (!map[f.category]) map[f.category] = [];
+    map[f.category]!.push(f);
+  }
+  return map;
 }

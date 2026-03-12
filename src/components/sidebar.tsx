@@ -67,7 +67,7 @@ const navSections: NavSection[] = [
         step: 1,
       },
       {
-        label: "Store Intelligence",
+        label: "Audit Machine",
         href: "/tools/store-intel",
         icon: <MagnifyingGlassIcon className="size-4" />,
         step: 2,
