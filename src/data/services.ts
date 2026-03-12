@@ -2,7 +2,7 @@
 // Single source of truth — mirrors the public Pricing & Packages page.
 // Pricing is tiered (Tier 1 / Tier 2) based on client classification.
 // Tier is selected when generating a proposal link.
-// Shopify Draft Orders are created dynamically from this data.
+// Whop checkout configurations are created dynamically from this data.
 
 export type ServiceMode = "one-off" | "retainer";
 export type ClientTier = 1 | 2;

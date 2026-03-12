@@ -186,7 +186,7 @@ export function ProposalBuilder({
         throw new Error(data.error || "Something went wrong");
       }
 
-      // Redirect to Shopify invoice checkout
+      // Redirect to checkout
       window.location.href = data.invoiceUrl;
     } catch (err) {
       setCheckoutError(
@@ -837,7 +837,7 @@ function OrderSummary({
 
       {!isEmpty && !loading && (
         <p className="text-[10px] text-[#AAAAAA] text-center mt-3">
-          You&apos;ll be redirected to our secure Shopify checkout
+          You&apos;ll be redirected to our secure checkout
         </p>
       )}
     </div>
