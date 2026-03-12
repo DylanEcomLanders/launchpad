@@ -1,35 +1,52 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   ClipboardDocumentIcon,
   CheckCircleIcon,
   ArrowPathIcon,
+  PlusIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/solid";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 import {
   type CopyMode,
   type CopySection,
-  modeSections,
+  type ContextBlock,
+  type ContextBlockLabel,
+  contextBlockLabels,
 } from "@/lib/copy-engine/types";
 import type { BrandProfile } from "@/lib/brand-profiles/types";
 import { getBrandProfiles } from "@/lib/brand-profiles/data";
+import {
+  pageChecklists,
+  checklistPageTypes,
+  type ChecklistPageType,
+} from "@/data/page-checklists";
 
-const copyModes: CopyMode[] = ["PDP", "Collection", "Landing Page"];
+const copyModes: { value: CopyMode; label: string; description: string }[] = [
+  { value: "Page", label: "Page", description: "Pick sections, get copy per section" },
+  { value: "Advertorial", label: "Advertorial", description: "One-shot editorial piece" },
+  { value: "Listicle", label: "Listicle", description: "One-shot listicle piece" },
+];
 
 type Status = "idle" | "generating" | "done" | "error";
 
+let blockCounter = 0;
+
 export default function CopyEnginePage() {
   /* ── state ── */
-  const [mode, setMode] = useState<CopyMode>("PDP");
+  const [mode, setMode] = useState<CopyMode>("Page");
+  const [brief, setBrief] = useState("");
+  const [contextBlocks, setContextBlocks] = useState<ContextBlock[]>([]);
   const [profiles, setProfiles] = useState<BrandProfile[]>([]);
   const [selectedProfileId, setSelectedProfileId] = useState("");
-  const [productName, setProductName] = useState("");
-  const [productDescription, setProductDescription] = useState("");
-  const [targetAudience, setTargetAudience] = useState("");
-  const [keyBenefits, setKeyBenefits] = useState("");
-  const [tone, setTone] = useState("conversational, confident");
 
+  // Page mode
+  const [pageType, setPageType] = useState<ChecklistPageType>("PDP");
+  const [selectedSections, setSelectedSections] = useState<Set<string>>(new Set());
+
+  // Output
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [sections, setSections] = useState<CopySection[]>([]);
@@ -43,27 +60,20 @@ export default function CopyEnginePage() {
     getBrandProfiles().then(setProfiles).catch(() => {});
   }, []);
 
-  /* ── auto-fill from profile ── */
-  useEffect(() => {
-    if (!selectedProfileId) return;
-    const profile = profiles.find((p) => p.id === selectedProfileId);
-    if (!profile) return;
+  /* ── auto-select sections when page type changes ── */
+  const syncSections = useCallback((pt: ChecklistPageType) => {
+    const items = pageChecklists[pt];
+    const autoSelected = new Set(
+      items
+        .filter((i) => i.priority === "required" || i.priority === "recommended")
+        .map((i) => i.sectionName)
+    );
+    setSelectedSections(autoSelected);
+  }, []);
 
-    setProductName(profile.project_name);
-    setProductDescription(
-      `${profile.brand_url}\n\nKey objections: ${profile.objections.join(", ")}`
-    );
-    setTargetAudience(
-      profile.desires.length > 0
-        ? `People who want: ${profile.desires.slice(0, 3).join("; ")}`
-        : ""
-    );
-    setKeyBenefits(
-      profile.pain_points.length > 0
-        ? profile.pain_points.slice(0, 4).join("; ")
-        : ""
-    );
-  }, [selectedProfileId, profiles]);
+  useEffect(() => {
+    syncSections(pageType);
+  }, [pageType, syncSections]);
 
   /* ── auto-scroll during generation ── */
   useEffect(() => {
@@ -72,9 +82,45 @@ export default function CopyEnginePage() {
     }
   }, [rawStream, status]);
 
-  /* ── generate copy ── */
+  /* ── context block handlers ── */
+  function addContextBlock() {
+    blockCounter++;
+    setContextBlocks((prev) => [
+      ...prev,
+      { id: `block-${blockCounter}`, label: "Ad Copy", content: "" },
+    ]);
+  }
+
+  function updateBlockLabel(id: string, label: ContextBlockLabel) {
+    setContextBlocks((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, label } : b))
+    );
+  }
+
+  function updateBlockContent(id: string, content: string) {
+    setContextBlocks((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, content } : b))
+    );
+  }
+
+  function removeBlock(id: string) {
+    setContextBlocks((prev) => prev.filter((b) => b.id !== id));
+  }
+
+  /* ── section toggle ── */
+  function toggleSection(name: string) {
+    setSelectedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  }
+
+  /* ── generate ── */
   async function handleGenerate() {
-    if (!productName.trim() || !productDescription.trim()) return;
+    if (!brief.trim()) return;
+    if (mode === "Page" && selectedSections.size === 0) return;
 
     setStatus("generating");
     setErrorMessage("");
@@ -89,24 +135,28 @@ export default function CopyEnginePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mode,
-          productName: productName.trim(),
-          productDescription: productDescription.trim(),
-          targetAudience: targetAudience.trim(),
-          keyBenefits: keyBenefits.trim(),
-          tone: tone.trim(),
+          brief: brief.trim(),
+          contextBlocks: contextBlocks
+            .filter((b) => b.content.trim())
+            .map((b) => ({ label: b.label, content: b.content })),
           brandContext: profile?.raw_report || null,
+          pageType: mode === "Page" ? pageType : undefined,
+          selectedSections:
+            mode === "Page" ? Array.from(selectedSections) : undefined,
         }),
       });
 
       if (!res.ok || !res.body) {
+        const err = res.ok ? null : await res.json().catch(() => null);
         setStatus("error");
-        setErrorMessage("Failed to connect to the copy engine.");
+        setErrorMessage(err?.error || "Failed to connect to the copy engine.");
         return;
       }
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let accumulated = "";
+      let completed = false;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -116,78 +166,70 @@ export default function CopyEnginePage() {
         const lines = chunk.split("\n");
 
         for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            try {
-              const data = JSON.parse(line.slice(6));
+          if (!line.startsWith("data: ")) continue;
 
-              if ("text" in data) {
-                accumulated += data.text;
-                setRawStream(accumulated);
-              }
-              if ("message" in data && line.includes("generation_complete")) {
-                // Parse accumulated JSON
-                try {
-                  const parsed = JSON.parse(accumulated);
-                  if (parsed.sections && Array.isArray(parsed.sections)) {
-                    setSections(parsed.sections);
-                    setStatus("done");
-                  } else {
-                    throw new Error("Invalid response shape");
-                  }
-                } catch {
-                  // Try extracting JSON from the accumulated text
-                  const jsonMatch = accumulated.match(/\{[\s\S]*\}/);
-                  if (jsonMatch) {
-                    try {
-                      const parsed = JSON.parse(jsonMatch[0]);
-                      if (parsed.sections) {
-                        setSections(parsed.sections);
-                        setStatus("done");
-                      } else {
-                        throw new Error("No sections");
-                      }
-                    } catch {
-                      setStatus("error");
-                      setErrorMessage(
-                        "Failed to parse generated copy. Please try again."
-                      );
-                    }
-                  } else {
-                    setStatus("error");
-                    setErrorMessage(
-                      "Failed to parse generated copy. Please try again."
-                    );
-                  }
-                }
-              }
-              if ("message" in data && line.includes("app_error")) {
-                setStatus("error");
-                setErrorMessage(data.message);
-              }
-            } catch {
-              // skip unparseable lines
+          try {
+            const data = JSON.parse(line.slice(6));
+
+            if ("text" in data) {
+              accumulated += data.text;
+              setRawStream(accumulated);
             }
+
+            if ("message" in data && data.message === "Copy generation complete") {
+              completed = true;
+
+              if (mode === "Page") {
+                // Parse JSON sections
+                const parsed = tryParseJsonSections(accumulated);
+                if (parsed) {
+                  setSections(parsed);
+                  setStatus("done");
+                } else {
+                  setStatus("error");
+                  setErrorMessage("Failed to parse section copy. Try again.");
+                }
+              } else {
+                // Advertorial / Listicle — raw text output
+                setSections([
+                  {
+                    id: mode.toLowerCase(),
+                    label: mode,
+                    content: accumulated.trim(),
+                  },
+                ]);
+                setStatus("done");
+              }
+            }
+
+            if ("message" in data && line.includes("app_error")) {
+              setStatus("error");
+              setErrorMessage(data.message);
+              completed = true;
+            }
+          } catch {
+            // skip
           }
         }
       }
 
-      // If stream ended without generation_complete event, try parsing
-      if (status !== "done" && status !== "error" && accumulated) {
-        try {
-          const jsonMatch = accumulated.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            const parsed = JSON.parse(jsonMatch[0]);
-            if (parsed.sections) {
-              setSections(parsed.sections);
-              setStatus("done");
-              return;
-            }
+      // Fallback if stream ended without completion event
+      if (!completed && accumulated) {
+        if (mode === "Page") {
+          const parsed = tryParseJsonSections(accumulated);
+          if (parsed) {
+            setSections(parsed);
+            setStatus("done");
+          } else {
+            setStatus("error");
+            setErrorMessage("Generation ended unexpectedly. Try again.");
           }
-        } catch {
-          // fallback handled below
+        } else {
+          setSections([
+            { id: mode.toLowerCase(), label: mode, content: accumulated.trim() },
+          ]);
+          setStatus("done");
         }
-        setStatus("error");
-        setErrorMessage("Generation ended unexpectedly. Please try again.");
       }
     } catch (err) {
       setStatus("error");
@@ -197,8 +239,32 @@ export default function CopyEnginePage() {
     }
   }
 
+  /* ── JSON parsing helper ── */
+  function tryParseJsonSections(text: string): CopySection[] | null {
+    // Try direct parse first
+    try {
+      const parsed = JSON.parse(text);
+      if (parsed.sections && Array.isArray(parsed.sections)) return parsed.sections;
+    } catch {
+      // fallthrough
+    }
+
+    // Try extracting JSON from text
+    const match = text.match(/\{[\s\S]*\}/);
+    if (match) {
+      try {
+        const parsed = JSON.parse(match[0]);
+        if (parsed.sections && Array.isArray(parsed.sections)) return parsed.sections;
+      } catch {
+        // fallthrough
+      }
+    }
+
+    return null;
+  }
+
   /* ── copy helpers ── */
-  function copySection(id: string, content: string) {
+  function copyText(id: string, content: string) {
     navigator.clipboard.writeText(content);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
@@ -206,15 +272,23 @@ export default function CopyEnginePage() {
 
   function copyAll() {
     const text = sections
-      .map((s) => `── ${s.label} ──\n${s.content}`)
+      .map((s) =>
+        mode === "Page"
+          ? `── ${s.label} ──\n${s.content}`
+          : s.content
+      )
       .join("\n\n");
     navigator.clipboard.writeText(text);
     setCopiedId("__all__");
     setTimeout(() => setCopiedId(null), 2000);
   }
 
-  /* ── expected sections for current mode ── */
-  const expectedSections = modeSections[mode];
+  /* ── derived ── */
+  const checklistItems = pageChecklists[pageType];
+  const canGenerate =
+    brief.trim().length >= 20 &&
+    (mode !== "Page" || selectedSections.size > 0) &&
+    status !== "generating";
 
   return (
     <div className="relative min-h-screen">
@@ -226,59 +300,127 @@ export default function CopyEnginePage() {
             Copy Engine
           </h1>
           <p className="text-[#6B6B6B] text-sm">
-            AI-generated page copy powered by brand research and VOC data
+            Drop in the brief, add context, generate conversion copy
           </p>
         </div>
 
-        {/* Mode selector */}
-        <div className="flex flex-wrap gap-2 mb-6">
+        {/* ── Mode selector ── */}
+        <div className="flex gap-2 mb-8">
           {copyModes.map((m) => (
             <button
-              key={m}
-              onClick={() => setMode(m)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
-                mode === m
+              key={m.value}
+              onClick={() => setMode(m.value)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                mode === m.value
                   ? "bg-[#0A0A0A] text-white"
                   : "bg-[#F5F5F5] text-[#6B6B6B] hover:bg-[#EBEBEB]"
               }`}
             >
-              {m}
+              <span>{m.label}</span>
+              <span className="hidden md:inline text-[10px] ml-1.5 opacity-60">
+                {m.description}
+              </span>
             </button>
           ))}
         </div>
 
-        {/* Expected sections preview */}
-        <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg px-5 py-3 mb-6">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-2">
-            Sections for {mode}
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {expectedSections.map((s) => (
-              <span
-                key={s.id}
-                className="px-2 py-0.5 text-[10px] font-medium bg-white text-[#6B6B6B] border border-[#E5E5E5] rounded"
-              >
-                {s.label}
-              </span>
-            ))}
+        {/* ── Input area ── */}
+        <div className="bg-white border border-[#E5E5E5] rounded-lg p-6 mb-6 space-y-5">
+          {/* Client brief */}
+          <div>
+            <label className="block text-xs font-semibold text-[#3A3A3A] mb-1.5 uppercase tracking-wider">
+              Client Brief *
+            </label>
+            <textarea
+              value={brief}
+              onChange={(e) => setBrief(e.target.value)}
+              rows={6}
+              placeholder="Paste the client brief here — product info, goals, target audience, tone, URLs, whatever you have..."
+              className="w-full px-4 py-3 text-sm border border-[#E5E5E5] rounded-md focus:outline-none focus:border-[#0A0A0A] transition-colors resize-none leading-relaxed"
+            />
           </div>
-        </div>
 
-        {/* Input form */}
-        <div className="bg-white border border-[#E5E5E5] rounded-lg p-6 mb-6 space-y-4">
-          {/* Brand profile selector */}
+          {/* Context blocks */}
+          {contextBlocks.length > 0 && (
+            <div className="space-y-3">
+              <label className="block text-xs font-semibold text-[#3A3A3A] uppercase tracking-wider">
+                Additional Context
+              </label>
+              {contextBlocks.map((block) => (
+                <div
+                  key={block.id}
+                  className="border border-[#E5E5E5] rounded-md p-3 bg-[#FAFAFA]"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <select
+                      value={block.label}
+                      onChange={(e) =>
+                        updateBlockLabel(
+                          block.id,
+                          e.target.value as ContextBlockLabel
+                        )
+                      }
+                      className="px-2 py-1 text-xs font-medium border border-[#E5E5E5] rounded bg-white focus:outline-none focus:border-[#0A0A0A] transition-colors"
+                    >
+                      {contextBlockLabels.map((l) => (
+                        <option key={l} value={l}>
+                          {l}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() => removeBlock(block.id)}
+                      className="ml-auto p-1 text-[#AAAAAA] hover:text-red-500 transition-colors"
+                    >
+                      <XMarkIcon className="size-4" />
+                    </button>
+                  </div>
+                  <textarea
+                    value={block.content}
+                    onChange={(e) =>
+                      updateBlockContent(block.id, e.target.value)
+                    }
+                    rows={3}
+                    placeholder={
+                      block.label === "Ad Copy"
+                        ? "Paste ad copy, headlines, hooks..."
+                        : block.label === "Inspo Page"
+                        ? "Paste content from an inspiration page..."
+                        : block.label === "Competitor Page"
+                        ? "Paste competitor page content..."
+                        : "Paste any additional context..."
+                    }
+                    className="w-full px-3 py-2 text-sm border border-[#E5E5E5] rounded bg-white focus:outline-none focus:border-[#0A0A0A] transition-colors resize-none"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button
+            onClick={addContextBlock}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#6B6B6B] border border-dashed border-[#D4D4D4] rounded-md hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-all"
+          >
+            <PlusIcon className="size-3.5" />
+            Add Context
+            <span className="text-[#AAAAAA]">(ads, inspo, competitor pages)</span>
+          </button>
+
+          {/* Brand profile */}
           {profiles.length > 0 && (
             <div>
-              <label className="block text-xs font-medium text-[#3A3A3A] mb-1.5">
+              <label className="block text-xs font-semibold text-[#3A3A3A] mb-1.5 uppercase tracking-wider">
                 Brand Profile{" "}
-                <span className="text-[#AAAAAA] font-normal">(optional — auto-fills fields + adds VOC context)</span>
+                <span className="text-[#AAAAAA] font-normal normal-case tracking-normal">
+                  (optional — adds VOC data as context)
+                </span>
               </label>
               <select
                 value={selectedProfileId}
                 onChange={(e) => setSelectedProfileId(e.target.value)}
                 className="w-full px-3 py-2 text-sm border border-[#E5E5E5] rounded-md bg-white focus:outline-none focus:border-[#0A0A0A] transition-colors"
               >
-                <option value="">None — manual input</option>
+                <option value="">None</option>
                 {profiles.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.project_name}
@@ -287,105 +429,145 @@ export default function CopyEnginePage() {
               </select>
             </div>
           )}
-
-          {/* Product name */}
-          <div>
-            <label className="block text-xs font-medium text-[#3A3A3A] mb-1.5">
-              Product / Page Name *
-            </label>
-            <input
-              type="text"
-              value={productName}
-              onChange={(e) => setProductName(e.target.value)}
-              placeholder="e.g. Ultra-Hydrating Serum"
-              className="w-full px-3 py-2 text-sm border border-[#E5E5E5] rounded-md focus:outline-none focus:border-[#0A0A0A] transition-colors"
-            />
-          </div>
-
-          {/* Product description */}
-          <div>
-            <label className="block text-xs font-medium text-[#3A3A3A] mb-1.5">
-              Product Description *
-            </label>
-            <textarea
-              value={productDescription}
-              onChange={(e) => setProductDescription(e.target.value)}
-              rows={3}
-              placeholder="What is this product? Key ingredients, features, what makes it different..."
-              className="w-full px-3 py-2 text-sm border border-[#E5E5E5] rounded-md focus:outline-none focus:border-[#0A0A0A] transition-colors resize-none"
-            />
-          </div>
-
-          {/* Target audience */}
-          <div>
-            <label className="block text-xs font-medium text-[#3A3A3A] mb-1.5">
-              Target Audience
-            </label>
-            <input
-              type="text"
-              value={targetAudience}
-              onChange={(e) => setTargetAudience(e.target.value)}
-              placeholder="e.g. Women 25-45 dealing with dry skin, willing to invest in skincare"
-              className="w-full px-3 py-2 text-sm border border-[#E5E5E5] rounded-md focus:outline-none focus:border-[#0A0A0A] transition-colors"
-            />
-          </div>
-
-          {/* Key benefits */}
-          <div>
-            <label className="block text-xs font-medium text-[#3A3A3A] mb-1.5">
-              Key Benefits / Pain Points
-            </label>
-            <input
-              type="text"
-              value={keyBenefits}
-              onChange={(e) => setKeyBenefits(e.target.value)}
-              placeholder="e.g. 72hr hydration; reduces fine lines; absorbs instantly"
-              className="w-full px-3 py-2 text-sm border border-[#E5E5E5] rounded-md focus:outline-none focus:border-[#0A0A0A] transition-colors"
-            />
-          </div>
-
-          {/* Tone */}
-          <div>
-            <label className="block text-xs font-medium text-[#3A3A3A] mb-1.5">
-              Tone
-            </label>
-            <input
-              type="text"
-              value={tone}
-              onChange={(e) => setTone(e.target.value)}
-              placeholder="e.g. conversational, confident"
-              className="w-full px-3 py-2 text-sm border border-[#E5E5E5] rounded-md focus:outline-none focus:border-[#0A0A0A] transition-colors"
-            />
-          </div>
-
-          {/* Generate button */}
-          <button
-            onClick={handleGenerate}
-            disabled={
-              status === "generating" ||
-              !productName.trim() ||
-              !productDescription.trim()
-            }
-            className={`w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-md transition-all ${
-              status === "generating"
-                ? "bg-[#3A3A3A] text-white cursor-wait"
-                : !productName.trim() || !productDescription.trim()
-                ? "bg-[#E5E5E5] text-[#AAAAAA] cursor-not-allowed"
-                : "bg-[#0A0A0A] text-white hover:bg-[#2A2A2A]"
-            }`}
-          >
-            {status === "generating" ? (
-              <>
-                <ArrowPathIcon className="size-4 animate-spin" />
-                Generating {mode} copy...
-              </>
-            ) : (
-              `Generate ${mode} Copy`
-            )}
-          </button>
         </div>
 
-        {/* Output area */}
+        {/* ── Page mode: section picker ── */}
+        {mode === "Page" && (
+          <div className="bg-white border border-[#E5E5E5] rounded-lg p-6 mb-6">
+            <label className="block text-xs font-semibold text-[#3A3A3A] mb-4 uppercase tracking-wider">
+              Page Sections
+            </label>
+
+            {/* Page type pills */}
+            <div className="flex flex-wrap gap-2 mb-5">
+              {checklistPageTypes.map((pt) => (
+                <button
+                  key={pt}
+                  onClick={() => setPageType(pt)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+                    pageType === pt
+                      ? "bg-[#0A0A0A] text-white"
+                      : "bg-[#F5F5F5] text-[#6B6B6B] hover:bg-[#EBEBEB]"
+                  }`}
+                >
+                  {pt}
+                </button>
+              ))}
+            </div>
+
+            {/* Section count */}
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs text-[#6B6B6B]">
+                {selectedSections.size}/{checklistItems.length} sections selected
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() =>
+                    setSelectedSections(
+                      new Set(checklistItems.map((i) => i.sectionName))
+                    )
+                  }
+                  className="text-[10px] font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
+                >
+                  Select All
+                </button>
+                <span className="text-[#E5E5E5]">|</span>
+                <button
+                  onClick={() => setSelectedSections(new Set())}
+                  className="text-[10px] font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            {/* Section checkboxes */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+              {checklistItems.map((item) => {
+                const isSelected = selectedSections.has(item.sectionName);
+                return (
+                  <button
+                    key={item.sectionName}
+                    onClick={() => toggleSection(item.sectionName)}
+                    className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-left transition-all ${
+                      isSelected
+                        ? "bg-[#0A0A0A] text-white"
+                        : "bg-[#F5F5F5] text-[#6B6B6B] hover:bg-[#EBEBEB]"
+                    }`}
+                  >
+                    <div
+                      className={`size-3.5 rounded border-2 shrink-0 flex items-center justify-center ${
+                        isSelected
+                          ? "border-white bg-white"
+                          : "border-[#D4D4D4]"
+                      }`}
+                    >
+                      {isSelected && (
+                        <CheckCircleIcon className="size-3 text-[#0A0A0A]" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-xs font-medium block truncate">
+                        {item.sectionName}
+                      </span>
+                    </div>
+                    <span
+                      className={`ml-auto text-[9px] font-semibold uppercase tracking-wider shrink-0 px-1.5 py-0.5 rounded ${
+                        isSelected
+                          ? item.priority === "required"
+                            ? "bg-white/20 text-white"
+                            : item.priority === "recommended"
+                            ? "bg-white/10 text-white/70"
+                            : "bg-white/5 text-white/50"
+                          : item.priority === "required"
+                          ? "bg-[#0A0A0A]/10 text-[#3A3A3A]"
+                          : item.priority === "recommended"
+                          ? "bg-[#0A0A0A]/5 text-[#999999]"
+                          : "text-[#CCCCCC]"
+                      }`}
+                    >
+                      {item.priority === "required"
+                        ? "Req"
+                        : item.priority === "recommended"
+                        ? "Rec"
+                        : "Opt"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── Generate button ── */}
+        <button
+          onClick={handleGenerate}
+          disabled={!canGenerate}
+          className={`w-full flex items-center justify-center gap-2 px-4 py-3.5 text-sm font-medium rounded-lg transition-all mb-8 ${
+            status === "generating"
+              ? "bg-[#3A3A3A] text-white cursor-wait"
+              : !canGenerate
+              ? "bg-[#E5E5E5] text-[#AAAAAA] cursor-not-allowed"
+              : "bg-[#0A0A0A] text-white hover:bg-[#2A2A2A]"
+          }`}
+        >
+          {status === "generating" ? (
+            <>
+              <ArrowPathIcon className="size-4 animate-spin" />
+              Generating{" "}
+              {mode === "Page" ? `${pageType} copy` : `${mode}`}...
+            </>
+          ) : (
+            <>
+              Generate{" "}
+              {mode === "Page"
+                ? `${pageType} Copy (${selectedSections.size} sections)`
+                : `${mode}`}
+            </>
+          )}
+        </button>
+
+        {/* ── Output ── */}
         <div ref={outputRef}>
           {/* Streaming indicator */}
           {status === "generating" && (
@@ -393,11 +575,11 @@ export default function CopyEnginePage() {
               <div className="flex items-center gap-3 mb-4">
                 <ArrowPathIcon className="size-4 text-[#6B6B6B] animate-spin" />
                 <span className="text-sm text-[#6B6B6B]">
-                  Writing {mode} copy...
+                  Writing {mode === "Page" ? `${pageType}` : mode} copy...
                 </span>
               </div>
-              <div className="bg-[#F5F5F5] rounded-md p-4 max-h-64 overflow-y-auto">
-                <pre className="text-xs text-[#6B6B6B] whitespace-pre-wrap font-mono">
+              <div className="bg-[#F5F5F5] rounded-md p-4 max-h-72 overflow-y-auto">
+                <pre className="text-xs text-[#6B6B6B] whitespace-pre-wrap font-mono leading-relaxed">
                   {rawStream || "Waiting for response..."}
                 </pre>
               </div>
@@ -414,12 +596,14 @@ export default function CopyEnginePage() {
             </div>
           )}
 
-          {/* Generated sections */}
+          {/* Results */}
           {status === "done" && sections.length > 0 && (
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-sm font-semibold">
-                  Generated {mode} Copy
+                  {mode === "Page"
+                    ? `${pageType} — ${sections.length} sections`
+                    : mode}
                 </h2>
                 <button
                   onClick={copyAll}
@@ -432,12 +616,12 @@ export default function CopyEnginePage() {
                   {copiedId === "__all__" ? (
                     <>
                       <CheckCircleIcon className="size-3.5" />
-                      Copied All
+                      Copied
                     </>
                   ) : (
                     <>
                       <ClipboardDocumentIcon className="size-3.5" />
-                      Copy All Sections
+                      Copy All
                     </>
                   )}
                 </button>
@@ -449,37 +633,41 @@ export default function CopyEnginePage() {
                     key={section.id}
                     className="bg-white border border-[#E5E5E5] rounded-lg overflow-hidden"
                   >
-                    <div className="flex items-center justify-between px-5 py-3 border-b border-[#F0F0F0]">
-                      <h3 className="text-xs font-semibold text-[#3A3A3A] uppercase tracking-wider">
-                        {section.label}
-                      </h3>
-                      <button
-                        onClick={() =>
-                          copySection(section.id, section.content)
-                        }
-                        className={`flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded transition-all ${
-                          copiedId === section.id
-                            ? "bg-emerald-50 text-emerald-700"
-                            : "text-[#AAAAAA] hover:text-[#3A3A3A] hover:bg-[#F5F5F5]"
-                        }`}
-                      >
-                        {copiedId === section.id ? (
-                          <>
-                            <CheckCircleIcon className="size-3" />
-                            Copied
-                          </>
-                        ) : (
-                          <>
-                            <ClipboardDocumentIcon className="size-3" />
-                            Copy
-                          </>
-                        )}
-                      </button>
-                    </div>
+                    {/* Section header — only show for Page mode (multi-section) */}
+                    {mode === "Page" && (
+                      <div className="flex items-center justify-between px-5 py-3 border-b border-[#F0F0F0]">
+                        <h3 className="text-xs font-semibold text-[#3A3A3A] uppercase tracking-wider">
+                          {section.label}
+                        </h3>
+                        <button
+                          onClick={() =>
+                            copyText(section.id, section.content)
+                          }
+                          className={`flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded transition-all ${
+                            copiedId === section.id
+                              ? "bg-emerald-50 text-emerald-700"
+                              : "text-[#AAAAAA] hover:text-[#3A3A3A] hover:bg-[#F5F5F5]"
+                          }`}
+                        >
+                          {copiedId === section.id ? (
+                            <>
+                              <CheckCircleIcon className="size-3" />
+                              Copied
+                            </>
+                          ) : (
+                            <>
+                              <ClipboardDocumentIcon className="size-3" />
+                              Copy
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+
                     <div className="px-5 py-4">
-                      <p className="text-sm text-[#3A3A3A] leading-relaxed whitespace-pre-wrap">
+                      <div className="text-sm text-[#3A3A3A] leading-relaxed whitespace-pre-wrap">
                         {section.content}
-                      </p>
+                      </div>
                     </div>
                   </div>
                 ))}
