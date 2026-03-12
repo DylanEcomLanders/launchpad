@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import type { BrandProfile, BrandProfileInsert } from "./types";
 
 /* ── Local-storage key ── */
@@ -13,34 +13,40 @@ function uid(): string {
 // ═══════════════════════════════════════════════════════════════════
 
 export async function getBrandProfiles(): Promise<BrandProfile[]> {
-  try {
-    const { data, error } = await supabase
-      .from("brand_profiles")
-      .select("*")
-      .order("updated_at", { ascending: false });
-    if (error) throw error;
-    return (data ?? []).map(mapRow);
-  } catch {
-    if (typeof window === "undefined") return [];
-    const stored = localStorage.getItem(LS_BRAND_PROFILES);
-    return stored ? JSON.parse(stored) : [];
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from("brand_profiles")
+        .select("*")
+        .order("updated_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []).map(mapRow);
+    } catch {
+      /* fall through to localStorage */
+    }
   }
+  if (typeof window === "undefined") return [];
+  const stored = localStorage.getItem(LS_BRAND_PROFILES);
+  return stored ? JSON.parse(stored) : [];
 }
 
 export async function getBrandProfileById(id: string): Promise<BrandProfile | null> {
-  try {
-    const { data, error } = await supabase
-      .from("brand_profiles")
-      .select("*")
-      .eq("id", id)
-      .single();
-    if (error) throw error;
-    return data ? mapRow(data) : null;
-  } catch {
-    if (typeof window === "undefined") return null;
-    const all = await getBrandProfiles();
-    return all.find((p) => p.id === id) ?? null;
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from("brand_profiles")
+        .select("*")
+        .eq("id", id)
+        .single();
+      if (error) throw error;
+      return data ? mapRow(data) : null;
+    } catch {
+      /* fall through */
+    }
   }
+  if (typeof window === "undefined") return null;
+  const all = await getBrandProfiles();
+  return all.find((p) => p.id === id) ?? null;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -65,21 +71,24 @@ export async function createBrandProfile(input: BrandProfileInsert): Promise<Bra
     updated_at: now,
   };
 
-  try {
-    const { data, error } = await supabase
-      .from("brand_profiles")
-      .insert(row)
-      .select()
-      .single();
-    if (error) throw error;
-    return mapRow(data);
-  } catch {
-    const profile = row as BrandProfile;
-    const existing = await getBrandProfiles();
-    existing.unshift(profile);
-    localStorage.setItem(LS_BRAND_PROFILES, JSON.stringify(existing));
-    return profile;
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from("brand_profiles")
+        .insert(row)
+        .select()
+        .single();
+      if (error) throw error;
+      return mapRow(data);
+    } catch {
+      /* fall through */
+    }
   }
+  const profile = row as BrandProfile;
+  const existing = await getBrandProfiles();
+  existing.unshift(profile);
+  localStorage.setItem(LS_BRAND_PROFILES, JSON.stringify(existing));
+  return profile;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -91,19 +100,23 @@ export async function updateBrandProfile(
   updates: Partial<BrandProfileInsert>
 ): Promise<void> {
   const now = new Date().toISOString();
-  try {
-    const { error } = await supabase
-      .from("brand_profiles")
-      .update({ ...updates, updated_at: now })
-      .eq("id", id);
-    if (error) throw error;
-  } catch {
-    const all = await getBrandProfiles();
-    const updated = all.map((p) =>
-      p.id === id ? { ...p, ...updates, updated_at: now } : p
-    );
-    localStorage.setItem(LS_BRAND_PROFILES, JSON.stringify(updated));
+  if (isSupabaseConfigured()) {
+    try {
+      const { error } = await supabase
+        .from("brand_profiles")
+        .update({ ...updates, updated_at: now })
+        .eq("id", id);
+      if (error) throw error;
+      return;
+    } catch {
+      /* fall through */
+    }
   }
+  const all = await getBrandProfiles();
+  const updated = all.map((p) =>
+    p.id === id ? { ...p, ...updates, updated_at: now } : p
+  );
+  localStorage.setItem(LS_BRAND_PROFILES, JSON.stringify(updated));
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -111,16 +124,20 @@ export async function updateBrandProfile(
 // ═══════════════════════════════════════════════════════════════════
 
 export async function deleteBrandProfile(id: string): Promise<void> {
-  try {
-    const { error } = await supabase
-      .from("brand_profiles")
-      .delete()
-      .eq("id", id);
-    if (error) throw error;
-  } catch {
-    const all = await getBrandProfiles();
-    localStorage.setItem(LS_BRAND_PROFILES, JSON.stringify(all.filter((p) => p.id !== id)));
+  if (isSupabaseConfigured()) {
+    try {
+      const { error } = await supabase
+        .from("brand_profiles")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+      return;
+    } catch {
+      /* fall through */
+    }
   }
+  const all = await getBrandProfiles();
+  localStorage.setItem(LS_BRAND_PROFILES, JSON.stringify(all.filter((p) => p.id !== id)));
 }
 
 // ═══════════════════════════════════════════════════════════════════

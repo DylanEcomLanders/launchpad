@@ -19,43 +19,37 @@ import {
 } from "@/lib/brand-profiles/data";
 import type { BrandProfile } from "@/lib/brand-profiles/types";
 
-// ── Source metadata ─────────────────────────────────────────────
-
-const SOURCES = [
-  { name: "Amazon Reviews", icon: "📦" },
-  { name: "Reddit", icon: "💬" },
-  { name: "Trustpilot", icon: "⭐" },
-  { name: "G2", icon: "🏆" },
-  { name: "YouTube", icon: "▶️" },
-  { name: "Quora", icon: "❓" },
-];
-
 // ── Section metadata for report rendering ───────────────────────
 
 const SECTION_META = [
-  { label: "Top Pain Points", border: "border-l-red-500", headerBg: "bg-red-50" },
-  { label: "Customer Language Bank", border: "border-l-amber-500", headerBg: "bg-amber-50" },
-  { label: "Purchase Triggers", border: "border-l-emerald-500", headerBg: "bg-emerald-50" },
-  { label: "Objections & Hesitations", border: "border-l-orange-500", headerBg: "bg-orange-50" },
-  { label: "Competitor Weaknesses", border: "border-l-blue-500", headerBg: "bg-blue-50" },
-  { label: "Messaging Hierarchy", border: "border-l-violet-500", headerBg: "bg-violet-50" },
+  { label: "Product Deep Dive", border: "border-l-blue-500", headerBg: "bg-blue-50" },
+  { label: "Customer Voice & Language Bank", border: "border-l-amber-500", headerBg: "bg-amber-50" },
+  { label: "Competitor & Market Intel", border: "border-l-emerald-500", headerBg: "bg-emerald-50" },
+  { label: "Objection Handling Framework", border: "border-l-red-500", headerBg: "bg-red-50" },
+  { label: "Messaging Direction", border: "border-l-violet-500", headerBg: "bg-violet-50" },
+  { label: "CRO & Page Structure Notes", border: "border-l-orange-500", headerBg: "bg-orange-50" },
 ];
 
 // ── Types ───────────────────────────────────────────────────────
 
-type SourceStatus = "waiting" | "loading" | "done" | "empty" | "error";
+interface ResearchStep {
+  id: string;
+  label: string;
+  icon: string;
+  status: "loading" | "done" | "empty" | "error";
+  resultCount?: number;
+}
 
 // ── Page Component ──────────────────────────────────────────────
 
 export default function ResearchPage() {
   // Input
-  const [query, setQuery] = useState("");
-  const [brandUrl, setBrandUrl] = useState("");
+  const [projectName, setProjectName] = useState("");
+  const [brief, setBrief] = useState("");
 
   // Research state
   const [isRunning, setIsRunning] = useState(false);
-  const [sourceStatuses, setSourceStatuses] = useState<Record<string, SourceStatus>>({});
-  const [sourceCounts, setSourceCounts] = useState<Record<string, number>>({});
+  const [steps, setSteps] = useState<ResearchStep[]>([]);
   const [analysisStarted, setAnalysisStarted] = useState(false);
   const [analysisMessage, setAnalysisMessage] = useState("");
   const [streamText, setStreamText] = useState("");
@@ -93,43 +87,62 @@ export default function ResearchPage() {
 
   // ── SSE Event Handler ───────────────────────────────────────
 
-  const handleSSEEvent = useCallback((event: string, data: Record<string, unknown>) => {
-    switch (event) {
-      case "source_start":
-        setSourceStatuses((prev) => ({ ...prev, [data.name as string]: "loading" }));
-        break;
-      case "source_done":
-        setSourceStatuses((prev) => ({ ...prev, [data.name as string]: "done" }));
-        setSourceCounts((prev) => ({ ...prev, [data.name as string]: data.count as number }));
-        break;
-      case "source_empty":
-        setSourceStatuses((prev) => ({ ...prev, [data.name as string]: "empty" }));
-        break;
-      case "source_error":
-        setSourceStatuses((prev) => ({ ...prev, [data.name as string]: "error" }));
-        break;
-      case "analysis_start":
-        setAnalysisStarted(true);
-        setAnalysisMessage(data.message as string);
-        break;
-      case "text_chunk":
-        streamRef.current += data.text as string;
-        setStreamText(streamRef.current);
-        break;
-      case "research_complete":
-        setFullReport(streamRef.current);
-        setIsComplete(true);
-        break;
-      case "app_error":
-        setError(data.message as string);
-        break;
-    }
-  }, []);
+  const handleSSEEvent = useCallback(
+    (event: string, data: Record<string, unknown>) => {
+      switch (event) {
+        case "step_start":
+          setSteps((prev) => [
+            ...prev,
+            {
+              id: data.id as string,
+              label: data.label as string,
+              icon: data.icon as string,
+              status: "loading",
+            },
+          ]);
+          break;
+        case "step_done":
+          setSteps((prev) =>
+            prev.map((s) =>
+              s.id === data.id
+                ? { ...s, status: "done" as const, resultCount: data.resultCount as number }
+                : s
+            )
+          );
+          break;
+        case "step_empty":
+          setSteps((prev) =>
+            prev.map((s) => (s.id === data.id ? { ...s, status: "empty" as const } : s))
+          );
+          break;
+        case "step_error":
+          setSteps((prev) =>
+            prev.map((s) => (s.id === data.id ? { ...s, status: "error" as const } : s))
+          );
+          break;
+        case "analysis_start":
+          setAnalysisStarted(true);
+          setAnalysisMessage(data.message as string);
+          break;
+        case "text_chunk":
+          streamRef.current += data.text as string;
+          setStreamText(streamRef.current);
+          break;
+        case "research_complete":
+          setFullReport(streamRef.current);
+          setIsComplete(true);
+          break;
+        case "app_error":
+          setError(data.message as string);
+          break;
+      }
+    },
+    []
+  );
 
   // ── Start Research ──────────────────────────────────────────
 
   async function startResearch() {
-    // Reset state
     setIsRunning(true);
     setStreamText("");
     streamRef.current = "";
@@ -141,8 +154,7 @@ export default function ResearchPage() {
     setCopied(false);
     setSaved(false);
     setCollapsedSections(new Set());
-    setSourceStatuses(Object.fromEntries(SOURCES.map((s) => [s.name, "waiting" as const])));
-    setSourceCounts({});
+    setSteps([]);
 
     abortRef.current = new AbortController();
 
@@ -150,7 +162,10 @@ export default function ResearchPage() {
       const res = await fetch("/api/research/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: query.trim() }),
+        body: JSON.stringify({
+          projectName: projectName.trim(),
+          brief: brief.trim(),
+        }),
         signal: abortRef.current.signal,
       });
 
@@ -169,7 +184,6 @@ export default function ResearchPage() {
 
         buffer += decoder.decode(value, { stream: true });
 
-        // Parse SSE events
         while (buffer.includes("\n\n")) {
           const eventEnd = buffer.indexOf("\n\n");
           const rawEvent = buffer.slice(0, eventEnd);
@@ -186,7 +200,7 @@ export default function ResearchPage() {
             try {
               handleSSEEvent(eventName, JSON.parse(eventData));
             } catch {
-              // skip malformed events
+              // skip malformed
             }
           }
         }
@@ -216,8 +230,8 @@ export default function ResearchPage() {
   async function saveProfile() {
     try {
       const profile = await createBrandProfile({
-        project_name: query.trim(),
-        brand_url: brandUrl.trim(),
+        project_name: projectName.trim() || brief.split("\n")[0].slice(0, 60),
+        brand_url: "",
         pain_points: [],
         desires: [],
         objections: [],
@@ -239,8 +253,8 @@ export default function ResearchPage() {
   }
 
   function loadProfile(profile: BrandProfile) {
-    setQuery(profile.project_name);
-    setBrandUrl(profile.brand_url);
+    setProjectName(profile.project_name);
+    setBrief("");
     setFullReport(profile.raw_report);
     streamRef.current = profile.raw_report;
     setStreamText(profile.raw_report);
@@ -252,8 +266,8 @@ export default function ResearchPage() {
   }
 
   function newResearch() {
-    setQuery("");
-    setBrandUrl("");
+    setProjectName("");
+    setBrief("");
     setStreamText("");
     streamRef.current = "";
     setFullReport("");
@@ -262,8 +276,7 @@ export default function ResearchPage() {
     setError(null);
     setAnalysisStarted(false);
     setAnalysisMessage("");
-    setSourceStatuses({});
-    setSourceCounts({});
+    setSteps([]);
     setCopied(false);
     setSaved(false);
     setCollapsedSections(new Set());
@@ -273,7 +286,6 @@ export default function ResearchPage() {
 
   function parseReportSections(report: string): string[] {
     const sections = report.split(/(?=^## \d+\.)/m).filter((s) => s.trim());
-    // Remove everything before the first ## section (the header)
     const sectionStart = sections.findIndex((s) => /^## \d+\./.test(s));
     return sectionStart >= 0 ? sections.slice(sectionStart) : sections;
   }
@@ -289,10 +301,11 @@ export default function ResearchPage() {
 
   // ── Progress helpers ────────────────────────────────────────
 
-  const completedSources = Object.values(sourceStatuses).filter(
-    (s) => s === "done" || s === "empty" || s === "error"
+  const completedSteps = steps.filter(
+    (s) => s.status === "done" || s.status === "empty" || s.status === "error"
   ).length;
-  const progressPercent = SOURCES.length > 0 ? Math.round((completedSources / SOURCES.length) * 100) : 0;
+  const totalSteps = steps.length;
+  const progressPercent = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
 
   // ── Render ──────────────────────────────────────────────────
 
@@ -309,7 +322,7 @@ export default function ResearchPage() {
               Research & Intel
             </h1>
             <p className="text-sm text-[#6B6B6B]">
-              Scrape customer language from 6 sources — powered by Firecrawl + Claude
+              Paste a client brief — get deep strategic research for the page build
             </p>
           </div>
           {savedProfiles.length > 0 && (
@@ -327,7 +340,7 @@ export default function ResearchPage() {
           <div className="bg-white border border-[#E5E5E5] rounded-lg p-4 mb-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B]">
-                Saved Brand Profiles
+                Saved Research
               </h3>
               <button onClick={() => setShowSaved(false)}>
                 <XMarkIcon className="size-4 text-[#AAAAAA] hover:text-[#0A0A0A]" />
@@ -373,43 +386,44 @@ export default function ResearchPage() {
 
         {/* Input Form */}
         <div className="bg-white border border-[#E5E5E5] rounded-lg p-5 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <div className="md:col-span-2">
-              <label className={labelClass}>Brand / Product / Niche</label>
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && query.trim() && !isRunning) startResearch();
-                }}
-                placeholder="e.g. standing desk, Notion, meditation apps"
-                className={inputClass}
-                disabled={isRunning}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Brand URL (optional)</label>
-              <input
-                type="text"
-                value={brandUrl}
-                onChange={(e) => setBrandUrl(e.target.value)}
-                placeholder="e.g. notion.so"
-                className={inputClass}
-                disabled={isRunning}
-              />
-            </div>
+          {/* Project name */}
+          <div className="mb-4">
+            <label className={labelClass}>Project Name</label>
+            <input
+              type="text"
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
+              placeholder="e.g. AntiApex Defender, Kyoku Knives, Hydra Bottle"
+              className={inputClass}
+              disabled={isRunning}
+            />
+          </div>
+
+          {/* Brief textarea */}
+          <div className="mb-4">
+            <label className={labelClass}>Client Brief</label>
+            <textarea
+              value={brief}
+              onChange={(e) => setBrief(e.target.value)}
+              placeholder={`Paste the full client brief here...\n\nInclude product URLs, goals, target audience, known objections, competitor info — the more detail, the better the research.`}
+              className={`${inputClass} min-h-[200px] resize-y`}
+              rows={10}
+              disabled={isRunning}
+            />
+            <p className="text-[11px] text-[#AAAAAA] mt-1.5">
+              Include product links, goals, objections, and any context — Claude will extract what it needs
+            </p>
           </div>
 
           <div className="flex items-center gap-3">
             {!isRunning ? (
               <button
                 onClick={startResearch}
-                disabled={!query.trim()}
+                disabled={!brief.trim() || brief.trim().length < 20}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#1a1a1a] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <MagnifyingGlassIcon className="size-4" />
-                Start Research
+                Run Research
               </button>
             ) : (
               <button
@@ -430,12 +444,6 @@ export default function ResearchPage() {
                 New Research
               </button>
             )}
-
-            {!isRunning && !isComplete && (
-              <span className="text-[11px] text-[#AAAAAA]">
-                Examples: &quot;meditation apps&quot; · &quot;standing desk&quot; · &quot;project management tools for agencies&quot;
-              </span>
-            )}
           </div>
         </div>
 
@@ -448,14 +456,14 @@ export default function ResearchPage() {
         )}
 
         {/* Progress */}
-        {isRunning && Object.keys(sourceStatuses).length > 0 && (
+        {isRunning && steps.length > 0 && (
           <div className="bg-white border border-[#E5E5E5] rounded-lg p-5 mb-6">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B]">
-                Scraping Sources
+                Researching
               </span>
               <span className="text-[11px] text-[#AAAAAA] tabular-nums">
-                {completedSources} / {SOURCES.length}
+                {completedSteps} / {totalSteps} steps
               </span>
             </div>
 
@@ -467,57 +475,49 @@ export default function ResearchPage() {
               />
             </div>
 
-            {/* Source rows */}
+            {/* Step rows */}
             <div className="space-y-2">
-              {SOURCES.map((source) => {
-                const status = sourceStatuses[source.name] || "waiting";
-                const count = sourceCounts[source.name];
-                return (
-                  <div
-                    key={source.name}
-                    className="flex items-center justify-between py-1.5"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">{source.icon}</span>
-                      <span className="text-sm text-[#6B6B6B]">{source.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`text-[11px] ${
-                          status === "done"
-                            ? "text-emerald-600"
-                            : status === "loading"
-                              ? "text-amber-500"
-                              : status === "empty"
-                                ? "text-[#AAAAAA]"
-                                : status === "error"
-                                  ? "text-red-500"
-                                  : "text-[#CCCCCC]"
-                        }`}
-                      >
-                        {status === "waiting" && "Waiting"}
-                        {status === "loading" && "Searching..."}
-                        {status === "done" && `${count} results`}
-                        {status === "empty" && "No results"}
-                        {status === "error" && "Failed"}
-                      </span>
-                      <span
-                        className={`size-2 rounded-full ${
-                          status === "done"
-                            ? "bg-emerald-500"
-                            : status === "loading"
-                              ? "bg-amber-400 animate-pulse"
-                              : status === "empty"
-                                ? "bg-[#CCCCCC]"
-                                : status === "error"
-                                  ? "bg-red-500"
-                                  : "bg-[#E5E5E5]"
-                        }`}
-                      />
-                    </div>
+              {steps.map((step) => (
+                <div
+                  key={step.id}
+                  className="flex items-center justify-between py-1.5"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">{step.icon}</span>
+                    <span className="text-sm text-[#6B6B6B]">{step.label}</span>
                   </div>
-                );
-              })}
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`text-[11px] ${
+                        step.status === "done"
+                          ? "text-emerald-600"
+                          : step.status === "loading"
+                            ? "text-amber-500"
+                            : step.status === "empty"
+                              ? "text-[#AAAAAA]"
+                              : "text-red-500"
+                      }`}
+                    >
+                      {step.status === "loading" && "Searching..."}
+                      {step.status === "done" &&
+                        `${step.resultCount} result${step.resultCount !== 1 ? "s" : ""}`}
+                      {step.status === "empty" && "No results"}
+                      {step.status === "error" && "Failed"}
+                    </span>
+                    <span
+                      className={`size-2 rounded-full ${
+                        step.status === "done"
+                          ? "bg-emerald-500"
+                          : step.status === "loading"
+                            ? "bg-amber-400 animate-pulse"
+                            : step.status === "empty"
+                              ? "bg-[#CCCCCC]"
+                              : "bg-red-500"
+                      }`}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Analysis status */}
@@ -534,7 +534,10 @@ export default function ResearchPage() {
 
         {/* Stream Display (during analysis) */}
         {analysisStarted && !isComplete && streamText && (
-          <div className="bg-[#1a1a1a] border border-[#333] rounded-lg p-4 mb-6 max-h-72 overflow-y-auto" ref={streamDisplayRef}>
+          <div
+            className="bg-[#1a1a1a] border border-[#333] rounded-lg p-4 mb-6 max-h-72 overflow-y-auto"
+            ref={streamDisplayRef}
+          >
             <pre className="text-xs text-[#CCCCCC] font-mono whitespace-pre-wrap leading-relaxed">
               {streamText}
               <span className="animate-pulse text-white">▊</span>
@@ -557,7 +560,7 @@ export default function ResearchPage() {
               className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#E5E5E5] rounded-md text-xs font-medium text-[#6B6B6B] hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-colors"
             >
               <BookmarkIcon className="size-3.5" />
-              {saved ? "Saved!" : "Save as Brand Profile"}
+              {saved ? "Saved!" : "Save Research"}
             </button>
             <button
               onClick={newResearch}
@@ -580,12 +583,10 @@ export default function ResearchPage() {
               };
               const isCollapsed = collapsedSections.has(idx);
 
-              // Extract section title from first line
               const firstLine = section.split("\n")[0] || "";
               const titleMatch = firstLine.match(/^## \d+\.\s*(.+)/);
               const title = titleMatch ? titleMatch[1] : meta.label;
 
-              // Body is everything after the first line
               const body = section.split("\n").slice(1).join("\n").trim();
 
               return (
@@ -622,8 +623,6 @@ export default function ResearchPage() {
 }
 
 // ── Simple Markdown Renderer ────────────────────────────────────
-// Renders markdown to JSX without external deps — handles the most
-// common patterns from the VOC report output.
 
 function ReportMarkdown({ content }: { content: string }) {
   const lines = content.split("\n");
@@ -633,7 +632,6 @@ function ReportMarkdown({ content }: { content: string }) {
   while (i < lines.length) {
     const line = lines[i];
 
-    // Empty line
     if (!line.trim()) {
       i++;
       continue;
@@ -654,6 +652,52 @@ function ReportMarkdown({ content }: { content: string }) {
         </h3>
       );
       i++;
+      continue;
+    }
+
+    // Table (simple markdown table)
+    if (line.includes("|") && i + 1 < lines.length && /^\|[\s-|]+\|$/.test(lines[i + 1]?.trim() || "")) {
+      const tableLines: string[] = [];
+      while (i < lines.length && lines[i].includes("|")) {
+        tableLines.push(lines[i]);
+        i++;
+      }
+      const headerCells = tableLines[0]
+        .split("|")
+        .map((c) => c.trim())
+        .filter(Boolean);
+      const bodyRows = tableLines.slice(2).map((row) =>
+        row
+          .split("|")
+          .map((c) => c.trim())
+          .filter(Boolean)
+      );
+      elements.push(
+        <div key={`table-${i}`} className="overflow-x-auto my-3">
+          <table className="w-full text-xs border border-[#E5E5E5] rounded">
+            <thead>
+              <tr className="bg-[#F7F7F8]">
+                {headerCells.map((cell, j) => (
+                  <th key={j} className="px-3 py-2 text-left font-semibold text-[#0A0A0A] border-b border-[#E5E5E5]">
+                    {cell}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {bodyRows.map((row, ri) => (
+                <tr key={ri} className="border-b border-[#F0F0F0] last:border-0">
+                  {row.map((cell, ci) => (
+                    <td key={ci} className="px-3 py-2 text-[#3A3A3A]">
+                      {inlineFormat(cell)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
       continue;
     }
 
@@ -717,7 +761,7 @@ function ReportMarkdown({ content }: { content: string }) {
       continue;
     }
 
-    // Bold paragraph (starts with **)
+    // Bold paragraph
     if (line.startsWith("**")) {
       elements.push(
         <p key={i} className="text-xs leading-relaxed my-1.5">
@@ -728,7 +772,7 @@ function ReportMarkdown({ content }: { content: string }) {
       continue;
     }
 
-    // Italic line (starts with *)
+    // Italic line
     if (line.startsWith("*") && !line.startsWith("**")) {
       elements.push(
         <p key={i} className="text-[11px] text-[#AAAAAA] italic my-1">
@@ -751,21 +795,17 @@ function ReportMarkdown({ content }: { content: string }) {
   return <>{elements}</>;
 }
 
-// Inline formatting: **bold**, *italic*, `code`, "[quotes]"
+// Inline formatting: **bold**, *italic*, `code`
 function inlineFormat(text: string): React.ReactNode {
   const parts: React.ReactNode[] = [];
   let remaining = text;
   let keyIdx = 0;
 
   while (remaining.length > 0) {
-    // Bold
     const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
-    // Italic
     const italicMatch = remaining.match(/(?<!\*)\*([^*]+?)\*(?!\*)/);
-    // Code
     const codeMatch = remaining.match(/`([^`]+?)`/);
 
-    // Find earliest match
     const matches = [
       boldMatch ? { type: "bold", match: boldMatch, index: boldMatch.index! } : null,
       italicMatch ? { type: "italic", match: italicMatch, index: italicMatch.index! } : null,

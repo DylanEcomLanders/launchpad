@@ -301,6 +301,21 @@ export function Sidebar() {
               <HomeIcon className="size-4" />
               {!collapsed && <span>Mission Control</span>}
             </Link>
+            <Link
+              href="/team"
+              onClick={() => setMobileOpen(false)}
+              className={`
+                flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm
+                transition-colors duration-150 mt-0.5
+                ${pathname.startsWith("/team")
+                  ? "bg-accent-light text-accent font-medium border-l-2 border-accent"
+                  : "hover:bg-[#F7F7F8] text-[#6B6B6B] border-l-2 border-transparent"
+                }
+              `}
+            >
+              <UserGroupIcon className="size-4" />
+              {!collapsed && <span>Team Tools</span>}
+            </Link>
           </div>
 
           {/* Sections */}

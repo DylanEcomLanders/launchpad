@@ -10,6 +10,7 @@ import {
   Bars3Icon,
   XMarkIcon,
   HomeIcon,
+  ArrowLeftIcon,
 } from "@heroicons/react/24/solid";
 import { Logo } from "@/components/logo";
 
@@ -160,7 +161,14 @@ export function TeamSidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="px-4 py-3 border-t border-[#E5E5E5]">
+        <div className="px-4 py-3 border-t border-[#E5E5E5] space-y-2">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-[11px] font-medium text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
+          >
+            <ArrowLeftIcon className="size-3" />
+            Back to Admin
+          </Link>
           <span className="text-[11px] text-[#AAAAAA]">Team Tools v0.1</span>
         </div>
       </aside>

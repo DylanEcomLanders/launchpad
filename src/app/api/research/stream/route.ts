@@ -3,236 +3,199 @@ import Anthropic from "@anthropic-ai/sdk";
 // ── Config ──────────────────────────────────────────────────────
 
 const MODEL = "claude-sonnet-4-5-20250929";
-const MAX_TOKENS = 8000;
-const FIRECRAWL_TIMEOUT = 30_000;
+const MAX_TOKENS = 16000;
 
-// ── Research Sources ────────────────────────────────────────────
+// ── Helpers ─────────────────────────────────────────────────────
 
-const RESEARCH_SOURCES = [
-  {
-    name: "Amazon Reviews",
-    icon: "📦",
-    query: (q: string) => `${q} customer reviews complaints site:amazon.com`,
-  },
-  {
-    name: "Reddit",
-    icon: "💬",
-    query: (q: string) => `${q} reviews honest experience reddit`,
-  },
-  {
-    name: "Trustpilot",
-    icon: "⭐",
-    query: (q: string) => `${q} reviews site:trustpilot.com`,
-  },
-  {
-    name: "G2",
-    icon: "🏆",
-    query: (q: string) => `${q} reviews site:g2.com`,
-  },
-  {
-    name: "YouTube",
-    icon: "▶️",
-    query: (q: string) => `${q} honest review site:youtube.com`,
-  },
-  {
-    name: "Quora",
-    icon: "❓",
-    query: (q: string) => `${q} site:quora.com`,
-  },
-];
-
-// ── Firecrawl Search ────────────────────────────────────────────
-
-async function firecrawlSearch(
-  searchQuery: string,
-  limit = 5
-): Promise<Array<{ markdown?: string; description?: string }>> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), FIRECRAWL_TIMEOUT);
-
-  try {
-    const response = await fetch("https://api.firecrawl.dev/v1/search", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.FIRECRAWL_API_KEY}`,
-      },
-      body: JSON.stringify({
-        query: searchQuery,
-        limit,
-        scrapeOptions: {
-          formats: ["markdown"],
-          onlyMainContent: true,
-        },
-      }),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(
-        `Firecrawl HTTP ${response.status}: ${errText.slice(0, 300)}`
-      );
-    }
-
-    const json = await response.json();
-    return json.data || [];
-  } catch (err) {
-    clearTimeout(timeoutId);
-    if (err instanceof Error && err.name === "AbortError") {
-      throw new Error("Search timed out after 30s");
-    }
-    throw err;
+function extractGoalHint(brief: string): string {
+  const patterns = [
+    /(?:primary\s*goal|main\s*goal|main\s*objective)[:\s\-—]*([^\n]+)/i,
+    /(?:goal|objective)[:\s\-—]*([^\n]+)/i,
+  ];
+  for (const p of patterns) {
+    const m = brief.match(p);
+    if (m) return m[1].trim().replace(/^["']|["']$/g, "");
   }
+  return "increase conversions";
 }
 
-// ── Analysis Prompt ─────────────────────────────────────────────
+// ── Prompt ──────────────────────────────────────────────────────
 
-const ANALYSIS_PROMPT = `You are a world-class conversion copywriter and Voice of Customer researcher. You've scraped raw customer data from Amazon, Reddit, Trustpilot, G2, YouTube, and Quora about: **{QUERY}**
+function buildPrompt(brief: string, projectName: string, goalHint: string): string {
+  return `You are a senior CRO strategist, conversion researcher, and brand intelligence analyst working for a high-end landing page agency. Your team builds pages that convert cold paid traffic into customers.
 
-YOUR MISSION: Extract VERBATIM customer language. Do NOT summarize, paraphrase, or generalize. Mine exact phrases conversion copywriters can drop directly into headlines, bullets, and CTAs. Generic insights are worthless — raw customer voice is everything.
+You have been given a CLIENT BRIEF for a new project. Your job is to deeply research this product/brand using web search and produce a comprehensive research document that the design and copy team will use to build the landing page.
 
-CRITICAL RULES:
-1. Use EXACT customer quotes — word-for-word, including grammar imperfections and slang
-2. Rank pain points by frequency (how many times they appear across sources)
-3. List each variation of the same complaint — every phrasing variant matters for A/B testing
-4. Preserve emotional intensity — mild frustrations and rage-quits belong in different buckets
-5. The Messaging Hierarchy must use CUSTOMER language, not marketing language
-6. Every section must feel like it was written by a customer, not a brand
+RESEARCH INSTRUCTIONS:
+- Use web search EXTENSIVELY. You should search at least 8-12 times to gather thorough data.
+- Search for: the product page/website, customer reviews on Amazon/Trustpilot/Reddit, competitor products, comparison articles, forum discussions, and industry context.
+- If the brief contains URLs, search for and read those pages.
+- Use EXACT customer quotes wherever possible — verbatim language including imperfections and slang is critical for conversion copy.
+- Every insight must tie back to the brief's stated goals, challenges, and target audience.
+- Do NOT make up quotes or data. Only include information you found through web search.
+- Generic advice is worthless — be specific to THIS product and THIS brief.
 
-RAW SCRAPED DATA ({SOURCE_COUNT} SOURCES):
-{DATA}
+═══════════════════════════════════════
+THE CLIENT BRIEF:
+═══════════════════════════════════════
+${brief}
+═══════════════════════════════════════
+
+After completing your research, write the report in this EXACT structure. Be thorough, specific, and actionable.
+
+# STRATEGIC RESEARCH REPORT: ${projectName}
 
 ---
 
-Write the complete VOC Report now in this exact structure:
+## 1. PRODUCT DEEP DIVE
+*What are we selling, to whom, and why should they care?*
 
-# VOICE OF CUSTOMER REPORT: {QUERY}
-*Scraped from Amazon, Reddit, Trustpilot, G2, YouTube, and Quora*
+**What is this product/service?**
+[Clear explanation based on product page + brief — not generic marketing fluff]
+
+**Who is the ideal customer?**
+- Demographics: [age, gender, income, location — be specific]
+- Psychographics: [values, lifestyle, motivations, fears]
+- Buying behavior: [how they shop for this, what triggers purchase]
+
+**Core value proposition:**
+[Single powerful sentence]
+
+**Key claims (evidence-backed only):**
+- [claim + proof/source]
+[Minimum 5]
+
+**Unique differentiators vs alternatives:**
+- [specific, not generic]
+[Minimum 3]
 
 ---
 
-## 1. TOP PAIN POINTS
-*Ranked HIGH/MEDIUM/LOW by frequency across all sources*
+## 2. CUSTOMER VOICE & LANGUAGE BANK
+*Verbatim phrases for the copywriter — DO NOT paraphrase*
+
+**Top pain points (ranked by frequency across sources):**
 
 **[Pain Point Name]** — Frequency: HIGH/MEDIUM/LOW
-What customers say verbatim:
+Verbatim quotes:
 - "[exact customer quote]"
 - "[exact customer quote]"
 - "[exact customer quote]"
-Core issue: [one plain-language sentence]
+Copy angle: [how to use this on the page]
 
 [Minimum 5 distinct pain points]
 
----
+**Desired outcomes — what they want:**
+- "[exact quote about what they hope to achieve]"
+[Minimum 8 quotes]
 
-## 2. CUSTOMER LANGUAGE BANK
-*These exact phrases belong in your copy — do not rewrite them*
+**Before / After language:**
+Before: "[frustration in their words]"
+After: "[desired result in their words]"
+[Minimum 4 pairs]
 
-**Before state — how they describe the problem:**
-- "[exact phrase]"
-- "[exact phrase]"
-- "[exact phrase]"
-- "[exact phrase]"
-- "[exact phrase]"
+**Emotional triggers — raw feelings:**
+- "[exact emotional phrase]"
+[Minimum 6]
 
-**After state — how they describe results/success:**
-- "[exact phrase]"
-- "[exact phrase]"
-- "[exact phrase]"
-- "[exact phrase]"
-
-**Emotional language — feelings, desires, and fears:**
-- "[exact phrase]"
-- "[exact phrase]"
-- "[exact phrase]"
-- "[exact phrase]"
-
-**Category/product language — what they call things:**
-- "[exact phrase]"
-- "[exact phrase]"
-- "[exact phrase]"
+**Category language — how they refer to this type of product:**
+- "[their words for it]"
 
 ---
 
-## 3. PURCHASE TRIGGERS
-*What finally pushed people to buy — verbatim decision moments*
+## 3. COMPETITOR & MARKET INTEL
+*Where to position and what gaps to exploit*
 
-**[Trigger Name]**
-> "[verbatim customer quote capturing the exact decision moment]"
-Copy angle: [how to weaponize this in marketing]
+**Direct competitors:**
+| Competitor | Positioning | Price Point | Key Message |
+|-----------|-------------|-------------|-------------|
+| [name] | [how they position] | [price] | [main angle] |
 
-[Minimum 4 distinct triggers]
+**Messaging gaps — what NO competitor is saying:**
+- [gap + why it's an opportunity]
+[Minimum 3]
 
----
+**What customers say about alternatives (verbatim complaints):**
+- "[exact quote about competitor/alternative]"
+[Minimum 5]
 
-## 4. OBJECTIONS & HESITATIONS
-*Why people didn't buy or almost didn't*
-
-**[Objection]** — Frequency: HIGH/MEDIUM/LOW
-> "[verbatim customer language expressing this hesitation]"
-Counter-copy: [exact language to dissolve this objection]
-
-[Minimum 4 distinct objections]
-
----
-
-## 5. COMPETITOR WEAKNESSES
-*Exact complaints about alternatives — your positioning goldmine*
-
-**[Competitor or status quo weakness]**
-> "[verbatim customer complaints about this gap]"
-Positioning angle: [the market position you can own]
-
-[Minimum 3 distinct weaknesses]
+**Positioning recommendation:**
+[Where this brand should sit in the market and why — specific to the brief's goals]
 
 ---
 
-## 6. MESSAGING HIERARCHY
-*Ready-to-deploy copy framework — all in customer language*
+## 4. OBJECTION HANDLING FRAMEWORK
+*Every barrier to purchase with a specific counter-strategy*
 
-**PRIMARY HERO MESSAGE**
-[Single most powerful statement — customer language, not marketing speak]
+Include objections from the brief PLUS newly discovered ones:
 
-**HEADLINE OPTIONS**
-- Pain-focused: [headline using customer language]
-- Outcome-focused: [headline using customer language]
-- Pattern interrupt: [unexpected angle from the data]
+**[Objection]** — Severity: HIGH/MEDIUM/LOW
+What they say: "[verbatim customer language]"
+Counter-message: [exact copy to overcome this]
+Proof to deploy: [testimonial, stat, guarantee, demo]
+Where on page: [hero, social proof, FAQ, etc.]
 
-**5 PROOF POINTS**
-1. [proof point grounded in customer language]
-2. [proof point grounded in customer language]
-3. [proof point grounded in customer language]
-4. [proof point grounded in customer language]
-5. [proof point grounded in customer language]
+[Minimum 6 objections]
 
-**OBJECTION HANDLERS**
-- "Worried about [objection]?" → [exact copy to neutralize it]
-- "Not sure about [objection]?" → [exact copy to neutralize it]
-- "What about [objection]?" → [exact copy to neutralize it]
+---
 
-**CTA LANGUAGE**
-Power words from the data: [comma-separated list]
-Recommended CTAs:
-- [CTA option 1]
-- [CTA option 2]
-- [CTA option 3]
+## 5. MESSAGING DIRECTION
+*Copy strategy tied to the primary goal: ${goalHint}*
 
-**THE EMOTIONAL ARC**
-From: "[their exact words describing their before state]"
-To: "[their exact words describing their desired after state]"`;
+**Recommended primary angle:**
+[One clear direction with rationale — why this angle for this audience and goal]
+
+**Hero headline options:**
+- Pain-led: [headline using customer language]
+- Outcome-led: [headline using customer language]
+- Social proof-led: [headline using customer language]
+- Pattern interrupt: [unexpected angle from the research]
+
+**Key proof points for the page:**
+1. [specific proof point — not generic]
+2. [specific proof point]
+3. [specific proof point]
+4. [specific proof point]
+5. [specific proof point]
+
+**CTA recommendations:**
+- Primary: [text] — Why: [reasoning]
+- Secondary: [text] — Why: [reasoning]
+
+**Tone & voice:**
+[Specific guidance for this brand — formal/casual, technical/simple, urgent/measured]
+
+**A/B test angles:**
+- Angle A: [description + when to use]
+- Angle B: [description + when to use]
+
+---
+
+## 6. CRO & PAGE STRUCTURE NOTES
+*Recommendations for the page build, informed by product type + traffic source*
+
+**Recommended page flow:**
+1. [Section name] — Purpose: [why this section here]
+2. [Section name] — Purpose: [why]
+3. [Section name] — Purpose: [why]
+[Full page flow, 8-12 sections]
+
+**Must-have elements:**
+- [element + why it's critical for this product/audience]
+
+**Elements to AVOID:**
+- [element + why it would hurt conversion for this case]
+
+**Mobile considerations:**
+- [specific to traffic source and audience behavior]
+
+**Trust signals:**
+- [specific trust elements needed for this product/industry]`;
+}
 
 // ── Route Handler ───────────────────────────────────────────────
 
 export async function POST(request: Request) {
-  if (!process.env.FIRECRAWL_API_KEY) {
-    return new Response(
-      JSON.stringify({ error: "FIRECRAWL_API_KEY not configured" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-  }
   if (!process.env.ANTHROPIC_API_KEY) {
     return new Response(
       JSON.stringify({ error: "ANTHROPIC_API_KEY not configured" }),
@@ -240,7 +203,7 @@ export async function POST(request: Request) {
     );
   }
 
-  let body: { query?: string };
+  let body: { projectName?: string; brief?: string };
   try {
     body = await request.json();
   } catch {
@@ -250,13 +213,18 @@ export async function POST(request: Request) {
     );
   }
 
-  const query = (body.query || "").trim();
-  if (!query || query.length < 2) {
+  const projectName = (body.projectName || "").trim();
+  const brief = (body.brief || "").trim();
+
+  if (!brief || brief.length < 20) {
     return new Response(
-      JSON.stringify({ error: "Please provide a valid search query" }),
+      JSON.stringify({ error: "Please paste a client brief (at least a few lines)" }),
       { status: 400, headers: { "Content-Type": "application/json" } }
     );
   }
+
+  const goalHint = extractGoalHint(brief);
+  const displayName = projectName || brief.split("\n")[0].slice(0, 60);
 
   const encoder = new TextEncoder();
 
@@ -267,77 +235,91 @@ export async function POST(request: Request) {
         try {
           controller.enqueue(encoder.encode(payload));
         } catch {
-          // stream already closed
+          // stream closed
         }
       }
 
       try {
-        const collectedContent: { source: string; content: string }[] = [];
-
-        // Scrape each source sequentially to stay within rate limits
-        for (const source of RESEARCH_SOURCES) {
-          emit("source_start", { name: source.name, icon: source.icon });
-
-          try {
-            const results = await firecrawlSearch(source.query(query), 5);
-
-            const content = results
-              .map((r) =>
-                [r.markdown, r.description].filter(Boolean).join("\n").trim()
-              )
-              .filter((c) => c.length > 80)
-              .slice(0, 5)
-              .map((c) => c.slice(0, 4000))
-              .join("\n\n--- next result ---\n\n");
-
-            if (content) {
-              collectedContent.push({ source: source.name, content });
-              emit("source_done", {
-                name: source.name,
-                count: results.length,
-              });
-            } else {
-              emit("source_empty", { name: source.name });
-            }
-          } catch (err) {
-            emit("source_error", {
-              name: source.name,
-              error: err instanceof Error ? err.message : "Unknown error",
-            });
-          }
-        }
-
-        if (collectedContent.length === 0) {
-          emit("app_error", {
-            message:
-              "No content could be retrieved from any source. Try a more specific product or brand name.",
-          });
-          controller.close();
-          return;
-        }
-
         emit("analysis_start", {
-          message: `Data collected from ${collectedContent.length} source${collectedContent.length !== 1 ? "s" : ""}. Running Claude AI analysis...`,
-          sourceCount: collectedContent.length,
+          message: "Starting deep research with web search...",
+          sourceCount: 0,
         });
 
-        // Build prompt
-        const dataText = collectedContent
-          .map(({ source, content }) => `### ${source}\n\n${content}`)
-          .join("\n\n" + "═".repeat(50) + "\n\n");
-
-        const prompt = ANALYSIS_PROMPT.replace(/\{QUERY\}/g, query)
-          .replace("{SOURCE_COUNT}", String(collectedContent.length))
-          .replace("{DATA}", dataText);
-
-        // Stream Claude response
         const anthropic = new Anthropic();
+        const prompt = buildPrompt(brief, displayName, goalHint);
+
+        let searchIdx = 0;
+        let inputJsonBuf = "";
+        // Track block types by index so we know what each content_block_stop refers to
+        const blockTypes: Record<number, string> = {};
+
         const claudeStream = anthropic.messages.stream({
           model: MODEL,
           max_tokens: MAX_TOKENS,
+          tools: [
+            {
+              type: "web_search_20250305",
+              name: "web_search",
+              max_uses: 15,
+            },
+          ],
           messages: [{ role: "user", content: prompt }],
         });
 
+        // Track web search progress via raw stream events
+        claudeStream.on("streamEvent", (rawEvent) => {
+          const event = rawEvent as unknown as {
+            type: string;
+            index?: number;
+            content_block?: { type: string; name?: string };
+            delta?: { type: string; partial_json?: string };
+          };
+
+          switch (event.type) {
+            case "content_block_start": {
+              const blockType = event.content_block?.type || "";
+              if (event.index !== undefined) blockTypes[event.index] = blockType;
+
+              if (blockType === "server_tool_use") {
+                searchIdx++;
+                inputJsonBuf = "";
+              }
+              if (blockType === "web_search_tool_result") {
+                // Results arrived — mark previous search as done
+                emit("step_done", { id: `search-${searchIdx}`, resultCount: 0 });
+              }
+              break;
+            }
+            case "content_block_delta": {
+              if (event.delta?.type === "input_json_delta") {
+                inputJsonBuf += event.delta.partial_json || "";
+              }
+              break;
+            }
+            case "content_block_stop": {
+              const blockType = event.index !== undefined ? blockTypes[event.index] : "";
+              if (blockType === "server_tool_use" && inputJsonBuf) {
+                let query = `Web search #${searchIdx}`;
+                try {
+                  const input = JSON.parse(inputJsonBuf);
+                  if (input.query) query = input.query;
+                } catch {
+                  // use fallback label
+                }
+                emit("step_start", {
+                  id: `search-${searchIdx}`,
+                  label: query,
+                  icon: "🔍",
+                });
+                inputJsonBuf = "";
+              }
+              if (event.index !== undefined) delete blockTypes[event.index];
+              break;
+            }
+          }
+        });
+
+        // Stream text output (the report)
         claudeStream.on("text", (text) => {
           emit("text_chunk", { text });
         });
@@ -346,8 +328,7 @@ export async function POST(request: Request) {
 
         emit("research_complete", { message: "Research complete" });
       } catch (err) {
-        const msg =
-          err instanceof Error ? err.message : "An unexpected error occurred.";
+        const msg = err instanceof Error ? err.message : "An unexpected error occurred.";
         emit("app_error", { message: msg });
       }
 
