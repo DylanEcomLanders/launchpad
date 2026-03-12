@@ -126,11 +126,13 @@ export async function POST(request: Request) {
       plan: {
         company_id: companyId,
         initial_price: totalGBP,
+        renewal_price: 0,
         plan_type: "one_time",
         currency: "gbp",
         title: `Proposal — ${clientName}`.slice(0, 30),
         description: description.slice(0, 500),
         visibility: "hidden",
+        release_method: "buy_now",
       },
       mode: "payment",
       metadata: {
@@ -164,9 +166,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ invoiceUrl: purchaseUrl });
   } catch (err) {
-    console.error("[checkout] Whop API request failed:", err);
+    const errMsg = err instanceof Error ? err.message : String(err);
+    console.error("[checkout] Whop API request failed:", errMsg, err);
     return NextResponse.json(
-      { error: "Failed to create checkout" },
+      { error: "Failed to create checkout", detail: errMsg },
       { status: 502 }
     );
   }
