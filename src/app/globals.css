@@ -63,6 +63,15 @@ h1, h2, h3, h4, h5, h6 {
   animation: fadeIn 0.25s ease-out;
 }
 
+/* Hide scrollbar but keep scrolling */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Ensure light theme only */
 @media (prefers-color-scheme: dark) {
   :root {

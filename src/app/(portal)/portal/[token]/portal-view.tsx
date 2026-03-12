@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type {
   PortalData,
   PortalPhase,
@@ -92,6 +92,60 @@ function phaseStatusIcon(status: PhaseStatus, size: "sm" | "md" = "md") {
   }
 }
 
+/* ── UK Time Banner ── */
+
+function UKTimeBanner() {
+  const [ukTime, setUkTime] = useState("");
+  const [isOnline, setIsOnline] = useState(false);
+
+  useEffect(() => {
+    function update() {
+      const now = new Date();
+      const formatter = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Europe/London",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+      const timeStr = formatter.format(now);
+      setUkTime(timeStr);
+
+      const hourFormatter = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Europe/London",
+        hour: "numeric",
+        hour12: false,
+      });
+      const hour = parseInt(hourFormatter.format(now), 10);
+      const day = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Europe/London",
+        weekday: "short",
+      }).format(now);
+      const isWeekday = !["Sat", "Sun"].includes(day);
+      setIsOnline(isWeekday && hour >= 9 && hour < 18);
+    }
+
+    update();
+    const timer = setInterval(update, 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  if (!ukTime) return null;
+
+  return (
+    <div className="flex items-center gap-2 mb-4">
+      <span
+        className={`size-2 rounded-full shrink-0 ${
+          isOnline ? "bg-emerald-400" : "bg-[#CCCCCC]"
+        }`}
+      />
+      <span className="text-[11px] text-[#6B6B6B]">
+        Our team works UK hours (GMT/BST 9am&ndash;6pm) &middot;{" "}
+        {isOnline ? "Currently online" : "Currently offline"} &middot; UK time: {ukTime}
+      </span>
+    </div>
+  );
+}
+
 /* ── Main Component ── */
 
 export function PortalView({
@@ -163,6 +217,7 @@ export function PortalView({
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#AAAAAA] mb-3">
             Client Portal
           </p>
+          <UKTimeBanner />
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">
             {portal.client_name}
           </h1>
@@ -171,49 +226,60 @@ export function PortalView({
           </p>
 
           {/* Progress track with phase labels */}
-          {portal.phases.length > 0 && (
-            <div className="mt-8">
-              <div className="flex gap-1">
-                {portal.phases.map((phase) => (
-                  <div key={phase.id || phase.name} className="flex-1 min-w-0">
-                    <div
-                      className={`h-1 rounded-full mb-2 ${
-                        phase.status === "complete"
-                          ? "bg-emerald-400"
-                          : phase.status === "in-progress"
-                          ? "bg-[#0A0A0A]"
-                          : "bg-[#E5E5E5]"
-                      }`}
-                    />
-                    <p
-                      className={`text-[10px] font-medium truncate ${
-                        phase.status === "in-progress"
-                          ? "text-[#0A0A0A]"
-                          : phase.status === "complete"
-                          ? "text-[#999999]"
-                          : "text-[#CCCCCC]"
-                      }`}
-                    >
-                      {phase.name}
-                    </p>
-                  </div>
-                ))}
+          {portal.phases.length > 0 && (() => {
+            const currentIdx = portal.phases.findIndex((p) => p.status === "in-progress");
+            const completedCount = portal.phases.filter((p) => p.status === "complete").length;
+            const currentPhase = currentIdx >= 0 ? portal.phases[currentIdx] : null;
+            const phaseNum = currentIdx >= 0 ? currentIdx + 1 : completedCount;
+
+            return (
+              <div className="mt-8">
+                <div className="flex gap-1">
+                  {portal.phases.map((phase) => (
+                    <div key={phase.id || phase.name} className="flex-1 min-w-0">
+                      <div
+                        className={`h-1.5 rounded-full mb-2 ${
+                          phase.status === "complete"
+                            ? "bg-emerald-400"
+                            : phase.status === "in-progress"
+                            ? "bg-[#0A0A0A]"
+                            : "bg-[#E5E5E5]"
+                        }`}
+                      />
+                      <p
+                        className={`text-[10px] md:text-[11px] font-medium truncate ${
+                          phase.status === "in-progress"
+                            ? "text-[#0A0A0A]"
+                            : phase.status === "complete"
+                            ? "text-[#999999]"
+                            : "text-[#CCCCCC]"
+                        }`}
+                      >
+                        {phase.name}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[11px] text-[#999999] mt-2">
+                  Phase {phaseNum} of {portal.phases.length}
+                  {currentPhase ? ` \u2014 ${currentPhase.name}` : completedCount === portal.phases.length ? " \u2014 Complete" : ""}
+                </p>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
       </div>
 
       {/* ── Content ── */}
       <div className="max-w-3xl mx-auto px-6 md:px-12 py-10 md:py-14">
         {/* Tabs */}
-        <div className="mb-10 -mx-6 px-6 md:mx-0 md:px-0 overflow-x-auto">
+        <div className="mb-10 -mx-6 px-6 md:mx-0 md:px-0 overflow-x-auto scrollbar-hide">
           <div className="inline-flex bg-[#F5F5F5] rounded-md p-1 gap-0.5 min-w-max">
             {tabs.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`px-3.5 md:px-5 py-2 text-sm font-medium rounded transition-all duration-200 whitespace-nowrap ${
+                className={`px-3 md:px-5 py-2 text-xs md:text-sm font-medium rounded transition-all duration-200 whitespace-nowrap ${
                   activeTab === tab.key
                     ? "bg-accent text-white shadow-sm"
                     : "text-[#6B6B6B] hover:text-[#0A0A0A]"
@@ -277,10 +343,43 @@ function OverviewTab({
 }) {
   const currentPhase = portal.phases.find((p) => p.status === "in-progress");
 
+  // Check for any pending approvals
+  const hasPendingApproval = portal.phases.some(
+    (p) => (p.status === "complete" || p.status === "in-progress") && !isApproved("phase", p.id)
+  );
+
   return (
     <div className="space-y-12">
-      {/* Status + Next Touchpoint */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      {/* Welcome Section */}
+      <div className="bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg p-6">
+        <h3 className="text-sm font-semibold mb-2">Welcome to your project portal</h3>
+        <p className="text-xs text-[#6B6B6B] leading-relaxed">
+          This is your central hub for tracking project progress. Use the tabs above to view your
+          timeline, scope, and any updates from the team. You can approve deliverables and phases
+          directly from here. If you have questions, reply to any update email or reach out to your
+          project manager.
+        </p>
+      </div>
+
+      {/* Next Touchpoint (prominent) + Current Status */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+        <div className={`border rounded-lg p-6 ${hasPendingApproval ? "border-[#0A0A0A] bg-white" : "border-[#E5E5E5] bg-[#FAFAFA]"}`}>
+          {hasPendingApproval && (
+            <span className="inline-block px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-[#0A0A0A] text-white rounded-full mb-3">
+              Your Next Step
+            </span>
+          )}
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-3">
+            Next Touchpoint
+          </p>
+          <p className="text-xl font-bold tracking-tight mb-1">
+            {portal.next_touchpoint?.date || "\u2014"}
+          </p>
+          <p className="text-sm text-[#6B6B6B] leading-relaxed">
+            {portal.next_touchpoint?.description || "No touchpoint scheduled"}
+          </p>
+        </div>
+
         <div className="border border-[#E5E5E5] rounded-lg p-6">
           <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-3">
             Current Status
@@ -293,18 +392,6 @@ function OverviewTab({
               {currentPhase.description}
             </p>
           )}
-        </div>
-
-        <div className="border border-[#E5E5E5] rounded-lg p-6 bg-[#FAFAFA]">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-3">
-            Next Touchpoint
-          </p>
-          <p className="text-xl font-bold tracking-tight mb-1">
-            {portal.next_touchpoint?.date || "—"}
-          </p>
-          <p className="text-sm text-[#6B6B6B] leading-relaxed">
-            {portal.next_touchpoint?.description || "No touchpoint scheduled"}
-          </p>
         </div>
       </div>
 
