@@ -151,7 +151,7 @@ export async function POST(request: Request) {
           retainer_build_discount: `${Math.round(buildDiscount * 100)}%`,
         }),
       },
-      redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || ""}/proposal/${proposalToken}?paid=1`,
+      redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || "https://launchpad-peach.vercel.app"}/proposal/${proposalToken}?paid=1`,
     });
 
     const purchaseUrl = checkoutConfig.purchase_url;
