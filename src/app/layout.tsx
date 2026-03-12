@@ -30,6 +30,12 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "Launchpad — Ecomlanders",
   description: "Internal tools for the Ecomlanders team",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Launchpad",
+  },
 };
 
 export default function RootLayout({
@@ -39,8 +45,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`light ${inter.variable} ${articulatCF.variable}`}>
+      <head>
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+      </head>
       <body className="font-body antialiased bg-[#FAFAFA] text-[#0A0A0A]">
         {children}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if("serviceWorker"in navigator)navigator.serviceWorker.register("/sw.js")`,
+          }}
+        />
       </body>
     </html>
   );

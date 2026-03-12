@@ -133,6 +133,7 @@ export async function POST(request: Request) {
         description: description.slice(0, 500),
         visibility: "hidden",
         release_method: "buy_now",
+        override_tax_type: "inclusive",
       },
       mode: "payment",
       metadata: {
