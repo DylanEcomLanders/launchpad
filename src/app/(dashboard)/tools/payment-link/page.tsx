@@ -1,0 +1,191 @@
+"use client";
+
+import { useState } from "react";
+import { ClipboardDocumentIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { DecorativeBlocks } from "@/components/decorative-blocks";
+import { inputClass, textareaClass, labelClass } from "@/lib/form-styles";
+
+export default function PaymentLinkPage() {
+  const [clientName, setClientName] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
+  const [amount, setAmount] = useState("");
+  const [description, setDescription] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const canSubmit = clientName.trim() && amount && parseFloat(amount) > 0;
+
+  async function handleGenerate() {
+    setLoading(true);
+    setError(null);
+    setPaymentUrl(null);
+
+    try {
+      const res = await fetch("/api/payment-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientName: clientName.trim(),
+          clientEmail: clientEmail.trim() || undefined,
+          amount: parseFloat(amount),
+          description: description.trim() || undefined,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Failed to create payment link");
+        return;
+      }
+
+      setPaymentUrl(data.paymentUrl);
+    } catch {
+      setError("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleCopy() {
+    if (!paymentUrl) return;
+    navigator.clipboard.writeText(paymentUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  function handleReset() {
+    setClientName("");
+    setClientEmail("");
+    setAmount("");
+    setDescription("");
+    setPaymentUrl(null);
+    setError(null);
+  }
+
+  return (
+    <div className="relative min-h-screen">
+      <DecorativeBlocks />
+      <div className="relative z-10 max-w-lg mx-auto px-6 md:px-12 py-16 md:py-24">
+        <div className="mb-12">
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
+            Payment Link
+          </h1>
+          <p className="text-[#6B6B6B]">
+            Generate a checkout link to send to a client
+          </p>
+        </div>
+
+        <div className="space-y-6">
+          <div>
+            <label className={labelClass}>Client Name *</label>
+            <input
+              type="text"
+              className={inputClass}
+              placeholder="e.g. Acme Store"
+              value={clientName}
+              onChange={(e) => setClientName(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label className={labelClass}>Client Email</label>
+            <input
+              type="email"
+              className={inputClass}
+              placeholder="e.g. client@example.com"
+              value={clientEmail}
+              onChange={(e) => setClientEmail(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label className={labelClass}>Amount (GBP) *</label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#AAAAAA]">
+                £
+              </span>
+              <input
+                type="number"
+                min="0.50"
+                step="0.01"
+                className={`${inputClass} pl-7`}
+                placeholder="0.00"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className={labelClass}>Description</label>
+            <textarea
+              className={textareaClass}
+              rows={3}
+              placeholder="What's this payment for?"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+
+          {error && (
+            <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+              {error}
+            </div>
+          )}
+
+          {paymentUrl ? (
+            <div className="space-y-4">
+              <div className="px-4 py-3 bg-[#F0FDF4] border border-[#BBF7D0] rounded-lg">
+                <p className="text-sm font-medium text-[#15803D] mb-2">
+                  Payment link created
+                </p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={paymentUrl}
+                    className="flex-1 px-3 py-2 bg-white border border-[#E5E5E5] rounded-md text-sm text-[#6B6B6B] truncate"
+                  />
+                  <button
+                    onClick={handleCopy}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#1A1A1A] transition-colors shrink-0"
+                  >
+                    {copied ? (
+                      <>
+                        <CheckIcon className="size-4" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <ClipboardDocumentIcon className="size-4" />
+                        Copy
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                onClick={handleReset}
+                className="w-full py-2.5 text-sm font-medium text-[#6B6B6B] border border-[#E5E5E5] rounded-md hover:bg-[#F5F5F5] transition-colors"
+              >
+                Create another
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleGenerate}
+              disabled={!canSubmit || loading}
+              className="w-full py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#1A1A1A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {loading ? "Creating…" : "Generate Payment Link"}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

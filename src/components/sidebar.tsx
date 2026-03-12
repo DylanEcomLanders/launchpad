@@ -32,6 +32,7 @@ import {
   SparklesIcon,
   BanknotesIcon,
   ChatBubbleLeftEllipsisIcon,
+  LinkIcon,
 } from "@heroicons/react/24/solid";
 import { Logo, LogoMark } from "@/components/logo";
 
@@ -136,10 +137,16 @@ const navSections: NavSection[] = [
         step: 2,
       },
       {
+        label: "Payment Link",
+        href: "/tools/payment-link",
+        icon: <LinkIcon className="size-4" />,
+        step: 3,
+      },
+      {
         label: "Expenses",
         href: "/tools/expenses",
         icon: <WalletIcon className="size-4" />,
-        step: 3,
+        step: 4,
       },
     ],
   },
