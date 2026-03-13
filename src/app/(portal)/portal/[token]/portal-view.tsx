@@ -1040,29 +1040,24 @@ function DesignsTab({
                           </span>
                         )}
                       </div>
-                      {/* Open in Figma to comment */}
-                      <a
-                        href={version.figma_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded-md bg-[#F5F5F5] text-[#6B6B6B] hover:bg-[#EBEBEB] transition-colors"
-                      >
-                        <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-                        </svg>
-                        Comment in Figma
-                      </a>
                     </div>
 
-                    {/* Figma embed — large viewport */}
+                    {/* Figma embed — large viewport with native commenting */}
                     {embedUrl && (
-                      <div className="relative w-full rounded-lg overflow-hidden border border-[#E5E5E5] mb-4" style={{ paddingBottom: "75%" }}>
-                        <iframe
-                          src={embedUrl}
-                          className="absolute inset-0 w-full h-full"
-                          allowFullScreen
-                        />
-                      </div>
+                      <>
+                        <div className="relative w-full rounded-xl overflow-hidden border border-[#E5E5E5] mb-2" style={{ paddingBottom: "80%" }}>
+                          <iframe
+                            src={embedUrl}
+                            className="absolute inset-0 w-full h-full"
+                            allowFullScreen
+                          />
+                        </div>
+                        {isLatest && review.status !== "approved" && (
+                          <p className="text-[11px] text-[#BBBBBB] mb-3">
+                            Use the <span className="inline-flex align-text-bottom mx-0.5"><svg className="size-3.5 text-[#AAAAAA]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg></span> icon in the toolbar to leave comments directly on the design
+                          </p>
+                        )}
+                      </>
                     )}
 
                     {/* Version notes */}
