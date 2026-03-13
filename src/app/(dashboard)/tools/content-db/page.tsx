@@ -16,6 +16,8 @@ import type {
   ContentCategory,
 } from "@/lib/content-database/types";
 import { contentPlatforms, contentCategories } from "@/lib/content-database/types";
+import { socialAccounts } from "@/lib/content-database/accounts";
+import type { ExtractedPost } from "@/app/api/content-sync/route";
 import {
   PlusIcon,
   XMarkIcon,
@@ -23,11 +25,14 @@ import {
   PencilSquareIcon,
   StarIcon,
   ArrowPathIcon,
+  ArrowDownTrayIcon,
   EyeIcon,
   HandThumbUpIcon,
   CursorArrowRaysIcon,
   ChartBarIcon,
   LinkIcon,
+  ExclamationTriangleIcon,
+  CheckCircleIcon,
 } from "@heroicons/react/24/solid";
 import { StarIcon as StarOutline } from "@heroicons/react/24/outline";
 
@@ -83,6 +88,16 @@ export default function ContentDatabasePage() {
   const [form, setForm] = useState<ContentEntryInsert>(defaultInsert);
   const [tagInput, setTagInput] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Import
+  const [importOpen, setImportOpen] = useState(false);
+  const [importAccount, setImportAccount] = useState(socialAccounts[0]?.id || "");
+  const [importPlatform, setImportPlatform] = useState<ContentPlatform>("twitter");
+  const [syncing, setSyncing] = useState(false);
+  const [syncError, setSyncError] = useState("");
+  const [syncResults, setSyncResults] = useState<ExtractedPost[] | null>(null);
+  const [importingPosts, setImportingPosts] = useState(false);
+  const [importDone, setImportDone] = useState<{ imported: number; skipped: number } | null>(null);
 
   /* ── Fetch ─────────────────────────────────────────────────────── */
 
@@ -257,6 +272,88 @@ export default function ContentDatabasePage() {
 
   const hasFilters = platformFilter !== "all" || categoryFilter !== "all" || winnersOnly;
 
+  /* ── Import handlers ─────────────────────────────────────────── */
+
+  function openImport() {
+    setImportOpen(true);
+    setSyncResults(null);
+    setSyncError("");
+    setImportDone(null);
+  }
+
+  async function handleSync() {
+    setSyncing(true);
+    setSyncError("");
+    setSyncResults(null);
+    setImportDone(null);
+
+    try {
+      const res = await fetch("/api/content-sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accountId: importAccount, platform: importPlatform }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        setSyncError(data.error || `Sync failed (${res.status})`);
+        return;
+      }
+
+      setSyncResults(data.posts || []);
+    } catch (err) {
+      setSyncError(err instanceof Error ? err.message : "Network error");
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  // Dedup: find which synced posts are new
+  const existingUrls = useMemo(
+    () => new Set(entries.map((e) => e.post_url).filter(Boolean)),
+    [entries]
+  );
+
+  const newPosts = useMemo(
+    () =>
+      syncResults
+        ? syncResults.filter((p) => p.post_url && !existingUrls.has(p.post_url))
+        : [],
+    [syncResults, existingUrls]
+  );
+
+  const skippedCount = syncResults ? syncResults.length - newPosts.length : 0;
+
+  async function handleImportPosts() {
+    setImportingPosts(true);
+    let imported = 0;
+
+    for (const post of newPosts) {
+      try {
+        await createContentEntry({
+          platform: importPlatform,
+          category: post.category || "other",
+          content: post.content,
+          post_url: post.post_url,
+          post_date: post.post_date || new Date().toISOString().slice(0, 10),
+          impressions: 0,
+          engagements: (post.likes || 0) + (post.retweets || 0) + (post.replies || 0),
+          clicks: 0,
+          is_winner: false,
+          tags: ["auto-imported"],
+          notes: `Likes: ${post.likes || 0}, Retweets: ${post.retweets || 0}, Replies: ${post.replies || 0}`,
+        });
+        imported++;
+      } catch {
+        // continue with remaining posts
+      }
+    }
+
+    setImportDone({ imported, skipped: skippedCount });
+    await fetchEntries();
+    setImportingPosts(false);
+  }
+
   /* ── Render ────────────────────────────────────────────────────── */
 
   return (
@@ -274,13 +371,22 @@ export default function ContentDatabasePage() {
               Track social posts, log performance, tag winners, find what works.
             </p>
           </div>
-          <button
-            onClick={openAdd}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#1A1A1A] transition-colors"
-          >
-            <PlusIcon className="size-4" />
-            Add Post
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={openImport}
+              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-[#E5E5E5] text-sm font-medium rounded-md hover:bg-[#F5F5F5] transition-colors"
+            >
+              <ArrowDownTrayIcon className="size-4 text-[#6B6B6B]" />
+              Import
+            </button>
+            <button
+              onClick={openAdd}
+              className="flex items-center gap-2 px-4 py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#1A1A1A] transition-colors"
+            >
+              <PlusIcon className="size-4" />
+              Add Post
+            </button>
+          </div>
         </div>
 
         {/* Stats Bar */}
@@ -561,6 +667,187 @@ export default function ContentDatabasePage() {
           </div>
         )}
       </div>
+
+      {/* ── Import Modal ─────────────────────────────────────────── */}
+      {importOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/30" onClick={() => setImportOpen(false)} />
+          <div className="relative bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold">Import from Social</h2>
+              <button
+                onClick={() => setImportOpen(false)}
+                className="p-1 rounded hover:bg-[#F0F0F0]"
+              >
+                <XMarkIcon className="size-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Account picker */}
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-1.5">
+                  Account
+                </label>
+                <div className="inline-flex rounded-md border border-[#E5E5E5] overflow-hidden">
+                  {socialAccounts.map((a) => (
+                    <button
+                      key={a.id}
+                      onClick={() => {
+                        setImportAccount(a.id);
+                        setSyncResults(null);
+                        setImportDone(null);
+                      }}
+                      className={`px-4 py-2 text-sm font-medium transition-colors ${
+                        importAccount === a.id
+                          ? "bg-[#0A0A0A] text-white"
+                          : "bg-white text-[#6B6B6B] hover:bg-[#F5F5F5]"
+                      }`}
+                    >
+                      {a.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Platform picker */}
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-1.5">
+                  Platform
+                </label>
+                <div className="inline-flex rounded-md border border-[#E5E5E5] overflow-hidden">
+                  {contentPlatforms.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => {
+                        setImportPlatform(p.id);
+                        setSyncResults(null);
+                        setImportDone(null);
+                      }}
+                      className={`px-4 py-2 text-sm font-medium transition-colors ${
+                        importPlatform === p.id
+                          ? "bg-[#0A0A0A] text-white"
+                          : "bg-white text-[#6B6B6B] hover:bg-[#F5F5F5]"
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+                {importPlatform === "linkedin" && (
+                  <p className="text-[10px] text-amber-600 mt-1.5 flex items-center gap-1">
+                    <ExclamationTriangleIcon className="size-3" />
+                    LinkedIn import is experimental — results may be limited
+                  </p>
+                )}
+              </div>
+
+              {/* Sync button */}
+              <button
+                onClick={handleSync}
+                disabled={syncing}
+                className="w-full py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#1A1A1A] transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+              >
+                {syncing ? (
+                  <>
+                    <ArrowPathIcon className="size-4 animate-spin" />
+                    Scraping {socialAccounts.find((a) => a.id === importAccount)?.name}&apos;s{" "}
+                    {importPlatform === "twitter" ? "Twitter" : "LinkedIn"}...
+                  </>
+                ) : (
+                  <>
+                    <ArrowDownTrayIcon className="size-4" />
+                    Sync Posts
+                  </>
+                )}
+              </button>
+
+              {/* Error */}
+              {syncError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+                  {syncError}
+                </div>
+              )}
+
+              {/* Results preview */}
+              {syncResults && !importDone && (
+                <div className="space-y-3">
+                  <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-3">
+                    <p className="text-sm font-medium">
+                      Found {syncResults.length} post{syncResults.length !== 1 ? "s" : ""}
+                    </p>
+                    <p className="text-xs text-[#6B6B6B] mt-0.5">
+                      {newPosts.length} new · {skippedCount} already imported
+                    </p>
+                  </div>
+
+                  {/* Preview list */}
+                  {newPosts.length > 0 && (
+                    <div className="max-h-60 overflow-y-auto space-y-2">
+                      {newPosts.map((post, i) => (
+                        <div
+                          key={i}
+                          className="bg-white border border-[#E5E5E5] rounded-md p-3"
+                        >
+                          <p className="text-xs text-[#333] line-clamp-2">{post.content}</p>
+                          <div className="flex items-center gap-3 mt-1.5 text-[10px] text-[#AAAAAA]">
+                            <span>{post.post_date}</span>
+                            {post.likes > 0 && <span>{post.likes} likes</span>}
+                            {post.retweets > 0 && <span>{post.retweets} RTs</span>}
+                            {post.replies > 0 && <span>{post.replies} replies</span>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {newPosts.length > 0 && (
+                    <button
+                      onClick={handleImportPosts}
+                      disabled={importingPosts}
+                      className="w-full py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#1A1A1A] transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+                    >
+                      {importingPosts ? (
+                        <>
+                          <ArrowPathIcon className="size-4 animate-spin" />
+                          Importing...
+                        </>
+                      ) : (
+                        <>
+                          Import {newPosts.length} New Post{newPosts.length !== 1 ? "s" : ""}
+                        </>
+                      )}
+                    </button>
+                  )}
+
+                  {newPosts.length === 0 && syncResults.length > 0 && (
+                    <p className="text-xs text-[#6B6B6B] text-center py-2">
+                      All posts are already in your database.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Import complete */}
+              {importDone && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
+                  <CheckCircleIcon className="size-5 text-green-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-green-800">
+                      Imported {importDone.imported} post{importDone.imported !== 1 ? "s" : ""}
+                    </p>
+                    {importDone.skipped > 0 && (
+                      <p className="text-xs text-green-700 mt-0.5">
+                        {importDone.skipped} duplicate{importDone.skipped !== 1 ? "s" : ""} skipped
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Add/Edit Modal ────────────────────────────────────────── */}
       {modalOpen && (
