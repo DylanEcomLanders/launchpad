@@ -1,3 +1,7 @@
+"use client";
+
+import { useParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import {
   getPortalByToken,
   getUpdates,
@@ -6,49 +10,86 @@ import {
 } from "@/lib/portal/data";
 import { DEMO_PORTALS } from "@/lib/portal-types";
 import { PortalView } from "./portal-view";
-import type { PortalData } from "@/lib/portal/types";
+import type { PortalData, PortalUpdate, PortalApproval } from "@/lib/portal/types";
 
-interface Props {
-  params: Promise<{ token: string }>;
-}
+export default function PortalPage() {
+  const { token } = useParams<{ token: string }>();
+  const [portal, setPortal] = useState<PortalData | null>(null);
+  const [updates, setUpdates] = useState<PortalUpdate[]>([]);
+  const [approvals, setApprovals] = useState<PortalApproval[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
-export default async function PortalPage({ params }: Props) {
-  const { token } = await params;
+  useEffect(() => {
+    if (!token) return;
 
-  // Try Supabase first
-  let portal = await getPortalByToken(token);
-  let updates = portal ? await getUpdates(portal.id) : [];
-  let approvals = portal ? await getApprovals(portal.id) : [];
+    async function load() {
+      setLoading(true);
 
-  // Fall back to demo data for backward compat
-  if (!portal) {
-    const demo = DEMO_PORTALS.find((p) => p.token === token);
-    if (demo) {
-      // Map legacy demo data to new PortalData shape
-      portal = {
-        id: demo.token,
-        token: demo.token,
-        client_name: demo.clientName,
-        client_email: "",
-        project_type: demo.projectType,
-        current_phase: demo.currentPhase,
-        progress: demo.progress,
-        next_touchpoint: demo.nextTouchpoint,
-        phases: demo.phases.map((p, i) => ({ ...p, id: `demo-phase-${i}` })),
-        scope: demo.scope,
-        deliverables: demo.deliverables.map((d, i) => ({ ...d, id: `demo-del-${i}` })),
-        documents: demo.documents,
-        results: demo.results,
-        created_at: demo.createdAt,
-        updated_at: demo.createdAt,
-        view_count: demo.viewCount,
-      } as PortalData;
-      updates = [];
-      approvals = [];
+      // Try Supabase / localStorage
+      let p = await getPortalByToken(token);
+      let u: PortalUpdate[] = [];
+      let a: PortalApproval[] = [];
+
+      if (p) {
+        u = await getUpdates(p.id);
+        a = await getApprovals(p.id);
+      }
+
+      // Fall back to legacy demo data
+      if (!p) {
+        const demo = DEMO_PORTALS.find((d) => d.token === token);
+        if (demo) {
+          p = {
+            id: demo.token,
+            token: demo.token,
+            client_name: demo.clientName,
+            client_email: "",
+            project_type: demo.projectType,
+            current_phase: demo.currentPhase,
+            progress: demo.progress,
+            next_touchpoint: demo.nextTouchpoint,
+            phases: demo.phases.map((ph, i) => ({ ...ph, id: `demo-phase-${i}` })),
+            scope: demo.scope,
+            deliverables: demo.deliverables.map((d, i) => ({ ...d, id: `demo-del-${i}` })),
+            documents: demo.documents,
+            results: demo.results,
+            created_at: demo.createdAt,
+            updated_at: demo.createdAt,
+            view_count: demo.viewCount,
+          } as PortalData;
+        }
+      }
+
+      if (!p) {
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+
+      setPortal(p);
+      setUpdates(u);
+      setApprovals(a);
+      setLoading(false);
+
+      // Increment view count (fire-and-forget)
+      incrementViewCount(token).catch(() => {});
     }
+
+    load();
+  }, [token]);
+
+  if (loading) {
+    return (
+      <div className="max-w-lg mx-auto px-6 py-24 text-center">
+        <div className="inline-flex items-center justify-center size-14 rounded-full bg-[#F5F5F5] mb-6 animate-pulse" />
+        <div className="h-6 w-48 bg-[#F0F0F0] rounded mx-auto mb-3 animate-pulse" />
+        <div className="h-4 w-64 bg-[#F5F5F5] rounded mx-auto animate-pulse" />
+      </div>
+    );
   }
 
-  if (!portal) {
+  if (notFound || !portal) {
     return (
       <div className="max-w-lg mx-auto px-6 py-24 text-center">
         <div className="inline-flex items-center justify-center size-14 rounded-full bg-[#F5F5F5] mb-6">
@@ -62,9 +103,6 @@ export default async function PortalPage({ params }: Props) {
       </div>
     );
   }
-
-  // Increment view count (fire-and-forget)
-  incrementViewCount(token).catch(() => {});
 
   return <PortalView portal={portal} updates={updates} approvals={approvals} />;
 }
