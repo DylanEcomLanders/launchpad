@@ -24,10 +24,10 @@ import {
   type ChecklistPageType,
 } from "@/data/page-checklists";
 
-const copyModes: { value: CopyMode; label: string; description: string }[] = [
-  { value: "Page", label: "Page", description: "Pick sections, get copy per section" },
-  { value: "Advertorial", label: "Advertorial", description: "One-shot editorial piece" },
-  { value: "Listicle", label: "Listicle", description: "One-shot listicle piece" },
+const copyModes: { value: CopyMode; label: string }[] = [
+  { value: "Page", label: "Page" },
+  { value: "Advertorial", label: "Advertorial" },
+  { value: "Listicle", label: "Listicle" },
 ];
 
 type Status = "idle" | "generating" | "done" | "error";
@@ -316,10 +316,7 @@ export default function CopyEnginePage() {
                   : "bg-[#F5F5F5] text-[#6B6B6B] hover:bg-[#EBEBEB]"
               }`}
             >
-              <span>{m.label}</span>
-              <span className="hidden md:inline text-[10px] ml-1.5 opacity-60">
-                {m.description}
-              </span>
+              {m.label}
             </button>
           ))}
         </div>
