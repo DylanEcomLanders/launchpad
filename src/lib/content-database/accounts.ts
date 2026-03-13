@@ -3,8 +3,9 @@
 export interface SocialAccount {
   id: string;
   name: string;
-  twitter?: string;   // handle (no @)
-  linkedin?: string;  // profile slug
+  twitter?: string;      // handle (no @)
+  twitterId?: string;    // numeric user ID for API calls
+  linkedin?: string;     // profile slug
 }
 
 export const socialAccounts: SocialAccount[] = [
@@ -12,12 +13,14 @@ export const socialAccounts: SocialAccount[] = [
     id: "dylan",
     name: "Dylan",
     twitter: "dylanevxns",
+    twitterId: "1654424976382935040",
     linkedin: "dylan-evans-730908197",
   },
   {
     id: "ajay",
     name: "Ajay",
     twitter: "1ajaay",
+    twitterId: "1298346990464577538",
     linkedin: "ajay-landing-pages-and-cro-shopify-brands",
   },
 ];

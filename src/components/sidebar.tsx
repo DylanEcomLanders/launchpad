@@ -134,7 +134,7 @@ const navSections: NavSection[] = [
     title: "Strategy & Content",
     items: [
       {
-        label: "Content Database",
+        label: "Content Analytics",
         href: "/tools/content-db",
         icon: <CircleStackIcon className="size-4" />,
       },
