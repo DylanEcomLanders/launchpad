@@ -39,6 +39,7 @@ import type {
   PortalPhase,
   PortalDeliverable,
   PortalWin,
+  AdHocRequest,
 } from "@/lib/portal/types";
 import type {
   DesignReview,
@@ -46,7 +47,7 @@ import type {
   DesignReviewFeedback,
 } from "@/lib/portal/review-types";
 
-type DashTab = "overview" | "updates" | "approvals" | "designs" | "wins";
+type DashTab = "overview" | "updates" | "approvals" | "designs" | "wins" | "requests";
 
 export default function PortalDetailPage() {
   const params = useParams();
@@ -195,10 +196,10 @@ export default function PortalDetailPage() {
     setPortal({ ...portal, deliverables: updatedDels });
   };
 
-  const handleUpdateField = async (field: string, value: string | number) => {
+  const handleUpdateField = async (field: string, value: string | number | boolean) => {
     if (!portal) return;
     await updatePortal(portal.id, { [field]: value });
-    setPortal({ ...portal, [field]: value });
+    setPortal({ ...portal, [field]: value } as PortalData);
   };
 
   const copyLink = () => {
@@ -260,11 +261,14 @@ export default function PortalDetailPage() {
     );
   }
 
+  const openRequests = (portal.ad_hoc_requests || []).filter(r => r.status !== "done").length;
+
   const dashTabs: { key: DashTab; label: string }[] = [
     { key: "overview", label: "Overview" },
     { key: "updates", label: `Updates (${updates.length})` },
     { key: "designs", label: `Designs (${reviews.length})` },
     { key: "wins", label: `Wins (${portal.wins?.length || 0})` },
+    { key: "requests", label: `Requests${openRequests > 0 ? ` (${openRequests})` : ""}` },
     { key: "approvals", label: `Approvals (${approvals.length})` },
   ];
 
@@ -382,6 +386,16 @@ export default function PortalDetailPage() {
           />
         )}
 
+        {activeTab === "requests" && (
+          <RequestsSection
+            requests={portal.ad_hoc_requests || []}
+            onUpdate={async (requests) => {
+              await updatePortal(portalId, { ad_hoc_requests: requests });
+              setPortal({ ...portal, ad_hoc_requests: requests });
+            }}
+          />
+        )}
+
         {activeTab === "approvals" && (
           <ApprovalsSection approvals={approvals} portal={portal} />
         )}
@@ -489,7 +503,7 @@ function OverviewSection({
   onSendNotification,
 }: {
   portal: PortalData;
-  onUpdateField: (field: string, value: string | number) => void;
+  onUpdateField: (field: string, value: string | number | boolean) => void;
   onAddPhase: () => void;
   onRemovePhase: (id: string) => void;
   onAddDeliverable: () => void;
@@ -535,6 +549,30 @@ function OverviewSection({
             onSave={(v) => onUpdateField("progress", parseInt(v) || 0)}
             type="number"
           />
+          <EditableField
+            label="Slack Channel URL"
+            value={portal.slack_channel_url || ""}
+            onSave={(v) => onUpdateField("slack_channel_url", v)}
+            placeholder="https://yourteam.slack.com/archives/..."
+          />
+          <div className="flex items-center justify-between py-1">
+            <div>
+              <p className="text-[11px] font-medium text-[#6B6B6B]">Show Results Tab</p>
+              <p className="text-[10px] text-[#AAAAAA]">Enable for retainer clients with active testing</p>
+            </div>
+            <button
+              onClick={() => onUpdateField("show_results", !portal.show_results)}
+              className={`relative w-9 h-5 rounded-full transition-colors duration-200 ${
+                portal.show_results ? "bg-emerald-400" : "bg-[#D4D4D4]"
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 size-4 bg-white rounded-full shadow transition-transform duration-200 ${
+                  portal.show_results ? "translate-x-4" : ""
+                }`}
+              />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -976,6 +1014,160 @@ function WinsSection({
 }
 
 /* ── Approvals Section ── */
+
+/* ── Requests Section ── */
+
+function RequestsSection({
+  requests,
+  onUpdate,
+}: {
+  requests: AdHocRequest[];
+  onUpdate: (requests: AdHocRequest[]) => Promise<void>;
+}) {
+  const [showForm, setShowForm] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const handleAdd = async () => {
+    if (!title.trim()) return;
+    setSaving(true);
+    const newRequest: AdHocRequest = {
+      id: crypto.randomUUID(),
+      title: title.trim(),
+      description: description.trim(),
+      requested_at: new Date().toISOString(),
+      status: "open",
+      created_by: "Team",
+    };
+    await onUpdate([newRequest, ...requests]);
+    setTitle("");
+    setDescription("");
+    setShowForm(false);
+    setSaving(false);
+  };
+
+  const handleStatusChange = async (id: string, status: AdHocRequest["status"]) => {
+    const updated = requests.map(r => r.id === id ? { ...r, status } : r);
+    await onUpdate(updated);
+  };
+
+  const handleDelete = async (id: string) => {
+    await onUpdate(requests.filter(r => r.id !== id));
+  };
+
+  const statusColors: Record<string, string> = {
+    open: "text-amber-600 bg-amber-50",
+    "in-progress": "text-blue-600 bg-blue-50",
+    done: "text-emerald-600 bg-emerald-50",
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B]">
+          Ad-hoc Requests
+        </h3>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="flex items-center gap-1 text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
+        >
+          <PlusIcon className="size-3" />
+          Add Request
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="bg-white border border-[#E5E5E5] rounded-lg p-4 space-y-3">
+          <div>
+            <label className={labelClass}>Title *</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g., Add testimonial section to homepage"
+              className={inputClass}
+              autoFocus
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Description</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Any details about the request..."
+              className={textareaClass}
+              rows={2}
+            />
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleAdd}
+              disabled={!title.trim() || saving}
+              className="px-3 py-1.5 text-xs font-semibold bg-[#0A0A0A] text-white rounded-md hover:bg-[#333] transition-colors disabled:opacity-50"
+            >
+              {saving ? "Adding..." : "Add"}
+            </button>
+            <button
+              onClick={() => { setShowForm(false); setTitle(""); setDescription(""); }}
+              className="px-3 py-1.5 text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {requests.length === 0 ? (
+        <div className="bg-white border border-dashed border-[#E5E5E5] rounded-lg p-8 text-center">
+          <p className="text-xs text-[#AAAAAA]">
+            No requests yet — track client ad-hoc requests here
+          </p>
+        </div>
+      ) : (
+        <div className="border border-[#E5E5E5] rounded-lg divide-y divide-[#F0F0F0]">
+          {requests.map((req) => (
+            <div key={req.id} className="p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-sm font-medium">{req.title}</p>
+                    <select
+                      value={req.status}
+                      onChange={(e) => handleStatusChange(req.id, e.target.value as AdHocRequest["status"])}
+                      className={`text-[10px] font-semibold uppercase tracking-wider rounded-full px-2 py-0.5 border-0 cursor-pointer ${statusColors[req.status]}`}
+                    >
+                      <option value="open">Open</option>
+                      <option value="in-progress">In Progress</option>
+                      <option value="done">Done</option>
+                    </select>
+                  </div>
+                  {req.description && (
+                    <p className="text-xs text-[#6B6B6B] leading-relaxed mb-1">{req.description}</p>
+                  )}
+                  <p className="text-[10px] text-[#AAAAAA]">
+                    {req.created_by} &middot; {new Date(req.requested_at).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleDelete(req.id)}
+                  className="p-1 text-[#AAAAAA] hover:text-red-400 transition-colors shrink-0"
+                >
+                  <TrashIcon className="size-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function ApprovalsSection({
   approvals,
@@ -1483,11 +1675,13 @@ function EditableField({
   value,
   onSave,
   type = "text",
+  placeholder,
 }: {
   label: string;
   value: string;
   onSave: (v: string) => void;
   type?: string;
+  placeholder?: string;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
@@ -1501,6 +1695,7 @@ function EditableField({
             type={type}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
+            placeholder={placeholder}
             className="px-2 py-1 text-sm border border-[#E5E5E5] rounded w-40"
             autoFocus
             onKeyDown={(e) => {

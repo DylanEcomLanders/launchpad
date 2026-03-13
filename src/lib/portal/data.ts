@@ -117,6 +117,9 @@ export async function seedDemoPortal(): Promise<PortalData> {
     documents: DEMO_DOCUMENTS,
     results: DEMO_RESULTS,
     wins: DEMO_WINS,
+    show_results: true,
+    slack_channel_url: "",
+    ad_hoc_requests: [],
   });
 
   // Seed demo updates (Loom videos) with staggered dates
@@ -240,6 +243,9 @@ export async function createPortal(input: PortalInsert): Promise<PortalData> {
     documents: input.documents || [],
     results: input.results || [],
     wins: input.wins || [],
+    show_results: input.show_results ?? false,
+    slack_channel_url: input.slack_channel_url || "",
+    ad_hoc_requests: input.ad_hoc_requests || [],
     created_at: now,
     updated_at: now,
     view_count: 0,
@@ -342,6 +348,9 @@ function mapPortalRow(row: any): PortalData {
     documents: row.documents || [],
     results: row.results || [],
     wins: row.wins || [],
+    show_results: row.show_results ?? false,
+    slack_channel_url: row.slack_channel_url || "",
+    ad_hoc_requests: row.ad_hoc_requests || [],
     created_at: row.created_at || "",
     updated_at: row.updated_at || "",
     view_count: row.view_count || 0,

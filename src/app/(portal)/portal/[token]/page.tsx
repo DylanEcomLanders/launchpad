@@ -8,15 +8,20 @@ import {
   getApprovals,
   incrementViewCount,
 } from "@/lib/portal/data";
+import { getReviews, getVersions, getFeedback } from "@/lib/portal/reviews";
 import { DEMO_PORTALS } from "@/lib/portal-types";
 import { PortalView } from "./portal-view";
 import type { PortalData, PortalUpdate, PortalApproval } from "@/lib/portal/types";
+import type { DesignReview, DesignReviewVersion, DesignReviewFeedback } from "@/lib/portal/review-types";
 
 export default function PortalPage() {
   const { token } = useParams<{ token: string }>();
   const [portal, setPortal] = useState<PortalData | null>(null);
   const [updates, setUpdates] = useState<PortalUpdate[]>([]);
   const [approvals, setApprovals] = useState<PortalApproval[]>([]);
+  const [reviews, setReviews] = useState<DesignReview[]>([]);
+  const [reviewVersions, setReviewVersions] = useState<Record<string, DesignReviewVersion[]>>({});
+  const [reviewFeedback, setReviewFeedback] = useState<Record<string, DesignReviewFeedback[]>>({});
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -34,6 +39,27 @@ export default function PortalPage() {
       if (p) {
         u = await getUpdates(p.id);
         a = await getApprovals(p.id);
+
+        // Load design reviews with versions and feedback
+        const allReviews = await getReviews(p.id);
+        const versionMap: Record<string, DesignReviewVersion[]> = {};
+        const feedbackMap: Record<string, DesignReviewFeedback[]> = {};
+
+        for (const review of allReviews) {
+          const versions = await getVersions(review.id);
+          versionMap[review.id] = versions;
+
+          const fb = await getFeedback(review.id);
+          // Group feedback by version_id
+          for (const f of fb) {
+            if (!feedbackMap[f.version_id]) feedbackMap[f.version_id] = [];
+            feedbackMap[f.version_id].push(f);
+          }
+        }
+
+        setReviews(allReviews);
+        setReviewVersions(versionMap);
+        setReviewFeedback(feedbackMap);
       }
 
       // Fall back to legacy demo data
@@ -104,5 +130,14 @@ export default function PortalPage() {
     );
   }
 
-  return <PortalView portal={portal} updates={updates} approvals={approvals} />;
+  return (
+    <PortalView
+      portal={portal}
+      updates={updates}
+      approvals={approvals}
+      reviews={reviews}
+      reviewVersions={reviewVersions}
+      reviewFeedback={reviewFeedback}
+    />
+  );
 }

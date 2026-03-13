@@ -11,6 +11,7 @@ export interface PortalPhase {
   description: string;
   tasks: number;
   completed: number;
+  deadline?: string; // ISO date — used for dashboard deadline tracking
 }
 
 export interface PortalDeliverable {
@@ -46,6 +47,15 @@ export interface PortalWin {
   description: string;
 }
 
+export interface AdHocRequest {
+  id: string;
+  title: string;
+  description: string;
+  requested_at: string;
+  status: "open" | "in-progress" | "done";
+  created_by: string;
+}
+
 export interface PortalData {
   id: string;
   token: string;
@@ -61,6 +71,9 @@ export interface PortalData {
   documents: PortalDocument[];
   results: PortalTestResult[];
   wins: PortalWin[];
+  show_results: boolean;
+  slack_channel_url: string;
+  ad_hoc_requests: AdHocRequest[];
   created_at: string;
   updated_at: string;
   view_count: number;

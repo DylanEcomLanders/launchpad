@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   PlusIcon,
   TrashIcon,
@@ -9,12 +9,14 @@ import {
   ClipboardDocumentIcon,
   EyeIcon,
   ArrowTopRightOnSquareIcon,
+  CalendarDaysIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 import { inputClass, labelClass } from "@/lib/form-styles";
 import { getPortals, createPortal, deletePortal, seedDemoPortal } from "@/lib/portal/data";
-import type { PortalData } from "@/lib/portal/types";
+import type { PortalData, AdHocRequest } from "@/lib/portal/types";
 
 export default function ClientPortalPage() {
   const [portals, setPortals] = useState<PortalData[]>([]);
@@ -24,6 +26,7 @@ export default function ClientPortalPage() {
   const [clientEmail, setClientEmail] = useState("");
   const [projectType, setProjectType] = useState("");
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"overview" | "manage">("overview");
 
   const loadPortals = useCallback(async () => {
     setLoading(true);
@@ -56,6 +59,9 @@ export default function ClientPortalPage() {
       documents: [],
       results: [],
       wins: [],
+      show_results: false,
+      slack_channel_url: "",
+      ad_hoc_requests: [],
     });
     setClientName("");
     setClientEmail("");
@@ -96,16 +102,25 @@ export default function ClientPortalPage() {
           </p>
         </div>
 
-        {/* Actions */}
+        {/* Actions bar */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B]">
-            Active Portals
-            {portals.length > 0 && (
-              <span className="ml-2 text-[10px] font-bold bg-[#F0F0F0] text-[#6B6B6B] px-1.5 py-0.5 rounded">
-                {portals.length}
-              </span>
-            )}
-          </h2>
+          {/* View toggle */}
+          <div className="inline-flex bg-[#F5F5F5] rounded-md p-0.5 gap-0.5">
+            {(["overview", "manage"] as const).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                className={`px-3 py-1.5 text-xs font-medium rounded transition-all ${
+                  viewMode === mode
+                    ? "bg-white text-[#0A0A0A] shadow-sm"
+                    : "text-[#6B6B6B] hover:text-[#0A0A0A]"
+                }`}
+              >
+                {mode === "overview" ? "Overview" : "Manage"}
+              </button>
+            ))}
+          </div>
+
           <div className="flex items-center gap-3">
             <button
               onClick={handleSeedDemo}
@@ -135,41 +150,21 @@ export default function ClientPortalPage() {
                 <XMarkIcon className="size-4" />
               </button>
             </div>
-
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className={labelClass}>Client Name *</label>
-                  <input
-                    type="text"
-                    value={clientName}
-                    onChange={(e) => setClientName(e.target.value)}
-                    placeholder="e.g., Nutribloom"
-                    className={inputClass}
-                  />
+                  <input type="text" value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="e.g., Nutribloom" className={inputClass} />
                 </div>
                 <div>
                   <label className={labelClass}>Client Email</label>
-                  <input
-                    type="email"
-                    value={clientEmail}
-                    onChange={(e) => setClientEmail(e.target.value)}
-                    placeholder="client@example.com"
-                    className={inputClass}
-                  />
+                  <input type="email" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} placeholder="client@example.com" className={inputClass} />
                 </div>
               </div>
               <div>
                 <label className={labelClass}>Project Type</label>
-                <input
-                  type="text"
-                  value={projectType}
-                  onChange={(e) => setProjectType(e.target.value)}
-                  placeholder="Full Page Build"
-                  className={inputClass}
-                />
+                <input type="text" value={projectType} onChange={(e) => setProjectType(e.target.value)} placeholder="Full Page Build" className={inputClass} />
               </div>
-
               <button
                 onClick={handleCreate}
                 disabled={!clientName.trim()}
@@ -182,151 +177,323 @@ export default function ClientPortalPage() {
           </div>
         )}
 
-        {/* Portal List */}
-        <div className="space-y-4">
-          {loading && (
-            <div className="space-y-4">
-              {[1, 2].map((i) => (
-                <div
-                  key={i}
-                  className="bg-white border border-[#E5E5E5] rounded-lg p-5 animate-pulse"
-                >
-                  <div className="h-4 bg-[#F0F0F0] rounded w-1/3 mb-2" />
-                  <div className="h-3 bg-[#F0F0F0] rounded w-2/3 mb-4" />
-                  <div className="h-1 bg-[#F0F0F0] rounded w-full" />
-                </div>
-              ))}
-            </div>
-          )}
-
-          {!loading && portals.length === 0 && !showForm && (
-            <div className="bg-white border border-dashed border-[#E5E5E5] rounded-lg p-8 text-center">
-              <p className="text-xs text-[#AAAAAA] mb-3">No portals yet</p>
-              <div className="flex items-center justify-center gap-3">
-                <button
-                  onClick={() => setShowForm(true)}
-                  className="text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
-                >
-                  + Create your first portal
-                </button>
-                <span className="text-[10px] text-[#E5E5E5]">or</span>
-                <button
-                  onClick={handleSeedDemo}
-                  className="text-xs font-medium text-[#2563EB] hover:text-[#1D4ED8] transition-colors"
-                >
-                  Seed demo portal
-                </button>
+        {/* Loading */}
+        {loading && (
+          <div className="space-y-4">
+            {[1, 2].map((i) => (
+              <div key={i} className="bg-white border border-[#E5E5E5] rounded-lg p-5 animate-pulse">
+                <div className="h-4 bg-[#F0F0F0] rounded w-1/3 mb-2" />
+                <div className="h-3 bg-[#F0F0F0] rounded w-2/3 mb-4" />
+                <div className="h-1 bg-[#F0F0F0] rounded w-full" />
               </div>
-            </div>
-          )}
+            ))}
+          </div>
+        )}
 
-          {!loading &&
-            portals.map((portal) => (
-              <div
-                key={portal.id}
-                className="bg-white border border-[#E5E5E5] rounded-lg p-5"
+        {!loading && portals.length === 0 && !showForm && (
+          <div className="bg-white border border-dashed border-[#E5E5E5] rounded-lg p-8 text-center">
+            <p className="text-xs text-[#AAAAAA] mb-3">No portals yet</p>
+            <div className="flex items-center justify-center gap-3">
+              <button onClick={() => setShowForm(true)} className="text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors">
+                + Create your first portal
+              </button>
+              <span className="text-[10px] text-[#E5E5E5]">or</span>
+              <button onClick={handleSeedDemo} className="text-xs font-medium text-[#2563EB] hover:text-[#1D4ED8] transition-colors">
+                Seed demo portal
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!loading && portals.length > 0 && viewMode === "overview" && (
+          <OverviewView portals={portals} copiedToken={copiedToken} onCopyLink={copyLink} />
+        )}
+
+        {!loading && portals.length > 0 && viewMode === "manage" && (
+          <ManageView portals={portals} copiedToken={copiedToken} onCopyLink={copyLink} onDelete={handleDelete} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── Overview View: at-a-glance info ── */
+
+function OverviewView({
+  portals,
+  copiedToken,
+  onCopyLink,
+}: {
+  portals: PortalData[];
+  copiedToken: string | null;
+  onCopyLink: (token: string) => void;
+}) {
+  // Aggregate upcoming deadlines across all portals
+  const deadlines = useMemo(() => {
+    const items: { client: string; name: string; date: string; portalId: string }[] = [];
+    for (const p of portals) {
+      // Phase deadlines
+      for (const phase of p.phases) {
+        if (phase.deadline && phase.status !== "complete") {
+          items.push({ client: p.client_name, name: phase.name, date: phase.deadline, portalId: p.id });
+        }
+      }
+      // Next touchpoint
+      if (p.next_touchpoint?.date) {
+        items.push({ client: p.client_name, name: p.next_touchpoint.description || "Touchpoint", date: p.next_touchpoint.date, portalId: p.id });
+      }
+    }
+    return items.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0, 8);
+  }, [portals]);
+
+  // Cross-portal ad-hoc requests
+  const allRequests = useMemo(() => {
+    const items: (AdHocRequest & { client: string; portalId: string })[] = [];
+    for (const p of portals) {
+      for (const req of (p.ad_hoc_requests || [])) {
+        items.push({ ...req, client: p.client_name, portalId: p.id });
+      }
+    }
+    return items.sort((a, b) => new Date(b.requested_at).getTime() - new Date(a.requested_at).getTime()).slice(0, 10);
+  }, [portals]);
+
+  const statusColors: Record<string, string> = {
+    open: "text-amber-600 bg-amber-50",
+    "in-progress": "text-blue-600 bg-blue-50",
+    done: "text-emerald-600 bg-emerald-50",
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Deadlines */}
+      {deadlines.length > 0 && (
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-3 flex items-center gap-1.5">
+            <CalendarDaysIcon className="size-3.5" />
+            Upcoming Deadlines
+          </h3>
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 md:mx-0 md:px-0 scrollbar-hide">
+            {deadlines.map((dl, i) => (
+              <Link
+                key={i}
+                href={`/tools/client-portal/${dl.portalId}`}
+                className="shrink-0 w-44 border border-[#E5E5E5] rounded-lg p-3 hover:border-[#0A0A0A] hover:shadow-sm transition-all"
               >
-                {/* Top row */}
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">{dl.client}</p>
+                <p className="text-xs font-semibold mb-1 truncate">{dl.name}</p>
+                <p className="text-[11px] text-[#6B6B6B]">
+                  {new Date(dl.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Portal cards with at-a-glance info */}
+      <div>
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-3">
+          Active Portals
+          <span className="ml-2 text-[10px] font-bold bg-[#F0F0F0] text-[#6B6B6B] px-1.5 py-0.5 rounded">
+            {portals.length}
+          </span>
+        </h3>
+        <div className="space-y-3">
+          {portals.map((portal) => {
+            const openReqs = (portal.ad_hoc_requests || []).filter(r => r.status !== "done").length;
+            const currentPhase = portal.phases.find(p => p.status === "in-progress");
+            const nextDeadline = portal.phases
+              .filter(p => p.deadline && p.status !== "complete")
+              .sort((a, b) => new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime())[0];
+
+            return (
+              <Link
+                key={portal.id}
+                href={`/tools/client-portal/${portal.id}`}
+                className="block bg-white border border-[#E5E5E5] rounded-lg p-5 hover:border-[#0A0A0A] hover:shadow-sm transition-all"
+              >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-sm font-semibold">
-                        {portal.client_name}
-                      </h3>
+                      <h3 className="text-sm font-semibold">{portal.client_name}</h3>
                       {portal.current_phase && (
                         <span className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-[#F0F0F0] text-[#6B6B6B] rounded">
                           {portal.current_phase}
                         </span>
                       )}
+                      {openReqs > 0 && (
+                        <span className="px-1.5 py-0.5 text-[9px] font-semibold bg-amber-50 text-amber-600 rounded">
+                          {openReqs} request{openReqs !== 1 ? "s" : ""}
+                        </span>
+                      )}
                     </div>
-                    <p className="text-xs text-[#6B6B6B]">
-                      {portal.project_type || "No project type set"}
-                    </p>
-                    {portal.client_email && (
-                      <p className="text-[11px] text-[#AAAAAA] mt-0.5">
-                        {portal.client_email}
-                      </p>
-                    )}
+                    <p className="text-xs text-[#6B6B6B]">{portal.project_type || "No project type set"}</p>
                   </div>
 
-                  <div className="flex items-center gap-1 text-xs text-[#AAAAAA]">
-                    <EyeIcon className="size-3" />
-                    <span className="tabular-nums">{portal.view_count}</span>
+                  <div className="flex items-center gap-3 shrink-0">
+                    {portal.progress > 0 && (
+                      <span className="text-sm font-bold tabular-nums">{portal.progress}%</span>
+                    )}
+                    <div className="flex items-center gap-1 text-xs text-[#AAAAAA]">
+                      <EyeIcon className="size-3" />
+                      <span className="tabular-nums">{portal.view_count}</span>
+                    </div>
                   </div>
+                </div>
+
+                {/* At-a-glance details */}
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-[#999999]">
+                  {portal.next_touchpoint?.date && (
+                    <span>Next: {portal.next_touchpoint.date} &mdash; {portal.next_touchpoint.description}</span>
+                  )}
+                  {currentPhase && nextDeadline?.deadline && (
+                    <span>Deadline: {new Date(nextDeadline.deadline).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
+                  )}
                 </div>
 
                 {/* Phase progress */}
                 {portal.phases.length > 0 && (
-                  <div className="mt-4 flex gap-1">
+                  <div className="mt-3 flex gap-1">
                     {portal.phases.map((phase) => (
                       <div
                         key={phase.id}
                         className={`h-1 rounded-full flex-1 ${
-                          phase.status === "complete"
-                            ? "bg-emerald-400"
-                            : phase.status === "in-progress"
-                            ? "bg-[#0A0A0A]"
-                            : "bg-[#E5E5E5]"
+                          phase.status === "complete" ? "bg-emerald-400" : phase.status === "in-progress" ? "bg-[#0A0A0A]" : "bg-[#E5E5E5]"
                         }`}
                       />
                     ))}
                   </div>
                 )}
-
-                {/* Actions */}
-                <div className="mt-4 pt-4 border-t border-[#F0F0F0] flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => copyLink(portal.token)}
-                      className="flex items-center gap-1 text-[11px] font-medium text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
-                    >
-                      <ClipboardDocumentIcon className="size-3.5" />
-                      {copiedToken === portal.token ? "Copied!" : "Copy Link"}
-                    </button>
-                    <a
-                      href={`/portal/${portal.token}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-[11px] font-medium text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
-                    >
-                      <ArrowTopRightOnSquareIcon className="size-3.5" />
-                      Preview
-                    </a>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Link
-                      href={`/tools/client-portal/${portal.id}`}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0A0A0A] text-white text-xs font-medium rounded-md hover:bg-[#2A2A2A] transition-colors"
-                    >
-                      Manage
-                      <svg
-                        className="size-3.5"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                      >
-                        <path
-                          d="M3 8h10M9 4l4 4-4 4"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(portal.id)}
-                      className="p-1.5 text-[#AAAAAA] hover:text-red-400 transition-colors"
-                      title="Delete portal"
-                    >
-                      <TrashIcon className="size-3.5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+              </Link>
+            );
+          })}
         </div>
       </div>
+
+      {/* Cross-portal requests */}
+      {allRequests.length > 0 && (
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-3 flex items-center gap-1.5">
+            <ChatBubbleLeftRightIcon className="size-3.5" />
+            Recent Requests
+          </h3>
+          <div className="border border-[#E5E5E5] rounded-lg divide-y divide-[#F0F0F0]">
+            {allRequests.map((req) => (
+              <Link
+                key={req.id}
+                href={`/tools/client-portal/${req.portalId}`}
+                className="flex items-center gap-3 p-3 hover:bg-[#FAFAFA] transition-colors"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA]">{req.client}</span>
+                    <span className={`text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${statusColors[req.status]}`}>
+                      {req.status}
+                    </span>
+                  </div>
+                  <p className="text-xs font-medium mt-0.5">{req.title}</p>
+                </div>
+                <span className="text-[10px] text-[#AAAAAA] shrink-0 tabular-nums">
+                  {new Date(req.requested_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Manage View: edit/delete/copy actions ── */
+
+function ManageView({
+  portals,
+  copiedToken,
+  onCopyLink,
+  onDelete,
+}: {
+  portals: PortalData[];
+  copiedToken: string | null;
+  onCopyLink: (token: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      {portals.map((portal) => (
+        <div key={portal.id} className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-sm font-semibold">{portal.client_name}</h3>
+                {portal.current_phase && (
+                  <span className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-[#F0F0F0] text-[#6B6B6B] rounded">
+                    {portal.current_phase}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-[#6B6B6B]">{portal.project_type || "No project type set"}</p>
+              {portal.client_email && <p className="text-[11px] text-[#AAAAAA] mt-0.5">{portal.client_email}</p>}
+            </div>
+            <div className="flex items-center gap-1 text-xs text-[#AAAAAA]">
+              <EyeIcon className="size-3" />
+              <span className="tabular-nums">{portal.view_count}</span>
+            </div>
+          </div>
+
+          {portal.phases.length > 0 && (
+            <div className="mt-4 flex gap-1">
+              {portal.phases.map((phase) => (
+                <div
+                  key={phase.id}
+                  className={`h-1 rounded-full flex-1 ${
+                    phase.status === "complete" ? "bg-emerald-400" : phase.status === "in-progress" ? "bg-[#0A0A0A]" : "bg-[#E5E5E5]"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+
+          <div className="mt-4 pt-4 border-t border-[#F0F0F0] flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onCopyLink(portal.token)}
+                className="flex items-center gap-1 text-[11px] font-medium text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
+              >
+                <ClipboardDocumentIcon className="size-3.5" />
+                {copiedToken === portal.token ? "Copied!" : "Copy Link"}
+              </button>
+              <a
+                href={`/portal/${portal.token}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-[11px] font-medium text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
+              >
+                <ArrowTopRightOnSquareIcon className="size-3.5" />
+                Preview
+              </a>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link
+                href={`/tools/client-portal/${portal.id}`}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0A0A0A] text-white text-xs font-medium rounded-md hover:bg-[#2A2A2A] transition-colors"
+              >
+                Manage
+                <svg className="size-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </Link>
+              <button
+                onClick={() => onDelete(portal.id)}
+                className="p-1.5 text-[#AAAAAA] hover:text-red-400 transition-colors"
+                title="Delete portal"
+              >
+                <TrashIcon className="size-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
