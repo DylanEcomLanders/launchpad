@@ -4,9 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
-  DocumentTextIcon,
   DocumentDuplicateIcon,
-  CalendarDaysIcon,
   CalculatorIcon,
   ReceiptPercentIcon,
   ClipboardDocumentCheckIcon,
@@ -33,6 +31,7 @@ import {
   BanknotesIcon,
   ChatBubbleLeftEllipsisIcon,
   LinkIcon,
+  CircleStackIcon,
 } from "@heroicons/react/24/solid";
 import { Logo, LogoMark } from "@/components/logo";
 
@@ -40,7 +39,6 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ReactNode;
-  step?: number;
 }
 
 interface NavSection {
@@ -58,115 +56,87 @@ const teamZones = [
 
 const navSections: NavSection[] = [
   {
-    title: "Win the Client",
+    title: "Operations",
     items: [
       {
         label: "Prospect Scraper",
         href: "/tools/prospect-scraper",
         icon: <UserGroupIcon className="size-4" />,
-        step: 1,
       },
       {
         label: "Audit Machine",
         href: "/tools/store-intel",
         icon: <MagnifyingGlassIcon className="size-4" />,
-        step: 2,
       },
       {
         label: "Outreach Generator",
         href: "/tools/outreach",
         icon: <PaperAirplaneIcon className="size-4" />,
-        step: 3,
       },
       {
         label: "Proposals",
         href: "/tools/proposals",
         icon: <DocumentDuplicateIcon className="size-4" />,
-        step: 4,
       },
-      {
-        label: "Price Calculator",
-        href: "/tools/price-calculator",
-        icon: <CalculatorIcon className="size-4" />,
-        step: 5,
-      },
-    ],
-  },
-  {
-    title: "Deliver the Project",
-    items: [
       {
         label: "Project Setup",
         href: "/tools/project-kickoff",
         icon: <RocketLaunchIcon className="size-4" />,
-        step: 1,
-      },
-      {
-        label: "Dev Self-Check",
-        href: "/tools/dev-selfcheck",
-        icon: <BeakerIcon className="size-4" />,
-        step: 2,
-      },
-      {
-        label: "QA Checklist",
-        href: "/tools/qa-checklist",
-        icon: <ClipboardDocumentCheckIcon className="size-4" />,
-        step: 3,
       },
       {
         label: "Client Portal",
         href: "/tools/client-portal",
         icon: <GlobeAltIcon className="size-4" />,
-        step: 4,
+      },
+      {
+        label: "QA Checklist",
+        href: "/tools/qa-checklist",
+        icon: <ClipboardDocumentCheckIcon className="size-4" />,
+      },
+      {
+        label: "Dev Self-Check",
+        href: "/tools/dev-selfcheck",
+        icon: <BeakerIcon className="size-4" />,
       },
     ],
   },
   {
-    title: "Get Paid",
+    title: "Finance",
     items: [
+      {
+        label: "Price Calculator",
+        href: "/tools/price-calculator",
+        icon: <CalculatorIcon className="size-4" />,
+      },
       {
         label: "Dev Hours",
         href: "/tools/dev-hours",
         icon: <ClockIcon className="size-4" />,
-        step: 1,
       },
       {
         label: "Invoice Generator",
         href: "/tools/invoice-generator",
         icon: <ReceiptPercentIcon className="size-4" />,
-        step: 2,
       },
       {
         label: "Payment Link",
         href: "/tools/payment-link",
         icon: <LinkIcon className="size-4" />,
-        step: 3,
       },
       {
         label: "Expenses",
         href: "/tools/expenses",
         icon: <WalletIcon className="size-4" />,
-        step: 4,
       },
     ],
   },
   {
-    title: "Toolbox",
+    title: "Strategy & Content",
     items: [
       {
-        label: "Portfolio",
-        href: "/tools/portfolio",
-        icon: <GlobeAltIcon className="size-4" />,
-      },
-      {
-        label: "Price Lists",
-        href: "/tools/price-lists",
-        icon: <BanknotesIcon className="size-4" />,
-      },
-      {
-        label: "Feedback",
-        href: "/tools/feedback",
-        icon: <ChatBubbleLeftEllipsisIcon className="size-4" />,
+        label: "Content Database",
+        href: "/tools/content-db",
+        icon: <CircleStackIcon className="size-4" />,
       },
       {
         label: "Funnel Planner",
@@ -203,6 +173,21 @@ const navSections: NavSection[] = [
         href: "/tools/playbooks",
         icon: <BookOpenIcon className="size-4" />,
       },
+      {
+        label: "Portfolio",
+        href: "/tools/portfolio",
+        icon: <GlobeAltIcon className="size-4" />,
+      },
+      {
+        label: "Price Lists",
+        href: "/tools/price-lists",
+        icon: <BanknotesIcon className="size-4" />,
+      },
+      {
+        label: "Feedback",
+        href: "/tools/feedback",
+        icon: <ChatBubbleLeftEllipsisIcon className="size-4" />,
+      },
     ],
   },
 ];
@@ -212,7 +197,7 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(
-    () => Object.fromEntries(navSections.map((s) => [s.title, s.title !== "Toolbox"]))
+    () => Object.fromEntries(navSections.map((s) => [s.title, true]))
   );
   const [now, setNow] = useState(() => new Date());
 
@@ -363,11 +348,6 @@ export function Sidebar() {
                       `}
                       title={collapsed ? item.label : undefined}
                     >
-                      {!collapsed && item.step && (
-                        <span className="text-[#AAAAAA] text-[10px] font-mono w-3 shrink-0">
-                          {item.step}.
-                        </span>
-                      )}
                       {item.icon}
                       {!collapsed && <span>{item.label}</span>}
                     </Link>
