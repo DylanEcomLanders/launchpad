@@ -909,12 +909,6 @@ function DesignsTab({
   const [feedbackState, setFeedbackState] = useState<Record<string, { show: boolean; comment: string }>>({});
   const [submitting, setSubmitting] = useState<string | null>(null);
   const [localFeedback, setLocalFeedback] = useState<Record<string, DesignReviewFeedback[]>>(reviewFeedback);
-  // Pin commenting state
-  const [commentMode, setCommentMode] = useState<string | null>(null); // version id in comment mode
-  const [pendingPin, setPendingPin] = useState<{ versionId: string; x: number; y: number } | null>(null);
-  const [pinComment, setPinComment] = useState("");
-  const [pinSubmitting, setPinSubmitting] = useState(false);
-  const [hoveredPin, setHoveredPin] = useState<string | null>(null); // feedback id
 
   const handleFeedback = async (reviewId: string, versionId: string, action: "approved" | "changes_requested") => {
     const comment = feedbackState[versionId]?.comment || "";
@@ -952,59 +946,6 @@ function DesignsTab({
       // Silent
     } finally {
       setSubmitting(null);
-    }
-  };
-
-  const handlePinClick = (versionId: string, e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    setPendingPin({ versionId, x, y });
-    setPinComment("");
-  };
-
-  const handlePinSubmit = async (reviewId: string) => {
-    if (!pendingPin || !pinComment.trim()) return;
-    setPinSubmitting(true);
-    try {
-      const res = await fetch("/api/portal/review-feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token: portalToken,
-          reviewId,
-          versionId: pendingPin.versionId,
-          action: "comment",
-          comment: pinComment.trim(),
-          submittedBy: clientName || "Client",
-          pinX: Math.round(pendingPin.x * 10) / 10,
-          pinY: Math.round(pendingPin.y * 10) / 10,
-        }),
-      });
-      if (res.ok) {
-        const newFb: DesignReviewFeedback = {
-          id: crypto.randomUUID(),
-          version_id: pendingPin.versionId,
-          review_id: reviewId,
-          action: "comment",
-          comment: pinComment.trim(),
-          submitted_by: clientName || "Client",
-          created_at: new Date().toISOString(),
-          pin_x: Math.round(pendingPin.x * 10) / 10,
-          pin_y: Math.round(pendingPin.y * 10) / 10,
-        };
-        setLocalFeedback(prev => ({
-          ...prev,
-          [pendingPin.versionId]: [...(prev[pendingPin.versionId] || []), newFb],
-        }));
-        setPendingPin(null);
-        setPinComment("");
-        setCommentMode(null);
-      }
-    } catch {
-      // Silent
-    } finally {
-      setPinSubmitting(false);
     }
   };
 
@@ -1078,10 +1019,8 @@ function DesignsTab({
               {versions.map((version) => {
                 const embedUrl = toFigmaEmbed(version.figma_url);
                 const versionFeedback = localFeedback[version.id] || [];
-                const pinComments = versionFeedback.filter(fb => fb.action === "comment" && fb.pin_x != null);
                 const statusFeedback = versionFeedback.filter(fb => fb.action !== "comment");
                 const isLatest = latestVersion && version.id === latestVersion.id;
-                const isCommenting = commentMode === version.id;
                 const showFb = feedbackState[version.id]?.show || false;
 
                 return (
@@ -1101,172 +1040,34 @@ function DesignsTab({
                           </span>
                         )}
                       </div>
-                      {/* Comment mode toggle */}
-                      {embedUrl && (
-                        <button
-                          onClick={() => {
-                            if (isCommenting) {
-                              setCommentMode(null);
-                              setPendingPin(null);
-                            } else {
-                              setCommentMode(version.id);
-                            }
-                          }}
-                          className={`flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors ${
-                            isCommenting
-                              ? "bg-blue-500 text-white"
-                              : "bg-[#F5F5F5] text-[#6B6B6B] hover:bg-[#EBEBEB]"
-                          }`}
-                        >
-                          <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-                          </svg>
-                          {isCommenting ? "Done" : `Comment${pinComments.length > 0 ? ` (${pinComments.length})` : ""}`}
-                        </button>
-                      )}
+                      {/* Open in Figma to comment */}
+                      <a
+                        href={version.figma_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded-md bg-[#F5F5F5] text-[#6B6B6B] hover:bg-[#EBEBEB] transition-colors"
+                      >
+                        <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+                        </svg>
+                        Comment in Figma
+                      </a>
                     </div>
 
-                    {/* Figma embed with pin overlay */}
+                    {/* Figma embed — large viewport */}
                     {embedUrl && (
-                      <div className="relative w-full rounded-lg overflow-hidden border border-[#E5E5E5] mb-3" style={{ paddingBottom: "56.25%" }}>
+                      <div className="relative w-full rounded-lg overflow-hidden border border-[#E5E5E5] mb-4" style={{ paddingBottom: "75%" }}>
                         <iframe
                           src={embedUrl}
                           className="absolute inset-0 w-full h-full"
                           allowFullScreen
-                          style={{ pointerEvents: isCommenting ? "none" : "auto" }}
                         />
-
-                        {/* Pin overlay — always visible to show existing pins, captures clicks in comment mode */}
-                        <div
-                          className={`absolute inset-0 ${isCommenting ? "cursor-crosshair" : "pointer-events-none"}`}
-                          style={isCommenting ? { background: "rgba(59, 130, 246, 0.04)" } : undefined}
-                          onClick={isCommenting ? (e) => handlePinClick(version.id, e) : undefined}
-                        >
-                          {/* Existing pin markers */}
-                          {pinComments.map((pin, idx) => (
-                            <div
-                              key={pin.id}
-                              className="absolute pointer-events-auto"
-                              style={{ left: `${pin.pin_x}%`, top: `${pin.pin_y}%`, transform: "translate(-50%, -100%)" }}
-                              onMouseEnter={() => setHoveredPin(pin.id)}
-                              onMouseLeave={() => setHoveredPin(null)}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setHoveredPin(hoveredPin === pin.id ? null : pin.id);
-                              }}
-                            >
-                              {/* Pin marker */}
-                              <div className="relative">
-                                <div className="flex items-center justify-center size-6 rounded-full bg-blue-500 text-white text-[10px] font-bold shadow-md border-2 border-white cursor-pointer hover:scale-110 transition-transform">
-                                  {idx + 1}
-                                </div>
-                                {/* Tooltip */}
-                                {hoveredPin === pin.id && (
-                                  <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-50 w-56 bg-white rounded-lg shadow-lg border border-[#E5E5E5] p-3">
-                                    <div className="flex items-center gap-1.5 mb-1.5">
-                                      <span className="text-[10px] font-semibold text-blue-500">{pin.submitted_by}</span>
-                                      <span className="text-[10px] text-[#CCCCCC]">&middot;</span>
-                                      <span className="text-[10px] text-[#AAAAAA]">
-                                        {new Date(pin.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                                      </span>
-                                    </div>
-                                    <p className="text-xs text-[#333] leading-relaxed">{pin.comment}</p>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-
-                          {/* Pending pin (being placed) */}
-                          {pendingPin && pendingPin.versionId === version.id && (
-                            <div
-                              className="absolute pointer-events-auto"
-                              style={{ left: `${pendingPin.x}%`, top: `${pendingPin.y}%`, transform: "translate(-50%, -100%)" }}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <div className="flex items-center justify-center size-6 rounded-full bg-blue-500 text-white text-[10px] font-bold shadow-md border-2 border-white animate-pulse">
-                                +
-                              </div>
-                              {/* Comment input popover */}
-                              <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 z-50 w-64 bg-white rounded-lg shadow-xl border border-[#E5E5E5] p-3">
-                                <textarea
-                                  value={pinComment}
-                                  onChange={(e) => setPinComment(e.target.value)}
-                                  placeholder="What needs changing here?"
-                                  className="w-full px-2.5 py-2 text-xs border border-[#E5E5E5] rounded-md resize-none h-16 focus:outline-none focus:ring-1 focus:ring-blue-300 focus:border-blue-300"
-                                  autoFocus
-                                  onKeyDown={(e) => {
-                                    if (e.key === "Enter" && !e.shiftKey) {
-                                      e.preventDefault();
-                                      handlePinSubmit(review.id);
-                                    }
-                                    if (e.key === "Escape") {
-                                      setPendingPin(null);
-                                      setPinComment("");
-                                    }
-                                  }}
-                                />
-                                <div className="flex items-center gap-2 mt-2">
-                                  <button
-                                    onClick={() => handlePinSubmit(review.id)}
-                                    disabled={!pinComment.trim() || pinSubmitting}
-                                    className="px-3 py-1.5 text-[11px] font-semibold bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50"
-                                  >
-                                    {pinSubmitting ? "Saving..." : "Add Comment"}
-                                  </button>
-                                  <button
-                                    onClick={() => { setPendingPin(null); setPinComment(""); }}
-                                    className="px-3 py-1.5 text-[11px] font-semibold text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
-                                  >
-                                    Cancel
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Comment mode banner */}
-                          {isCommenting && !pendingPin && (
-                            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-[11px] font-semibold px-4 py-2 rounded-full shadow-lg pointer-events-none">
-                              Click anywhere on the design to leave a comment
-                            </div>
-                          )}
-                        </div>
                       </div>
                     )}
 
                     {/* Version notes */}
                     {version.notes && (
                       <p className="text-xs text-[#6B6B6B] leading-relaxed mb-3">{version.notes}</p>
-                    )}
-
-                    {/* Pin comments list (below embed) */}
-                    {pinComments.length > 0 && (
-                      <div className="space-y-1.5 mb-3">
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-2">Comments</p>
-                        {pinComments.map((pin, idx) => (
-                          <div
-                            key={pin.id}
-                            className="flex items-start gap-2.5 p-2.5 rounded-md bg-[#FAFAFA] border border-[#F0F0F0] hover:border-blue-200 transition-colors cursor-pointer"
-                            onMouseEnter={() => setHoveredPin(pin.id)}
-                            onMouseLeave={() => setHoveredPin(null)}
-                          >
-                            <div className="flex items-center justify-center size-5 shrink-0 rounded-full bg-blue-500 text-white text-[9px] font-bold mt-0.5">
-                              {idx + 1}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs text-[#333] leading-relaxed">{pin.comment}</p>
-                              <div className="flex items-center gap-1.5 mt-1">
-                                <span className="text-[10px] text-[#AAAAAA]">{pin.submitted_by}</span>
-                                <span className="text-[10px] text-[#DDDDDD]">&middot;</span>
-                                <span className="text-[10px] text-[#AAAAAA]">
-                                  {new Date(pin.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
                     )}
 
                     {/* Status feedback history (approvals / change requests) */}
