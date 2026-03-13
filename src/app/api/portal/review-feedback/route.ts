@@ -9,7 +9,7 @@ import { supabase } from "@/lib/supabase";
  */
 export async function POST(request: Request) {
   const body = await request.json();
-  const { token, reviewId, versionId, action, comment, submittedBy } = body;
+  const { token, reviewId, versionId, action, comment, submittedBy, pinX, pinY } = body;
 
   if (!token || !reviewId || !versionId || !action) {
     return NextResponse.json(
@@ -18,9 +18,9 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!["approved", "changes_requested"].includes(action)) {
+  if (!["approved", "changes_requested", "comment"].includes(action)) {
     return NextResponse.json(
-      { error: "action must be 'approved' or 'changes_requested'" },
+      { error: "action must be 'approved', 'changes_requested', or 'comment'" },
       { status: 400 }
     );
   }
@@ -66,15 +66,19 @@ export async function POST(request: Request) {
   }
 
   // Record feedback
+  const insertRow: Record<string, unknown> = {
+    version_id: versionId,
+    review_id: reviewId,
+    action,
+    comment: comment || "",
+    submitted_by: submittedBy || "Client",
+  };
+  if (typeof pinX === "number") insertRow.pin_x = pinX;
+  if (typeof pinY === "number") insertRow.pin_y = pinY;
+
   const { data: feedback, error: insertError } = await supabase
     .from("design_review_feedback")
-    .insert({
-      version_id: versionId,
-      review_id: reviewId,
-      action,
-      comment: comment || "",
-      submitted_by: submittedBy || "Client",
-    })
+    .insert(insertRow)
     .select()
     .single();
 
@@ -86,12 +90,14 @@ export async function POST(request: Request) {
     );
   }
 
-  // Update review status to match latest action
-  const newStatus = action === "approved" ? "approved" : "changes_requested";
-  await supabase
-    .from("design_reviews")
-    .update({ status: newStatus, updated_at: new Date().toISOString() })
-    .eq("id", reviewId);
+  // Update review status to match latest action (pin comments don't change status)
+  if (action !== "comment") {
+    const newStatus = action === "approved" ? "approved" : "changes_requested";
+    await supabase
+      .from("design_reviews")
+      .update({ status: newStatus, updated_at: new Date().toISOString() })
+      .eq("id", reviewId);
+  }
 
   return NextResponse.json({ success: true, feedback });
 }

@@ -1,7 +1,7 @@
 /* ── Design Review types ── */
 
 export type ReviewStatus = "pending" | "changes_requested" | "approved";
-export type FeedbackAction = "approved" | "changes_requested";
+export type FeedbackAction = "approved" | "changes_requested" | "comment";
 
 export interface DesignReview {
   id: string;
@@ -34,6 +34,8 @@ export interface DesignReviewFeedback {
   comment: string;
   submitted_by: string;
   created_at: string;
+  pin_x?: number; // percentage (0-100) from left edge
+  pin_y?: number; // percentage (0-100) from top edge
 }
 
 export type DesignReviewFeedbackInsert = Omit<DesignReviewFeedback, "id" | "created_at">;
