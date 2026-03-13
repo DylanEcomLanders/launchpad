@@ -139,6 +139,26 @@ const navSections: NavSection[] = [
         icon: <CircleStackIcon className="size-4" />,
       },
       {
+        label: "Portfolio",
+        href: "/tools/portfolio",
+        icon: <GlobeAltIcon className="size-4" />,
+      },
+      {
+        label: "Price Lists",
+        href: "/tools/price-lists",
+        icon: <BanknotesIcon className="size-4" />,
+      },
+      {
+        label: "Feedback",
+        href: "/tools/feedback",
+        icon: <ChatBubbleLeftEllipsisIcon className="size-4" />,
+      },
+    ],
+  },
+  {
+    title: "Toolbox",
+    items: [
+      {
         label: "Funnel Planner",
         href: "/tools/funnel-planner",
         icon: <FunnelIcon className="size-4" />,
@@ -173,21 +193,6 @@ const navSections: NavSection[] = [
         href: "/tools/playbooks",
         icon: <BookOpenIcon className="size-4" />,
       },
-      {
-        label: "Portfolio",
-        href: "/tools/portfolio",
-        icon: <GlobeAltIcon className="size-4" />,
-      },
-      {
-        label: "Price Lists",
-        href: "/tools/price-lists",
-        icon: <BanknotesIcon className="size-4" />,
-      },
-      {
-        label: "Feedback",
-        href: "/tools/feedback",
-        icon: <ChatBubbleLeftEllipsisIcon className="size-4" />,
-      },
     ],
   },
 ];
@@ -197,7 +202,7 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(
-    () => Object.fromEntries(navSections.map((s) => [s.title, true]))
+    () => Object.fromEntries(navSections.map((s) => [s.title, s.title !== "Toolbox"]))
   );
   const [now, setNow] = useState(() => new Date());
 

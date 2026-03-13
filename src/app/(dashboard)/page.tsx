@@ -120,7 +120,6 @@ export default function PulseDashboard() {
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">
               Mission Control
-              <span className="ml-2 inline-block text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30 rounded-full px-2 py-0.5 align-middle">TEST</span>
             </h1>
             <p className="text-sm text-[#6B6B6B]">
               Mission control for the Ecomlanders team
