@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import * as cheerio from "cheerio";
 import { getAccountById, getProfileUrl } from "@/lib/content-database/accounts";
 import type { ContentPlatform, ContentCategory } from "@/lib/content-database/types";
 
@@ -9,7 +10,7 @@ export const maxDuration = 60;
 
 const MODEL = "claude-sonnet-4-5-20250929";
 const MAX_TOKENS = 8000;
-const FIRECRAWL_BASE = "https://api.firecrawl.dev/v1";
+const FETCH_TIMEOUT = 20000;
 
 // ── Types ───────────────────────────────────────────────────────
 
@@ -33,24 +34,42 @@ interface SyncResponse {
 
 // ── Helpers ─────────────────────────────────────────────────────
 
+async function fetchWithTimeout(url: string, options: RequestInit = {}) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        ...options.headers,
+      },
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 function parseJsonFromText(text: string): ExtractedPost[] {
-  // Strip markdown code fences if present
   let cleaned = text.trim();
+  // Strip markdown code fences
   if (cleaned.startsWith("```")) {
     cleaned = cleaned.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
   }
-
-  // Try to find JSON array in the text
+  // Find JSON array
   const arrayMatch = cleaned.match(/\[[\s\S]*\]/);
   if (arrayMatch) {
     try {
       return JSON.parse(arrayMatch[0]);
     } catch {
-      // fall through
+      /* fall through */
     }
   }
-
-  // Try parsing the whole thing
   try {
     const parsed = JSON.parse(cleaned);
     return Array.isArray(parsed) ? parsed : [];
@@ -59,22 +78,23 @@ function parseJsonFromText(text: string): ExtractedPost[] {
   }
 }
 
+function extractPageText(html: string): string {
+  const $ = cheerio.load(html);
+  // Remove scripts, styles, nav, footer
+  $("script, style, nav, footer, header, noscript, svg, link, meta").remove();
+  // Get text content, collapse whitespace
+  const text = $("body").text().replace(/\s+/g, " ").trim();
+  return text;
+}
+
 // ── POST handler ────────────────────────────────────────────────
 
 export async function POST(req: Request) {
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY;
-    const firecrawlKey = process.env.FIRECRAWL_API_KEY;
-
     if (!apiKey) {
       return NextResponse.json(
         { error: "ANTHROPIC_API_KEY not configured" },
-        { status: 500 }
-      );
-    }
-    if (!firecrawlKey) {
-      return NextResponse.json(
-        { error: "FIRECRAWL_API_KEY not configured" },
         { status: 500 }
       );
     }
@@ -108,40 +128,31 @@ export async function POST(req: Request) {
       );
     }
 
-    // ── Step 1: Scrape with Firecrawl ───────────────────────────
+    // ── Step 1: Fetch the profile page ──────────────────────────
 
-    const firecrawlRes = await fetch(`${FIRECRAWL_BASE}/scrape`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${firecrawlKey}`,
-      },
-      body: JSON.stringify({
-        url: profileUrl,
-        formats: ["markdown"],
-        waitFor: 5000,
-      }),
-    });
+    let pageText = "";
+    let rawHtml = "";
 
-    if (!firecrawlRes.ok) {
-      const errText = await firecrawlRes.text().catch(() => "Unknown error");
+    try {
+      const res = await fetchWithTimeout(profileUrl);
+      if (!res.ok) {
+        return NextResponse.json(
+          {
+            error: `Failed to fetch profile (${res.status}). The profile may be private or restricted.`,
+            posts: [],
+            account: account.name,
+            platform,
+            profileUrl,
+          } satisfies SyncResponse,
+          { status: 200 }
+        );
+      }
+      rawHtml = await res.text();
+      pageText = extractPageText(rawHtml);
+    } catch (err) {
       return NextResponse.json(
         {
-          error: `Firecrawl scrape failed (${firecrawlRes.status}): ${errText.slice(0, 200)}`,
-        },
-        { status: 502 }
-      );
-    }
-
-    const firecrawlData = await firecrawlRes.json();
-    const markdown: string =
-      firecrawlData?.data?.markdown || firecrawlData?.markdown || "";
-
-    if (!markdown || markdown.length < 100) {
-      return NextResponse.json(
-        {
-          error:
-            "Scrape returned very little content. The profile may be private, empty, or blocked.",
+          error: `Could not reach ${platform === "twitter" ? "Twitter/X" : "LinkedIn"}: ${err instanceof Error ? err.message : "timeout"}`,
           posts: [],
           account: account.name,
           platform,
@@ -151,41 +162,58 @@ export async function POST(req: Request) {
       );
     }
 
-    // ── Step 2: Extract posts with Claude ───────────────────────
+    if (pageText.length < 50) {
+      return NextResponse.json(
+        {
+          error:
+            "Page returned very little content. The profile may be private, empty, or require login.",
+          posts: [],
+          account: account.name,
+          platform,
+          profileUrl,
+        } satisfies SyncResponse,
+        { status: 200 }
+      );
+    }
+
+    // ── Step 2: Send to Claude for extraction + analysis ────────
 
     const handle =
       platform === "twitter" ? account.twitter : account.linkedin;
     const today = new Date().toISOString().slice(0, 10);
 
-    const extractionPrompt = `You are extracting social media posts from a scraped ${platform === "twitter" ? "Twitter/X" : "LinkedIn"} profile page.
+    const prompt = `You are analysing a scraped ${platform === "twitter" ? "Twitter/X" : "LinkedIn"} profile page to extract social media posts and understand what content is performing.
 
-The page belongs to: ${account.name} (${platform === "twitter" ? "@" + handle : handle})
+Profile: ${account.name} (${platform === "twitter" ? "@" + handle : handle})
+URL: ${profileUrl}
 Today's date: ${today}
 
-Extract ALL individual posts you can find from this person. For each post return a JSON object with:
-- "content": The full text of the post (include the complete text, not truncated)
-- "post_url": Direct URL to the post. For Twitter construct as https://x.com/${handle}/status/{tweet_id} if you can find the ID. For LinkedIn use the post URL if visible, otherwise use an empty string.
-- "post_date": Date in YYYY-MM-DD format. Convert relative dates ("2h ago" = today, "3d" = 3 days before ${today}, "Mar 5" = 2025-03-05 or 2026-03-05 whichever is most recent and not in the future).
+Below is the text content extracted from the page. Extract ALL individual posts you can find authored by this person.
+
+For each post, return a JSON object with:
+- "content": Full text of the post (not truncated)
+- "post_url": Direct URL to the post. For Twitter: https://x.com/${handle}/status/{tweet_id}. For LinkedIn: the post URL if visible, otherwise empty string.
+- "post_date": Date in YYYY-MM-DD format. Convert relative dates ("2h" = ${today}, "3d" = 3 days before ${today}, "Mar 5" = most recent occurrence not in the future).
 - "likes": Number of likes/reactions (0 if not visible)
 - "retweets": Number of retweets/reposts/shares (0 if not visible)
 - "replies": Number of replies/comments (0 if not visible)
-- "category": Best-fit category from exactly these options: "case-study", "insight", "behind-the-scenes", "hot-take", "educational", "promotional", "thread", "other"
+- "category": Best-fit from: "case-study", "insight", "behind-the-scenes", "hot-take", "educational", "promotional", "thread", "other"
 
 Rules:
-- Only extract posts authored BY ${account.name}, not reposts/retweets of others (unless they added their own text)
-- Skip ads, promoted content, and pinned navigation elements
-- If engagement numbers show as "K" (e.g. "1.2K"), convert to actual numbers (1200)
-- Return ONLY a valid JSON array. No markdown fences. No commentary.
+- Only posts authored BY this person — skip pure retweets/reposts without added text
+- Skip ads, promoted content, navigation elements, and bio text
+- Convert "K" numbers to actual values (1.2K → 1200)
+- Return ONLY a valid JSON array. No markdown fences, no commentary.
 
-Scraped content:
-${markdown.slice(0, 60000)}`;
+Page content:
+${pageText.slice(0, 80000)}`;
 
     const anthropic = new Anthropic({ apiKey });
 
     const message = await anthropic.messages.create({
       model: MODEL,
       max_tokens: MAX_TOKENS,
-      messages: [{ role: "user", content: extractionPrompt }],
+      messages: [{ role: "user", content: prompt }],
     });
 
     const responseText =
@@ -193,7 +221,7 @@ ${markdown.slice(0, 60000)}`;
 
     const posts = parseJsonFromText(responseText);
 
-    // Sanitise each post
+    // Sanitise
     const sanitised: ExtractedPost[] = posts
       .filter((p) => p.content && p.content.trim().length > 0)
       .map((p) => ({
@@ -237,7 +265,10 @@ const validCategories: ContentCategory[] = [
 ];
 
 function validateCategory(cat: unknown): ContentCategory {
-  if (typeof cat === "string" && validCategories.includes(cat as ContentCategory)) {
+  if (
+    typeof cat === "string" &&
+    validCategories.includes(cat as ContentCategory)
+  ) {
     return cat as ContentCategory;
   }
   return "other";
