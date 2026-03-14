@@ -1042,22 +1042,15 @@ function DesignsTab({
                       </div>
                     </div>
 
-                    {/* Figma embed — large viewport with native commenting */}
+                    {/* Figma embed — large preview */}
                     {embedUrl && (
-                      <>
-                        <div className="relative w-full rounded-xl overflow-hidden border border-[#E5E5E5] mb-2" style={{ paddingBottom: "80%" }}>
-                          <iframe
-                            src={embedUrl}
-                            className="absolute inset-0 w-full h-full"
-                            allowFullScreen
-                          />
-                        </div>
-                        {isLatest && review.status !== "approved" && (
-                          <p className="text-[11px] text-[#BBBBBB] mb-3">
-                            Use the <span className="inline-flex align-text-bottom mx-0.5"><svg className="size-3.5 text-[#AAAAAA]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg></span> icon in the toolbar to leave comments directly on the design
-                          </p>
-                        )}
-                      </>
+                      <div className="relative w-full rounded-xl overflow-hidden border border-[#E5E5E5] mb-4" style={{ paddingBottom: "80%" }}>
+                        <iframe
+                          src={embedUrl}
+                          className="absolute inset-0 w-full h-full"
+                          allowFullScreen
+                        />
+                      </div>
                     )}
 
                     {/* Version notes */}
@@ -1089,54 +1082,105 @@ function DesignsTab({
                       </div>
                     )}
 
-                    {/* Approve / Amends buttons (only on latest version) */}
+                    {/* Review actions (only on latest version, not yet approved) */}
                     {isLatest && review.status !== "approved" && (
-                      <div>
-                        {showFb ? (
-                          <div className="space-y-2 pt-2 border-t border-[#F0F0F0]">
-                            <textarea
-                              value={feedbackState[version.id]?.comment || ""}
-                              onChange={(e) => setFeedbackState(prev => ({
-                                ...prev,
-                                [version.id]: { ...prev[version.id], show: true, comment: e.target.value }
-                              }))}
-                              placeholder="Add a comment (optional)"
-                              className="w-full px-3 py-2 text-xs border border-[#E5E5E5] rounded-md resize-none h-16"
-                              autoFocus
-                            />
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => handleFeedback(review.id, version.id, "approved")}
-                                disabled={submitting === version.id}
-                                className="px-3 py-1.5 text-xs font-semibold bg-emerald-500 text-white rounded-md hover:bg-emerald-600 transition-colors disabled:opacity-50"
-                              >
-                                Approve
-                              </button>
-                              <button
-                                onClick={() => handleFeedback(review.id, version.id, "changes_requested")}
-                                disabled={submitting === version.id}
-                                className="px-3 py-1.5 text-xs font-semibold bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors disabled:opacity-50"
-                              >
-                                Amends Needed
-                              </button>
-                              <button
-                                onClick={() => setFeedbackState(prev => ({ ...prev, [version.id]: { show: false, comment: "" } }))}
-                                className="px-3 py-1.5 text-xs font-semibold text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
-                              >
-                                Cancel
-                              </button>
+                      <div className="border border-[#E5E5E5] rounded-lg overflow-hidden">
+                        {/* Step 1: Leave comments */}
+                        <div className="p-4 bg-[#FAFAFA] border-b border-[#F0F0F0]">
+                          <div className="flex items-start gap-3">
+                            <div className="flex items-center justify-center size-6 shrink-0 rounded-full bg-[#0A0A0A] text-white text-[10px] font-bold mt-0.5">1</div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-[#0A0A0A] mb-0.5">Leave comments on the design</p>
+                              <p className="text-xs text-[#999999] leading-relaxed">Click below to open the design in Figma. Leave your comments directly on the design, then close the tab and come back here.</p>
                             </div>
                           </div>
-                        ) : (
-                          <div className="flex items-center gap-2 pt-2 border-t border-[#F0F0F0]">
-                            <button
-                              onClick={() => setFeedbackState(prev => ({ ...prev, [version.id]: { show: true, comment: "" } }))}
-                              className="px-3 py-1.5 text-xs font-semibold bg-[#0A0A0A] text-white rounded-md hover:bg-[#333] transition-colors"
-                            >
-                              Review this version
-                            </button>
+                          <a
+                            href={version.figma_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-3 ml-9 inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-[#0A0A0A] text-white rounded-lg hover:bg-[#333] transition-colors"
+                          >
+                            <svg className="size-4" viewBox="0 0 15 15" fill="currentColor">
+                              <path fillRule="evenodd" clipRule="evenodd" d="M7.5 0C5.57 0 4 1.57 4 3.5c0 .62.16 1.2.44 1.7A3.49 3.49 0 003 8.5c0 1.63 1.12 3 2.63 3.38A3.49 3.49 0 007 15a3.5 3.5 0 003.5-3.5V9.95A3.49 3.49 0 0011 3.5C11 1.57 9.43 0 7.5 0zM5 3.5C5 2.12 6.12 1 7.5 1H8v5H7.5A2.5 2.5 0 015 3.5zM7 12v-.5a2.5 2.5 0 112.5-2.5H9v2.5A2 2 0 017 12z" />
+                            </svg>
+                            Open in Figma to Comment
+                            <svg className="size-3 text-white/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                            </svg>
+                          </a>
+                        </div>
+
+                        {/* Step 2: Approve or request amends */}
+                        <div className="p-4">
+                          <div className="flex items-start gap-3 mb-3">
+                            <div className="flex items-center justify-center size-6 shrink-0 rounded-full bg-[#0A0A0A] text-white text-[10px] font-bold mt-0.5">2</div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-[#0A0A0A] mb-0.5">Approve or request changes</p>
+                              <p className="text-xs text-[#999999] leading-relaxed">Once you&apos;ve reviewed the design, let us know if it&apos;s good to go or if anything needs changing.</p>
+                            </div>
                           </div>
-                        )}
+                          {showFb ? (
+                            <div className="ml-9 space-y-2">
+                              <textarea
+                                value={feedbackState[version.id]?.comment || ""}
+                                onChange={(e) => setFeedbackState(prev => ({
+                                  ...prev,
+                                  [version.id]: { ...prev[version.id], show: true, comment: e.target.value }
+                                }))}
+                                placeholder="Any additional notes (optional)"
+                                className="w-full px-3 py-2 text-xs border border-[#E5E5E5] rounded-lg resize-none h-16 focus:outline-none focus:ring-1 focus:ring-[#0A0A0A]/10 focus:border-[#CCCCCC]"
+                                autoFocus
+                              />
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleFeedback(review.id, version.id, "approved")}
+                                  disabled={submitting === version.id}
+                                  className="px-4 py-2 text-xs font-semibold bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
+                                >
+                                  {submitting === version.id ? "Saving..." : "Approve Design"}
+                                </button>
+                                <button
+                                  onClick={() => handleFeedback(review.id, version.id, "changes_requested")}
+                                  disabled={submitting === version.id}
+                                  className="px-4 py-2 text-xs font-semibold bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
+                                >
+                                  Request Amends
+                                </button>
+                                <button
+                                  onClick={() => setFeedbackState(prev => ({ ...prev, [version.id]: { show: false, comment: "" } }))}
+                                  className="px-3 py-2 text-xs font-semibold text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="ml-9 flex items-center gap-2">
+                              <button
+                                onClick={() => setFeedbackState(prev => ({ ...prev, [version.id]: { show: true, comment: "" } }))}
+                                className="px-4 py-2 text-xs font-semibold bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
+                              >
+                                Approve Design
+                              </button>
+                              <button
+                                onClick={() => setFeedbackState(prev => ({ ...prev, [version.id]: { show: true, comment: "" } }))}
+                                className="px-4 py-2 text-xs font-semibold border border-[#E5E5E5] text-[#6B6B6B] rounded-lg hover:bg-[#F5F5F5] transition-colors"
+                              >
+                                Request Amends
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Approved state */}
+                    {isLatest && review.status === "approved" && (
+                      <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-100 rounded-lg">
+                        <svg className="size-4 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-xs font-semibold text-emerald-600">Design approved</span>
                       </div>
                     )}
                   </div>
