@@ -96,7 +96,7 @@ export default function ClientPortalPage() {
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
             Client Portal
           </h1>
-          <p className="text-[#6B6B6B]">
+          <p className="text-[#7A7A7A]">
             Manage client-facing project portals — share status, updates, and
             collect approvals
           </p>
@@ -105,15 +105,15 @@ export default function ClientPortalPage() {
         {/* Actions bar */}
         <div className="flex items-center justify-between mb-6">
           {/* View toggle */}
-          <div className="inline-flex bg-[#F5F5F5] rounded-md p-0.5 gap-0.5">
+          <div className="inline-flex bg-[#F3F3F5] rounded-md p-0.5 gap-0.5">
             {(["overview", "manage"] as const).map((mode) => (
               <button
                 key={mode}
                 onClick={() => setViewMode(mode)}
                 className={`px-3 py-1.5 text-xs font-medium rounded transition-all ${
                   viewMode === mode
-                    ? "bg-white text-[#0A0A0A] shadow-sm"
-                    : "text-[#6B6B6B] hover:text-[#0A0A0A]"
+                    ? "bg-white text-[#1B1B1B] shadow-sm"
+                    : "text-[#7A7A7A] hover:text-[#1B1B1B]"
                 }`}
               >
                 {mode === "overview" ? "Overview" : "Manage"}
@@ -124,13 +124,13 @@ export default function ClientPortalPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={handleSeedDemo}
-              className="text-xs font-medium text-[#AAAAAA] hover:text-[#2563EB] transition-colors"
+              className="text-xs font-medium text-[#A0A0A0] hover:text-[#2563EB] transition-colors"
             >
               Seed Demo
             </button>
             <button
               onClick={() => setShowForm(true)}
-              className="flex items-center gap-1 text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
+              className="flex items-center gap-1 text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
             >
               <PlusIcon className="size-3.5" />
               New Portal
@@ -140,12 +140,12 @@ export default function ClientPortalPage() {
 
         {/* Create Form */}
         {showForm && (
-          <div className="bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg p-5 mb-6">
+          <div className="bg-[#F7F8FA] border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-5 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold">Create Portal</h3>
               <button
                 onClick={() => setShowForm(false)}
-                className="text-[#AAAAAA] hover:text-[#0A0A0A]"
+                className="text-[#A0A0A0] hover:text-[#1B1B1B]"
               >
                 <XMarkIcon className="size-4" />
               </button>
@@ -168,7 +168,7 @@ export default function ClientPortalPage() {
               <button
                 onClick={handleCreate}
                 disabled={!clientName.trim()}
-                className="flex items-center gap-1.5 px-4 py-2 bg-[#0A0A0A] text-white text-xs font-medium rounded-md hover:bg-[#2A2A2A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <CheckIcon className="size-3.5" />
                 Create Portal
@@ -181,23 +181,23 @@ export default function ClientPortalPage() {
         {loading && (
           <div className="space-y-4">
             {[1, 2].map((i) => (
-              <div key={i} className="bg-white border border-[#E5E5E5] rounded-lg p-5 animate-pulse">
-                <div className="h-4 bg-[#F0F0F0] rounded w-1/3 mb-2" />
-                <div className="h-3 bg-[#F0F0F0] rounded w-2/3 mb-4" />
-                <div className="h-1 bg-[#F0F0F0] rounded w-full" />
+              <div key={i} className="bg-white border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-5 animate-pulse">
+                <div className="h-4 bg-[#EDEDEF] rounded w-1/3 mb-2" />
+                <div className="h-3 bg-[#EDEDEF] rounded w-2/3 mb-4" />
+                <div className="h-1 bg-[#EDEDEF] rounded w-full" />
               </div>
             ))}
           </div>
         )}
 
         {!loading && portals.length === 0 && !showForm && (
-          <div className="bg-white border border-dashed border-[#E5E5E5] rounded-lg p-8 text-center">
-            <p className="text-xs text-[#AAAAAA] mb-3">No portals yet</p>
+          <div className="bg-white border border-dashed border-[#E5E5EA] rounded-lg p-8 text-center">
+            <p className="text-xs text-[#A0A0A0] mb-3">No portals yet</p>
             <div className="flex items-center justify-center gap-3">
-              <button onClick={() => setShowForm(true)} className="text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors">
+              <button onClick={() => setShowForm(true)} className="text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors">
                 + Create your first portal
               </button>
-              <span className="text-[10px] text-[#E5E5E5]">or</span>
+              <span className="text-[10px] text-[#E5E5EA]">or</span>
               <button onClick={handleSeedDemo} className="text-xs font-medium text-[#2563EB] hover:text-[#1D4ED8] transition-colors">
                 Seed demo portal
               </button>
@@ -283,18 +283,18 @@ function OverviewView({
       <div className="flex items-center gap-6 text-sm">
         <div className="flex items-baseline gap-1.5">
           <span className="text-lg font-semibold tabular-nums">{portals.length}</span>
-          <span className="text-xs text-[#AAAAAA]">active portals</span>
+          <span className="text-xs text-[#A0A0A0]">active portals</span>
         </div>
         {openRequests > 0 && (
           <div className="flex items-baseline gap-1.5">
             <span className="text-lg font-semibold tabular-nums">{openRequests}</span>
-            <span className="text-xs text-[#AAAAAA]">open requests</span>
+            <span className="text-xs text-[#A0A0A0]">open requests</span>
           </div>
         )}
         {clickupData && clickupData.overdue > 0 && (
           <Link href="/tools/ops-radar" className="flex items-baseline gap-1.5 hover:opacity-70 transition-opacity">
             <span className="text-lg font-semibold tabular-nums">{clickupData.overdue}</span>
-            <span className="text-xs text-[#AAAAAA]">overdue in ClickUp</span>
+            <span className="text-xs text-[#A0A0A0]">overdue in ClickUp</span>
             <span className="w-1.5 h-1.5 rounded-full bg-red-500 ml-0.5" />
           </Link>
         )}
@@ -303,27 +303,27 @@ function OverviewView({
       {/* Ad Hoc Requests — promoted to top */}
       {allRequests.length > 0 && (
         <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-3 flex items-center gap-1.5">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3 flex items-center gap-1.5">
             <ChatBubbleLeftRightIcon className="size-3.5" />
             Ad Hoc Requests
           </h3>
-          <div className="border border-[#E5E5E5] rounded-lg divide-y divide-[#F0F0F0]">
+          <div className="border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg divide-y divide-[#EDEDEF]">
             {allRequests.map((req) => (
               <Link
                 key={req.id}
                 href={`/tools/client-portal/${req.portalId}`}
-                className="flex items-center gap-3 p-3 hover:bg-[#FAFAFA] transition-colors"
+                className="flex items-center gap-3 p-3 hover:bg-[#F7F8FA] transition-colors"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA]">{req.client}</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">{req.client}</span>
                     <span className={`text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${statusColors[req.status]}`}>
                       {req.status}
                     </span>
                   </div>
                   <p className="text-xs font-medium mt-0.5">{req.title}</p>
                 </div>
-                <span className="text-[10px] text-[#AAAAAA] shrink-0 tabular-nums">
+                <span className="text-[10px] text-[#A0A0A0] shrink-0 tabular-nums">
                   {new Date(req.requested_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                 </span>
               </Link>
@@ -335,11 +335,11 @@ function OverviewView({
       {/* Upcoming Deadlines */}
       {deadlines.length > 0 && (
         <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-3 flex items-center gap-1.5">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3 flex items-center gap-1.5">
             <CalendarDaysIcon className="size-3.5" />
             Upcoming Deadlines
           </h3>
-          <div className="border border-[#E5E5E5] rounded-lg divide-y divide-[#F0F0F0]">
+          <div className="border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg divide-y divide-[#EDEDEF]">
             {deadlines.map((dl, i) => {
               const daysUntil = Math.ceil(
                 (new Date(dl.date).getTime() - Date.now()) / 86400000
@@ -348,17 +348,17 @@ function OverviewView({
                 <Link
                   key={i}
                   href={`/tools/client-portal/${dl.portalId}`}
-                  className="flex items-center gap-3 p-3 hover:bg-[#FAFAFA] transition-colors"
+                  className="flex items-center gap-3 p-3 hover:bg-[#F7F8FA] transition-colors"
                 >
                   <div className="flex-1 min-w-0">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA]">{dl.client}</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">{dl.client}</span>
                     <p className="text-xs font-medium mt-0.5 truncate">{dl.name}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[11px] text-[#6B6B6B]">
+                    <p className="text-[11px] text-[#7A7A7A]">
                       {new Date(dl.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                     </p>
-                    <p className={`text-[10px] tabular-nums ${daysUntil < 0 ? "text-red-500 font-medium" : "text-[#AAAAAA]"}`}>
+                    <p className={`text-[10px] tabular-nums ${daysUntil < 0 ? "text-red-500 font-medium" : "text-[#A0A0A0]"}`}>
                       {daysUntil < 0 ? `${Math.abs(daysUntil)}d overdue` : daysUntil === 0 ? "today" : `${daysUntil}d`}
                     </p>
                   </div>
@@ -388,21 +388,21 @@ function ManageView({
   return (
     <div className="space-y-4">
       {portals.map((portal) => (
-        <div key={portal.id} className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+        <div key={portal.id} className="bg-white border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-5">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="text-sm font-semibold">{portal.client_name}</h3>
                 {portal.current_phase && (
-                  <span className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-[#F0F0F0] text-[#6B6B6B] rounded">
+                  <span className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-[#EDEDEF] text-[#7A7A7A] rounded">
                     {portal.current_phase}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-[#6B6B6B]">{portal.project_type || "No project type set"}</p>
-              {portal.client_email && <p className="text-[11px] text-[#AAAAAA] mt-0.5">{portal.client_email}</p>}
+              <p className="text-xs text-[#7A7A7A]">{portal.project_type || "No project type set"}</p>
+              {portal.client_email && <p className="text-[11px] text-[#A0A0A0] mt-0.5">{portal.client_email}</p>}
             </div>
-            <div className="flex items-center gap-1 text-xs text-[#AAAAAA]">
+            <div className="flex items-center gap-1 text-xs text-[#A0A0A0]">
               <EyeIcon className="size-3" />
               <span className="tabular-nums">{portal.view_count}</span>
             </div>
@@ -414,18 +414,18 @@ function ManageView({
                 <div
                   key={phase.id}
                   className={`h-1 rounded-full flex-1 ${
-                    phase.status === "complete" ? "bg-emerald-400" : phase.status === "in-progress" ? "bg-[#0A0A0A]" : "bg-[#E5E5E5]"
+                    phase.status === "complete" ? "bg-emerald-400" : phase.status === "in-progress" ? "bg-[#1B1B1B]" : "bg-[#E5E5EA]"
                   }`}
                 />
               ))}
             </div>
           )}
 
-          <div className="mt-4 pt-4 border-t border-[#F0F0F0] flex items-center justify-between gap-4">
+          <div className="mt-4 pt-4 border-t border-[#EDEDEF] flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <button
                 onClick={() => onCopyLink(portal.token)}
-                className="flex items-center gap-1 text-[11px] font-medium text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
+                className="flex items-center gap-1 text-[11px] font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
               >
                 <ClipboardDocumentIcon className="size-3.5" />
                 {copiedToken === portal.token ? "Copied!" : "Copy Link"}
@@ -434,7 +434,7 @@ function ManageView({
                 href={`/portal/${portal.token}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 text-[11px] font-medium text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
+                className="flex items-center gap-1 text-[11px] font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
               >
                 <ArrowTopRightOnSquareIcon className="size-3.5" />
                 Preview
@@ -443,7 +443,7 @@ function ManageView({
             <div className="flex items-center gap-2">
               <Link
                 href={`/tools/client-portal/${portal.id}`}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0A0A0A] text-white text-xs font-medium rounded-md hover:bg-[#2A2A2A] transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
               >
                 Manage
                 <svg className="size-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -452,7 +452,7 @@ function ManageView({
               </Link>
               <button
                 onClick={() => onDelete(portal.id)}
-                className="p-1.5 text-[#AAAAAA] hover:text-red-400 transition-colors"
+                className="p-1.5 text-[#A0A0A0] hover:text-red-400 transition-colors"
                 title="Delete portal"
               >
                 <TrashIcon className="size-3.5" />

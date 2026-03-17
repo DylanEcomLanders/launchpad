@@ -9,6 +9,7 @@ import type {
   PortalWin,
   PortalUpdate,
   PortalApproval,
+  AdHocRequest,
   PhaseStatus,
 } from "@/lib/portal/types";
 import type { DesignReview, DesignReviewVersion, DesignReviewFeedback } from "@/lib/portal/review-types";
@@ -16,7 +17,7 @@ import { toLoomEmbed } from "@/lib/portal/loom";
 import { toFigmaEmbed } from "@/lib/portal/review-types";
 
 /* ── Tab type ── */
-type Tab = "overview" | "timeline" | "updates" | "scope" | "designs" | "wins" | "results";
+type Tab = "overview" | "timeline" | "updates" | "scope" | "designs" | "wins" | "results" | "requests";
 
 /* ── SVG Progress Ring ── */
 function ProgressRing({
@@ -40,7 +41,7 @@ function ProgressRing({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#E5E5E5"
+          stroke="#E5E5EA"
           strokeWidth={strokeWidth}
         />
         <circle
@@ -48,7 +49,7 @@ function ProgressRing({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#0A0A0A"
+          stroke="#1B1B1B"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
@@ -58,7 +59,7 @@ function ProgressRing({
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-2xl font-bold tracking-tight">{progress}</span>
-        <span className="text-[10px] font-medium text-[#AAAAAA] -mt-0.5">
+        <span className="text-[10px] font-medium text-[#A0A0A0] -mt-0.5">
           percent
         </span>
       </div>
@@ -137,10 +138,10 @@ function UKTimeBanner() {
     <div className="flex items-center gap-2 mb-4">
       <span
         className={`size-2 rounded-full shrink-0 ${
-          isOnline ? "bg-emerald-400" : "bg-[#CCCCCC]"
+          isOnline ? "bg-emerald-400" : "bg-[#C5C5C5]"
         }`}
       />
-      <span className="text-[11px] text-[#6B6B6B]">
+      <span className="text-[11px] text-[#7A7A7A]">
         Our team works UK hours (GMT/BST 9am&ndash;6pm) &middot;{" "}
         {isOnline ? "Currently online" : "Currently offline"} &middot; UK time: {ukTime}
       </span>
@@ -157,6 +158,7 @@ export function PortalView({
   reviews = [],
   reviewVersions = {},
   reviewFeedback = {},
+  onSubmitRequest,
 }: {
   portal: PortalData;
   updates?: PortalUpdate[];
@@ -164,27 +166,34 @@ export function PortalView({
   reviews?: DesignReview[];
   reviewVersions?: Record<string, DesignReviewVersion[]>;
   reviewFeedback?: Record<string, DesignReviewFeedback[]>;
+  onSubmitRequest?: (title: string, description: string) => Promise<void>;
 }) {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
 
   const hasDesigns = reviews.length > 0;
 
+  /* Auto-calculate progress from deliverables */
+  const computedProgress = portal.deliverables.length > 0
+    ? Math.round(portal.deliverables.filter(d => d.status === "complete").length / portal.deliverables.length * 100)
+    : portal.progress;
+
   const tabs: { key: Tab; label: string }[] = [
     { key: "overview", label: "Overview" },
     { key: "timeline", label: "Timeline" },
     ...(updates.length > 0 ? [{ key: "updates" as Tab, label: "Updates" }] : []),
-    { key: "scope", label: "Scope" },
+    { key: "scope", label: "Scope / Deliverables" },
     ...(hasDesigns ? [{ key: "designs" as Tab, label: "Designs" }] : []),
     ...(portal.wins && portal.wins.length > 0 ? [{ key: "wins" as Tab, label: "Wins" }] : []),
     ...(portal.show_results ? [{ key: "results" as Tab, label: "Results" }] : []),
+    { key: "requests", label: "Requests" },
   ];
 
   return (
     <div>
       {/* ── Header ── */}
-      <div className="border-b border-[#E5E5E5]">
+      <div className="border-b border-[#E5E5EA]">
         <div className="max-w-3xl mx-auto px-6 md:px-12 pt-10 pb-8 md:pt-12 md:pb-10">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#AAAAAA] mb-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#A0A0A0] mb-3">
             Client Portal
           </p>
           <UKTimeBanner />
@@ -212,17 +221,17 @@ export function PortalView({
                           phase.status === "complete"
                             ? "bg-emerald-400"
                             : phase.status === "in-progress"
-                            ? "bg-[#0A0A0A]"
-                            : "bg-[#E5E5E5]"
+                            ? "bg-[#1B1B1B]"
+                            : "bg-[#E5E5EA]"
                         }`}
                       />
                       <p
                         className={`text-[10px] md:text-[11px] font-medium truncate ${
                           phase.status === "in-progress"
-                            ? "text-[#0A0A0A]"
+                            ? "text-[#1B1B1B]"
                             : phase.status === "complete"
                             ? "text-[#999999]"
-                            : "text-[#CCCCCC]"
+                            : "text-[#C5C5C5]"
                         }`}
                       >
                         {phase.name}
@@ -244,7 +253,7 @@ export function PortalView({
       <div className="max-w-3xl mx-auto px-6 md:px-12 py-10 md:py-14">
         {/* Tabs */}
         <div className="mb-10 -mx-6 px-6 md:mx-0 md:px-0 overflow-x-auto scrollbar-hide">
-          <div className="inline-flex bg-[#F5F5F5] rounded-md p-1 gap-0.5 min-w-max">
+          <div className="inline-flex bg-[#F3F3F5] rounded-md p-1 gap-0.5 min-w-max">
             {tabs.map((tab) => (
               <button
                 key={tab.key}
@@ -252,7 +261,7 @@ export function PortalView({
                 className={`px-3 md:px-5 py-2 text-xs md:text-sm font-medium rounded transition-all duration-200 whitespace-nowrap ${
                   activeTab === tab.key
                     ? "bg-accent text-white shadow-sm"
-                    : "text-[#6B6B6B] hover:text-[#0A0A0A]"
+                    : "text-[#7A7A7A] hover:text-[#1B1B1B]"
                 }`}
               >
                 {tab.label}
@@ -274,7 +283,6 @@ export function PortalView({
             <ScopeTab
               scope={portal.scope}
               documents={portal.documents}
-              deliverables={portal.deliverables}
             />
           )}
           {activeTab === "designs" && (
@@ -284,11 +292,16 @@ export function PortalView({
               reviewFeedback={reviewFeedback}
               portalToken={portal.token}
               clientName={portal.client_name}
-              slackChannelUrl={portal.slack_channel_url}
             />
           )}
           {activeTab === "wins" && <WinsTab wins={portal.wins || []} />}
           {activeTab === "results" && portal.show_results && <ResultsTab results={portal.results} />}
+          {activeTab === "requests" && (
+            <RequestsTab
+              requests={portal.ad_hoc_requests || []}
+              onSubmit={onSubmitRequest}
+            />
+          )}
         </div>
       </div>
     </div>
@@ -307,9 +320,9 @@ function OverviewTab({
   return (
     <div className="space-y-12">
       {/* Welcome Section */}
-      <div className="bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg p-6">
+      <div className="bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg p-6">
         <h3 className="text-sm font-semibold mb-2">Welcome to your project portal</h3>
-        <p className="text-xs text-[#6B6B6B] leading-relaxed">
+        <p className="text-xs text-[#7A7A7A] leading-relaxed">
           This is your central hub for tracking project progress. Use the tabs above to view your
           timeline, scope, designs, and any updates from the team. If you have questions, reply to
           any update email or reach out to your project manager.
@@ -318,27 +331,27 @@ function OverviewTab({
 
       {/* Next Touchpoint + Current Status */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-        <div className="border border-[#E5E5E5] rounded-lg p-6 bg-[#FAFAFA]">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-3">
+        <div className="bg-[#1B1B1B] rounded-lg p-6">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#888] mb-3">
             Next Touchpoint
           </p>
-          <p className="text-xl font-bold tracking-tight mb-1">
+          <p className="text-xl font-bold tracking-tight mb-1 text-white">
             {portal.next_touchpoint?.date || "\u2014"}
           </p>
-          <p className="text-sm text-[#6B6B6B] leading-relaxed">
+          <p className="text-sm text-[#999] leading-relaxed">
             {portal.next_touchpoint?.description || "No touchpoint scheduled"}
           </p>
         </div>
 
-        <div className="border border-[#E5E5E5] rounded-lg p-6">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-3">
+        <div className="border border-[#E5E5EA] rounded-lg p-6">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-3">
             Current Status
           </p>
           <p className="text-xl font-bold tracking-tight mb-1">
             {portal.current_phase}
           </p>
           {currentPhase && (
-            <p className="text-sm text-[#6B6B6B] leading-relaxed">
+            <p className="text-sm text-[#7A7A7A] leading-relaxed">
               {currentPhase.description}
             </p>
           )}
@@ -347,10 +360,10 @@ function OverviewTab({
 
       {/* Project journey */}
       <div>
-        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-5">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-5">
           Project Journey
         </h3>
-        <div className="border border-[#E5E5E5] rounded-lg divide-y divide-[#F0F0F0]">
+        <div className="border border-[#E5E5EA] rounded-lg divide-y divide-[#EDEDEF]">
           {portal.phases.map((phase) => (
               <div key={phase.id || phase.name} className="flex items-start gap-4 p-4">
                 <div className="pt-0.5">
@@ -361,11 +374,11 @@ function OverviewTab({
                     <span className={`text-sm font-medium ${phase.status === "upcoming" ? "text-[#BBBBBB]" : ""}`}>
                       {phase.name}
                     </span>
-                    <span className="text-xs text-[#AAAAAA] shrink-0">
+                    <span className="text-xs text-[#A0A0A0] shrink-0">
                       {phase.dates}
                     </span>
                   </div>
-                  <p className={`text-xs mt-0.5 leading-relaxed ${phase.status === "upcoming" ? "text-[#CCCCCC]" : "text-[#999999]"}`}>
+                  <p className={`text-xs mt-0.5 leading-relaxed ${phase.status === "upcoming" ? "text-[#C5C5C5]" : "text-[#999999]"}`}>
                     {phase.description}
                   </p>
                 </div>
@@ -376,15 +389,15 @@ function OverviewTab({
 
       {/* What we're building */}
       <div>
-        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-5">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-5">
           What We&apos;re Building
         </h3>
-        <div className="border border-[#E5E5E5] rounded-lg p-5">
+        <div className="border border-[#E5E5EA] rounded-lg p-5">
           <div className="grid grid-cols-2 gap-x-6 gap-y-2">
             {portal.scope.map((item, i) => (
               <div key={i} className="flex items-center gap-2.5 py-1">
-                <span className="size-1 rounded-full bg-[#CCCCCC] shrink-0" />
-                <span className="text-sm text-[#6B6B6B]">{item}</span>
+                <span className="size-1 rounded-full bg-[#C5C5C5] shrink-0" />
+                <span className="text-sm text-[#7A7A7A]">{item}</span>
               </div>
             ))}
           </div>
@@ -404,7 +417,7 @@ function TimelineTab({
   return (
     <div className="relative">
       {/* Vertical line */}
-      <div className="absolute left-[11px] top-4 bottom-4 w-px bg-[#E5E5E5]" />
+      <div className="absolute left-[11px] top-4 bottom-4 w-px bg-[#E5E5EA]" />
 
       <div className="space-y-0">
         {phases.map((phase) => {
@@ -421,7 +434,7 @@ function TimelineTab({
                     isComplete
                       ? "border-emerald-400 bg-white"
                       : isActive
-                      ? "border-[#0A0A0A] bg-white"
+                      ? "border-[#1B1B1B] bg-white"
                       : "border-[#D4D4D4] bg-white"
                   }`}
                 >
@@ -431,7 +444,7 @@ function TimelineTab({
                     </svg>
                   )}
                   {isActive && (
-                    <span className="size-2 rounded-full bg-[#0A0A0A] animate-pulse" />
+                    <span className="size-2 rounded-full bg-[#1B1B1B] animate-pulse" />
                   )}
                 </div>
               </div>
@@ -440,10 +453,10 @@ function TimelineTab({
               <div
                 className={`flex-1 rounded-lg p-5 transition-all ${
                   isActive
-                    ? "ring-1 ring-[#0A0A0A] bg-white"
+                    ? "ring-1 ring-[#1B1B1B] bg-white"
                     : isComplete
                     ? "ring-1 ring-emerald-300 bg-white"
-                    : "bg-[#FAFAFA]"
+                    : "bg-[#F7F8FA]"
                 }`}
               >
                 <div className="flex items-start justify-between mb-2">
@@ -451,7 +464,7 @@ function TimelineTab({
                     <div className="flex items-center gap-2 mb-0.5">
                       <h3 className={`text-sm font-bold ${!isComplete && !isActive ? "text-[#BBBBBB]" : ""}`}>{phase.name}</h3>
                       {isActive && (
-                        <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-[#0A0A0A] text-white rounded-full">
+                        <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-[#1B1B1B] text-white rounded-full">
                           Current
                         </span>
                       )}
@@ -461,7 +474,7 @@ function TimelineTab({
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-[#AAAAAA]">
+                    <p className="text-xs text-[#A0A0A0]">
                       {phase.dates}
                       {phase.deadline && (
                         <span className="ml-2 text-[#999999]">
@@ -472,7 +485,7 @@ function TimelineTab({
                   </div>
                 </div>
 
-                <p className={`text-sm leading-relaxed ${(isComplete || isActive) ? "text-[#6B6B6B]" : "text-[#BBBBBB]"} ${pct > 0 ? "mb-3" : ""}`}>
+                <p className={`text-sm leading-relaxed ${(isComplete || isActive) ? "text-[#7A7A7A]" : "text-[#BBBBBB]"} ${pct > 0 ? "mb-3" : ""}`}>
                   {phase.description}
                 </p>
 
@@ -481,7 +494,7 @@ function TimelineTab({
                   <div className="h-1 rounded-full overflow-hidden bg-[#EBEBEB]">
                     <div
                       className={`h-full rounded-full transition-all duration-700 ${
-                        isComplete ? "bg-emerald-400" : "bg-[#0A0A0A]"
+                        isComplete ? "bg-emerald-400" : "bg-[#1B1B1B]"
                       }`}
                       style={{ width: `${pct}%` }}
                     />
@@ -502,13 +515,13 @@ function UpdatesTab({ updates }: { updates: PortalUpdate[] }) {
   if (updates.length === 0) {
     return (
       <div className="text-center py-20">
-        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F5F5F5] mb-4">
-          <svg className="size-5 text-[#AAAAAA]" viewBox="0 0 20 20" fill="currentColor">
+        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F3F3F5] mb-4">
+          <svg className="size-5 text-[#A0A0A0]" viewBox="0 0 20 20" fill="currentColor">
             <path d="M2 3a1 1 0 00-1 1v1a1 1 0 001 1h16a1 1 0 001-1V4a1 1 0 00-1-1H2zM2 7.5h16l-.811 7.71a2 2 0 01-1.99 1.79H4.802a2 2 0 01-1.99-1.79L2 7.5z" />
           </svg>
         </div>
         <p className="text-sm text-[#999999] mb-1">No updates yet</p>
-        <p className="text-xs text-[#CCCCCC]">
+        <p className="text-xs text-[#C5C5C5]">
           Video updates from the team will appear here
         </p>
       </div>
@@ -518,7 +531,7 @@ function UpdatesTab({ updates }: { updates: PortalUpdate[] }) {
   return (
     <div className="space-y-6">
       {updates.map((update) => (
-        <div key={update.id} className="border border-[#E5E5E5] rounded-lg overflow-hidden">
+        <div key={update.id} className="border border-[#E5E5EA] rounded-lg overflow-hidden">
           {/* Video embed */}
           {toLoomEmbed(update.loom_url) && (
             <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
@@ -534,7 +547,7 @@ function UpdatesTab({ updates }: { updates: PortalUpdate[] }) {
           <div className="p-5">
             <div className="flex items-start justify-between gap-3 mb-1">
               <h3 className="text-base font-bold">{update.title}</h3>
-              <p className="text-xs text-[#AAAAAA] shrink-0">
+              <p className="text-xs text-[#A0A0A0] shrink-0">
                 {new Date(update.created_at).toLocaleDateString("en-GB", {
                   day: "numeric",
                   month: "short",
@@ -543,11 +556,11 @@ function UpdatesTab({ updates }: { updates: PortalUpdate[] }) {
               </p>
             </div>
             {update.description && (
-              <p className="text-sm text-[#6B6B6B] leading-relaxed">
+              <p className="text-sm text-[#7A7A7A] leading-relaxed">
                 {update.description}
               </p>
             )}
-            <p className="text-[11px] text-[#AAAAAA] mt-2">
+            <p className="text-[11px] text-[#A0A0A0] mt-2">
               Posted by {update.posted_by}
             </p>
           </div>
@@ -570,36 +583,26 @@ const typeLabels: Record<string, string> = {
 function ScopeTab({
   scope,
   documents,
-  deliverables,
 }: {
   scope: string[];
   documents: PortalDocument[];
-  deliverables: PortalData["deliverables"];
 }) {
   const [selected, setSelected] = useState<PortalDocument | null>(null);
 
-  // Group deliverables by phase
-  const phaseGroups = deliverables.reduce((acc, del) => {
-    const phase = del.phase || "Other";
-    if (!acc[phase]) acc[phase] = [];
-    acc[phase].push(del);
-    return acc;
-  }, {} as Record<string, typeof deliverables>);
-
   return (
     <div className="space-y-12">
-      {/* Scope items */}
+      {/* Scope / Deliverables */}
       {scope.length > 0 && (
         <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-5">
-            What&apos;s Included
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-5">
+            Scope / Deliverables
           </h3>
-          <div className="border border-[#E5E5E5] rounded-lg p-5">
+          <div className="border border-[#E5E5EA] rounded-lg p-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
               {scope.map((item, i) => (
                 <div key={i} className="flex items-center gap-2.5 py-1">
-                  <span className="size-1 rounded-full bg-[#CCCCCC] shrink-0" />
-                  <span className="text-sm text-[#6B6B6B]">{item}</span>
+                  <span className="size-1 rounded-full bg-[#C5C5C5] shrink-0" />
+                  <span className="text-sm text-[#7A7A7A]">{item}</span>
                 </div>
               ))}
             </div>
@@ -607,49 +610,10 @@ function ScopeTab({
         </div>
       )}
 
-      {/* Deliverables with approval */}
-      {deliverables.length > 0 && (
-        <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-5">
-            Deliverables
-          </h3>
-          <div className="space-y-6">
-            {Object.entries(phaseGroups).map(([phaseName, dels]) => (
-              <div key={phaseName}>
-                <p className="text-xs font-semibold text-[#6B6B6B] mb-2">
-                  {phaseName}
-                </p>
-                <div className="border border-[#E5E5E5] rounded-lg divide-y divide-[#F0F0F0]">
-                  {dels.map((del) => {
-                    const statusLabel = del.status === "complete" ? "Complete" : del.status === "in-progress" ? "Development" : "Design";
-                    const statusColor = del.status === "complete" ? "text-emerald-600 bg-emerald-50" : del.status === "in-progress" ? "text-blue-600 bg-blue-50" : "text-[#999999] bg-[#F5F5F5]";
-                    return (
-                      <div
-                        key={del.id}
-                        className="flex items-center gap-3 p-3"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium">
-                            {del.name}
-                          </p>
-                        </div>
-                        <span className={`shrink-0 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full ${statusColor}`}>
-                          {statusLabel}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Documents */}
       {documents.length > 0 && (
         <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-5">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-5">
             Key Documents
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -657,10 +621,10 @@ function ScopeTab({
               <button
                 key={i}
                 onClick={() => setSelected(doc)}
-                className="group text-left border border-[#E5E5E5] rounded-lg p-5 hover:border-[#0A0A0A] hover:shadow-sm transition-all duration-200"
+                className="group text-left border border-[#E5E5EA] rounded-lg p-5 hover:border-[#1B1B1B] hover:shadow-sm transition-all duration-200"
               >
                 <div className="flex items-start gap-4">
-                  <div className="shrink-0 size-10 rounded-lg bg-[#0A0A0A] text-white flex items-center justify-center text-[10px] font-bold tracking-wider">
+                  <div className="shrink-0 size-10 rounded-lg bg-[#1B1B1B] text-white flex items-center justify-center text-[10px] font-bold tracking-wider">
                     {typeLabels[doc.type] || "DOC"}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -668,17 +632,17 @@ function ScopeTab({
                       {doc.name}
                     </p>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-medium text-[#AAAAAA] uppercase tracking-wider">
+                      <span className="text-[10px] font-medium text-[#A0A0A0] uppercase tracking-wider">
                         {doc.type}
                       </span>
-                      <span className="text-[#E5E5E5]">&middot;</span>
-                      <span className="text-[10px] text-[#AAAAAA]">
+                      <span className="text-[#E5E5EA]">&middot;</span>
+                      <span className="text-[10px] text-[#A0A0A0]">
                         {doc.date}
                       </span>
                     </div>
                   </div>
                   <svg
-                    className="size-4 text-[#CCCCCC] group-hover:text-[#0A0A0A] group-hover:translate-x-0.5 transition-all shrink-0 mt-0.5"
+                    className="size-4 text-[#C5C5C5] group-hover:text-[#1B1B1B] group-hover:translate-x-0.5 transition-all shrink-0 mt-0.5"
                     viewBox="0 0 16 16"
                     fill="none"
                     stroke="currentColor"
@@ -709,13 +673,13 @@ function WinsTab({ wins }: { wins: PortalWin[] }) {
   if (wins.length === 0) {
     return (
       <div className="text-center py-20">
-        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F5F5F5] mb-4">
-          <svg className="size-5 text-[#AAAAAA]" viewBox="0 0 20 20" fill="currentColor">
+        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F3F3F5] mb-4">
+          <svg className="size-5 text-[#A0A0A0]" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clipRule="evenodd" />
           </svg>
         </div>
         <p className="text-sm text-[#999999] mb-1">No wins recorded yet</p>
-        <p className="text-xs text-[#CCCCCC]">Results and milestones will appear here</p>
+        <p className="text-xs text-[#C5C5C5]">Results and milestones will appear here</p>
       </div>
     );
   }
@@ -724,12 +688,12 @@ function WinsTab({ wins }: { wins: PortalWin[] }) {
     <div className="space-y-10">
       {/* Summary stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <div className="border border-[#E5E5E5] rounded-lg p-5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-2">Total Wins</p>
+        <div className="border border-[#E5E5EA] rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-2">Total Wins</p>
           <p className="text-2xl font-bold tracking-tight text-emerald-500">{wins.length}</p>
         </div>
-        <div className="border border-[#E5E5E5] rounded-lg p-5 col-span-1 md:col-span-2">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-2">Latest Win</p>
+        <div className="border border-[#E5E5EA] rounded-lg p-5 col-span-1 md:col-span-2">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-2">Latest Win</p>
           <p className="text-sm font-semibold">{wins[0]?.title}</p>
           <p className="text-xs text-emerald-500 font-semibold mt-0.5">{wins[0]?.lift}</p>
         </div>
@@ -737,12 +701,12 @@ function WinsTab({ wins }: { wins: PortalWin[] }) {
 
       {/* Win cards */}
       <div>
-        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-5">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-5">
           All Wins
         </h3>
         <div className="space-y-4">
           {wins.map((win) => (
-            <div key={win.id} className="border border-[#E5E5E5] rounded-lg p-5">
+            <div key={win.id} className="border border-[#E5E5EA] rounded-lg p-5">
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div>
                   <h4 className="text-sm font-semibold mb-0.5">{win.title}</h4>
@@ -754,8 +718,8 @@ function WinsTab({ wins }: { wins: PortalWin[] }) {
               </div>
               {/* Before → After bar */}
               <div className="flex items-center gap-3 mb-3">
-                <div className="flex-1 bg-[#F5F5F5] rounded-lg p-3 text-center">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">Before</p>
+                <div className="flex-1 bg-[#F3F3F5] rounded-lg p-3 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">Before</p>
                   <p className="text-lg font-bold text-[#999999]">{win.before}</p>
                 </div>
                 <svg className="size-5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
@@ -787,13 +751,13 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
   if (results.length === 0) {
     return (
       <div className="text-center py-20">
-        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F5F5F5] mb-4">
-          <svg className="size-5 text-[#AAAAAA]" viewBox="0 0 20 20" fill="currentColor">
+        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F3F3F5] mb-4">
+          <svg className="size-5 text-[#A0A0A0]" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M2 3.75A.75.75 0 012.75 3h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 3.75zm0 4.167a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75zm0 4.166a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75zm0 4.167a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75z" clipRule="evenodd" />
           </svg>
         </div>
         <p className="text-sm text-[#999999] mb-1">No tests yet</p>
-        <p className="text-xs text-[#CCCCCC]">Results will appear here once testing begins</p>
+        <p className="text-xs text-[#C5C5C5]">Results will appear here once testing begins</p>
       </div>
     );
   }
@@ -807,7 +771,7 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
 
   function TestList({ tests }: { tests: PortalTestResult[] }) {
     return (
-      <div className="border border-[#E5E5E5] rounded-lg divide-y divide-[#F0F0F0]">
+      <div className="border border-[#E5E5EA] rounded-lg divide-y divide-[#EDEDEF]">
         {tests.map((test, i) => {
           const config = statusConfig[test.status];
           return (
@@ -837,16 +801,16 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
     <div className="space-y-10">
       {/* Summary */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="border border-[#E5E5E5] rounded-lg p-5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-2">Active Tests</p>
+        <div className="border border-[#E5E5EA] rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-2">Active Tests</p>
           <p className="text-2xl font-bold tracking-tight">{running.length}</p>
         </div>
-        <div className="border border-[#E5E5E5] rounded-lg p-5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-2">Winners</p>
+        <div className="border border-[#E5E5EA] rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-2">Winners</p>
           <p className="text-2xl font-bold tracking-tight text-emerald-500">{completed.filter(r => r.status === "winner").length}</p>
         </div>
-        <div className="border border-[#E5E5E5] rounded-lg p-5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-2">Coming Up</p>
+        <div className="border border-[#E5E5EA] rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-2">Coming Up</p>
           <p className="text-2xl font-bold tracking-tight text-amber-500">{scheduled.length}</p>
         </div>
       </div>
@@ -854,7 +818,7 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
       {/* Currently Running */}
       {running.length > 0 && (
         <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-5">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-5">
             Currently Running
           </h3>
           <TestList tests={running} />
@@ -865,7 +829,7 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
       {scheduled.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-5">
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA]">
+            <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0]">
               What&apos;s Coming Next
             </h3>
             <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-amber-50 text-amber-600 rounded-full">
@@ -879,7 +843,7 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
       {/* Completed Tests */}
       {completed.length > 0 && (
         <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAAAAA] mb-5">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-5">
             Completed Tests
           </h3>
           <TestList tests={completed} />
@@ -897,18 +861,18 @@ function DesignsTab({
   reviewFeedback,
   portalToken,
   clientName,
-  slackChannelUrl,
 }: {
   reviews: DesignReview[];
   reviewVersions: Record<string, DesignReviewVersion[]>;
   reviewFeedback: Record<string, DesignReviewFeedback[]>;
   portalToken: string;
   clientName: string;
-  slackChannelUrl?: string;
 }) {
   const [feedbackState, setFeedbackState] = useState<Record<string, { show: boolean; comment: string }>>({});
   const [submitting, setSubmitting] = useState<string | null>(null);
   const [localFeedback, setLocalFeedback] = useState<Record<string, DesignReviewFeedback[]>>(reviewFeedback);
+  // Track selected version per review
+  const [selectedVersions, setSelectedVersions] = useState<Record<string, string>>({});
 
   const handleFeedback = async (reviewId: string, versionId: string, action: "approved" | "changes_requested") => {
     const comment = feedbackState[versionId]?.comment || "";
@@ -952,241 +916,198 @@ function DesignsTab({
   if (reviews.length === 0) {
     return (
       <div className="text-center py-20">
-        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F5F5F5] mb-4">
-          <svg className="size-5 text-[#AAAAAA]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />
+        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F3F3F5] mb-4">
+          <svg className="size-5 text-[#A0A0A0]" viewBox="0 0 15 15" fill="currentColor">
+            <path fillRule="evenodd" clipRule="evenodd" d="M7.5 0C5.57 0 4 1.57 4 3.5c0 .62.16 1.2.44 1.7A3.49 3.49 0 003 8.5c0 1.63 1.12 3 2.63 3.38A3.49 3.49 0 007 15a3.5 3.5 0 003.5-3.5V9.95A3.49 3.49 0 0011 3.5C11 1.57 9.43 0 7.5 0zM5 3.5C5 2.12 6.12 1 7.5 1H8v5H7.5A2.5 2.5 0 015 3.5zM7 12v-.5a2.5 2.5 0 112.5-2.5H9v2.5A2 2 0 017 12z" />
           </svg>
         </div>
-        <p className="text-sm text-[#999999] mb-1">No designs yet</p>
-        <p className="text-xs text-[#CCCCCC]">Design reviews will appear here as they&apos;re shared</p>
+        <p className="text-sm text-[#999999] mb-1">No designs shared yet</p>
+        <p className="text-xs text-[#C5C5C5]">Designs will appear here when they&apos;re ready for review</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-10">
-      {/* Slack link */}
-      {slackChannelUrl && (
-        <div className="bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg p-4 flex items-center gap-3">
-          <div className="shrink-0 size-9 rounded-lg bg-[#4A154B] flex items-center justify-center">
-            <svg className="size-5 text-white" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z" />
-            </svg>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium">Discuss designs in Slack</p>
-            <p className="text-xs text-[#999999]">Quick feedback and questions? Drop them in the channel</p>
-          </div>
-          <a
-            href={slackChannelUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="shrink-0 px-3 py-1.5 text-xs font-semibold bg-[#0A0A0A] text-white rounded-md hover:bg-[#333] transition-colors"
-          >
-            Open Slack
-          </a>
-        </div>
-      )}
-
-      {/* Design reviews */}
+    <div className="space-y-12">
       {reviews.map((review) => {
-        const versions = (reviewVersions[review.id] || []).sort((a, b) => a.version_number - b.version_number);
-        const latestVersion = versions[versions.length - 1];
+        const versions = (reviewVersions[review.id] || []).sort((a, b) => b.version_number - a.version_number);
+        const latestVersion = versions[0];
+        const activeVersionId = selectedVersions[review.id] || latestVersion?.id;
+        const activeVersion = versions.find(v => v.id === activeVersionId) || latestVersion;
+        const isCurrentSelected = activeVersion?.id === latestVersion?.id;
 
         return (
-          <div key={review.id} className="border border-[#E5E5E5] rounded-lg overflow-hidden">
-            {/* Review header */}
-            <div className="p-5 border-b border-[#F0F0F0]">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="text-base font-bold mb-0.5">{review.title}</h3>
-                  {review.description && (
-                    <p className="text-xs text-[#999999] leading-relaxed">{review.description}</p>
-                  )}
-                </div>
-                <span className={`shrink-0 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full ${
-                  review.status === "approved" ? "text-emerald-600 bg-emerald-50" :
-                  review.status === "changes_requested" ? "text-amber-600 bg-amber-50" :
-                  "text-blue-600 bg-blue-50"
-                }`}>
-                  {review.status === "approved" ? "Approved" : review.status === "changes_requested" ? "Changes Requested" : "Awaiting Review"}
-                </span>
-              </div>
+          <div key={review.id}>
+            {/* Title + status */}
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <h3 className="text-base font-bold">{review.title}</h3>
+              <span className={`shrink-0 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full ${
+                review.status === "approved" ? "text-emerald-600 bg-emerald-50" :
+                review.status === "changes_requested" ? "text-amber-600 bg-amber-50" :
+                "text-[#999] bg-[#F3F3F5]"
+              }`}>
+                {review.status === "approved" ? "Approved" : review.status === "changes_requested" ? "Amends Needed" : "Pending"}
+              </span>
             </div>
 
-            {/* Versions chronological */}
-            <div className="divide-y divide-[#F0F0F0]">
-              {versions.map((version) => {
-                const embedUrl = toFigmaEmbed(version.figma_url);
-                const versionFeedback = localFeedback[version.id] || [];
-                const statusFeedback = versionFeedback.filter(fb => fb.action !== "comment");
-                const isLatest = latestVersion && version.id === latestVersion.id;
-                const showFb = feedbackState[version.id]?.show || false;
+            {/* Horizontal version tabs */}
+            {versions.length > 0 && (
+              <div className="flex items-center gap-1.5 mb-4">
+                {versions.map((v, i) => {
+                  const isCurrent = i === 0;
+                  const isActive = v.id === activeVersionId;
+                  return (
+                    <button
+                      key={v.id}
+                      onClick={() => setSelectedVersions(prev => ({ ...prev, [review.id]: v.id }))}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
+                        isActive
+                          ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
+                          : "bg-white text-[#7A7A7A] border-[#E5E5EA] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"
+                      }`}
+                    >
+                      v{v.version_number}
+                      {isCurrent && (
+                        <span className={`text-[9px] font-semibold uppercase ${isActive ? "text-emerald-300" : "text-emerald-500"}`}>
+                          Current
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
-                return (
-                  <div key={version.id} className="p-5">
-                    {/* Version header */}
-                    <div className="flex items-center justify-between mb-3">
+            {/* Figma embed for selected version */}
+            {activeVersion && (
+              <div>
+                {toFigmaEmbed(activeVersion.figma_url) && (
+                  <div className="relative w-full rounded-lg overflow-hidden border border-[#E5E5EA]" style={{ paddingBottom: "65%" }}>
+                    <iframe
+                      src={toFigmaEmbed(activeVersion.figma_url) || ""}
+                      className="absolute inset-0 w-full h-full"
+                      allowFullScreen
+                    />
+                  </div>
+                )}
+
+                {/* Open in Figma */}
+                <a
+                  href={activeVersion.figma_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
+                >
+                  <svg className="size-4" viewBox="0 0 15 15" fill="currentColor">
+                    <path fillRule="evenodd" clipRule="evenodd" d="M7.5 0C5.57 0 4 1.57 4 3.5c0 .62.16 1.2.44 1.7A3.49 3.49 0 003 8.5c0 1.63 1.12 3 2.63 3.38A3.49 3.49 0 007 15a3.5 3.5 0 003.5-3.5V9.95A3.49 3.49 0 0011 3.5C11 1.57 9.43 0 7.5 0zM5 3.5C5 2.12 6.12 1 7.5 1H8v5H7.5A2.5 2.5 0 015 3.5zM7 12v-.5a2.5 2.5 0 112.5-2.5H9v2.5A2 2 0 017 12z" />
+                  </svg>
+                  Open in Figma
+                  <svg className="size-3 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                  </svg>
+                </a>
+              </div>
+            )}
+
+            {/* Feedback history for active version */}
+            {activeVersion && (() => {
+              const versionFeedback = localFeedback[activeVersion.id] || [];
+              const statusFeedback = versionFeedback.filter(fb => fb.action !== "comment");
+              return statusFeedback.length > 0 ? (
+                <div className="space-y-2 mt-5">
+                  {statusFeedback.map((fb) => (
+                    <div key={fb.id} className={`rounded-lg p-3 text-xs ${
+                      fb.action === "approved" ? "bg-emerald-50 border border-emerald-100" : "bg-amber-50 border border-amber-100"
+                    }`}>
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-[#F5F5F5] text-[#6B6B6B] rounded">
-                          v{version.version_number}
+                        <span className={`font-semibold ${fb.action === "approved" ? "text-emerald-600" : "text-amber-600"}`}>
+                          {fb.action === "approved" ? "Approved" : "Changes Requested"}
                         </span>
-                        <span className="text-xs text-[#AAAAAA]">
-                          {new Date(version.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                        <span className="text-[#A0A0A0]">&middot;</span>
+                        <span className="text-[#999999]">{fb.submitted_by}</span>
+                        <span className="text-[#A0A0A0]">&middot;</span>
+                        <span className="text-[#999999]">
+                          {new Date(fb.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                         </span>
-                        {isLatest && (
-                          <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-[#0A0A0A] text-white rounded-full">
-                            Latest
-                          </span>
-                        )}
+                      </div>
+                      {fb.comment && <p className="text-[#7A7A7A] mt-1">{fb.comment}</p>}
+                    </div>
+                  ))}
+                </div>
+              ) : null;
+            })()}
+
+            {/* Approve / Request Amends — only on current version */}
+            {isCurrentSelected && activeVersion && review.status !== "approved" && (() => {
+              const showFb = feedbackState[activeVersion.id]?.show || false;
+              return (
+                <div className="border border-[#E5E5EA] rounded-lg p-5 mt-5">
+                  <p className="text-sm font-semibold mb-1">Ready to approve?</p>
+                  <p className="text-xs text-[#999] mb-4">Leave any comments in Figma first, then approve or request amends below.</p>
+                  {showFb ? (
+                    <div className="space-y-3">
+                      <textarea
+                        value={feedbackState[activeVersion.id]?.comment || ""}
+                        onChange={(e) => setFeedbackState(prev => ({
+                          ...prev,
+                          [activeVersion.id]: { ...prev[activeVersion.id], show: true, comment: e.target.value }
+                        }))}
+                        placeholder="Any notes (optional)"
+                        className="w-full px-3 py-2.5 text-sm border border-[#E5E5EA] rounded-lg resize-none h-20 focus:outline-none focus:ring-1 focus:ring-[#1B1B1B]/10 focus:border-[#C5C5C5]"
+                        autoFocus
+                      />
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleFeedback(review.id, activeVersion.id, "approved")}
+                          disabled={submitting === activeVersion.id}
+                          className="px-5 py-2.5 text-xs font-semibold bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
+                        >
+                          {submitting === activeVersion.id ? "Saving..." : "Approve"}
+                        </button>
+                        <button
+                          onClick={() => handleFeedback(review.id, activeVersion.id, "changes_requested")}
+                          disabled={submitting === activeVersion.id}
+                          className="px-5 py-2.5 text-xs font-semibold bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
+                        >
+                          Request Amends
+                        </button>
+                        <button
+                          onClick={() => setFeedbackState(prev => ({ ...prev, [activeVersion.id]: { show: false, comment: "" } }))}
+                          className="px-3 py-2.5 text-xs font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
+                        >
+                          Cancel
+                        </button>
                       </div>
                     </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setFeedbackState(prev => ({ ...prev, [activeVersion.id]: { show: true, comment: "" } }))}
+                        className="px-5 py-2.5 text-xs font-semibold bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => setFeedbackState(prev => ({ ...prev, [activeVersion.id]: { show: true, comment: "" } }))}
+                        className="px-5 py-2.5 text-xs font-semibold border border-[#E5E5EA] text-[#7A7A7A] rounded-lg hover:bg-[#F3F3F5] transition-colors"
+                      >
+                        Request Amends
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
-                    {/* Figma embed — large preview */}
-                    {embedUrl && (
-                      <div className="relative w-full rounded-xl overflow-hidden border border-[#E5E5E5] mb-4" style={{ paddingBottom: "80%" }}>
-                        <iframe
-                          src={embedUrl}
-                          className="absolute inset-0 w-full h-full"
-                          allowFullScreen
-                        />
-                      </div>
-                    )}
-
-                    {/* Version notes */}
-                    {version.notes && (
-                      <p className="text-xs text-[#6B6B6B] leading-relaxed mb-3">{version.notes}</p>
-                    )}
-
-                    {/* Status feedback history (approvals / change requests) */}
-                    {statusFeedback.length > 0 && (
-                      <div className="space-y-2 mb-3">
-                        {statusFeedback.map((fb) => (
-                          <div key={fb.id} className={`rounded-md p-3 text-xs ${
-                            fb.action === "approved" ? "bg-emerald-50 border border-emerald-100" : "bg-amber-50 border border-amber-100"
-                          }`}>
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className={`font-semibold ${fb.action === "approved" ? "text-emerald-600" : "text-amber-600"}`}>
-                                {fb.action === "approved" ? "Approved" : "Changes Requested"}
-                              </span>
-                              <span className="text-[#AAAAAA]">&middot;</span>
-                              <span className="text-[#999999]">{fb.submitted_by}</span>
-                              <span className="text-[#AAAAAA]">&middot;</span>
-                              <span className="text-[#999999]">
-                                {new Date(fb.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                              </span>
-                            </div>
-                            {fb.comment && <p className="text-[#6B6B6B]">{fb.comment}</p>}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Review actions (only on latest version, not yet approved) */}
-                    {isLatest && review.status !== "approved" && (
-                      <div className="border border-[#E5E5E5] rounded-lg overflow-hidden">
-                        {/* Step 1: Leave comments */}
-                        <div className="p-4 bg-[#FAFAFA] border-b border-[#F0F0F0]">
-                          <div className="flex items-start gap-3">
-                            <div className="flex items-center justify-center size-6 shrink-0 rounded-full bg-[#0A0A0A] text-white text-[10px] font-bold mt-0.5">1</div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-[#0A0A0A] mb-0.5">Leave comments on the design</p>
-                              <p className="text-xs text-[#999999] leading-relaxed">Click below to open the design in Figma. Leave your comments directly on the design, then close the tab and come back here.</p>
-                            </div>
-                          </div>
-                          <a
-                            href={version.figma_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mt-3 ml-9 inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-[#0A0A0A] text-white rounded-lg hover:bg-[#333] transition-colors"
-                          >
-                            <svg className="size-4" viewBox="0 0 15 15" fill="currentColor">
-                              <path fillRule="evenodd" clipRule="evenodd" d="M7.5 0C5.57 0 4 1.57 4 3.5c0 .62.16 1.2.44 1.7A3.49 3.49 0 003 8.5c0 1.63 1.12 3 2.63 3.38A3.49 3.49 0 007 15a3.5 3.5 0 003.5-3.5V9.95A3.49 3.49 0 0011 3.5C11 1.57 9.43 0 7.5 0zM5 3.5C5 2.12 6.12 1 7.5 1H8v5H7.5A2.5 2.5 0 015 3.5zM7 12v-.5a2.5 2.5 0 112.5-2.5H9v2.5A2 2 0 017 12z" />
-                            </svg>
-                            Open in Figma to Comment
-                            <svg className="size-3 text-white/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                            </svg>
-                          </a>
-                        </div>
-
-                        {/* Step 2: Approve or request amends */}
-                        <div className="p-4">
-                          <div className="flex items-start gap-3 mb-3">
-                            <div className="flex items-center justify-center size-6 shrink-0 rounded-full bg-[#0A0A0A] text-white text-[10px] font-bold mt-0.5">2</div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-[#0A0A0A] mb-0.5">Approve or request changes</p>
-                              <p className="text-xs text-[#999999] leading-relaxed">Once you&apos;ve reviewed the design, let us know if it&apos;s good to go or if anything needs changing.</p>
-                            </div>
-                          </div>
-                          {showFb ? (
-                            <div className="ml-9 space-y-2">
-                              <textarea
-                                value={feedbackState[version.id]?.comment || ""}
-                                onChange={(e) => setFeedbackState(prev => ({
-                                  ...prev,
-                                  [version.id]: { ...prev[version.id], show: true, comment: e.target.value }
-                                }))}
-                                placeholder="Any additional notes (optional)"
-                                className="w-full px-3 py-2 text-xs border border-[#E5E5E5] rounded-lg resize-none h-16 focus:outline-none focus:ring-1 focus:ring-[#0A0A0A]/10 focus:border-[#CCCCCC]"
-                                autoFocus
-                              />
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => handleFeedback(review.id, version.id, "approved")}
-                                  disabled={submitting === version.id}
-                                  className="px-4 py-2 text-xs font-semibold bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
-                                >
-                                  {submitting === version.id ? "Saving..." : "Approve Design"}
-                                </button>
-                                <button
-                                  onClick={() => handleFeedback(review.id, version.id, "changes_requested")}
-                                  disabled={submitting === version.id}
-                                  className="px-4 py-2 text-xs font-semibold bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
-                                >
-                                  Request Amends
-                                </button>
-                                <button
-                                  onClick={() => setFeedbackState(prev => ({ ...prev, [version.id]: { show: false, comment: "" } }))}
-                                  className="px-3 py-2 text-xs font-semibold text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="ml-9 flex items-center gap-2">
-                              <button
-                                onClick={() => setFeedbackState(prev => ({ ...prev, [version.id]: { show: true, comment: "" } }))}
-                                className="px-4 py-2 text-xs font-semibold bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
-                              >
-                                Approve Design
-                              </button>
-                              <button
-                                onClick={() => setFeedbackState(prev => ({ ...prev, [version.id]: { show: true, comment: "" } }))}
-                                className="px-4 py-2 text-xs font-semibold border border-[#E5E5E5] text-[#6B6B6B] rounded-lg hover:bg-[#F5F5F5] transition-colors"
-                              >
-                                Request Amends
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Approved state */}
-                    {isLatest && review.status === "approved" && (
-                      <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-100 rounded-lg">
-                        <svg className="size-4 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span className="text-xs font-semibold text-emerald-600">Design approved</span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            {/* Approved banner */}
+            {review.status === "approved" && (
+              <div className="flex items-center gap-2 p-4 bg-emerald-50 border border-emerald-100 rounded-lg mt-5">
+                <svg className="size-5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-sm font-semibold text-emerald-600">This design has been approved</span>
+              </div>
+            )}
           </div>
         );
       })}
@@ -1216,7 +1137,7 @@ function ApproveButton({
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder="Add a note (optional)"
-          className={`px-2 py-1 text-xs border border-[#E5E5E5] rounded ${compact ? "w-32" : "w-full"}`}
+          className={`px-2 py-1 text-xs border border-[#E5E5EA] rounded ${compact ? "w-32" : "w-full"}`}
           autoFocus
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -1238,7 +1159,7 @@ function ApproveButton({
           </button>
           <button
             onClick={() => setShowComment(false)}
-            className="px-2 py-1 text-[10px] font-semibold text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
+            className="px-2 py-1 text-[10px] font-semibold text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
           >
             Cancel
           </button>
@@ -1284,27 +1205,27 @@ function DocumentPreview({
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-lg bg-white rounded-xl shadow-2xl animate-fadeIn">
+      <div className="relative w-full max-w-lg bg-white rounded-lg shadow-2xl animate-fadeIn">
         {/* Header */}
-        <div className="flex items-start justify-between p-6 border-b border-[#F0F0F0]">
+        <div className="flex items-start justify-between p-6 border-b border-[#EDEDEF]">
           <div className="flex items-start gap-4">
-            <div className="shrink-0 size-12 rounded-lg bg-[#0A0A0A] text-white flex items-center justify-center text-[11px] font-bold tracking-wider">
+            <div className="shrink-0 size-12 rounded-lg bg-[#1B1B1B] text-white flex items-center justify-center text-[11px] font-bold tracking-wider">
               {typeLabels[doc.type] || "DOC"}
             </div>
             <div>
               <h3 className="text-base font-bold mb-1">{doc.name}</h3>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-[#AAAAAA] uppercase tracking-wider font-medium">
+                <span className="text-xs text-[#A0A0A0] uppercase tracking-wider font-medium">
                   {doc.type}
                 </span>
-                <span className="text-[#E5E5E5]">&middot;</span>
-                <span className="text-xs text-[#AAAAAA]">{doc.date}</span>
+                <span className="text-[#E5E5EA]">&middot;</span>
+                <span className="text-xs text-[#A0A0A0]">{doc.date}</span>
               </div>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-md hover:bg-[#F5F5F5] transition-colors text-[#AAAAAA] hover:text-[#0A0A0A]"
+            className="p-1.5 rounded-md hover:bg-[#F3F3F5] transition-colors text-[#A0A0A0] hover:text-[#1B1B1B]"
           >
             <svg className="size-5" viewBox="0 0 20 20" fill="currentColor">
               <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
@@ -1314,22 +1235,22 @@ function DocumentPreview({
 
         {/* Document preview placeholder */}
         <div className="p-6">
-          <div className="border border-[#E5E5E5] rounded-lg bg-[#FAFAFA] p-8 mb-6">
+          <div className="border border-[#E5E5EA] rounded-lg bg-[#F7F8FA] p-8 mb-6">
             <div className="space-y-4">
-              <div className="h-3 bg-[#E5E5E5] rounded w-2/3" />
+              <div className="h-3 bg-[#E5E5EA] rounded w-2/3" />
               <div className="space-y-2">
                 <div className="h-2 bg-[#EBEBEB] rounded w-full" />
                 <div className="h-2 bg-[#EBEBEB] rounded w-5/6" />
                 <div className="h-2 bg-[#EBEBEB] rounded w-4/6" />
               </div>
-              <div className="h-px bg-[#E5E5E5]" />
+              <div className="h-px bg-[#E5E5EA]" />
               <div className="space-y-2">
                 <div className="h-2 bg-[#EBEBEB] rounded w-full" />
                 <div className="h-2 bg-[#EBEBEB] rounded w-3/4" />
                 <div className="h-2 bg-[#EBEBEB] rounded w-5/6" />
                 <div className="h-2 bg-[#EBEBEB] rounded w-2/3" />
               </div>
-              <div className="h-px bg-[#E5E5E5]" />
+              <div className="h-px bg-[#E5E5EA]" />
               <div className="space-y-2">
                 <div className="h-2 bg-[#EBEBEB] rounded w-full" />
                 <div className="h-2 bg-[#EBEBEB] rounded w-4/5" />
@@ -1341,7 +1262,7 @@ function DocumentPreview({
           <div className="flex items-center gap-3">
             <button
               onClick={handleDownload}
-              className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-lg hover:bg-[#2A2A2A] transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-[#1B1B1B] text-white text-sm font-medium rounded-lg hover:bg-[#2A2A3E] transition-colors"
             >
               <svg className="size-4" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z" />
@@ -1351,7 +1272,7 @@ function DocumentPreview({
             </button>
             <button
               onClick={onClose}
-              className="px-5 py-3 text-sm font-medium text-[#6B6B6B] border border-[#E5E5E5] rounded-lg hover:bg-[#F5F5F5] transition-colors"
+              className="px-5 py-3 text-sm font-medium text-[#7A7A7A] border border-[#E5E5EA] rounded-lg hover:bg-[#F3F3F5] transition-colors"
             >
               Close
             </button>
@@ -1360,11 +1281,163 @@ function DocumentPreview({
 
         {/* Toast */}
         {toast && (
-          <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 px-5 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-full shadow-xl whitespace-nowrap animate-fadeIn">
+          <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 px-5 py-3 bg-[#1B1B1B] text-white text-sm font-medium rounded-full shadow-xl whitespace-nowrap animate-fadeIn">
             {toast}
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/* ── Requests Tab ── */
+
+function RequestsTab({
+  requests,
+  onSubmit,
+}: {
+  requests: AdHocRequest[];
+  onSubmit?: (title: string, description: string) => Promise<void>;
+}) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const statusColor = (status: AdHocRequest["status"]) => {
+    switch (status) {
+      case "open":
+        return "bg-amber-100 text-amber-700 border-amber-200";
+      case "in-progress":
+        return "bg-blue-100 text-blue-700 border-blue-200";
+      case "done":
+        return "bg-emerald-100 text-emerald-700 border-emerald-200";
+    }
+  };
+
+  const statusLabel = (status: AdHocRequest["status"]) => {
+    switch (status) {
+      case "open":
+        return "Open";
+      case "in-progress":
+        return "In Progress";
+      case "done":
+        return "Done";
+    }
+  };
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!title.trim() || !onSubmit) return;
+
+    setSubmitting(true);
+    try {
+      await onSubmit(title.trim(), description.trim());
+      setTitle("");
+      setDescription("");
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="space-y-10">
+      {/* Submit form */}
+      <div>
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-5">
+          Submit a Request
+        </h3>
+        <form onSubmit={handleSubmit} className="border border-[#E5E5EA] rounded-lg p-5 space-y-4">
+          <div>
+            <label htmlFor="req-title" className="block text-xs font-medium text-[#7A7A7A] mb-1.5">
+              Title <span className="text-[#C5C5C5]">*</span>
+            </label>
+            <input
+              id="req-title"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Add announcement bar to homepage"
+              className="w-full px-3 py-2.5 text-sm border border-[#E5E5EA] rounded-lg bg-white placeholder:text-[#C5C5C5] focus:outline-none focus:border-[#1B1B1B] transition-colors"
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="req-desc" className="block text-xs font-medium text-[#7A7A7A] mb-1.5">
+              Description <span className="text-[#C5C5C5]">(optional)</span>
+            </label>
+            <textarea
+              id="req-desc"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Add any details, context, or links..."
+              rows={3}
+              className="w-full px-3 py-2.5 text-sm border border-[#E5E5EA] rounded-lg bg-white placeholder:text-[#C5C5C5] focus:outline-none focus:border-[#1B1B1B] transition-colors resize-none"
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={!title.trim() || submitting}
+              className="px-5 py-2.5 text-sm font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#1A1A1A] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              {submitting ? "Submitting..." : "Submit Request"}
+            </button>
+            {showSuccess && (
+              <span className="text-sm text-emerald-600 font-medium animate-fadeIn">
+                Request submitted
+              </span>
+            )}
+          </div>
+        </form>
+      </div>
+
+      {/* Existing requests */}
+      {requests.length > 0 && (
+        <div>
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-5">
+            Your Requests
+          </h3>
+          <div className="border border-[#E5E5EA] rounded-lg divide-y divide-[#EDEDEF]">
+            {requests.map((req) => (
+              <div key={req.id} className="p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[#1B1B1B]">{req.title}</p>
+                    {req.description && (
+                      <p className="text-xs text-[#7A7A7A] mt-1 leading-relaxed">
+                        {req.description}
+                      </p>
+                    )}
+                    <p className="text-[10px] text-[#A0A0A0] mt-2">
+                      {new Date(req.requested_at).toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </p>
+                  </div>
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 text-[10px] font-semibold rounded-full border shrink-0 ${statusColor(req.status)}`}
+                  >
+                    {statusLabel(req.status)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {requests.length === 0 && (
+        <div className="text-center py-8">
+          <p className="text-sm text-[#A0A0A0]">
+            No requests yet. Use the form above to submit your first request.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

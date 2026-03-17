@@ -1,23 +1,47 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: #FAFAFA;
-  --color-foreground: #0A0A0A;
-  --color-surface: #F0F0F0;
-  --color-surface-light: #F5F5F5;
-  --color-border: #E5E5E5;
-  --color-muted: #6B6B6B;
-  --color-hover: #2A2A2A;
-  --color-accent: #0A0A0A;
-  --color-accent-hover: #2A2A2A;
-  --color-accent-light: #F5F5F5;
-  --color-accent-muted: #999999;
+  --color-background: #F7F8FA;
+  --color-foreground: #1B1B1B;
+  --color-surface: #EDEDEF;
+  --color-surface-light: #F3F3F5;
+  --color-border: #E5E5EA;
+  --color-muted: #7A7A7A;
+  --color-hover: #2D2D2D;
+  --color-accent: #1B1B1B;
+  --color-accent-hover: #2D2D2D;
+  --color-accent-light: #F3F3F5;
+  --color-accent-muted: #A0A0A0;
+  --color-sidebar-bg: #FFFFFF;
+  --color-card-bg: #FFFFFF;
   --font-heading: var(--font-inter), "Inter", system-ui, sans-serif;
   --font-body: var(--font-articulat), "Articulat CF", system-ui, sans-serif;
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);
+  --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.03);
+  --shadow-nav-active: 0 1px 4px rgba(0, 0, 0, 0.08), 0 0.5px 1.5px rgba(0, 0, 0, 0.04);
 }
 
 html, body {
   overflow-x: hidden;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #D4D4D4 transparent;
+}
+*::-webkit-scrollbar {
+  width: 2px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: #D4D4D4;
+  border-radius: 2px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #A0A0A0;
 }
 
 body {
@@ -70,6 +94,25 @@ h1, h2, h3, h4, h5, h6 {
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* Thin minimal scrollbar */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #D4D4D4 transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  width: 2px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #D4D4D4;
+  border-radius: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #A0A0A0;
 }
 
 /* Ensure light theme only */

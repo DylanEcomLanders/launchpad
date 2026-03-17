@@ -77,7 +77,7 @@ export default function IssuesPage() {
     <div className="max-w-3xl mx-auto px-6 md:px-12 py-12">
       <div className="mb-6">
         <h1 className="text-xl font-semibold">Issues</h1>
-        <p className="text-xs text-[#AAAAAA] mt-0.5">
+        <p className="text-xs text-[#A0A0A0] mt-0.5">
           Bugs, change requests &amp; ideas logged by the team
         </p>
       </div>
@@ -107,22 +107,22 @@ export default function IssuesPage() {
           <option value="done">Done</option>
         </select>
 
-        <span className="text-[11px] text-[#AAAAAA] ml-auto tabular-nums">
+        <span className="text-[11px] text-[#A0A0A0] ml-auto tabular-nums">
           {filtered.length} {filtered.length === 1 ? "issue" : "issues"}
         </span>
       </div>
 
       {/* List */}
       {filtered.length === 0 ? (
-        <div className="border border-[#E5E5E5] rounded-lg p-12 text-center">
-          <p className="text-sm text-[#AAAAAA]">
+        <div className="border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-12 text-center">
+          <p className="text-sm text-[#A0A0A0]">
             {issues.length === 0
               ? "No issues yet. Use the floating button to report one."
               : "No issues match the current filters."}
           </p>
         </div>
       ) : (
-        <div className="space-y-0 border border-[#E5E5E5] rounded-lg divide-y divide-[#F0F0F0]">
+        <div className="space-y-0 border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg divide-y divide-[#EDEDEF]">
           {filtered.map((issue) => (
             <div key={issue.id} className="px-4 py-3 flex items-start gap-3">
               {/* Type badge */}
@@ -136,16 +136,16 @@ export default function IssuesPage() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{issue.title}</p>
                 {issue.description && (
-                  <p className="text-xs text-[#6B6B6B] mt-0.5 line-clamp-2">
+                  <p className="text-xs text-[#7A7A7A] mt-0.5 line-clamp-2">
                     {issue.description}
                   </p>
                 )}
                 <div className="flex items-center gap-2 mt-1.5">
-                  <span className="text-[10px] text-[#AAAAAA]">
+                  <span className="text-[10px] text-[#A0A0A0]">
                     {timeAgo(issue.created_at)}
                   </span>
                   {issue.page && (
-                    <span className="text-[10px] text-[#AAAAAA] truncate max-w-[200px]">
+                    <span className="text-[10px] text-[#A0A0A0] truncate max-w-[200px]">
                       {issue.page}
                     </span>
                   )}
@@ -159,7 +159,7 @@ export default function IssuesPage() {
                   onChange={(e) =>
                     handleStatusChange(issue.id, e.target.value as IssueStatus)
                   }
-                  className="text-[11px] border border-[#E5E5E5] rounded px-1.5 py-1 bg-white focus:outline-none"
+                  className="text-[11px] border border-[#E5E5EA] rounded px-1.5 py-1 bg-white focus:outline-none"
                 >
                   {(Object.keys(STATUS_LABELS) as IssueStatus[]).map((s) => (
                     <option key={s} value={s}>
@@ -170,7 +170,7 @@ export default function IssuesPage() {
 
                 <button
                   onClick={() => handleDelete(issue.id)}
-                  className="text-[#CCCCCC] hover:text-red-500 transition-colors text-sm leading-none p-1"
+                  className="text-[#C5C5C5] hover:text-red-500 transition-colors text-sm leading-none p-1"
                   title="Delete issue"
                 >
                   &times;

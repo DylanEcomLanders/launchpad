@@ -36,14 +36,14 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (!authed) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] px-6">
+      <div className="min-h-screen flex items-center justify-center bg-[#F7F8FA] px-6">
         <div className="w-full max-w-xs">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#F0F0F0] border border-[#E5E5E5] mb-4">
-              <LockClosedIcon className="size-5 text-[#6B6B6B]" />
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#EDEDEF] border border-[#E5E5EA] mb-4">
+              <LockClosedIcon className="size-5 text-[#7A7A7A]" />
             </div>
             <h1 className="text-lg font-semibold">Launchpad</h1>
-            <p className="text-xs text-[#6B6B6B] mt-1">
+            <p className="text-xs text-[#7A7A7A] mt-1">
               Enter password to continue
             </p>
           </div>
@@ -57,10 +57,10 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
               }}
               placeholder="Password"
               autoFocus
-              className={`w-full px-3 py-2.5 bg-white border rounded-md text-sm focus:outline-none transition-colors placeholder:text-[#CCCCCC] ${
+              className={`w-full px-3 py-2.5 bg-white border rounded-md text-sm focus:outline-none transition-colors placeholder:text-[#C5C5C5] ${
                 error
                   ? "border-red-300 focus:border-red-500"
-                  : "border-[#E5E5E5] focus:border-[#0A0A0A]"
+                  : "border-[#E5E5EA] focus:border-[#1B1B1B]"
               }`}
             />
             {error && (
@@ -68,7 +68,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
             )}
             <button
               type="submit"
-              className="w-full px-4 py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors"
+              className="w-full px-4 py-2.5 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors"
             >
               Continue
             </button>

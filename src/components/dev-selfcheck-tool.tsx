@@ -42,10 +42,10 @@ function nextResult(current: SelfCheckResult): SelfCheckResult {
 }
 
 const resultStyles: Record<SelfCheckResult, { label: string; bg: string; text: string }> = {
-  "": { label: "\u2014", bg: "bg-[#F5F5F5]", text: "text-[#CCCCCC]" },
+  "": { label: "\u2014", bg: "bg-[#F3F3F5]", text: "text-[#C5C5C5]" },
   pass: { label: "Pass", bg: "bg-emerald-50", text: "text-emerald-600" },
   fail: { label: "Fail", bg: "bg-red-50", text: "text-red-500" },
-  na: { label: "N/A", bg: "bg-[#F5F5F5]", text: "text-[#999999]" },
+  na: { label: "N/A", bg: "bg-[#F3F3F5]", text: "text-[#999999]" },
 };
 
 export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } = {}) {
@@ -176,13 +176,13 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
             Dev Self-Check
           </h1>
-          <p className="text-[#6B6B6B]">
+          <p className="text-[#7A7A7A]">
             Run through this checklist before handing off to QA — catch issues before they cost you time
           </p>
         </div>
 
         {/* Project Info */}
-        <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5 space-y-4 mb-8">
+        <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-5 space-y-4 mb-8">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className={labelClass}>Project Name</label>
@@ -222,9 +222,9 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
 
         {/* Stats Bar */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-          <div className="bg-white border border-[#E5E5E5] rounded-lg p-3 text-center">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">Pass Rate</p>
-            <p className={`text-xl font-bold ${passRate >= 90 ? "text-emerald-500" : passRate >= 70 ? "text-amber-500" : stats.checked === 0 ? "text-[#CCCCCC]" : "text-red-500"}`}>
+          <div className="bg-white border border-[#E5E5EA] rounded-lg p-3 text-center">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">Pass Rate</p>
+            <p className={`text-xl font-bold ${passRate >= 90 ? "text-emerald-500" : passRate >= 70 ? "text-amber-500" : stats.checked === 0 ? "text-[#C5C5C5]" : "text-red-500"}`}>
               {stats.checked > 0 ? `${passRate}%` : "\u2014"}
             </p>
           </div>
@@ -236,8 +236,8 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
             <p className="text-[10px] font-semibold uppercase tracking-wider text-red-300 mb-1">Fail</p>
             <p className="text-xl font-bold text-red-500">{stats.fail}</p>
           </div>
-          <div className="bg-white border border-[#E5E5E5] rounded-lg p-3 text-center">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">Unchecked</p>
+          <div className="bg-white border border-[#E5E5EA] rounded-lg p-3 text-center">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">Unchecked</p>
             <p className="text-xl font-bold text-[#999999]">{stats.unchecked}</p>
           </div>
         </div>
@@ -250,16 +250,16 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
             const isCollapsed = collapsed[cat];
 
             return (
-              <div key={cat} className="bg-white border border-[#E5E5E5] rounded-lg overflow-hidden">
+              <div key={cat} className="bg-white border border-[#E5E5EA] rounded-lg overflow-hidden">
                 {/* Category header */}
                 <button
                   onClick={() => setCollapsed((prev) => ({ ...prev, [cat]: !prev[cat] }))}
-                  className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-[#FAFAFA] transition-colors"
+                  className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-[#F7F8FA] transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <ChevronDownIcon className={`size-3.5 text-[#AAAAAA] transition-transform ${isCollapsed ? "-rotate-90" : ""}`} />
+                    <ChevronDownIcon className={`size-3.5 text-[#A0A0A0] transition-transform ${isCollapsed ? "-rotate-90" : ""}`} />
                     <span className="text-sm font-semibold">{cat}</span>
-                    <span className="text-[10px] text-[#AAAAAA]">
+                    <span className="text-[10px] text-[#A0A0A0]">
                       {catStat.pass}/{catStat.total - catStat.na} pass
                     </span>
                   </div>
@@ -272,11 +272,11 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
 
                 {/* Items */}
                 {!isCollapsed && (
-                  <div className="border-t border-[#F0F0F0]">
+                  <div className="border-t border-[#EDEDEF]">
                     {catItems.map((item) => {
                       const style = resultStyles[item.result];
                       return (
-                        <div key={item.id} className="border-b border-[#F0F0F0] last:border-b-0">
+                        <div key={item.id} className="border-b border-[#EDEDEF] last:border-b-0">
                           <div className="flex items-center gap-3 px-5 py-3">
                             {/* Result toggle */}
                             <button
@@ -294,7 +294,7 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
                               <button
                                 onClick={() => setNotesOpen((prev) => ({ ...prev, [item.id]: !prev[item.id] }))}
                                 className={`p-1 rounded transition-colors ${
-                                  item.notes ? "text-blue-500" : "text-[#CCCCCC] hover:text-[#999999]"
+                                  item.notes ? "text-blue-500" : "text-[#C5C5C5] hover:text-[#999999]"
                                 }`}
                                 title="Notes"
                               >
@@ -302,7 +302,7 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
                               </button>
                               <button
                                 onClick={() => removeItem(item.id)}
-                                className="p-1 text-[#CCCCCC] hover:text-red-400 transition-colors"
+                                className="p-1 text-[#C5C5C5] hover:text-red-400 transition-colors"
                                 title="Remove"
                               >
                                 <TrashIcon className="size-3.5" />
@@ -317,7 +317,7 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
                                 value={item.notes}
                                 onChange={(e) => updateItem(item.id, { notes: e.target.value })}
                                 placeholder="Add a note..."
-                                className="w-full px-3 py-2 text-xs bg-[#FAFAFA] border border-[#E5E5E5] rounded-md focus:outline-none focus:border-[#999999]"
+                                className="w-full px-3 py-2 text-xs bg-[#F7F8FA] border border-[#E5E5EA] rounded-md focus:outline-none focus:border-[#999999]"
                               />
                             </div>
                           )}
@@ -334,19 +334,19 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
                           onChange={(e) => setNewItemText(e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && addCustomItem(cat)}
                           placeholder="Describe the check..."
-                          className="flex-1 px-3 py-2 text-xs bg-[#FAFAFA] border border-[#E5E5E5] rounded-md focus:outline-none focus:border-[#999999]"
+                          className="flex-1 px-3 py-2 text-xs bg-[#F7F8FA] border border-[#E5E5EA] rounded-md focus:outline-none focus:border-[#999999]"
                           autoFocus
                         />
                         <button
                           onClick={() => addCustomItem(cat)}
                           disabled={!newItemText.trim()}
-                          className="px-3 py-2 text-xs font-medium bg-[#0A0A0A] text-white rounded-md hover:bg-[#2A2A2A] transition-colors disabled:opacity-40"
+                          className="px-3 py-2 text-xs font-medium bg-[#1B1B1B] text-white rounded-md hover:bg-[#2D2D2D] transition-colors disabled:opacity-40"
                         >
                           Add
                         </button>
                         <button
                           onClick={() => { setAddingTo(null); setNewItemText(""); }}
-                          className="px-3 py-2 text-xs text-[#999999] hover:text-[#0A0A0A]"
+                          className="px-3 py-2 text-xs text-[#999999] hover:text-[#1B1B1B]"
                         >
                           Cancel
                         </button>
@@ -354,7 +354,7 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
                     ) : (
                       <button
                         onClick={() => setAddingTo(cat)}
-                        className="flex items-center gap-1.5 px-5 py-3 text-xs text-[#AAAAAA] hover:text-[#6B6B6B] transition-colors w-full"
+                        className="flex items-center gap-1.5 px-5 py-3 text-xs text-[#A0A0A0] hover:text-[#7A7A7A] transition-colors w-full"
                       >
                         <PlusIcon className="size-3" />
                         Add item
@@ -375,14 +375,14 @@ export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } =
             className={`flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-md transition-all ${
               copiedReport
                 ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
-                : "bg-[#0A0A0A] text-white hover:bg-[#2A2A2A] disabled:opacity-40 disabled:cursor-not-allowed"
+                : "bg-[#1B1B1B] text-white hover:bg-[#2D2D2D] disabled:opacity-40 disabled:cursor-not-allowed"
             }`}
           >
             {copiedReport ? "Copied Report!" : "Copy Report"}
           </button>
           <button
             onClick={resetAll}
-            className="flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-md border border-[#E5E5E5] bg-white text-[#6B6B6B] hover:border-[#CCCCCC] hover:text-[#0A0A0A] transition-colors"
+            className="flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-md border border-[#E5E5EA] bg-white text-[#7A7A7A] hover:border-[#C5C5C5] hover:text-[#1B1B1B] transition-colors"
           >
             Reset
           </button>

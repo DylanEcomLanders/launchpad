@@ -61,7 +61,7 @@ export default function TeamToolsPage() {
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">
             Team Tools
           </h1>
-          <p className="text-sm text-[#6B6B6B]">
+          <p className="text-sm text-[#7A7A7A]">
             Research, create, and ship — powered by brand intelligence
           </p>
         </div>
@@ -75,30 +75,30 @@ export default function TeamToolsPage() {
                 key={mod.title}
                 href={mod.live ? mod.href : "#"}
                 className={`
-                  bg-white border border-[#E5E5E5] rounded-lg p-5 transition-all
+                  bg-white border border-[#E5E5EA] rounded-lg p-5 transition-all
                   ${
                     mod.live
-                      ? "hover:border-[#0A0A0A] hover:shadow-sm cursor-pointer group"
+                      ? "hover:border-[#1B1B1B] hover:shadow-sm cursor-pointer group"
                       : "opacity-60 cursor-default"
                   }
                 `}
               >
                 <div className="flex items-center gap-2 mb-3">
-                  <mod.icon className="size-5 text-[#6B6B6B]" />
-                  <h2 className="text-sm font-semibold text-[#0A0A0A]">
+                  <mod.icon className="size-5 text-[#7A7A7A]" />
+                  <h2 className="text-sm font-semibold text-[#1B1B1B]">
                     {mod.title}
                   </h2>
                   {!mod.live && (
-                    <span className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-[#F0F0F0] text-[#AAAAAA] rounded">
+                    <span className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-[#EDEDEF] text-[#A0A0A0] rounded">
                       Coming Soon
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-[#6B6B6B] leading-relaxed mb-3">
+                <p className="text-xs text-[#7A7A7A] leading-relaxed mb-3">
                   {mod.description}
                 </p>
                 {mod.live && (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-[#0A0A0A] group-hover:gap-1.5 transition-all">
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-[#1B1B1B] group-hover:gap-1.5 transition-all">
                     Open
                     <ChevronRightIcon className="size-3" />
                   </span>
@@ -110,7 +110,7 @@ export default function TeamToolsPage() {
 
         {/* Tools Section */}
         <div className="mt-10">
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#6B6B6B] mb-4">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
             Tools
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -118,18 +118,18 @@ export default function TeamToolsPage() {
               <Link
                 key={tool.title}
                 href={tool.href}
-                className="bg-white border border-[#E5E5E5] rounded-lg p-5 hover:border-[#0A0A0A] hover:shadow-sm cursor-pointer group transition-all"
+                className="bg-white border border-[#E5E5EA] rounded-lg p-5 hover:border-[#1B1B1B] hover:shadow-sm cursor-pointer group transition-all"
               >
                 <div className="flex items-center gap-2 mb-3">
-                  <tool.icon className="size-5 text-[#6B6B6B]" />
-                  <h2 className="text-sm font-semibold text-[#0A0A0A]">
+                  <tool.icon className="size-5 text-[#7A7A7A]" />
+                  <h2 className="text-sm font-semibold text-[#1B1B1B]">
                     {tool.title}
                   </h2>
                 </div>
-                <p className="text-xs text-[#6B6B6B] leading-relaxed mb-3">
+                <p className="text-xs text-[#7A7A7A] leading-relaxed mb-3">
                   {tool.description}
                 </p>
-                <span className="inline-flex items-center gap-1 text-xs font-medium text-[#0A0A0A] group-hover:gap-1.5 transition-all">
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-[#1B1B1B] group-hover:gap-1.5 transition-all">
                   Open
                   <ChevronRightIcon className="size-3" />
                 </span>

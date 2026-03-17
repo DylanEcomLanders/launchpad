@@ -44,7 +44,7 @@ export default function PricingPage() {
   if (!tier) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-sm text-[#AAAAAA]">Invalid pricing tier</p>
+        <p className="text-sm text-[#A0A0A0]">Invalid pricing tier</p>
       </div>
     );
   }
@@ -166,14 +166,14 @@ export default function PricingPage() {
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
       <header className="px-6 md:px-12 py-5">
-        <Logo height={16} className="text-[#0A0A0A]" />
+        <Logo height={16} className="text-[#1B1B1B]" />
       </header>
 
       <div className="px-6 md:px-12 pb-6">
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">
           Pricing &amp; Packages
         </h1>
-        <p className="text-sm text-[#6B6B6B]">
+        <p className="text-sm text-[#7A7A7A]">
           Choose your services, get your price.
         </p>
       </div>
@@ -200,7 +200,7 @@ export default function PricingPage() {
             if (!items?.length) return null;
             return (
               <section key={cat}>
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-4">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
                   {serviceCategories[cat]}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -226,17 +226,17 @@ export default function PricingPage() {
                         onClick={() => toggle(svc.id)}
                         className={`text-left p-5 rounded-lg border-2 transition-all ${
                           isSelected
-                            ? "border-[#0A0A0A] bg-[#FAFAFA]"
-                            : "border-[#E5E5E5] bg-white hover:border-[#CCCCCC]"
+                            ? "border-[#1B1B1B] bg-[#F7F8FA]"
+                            : "border-[#E5E5EA] bg-white hover:border-[#C5C5C5]"
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3 mb-2">
                           <div className="flex items-center gap-2">
-                            <h3 className="text-sm font-semibold text-[#0A0A0A]">
+                            <h3 className="text-sm font-semibold text-[#1B1B1B]">
                               {svc.name}
                             </h3>
                             {svc.recommended && (
-                              <span className="flex items-center gap-0.5 text-[10px] font-semibold uppercase tracking-wide bg-[#0A0A0A] text-white px-1.5 py-0.5 rounded">
+                              <span className="flex items-center gap-0.5 text-[10px] font-semibold uppercase tracking-wide bg-[#1B1B1B] text-white px-1.5 py-0.5 rounded">
                                 <SparklesIcon className="size-2.5" />
                                 Popular
                               </span>
@@ -245,8 +245,8 @@ export default function PricingPage() {
                           <div
                             className={`size-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
                               isSelected
-                                ? "bg-[#0A0A0A] border-[#0A0A0A]"
-                                : "border-[#E5E5E5]"
+                                ? "bg-[#1B1B1B] border-[#1B1B1B]"
+                                : "border-[#E5E5EA]"
                             }`}
                           >
                             {isSelected && (
@@ -258,23 +258,23 @@ export default function PricingPage() {
                         <div className="mb-3">
                           {originalPrice ? (
                             <div className="flex items-baseline gap-2">
-                              <span className="text-lg font-bold text-[#0A0A0A] tabular-nums">
+                              <span className="text-lg font-bold text-[#1B1B1B] tabular-nums">
                                 {formatGBP(displayPrice)}
-                                {isRecurring && <span className="text-sm font-normal text-[#6B6B6B]">/mo</span>}
+                                {isRecurring && <span className="text-sm font-normal text-[#7A7A7A]">/mo</span>}
                               </span>
-                              <span className="text-sm line-through text-[#AAAAAA] tabular-nums">
+                              <span className="text-sm line-through text-[#A0A0A0] tabular-nums">
                                 {formatGBP(originalPrice)}
                               </span>
                             </div>
                           ) : (
-                            <span className="text-lg font-bold text-[#0A0A0A] tabular-nums">
+                            <span className="text-lg font-bold text-[#1B1B1B] tabular-nums">
                               {formatGBP(displayPrice)}
-                              {isRecurring && <span className="text-sm font-normal text-[#6B6B6B]">/mo</span>}
+                              {isRecurring && <span className="text-sm font-normal text-[#7A7A7A]">/mo</span>}
                             </span>
                           )}
                         </div>
 
-                        <p className="text-xs text-[#6B6B6B] mb-3">
+                        <p className="text-xs text-[#7A7A7A] mb-3">
                           {svc.description}
                         </p>
 
@@ -283,9 +283,9 @@ export default function PricingPage() {
                             {svc.features.map((f, i) => (
                               <li
                                 key={i}
-                                className="flex items-start gap-2 text-xs text-[#6B6B6B]"
+                                className="flex items-start gap-2 text-xs text-[#7A7A7A]"
                               >
-                                <CheckIcon className="size-3 text-[#0A0A0A] mt-0.5 shrink-0" />
+                                <CheckIcon className="size-3 text-[#1B1B1B] mt-0.5 shrink-0" />
                                 {f}
                               </li>
                             ))}
@@ -302,10 +302,10 @@ export default function PricingPage() {
         {/* Add-on Services */}
         {addOnServices.length > 0 && (
           <section>
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-4">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
               {serviceCategories["additional"]}
             </h2>
-            <div className="bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg divide-y divide-[#E5E5E5]">
+            <div className="bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg divide-y divide-[#E5E5EA]">
               {addOnServices.map((svc) => {
                 const mode = svc.modes[0];
                 const pricing = svc.pricing[mode];
@@ -329,8 +329,8 @@ export default function PricingPage() {
                         <div
                           className={`size-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
                             isSelected
-                              ? "bg-[#0A0A0A] border-[#0A0A0A]"
-                              : "border-[#CCCCCC]"
+                              ? "bg-[#1B1B1B] border-[#1B1B1B]"
+                              : "border-[#C5C5C5]"
                           }`}
                         >
                           {isSelected && (
@@ -338,17 +338,17 @@ export default function PricingPage() {
                           )}
                         </div>
                         <div className="min-w-0">
-                          <span className="text-sm font-medium text-[#0A0A0A] block truncate">
+                          <span className="text-sm font-medium text-[#1B1B1B] block truncate">
                             {svc.name}
                           </span>
                           {svc.description && (
-                            <span className="text-xs text-[#AAAAAA] block truncate">
+                            <span className="text-xs text-[#A0A0A0] block truncate">
                               {svc.description}
                             </span>
                           )}
                         </div>
                       </div>
-                      <span className="text-sm font-semibold text-[#0A0A0A] tabular-nums shrink-0">
+                      <span className="text-sm font-semibold text-[#1B1B1B] tabular-nums shrink-0">
                         {tierPrice.label}
                       </span>
                     </button>
@@ -357,7 +357,7 @@ export default function PricingPage() {
                     {!isSelected && svc.volumeDiscounts && svc.volumeDiscounts.length > 0 && (
                       <div className="px-5 pb-2 ml-7 flex items-center gap-3 flex-wrap">
                         {svc.volumeDiscounts.map((vd) => (
-                          <span key={vd.minQty} className="text-[10px] text-[#AAAAAA]">
+                          <span key={vd.minQty} className="text-[10px] text-[#A0A0A0]">
                             {vd.minQty}+: <span className="font-semibold text-[#15803D]">{vd.label}</span>
                           </span>
                         ))}
@@ -377,32 +377,32 @@ export default function PricingPage() {
                         <div className="px-5 pb-3.5 ml-7 space-y-1.5">
                           <div className="flex items-center justify-between gap-4">
                             <div className="flex items-center gap-3">
-                              <span className="text-xs font-medium text-[#6B6B6B]">Qty:</span>
-                              <div className="inline-flex items-center rounded-md border border-[#E5E5E5] bg-white">
+                              <span className="text-xs font-medium text-[#7A7A7A]">Qty:</span>
+                              <div className="inline-flex items-center rounded-md border border-[#E5E5EA] bg-white">
                                 <button
                                   onClick={() => setQuantity(svc.id, Math.max(minQty, qty - 1))}
                                   disabled={qty <= minQty}
-                                  className="px-2 py-1 text-[#6B6B6B] hover:text-[#0A0A0A] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                  className="px-2 py-1 text-[#7A7A7A] hover:text-[#1B1B1B] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                 >
                                   <MinusIcon className="size-3" />
                                 </button>
-                                <span className="px-3 py-1 text-sm font-semibold tabular-nums border-x border-[#E5E5E5]">
+                                <span className="px-3 py-1 text-sm font-semibold tabular-nums border-x border-[#E5E5EA]">
                                   {qty}
                                 </span>
                                 <button
                                   onClick={() => setQuantity(svc.id, Math.min(svc.maxQuantity!, qty + 1))}
                                   disabled={qty >= svc.maxQuantity!}
-                                  className="px-2 py-1 text-[#6B6B6B] hover:text-[#0A0A0A] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                  className="px-2 py-1 text-[#7A7A7A] hover:text-[#1B1B1B] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                 >
                                   <PlusIcon className="size-3" />
                                 </button>
                               </div>
                               {minQty > 1 && (
-                                <span className="text-[10px] text-[#AAAAAA]">min {minQty}</span>
+                                <span className="text-[10px] text-[#A0A0A0]">min {minQty}</span>
                               )}
                             </div>
                             <div className="text-right">
-                              <span className="text-sm font-semibold text-[#0A0A0A] tabular-nums">
+                              <span className="text-sm font-semibold text-[#1B1B1B] tabular-nums">
                                 {qty} &times; {effectiveLabel || tierPrice.label} = {formatGBP(lineTotal)}
                               </span>
                               {saving > 0 && (
@@ -414,7 +414,7 @@ export default function PricingPage() {
                           </div>
                           {/* Next discount tier nudge */}
                           {volResult.nextTier && (
-                            <p className="text-[10px] text-[#AAAAAA] ml-10">
+                            <p className="text-[10px] text-[#A0A0A0] ml-10">
                               Order {volResult.nextTier.minQty}+ for {volResult.nextTier.label}
                             </p>
                           )}
@@ -430,7 +430,7 @@ export default function PricingPage() {
       </div>
 
       {/* Persistent Sticky Summary Bar — always visible */}
-      <div className="sticky bottom-0 bg-white border-t border-[#E5E5E5] shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+      <div className="sticky bottom-0 bg-white border-t border-[#E5E5EA] shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
         <div className="px-6 md:px-12 py-4">
           {hasSelection ? (
             <>
@@ -439,17 +439,17 @@ export default function PricingPage() {
                 {selectedItems.map(({ service, price, quantity, isRecurring, originalPrice, volumeSaving }) => (
                   <div key={service.id}>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-[#6B6B6B]">
+                      <span className="text-xs text-[#7A7A7A]">
                         {service.name}
-                        {quantity > 1 && <span className="text-[#AAAAAA]"> &times;{quantity}</span>}
+                        {quantity > 1 && <span className="text-[#A0A0A0]"> &times;{quantity}</span>}
                       </span>
                       <div className="flex items-baseline gap-2">
                         {originalPrice && (
-                          <span className="text-xs line-through text-[#AAAAAA] tabular-nums">
+                          <span className="text-xs line-through text-[#A0A0A0] tabular-nums">
                             {formatGBP(originalPrice)}
                           </span>
                         )}
-                        <span className="text-xs font-semibold text-[#0A0A0A] tabular-nums">
+                        <span className="text-xs font-semibold text-[#1B1B1B] tabular-nums">
                           {formatGBP(price)}
                           {isRecurring && "/mo"}
                         </span>
@@ -471,20 +471,20 @@ export default function PricingPage() {
               </div>
 
               {/* Total */}
-              <div className="border-t border-[#E5E5E5] pt-3 flex items-center justify-between">
-                <span className="text-xs font-medium text-[#6B6B6B]">
+              <div className="border-t border-[#E5E5EA] pt-3 flex items-center justify-between">
+                <span className="text-xs font-medium text-[#7A7A7A]">
                   {selected.size} {selected.size === 1 ? "service" : "services"} selected
                 </span>
                 <div className="flex items-baseline gap-4">
                   {oneOffTotal > 0 && (
-                    <span className="text-lg font-bold text-[#0A0A0A] tabular-nums">
+                    <span className="text-lg font-bold text-[#1B1B1B] tabular-nums">
                       {formatGBP(oneOffTotal)}
                     </span>
                   )}
                   {recurringTotal > 0 && (
-                    <span className="text-lg font-bold text-[#0A0A0A] tabular-nums">
+                    <span className="text-lg font-bold text-[#1B1B1B] tabular-nums">
                       {formatGBP(recurringTotal)}
-                      <span className="text-sm font-normal text-[#6B6B6B]">/mo</span>
+                      <span className="text-sm font-normal text-[#7A7A7A]">/mo</span>
                     </span>
                   )}
                 </div>
@@ -492,10 +492,10 @@ export default function PricingPage() {
             </>
           ) : (
             <div className="flex items-center justify-between">
-              <span className="text-xs text-[#AAAAAA]">
+              <span className="text-xs text-[#A0A0A0]">
                 Select services above to build your package
               </span>
-              <span className="text-lg font-bold text-[#AAAAAA] tabular-nums">
+              <span className="text-lg font-bold text-[#A0A0A0] tabular-nums">
                 {formatGBP(0)}
               </span>
             </div>
@@ -504,14 +504,14 @@ export default function PricingPage() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-[#F0F0F0] px-6 md:px-12 py-6 text-center mt-auto">
-        <p className="text-xs text-[#AAAAAA]">
+      <footer className="border-t border-[#EDEDEF] px-6 md:px-12 py-6 text-center mt-auto">
+        <p className="text-xs text-[#A0A0A0]">
           Built by{" "}
           <a
             href="https://ecomlanders.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
+            className="font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
           >
             Ecomlanders
           </a>

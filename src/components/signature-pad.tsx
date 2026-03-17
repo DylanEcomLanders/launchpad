@@ -36,7 +36,7 @@ export function SignaturePad({
     ctx.fillRect(0, 0, rect.width, rect.height);
 
     // Drawing style
-    ctx.strokeStyle = "#0A0A0A";
+    ctx.strokeStyle = "#1B1B1B";
     ctx.lineWidth = 2;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
@@ -109,20 +109,20 @@ export function SignaturePad({
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B6B6B]">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
           {label}
         </label>
         <button
           type="button"
           onClick={handleClear}
-          className="text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
+          className="text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
         >
           Clear
         </button>
       </div>
       <canvas
         ref={canvasRef}
-        className="w-full border border-[#E5E5E5] rounded-md cursor-crosshair bg-white"
+        className="w-full border border-[#E5E5EA] rounded-md cursor-crosshair bg-white"
         style={{ height: 150, touchAction: "none" }}
         onMouseDown={startDrawing}
         onMouseMove={draw}
@@ -133,7 +133,7 @@ export function SignaturePad({
         onTouchEnd={endDrawing}
       />
       {!value && (
-        <p className="mt-1.5 text-[10px] text-[#AAAAAA]">
+        <p className="mt-1.5 text-[10px] text-[#A0A0A0]">
           Draw your signature above
         </p>
       )}

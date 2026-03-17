@@ -1,17 +1,18 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   getPortalByToken,
   getUpdates,
   getApprovals,
+  updatePortal,
   incrementViewCount,
 } from "@/lib/portal/data";
 import { getReviews, getVersions, getFeedback } from "@/lib/portal/reviews";
 import { DEMO_PORTALS } from "@/lib/portal-types";
 import { PortalView } from "./portal-view";
-import type { PortalData, PortalUpdate, PortalApproval } from "@/lib/portal/types";
+import type { PortalData, PortalUpdate, PortalApproval, AdHocRequest } from "@/lib/portal/types";
 import type { DesignReview, DesignReviewVersion, DesignReviewFeedback } from "@/lib/portal/review-types";
 
 export default function PortalPage() {
@@ -105,12 +106,33 @@ export default function PortalPage() {
     load();
   }, [token]);
 
+  const handleSubmitRequest = useCallback(async (title: string, description: string) => {
+    if (!portal) return;
+
+    const newRequest: AdHocRequest = {
+      id: crypto.randomUUID(),
+      title,
+      description,
+      requested_at: new Date().toISOString(),
+      status: "open",
+      created_by: portal.client_name,
+    };
+
+    const existingRequests = portal.ad_hoc_requests || [];
+    const updatedRequests = [...existingRequests, newRequest];
+
+    await updatePortal(portal.id, { ad_hoc_requests: updatedRequests });
+
+    // Update local state so the UI reflects the change immediately
+    setPortal((prev) => prev ? { ...prev, ad_hoc_requests: updatedRequests } : prev);
+  }, [portal]);
+
   if (loading) {
     return (
       <div className="max-w-lg mx-auto px-6 py-24 text-center">
-        <div className="inline-flex items-center justify-center size-14 rounded-full bg-[#F5F5F5] mb-6 animate-pulse" />
-        <div className="h-6 w-48 bg-[#F0F0F0] rounded mx-auto mb-3 animate-pulse" />
-        <div className="h-4 w-64 bg-[#F5F5F5] rounded mx-auto animate-pulse" />
+        <div className="inline-flex items-center justify-center size-14 rounded-full bg-[#F3F3F5] mb-6 animate-pulse" />
+        <div className="h-6 w-48 bg-[#EDEDEF] rounded mx-auto mb-3 animate-pulse" />
+        <div className="h-4 w-64 bg-[#F3F3F5] rounded mx-auto animate-pulse" />
       </div>
     );
   }
@@ -118,11 +140,11 @@ export default function PortalPage() {
   if (notFound || !portal) {
     return (
       <div className="max-w-lg mx-auto px-6 py-24 text-center">
-        <div className="inline-flex items-center justify-center size-14 rounded-full bg-[#F5F5F5] mb-6">
+        <div className="inline-flex items-center justify-center size-14 rounded-full bg-[#F3F3F5] mb-6">
           <span className="text-2xl">🔒</span>
         </div>
         <h1 className="text-2xl font-bold mb-2">Portal Not Found</h1>
-        <p className="text-[#6B6B6B] text-sm leading-relaxed">
+        <p className="text-[#7A7A7A] text-sm leading-relaxed">
           This portal link is invalid or has been removed. Please contact your
           project manager for an updated link.
         </p>
@@ -138,6 +160,7 @@ export default function PortalPage() {
       reviews={reviews}
       reviewVersions={reviewVersions}
       reviewFeedback={reviewFeedback}
+      onSubmitRequest={handleSubmitRequest}
     />
   );
 }

@@ -146,7 +146,7 @@ export default function ProjectRoadmapPage() {
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
             Project Roadmap
           </h1>
-          <p className="text-[#6B6B6B]">
+          <p className="text-[#7A7A7A]">
             Generate branded project timeline PDFs so clients know what to
             expect and when
           </p>
@@ -195,12 +195,12 @@ export default function ProjectRoadmapPage() {
           {/* Deliverables */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B6B6B]">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
                 Deliverables
               </label>
               <button
                 onClick={addType}
-                className="flex items-center gap-1.5 text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
+                className="flex items-center gap-1.5 text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
               >
                 <PlusIcon className="size-3.5" />
                 Add row
@@ -222,7 +222,7 @@ export default function ProjectRoadmapPage() {
                   <button
                     onClick={() => removeType(i)}
                     disabled={selectedTypes.length <= 1}
-                    className="p-2.5 text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="p-2.5 text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     <TrashIcon className="size-3.5" />
                   </button>
@@ -233,10 +233,10 @@ export default function ProjectRoadmapPage() {
 
           {/* Timeline */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-4">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
               Timeline
             </label>
-            <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5 space-y-5">
+            <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-5 space-y-5">
               <div>
                 <label className={labelClass}>Kickoff Date</label>
                 <input
@@ -252,22 +252,22 @@ export default function ProjectRoadmapPage() {
 
               {/* Auto-computed summary */}
               {hasDeliverables && (
-                <div className="pt-4 border-t border-[#E5E5E5]">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-2">
+                <div className="pt-4 border-t border-[#E5E5EA]">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-2">
                     Computed from deliverables
                   </p>
-                  <p className="text-xs text-[#6B6B6B]">
-                    Design: <span className="font-semibold text-[#0A0A0A]">{designDays}d</span>
-                    <span className="mx-2 text-[#CCCCCC]">·</span>
-                    Development: <span className="font-semibold text-[#0A0A0A]">{devDays}d</span>
+                  <p className="text-xs text-[#7A7A7A]">
+                    Design: <span className="font-semibold text-[#1B1B1B]">{designDays}d</span>
+                    <span className="mx-2 text-[#C5C5C5]">·</span>
+                    Development: <span className="font-semibold text-[#1B1B1B]">{devDays}d</span>
                   </p>
                 </div>
               )}
 
               {/* Auto-computed timeline summary */}
               {phases.length > 0 && (
-                <div className="pt-4 border-t border-[#E5E5E5]">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-3">
+                <div className="pt-4 border-t border-[#E5E5EA]">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-3">
                     Computed Timeline (business days only)
                   </p>
                   <div className="space-y-2">
@@ -280,24 +280,24 @@ export default function ProjectRoadmapPage() {
                           key={phase.name}
                           className="flex items-center gap-3 text-xs"
                         >
-                          <span className="text-[#AAAAAA] font-bold tabular-nums w-5">
+                          <span className="text-[#A0A0A0] font-bold tabular-nums w-5">
                             {String(i + 1).padStart(2, "0")}
                           </span>
-                          <span className="font-semibold text-[#0A0A0A] w-28">
+                          <span className="font-semibold text-[#1B1B1B] w-28">
                             {phase.name}
                           </span>
-                          <span className="text-[#6B6B6B]">
+                          <span className="text-[#7A7A7A]">
                             {isPoint
                               ? formatShortDate(phase.startDate)
                               : `${formatShortDate(phase.startDate)} → ${formatShortDate(phase.endDate)}`}
                             {dur > 0 && (
-                              <span className="text-[#AAAAAA] ml-1">
+                              <span className="text-[#A0A0A0] ml-1">
                                 ({dur}d)
                               </span>
                             )}
                           </span>
                           {touchpoints.length > 0 && (
-                            <span className="text-[#AAAAAA]">
+                            <span className="text-[#A0A0A0]">
                               ◆{" "}
                               {touchpoints
                                 .map(
@@ -319,7 +319,7 @@ export default function ProjectRoadmapPage() {
           {/* Phase Detail Cards */}
           {phases.length > 0 && (
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-4">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
                 Phase Details
               </label>
               <div className="space-y-4">
@@ -330,35 +330,35 @@ export default function ProjectRoadmapPage() {
                   return (
                     <div
                       key={phase.name}
-                      className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5"
+                      className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-5"
                     >
                       {/* Phase header */}
                       <div className="flex items-center gap-3 mb-3">
-                        <span className="text-xs font-bold text-[#AAAAAA] tabular-nums">
+                        <span className="text-xs font-bold text-[#A0A0A0] tabular-nums">
                           {String(i + 1).padStart(2, "0")}
                         </span>
-                        <span className="text-sm font-semibold text-[#0A0A0A]">
+                        <span className="text-sm font-semibold text-[#1B1B1B]">
                           {phase.name}
                         </span>
-                        <span className="text-xs text-[#6B6B6B]">
+                        <span className="text-xs text-[#7A7A7A]">
                           {isPoint
                             ? formatShortDate(phase.startDate)
                             : `${formatShortDate(phase.startDate)} → ${formatShortDate(phase.endDate)}`}
                           {dur > 0 && (
-                            <span className="text-[#AAAAAA] ml-1">
+                            <span className="text-[#A0A0A0] ml-1">
                               ({dur}d)
                             </span>
                           )}
                         </span>
                         {isPoint && (
-                          <span className="text-[10px] font-medium uppercase tracking-wider text-[#AAAAAA] bg-white px-1.5 py-0.5 rounded border border-[#E5E5E5]">
+                          <span className="text-[10px] font-medium uppercase tracking-wider text-[#A0A0A0] bg-white px-1.5 py-0.5 rounded border border-[#E5E5EA]">
                             Milestone
                           </span>
                         )}
                       </div>
 
                       {/* Description (evergreen) */}
-                      <p className="text-sm text-[#6B6B6B] leading-relaxed mb-3">
+                      <p className="text-sm text-[#7A7A7A] leading-relaxed mb-3">
                         {phase.description}
                       </p>
 
@@ -366,7 +366,7 @@ export default function ProjectRoadmapPage() {
                       <div>
                         <label className={labelClass}>
                           Notes{" "}
-                          <span className="font-normal text-[#AAAAAA]">
+                          <span className="font-normal text-[#A0A0A0]">
                             (optional)
                           </span>
                         </label>
@@ -392,7 +392,7 @@ export default function ProjectRoadmapPage() {
             <button
               onClick={handleGenerate}
               disabled={!isFormValid || generating}
-              className="flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-6 py-3 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {generating ? (
                 <>
@@ -411,7 +411,7 @@ export default function ProjectRoadmapPage() {
 
         {/* PDF Preview */}
         {showPreview && (
-          <div className="mt-12 pt-12 border-t border-[#E5E5E5]">
+          <div className="mt-12 pt-12 border-t border-[#E5E5EA]">
             <PdfPreview
               document={<RoadmapPdfDocument data={formData} />}
               filename={`${slug}-roadmap-${date}.pdf`}

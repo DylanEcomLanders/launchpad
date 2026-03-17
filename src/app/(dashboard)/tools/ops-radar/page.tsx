@@ -41,19 +41,19 @@ const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 function severityColor(days: number): string {
   if (days > 7) return "bg-red-500";
   if (days >= 3) return "bg-amber-400";
-  return "bg-[#AAAAAA]";
+  return "bg-[#A0A0A0]";
 }
 
 function severityText(days: number): string {
   if (days > 7) return "text-red-600";
   if (days >= 3) return "text-amber-600";
-  return "text-[#6B6B6B]";
+  return "text-[#7A7A7A]";
 }
 
 function barColor(count: number): string {
   if (count > 12) return "bg-red-500";
   if (count > 8) return "bg-amber-400";
-  return "bg-[#0A0A0A]";
+  return "bg-[#1B1B1B]";
 }
 
 /* ── Main page ── */
@@ -131,11 +131,11 @@ export default function OpsRadarPage() {
         <h1 className="text-xl font-semibold mb-6">Ops Radar</h1>
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="border border-[#E5E5E5] rounded-lg p-6 animate-pulse">
-              <div className="h-3 w-24 bg-[#F0F0F0] rounded mb-4" />
+            <div key={i} className="border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-6 animate-pulse">
+              <div className="h-3 w-24 bg-[#EDEDEF] rounded mb-4" />
               <div className="space-y-2">
-                <div className="h-3 w-full bg-[#F0F0F0] rounded" />
-                <div className="h-3 w-3/4 bg-[#F0F0F0] rounded" />
+                <div className="h-3 w-full bg-[#EDEDEF] rounded" />
+                <div className="h-3 w-3/4 bg-[#EDEDEF] rounded" />
               </div>
             </div>
           ))}
@@ -149,11 +149,11 @@ export default function OpsRadarPage() {
     return (
       <div className="max-w-5xl mx-auto px-6 md:px-12 py-12">
         <h1 className="text-xl font-semibold mb-6">Ops Radar</h1>
-        <div className="border border-[#E5E5E5] rounded-lg p-8 text-center">
-          <p className="text-sm text-[#6B6B6B] mb-4">{error}</p>
+        <div className="border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-8 text-center">
+          <p className="text-sm text-[#7A7A7A] mb-4">{error}</p>
           <button
             onClick={() => { setLoading(true); fetchData(); }}
-            className="px-4 py-2 bg-[#0A0A0A] text-white text-sm rounded-md hover:bg-[#333]"
+            className="px-4 py-2 bg-[#1B1B1B] text-white text-sm rounded-lg hover:bg-[#2D2D2D]"
           >
             Retry
           </button>
@@ -174,13 +174,13 @@ export default function OpsRadarPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-semibold">Ops Radar</h1>
-          <p className="text-xs text-[#AAAAAA] mt-0.5">
+          <p className="text-xs text-[#A0A0A0] mt-0.5">
             Synced from ClickUp &middot; {new Date(data.fetchedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
           </p>
         </div>
         <button
           onClick={() => { setLoading(true); fetchData(); }}
-          className="text-xs text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
+          className="text-xs text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
         >
           Refresh
         </button>
@@ -203,13 +203,13 @@ export default function OpsRadarPage() {
               <div
                 key={i}
                 className={`flex-1 text-center py-2 rounded-md ${
-                  isToday ? "bg-[#0A0A0A] text-white" : isPast ? "bg-[#FAFAFA] opacity-50" : "bg-[#FAFAFA]"
+                  isToday ? "bg-[#1B1B1B] text-white" : isPast ? "bg-[#F7F8FA] opacity-50" : "bg-[#F7F8FA]"
                 }`}
               >
-                <div className={`text-[10px] uppercase tracking-wider ${isToday ? "text-white/70" : "text-[#AAAAAA]"}`}>
+                <div className={`text-[10px] uppercase tracking-wider ${isToday ? "text-white/70" : "text-[#A0A0A0]"}`}>
                   {DAY_NAMES[i]}
                 </div>
-                <div className={`text-sm font-semibold tabular-nums mt-0.5 ${isToday ? "text-white" : count > 0 ? "text-[#0A0A0A]" : "text-[#D4D4D4]"}`}>
+                <div className={`text-sm font-semibold tabular-nums mt-0.5 ${isToday ? "text-white" : count > 0 ? "text-[#1B1B1B]" : "text-[#D4D4D4]"}`}>
                   {count}
                 </div>
               </div>
@@ -222,7 +222,7 @@ export default function OpsRadarPage() {
       {overdueTasks.length > 0 && (
         <div className="mb-8">
           <SectionHeader title="Overdue" count={overdueTasks.length} />
-          <div className="border border-[#E5E5E5] rounded-lg divide-y divide-[#F0F0F0]">
+          <div className="border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg divide-y divide-[#EDEDEF]">
             {overdueByClient.map(({ client, tasks }) => {
               const worst = Math.max(...tasks.map((t) => t.daysOverdue));
               const isExpanded = expandedClient === client;
@@ -230,11 +230,11 @@ export default function OpsRadarPage() {
                 <div key={client}>
                   <button
                     onClick={() => setExpandedClient(isExpanded ? null : client)}
-                    className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-[#FAFAFA] transition-colors text-left"
+                    className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-[#F7F8FA] transition-colors text-left"
                   >
                     <span className={`size-2 rounded-full shrink-0 ${severityColor(worst)}`} />
                     <span className="text-sm font-medium flex-1 truncate">{client}</span>
-                    <span className="text-[11px] text-[#AAAAAA] tabular-nums">{tasks.length} task{tasks.length !== 1 ? "s" : ""}</span>
+                    <span className="text-[11px] text-[#A0A0A0] tabular-nums">{tasks.length} task{tasks.length !== 1 ? "s" : ""}</span>
                     <span className={`text-xs font-semibold tabular-nums ${severityText(worst)}`}>{worst}d</span>
                   </button>
                   {isExpanded && (
@@ -245,7 +245,7 @@ export default function OpsRadarPage() {
                           href={t.clickupUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-[11px] text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
+                          className="flex items-center gap-2 text-[11px] text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
                         >
                           <span className={`size-1.5 rounded-full shrink-0 ${severityColor(t.daysOverdue)}`} />
                           <span className="flex-1 truncate">{t.name}</span>
@@ -277,7 +277,7 @@ function Stat({ label, value, warn }: { label: string; value: number; warn?: boo
   return (
     <div className="flex items-baseline gap-1.5">
       <span className="text-lg font-semibold tabular-nums">{value}</span>
-      <span className="text-xs text-[#AAAAAA]">{label}</span>
+      <span className="text-xs text-[#A0A0A0]">{label}</span>
       {warn && <span className="w-1.5 h-1.5 rounded-full bg-red-500 ml-0.5" />}
     </div>
   );
@@ -285,10 +285,10 @@ function Stat({ label, value, warn }: { label: string; value: number; warn?: boo
 
 function SectionHeader({ title, count }: { title: string; count?: number }) {
   return (
-    <div className="flex items-center gap-2 mb-2 pb-1.5 border-b border-[#E5E5E5]">
-      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#0A0A0A]">{title}</h2>
+    <div className="flex items-center gap-2 mb-2 pb-1.5 border-b border-[#E5E5EA]">
+      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#1B1B1B]">{title}</h2>
       {count !== undefined && (
-        <span className="text-[11px] text-[#AAAAAA] tabular-nums">{count}</span>
+        <span className="text-[11px] text-[#A0A0A0] tabular-nums">{count}</span>
       )}
     </div>
   );
@@ -311,14 +311,14 @@ function TeamGroup({
             {count === 0 ? (
               <span className="flex-1 text-[11px] text-[#D4D4D4]">No tasks</span>
             ) : (
-              <div className="flex-1 h-1.5 bg-[#F0F0F0] rounded-full overflow-hidden">
+              <div className="flex-1 h-1.5 bg-[#EDEDEF] rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all ${barColor(count)}`}
                   style={{ width: `${Math.max((count / 20) * 100, 4)}%` }}
                 />
               </div>
             )}
-            <span className={`text-[11px] w-10 text-right tabular-nums ${count > 12 ? "text-red-600 font-semibold" : count > 8 ? "text-amber-600 font-medium" : "text-[#AAAAAA]"}`}>
+            <span className={`text-[11px] w-10 text-right tabular-nums ${count > 12 ? "text-red-600 font-semibold" : count > 8 ? "text-amber-600 font-medium" : "text-[#A0A0A0]"}`}>
               {count}
             </span>
             {overdue > 0 ? (

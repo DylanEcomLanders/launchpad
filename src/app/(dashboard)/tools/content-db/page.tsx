@@ -268,7 +268,7 @@ export default function ContentAnalyticsPage() {
 
         {/* ── Account Tabs ────────────────────────────────── */}
         <div className="mb-6">
-          <div className="inline-flex rounded-lg border border-[#E5E5E5] bg-white p-0.5">
+          <div className="inline-flex rounded-lg border border-[#E5E5EA] bg-white p-0.5">
             {socialAccounts.map((acct) => (
               <button
                 key={acct.id}
@@ -279,8 +279,8 @@ export default function ContentAnalyticsPage() {
                 }}
                 className={`px-5 py-2 text-sm font-medium rounded-md transition-colors ${
                   activeAccount === acct.id
-                    ? "bg-[#0A0A0A] text-white"
-                    : "text-[#6B6B6B] hover:text-[#0A0A0A]"
+                    ? "bg-[#1B1B1B] text-white"
+                    : "text-[#7A7A7A] hover:text-[#1B1B1B]"
                 }`}
               >
                 {acct.name}
@@ -292,7 +292,7 @@ export default function ContentAnalyticsPage() {
         {/* ── Sync Controls ───────────────────────────────── */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
           {cacheAge && (
-            <span className="text-xs text-[#AAAAAA]">
+            <span className="text-xs text-[#A0A0A0]">
               Last synced: {cacheAge}
             </span>
           )}
@@ -300,7 +300,7 @@ export default function ContentAnalyticsPage() {
           <button
             onClick={handleSync}
             disabled={syncing}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-[#0A0A0A] text-white hover:bg-[#1A1A1A] disabled:opacity-50 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-[#1B1B1B] text-white hover:bg-[#1A1A1A] disabled:opacity-50 transition-colors"
           >
             <ArrowPathIcon
               className={`size-4 ${syncing ? "animate-spin" : ""}`}
@@ -310,7 +310,7 @@ export default function ContentAnalyticsPage() {
           <button
             onClick={handleAnalyse}
             disabled={analyzing || posts.length === 0}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-[#E5E5E5] bg-white text-[#0A0A0A] hover:bg-[#F5F5F5] disabled:opacity-40 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-[#E5E5EA] bg-white text-[#1B1B1B] hover:bg-[#F3F3F5] disabled:opacity-40 transition-colors"
           >
             <SparklesIcon
               className={`size-4 ${analyzing ? "animate-pulse" : ""}`}
@@ -338,8 +338,8 @@ export default function ContentAnalyticsPage() {
 
         {/* ── Empty State ─────────────────────────────────── */}
         {posts.length === 0 && !syncing && (
-          <div className="text-center py-20 border border-dashed border-[#E5E5E5] rounded-xl bg-white/50">
-            <ChartBarIcon className="size-10 text-[#CCCCCC] mx-auto mb-4" />
+          <div className="text-center py-20 border border-dashed border-[#E5E5EA] rounded-lg bg-white/50">
+            <ChartBarIcon className="size-10 text-[#C5C5C5] mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
             <p className="text-sm text-[#999] mb-6">
               Click &quot;Sync Posts&quot; to fetch {accountName}&apos;s Twitter
@@ -362,7 +362,7 @@ export default function ContentAnalyticsPage() {
         {analysis && (
           <div className="mb-8 space-y-6">
             {/* Summary */}
-            <div className="bg-gradient-to-r from-[#F8F8FF] to-[#F5F5F5] border border-[#E5E5E5] rounded-xl p-5">
+            <div className="bg-gradient-to-r from-[#F8F8FF] to-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-5">
               <p className="text-sm text-[#333] leading-relaxed">
                 {analysis.summary}
               </p>
@@ -370,10 +370,10 @@ export default function ContentAnalyticsPage() {
 
             {/* Top Performers */}
             {analysis.topPerformers.length > 0 && (
-              <div className="bg-white border border-[#E5E5E5] rounded-xl p-5">
+              <div className="bg-white border border-[#E5E5EA] rounded-lg p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <TrophyIcon className="size-4 text-amber-500" />
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-[#6B6B6B]">
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A]">
                     Top Performers
                   </h3>
                 </div>
@@ -381,7 +381,7 @@ export default function ContentAnalyticsPage() {
                   {analysis.topPerformers.map((post, i) => (
                     <div
                       key={post.id || i}
-                      className="flex items-start gap-3 p-3 bg-[#FAFAFA] rounded-lg"
+                      className="flex items-start gap-3 p-3 bg-[#F7F8FA] rounded-lg"
                     >
                       <span className="text-xs font-bold text-amber-500 mt-0.5 shrink-0">
                         #{i + 1}
@@ -390,7 +390,7 @@ export default function ContentAnalyticsPage() {
                         <p className="text-sm text-[#333] line-clamp-2 mb-1">
                           {post.content}
                         </p>
-                        <div className="flex items-center gap-3 text-xs text-[#AAAAAA]">
+                        <div className="flex items-center gap-3 text-xs text-[#A0A0A0]">
                           <PlatformBadge platform={post.platform} />
                           <span>{formatDate(post.post_date)}</span>
                           <span className="flex items-center gap-1">
@@ -417,10 +417,10 @@ export default function ContentAnalyticsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Patterns */}
               {analysis.patterns.length > 0 && (
-                <div className="bg-white border border-[#E5E5E5] rounded-xl p-5">
+                <div className="bg-white border border-[#E5E5EA] rounded-lg p-5">
                   <div className="flex items-center gap-2 mb-4">
                     <ChartBarIcon className="size-4 text-blue-500" />
-                    <h3 className="text-sm font-semibold uppercase tracking-wider text-[#6B6B6B]">
+                    <h3 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A]">
                       Patterns
                     </h3>
                   </div>
@@ -438,7 +438,7 @@ export default function ContentAnalyticsPage() {
                         <p className="text-xs text-[#666] mb-1">
                           {pat.description}
                         </p>
-                        <p className="text-[11px] text-[#AAAAAA] italic">
+                        <p className="text-[11px] text-[#A0A0A0] italic">
                           {pat.evidence}
                         </p>
                       </div>
@@ -449,10 +449,10 @@ export default function ContentAnalyticsPage() {
 
               {/* Content Ideas */}
               {analysis.contentIdeas.length > 0 && (
-                <div className="bg-white border border-[#E5E5E5] rounded-xl p-5">
+                <div className="bg-white border border-[#E5E5EA] rounded-lg p-5">
                   <div className="flex items-center gap-2 mb-4">
                     <LightBulbIcon className="size-4 text-yellow-500" />
-                    <h3 className="text-sm font-semibold uppercase tracking-wider text-[#6B6B6B]">
+                    <h3 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A]">
                       Content Ideas
                     </h3>
                   </div>
@@ -472,7 +472,7 @@ export default function ContentAnalyticsPage() {
                         <p className="text-xs text-[#666] mb-1">
                           {idea.description}
                         </p>
-                        <p className="text-[11px] text-[#AAAAAA] italic">
+                        <p className="text-[11px] text-[#A0A0A0] italic">
                           Based on: {idea.basedOn}
                         </p>
                       </div>
@@ -508,7 +508,7 @@ export default function ContentAnalyticsPage() {
               <div className="flex-1" />
 
               {/* Sort */}
-              <div className="inline-flex rounded-md border border-[#E5E5E5] overflow-hidden">
+              <div className="inline-flex rounded-md border border-[#E5E5EA] overflow-hidden">
                 {(
                   [
                     { id: "engagement" as const, label: "Top" },
@@ -520,8 +520,8 @@ export default function ContentAnalyticsPage() {
                     onClick={() => setSortMode(opt.id)}
                     className={`px-3 py-1.5 text-xs font-medium transition-colors ${
                       sortMode === opt.id
-                        ? "bg-[#0A0A0A] text-white"
-                        : "bg-white text-[#6B6B6B] hover:bg-[#F5F5F5]"
+                        ? "bg-[#1B1B1B] text-white"
+                        : "bg-white text-[#7A7A7A] hover:bg-[#F3F3F5]"
                     }`}
                   >
                     {opt.label}
@@ -531,7 +531,7 @@ export default function ContentAnalyticsPage() {
             </div>
 
             {/* Post count */}
-            <p className="text-xs text-[#AAAAAA] mb-3">
+            <p className="text-xs text-[#A0A0A0] mb-3">
               {filtered.length} post{filtered.length !== 1 ? "s" : ""}
               {platformFilter !== "all" || categoryFilter !== "all"
                 ? " (filtered)"
@@ -544,7 +544,7 @@ export default function ContentAnalyticsPage() {
                 <PostCard key={post.id} post={post} maxEngagement={stats.topEng} />
               ))}
               {filtered.length === 0 && (
-                <p className="col-span-full text-center text-sm text-[#AAAAAA] py-8">
+                <p className="col-span-full text-center text-sm text-[#A0A0A0] py-8">
                   No posts match current filters.
                 </p>
               )}
@@ -560,8 +560,8 @@ export default function ContentAnalyticsPage() {
 
 function StatBox({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg px-4 py-3">
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
+    <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg px-4 py-3">
+      <div className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">
         {label}
       </div>
       <div className="text-lg font-semibold tabular-nums">{value}</div>
@@ -574,7 +574,7 @@ function PlatformBadge({ platform }: { platform: ContentPlatform }) {
     <span
       className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium rounded ${
         platform === "twitter"
-          ? "bg-[#0A0A0A] text-white"
+          ? "bg-[#1B1B1B] text-white"
           : "bg-blue-600 text-white"
       }`}
     >
@@ -593,13 +593,13 @@ function PostCard({ post, maxEngagement }: { post: SyncedPost; maxEngagement: nu
   const isMidPerformer = ratio > 0.3;
 
   return (
-    <div className={`bg-white border rounded-lg p-4 hover:border-[#CCCCCC] transition-colors flex flex-col ${
-      isTopPerformer ? "border-emerald-300 ring-1 ring-emerald-100" : isMidPerformer ? "border-[#E5E5E5]" : "border-[#F0F0F0]"
+    <div className={`bg-white border rounded-lg p-4 hover:border-[#C5C5C5] transition-colors flex flex-col ${
+      isTopPerformer ? "border-emerald-300 ring-1 ring-emerald-100" : isMidPerformer ? "border-[#E5E5EA]" : "border-[#EDEDEF]"
     }`}>
       {/* Top row */}
       <div className="flex items-center gap-1.5 mb-2">
         <PlatformBadge platform={post.platform} />
-        <span className="text-[10px] text-[#AAAAAA] flex-1">
+        <span className="text-[10px] text-[#A0A0A0] flex-1">
           {formatDate(post.post_date)}
         </span>
         {post.post_url && (
@@ -607,7 +607,7 @@ function PostCard({ post, maxEngagement }: { post: SyncedPost; maxEngagement: nu
             href={post.post_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#CCCCCC] hover:text-[#0A0A0A] transition-colors"
+            className="text-[#C5C5C5] hover:text-[#1B1B1B] transition-colors"
             title="View original post"
           >
             <LinkIcon className="size-3" />
@@ -622,13 +622,13 @@ function PostCard({ post, maxEngagement }: { post: SyncedPost; maxEngagement: nu
 
       {/* Category */}
       <div className="mb-2">
-        <span className="px-2 py-0.5 bg-[#F5F5F5] text-[#6B6B6B] text-[10px] font-medium rounded-full">
+        <span className="px-2 py-0.5 bg-[#F3F3F5] text-[#7A7A7A] text-[10px] font-medium rounded-full">
           {catLabel}
         </span>
       </div>
 
       {/* Metrics bar */}
-      <div className="flex items-center gap-3 text-[11px] text-[#AAAAAA] pt-2 border-t border-[#F5F5F5]">
+      <div className="flex items-center gap-3 text-[11px] text-[#A0A0A0] pt-2 border-t border-[#F3F3F5]">
         <span className="flex items-center gap-1">
           <HeartIcon className="size-3" />
           {formatNum(post.likes)}

@@ -238,7 +238,7 @@ export default function InvoiceGeneratorPage() {
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
             Invoice Generator
           </h1>
-          <p className="text-[#6B6B6B]">
+          <p className="text-[#7A7A7A]">
             Generate branded PDF invoices for client projects
           </p>
         </div>
@@ -246,7 +246,7 @@ export default function InvoiceGeneratorPage() {
         <div className="space-y-10">
           {/* ── Invoice Details ── */}
           <section>
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-[#6B6B6B] mb-4">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
               Invoice Details
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -295,7 +295,7 @@ export default function InvoiceGeneratorPage() {
 
           {/* ── Client Details ── */}
           <section>
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-[#6B6B6B] mb-4">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
               Client Details
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -344,18 +344,18 @@ export default function InvoiceGeneratorPage() {
 
           {/* ── Tier Toggle ── */}
           <section>
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-[#6B6B6B] mb-4">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
               Pricing Tier
             </h2>
-            <div className="inline-flex rounded-md border border-[#E5E5E5] overflow-hidden">
+            <div className="inline-flex rounded-md border border-[#E5E5EA] overflow-hidden">
               {([1, 2] as Tier[]).map((t) => (
                 <button
                   key={t}
                   onClick={() => switchTier(t)}
                   className={`px-5 py-2 text-sm font-medium transition-colors ${
                     tier === t
-                      ? "bg-[#0A0A0A] text-white"
-                      : "bg-white text-[#6B6B6B] hover:bg-[#F5F5F5]"
+                      ? "bg-[#1B1B1B] text-white"
+                      : "bg-white text-[#7A7A7A] hover:bg-[#F3F3F5]"
                   }`}
                 >
                   Tier {t}
@@ -366,7 +366,7 @@ export default function InvoiceGeneratorPage() {
 
           {/* ── Line Items ── */}
           <section>
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-[#6B6B6B] mb-4">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
               Line Items
             </h2>
 
@@ -393,7 +393,7 @@ export default function InvoiceGeneratorPage() {
               <button
                 onClick={addDeliverable}
                 disabled={!selectedDeliverable}
-                className="px-4 py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-30"
+                className="px-4 py-2.5 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-30"
               >
                 <PlusIcon className="size-4" />
               </button>
@@ -401,9 +401,9 @@ export default function InvoiceGeneratorPage() {
 
             {/* Items list */}
             {items.length > 0 && (
-              <div className="border border-[#E5E5E5] rounded-lg overflow-hidden mb-4">
+              <div className="border border-[#E5E5EA] rounded-lg overflow-hidden mb-4">
                 {/* Header */}
-                <div className="hidden md:grid grid-cols-[1fr_70px_100px_100px_36px] gap-2 px-4 py-2.5 bg-[#F5F5F5] text-[10px] font-semibold uppercase tracking-wider text-[#6B6B6B]">
+                <div className="hidden md:grid grid-cols-[1fr_70px_100px_100px_36px] gap-2 px-4 py-2.5 bg-[#F3F3F5] text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
                   <span>Description</span>
                   <span className="text-center">Qty</span>
                   <span className="text-right">Unit Price</span>
@@ -414,8 +414,8 @@ export default function InvoiceGeneratorPage() {
                 {items.map((item, idx) => (
                   <div
                     key={item.id}
-                    className={`grid grid-cols-1 md:grid-cols-[1fr_70px_100px_100px_36px] gap-2 px-4 py-3 border-t border-[#F0F0F0] items-center ${
-                      idx % 2 === 1 ? "bg-[#FAFAFA]" : ""
+                    className={`grid grid-cols-1 md:grid-cols-[1fr_70px_100px_100px_36px] gap-2 px-4 py-3 border-t border-[#EDEDEF] items-center ${
+                      idx % 2 === 1 ? "bg-[#F7F8FA]" : ""
                     }`}
                   >
                     {/* Description */}
@@ -456,7 +456,7 @@ export default function InvoiceGeneratorPage() {
                         className={`${inputClass} text-right text-sm`}
                       />
                     ) : (
-                      <span className="text-sm text-right text-[#6B6B6B]">
+                      <span className="text-sm text-right text-[#7A7A7A]">
                         {formatGBP(item.unitPrice)}
                       </span>
                     )}
@@ -469,7 +469,7 @@ export default function InvoiceGeneratorPage() {
                     {/* Remove */}
                     <button
                       onClick={() => removeItem(item.id)}
-                      className="p-1 text-[#AAAAAA] hover:text-red-500 transition-colors justify-self-center"
+                      className="p-1 text-[#A0A0A0] hover:text-red-500 transition-colors justify-self-center"
                     >
                       <XMarkIcon className="size-3.5" />
                     </button>
@@ -481,7 +481,7 @@ export default function InvoiceGeneratorPage() {
             {/* Add custom item */}
             <button
               onClick={addCustomItem}
-              className="flex items-center gap-1.5 text-sm text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
+              className="flex items-center gap-1.5 text-sm text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
             >
               <PlusIcon className="size-3.5" />
               Add custom line item
@@ -489,27 +489,27 @@ export default function InvoiceGeneratorPage() {
 
             {/* Totals */}
             {items.length > 0 && (
-              <div className="mt-6 border-t border-[#E5E5E5] pt-4 space-y-2">
+              <div className="mt-6 border-t border-[#E5E5EA] pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-[#6B6B6B]">Subtotal</span>
+                  <span className="text-[#7A7A7A]">Subtotal</span>
                   <span className="font-medium">{formatGBP(subtotal)}</span>
                 </div>
 
                 {/* VAT toggle */}
                 <div className="flex justify-between items-center text-sm">
-                  <label className="flex items-center gap-2 text-[#6B6B6B] cursor-pointer">
+                  <label className="flex items-center gap-2 text-[#7A7A7A] cursor-pointer">
                     <input
                       type="checkbox"
                       checked={includeVat}
                       onChange={(e) => { setIncludeVat(e.target.checked); resetPreview(); }}
-                      className="rounded border-[#E5E5E5]"
+                      className="rounded border-[#E5E5EA]"
                     />
                     VAT (20%)
                   </label>
                   <span className="font-medium">{formatGBP(vat)}</span>
                 </div>
 
-                <div className="flex justify-between text-sm pt-2 border-t border-[#E5E5E5]">
+                <div className="flex justify-between text-sm pt-2 border-t border-[#E5E5EA]">
                   <span className="font-semibold">Total</span>
                   <span className="font-bold text-base">{formatGBP(total)}</span>
                 </div>
@@ -519,7 +519,7 @@ export default function InvoiceGeneratorPage() {
 
           {/* ── Payment Details ── */}
           <section>
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-[#6B6B6B] mb-4">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
               Payment Details
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -580,7 +580,7 @@ export default function InvoiceGeneratorPage() {
           <button
             onClick={handleGenerate}
             disabled={!canGenerate || generating}
-            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-30"
+            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-30"
           >
             {generating ? (
               <>

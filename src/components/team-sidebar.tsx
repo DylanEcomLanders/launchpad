@@ -63,7 +63,7 @@ export function TeamSidebar() {
       {/* Mobile hamburger */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="fixed top-4 left-4 z-50 p-2 rounded-md bg-white border border-[#E5E5E5] md:hidden"
+        className="fixed top-4 left-4 z-50 p-2 rounded-md bg-white border border-[#E5E5EA] md:hidden"
         aria-label="Open menu"
       >
         <Bars3Icon className="size-5" />
@@ -83,14 +83,14 @@ export function TeamSidebar() {
           ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0
           fixed md:relative z-50 md:z-0
-          h-screen bg-white border-r border-[#E5E5E5]
+          h-screen bg-white border-r border-[#E5E5EA]
           flex flex-col
           transition-all duration-200 ease-in-out
           w-52
         `}
       >
         {/* Logo area */}
-        <div className="flex items-center justify-between px-4 h-14 border-b border-[#E5E5E5]">
+        <div className="flex items-center justify-between px-4 h-14 border-b border-[#E5E5EA]">
           <Link
             href="/team"
             className="flex items-center"
@@ -121,7 +121,7 @@ export function TeamSidebar() {
                 ${
                   pathname === "/team"
                     ? "bg-accent-light text-accent font-medium border-l-2 border-accent"
-                    : "hover:bg-[#F7F7F8] text-[#6B6B6B] border-l-2 border-transparent"
+                    : "hover:bg-[#F3F3F5] text-[#7A7A7A] border-l-2 border-transparent"
                 }
               `}
             >
@@ -132,7 +132,7 @@ export function TeamSidebar() {
 
           {/* Section header */}
           <div className="px-4 mb-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6B6B6B]">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
               Modules
             </span>
           </div>
@@ -152,10 +152,10 @@ export function TeamSidebar() {
                   transition-colors duration-150
                   ${
                     item.comingSoon
-                      ? "text-[#CCCCCC] cursor-default"
+                      ? "text-[#C5C5C5] cursor-default"
                       : pathname.startsWith(item.href)
-                        ? "bg-[#F0F0F0] font-medium border-l-2 border-accent"
-                        : "hover:bg-[#F5F5F5] text-[#6B6B6B] border-l-2 border-transparent"
+                        ? "bg-[#EDEDEF] font-medium border-l-2 border-accent"
+                        : "hover:bg-[#F3F3F5] text-[#7A7A7A] border-l-2 border-transparent"
                   }
                 `}
               >
@@ -163,7 +163,7 @@ export function TeamSidebar() {
                 <span className="flex items-center gap-1.5">
                   {item.label}
                   {item.comingSoon && (
-                    <span className="px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-[#F0F0F0] text-[#AAAAAA] rounded">
+                    <span className="px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-[#EDEDEF] text-[#A0A0A0] rounded">
                       Soon
                     </span>
                   )}
@@ -174,7 +174,7 @@ export function TeamSidebar() {
 
           {/* Tools section */}
           <div className="px-4 mb-1.5 mt-5">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6B6B6B]">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
               Tools
             </span>
           </div>
@@ -189,8 +189,8 @@ export function TeamSidebar() {
                   transition-colors duration-150
                   ${
                     pathname.startsWith(item.href)
-                      ? "bg-[#F0F0F0] font-medium border-l-2 border-accent"
-                      : "hover:bg-[#F5F5F5] text-[#6B6B6B] border-l-2 border-transparent"
+                      ? "bg-[#EDEDEF] font-medium border-l-2 border-accent"
+                      : "hover:bg-[#F3F3F5] text-[#7A7A7A] border-l-2 border-transparent"
                   }
                 `}
               >
@@ -202,15 +202,15 @@ export function TeamSidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="px-4 py-3 border-t border-[#E5E5E5] space-y-2">
+        <div className="px-4 py-3 border-t border-[#E5E5EA] space-y-2">
           <Link
             href="/"
-            className="flex items-center gap-2 text-[11px] font-medium text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
+            className="flex items-center gap-2 text-[11px] font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
           >
             <ArrowLeftIcon className="size-3" />
             Back to Admin
           </Link>
-          <span className="text-[11px] text-[#AAAAAA]">Team Tools v0.1</span>
+          <span className="text-[11px] text-[#A0A0A0]">Team Tools v0.1</span>
         </div>
       </aside>
     </>

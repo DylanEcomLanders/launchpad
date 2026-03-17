@@ -263,13 +263,13 @@ export default function PriceCalculatorPage() {
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
             Price Calculator
           </h1>
-          <p className="text-[#6B6B6B]">
+          <p className="text-[#7A7A7A]">
             Select deliverables and quantities to calculate project costs and
             margins
           </p>
           {/* Share Price List Links */}
           <div className="flex flex-wrap items-center gap-3 mt-4">
-            <span className="text-xs font-medium text-[#AAAAAA]">Share price list:</span>
+            <span className="text-xs font-medium text-[#A0A0A0]">Share price list:</span>
             {[1, 2].map((t) => (
               <div key={t} className="flex items-center gap-1">
                 <button
@@ -279,7 +279,7 @@ export default function PriceCalculatorPage() {
                     setCopiedTier(t);
                     setTimeout(() => setCopiedTier(null), 2000);
                   }}
-                  className="flex items-center gap-1 text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
+                  className="flex items-center gap-1 text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
                 >
                   <ClipboardDocumentIcon className="size-3.5" />
                   {copiedTier === t ? "Copied!" : `Tier ${t}`}
@@ -288,7 +288,7 @@ export default function PriceCalculatorPage() {
                   href={`/pricing/tier-${t}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
+                  className="text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
                 >
                   <ArrowTopRightOnSquareIcon className="size-3.5" />
                 </a>
@@ -302,13 +302,13 @@ export default function PriceCalculatorPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className={labelClass}>Pricing Tier</label>
-              <div className="inline-flex rounded-md border border-[#E5E5E5] bg-[#F5F5F5] p-0.5">
+              <div className="inline-flex rounded-md border border-[#E5E5EA] bg-[#F3F3F5] p-0.5">
                 <button
                   onClick={() => setTier(1)}
                   className={`px-4 py-2 text-sm font-medium rounded transition-colors ${
                     tier === 1
-                      ? "bg-[#0A0A0A] text-white"
-                      : "text-[#6B6B6B] hover:text-[#0A0A0A]"
+                      ? "bg-[#1B1B1B] text-white"
+                      : "text-[#7A7A7A] hover:text-[#1B1B1B]"
                   }`}
                 >
                   Tier 1
@@ -317,8 +317,8 @@ export default function PriceCalculatorPage() {
                   onClick={() => setTier(2)}
                   className={`px-4 py-2 text-sm font-medium rounded transition-colors ${
                     tier === 2
-                      ? "bg-[#0A0A0A] text-white"
-                      : "text-[#6B6B6B] hover:text-[#0A0A0A]"
+                      ? "bg-[#1B1B1B] text-white"
+                      : "text-[#7A7A7A] hover:text-[#1B1B1B]"
                   }`}
                 >
                   Tier 2
@@ -337,8 +337,8 @@ export default function PriceCalculatorPage() {
                       onClick={() => toggleRole(role)}
                       className={`px-3 py-2 text-sm font-medium rounded-md border transition-colors ${
                         isOn
-                          ? "bg-[#0A0A0A] text-white border-[#0A0A0A]"
-                          : "bg-white text-[#AAAAAA] border-[#E5E5E5] hover:text-[#6B6B6B] hover:border-[#CCCCCC]"
+                          ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
+                          : "bg-white text-[#A0A0A0] border-[#E5E5EA] hover:text-[#7A7A7A] hover:border-[#C5C5C5]"
                       }`}
                     >
                       {roleLabels[role]}
@@ -370,24 +370,24 @@ export default function PriceCalculatorPage() {
             return (
               <div key={cat}>
                 <label className={labelClass}>{cat}</label>
-                <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg overflow-hidden">
+                <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg overflow-hidden">
                   {/* Column headers */}
-                  <div className="hidden md:grid md:grid-cols-[1fr_80px_80px_72px] gap-3 px-5 py-2.5 border-b border-[#E5E5E5] bg-[#F0F0F0]">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA]">
+                  <div className="hidden md:grid md:grid-cols-[1fr_80px_80px_72px] gap-3 px-5 py-2.5 border-b border-[#E5E5EA] bg-[#EDEDEF]">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
                       Deliverable
                     </span>
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] text-right">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] text-right">
                       Internal
                     </span>
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] text-right">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] text-right">
                       Client
                     </span>
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] text-center">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] text-center">
                       Qty
                     </span>
                   </div>
 
-                  <div className="divide-y divide-[#E5E5E5]">
+                  <div className="divide-y divide-[#E5E5EA]">
                     {items.map((d) => {
                       const qty = getQty(d.name);
                       const isActive = qty > 0;
@@ -405,14 +405,14 @@ export default function PriceCalculatorPage() {
                           {/* Desktop row */}
                           <div className="hidden md:grid md:grid-cols-[1fr_80px_80px_72px] gap-3 items-center">
                             <span
-                              className={`text-sm font-medium ${isActive ? "text-[#0A0A0A]" : "text-[#6B6B6B]"}`}
+                              className={`text-sm font-medium ${isActive ? "text-[#1B1B1B]" : "text-[#7A7A7A]"}`}
                             >
                               {d.name}
                             </span>
                             <div className="text-right">
                               {hasDiscount && activeRoleCount > 0 ? (
                                 <>
-                                  <span className="text-[10px] line-through text-[#CCCCCC] block leading-tight">
+                                  <span className="text-[10px] line-through text-[#C5C5C5] block leading-tight">
                                     {fmt.format(costFull)}
                                   </span>
                                   <span
@@ -423,14 +423,14 @@ export default function PriceCalculatorPage() {
                                 </>
                               ) : (
                                 <span
-                                  className={`text-sm tabular-nums ${isActive ? "text-[#0A0A0A]" : "text-[#AAAAAA]"}`}
+                                  className={`text-sm tabular-nums ${isActive ? "text-[#1B1B1B]" : "text-[#A0A0A0]"}`}
                                 >
                                   {activeRoleCount > 0 ? fmt.format(cost) : "—"}
                                 </span>
                               )}
                             </div>
                             <span
-                              className={`text-sm tabular-nums text-right ${isActive ? "text-[#0A0A0A]" : "text-[#AAAAAA]"}`}
+                              className={`text-sm tabular-nums text-right ${isActive ? "text-[#1B1B1B]" : "text-[#A0A0A0]"}`}
                             >
                               {fmt.format(price)}
                             </span>
@@ -438,19 +438,19 @@ export default function PriceCalculatorPage() {
                               <button
                                 onClick={() => setQty(d.name, qty - 1)}
                                 disabled={qty === 0}
-                                className="p-1 rounded hover:bg-[#E5E5E5] text-[#AAAAAA] hover:text-[#6B6B6B] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                className="p-1 rounded hover:bg-[#E5E5EA] text-[#A0A0A0] hover:text-[#7A7A7A] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                                 aria-label={`Decrease ${d.name} quantity`}
                               >
                                 <MinusIcon className="size-3" />
                               </button>
                               <span
-                                className={`text-sm font-semibold tabular-nums w-5 text-center ${isActive ? "text-[#0A0A0A]" : "text-[#AAAAAA]"}`}
+                                className={`text-sm font-semibold tabular-nums w-5 text-center ${isActive ? "text-[#1B1B1B]" : "text-[#A0A0A0]"}`}
                               >
                                 {qty}
                               </span>
                               <button
                                 onClick={() => setQty(d.name, qty + 1)}
-                                className="p-1 rounded hover:bg-[#E5E5E5] text-[#AAAAAA] hover:text-[#6B6B6B] transition-colors"
+                                className="p-1 rounded hover:bg-[#E5E5EA] text-[#A0A0A0] hover:text-[#7A7A7A] transition-colors"
                                 aria-label={`Increase ${d.name} quantity`}
                               >
                                 <PlusIcon className="size-3" />
@@ -462,16 +462,16 @@ export default function PriceCalculatorPage() {
                           <div className="md:hidden flex items-center justify-between gap-3">
                             <div className="flex-1 min-w-0">
                               <span
-                                className={`text-sm font-medium block ${isActive ? "text-[#0A0A0A]" : "text-[#6B6B6B]"}`}
+                                className={`text-sm font-medium block ${isActive ? "text-[#1B1B1B]" : "text-[#7A7A7A]"}`}
                               >
                                 {d.name}
                               </span>
                               <span
-                                className={`text-xs tabular-nums ${isActive ? "text-[#6B6B6B]" : "text-[#AAAAAA]"}`}
+                                className={`text-xs tabular-nums ${isActive ? "text-[#7A7A7A]" : "text-[#A0A0A0]"}`}
                               >
                                 {activeRoleCount > 0 ? fmt.format(cost) : "—"}
                                 {hasDiscount && activeRoleCount > 0 && (
-                                  <span className="line-through text-[#CCCCCC] ml-1">
+                                  <span className="line-through text-[#C5C5C5] ml-1">
                                     {fmt.format(costFull)}
                                   </span>
                                 )}
@@ -483,19 +483,19 @@ export default function PriceCalculatorPage() {
                               <button
                                 onClick={() => setQty(d.name, qty - 1)}
                                 disabled={qty === 0}
-                                className="p-1 rounded hover:bg-[#E5E5E5] text-[#AAAAAA] hover:text-[#6B6B6B] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                className="p-1 rounded hover:bg-[#E5E5EA] text-[#A0A0A0] hover:text-[#7A7A7A] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                                 aria-label={`Decrease ${d.name} quantity`}
                               >
                                 <MinusIcon className="size-3.5" />
                               </button>
                               <span
-                                className={`text-sm font-semibold tabular-nums w-5 text-center ${isActive ? "text-[#0A0A0A]" : "text-[#AAAAAA]"}`}
+                                className={`text-sm font-semibold tabular-nums w-5 text-center ${isActive ? "text-[#1B1B1B]" : "text-[#A0A0A0]"}`}
                               >
                                 {qty}
                               </span>
                               <button
                                 onClick={() => setQty(d.name, qty + 1)}
-                                className="p-1 rounded hover:bg-[#E5E5E5] text-[#AAAAAA] hover:text-[#6B6B6B] transition-colors"
+                                className="p-1 rounded hover:bg-[#E5E5EA] text-[#A0A0A0] hover:text-[#7A7A7A] transition-colors"
                                 aria-label={`Increase ${d.name} quantity`}
                               >
                                 <PlusIcon className="size-3.5" />
@@ -515,32 +515,32 @@ export default function PriceCalculatorPage() {
           {hasActiveItems && (
             <div>
               <label className={labelClass}>Breakdown</label>
-              <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg overflow-hidden">
-                <div className="hidden md:grid md:grid-cols-[1fr_80px_80px_90px] gap-3 px-5 py-2.5 border-b border-[#E5E5E5] bg-[#F0F0F0]">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA]">
+              <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg overflow-hidden">
+                <div className="hidden md:grid md:grid-cols-[1fr_80px_80px_90px] gap-3 px-5 py-2.5 border-b border-[#E5E5EA] bg-[#EDEDEF]">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
                     Deliverable
                   </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] text-right">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] text-right">
                     Internal
                   </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] text-right">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] text-right">
                     Client
                   </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] text-right">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] text-right">
                     Margin
                   </span>
                 </div>
 
-                <div className="divide-y divide-[#E5E5E5]">
+                <div className="divide-y divide-[#E5E5EA]">
                   {activeItems.map((item) => (
                     <div key={item.name} className="px-5 py-3">
                       {/* Desktop */}
                       <div className="hidden md:grid md:grid-cols-[1fr_80px_80px_90px] gap-3 items-center">
                         <div>
-                          <span className="text-sm text-[#0A0A0A]">
+                          <span className="text-sm text-[#1B1B1B]">
                             {item.name}
                             {item.qty > 1 && (
-                              <span className="text-[#AAAAAA] ml-1">
+                              <span className="text-[#A0A0A0] ml-1">
                                 ×{item.qty}
                               </span>
                             )}
@@ -548,17 +548,17 @@ export default function PriceCalculatorPage() {
                           {/* Role cost breakdown */}
                           <div className="flex gap-3 mt-1">
                             {activeRoles.has("dev") && item.lineDevCost > 0 && (
-                              <span className="text-[10px] text-[#AAAAAA]">
+                              <span className="text-[10px] text-[#A0A0A0]">
                                 Dev {fmt.format(item.lineDevCost)}
                               </span>
                             )}
                             {activeRoles.has("designer") && item.lineDesignerCost > 0 && (
-                              <span className="text-[10px] text-[#AAAAAA]">
+                              <span className="text-[10px] text-[#A0A0A0]">
                                 Design {fmt.format(item.lineDesignerCost)}
                               </span>
                             )}
                             {activeRoles.has("juniorDesigner") && item.lineJuniorCost > 0 && (
-                              <span className="text-[10px] text-[#AAAAAA]">
+                              <span className="text-[10px] text-[#A0A0A0]">
                                 Jr {fmt.format(item.lineJuniorCost)}
                               </span>
                             )}
@@ -569,10 +569,10 @@ export default function PriceCalculatorPage() {
                             )}
                           </div>
                         </div>
-                        <span className="text-sm tabular-nums text-right text-[#6B6B6B]">
+                        <span className="text-sm tabular-nums text-right text-[#7A7A7A]">
                           {fmt.format(item.lineCost)}
                         </span>
-                        <span className="text-sm tabular-nums text-right text-[#0A0A0A]">
+                        <span className="text-sm tabular-nums text-right text-[#1B1B1B]">
                           {fmt.format(item.linePrice)}
                         </span>
                         <div className="text-right">
@@ -580,12 +580,12 @@ export default function PriceCalculatorPage() {
                             className={`text-sm tabular-nums font-medium ${
                               item.lineMargin < 0
                                 ? "text-red-600"
-                                : "text-[#0A0A0A]"
+                                : "text-[#1B1B1B]"
                             }`}
                           >
                             {fmt.format(item.lineMargin)}
                           </span>
-                          <span className="text-[10px] text-[#AAAAAA] ml-1">
+                          <span className="text-[10px] text-[#A0A0A0] ml-1">
                             {item.lineMarginPercent.toFixed(0)}%
                           </span>
                         </div>
@@ -594,10 +594,10 @@ export default function PriceCalculatorPage() {
                       {/* Mobile */}
                       <div className="md:hidden">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium text-[#0A0A0A]">
+                          <span className="text-sm font-medium text-[#1B1B1B]">
                             {item.name}
                             {item.qty > 1 && (
-                              <span className="text-[#AAAAAA] ml-1">
+                              <span className="text-[#A0A0A0] ml-1">
                                 ×{item.qty}
                               </span>
                             )}
@@ -606,14 +606,14 @@ export default function PriceCalculatorPage() {
                             className={`text-sm font-medium tabular-nums ${
                               item.lineMargin < 0
                                 ? "text-red-600"
-                                : "text-[#0A0A0A]"
+                                : "text-[#1B1B1B]"
                             }`}
                           >
                             {fmt.format(item.lineMargin)}
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-xs tabular-nums text-[#AAAAAA]">
+                          <span className="text-xs tabular-nums text-[#A0A0A0]">
                             {fmt.format(item.lineCost)} internal ·{" "}
                             {fmt.format(item.linePrice)} client
                             {item.discountRate > 0 && (
@@ -622,24 +622,24 @@ export default function PriceCalculatorPage() {
                               </span>
                             )}
                           </span>
-                          <span className="text-xs text-[#AAAAAA]">
+                          <span className="text-xs text-[#A0A0A0]">
                             {item.lineMarginPercent.toFixed(0)}%
                           </span>
                         </div>
                         {/* Role breakdown on mobile */}
                         <div className="flex gap-3 mt-1">
                           {activeRoles.has("dev") && item.lineDevCost > 0 && (
-                            <span className="text-[10px] text-[#AAAAAA]">
+                            <span className="text-[10px] text-[#A0A0A0]">
                               Dev {fmt.format(item.lineDevCost)}
                             </span>
                           )}
                           {activeRoles.has("designer") && item.lineDesignerCost > 0 && (
-                            <span className="text-[10px] text-[#AAAAAA]">
+                            <span className="text-[10px] text-[#A0A0A0]">
                               Design {fmt.format(item.lineDesignerCost)}
                             </span>
                           )}
                           {activeRoles.has("juniorDesigner") && item.lineJuniorCost > 0 && (
-                            <span className="text-[10px] text-[#AAAAAA]">
+                            <span className="text-[10px] text-[#A0A0A0]">
                               Jr {fmt.format(item.lineJuniorCost)}
                             </span>
                           )}
@@ -650,46 +650,46 @@ export default function PriceCalculatorPage() {
                 </div>
 
                 {/* Totals row */}
-                <div className="px-5 py-4 border-t-2 border-[#E5E5E5] bg-white">
+                <div className="px-5 py-4 border-t-2 border-[#E5E5EA] bg-white">
                   <div className="hidden md:grid md:grid-cols-[1fr_80px_80px_90px] gap-3 items-center">
                     <div>
-                      <span className="text-sm font-semibold text-[#0A0A0A]">
+                      <span className="text-sm font-semibold text-[#1B1B1B]">
                         Total
                       </span>
                       {/* Role total breakdown */}
                       <div className="flex gap-3 mt-1">
                         {activeRoles.has("dev") && roleTotals.dev > 0 && (
-                          <span className="text-[10px] font-medium text-[#AAAAAA]">
+                          <span className="text-[10px] font-medium text-[#A0A0A0]">
                             Dev {fmt.format(roleTotals.dev)}
                           </span>
                         )}
                         {activeRoles.has("designer") && roleTotals.designer > 0 && (
-                          <span className="text-[10px] font-medium text-[#AAAAAA]">
+                          <span className="text-[10px] font-medium text-[#A0A0A0]">
                             Design {fmt.format(roleTotals.designer)}
                           </span>
                         )}
                         {activeRoles.has("juniorDesigner") && roleTotals.juniorDesigner > 0 && (
-                          <span className="text-[10px] font-medium text-[#AAAAAA]">
+                          <span className="text-[10px] font-medium text-[#A0A0A0]">
                             Jr {fmt.format(roleTotals.juniorDesigner)}
                           </span>
                         )}
                       </div>
                     </div>
-                    <span className="text-sm font-semibold tabular-nums text-right text-[#6B6B6B]">
+                    <span className="text-sm font-semibold tabular-nums text-right text-[#7A7A7A]">
                       {fmtDetailed.format(totalCost)}
                     </span>
-                    <span className="text-sm font-semibold tabular-nums text-right text-[#0A0A0A]">
+                    <span className="text-sm font-semibold tabular-nums text-right text-[#1B1B1B]">
                       {fmtDetailed.format(totalPrice)}
                     </span>
                     <div className="text-right">
                       <span
                         className={`text-sm font-semibold tabular-nums ${
-                          totalMargin < 0 ? "text-red-600" : "text-[#0A0A0A]"
+                          totalMargin < 0 ? "text-red-600" : "text-[#1B1B1B]"
                         }`}
                       >
                         {fmtDetailed.format(totalMargin)}
                       </span>
-                      <span className="text-[10px] font-medium text-[#AAAAAA] ml-1">
+                      <span className="text-[10px] font-medium text-[#A0A0A0] ml-1">
                         {marginPercent.toFixed(1)}%
                       </span>
                     </div>
@@ -697,40 +697,40 @@ export default function PriceCalculatorPage() {
 
                   <div className="md:hidden">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-semibold text-[#0A0A0A]">
+                      <span className="text-sm font-semibold text-[#1B1B1B]">
                         Total
                       </span>
                       <span
                         className={`text-sm font-semibold tabular-nums ${
-                          totalMargin < 0 ? "text-red-600" : "text-[#0A0A0A]"
+                          totalMargin < 0 ? "text-red-600" : "text-[#1B1B1B]"
                         }`}
                       >
                         {fmtDetailed.format(totalMargin)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs tabular-nums text-[#AAAAAA]">
+                      <span className="text-xs tabular-nums text-[#A0A0A0]">
                         {fmtDetailed.format(totalCost)} internal ·{" "}
                         {fmtDetailed.format(totalPrice)} client
                       </span>
-                      <span className="text-xs font-medium text-[#AAAAAA]">
+                      <span className="text-xs font-medium text-[#A0A0A0]">
                         {marginPercent.toFixed(1)}%
                       </span>
                     </div>
                     {/* Role totals on mobile */}
                     <div className="flex gap-3 mt-1">
                       {activeRoles.has("dev") && roleTotals.dev > 0 && (
-                        <span className="text-[10px] font-medium text-[#AAAAAA]">
+                        <span className="text-[10px] font-medium text-[#A0A0A0]">
                           Dev {fmt.format(roleTotals.dev)}
                         </span>
                       )}
                       {activeRoles.has("designer") && roleTotals.designer > 0 && (
-                        <span className="text-[10px] font-medium text-[#AAAAAA]">
+                        <span className="text-[10px] font-medium text-[#A0A0A0]">
                           Design {fmt.format(roleTotals.designer)}
                         </span>
                       )}
                       {activeRoles.has("juniorDesigner") && roleTotals.juniorDesigner > 0 && (
-                        <span className="text-[10px] font-medium text-[#AAAAAA]">
+                        <span className="text-[10px] font-medium text-[#A0A0A0]">
                           Jr {fmt.format(roleTotals.juniorDesigner)}
                         </span>
                       )}
@@ -745,43 +745,43 @@ export default function PriceCalculatorPage() {
           {hasActiveItems && (
             <div>
               <label className={labelClass}>Project Summary</label>
-              <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5">
+              <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-5">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">
                       Internal Cost
                     </p>
-                    <p className="text-lg font-semibold tabular-nums text-[#0A0A0A]">
+                    <p className="text-lg font-semibold tabular-nums text-[#1B1B1B]">
                       {fmtDetailed.format(totalCost)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">
                       Client Price
                     </p>
-                    <p className="text-lg font-semibold tabular-nums text-[#0A0A0A]">
+                    <p className="text-lg font-semibold tabular-nums text-[#1B1B1B]">
                       {fmtDetailed.format(totalPrice)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">
                       Total Margin
                     </p>
                     <p
                       className={`text-lg font-semibold tabular-nums ${
-                        totalMargin < 0 ? "text-red-600" : "text-[#0A0A0A]"
+                        totalMargin < 0 ? "text-red-600" : "text-[#1B1B1B]"
                       }`}
                     >
                       {fmtDetailed.format(totalMargin)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">
                       Margin %
                     </p>
                     <p
                       className={`text-lg font-semibold tabular-nums ${
-                        totalMargin < 0 ? "text-red-600" : "text-[#0A0A0A]"
+                        totalMargin < 0 ? "text-red-600" : "text-[#1B1B1B]"
                       }`}
                     >
                       {marginPercent.toFixed(1)}%
@@ -791,37 +791,37 @@ export default function PriceCalculatorPage() {
 
                 {/* Role cost breakdown in summary */}
                 {activeRoleCount > 0 && (
-                  <div className="mt-4 pt-4 border-t border-[#E5E5E5]">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-2">
+                  <div className="mt-4 pt-4 border-t border-[#E5E5EA]">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-2">
                       Cost by Role
                     </p>
                     <div className="flex flex-wrap gap-x-6 gap-y-1">
                       {activeRoles.has("dev") && (
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-[#6B6B6B]">
+                          <span className="text-xs text-[#7A7A7A]">
                             Developer
                           </span>
-                          <span className="text-xs font-semibold tabular-nums text-[#0A0A0A]">
+                          <span className="text-xs font-semibold tabular-nums text-[#1B1B1B]">
                             {fmtDetailed.format(roleTotals.dev)}
                           </span>
                         </div>
                       )}
                       {activeRoles.has("designer") && (
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-[#6B6B6B]">
+                          <span className="text-xs text-[#7A7A7A]">
                             Designer
                           </span>
-                          <span className="text-xs font-semibold tabular-nums text-[#0A0A0A]">
+                          <span className="text-xs font-semibold tabular-nums text-[#1B1B1B]">
                             {fmtDetailed.format(roleTotals.designer)}
                           </span>
                         </div>
                       )}
                       {activeRoles.has("juniorDesigner") && (
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-[#6B6B6B]">
+                          <span className="text-xs text-[#7A7A7A]">
                             Junior Designer
                           </span>
-                          <span className="text-xs font-semibold tabular-nums text-[#0A0A0A]">
+                          <span className="text-xs font-semibold tabular-nums text-[#1B1B1B]">
                             {fmtDetailed.format(roleTotals.juniorDesigner)}
                           </span>
                         </div>

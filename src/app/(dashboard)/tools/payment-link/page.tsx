@@ -73,7 +73,7 @@ export default function PaymentLinkPage() {
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
             Payment Link
           </h1>
-          <p className="text-[#6B6B6B]">
+          <p className="text-[#7A7A7A]">
             Generate a checkout link to send to a client
           </p>
         </div>
@@ -104,7 +104,7 @@ export default function PaymentLinkPage() {
           <div>
             <label className={labelClass}>Amount (GBP) *</label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#AAAAAA]">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#A0A0A0]">
                 £
               </span>
               <input
@@ -147,11 +147,11 @@ export default function PaymentLinkPage() {
                     type="text"
                     readOnly
                     value={paymentUrl}
-                    className="flex-1 px-3 py-2 bg-white border border-[#E5E5E5] rounded-md text-sm text-[#6B6B6B] truncate"
+                    className="flex-1 px-3 py-2 bg-white border border-[#E5E5EA] rounded-md text-sm text-[#7A7A7A] truncate"
                   />
                   <button
                     onClick={handleCopy}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#1A1A1A] transition-colors shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-2 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:bg-[#1A1A1A] transition-colors shrink-0"
                   >
                     {copied ? (
                       <>
@@ -170,7 +170,7 @@ export default function PaymentLinkPage() {
 
               <button
                 onClick={handleReset}
-                className="w-full py-2.5 text-sm font-medium text-[#6B6B6B] border border-[#E5E5E5] rounded-md hover:bg-[#F5F5F5] transition-colors"
+                className="w-full py-2.5 text-sm font-medium text-[#7A7A7A] border border-[#E5E5EA] rounded-md hover:bg-[#F3F3F5] transition-colors"
               >
                 Create another
               </button>
@@ -179,7 +179,7 @@ export default function PaymentLinkPage() {
             <button
               onClick={handleGenerate}
               disabled={!canSubmit || loading}
-              className="w-full py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#1A1A1A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full py-2.5 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:bg-[#1A1A1A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {loading ? "Creating…" : "Generate Payment Link"}
             </button>

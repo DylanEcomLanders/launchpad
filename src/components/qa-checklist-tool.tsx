@@ -164,7 +164,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-3xl font-bold tracking-tight mb-2">QA Checklist</h1>
-          <p className="text-[#6B6B6B] text-sm">
+          <p className="text-[#7A7A7A] text-sm">
             Interactive quality assurance checklist for client projects
           </p>
         </div>
@@ -253,16 +253,16 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
         </div>
 
         {/* Progress Bar */}
-        <div className="bg-white border border-[#E5E5E5] rounded-lg p-4 mb-8">
+        <div className="bg-white border border-[#E5E5EA] rounded-lg p-4 mb-8">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-[#6B6B6B] uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#7A7A7A] uppercase tracking-wider">
               Progress
             </span>
-            <span className="text-xs text-[#6B6B6B]">
+            <span className="text-xs text-[#7A7A7A]">
               {stats.checked}/{stats.total} checked
             </span>
           </div>
-          <div className="h-2 bg-[#F0F0F0] rounded-full overflow-hidden flex">
+          <div className="h-2 bg-[#EDEDEF] rounded-full overflow-hidden flex">
             {stats.pass > 0 && (
               <div
                 className="bg-emerald-500 transition-all duration-300"
@@ -277,7 +277,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
             )}
             {stats.skip > 0 && (
               <div
-                className="bg-[#CCCCCC] transition-all duration-300"
+                className="bg-[#C5C5C5] transition-all duration-300"
                 style={{ width: `${(stats.skip / stats.total) * 100}%` }}
               />
             )}
@@ -285,7 +285,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
           <div className="flex gap-4 mt-2">
             <span className="text-xs text-emerald-600 font-medium">{stats.pass} pass</span>
             <span className="text-xs text-red-500 font-medium">{stats.fail} fail</span>
-            <span className="text-xs text-[#AAAAAA] font-medium">{stats.skip} skip</span>
+            <span className="text-xs text-[#A0A0A0] font-medium">{stats.skip} skip</span>
           </div>
         </div>
 
@@ -300,27 +300,27 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
               <button
                 type="button"
                 onClick={() => setCollapsed((prev) => ({ ...prev, [category]: !isCollapsed }))}
-                className="w-full flex items-center justify-between px-4 py-3 bg-white border border-[#E5E5E5] rounded-lg hover:bg-[#FAFAFA] transition-colors"
+                className="w-full flex items-center justify-between px-4 py-3 bg-white border border-[#E5E5EA] rounded-lg hover:bg-[#F7F8FA] transition-colors"
               >
                 <div className="flex items-center gap-2">
                   {cs.hasFail && (
                     <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
                   )}
                   <span className="text-sm font-semibold">{category}</span>
-                  <span className="text-xs text-[#AAAAAA]">
+                  <span className="text-xs text-[#A0A0A0]">
                     ({cs.checked}/{cs.total})
                   </span>
                 </div>
                 <ChevronDownIcon
-                  className={`size-4 text-[#6B6B6B] transition-transform ${isCollapsed ? "" : "rotate-180"}`}
+                  className={`size-4 text-[#7A7A7A] transition-transform ${isCollapsed ? "" : "rotate-180"}`}
                 />
               </button>
 
               {!isCollapsed && (
-                <div className="border border-t-0 border-[#E5E5E5] rounded-b-lg bg-white -mt-[1px]">
+                <div className="border border-t-0 border-[#E5E5EA] rounded-b-lg bg-white -mt-[1px]">
                   {catItems.map((item) => (
                     <div key={item.id}>
-                      <div className="flex items-center gap-3 px-4 py-2.5 border-b border-[#F0F0F0] last:border-b-0">
+                      <div className="flex items-center gap-3 px-4 py-2.5 border-b border-[#EDEDEF] last:border-b-0">
                         {/* Result toggle */}
                         <button
                           type="button"
@@ -333,15 +333,15 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
                                 : item.result === "fail"
                                   ? "#ef4444"
                                   : item.result === "skip"
-                                    ? "#CCCCCC"
-                                    : "#E5E5E5",
+                                    ? "#C5C5C5"
+                                    : "#E5E5EA",
                             backgroundColor:
                               item.result === "pass"
                                 ? "#ecfdf5"
                                 : item.result === "fail"
                                   ? "#fef2f2"
                                   : item.result === "skip"
-                                    ? "#F5F5F5"
+                                    ? "#F3F3F5"
                                     : "#FFFFFF",
                             color:
                               item.result === "pass"
@@ -350,7 +350,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
                                   ? "#dc2626"
                                   : item.result === "skip"
                                     ? "#999999"
-                                    : "#CCCCCC",
+                                    : "#C5C5C5",
                           }}
                         >
                           {item.result === "pass"
@@ -366,10 +366,10 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
                         <span
                           className={`flex-1 text-sm ${
                             item.result === "skip"
-                              ? "text-[#AAAAAA] line-through"
+                              ? "text-[#A0A0A0] line-through"
                               : item.result === "fail"
                                 ? "text-red-700"
-                                : "text-[#0A0A0A]"
+                                : "text-[#1B1B1B]"
                           }`}
                         >
                           {item.description}
@@ -383,8 +383,8 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
                           }
                           className={`flex-shrink-0 p-1.5 rounded transition-colors ${
                             notesOpen[item.id] || item.notes
-                              ? "text-[#0A0A0A]"
-                              : "text-[#CCCCCC] hover:text-[#6B6B6B]"
+                              ? "text-[#1B1B1B]"
+                              : "text-[#C5C5C5] hover:text-[#7A7A7A]"
                           }`}
                         >
                           <ChatBubbleLeftIcon className="size-3.5" />
@@ -394,7 +394,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
                         <button
                           type="button"
                           onClick={() => removeItem(item.id)}
-                          className="flex-shrink-0 p-1.5 text-[#CCCCCC] hover:text-red-500 transition-colors"
+                          className="flex-shrink-0 p-1.5 text-[#C5C5C5] hover:text-red-500 transition-colors"
                         >
                           <TrashIcon className="size-3.5" />
                         </button>
@@ -402,10 +402,10 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
 
                       {/* Notes input */}
                       {notesOpen[item.id] && (
-                        <div className="px-4 pb-2.5 pl-14 border-b border-[#F0F0F0]">
+                        <div className="px-4 pb-2.5 pl-14 border-b border-[#EDEDEF]">
                           <input
                             type="text"
-                            className="w-full px-2.5 py-1.5 text-xs bg-[#FAFAFA] border border-[#E5E5E5] rounded focus:outline-none focus:border-[#0A0A0A] placeholder:text-[#CCCCCC]"
+                            className="w-full px-2.5 py-1.5 text-xs bg-[#F7F8FA] border border-[#E5E5EA] rounded focus:outline-none focus:border-[#1B1B1B] placeholder:text-[#C5C5C5]"
                             placeholder="Add a note..."
                             value={item.notes}
                             onChange={(e) => updateItem(item.id, { notes: e.target.value })}
@@ -421,7 +421,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
                       <div className="flex items-center gap-2">
                         <input
                           type="text"
-                          className="flex-1 px-2.5 py-1.5 text-sm bg-[#FAFAFA] border border-[#E5E5E5] rounded focus:outline-none focus:border-[#0A0A0A] placeholder:text-[#CCCCCC]"
+                          className="flex-1 px-2.5 py-1.5 text-sm bg-[#F7F8FA] border border-[#E5E5EA] rounded focus:outline-none focus:border-[#1B1B1B] placeholder:text-[#C5C5C5]"
                           placeholder="New check description..."
                           value={newItemText}
                           onChange={(e) => setNewItemText(e.target.value)}
@@ -437,7 +437,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
                         <button
                           type="button"
                           onClick={() => addCustomItem(category)}
-                          className="px-3 py-1.5 bg-[#0A0A0A] text-white text-xs font-medium rounded hover:bg-accent-hover transition-colors"
+                          className="px-3 py-1.5 bg-[#1B1B1B] text-white text-xs font-medium rounded hover:bg-accent-hover transition-colors"
                         >
                           Add
                         </button>
@@ -447,7 +447,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
                             setAddingTo(null);
                             setNewItemText("");
                           }}
-                          className="px-3 py-1.5 text-xs text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
+                          className="px-3 py-1.5 text-xs text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
                         >
                           Cancel
                         </button>
@@ -456,7 +456,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
                       <button
                         type="button"
                         onClick={() => setAddingTo(category)}
-                        className="flex items-center gap-1.5 text-xs text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
+                        className="flex items-center gap-1.5 text-xs text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
                       >
                         <PlusIcon className="size-3" />
                         Add check
@@ -486,7 +486,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
           <button
             onClick={handleGenerate}
             disabled={!isFormValid || generating}
-            className="flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-6 py-3 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {generating ? (
               <>
@@ -499,7 +499,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
           </button>
           <button
             onClick={handleReset}
-            className="px-6 py-3 border border-[#E5E5E5] bg-white text-[#6B6B6B] text-sm font-medium rounded-md hover:bg-[#F5F5F5] transition-colors"
+            className="px-6 py-3 border border-[#E5E5EA] bg-white text-[#7A7A7A] text-sm font-medium rounded-md hover:bg-[#F3F3F5] transition-colors"
           >
             Reset Checklist
           </button>

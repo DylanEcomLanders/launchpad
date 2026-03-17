@@ -240,7 +240,7 @@ export default function FunnelPlannerPage() {
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
             Funnel Planner
           </h1>
-          <p className="text-[#6B6B6B]">
+          <p className="text-[#7A7A7A]">
             Map content to TOFU / MOFU / BOFU — see gaps at a glance
           </p>
         </div>
@@ -265,7 +265,7 @@ export default function FunnelPlannerPage() {
                     {count}
                   </span>
                 </div>
-                <p className="text-[10px] text-[#6B6B6B]">
+                <p className="text-[10px] text-[#7A7A7A]">
                   {stage.fullLabel}
                 </p>
                 {stats.total > 0 && (
@@ -310,7 +310,7 @@ export default function FunnelPlannerPage() {
                 resetForm();
                 setShowForm(true);
               }}
-              className="flex items-center gap-1.5 px-4 py-2 bg-[#0A0A0A] text-white text-xs font-medium rounded-md hover:bg-[#2A2A2A] transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-md hover:bg-[#2D2D2D] transition-colors"
             >
               <PlusIcon className="size-3.5" />
               Add Content
@@ -320,7 +320,7 @@ export default function FunnelPlannerPage() {
               <>
                 <button
                   onClick={copySummary}
-                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md border border-[#E5E5E5] bg-white text-[#6B6B6B] hover:bg-[#F5F5F5] transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md border border-[#E5E5EA] bg-white text-[#7A7A7A] hover:bg-[#F3F3F5] transition-colors"
                 >
                   {copied ? (
                     <CheckIcon className="size-3.5 text-emerald-500" />
@@ -331,7 +331,7 @@ export default function FunnelPlannerPage() {
                 </button>
                 <button
                   onClick={exportCSV}
-                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md border border-[#E5E5E5] bg-white text-[#6B6B6B] hover:bg-[#F5F5F5] transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md border border-[#E5E5EA] bg-white text-[#7A7A7A] hover:bg-[#F3F3F5] transition-colors"
                 >
                   <ArrowDownTrayIcon className="size-3.5" />
                   CSV
@@ -347,7 +347,7 @@ export default function FunnelPlannerPage() {
               onChange={(e) =>
                 setFilterPlatform(e.target.value as Platform | "all")
               }
-              className="px-2 py-1.5 text-xs border border-[#E5E5E5] rounded-md bg-white text-[#6B6B6B]"
+              className="px-2 py-1.5 text-xs border border-[#E5E5EA] rounded-md bg-white text-[#7A7A7A]"
             >
               <option value="all">All platforms</option>
               {platforms.map((p) => (
@@ -361,7 +361,7 @@ export default function FunnelPlannerPage() {
               onChange={(e) =>
                 setFilterStatus(e.target.value as ContentStatus | "all")
               }
-              className="px-2 py-1.5 text-xs border border-[#E5E5E5] rounded-md bg-white text-[#6B6B6B]"
+              className="px-2 py-1.5 text-xs border border-[#E5E5EA] rounded-md bg-white text-[#7A7A7A]"
             >
               <option value="all">All statuses</option>
               {statusOptions.map((s) => (
@@ -372,13 +372,13 @@ export default function FunnelPlannerPage() {
             </select>
 
             {/* View toggle */}
-            <div className="flex border border-[#E5E5E5] rounded-md overflow-hidden">
+            <div className="flex border border-[#E5E5EA] rounded-md overflow-hidden">
               <button
                 onClick={() => setView("board")}
                 className={`p-1.5 ${
                   view === "board"
-                    ? "bg-[#0A0A0A] text-white"
-                    : "bg-white text-[#6B6B6B] hover:bg-[#F5F5F5]"
+                    ? "bg-[#1B1B1B] text-white"
+                    : "bg-white text-[#7A7A7A] hover:bg-[#F3F3F5]"
                 }`}
               >
                 <ViewColumnsIcon className="size-4" />
@@ -387,8 +387,8 @@ export default function FunnelPlannerPage() {
                 onClick={() => setView("list")}
                 className={`p-1.5 ${
                   view === "list"
-                    ? "bg-[#0A0A0A] text-white"
-                    : "bg-white text-[#6B6B6B] hover:bg-[#F5F5F5]"
+                    ? "bg-[#1B1B1B] text-white"
+                    : "bg-white text-[#7A7A7A] hover:bg-[#F3F3F5]"
                 }`}
               >
                 <ListBulletIcon className="size-4" />
@@ -399,12 +399,12 @@ export default function FunnelPlannerPage() {
 
         {/* ── Add/Edit Form ── */}
         {showForm && (
-          <div className="mb-8 bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg p-5">
+          <div className="mb-8 bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold">
                 {editingId ? "Edit Content Piece" : "Add Content Piece"}
               </h3>
-              <button onClick={resetForm} className="text-[#AAAAAA] hover:text-[#0A0A0A]">
+              <button onClick={resetForm} className="text-[#A0A0A0] hover:text-[#1B1B1B]">
                 <XMarkIcon className="size-4" />
               </button>
             </div>
@@ -486,7 +486,7 @@ export default function FunnelPlannerPage() {
                       className={`flex-1 px-3 py-2 text-xs font-semibold rounded-md border transition-colors ${
                         form.funnelStage === stage.id
                           ? `${stage.bgColor} ${stage.borderColor} ${stage.color}`
-                          : "bg-white border-[#E5E5E5] text-[#AAAAAA] hover:bg-[#F5F5F5]"
+                          : "bg-white border-[#E5E5EA] text-[#A0A0A0] hover:bg-[#F3F3F5]"
                       }`}
                     >
                       {stage.label}
@@ -532,7 +532,7 @@ export default function FunnelPlannerPage() {
                       <button
                         key={cta}
                         onClick={() => updateForm("cta", cta)}
-                        className="px-2 py-1 text-[10px] font-medium rounded border border-[#E5E5E5] bg-white text-[#6B6B6B] hover:bg-[#F5F5F5] transition-colors"
+                        className="px-2 py-1 text-[10px] font-medium rounded border border-[#E5E5EA] bg-white text-[#7A7A7A] hover:bg-[#F3F3F5] transition-colors"
                       >
                         {cta}
                       </button>
@@ -544,7 +544,7 @@ export default function FunnelPlannerPage() {
               <div>
                 <label className={labelClass}>
                   Notes{" "}
-                  <span className="font-normal text-[#AAAAAA]">(optional)</span>
+                  <span className="font-normal text-[#A0A0A0]">(optional)</span>
                 </label>
                 <textarea
                   value={form.notes}
@@ -558,7 +558,7 @@ export default function FunnelPlannerPage() {
               <button
                 onClick={handleSubmit}
                 disabled={!form.title.trim()}
-                className="flex items-center gap-2 px-5 py-2.5 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#2A2A2A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:bg-[#2D2D2D] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {editingId ? "Save Changes" : "Add to Plan"}
               </button>
@@ -587,9 +587,9 @@ export default function FunnelPlannerPage() {
                       {stagePieces.length}
                     </span>
                   </div>
-                  <div className="border border-t-0 border-[#E5E5E5] rounded-b-lg min-h-[200px] p-2 space-y-2">
+                  <div className="border border-t-0 border-[#E5E5EA] rounded-b-lg min-h-[200px] p-2 space-y-2">
                     {stagePieces.length === 0 && (
-                      <p className="text-[10px] text-[#CCCCCC] text-center py-8">
+                      <p className="text-[10px] text-[#C5C5C5] text-center py-8">
                         No content yet
                       </p>
                     )}
@@ -601,15 +601,15 @@ export default function FunnelPlannerPage() {
                       return (
                         <div
                           key={piece.id}
-                          className="bg-white border border-[#E5E5E5] rounded-md p-3"
+                          className="bg-white border border-[#E5E5EA] rounded-md p-3"
                         >
                           <div className="flex items-center justify-between mb-1.5">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-[9px] font-bold bg-[#F0F0F0] px-1.5 py-0.5 rounded">
+                              <span className="text-[9px] font-bold bg-[#EDEDEF] px-1.5 py-0.5 rounded">
                                 {plat?.icon}
                               </span>
                               {piece.format && (
-                                <span className="text-[9px] text-[#AAAAAA]">
+                                <span className="text-[9px] text-[#A0A0A0]">
                                   {plat?.formats.find(
                                     (f) => f.id === piece.format
                                   )?.label || piece.format}
@@ -622,24 +622,24 @@ export default function FunnelPlannerPage() {
                               {status?.label}
                             </span>
                           </div>
-                          <p className="text-xs font-semibold text-[#0A0A0A] mb-1 line-clamp-2">
+                          <p className="text-xs font-semibold text-[#1B1B1B] mb-1 line-clamp-2">
                             {piece.title}
                           </p>
                           {piece.hook && (
-                            <p className="text-[10px] text-[#6B6B6B] line-clamp-2 mb-2">
+                            <p className="text-[10px] text-[#7A7A7A] line-clamp-2 mb-2">
                               &ldquo;{piece.hook}&rdquo;
                             </p>
                           )}
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => startEdit(piece)}
-                              className="p-1 text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
+                              className="p-1 text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
                             >
                               <PencilSquareIcon className="size-3" />
                             </button>
                             <button
                               onClick={() => deletePiece(piece.id)}
-                              className="p-1 text-[#AAAAAA] hover:text-red-400 transition-colors"
+                              className="p-1 text-[#A0A0A0] hover:text-red-400 transition-colors"
                             >
                               <TrashIcon className="size-3" />
                             </button>
@@ -676,7 +676,7 @@ export default function FunnelPlannerPage() {
                     </span>
                   </div>
                   {stagePieces.length === 0 ? (
-                    <p className="text-xs text-[#CCCCCC] py-4 text-center">
+                    <p className="text-xs text-[#C5C5C5] py-4 text-center">
                       No content in this stage
                     </p>
                   ) : (
@@ -689,17 +689,17 @@ export default function FunnelPlannerPage() {
                         return (
                           <div
                             key={piece.id}
-                            className="flex items-center gap-3 bg-white border border-[#E5E5E5] rounded-md px-4 py-3"
+                            className="flex items-center gap-3 bg-white border border-[#E5E5EA] rounded-md px-4 py-3"
                           >
-                            <span className="text-[10px] font-bold bg-[#F0F0F0] px-2 py-1 rounded shrink-0">
+                            <span className="text-[10px] font-bold bg-[#EDEDEF] px-2 py-1 rounded shrink-0">
                               {plat?.icon}
                             </span>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-[#0A0A0A] truncate">
+                              <p className="text-sm font-semibold text-[#1B1B1B] truncate">
                                 {piece.title}
                               </p>
                               {piece.hook && (
-                                <p className="text-xs text-[#6B6B6B] truncate">
+                                <p className="text-xs text-[#7A7A7A] truncate">
                                   &ldquo;{piece.hook}&rdquo;
                                 </p>
                               )}
@@ -712,13 +712,13 @@ export default function FunnelPlannerPage() {
                             <div className="flex items-center gap-1 shrink-0">
                               <button
                                 onClick={() => startEdit(piece)}
-                                className="p-1.5 text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
+                                className="p-1.5 text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
                               >
                                 <PencilSquareIcon className="size-3.5" />
                               </button>
                               <button
                                 onClick={() => deletePiece(piece.id)}
-                                className="p-1.5 text-[#AAAAAA] hover:text-red-400 transition-colors"
+                                className="p-1.5 text-[#A0A0A0] hover:text-red-400 transition-colors"
                               >
                                 <TrashIcon className="size-3.5" />
                               </button>
@@ -736,12 +736,12 @@ export default function FunnelPlannerPage() {
 
         {/* ── Gap Analysis ── */}
         {pieces.length > 0 && (
-          <div className="mt-12 pt-12 border-t border-[#E5E5E5]">
+          <div className="mt-12 pt-12 border-t border-[#E5E5EA]">
             <h2 className="text-lg font-bold tracking-tight mb-4">
               Gap Analysis
             </h2>
-            <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-3">
+            <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-5">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-3">
                 Per-Platform Breakdown
               </p>
               <div className="space-y-2">
@@ -753,20 +753,20 @@ export default function FunnelPlannerPage() {
                       key={p.id}
                       className="flex items-center gap-3 text-xs"
                     >
-                      <span className="font-bold text-[10px] bg-[#E5E5E5] px-2 py-1 rounded w-8 text-center">
+                      <span className="font-bold text-[10px] bg-[#E5E5EA] px-2 py-1 rounded w-8 text-center">
                         {p.icon}
                       </span>
-                      <span className="font-medium text-[#0A0A0A] w-24">
+                      <span className="font-medium text-[#1B1B1B] w-24">
                         {p.label}
                       </span>
                       <span className="text-blue-600">
                         {ps.tofu} TOFU
                       </span>
-                      <span className="text-[#CCCCCC]">\u00b7</span>
+                      <span className="text-[#C5C5C5]">\u00b7</span>
                       <span className="text-amber-600">
                         {ps.mofu} MOFU
                       </span>
-                      <span className="text-[#CCCCCC]">\u00b7</span>
+                      <span className="text-[#C5C5C5]">\u00b7</span>
                       <span className="text-emerald-600">
                         {ps.bofu} BOFU
                       </span>
@@ -776,8 +776,8 @@ export default function FunnelPlannerPage() {
               </div>
 
               {gaps.missing.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-[#E5E5E5]">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-2">
+                <div className="mt-4 pt-4 border-t border-[#E5E5EA]">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-2">
                     Missing Combinations
                   </p>
                   <div className="flex flex-wrap gap-1.5">

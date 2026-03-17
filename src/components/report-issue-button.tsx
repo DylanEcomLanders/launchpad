@@ -41,7 +41,7 @@ export function ReportIssueButton() {
       {/* Floating trigger */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-40 w-10 h-10 bg-[#0A0A0A] text-white rounded-full flex items-center justify-center shadow-lg hover:bg-[#333] transition-colors"
+        className="fixed bottom-6 right-6 z-40 w-10 h-10 bg-[#1B1B1B] text-white rounded-full flex items-center justify-center shadow-lg hover:bg-[#333] transition-colors"
         title="Report an issue"
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
@@ -56,12 +56,12 @@ export function ReportIssueButton() {
             className="absolute inset-0 bg-black/20"
             onClick={() => setOpen(false)}
           />
-          <div className="relative bg-white rounded-t-xl sm:rounded-xl w-full max-w-md mx-4 mb-0 sm:mb-0 shadow-xl">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[#E5E5E5]">
+          <div className="relative bg-white rounded-t-xl sm:rounded-lg w-full max-w-md mx-4 mb-0 sm:mb-0 shadow-xl">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#E5E5EA]">
               <h3 className="text-sm font-semibold">Report an Issue</h3>
               <button
                 onClick={() => setOpen(false)}
-                className="text-[#AAAAAA] hover:text-[#0A0A0A] text-lg leading-none"
+                className="text-[#A0A0A0] hover:text-[#1B1B1B] text-lg leading-none"
               >
                 &times;
               </button>
@@ -69,7 +69,7 @@ export function ReportIssueButton() {
 
             {submitted ? (
               <div className="p-8 text-center">
-                <p className="text-sm text-[#6B6B6B]">Logged. Thanks!</p>
+                <p className="text-sm text-[#7A7A7A]">Logged. Thanks!</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="p-5 space-y-4">
@@ -110,13 +110,13 @@ export function ReportIssueButton() {
                   />
                 </div>
 
-                <p className="text-[10px] text-[#AAAAAA]">
+                <p className="text-[10px] text-[#A0A0A0]">
                   Page: {pathname}
                 </p>
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-[#0A0A0A] text-white text-sm rounded-md hover:bg-[#333] transition-colors"
+                  className="w-full py-2.5 bg-[#1B1B1B] text-white text-sm rounded-md hover:bg-[#333] transition-colors"
                 >
                   Submit
                 </button>

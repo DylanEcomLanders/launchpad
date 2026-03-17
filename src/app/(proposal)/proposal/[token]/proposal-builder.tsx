@@ -205,10 +205,10 @@ export function ProposalBuilder({
         <p className="text-sm font-medium text-[#2563EB] mb-2 uppercase tracking-wider">
           Build Your Package
         </p>
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-[#0A0A0A] mb-3">
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-[#1B1B1B] mb-3">
           Hey {proposal.client_name}
         </h1>
-        <p className="text-base md:text-lg text-[#6B6B6B] max-w-2xl">
+        <p className="text-base md:text-lg text-[#7A7A7A] max-w-2xl">
           Choose your services, get your price.
         </p>
         <div className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 bg-[#EFF6FF] border border-[#BFDBFE] rounded-lg">
@@ -225,7 +225,7 @@ export function ProposalBuilder({
           {/* Main services by category */}
           {Object.entries(grouped).map(([cat, svcs]) => (
             <div key={cat} className="mb-10">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-[#AAAAAA] mb-4">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] mb-4">
                 {serviceCategories[cat] || cat}
               </h2>
 
@@ -273,10 +273,10 @@ export function ProposalBuilder({
           {/* Add-ons */}
           {addOnServices.length > 0 && (
             <div className="mb-10">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">
                 Additional Services
               </h2>
-              <p className="text-xs text-[#CCCCCC] mb-4">
+              <p className="text-xs text-[#C5C5C5] mb-4">
                 Bolt onto any project or retainer to extend output without
                 adding overhead.
               </p>
@@ -321,7 +321,7 @@ export function ProposalBuilder({
 
       {/* Mobile: Persistent summary bar */}
       {itemCount > 0 && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E5E5] z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E5EA] z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
           {/* Scrollable item list */}
           <div className="max-h-[30vh] overflow-y-auto px-4 pt-3 pb-2 space-y-1.5">
             {selectedItems.map(({ service, sel, lineTotal, baseLineTotal, discount }) => (
@@ -329,10 +329,10 @@ export function ProposalBuilder({
                 key={service.id}
                 className="flex items-center justify-between text-xs"
               >
-                <span className="text-[#0A0A0A] truncate mr-3">
+                <span className="text-[#1B1B1B] truncate mr-3">
                   {service.name}
                   {sel.quantity > 1 && (
-                    <span className="text-[#AAAAAA]"> &times;{sel.quantity}</span>
+                    <span className="text-[#A0A0A0]"> &times;{sel.quantity}</span>
                   )}
                 </span>
                 {discount > 0 ? (
@@ -362,14 +362,14 @@ export function ProposalBuilder({
           </div>
 
           {/* Total + CTA */}
-          <div className="px-4 pb-4 pt-2 border-t border-[#F0F0F0]">
+          <div className="px-4 pb-4 pt-2 border-t border-[#EDEDEF]">
             <div className="flex items-center justify-between mb-2.5">
-              <span className="text-sm font-semibold text-[#0A0A0A]">Total</span>
-              <span className="text-lg font-bold text-[#0A0A0A]">{formatGBP(totalPence)}</span>
+              <span className="text-sm font-semibold text-[#1B1B1B]">Total</span>
+              <span className="text-lg font-bold text-[#1B1B1B]">{formatGBP(totalPence)}</span>
             </div>
             <button
               onClick={() => setDrawerOpen(true)}
-              className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#2563EB] text-white rounded-xl font-medium text-sm hover:bg-[#1D4ED8] transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#2563EB] text-white rounded-lg font-medium text-sm hover:bg-[#1D4ED8] transition-colors"
             >
               <ShoppingCartIcon className="size-4" />
               Proceed to Checkout
@@ -387,11 +387,11 @@ export function ProposalBuilder({
             onClick={() => setDrawerOpen(false)}
           />
           <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[80vh] overflow-y-auto animate-slideUp">
-            <div className="flex items-center justify-between p-4 border-b border-[#F0F0F0]">
+            <div className="flex items-center justify-between p-4 border-b border-[#EDEDEF]">
               <h3 className="text-sm font-semibold">Order Summary</h3>
               <button
                 onClick={() => setDrawerOpen(false)}
-                className="p-1.5 hover:bg-[#F5F5F5] rounded-md"
+                className="p-1.5 hover:bg-[#F3F3F5] rounded-md"
               >
                 <XMarkIcon className="size-4" />
               </button>
@@ -464,10 +464,10 @@ function ServiceCard({
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") onToggle();
       }}
-      className={`relative rounded-xl border-2 p-5 transition-all duration-200 cursor-pointer ${
+      className={`relative rounded-lg border-2 p-5 transition-all duration-200 cursor-pointer ${
         isSelected
           ? "border-[#2563EB] bg-[#EFF6FF] shadow-sm"
-          : "border-[#E5E5E5] bg-white hover:border-[#CCCCCC] hover:shadow-sm"
+          : "border-[#E5E5EA] bg-white hover:border-[#C5C5C5] hover:shadow-sm"
       }`}
     >
       {/* Recommended badge */}
@@ -480,21 +480,21 @@ function ServiceCard({
 
       {/* Selection indicator */}
       <div className="flex items-start justify-between mb-3">
-        <h3 className="text-sm font-semibold text-[#0A0A0A] pr-8">
+        <h3 className="text-sm font-semibold text-[#1B1B1B] pr-8">
           {service.name}
         </h3>
         <div
           className={`shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
             isSelected
               ? "bg-[#2563EB] border-[#2563EB]"
-              : "border-[#CCCCCC]"
+              : "border-[#C5C5C5]"
           }`}
         >
           {isSelected && <CheckCircleIcon className="size-4 text-white" />}
         </div>
       </div>
 
-      <p className="text-xs text-[#6B6B6B] leading-relaxed mb-3">
+      <p className="text-xs text-[#7A7A7A] leading-relaxed mb-3">
         {service.description}
       </p>
 
@@ -504,7 +504,7 @@ function ServiceCard({
           {service.features.map((f) => (
             <li
               key={f}
-              className="text-xs text-[#6B6B6B] flex items-start gap-2"
+              className="text-xs text-[#7A7A7A] flex items-start gap-2"
             >
               <span className="text-[#2563EB] mt-0.5 shrink-0">&#x2022;</span>
               {f}
@@ -517,7 +517,7 @@ function ServiceCard({
       <div className="flex items-end justify-between">
         {hasDiscount ? (
           <div className="flex items-baseline gap-2">
-            <span className="text-sm text-[#AAAAAA] line-through">
+            <span className="text-sm text-[#A0A0A0] line-through">
               {tierPrice?.label}
             </span>
             <span className="text-lg font-bold text-[#15803D]">
@@ -529,11 +529,11 @@ function ServiceCard({
           </div>
         ) : (
           <div>
-            <span className="text-lg font-bold text-[#0A0A0A]">
+            <span className="text-lg font-bold text-[#1B1B1B]">
               {tierPrice?.label ?? "—"}
             </span>
             {service.minQuantity && service.minQuantity > 1 && (
-              <span className="block text-[10px] text-[#AAAAAA]">
+              <span className="block text-[10px] text-[#A0A0A0]">
                 min {service.minQuantity} {service.unitLabel ? `${service.unitLabel}s` : ""}
               </span>
             )}
@@ -543,7 +543,7 @@ function ServiceCard({
         {/* Mode toggle (only if both modes) */}
         {hasBothModes && isSelected && (
           <div
-            className="inline-flex rounded-md border border-[#E5E5E5] bg-white p-0.5 text-[10px] font-semibold uppercase tracking-wider"
+            className="inline-flex rounded-md border border-[#E5E5EA] bg-white p-0.5 text-[10px] font-semibold uppercase tracking-wider"
             onClick={(e) => e.stopPropagation()}
           >
             {service.modes.map((m) => (
@@ -553,7 +553,7 @@ function ServiceCard({
                 className={`px-2.5 py-1 rounded transition-colors ${
                   activeMode === m
                     ? "bg-[#2563EB] text-white"
-                    : "text-[#6B6B6B] hover:text-[#0A0A0A]"
+                    : "text-[#7A7A7A] hover:text-[#1B1B1B]"
                 }`}
               >
                 {m === "one-off" ? "One-off" : "Retainer"}
@@ -577,23 +577,23 @@ function ServiceCard({
 
         return (
           <div
-            className="mt-3 pt-3 border-t border-[#E5E5E5] space-y-1.5"
+            className="mt-3 pt-3 border-t border-[#E5E5EA] space-y-1.5"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="text-xs font-medium text-[#6B6B6B]">
+                <span className="text-xs font-medium text-[#7A7A7A]">
                   Qty:
                 </span>
-                <div className="inline-flex items-center gap-0 rounded-md border border-[#E5E5E5] bg-white">
+                <div className="inline-flex items-center gap-0 rounded-md border border-[#E5E5EA] bg-white">
                   <button
                     onClick={() => onSetQuantity(Math.max(minQty, qty - 1))}
                     disabled={qty <= minQty}
-                    className="px-2.5 py-1.5 text-[#6B6B6B] hover:text-[#0A0A0A] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    className="px-2.5 py-1.5 text-[#7A7A7A] hover:text-[#1B1B1B] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
                     <MinusIcon className="size-3" />
                   </button>
-                  <span className="px-3 py-1.5 text-sm font-semibold tabular-nums border-x border-[#E5E5E5]">
+                  <span className="px-3 py-1.5 text-sm font-semibold tabular-nums border-x border-[#E5E5EA]">
                     {qty}
                   </span>
                   <button
@@ -601,20 +601,20 @@ function ServiceCard({
                       onSetQuantity(Math.min(service.maxQuantity!, qty + 1))
                     }
                     disabled={qty >= service.maxQuantity!}
-                    className="px-2.5 py-1.5 text-[#6B6B6B] hover:text-[#0A0A0A] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    className="px-2.5 py-1.5 text-[#7A7A7A] hover:text-[#1B1B1B] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
                     <PlusIcon className="size-3" />
                   </button>
                 </div>
                 {minQty > 1 && (
-                  <span className="text-[10px] text-[#AAAAAA]">
+                  <span className="text-[10px] text-[#A0A0A0]">
                     min {minQty}
                   </span>
                 )}
               </div>
               <div className="text-right">
                 {service.unitLabel && (
-                  <span className="text-xs font-semibold text-[#0A0A0A] tabular-nums">
+                  <span className="text-xs font-semibold text-[#1B1B1B] tabular-nums">
                     {qty} &times; {effectiveLabel} = {formatGBP(lineTotal)}
                   </span>
                 )}
@@ -627,7 +627,7 @@ function ServiceCard({
             </div>
             {/* Next discount tier nudge */}
             {volResult.nextTier && (
-              <p className="text-[10px] text-[#AAAAAA] ml-10">
+              <p className="text-[10px] text-[#A0A0A0] ml-10">
                 Order {volResult.nextTier.minQty}+ for {volResult.nextTier.label}
               </p>
             )}
@@ -670,13 +670,13 @@ function OrderSummary({
   );
 
   return (
-    <div className="bg-[#FAFAFA] border border-[#E5E5E5] rounded-xl p-5">
-      <h3 className="text-sm font-semibold text-[#0A0A0A] mb-4">
+    <div className="bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg p-5">
+      <h3 className="text-sm font-semibold text-[#1B1B1B] mb-4">
         Order Summary
       </h3>
 
       {isEmpty ? (
-        <p className="text-xs text-[#AAAAAA] py-6 text-center">
+        <p className="text-xs text-[#A0A0A0] py-6 text-center">
           Select services to build your package
         </p>
       ) : (
@@ -688,16 +688,16 @@ function OrderSummary({
                 className="flex items-start justify-between gap-3"
               >
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-[#0A0A0A] truncate">
+                  <p className="text-sm font-medium text-[#1B1B1B] truncate">
                     {service.name}
                     {sel.quantity > 1 && (
-                      <span className="text-[#6B6B6B]">
+                      <span className="text-[#7A7A7A]">
                         {" "}
                         &times;{sel.quantity}
                       </span>
                     )}
                   </p>
-                  <p className="text-[10px] uppercase tracking-wider text-[#AAAAAA]">
+                  <p className="text-[10px] uppercase tracking-wider text-[#A0A0A0]">
                     {sel.mode === "retainer" ? "Monthly retainer" : "One-off"}
                     {discount > 0 && (
                       <span className="text-[#15803D] ml-1">
@@ -710,7 +710,7 @@ function OrderSummary({
                   <div className="text-right">
                     {discount > 0 ? (
                       <>
-                        <span className="text-[10px] text-[#CCCCCC] line-through block leading-tight">
+                        <span className="text-[10px] text-[#C5C5C5] line-through block leading-tight">
                           {formatGBP(baseLineTotal)}
                         </span>
                         <span className="text-sm font-semibold tabular-nums text-[#15803D]">
@@ -725,7 +725,7 @@ function OrderSummary({
                   </div>
                   <button
                     onClick={() => onRemove(service.id)}
-                    className="p-1 text-[#CCCCCC] hover:text-red-500 transition-colors"
+                    className="p-1 text-[#C5C5C5] hover:text-red-500 transition-colors"
                   >
                     <XMarkIcon className="size-3.5" />
                   </button>
@@ -745,17 +745,17 @@ function OrderSummary({
           )}
 
           {/* Divider */}
-          <div className="border-t border-[#E5E5E5] pt-4 mb-5">
+          <div className="border-t border-[#E5E5EA] pt-4 mb-5">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-[#0A0A0A]">
+              <span className="text-sm font-semibold text-[#1B1B1B]">
                 Total
               </span>
               <div className="text-right">
-                <span className="text-lg font-bold text-[#0A0A0A]">
+                <span className="text-lg font-bold text-[#1B1B1B]">
                   {formatGBP(totalPence)}
                 </span>
                 {hasRetainer && (
-                  <p className="text-[10px] text-[#AAAAAA]">
+                  <p className="text-[10px] text-[#A0A0A0]">
                     includes recurring monthly fees
                   </p>
                 )}
@@ -770,10 +770,10 @@ function OrderSummary({
         <div className="mb-4">
           <label
             htmlFor="client-email"
-            className="block text-xs font-medium text-[#6B6B6B] mb-1.5"
+            className="block text-xs font-medium text-[#7A7A7A] mb-1.5"
           >
             Your email{" "}
-            <span className="text-[#AAAAAA] font-normal">(for Slack channel invite)</span>
+            <span className="text-[#A0A0A0] font-normal">(for Slack channel invite)</span>
           </label>
           <input
             id="client-email"
@@ -781,7 +781,7 @@ function OrderSummary({
             placeholder="you@company.com"
             value={clientEmail}
             onChange={(e) => onEmailChange(e.target.value)}
-            className="w-full px-3 py-2.5 text-sm border border-[#E5E5E5] rounded-lg bg-white text-[#0A0A0A] placeholder:text-[#CCCCCC] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-colors"
+            className="w-full px-3 py-2.5 text-sm border border-[#E5E5EA] rounded-lg bg-white text-[#1B1B1B] placeholder:text-[#C5C5C5] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-colors"
           />
         </div>
       )}
@@ -797,9 +797,9 @@ function OrderSummary({
       <button
         onClick={onProceed}
         disabled={isEmpty || loading}
-        className={`w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+        className={`w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
           isEmpty || loading
-            ? "bg-[#E5E5E5] text-[#AAAAAA] cursor-not-allowed"
+            ? "bg-[#E5E5EA] text-[#A0A0A0] cursor-not-allowed"
             : "bg-[#2563EB] text-white hover:bg-[#1D4ED8] shadow-sm hover:shadow-md"
         }`}
       >
@@ -836,7 +836,7 @@ function OrderSummary({
       </button>
 
       {!isEmpty && !loading && (
-        <p className="text-[10px] text-[#AAAAAA] text-center mt-3">
+        <p className="text-[10px] text-[#A0A0A0] text-center mt-3">
           You&apos;ll be redirected to our secure checkout
         </p>
       )}

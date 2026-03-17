@@ -240,7 +240,7 @@ export default function DevHoursPage() {
               <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
                 Dev Hours
               </h1>
-              <p className="text-[#6B6B6B]">
+              <p className="text-[#7A7A7A]">
                 Log out-of-scope dev hours and track invoicing against clients
               </p>
             </div>
@@ -255,7 +255,7 @@ export default function DevHoursPage() {
               className={`shrink-0 flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-md border transition-all duration-200 ${
                 linkCopied
                   ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                  : "bg-white border-[#E5E5E5] text-[#6B6B6B] hover:border-[#CCCCCC] hover:text-[#0A0A0A]"
+                  : "bg-white border-[#E5E5EA] text-[#7A7A7A] hover:border-[#C5C5C5] hover:text-[#1B1B1B]"
               }`}
             >
               {linkCopied ? (
@@ -297,7 +297,7 @@ export default function DevHoursPage() {
                   onClick={() =>
                     setFilters((f) => ({ ...f, month: shiftMonth(f.month, -1) }))
                   }
-                  className="p-1.5 rounded-md border border-[#E5E5E5] hover:bg-[#F0F0F0] transition-colors"
+                  className="p-1.5 rounded-md border border-[#E5E5EA] hover:bg-[#EDEDEF] transition-colors"
                 >
                   <ChevronLeftIcon className="size-4" />
                 </button>
@@ -310,7 +310,7 @@ export default function DevHoursPage() {
                     setFilters((f) => ({ ...f, month: shiftMonth(f.month, 1) }))
                   }
                   disabled={filters.month >= currentMonth()}
-                  className="p-1.5 rounded-md border border-[#E5E5E5] hover:bg-[#F0F0F0] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="p-1.5 rounded-md border border-[#E5E5EA] hover:bg-[#EDEDEF] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <ChevronRightIcon className="size-4" />
                 </button>
@@ -319,7 +319,7 @@ export default function DevHoursPage() {
               {/* Inline filters */}
               <div className="flex flex-wrap items-center gap-3 flex-1">
                 <select
-                  className="px-3 py-2 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors appearance-none"
+                  className="px-3 py-2 bg-white border border-[#E5E5EA] rounded-md text-sm focus:outline-none focus:border-[#1B1B1B] transition-colors appearance-none"
                   value={filters.devName}
                   onChange={(e) =>
                     setFilters((f) => ({ ...f, devName: e.target.value }))
@@ -333,7 +333,7 @@ export default function DevHoursPage() {
                   ))}
                 </select>
                 <select
-                  className="px-3 py-2 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:border-[#0A0A0A] transition-colors appearance-none"
+                  className="px-3 py-2 bg-white border border-[#E5E5EA] rounded-md text-sm focus:outline-none focus:border-[#1B1B1B] transition-colors appearance-none"
                   value={filters.clientName}
                   onChange={(e) =>
                     setFilters((f) => ({
@@ -349,7 +349,7 @@ export default function DevHoursPage() {
                     </option>
                   ))}
                 </select>
-                <div className="inline-flex rounded-md border border-[#E5E5E5] bg-white p-0.5">
+                <div className="inline-flex rounded-md border border-[#E5E5EA] bg-white p-0.5">
                   {(["all", "invoiced", "uninvoiced"] as const).map(
                     (status) => (
                       <button
@@ -363,8 +363,8 @@ export default function DevHoursPage() {
                         }
                         className={`px-3 py-1.5 text-xs font-medium rounded transition-colors capitalize ${
                           filters.invoicedStatus === status
-                            ? "bg-[#0A0A0A] text-white"
-                            : "text-[#6B6B6B] hover:text-[#0A0A0A]"
+                            ? "bg-[#1B1B1B] text-white"
+                            : "text-[#7A7A7A] hover:text-[#1B1B1B]"
                         }`}
                       >
                         {status}
@@ -383,7 +383,7 @@ export default function DevHoursPage() {
                         invoicedStatus: "all",
                       }))
                     }
-                    className="px-3 py-2 text-xs text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
+                    className="px-3 py-2 text-xs text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
                   >
                     Clear filters
                   </button>
@@ -395,39 +395,39 @@ export default function DevHoursPage() {
           {/* ── Financial Dashboard ── */}
           <div>
             <label className={labelClass}>Dashboard</label>
-            <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5">
+            <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-5">
               {loading ? (
                 <div className="flex items-center justify-center py-4">
-                  <ArrowPathIcon className="size-5 animate-spin text-[#AAAAAA]" />
+                  <ArrowPathIcon className="size-5 animate-spin text-[#A0A0A0]" />
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">
                       Total Hours
                     </p>
-                    <p className="text-lg font-semibold tabular-nums text-[#0A0A0A]">
+                    <p className="text-lg font-semibold tabular-nums text-[#1B1B1B]">
                       {metrics.totalHours.toFixed(1)}h
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">
                       Internal Cost
                     </p>
-                    <p className="text-lg font-semibold tabular-nums text-[#0A0A0A]">
+                    <p className="text-lg font-semibold tabular-nums text-[#1B1B1B]">
                       {formatGBP(metrics.internalCost)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">
                       Client Billable
                     </p>
-                    <p className="text-lg font-semibold tabular-nums text-[#0A0A0A]">
+                    <p className="text-lg font-semibold tabular-nums text-[#1B1B1B]">
                       {formatGBP(metrics.clientBillable)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">
                       Invoiced
                     </p>
                     <p className="text-lg font-semibold tabular-nums text-[#15803D]">
@@ -435,24 +435,24 @@ export default function DevHoursPage() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">
                       Uninvoiced
                     </p>
                     <p
                       className={`text-lg font-semibold tabular-nums ${
                         metrics.uninvoicedAmount > 0
                           ? "text-[#B45309]"
-                          : "text-[#0A0A0A]"
+                          : "text-[#1B1B1B]"
                       }`}
                     >
                       {formatGBP(metrics.uninvoicedAmount)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">
                       Margin
                     </p>
-                    <p className="text-lg font-semibold tabular-nums text-[#0A0A0A]">
+                    <p className="text-lg font-semibold tabular-nums text-[#1B1B1B]">
                       {formatGBP(metrics.margin)}
                     </p>
                   </div>
@@ -466,11 +466,11 @@ export default function DevHoursPage() {
             <label className={labelClass}>Log Hours</label>
             <form
               onSubmit={handleSubmit}
-              className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5 space-y-4"
+              className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-5 space-y-4"
             >
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs text-[#6B6B6B] mb-1">
+                  <label className="block text-xs text-[#7A7A7A] mb-1">
                     Dev Name *
                   </label>
                   <select
@@ -490,7 +490,7 @@ export default function DevHoursPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-[#6B6B6B] mb-1">
+                  <label className="block text-xs text-[#7A7A7A] mb-1">
                     Client Name *
                   </label>
                   <input
@@ -511,7 +511,7 @@ export default function DevHoursPage() {
                   </datalist>
                 </div>
                 <div>
-                  <label className="block text-xs text-[#6B6B6B] mb-1">
+                  <label className="block text-xs text-[#7A7A7A] mb-1">
                     Project
                   </label>
                   <input
@@ -528,7 +528,7 @@ export default function DevHoursPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs text-[#6B6B6B] mb-1">
+                  <label className="block text-xs text-[#7A7A7A] mb-1">
                     Hours *
                   </label>
                   <input
@@ -547,7 +547,7 @@ export default function DevHoursPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-[#6B6B6B] mb-1">
+                  <label className="block text-xs text-[#7A7A7A] mb-1">
                     Date *
                   </label>
                   <input
@@ -561,7 +561,7 @@ export default function DevHoursPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-[#6B6B6B] mb-1">
+                  <label className="block text-xs text-[#7A7A7A] mb-1">
                     Description
                   </label>
                   <input
@@ -584,7 +584,7 @@ export default function DevHoursPage() {
                   !form.client_name.trim() ||
                   form.hours <= 0
                 }
-                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {submitting ? (
                   <>
@@ -606,7 +606,7 @@ export default function DevHoursPage() {
             <label className={labelClass}>
               Time Entries
               {filtered.length !== entries.length && (
-                <span className="text-[#AAAAAA] font-normal normal-case tracking-normal ml-2">
+                <span className="text-[#A0A0A0] font-normal normal-case tracking-normal ml-2">
                   ({filtered.length} of {entries.length})
                 </span>
               )}
@@ -614,11 +614,11 @@ export default function DevHoursPage() {
 
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <ArrowPathIcon className="size-6 animate-spin text-[#AAAAAA]" />
+                <ArrowPathIcon className="size-6 animate-spin text-[#A0A0A0]" />
               </div>
             ) : filtered.length === 0 ? (
-              <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-8">
-                <p className="text-xs text-[#AAAAAA] text-center">
+              <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-8">
+                <p className="text-xs text-[#A0A0A0] text-center">
                   {entries.length === 0
                     ? "No hours logged yet — use the form above to log your first entry"
                     : "No entries for this month"}
@@ -628,28 +628,28 @@ export default function DevHoursPage() {
               <div className="space-y-2">
                 {/* Desktop table header */}
                 <div className="hidden md:grid md:grid-cols-[90px_100px_120px_1fr_60px_80px_80px_50px_32px] gap-3 px-4 py-2">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA]">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
                     Date
                   </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA]">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
                     Dev
                   </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA]">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
                     Client
                   </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA]">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
                     Description
                   </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] text-right">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] text-right">
                     Hours
                   </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] text-right">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] text-right">
                     Billable
                   </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] text-right">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] text-right">
                     Cost
                   </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] text-center">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] text-center">
                     Inv
                   </span>
                   <span />
@@ -659,33 +659,33 @@ export default function DevHoursPage() {
                   <div key={entry.id}>
                     {/* Desktop row */}
                     <div
-                      className={`hidden md:grid md:grid-cols-[90px_100px_120px_1fr_60px_80px_80px_50px_32px] gap-3 items-center bg-white border border-[#E5E5E5] rounded-md px-4 py-3 ${
+                      className={`hidden md:grid md:grid-cols-[90px_100px_120px_1fr_60px_80px_80px_50px_32px] gap-3 items-center bg-white border border-[#E5E5EA] rounded-md px-4 py-3 ${
                         entry.invoiced ? "opacity-60" : ""
                       }`}
                     >
-                      <span className="text-xs text-[#6B6B6B] tabular-nums">
+                      <span className="text-xs text-[#7A7A7A] tabular-nums">
                         {formatDisplayDate(entry.date)}
                       </span>
-                      <span className="text-sm text-[#0A0A0A] truncate">
+                      <span className="text-sm text-[#1B1B1B] truncate">
                         {entry.dev_name}
                       </span>
-                      <span className="text-sm text-[#0A0A0A] truncate">
+                      <span className="text-sm text-[#1B1B1B] truncate">
                         {entry.client_name}
                       </span>
-                      <span className="text-xs text-[#6B6B6B] truncate">
+                      <span className="text-xs text-[#7A7A7A] truncate">
                         {entry.project_name
                           ? `${entry.project_name}${entry.description ? " — " + entry.description : ""}`
                           : entry.description || "—"}
                       </span>
-                      <span className="text-sm font-medium tabular-nums text-right text-[#0A0A0A]">
+                      <span className="text-sm font-medium tabular-nums text-right text-[#1B1B1B]">
                         {Number(entry.hours).toFixed(1)}
                       </span>
-                      <span className="text-sm font-medium tabular-nums text-right text-[#0A0A0A]">
+                      <span className="text-sm font-medium tabular-nums text-right text-[#1B1B1B]">
                         {formatGBP(
                           Number(entry.hours) * Number(entry.client_rate)
                         )}
                       </span>
-                      <span className="text-xs tabular-nums text-right text-[#AAAAAA]">
+                      <span className="text-xs tabular-nums text-right text-[#A0A0A0]">
                         {formatGBP(
                           Number(entry.hours) * Number(entry.dev_rate)
                         )}
@@ -698,8 +698,8 @@ export default function DevHoursPage() {
                           }
                           className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
                             entry.invoiced
-                              ? "bg-[#0A0A0A] border-[#0A0A0A]"
-                              : "border-[#CCCCCC] hover:border-[#0A0A0A]"
+                              ? "bg-[#1B1B1B] border-[#1B1B1B]"
+                              : "border-[#C5C5C5] hover:border-[#1B1B1B]"
                           }`}
                         >
                           {entry.invoiced && (
@@ -709,7 +709,7 @@ export default function DevHoursPage() {
                       </div>
                       <button
                         onClick={() => deleteEntry(entry.id)}
-                        className="p-1 text-[#CCCCCC] hover:text-[#0A0A0A] transition-colors"
+                        className="p-1 text-[#C5C5C5] hover:text-[#1B1B1B] transition-colors"
                       >
                         <XMarkIcon className="size-3.5" />
                       </button>
@@ -717,17 +717,17 @@ export default function DevHoursPage() {
 
                     {/* Mobile card */}
                     <div
-                      className={`md:hidden bg-white border border-[#E5E5E5] rounded-md px-4 py-3 ${
+                      className={`md:hidden bg-white border border-[#E5E5EA] rounded-md px-4 py-3 ${
                         entry.invoiced ? "opacity-60" : ""
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-[#0A0A0A]">
+                          <span className="text-sm font-medium text-[#1B1B1B]">
                             {entry.dev_name}
                           </span>
-                          <span className="text-xs text-[#AAAAAA]">→</span>
-                          <span className="text-sm text-[#0A0A0A]">
+                          <span className="text-xs text-[#A0A0A0]">→</span>
+                          <span className="text-sm text-[#1B1B1B]">
                             {entry.client_name}
                           </span>
                         </div>
@@ -739,8 +739,8 @@ export default function DevHoursPage() {
                             }
                             className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
                               entry.invoiced
-                                ? "bg-[#0A0A0A] border-[#0A0A0A]"
-                                : "border-[#CCCCCC] hover:border-[#0A0A0A]"
+                                ? "bg-[#1B1B1B] border-[#1B1B1B]"
+                                : "border-[#C5C5C5] hover:border-[#1B1B1B]"
                             }`}
                           >
                             {entry.invoiced && (
@@ -749,22 +749,22 @@ export default function DevHoursPage() {
                           </button>
                           <button
                             onClick={() => deleteEntry(entry.id)}
-                            className="p-1 text-[#CCCCCC] hover:text-[#0A0A0A] transition-colors"
+                            className="p-1 text-[#C5C5C5] hover:text-[#1B1B1B] transition-colors"
                           >
                             <XMarkIcon className="size-3.5" />
                           </button>
                         </div>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-[#6B6B6B]">
+                        <span className="text-xs text-[#7A7A7A]">
                           {formatDisplayDate(entry.date)}
                           {entry.project_name && ` · ${entry.project_name}`}
                         </span>
                         <div className="text-right">
-                          <span className="text-sm font-semibold tabular-nums text-[#0A0A0A]">
+                          <span className="text-sm font-semibold tabular-nums text-[#1B1B1B]">
                             {Number(entry.hours).toFixed(1)}h
                           </span>
-                          <span className="text-xs text-[#AAAAAA] ml-2">
+                          <span className="text-xs text-[#A0A0A0] ml-2">
                             {formatGBP(
                               Number(entry.hours) * Number(entry.client_rate)
                             )}
@@ -772,7 +772,7 @@ export default function DevHoursPage() {
                         </div>
                       </div>
                       {entry.description && (
-                        <p className="text-xs text-[#AAAAAA] mt-1">
+                        <p className="text-xs text-[#A0A0A0] mt-1">
                           {entry.description}
                         </p>
                       )}

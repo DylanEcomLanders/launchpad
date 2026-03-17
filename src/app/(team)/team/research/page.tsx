@@ -321,14 +321,14 @@ export default function ResearchPage() {
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">
               Research & Intel
             </h1>
-            <p className="text-sm text-[#6B6B6B]">
+            <p className="text-sm text-[#7A7A7A]">
               Paste a client brief — get deep strategic research for the page build
             </p>
           </div>
           {savedProfiles.length > 0 && (
             <button
               onClick={() => setShowSaved(!showSaved)}
-              className="text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] px-3 py-1.5 border border-[#E5E5E5] rounded-md hover:border-[#0A0A0A] transition-colors"
+              className="text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] px-3 py-1.5 border border-[#E5E5EA] rounded-md hover:border-[#1B1B1B] transition-colors"
             >
               Saved ({savedProfiles.length})
             </button>
@@ -337,26 +337,26 @@ export default function ResearchPage() {
 
         {/* Saved Profiles Panel */}
         {showSaved && savedProfiles.length > 0 && (
-          <div className="bg-white border border-[#E5E5E5] rounded-lg p-4 mb-6">
+          <div className="bg-white border border-[#E5E5EA] rounded-lg p-4 mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B]">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
                 Saved Research
               </h3>
               <button onClick={() => setShowSaved(false)}>
-                <XMarkIcon className="size-4 text-[#AAAAAA] hover:text-[#0A0A0A]" />
+                <XMarkIcon className="size-4 text-[#A0A0A0] hover:text-[#1B1B1B]" />
               </button>
             </div>
             <div className="space-y-2">
               {savedProfiles.map((p) => (
                 <div
                   key={p.id}
-                  className="flex items-center justify-between py-2 px-3 bg-[#F7F7F8] rounded-md"
+                  className="flex items-center justify-between py-2 px-3 bg-[#F3F3F5] rounded-md"
                 >
                   <div>
-                    <span className="text-sm font-medium text-[#0A0A0A]">
+                    <span className="text-sm font-medium text-[#1B1B1B]">
                       {p.project_name}
                     </span>
-                    <span className="text-[11px] text-[#AAAAAA] ml-2">
+                    <span className="text-[11px] text-[#A0A0A0] ml-2">
                       {new Date(p.last_researched).toLocaleDateString("en-GB", {
                         day: "numeric",
                         month: "short",
@@ -367,13 +367,13 @@ export default function ResearchPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => loadProfile(p)}
-                      className="text-[11px] font-medium text-[#6B6B6B] hover:text-[#0A0A0A] px-2 py-1 border border-[#E5E5E5] rounded hover:border-[#0A0A0A] transition-colors"
+                      className="text-[11px] font-medium text-[#7A7A7A] hover:text-[#1B1B1B] px-2 py-1 border border-[#E5E5EA] rounded hover:border-[#1B1B1B] transition-colors"
                     >
                       Load
                     </button>
                     <button
                       onClick={() => deleteProfile(p.id)}
-                      className="p-1 text-[#CCCCCC] hover:text-red-500 transition-colors"
+                      className="p-1 text-[#C5C5C5] hover:text-red-500 transition-colors"
                     >
                       <TrashIcon className="size-3.5" />
                     </button>
@@ -385,7 +385,7 @@ export default function ResearchPage() {
         )}
 
         {/* Input Form */}
-        <div className="bg-white border border-[#E5E5E5] rounded-lg p-5 mb-6">
+        <div className="bg-white border border-[#E5E5EA] rounded-lg p-5 mb-6">
           {/* Project name */}
           <div className="mb-4">
             <label className={labelClass}>Project Name</label>
@@ -410,7 +410,7 @@ export default function ResearchPage() {
               rows={10}
               disabled={isRunning}
             />
-            <p className="text-[11px] text-[#AAAAAA] mt-1.5">
+            <p className="text-[11px] text-[#A0A0A0] mt-1.5">
               Include product links, goals, objections, and any context — Claude will extract what it needs
             </p>
           </div>
@@ -420,7 +420,7 @@ export default function ResearchPage() {
               <button
                 onClick={startResearch}
                 disabled={!brief.trim() || brief.trim().length < 20}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-[#1a1a1a] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:bg-[#1a1a1a] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <MagnifyingGlassIcon className="size-4" />
                 Run Research
@@ -438,7 +438,7 @@ export default function ResearchPage() {
             {isComplete && (
               <button
                 onClick={newResearch}
-                className="inline-flex items-center gap-2 px-4 py-2 border border-[#E5E5E5] text-sm font-medium rounded-md hover:border-[#0A0A0A] transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 border border-[#E5E5EA] text-sm font-medium rounded-md hover:border-[#1B1B1B] transition-colors"
               >
                 <ArrowPathIcon className="size-4" />
                 New Research
@@ -457,20 +457,20 @@ export default function ResearchPage() {
 
         {/* Progress */}
         {isRunning && steps.length > 0 && (
-          <div className="bg-white border border-[#E5E5E5] rounded-lg p-5 mb-6">
+          <div className="bg-white border border-[#E5E5EA] rounded-lg p-5 mb-6">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B]">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
                 Researching
               </span>
-              <span className="text-[11px] text-[#AAAAAA] tabular-nums">
+              <span className="text-[11px] text-[#A0A0A0] tabular-nums">
                 {completedSteps} / {totalSteps} steps
               </span>
             </div>
 
             {/* Progress bar */}
-            <div className="h-1 bg-[#F0F0F0] rounded-full mb-4 overflow-hidden">
+            <div className="h-1 bg-[#EDEDEF] rounded-full mb-4 overflow-hidden">
               <div
-                className="h-full bg-[#0A0A0A] rounded-full transition-all duration-500"
+                className="h-full bg-[#1B1B1B] rounded-full transition-all duration-500"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -484,7 +484,7 @@ export default function ResearchPage() {
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-sm">{step.icon}</span>
-                    <span className="text-sm text-[#6B6B6B]">{step.label}</span>
+                    <span className="text-sm text-[#7A7A7A]">{step.label}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span
@@ -494,7 +494,7 @@ export default function ResearchPage() {
                           : step.status === "loading"
                             ? "text-amber-500"
                             : step.status === "empty"
-                              ? "text-[#AAAAAA]"
+                              ? "text-[#A0A0A0]"
                               : "text-red-500"
                       }`}
                     >
@@ -511,7 +511,7 @@ export default function ResearchPage() {
                           : step.status === "loading"
                             ? "bg-amber-400 animate-pulse"
                             : step.status === "empty"
-                              ? "bg-[#CCCCCC]"
+                              ? "bg-[#C5C5C5]"
                               : "bg-red-500"
                       }`}
                     />
@@ -522,10 +522,10 @@ export default function ResearchPage() {
 
             {/* Analysis status */}
             {analysisStarted && !isComplete && (
-              <div className="mt-4 pt-4 border-t border-[#E5E5E5]">
+              <div className="mt-4 pt-4 border-t border-[#E5E5EA]">
                 <div className="flex items-center gap-2">
                   <div className="size-2 bg-violet-400 rounded-full animate-pulse" />
-                  <span className="text-xs text-[#6B6B6B]">{analysisMessage}</span>
+                  <span className="text-xs text-[#7A7A7A]">{analysisMessage}</span>
                 </div>
               </div>
             )}
@@ -538,7 +538,7 @@ export default function ResearchPage() {
             className="bg-[#1a1a1a] border border-[#333] rounded-lg p-4 mb-6 max-h-72 overflow-y-auto"
             ref={streamDisplayRef}
           >
-            <pre className="text-xs text-[#CCCCCC] font-mono whitespace-pre-wrap leading-relaxed">
+            <pre className="text-xs text-[#C5C5C5] font-mono whitespace-pre-wrap leading-relaxed">
               {streamText}
               <span className="animate-pulse text-white">▊</span>
             </pre>
@@ -550,21 +550,21 @@ export default function ResearchPage() {
           <div className="flex flex-wrap gap-2 mb-6">
             <button
               onClick={copyReport}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#E5E5E5] rounded-md text-xs font-medium text-[#6B6B6B] hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#E5E5EA] rounded-md text-xs font-medium text-[#7A7A7A] hover:border-[#1B1B1B] hover:text-[#1B1B1B] transition-colors"
             >
               <DocumentDuplicateIcon className="size-3.5" />
               {copied ? "Copied!" : "Copy Report"}
             </button>
             <button
               onClick={saveProfile}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#E5E5E5] rounded-md text-xs font-medium text-[#6B6B6B] hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#E5E5EA] rounded-md text-xs font-medium text-[#7A7A7A] hover:border-[#1B1B1B] hover:text-[#1B1B1B] transition-colors"
             >
               <BookmarkIcon className="size-3.5" />
               {saved ? "Saved!" : "Save Research"}
             </button>
             <button
               onClick={newResearch}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#E5E5E5] rounded-md text-xs font-medium text-[#6B6B6B] hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#E5E5EA] rounded-md text-xs font-medium text-[#7A7A7A] hover:border-[#1B1B1B] hover:text-[#1B1B1B] transition-colors"
             >
               <ArrowPathIcon className="size-3.5" />
               New Research
@@ -592,17 +592,17 @@ export default function ResearchPage() {
               return (
                 <div
                   key={idx}
-                  className={`bg-white border border-[#E5E5E5] border-l-4 ${meta.border} rounded-lg overflow-hidden`}
+                  className={`bg-white border border-[#E5E5EA] border-l-4 ${meta.border} rounded-lg overflow-hidden`}
                 >
                   <button
                     onClick={() => toggleSection(idx)}
                     className={`w-full flex items-center justify-between px-5 py-3.5 text-left ${meta.headerBg} hover:brightness-95 transition-all`}
                   >
-                    <span className="text-sm font-semibold text-[#0A0A0A]">
+                    <span className="text-sm font-semibold text-[#1B1B1B]">
                       {title}
                     </span>
                     <ChevronDownIcon
-                      className={`size-4 text-[#6B6B6B] transition-transform duration-200 ${
+                      className={`size-4 text-[#7A7A7A] transition-transform duration-200 ${
                         isCollapsed ? "-rotate-90" : ""
                       }`}
                     />
@@ -639,7 +639,7 @@ function ReportMarkdown({ content }: { content: string }) {
 
     // Horizontal rule
     if (/^---+$/.test(line.trim())) {
-      elements.push(<hr key={i} className="my-4 border-[#E5E5E5]" />);
+      elements.push(<hr key={i} className="my-4 border-[#E5E5EA]" />);
       i++;
       continue;
     }
@@ -647,7 +647,7 @@ function ReportMarkdown({ content }: { content: string }) {
     // H3
     if (line.startsWith("### ")) {
       elements.push(
-        <h3 key={i} className="text-sm font-semibold text-[#0A0A0A] mt-4 mb-2">
+        <h3 key={i} className="text-sm font-semibold text-[#1B1B1B] mt-4 mb-2">
           {inlineFormat(line.slice(4))}
         </h3>
       );
@@ -674,11 +674,11 @@ function ReportMarkdown({ content }: { content: string }) {
       );
       elements.push(
         <div key={`table-${i}`} className="overflow-x-auto my-3">
-          <table className="w-full text-xs border border-[#E5E5E5] rounded">
+          <table className="w-full text-xs border border-[#E5E5EA] rounded">
             <thead>
-              <tr className="bg-[#F7F7F8]">
+              <tr className="bg-[#F3F3F5]">
                 {headerCells.map((cell, j) => (
-                  <th key={j} className="px-3 py-2 text-left font-semibold text-[#0A0A0A] border-b border-[#E5E5E5]">
+                  <th key={j} className="px-3 py-2 text-left font-semibold text-[#1B1B1B] border-b border-[#E5E5EA]">
                     {cell}
                   </th>
                 ))}
@@ -686,7 +686,7 @@ function ReportMarkdown({ content }: { content: string }) {
             </thead>
             <tbody>
               {bodyRows.map((row, ri) => (
-                <tr key={ri} className="border-b border-[#F0F0F0] last:border-0">
+                <tr key={ri} className="border-b border-[#EDEDEF] last:border-0">
                   {row.map((cell, ci) => (
                     <td key={ci} className="px-3 py-2 text-[#3A3A3A]">
                       {inlineFormat(cell)}
@@ -711,7 +711,7 @@ function ReportMarkdown({ content }: { content: string }) {
       elements.push(
         <blockquote
           key={`bq-${i}`}
-          className="border-l-2 border-[#E5E5E5] pl-3 my-2 text-[#6B6B6B] italic text-xs"
+          className="border-l-2 border-[#E5E5EA] pl-3 my-2 text-[#7A7A7A] italic text-xs"
         >
           {inlineFormat(quoteLines.join(" "))}
         </blockquote>
@@ -730,7 +730,7 @@ function ReportMarkdown({ content }: { content: string }) {
         <ul key={`ul-${i}`} className="space-y-1 my-2">
           {items.map((item, j) => (
             <li key={j} className="flex gap-1.5 text-xs leading-relaxed">
-              <span className="text-[#CCCCCC] mt-0.5 shrink-0">•</span>
+              <span className="text-[#C5C5C5] mt-0.5 shrink-0">•</span>
               <span>{inlineFormat(item)}</span>
             </li>
           ))}
@@ -750,7 +750,7 @@ function ReportMarkdown({ content }: { content: string }) {
         <ol key={`ol-${i}`} className="space-y-1 my-2">
           {items.map((item, j) => (
             <li key={j} className="flex gap-1.5 text-xs leading-relaxed">
-              <span className="text-[#AAAAAA] font-mono text-[10px] mt-0.5 shrink-0 w-3">
+              <span className="text-[#A0A0A0] font-mono text-[10px] mt-0.5 shrink-0 w-3">
                 {j + 1}.
               </span>
               <span>{inlineFormat(item)}</span>
@@ -775,7 +775,7 @@ function ReportMarkdown({ content }: { content: string }) {
     // Italic line
     if (line.startsWith("*") && !line.startsWith("**")) {
       elements.push(
-        <p key={i} className="text-[11px] text-[#AAAAAA] italic my-1">
+        <p key={i} className="text-[11px] text-[#A0A0A0] italic my-1">
           {inlineFormat(line)}
         </p>
       );
@@ -825,13 +825,13 @@ function inlineFormat(text: string): React.ReactNode {
 
     if (first.type === "bold") {
       parts.push(
-        <strong key={`b-${keyIdx++}`} className="font-semibold text-[#0A0A0A]">
+        <strong key={`b-${keyIdx++}`} className="font-semibold text-[#1B1B1B]">
           {first.match![1]}
         </strong>
       );
     } else if (first.type === "italic") {
       parts.push(
-        <em key={`i-${keyIdx++}`} className="italic text-[#6B6B6B]">
+        <em key={`i-${keyIdx++}`} className="italic text-[#7A7A7A]">
           {first.match![1]}
         </em>
       );
@@ -839,7 +839,7 @@ function inlineFormat(text: string): React.ReactNode {
       parts.push(
         <code
           key={`c-${keyIdx++}`}
-          className="px-1 py-0.5 bg-[#F0F0F0] rounded text-[10px] font-mono"
+          className="px-1 py-0.5 bg-[#EDEDEF] rounded text-[10px] font-mono"
         >
           {first.match![1]}
         </code>

@@ -51,7 +51,7 @@ export default function PriceListsPage() {
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
             Price Lists
           </h1>
-          <p className="text-[#6B6B6B]">
+          <p className="text-[#7A7A7A]">
             Shareable pricing pages for clients. Each tier has its own link.
           </p>
         </div>
@@ -64,13 +64,13 @@ export default function PriceListsPage() {
             return (
               <div
                 key={slug}
-                className="bg-white border border-[#E5E5E5] rounded-lg p-5"
+                className="bg-white border border-[#E5E5EA] rounded-lg p-5"
               >
                 <div className="mb-4">
-                  <h2 className="text-lg font-semibold text-[#0A0A0A]">
+                  <h2 className="text-lg font-semibold text-[#1B1B1B]">
                     {label}
                   </h2>
-                  <p className="text-sm text-[#6B6B6B] mt-0.5">
+                  <p className="text-sm text-[#7A7A7A] mt-0.5">
                     {description}
                   </p>
                 </div>
@@ -78,7 +78,7 @@ export default function PriceListsPage() {
                 <div className="flex items-center gap-3 mb-4">
                   <button
                     onClick={() => copyLink(slug)}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium bg-[#0A0A0A] text-white rounded-lg hover:bg-[#2A2A2A] transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors"
                   >
                     {isCopied ? (
                       <>
@@ -96,7 +96,7 @@ export default function PriceListsPage() {
                     href={`/pricing/${slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium border border-[#E5E5E5] rounded-lg text-[#0A0A0A] hover:bg-[#F5F5F5] transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium border border-[#E5E5EA] rounded-lg text-[#1B1B1B] hover:bg-[#F3F3F5] transition-colors"
                   >
                     <ArrowTopRightOnSquareIcon className="size-4" />
                     Preview Page
@@ -104,8 +104,8 @@ export default function PriceListsPage() {
                 </div>
 
                 {/* Quick price overview */}
-                <div className="border-t border-[#F0F0F0] pt-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-2">
+                <div className="border-t border-[#EDEDEF] pt-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-2">
                     Price snapshot
                   </p>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1.5">
@@ -123,13 +123,13 @@ export default function PriceListsPage() {
                             key={svc.id}
                             className="flex items-baseline justify-between gap-2"
                           >
-                            <span className="text-xs text-[#6B6B6B] truncate">
+                            <span className="text-xs text-[#7A7A7A] truncate">
                               {svc.name}
                             </span>
-                            <span className="text-xs font-semibold text-[#0A0A0A] tabular-nums shrink-0">
+                            <span className="text-xs font-semibold text-[#1B1B1B] tabular-nums shrink-0">
                               {formatGBP(tierPrice.amount)}
                               {isRecurring && (
-                                <span className="font-normal text-[#AAAAAA]">
+                                <span className="font-normal text-[#A0A0A0]">
                                   /mo
                                 </span>
                               )}
@@ -146,13 +146,13 @@ export default function PriceListsPage() {
 
         {/* Add-ons summary */}
         <div>
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-3">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
             Add-on Services
-            <span className="ml-2 text-[10px] font-bold bg-[#F0F0F0] text-[#6B6B6B] px-1.5 py-0.5 rounded">
+            <span className="ml-2 text-[10px] font-bold bg-[#EDEDEF] text-[#7A7A7A] px-1.5 py-0.5 rounded">
               {services.filter((s) => s.isAddOn).length}
             </span>
           </h2>
-          <div className="bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg divide-y divide-[#E5E5E5]">
+          <div className="bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg divide-y divide-[#E5E5EA]">
             {services
               .filter((s) => s.isAddOn)
               .map((svc) => {
@@ -170,27 +170,27 @@ export default function PriceListsPage() {
                     className="px-4 py-2.5"
                   >
                     <div className="flex items-center justify-between gap-4">
-                      <span className="text-xs text-[#6B6B6B] truncate">
+                      <span className="text-xs text-[#7A7A7A] truncate">
                         {svc.name}
                         {hasUnit && (
-                          <span className="text-[10px] text-[#AAAAAA] ml-1">
+                          <span className="text-[10px] text-[#A0A0A0] ml-1">
                             (min {svc.minQuantity})
                           </span>
                         )}
                       </span>
                       <div className="flex items-center gap-4 shrink-0">
-                        <span className="text-xs tabular-nums text-[#AAAAAA]">
-                          T1: <span className="font-semibold text-[#0A0A0A]">{t1.label}</span>
+                        <span className="text-xs tabular-nums text-[#A0A0A0]">
+                          T1: <span className="font-semibold text-[#1B1B1B]">{t1.label}</span>
                         </span>
-                        <span className="text-xs tabular-nums text-[#AAAAAA]">
-                          T2: <span className="font-semibold text-[#0A0A0A]">{t2.label}</span>
+                        <span className="text-xs tabular-nums text-[#A0A0A0]">
+                          T2: <span className="font-semibold text-[#1B1B1B]">{t2.label}</span>
                         </span>
                       </div>
                     </div>
                     {hasVolume && (
                       <div className="flex items-center gap-3 mt-1 ml-0 flex-wrap">
                         {svc.volumeDiscounts!.map((vd) => (
-                          <span key={vd.minQty} className="text-[10px] text-[#AAAAAA]">
+                          <span key={vd.minQty} className="text-[10px] text-[#A0A0A0]">
                             {vd.minQty}+: <span className="font-semibold text-[#15803D]">{vd.label}</span>
                           </span>
                         ))}

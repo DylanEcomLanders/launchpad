@@ -36,6 +36,23 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-7",
+    date: "17 Mar 2026",
+    version: "0.7.0",
+    title: "Design System Overhaul & Nav Restructure",
+    changes: [
+      { type: "improved", text: "De-blued entire UI — replaced all blue-tinted greys with pure neutral greys across 50+ files" },
+      { type: "improved", text: "Sidebar restructured — icons on section headers only, cleaner indented sub-items" },
+      { type: "improved", text: "Mission Control — removed Overdue section (redundant with Needs Attention), feed contained in scrollable box, Deadlines This Week shows day numbers and task counts" },
+      { type: "improved", text: "Portfolio — all Figma embeds preloaded for instant tab switching" },
+      { type: "improved", text: "Scrollbars — minimal 2px thin scrollbar globally" },
+      { type: "improved", text: "Border radius tightened — rounded-xl to rounded-lg across tool pages" },
+      { type: "improved", text: "Nav renamed — Lead Scraper, Audit Engine, Content Engine, Dev Hours Log, Invoice Generator, Project Documents, Client Portals" },
+      { type: "removed", text: "Ops Radar removed from sidebar (data folded into Mission Control, page still accessible)" },
+      { type: "removed", text: "Outreach removed from sidebar (will be merged into Lead Scraper)" },
+    ],
+  },
+  {
     id: "cl-6",
     date: "17 Mar 2025",
     version: "0.6.0",

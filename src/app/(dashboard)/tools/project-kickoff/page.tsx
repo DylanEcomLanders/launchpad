@@ -86,7 +86,7 @@ function formatLongDate(dateStr: string): string {
 
 /* ── Shared CSS classes ── */
 const sectionHeadingClass =
-  "text-xs font-semibold uppercase tracking-wider text-[#6B6B6B]";
+  "text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]";
 
 /* ── Main Component ── */
 
@@ -377,13 +377,13 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
             Project Setup
           </h1>
-          <p className="text-[#6B6B6B] mb-4">
+          <p className="text-[#7A7A7A] mb-4">
             Fill in the details once, get your scope doc, roadmap, agreement, kickoff email, and Slack brief
           </p>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setActiveModal("scope")}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#6B6B6B] bg-[#F5F5F5] border border-[#E5E5E5] rounded-md hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#7A7A7A] bg-[#F3F3F5] border border-[#E5E5EA] rounded-md hover:border-[#1B1B1B] hover:text-[#1B1B1B] transition-colors"
             >
               Scope Doc Only
               <svg className="size-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -392,7 +392,7 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
             </button>
             <button
               onClick={() => setActiveModal("roadmap")}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#6B6B6B] bg-[#F5F5F5] border border-[#E5E5E5] rounded-md hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#7A7A7A] bg-[#F3F3F5] border border-[#E5E5EA] rounded-md hover:border-[#1B1B1B] hover:text-[#1B1B1B] transition-colors"
             >
               Roadmap Only
               <svg className="size-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -401,7 +401,7 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
             </button>
             <button
               onClick={() => setActiveModal("agreement")}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#6B6B6B] bg-[#F5F5F5] border border-[#E5E5E5] rounded-md hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#7A7A7A] bg-[#F3F3F5] border border-[#E5E5EA] rounded-md hover:border-[#1B1B1B] hover:text-[#1B1B1B] transition-colors"
             >
               Agreement Only
               <svg className="size-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -456,12 +456,12 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
           </div>
 
           {/* ── Section 2: Deliverables ── */}
-          <div className="pt-6 border-t border-[#E5E5E5]">
+          <div className="pt-6 border-t border-[#E5E5EA]">
             <div className="flex items-center justify-between mb-4">
               <p className={sectionHeadingClass}>Deliverables</p>
               <button
                 onClick={addDeliverable}
-                className="flex items-center gap-1.5 text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
+                className="flex items-center gap-1.5 text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
               >
                 <PlusIcon className="size-3.5" />
                 Add row
@@ -490,7 +490,7 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
                   <button
                     onClick={() => removeDeliverable(i)}
                     disabled={deliverables.length <= 1}
-                    className="p-2.5 text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="p-2.5 text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     <TrashIcon className="size-3.5" />
                   </button>
@@ -512,9 +512,9 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
           </div>
 
           {/* ── Section 3: Timeline ── */}
-          <div className="pt-6 border-t border-[#E5E5E5]">
+          <div className="pt-6 border-t border-[#E5E5EA]">
             <p className={`${sectionHeadingClass} mb-4`}>Timeline</p>
-            <div className="bg-[#F5F5F5] border border-[#E5E5E5] rounded-lg p-5">
+            <div className="bg-[#F3F3F5] border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-5">
               <div>
                 <label className={labelClass}>Kickoff Date</label>
                 <input
@@ -527,22 +527,22 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
 
               {/* Auto-computed summary */}
               {hasDeliverableTypes && (
-                <div className="mt-4 pt-4 border-t border-[#E5E5E5]">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-2">
+                <div className="mt-4 pt-4 border-t border-[#E5E5EA]">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-2">
                     Computed from deliverables
                   </p>
-                  <p className="text-xs text-[#6B6B6B] mb-3">
-                    Design: <span className="font-semibold text-[#0A0A0A]">{designDays}d</span>
-                    <span className="mx-2 text-[#CCCCCC]">·</span>
-                    Development: <span className="font-semibold text-[#0A0A0A]">{devDays}d</span>
+                  <p className="text-xs text-[#7A7A7A] mb-3">
+                    Design: <span className="font-semibold text-[#1B1B1B]">{designDays}d</span>
+                    <span className="mx-2 text-[#C5C5C5]">·</span>
+                    Development: <span className="font-semibold text-[#1B1B1B]">{devDays}d</span>
                   </p>
                   {phases.length > 0 && (
                     <div className="flex flex-wrap gap-x-4 gap-y-1">
                       {phases.map((phase) => {
                         const isPoint = phase.startDate === phase.endDate;
                         return (
-                          <span key={phase.name} className="text-[11px] text-[#6B6B6B]">
-                            <span className="font-semibold text-[#0A0A0A]">{phase.name}</span>{" "}
+                          <span key={phase.name} className="text-[11px] text-[#7A7A7A]">
+                            <span className="font-semibold text-[#1B1B1B]">{phase.name}</span>{" "}
                             {isPoint
                               ? formatShortDate(phase.startDate)
                               : `${formatShortDate(phase.startDate)} → ${formatShortDate(phase.endDate)}`}
@@ -557,7 +557,7 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
           </div>
 
           {/* ── Section 4: Agreement ── */}
-          <div className="pt-6 border-t border-[#E5E5E5]">
+          <div className="pt-6 border-t border-[#E5E5EA]">
             <p className={`${sectionHeadingClass} mb-6`}>Agreement Details</p>
             <div className="space-y-6">
               <div>
@@ -663,7 +663,7 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
                     <label className={sectionHeadingClass}>Milestones</label>
                     <button
                       onClick={addMilestone}
-                      className="flex items-center gap-1.5 text-xs font-medium text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors"
+                      className="flex items-center gap-1.5 text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
                     >
                       <PlusIcon className="size-3.5" />
                       Add milestone
@@ -689,7 +689,7 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
                         <button
                           onClick={() => removeMilestone(i)}
                           disabled={agreement.milestones.length <= 1}
-                          className="p-2.5 text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="p-2.5 text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                         >
                           <TrashIcon className="size-3.5" />
                         </button>
@@ -779,7 +779,7 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
             <button
               onClick={handleGenerate}
               disabled={!isFormValid || generating}
-              className="flex items-center gap-2 px-6 py-3 bg-[#0A0A0A] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-6 py-3 bg-[#1B1B1B] text-white text-sm font-medium rounded-lg hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {generating ? (
                 <>
@@ -798,13 +798,13 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
 
         {/* ── Outputs ── */}
         {showOutputs && (
-          <div className="mt-12 pt-12 border-t border-[#E5E5E5] space-y-8">
+          <div className="mt-12 pt-12 border-t border-[#E5E5EA] space-y-8">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold">Kickoff Pack</h2>
               <button
                 onClick={handleDownloadAll}
                 disabled={downloadingAll}
-                className="flex items-center gap-2 px-4 py-2 bg-[#0A0A0A] text-white text-xs font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40"
+                className="flex items-center gap-2 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-accent-hover transition-colors disabled:opacity-40"
               >
                 {downloadingAll ? (
                   <>
@@ -848,12 +848,12 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
             )}
 
             {/* Kickoff Email */}
-            <div className="bg-[#F0F0F0] border border-[#E5E5E5] rounded-lg p-6">
+            <div className="bg-[#EDEDEF] border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold">Client Kickoff Email</h3>
                 <button
                   onClick={() => copyToClipboard(kickoffEmail, setCopiedEmail)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white border border-[#E5E5E5] rounded-md hover:bg-[#F5F5F5] transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white border border-[#E5E5EA] rounded-md hover:bg-[#F3F3F5] transition-colors"
                 >
                   {copiedEmail ? (
                     <><CheckIcon className="size-3" /> Copied</>
@@ -862,18 +862,18 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
                   )}
                 </button>
               </div>
-              <pre className="text-xs text-[#3A3A3A] whitespace-pre-wrap font-sans leading-relaxed bg-white border border-[#E5E5E5] rounded-md p-4 max-h-60 overflow-y-auto">
+              <pre className="text-xs text-[#3A3A3A] whitespace-pre-wrap font-sans leading-relaxed bg-white border border-[#E5E5EA] rounded-md p-4 max-h-60 overflow-y-auto">
                 {kickoffEmail}
               </pre>
             </div>
 
             {/* Slack Brief */}
-            <div className="bg-[#F0F0F0] border border-[#E5E5E5] rounded-lg p-6">
+            <div className="bg-[#EDEDEF] border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold">Slack Brief</h3>
                 <button
                   onClick={() => copyToClipboard(slackBrief, setCopiedSlack)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white border border-[#E5E5E5] rounded-md hover:bg-[#F5F5F5] transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white border border-[#E5E5EA] rounded-md hover:bg-[#F3F3F5] transition-colors"
                 >
                   {copiedSlack ? (
                     <><CheckIcon className="size-3" /> Copied</>
@@ -882,7 +882,7 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
                   )}
                 </button>
               </div>
-              <pre className="text-xs text-[#3A3A3A] whitespace-pre-wrap font-sans leading-relaxed bg-white border border-[#E5E5E5] rounded-md p-4 max-h-60 overflow-y-auto">
+              <pre className="text-xs text-[#3A3A3A] whitespace-pre-wrap font-sans leading-relaxed bg-white border border-[#E5E5EA] rounded-md p-4 max-h-60 overflow-y-auto">
                 {slackBrief}
               </pre>
             </div>
@@ -898,12 +898,12 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
         >
           <div className="min-h-full flex justify-center py-6 px-4">
             <div
-              className="w-full max-w-4xl bg-white rounded-xl shadow-2xl relative"
+              className="w-full max-w-4xl bg-white rounded-lg shadow-2xl relative"
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 onClick={closeModal}
-                className="sticky top-4 float-right mr-4 mt-4 z-20 p-2 rounded-full bg-white border border-[#E5E5E5] shadow-sm hover:bg-[#F5F5F5] transition-colors"
+                className="sticky top-4 float-right mr-4 mt-4 z-20 p-2 rounded-full bg-white border border-[#E5E5EA] shadow-sm hover:bg-[#F3F3F5] transition-colors"
                 aria-label="Close"
               >
                 <XMarkIcon className="size-4" />
@@ -915,14 +915,14 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
                   {activeModal === "roadmap" && "Project Roadmap"}
                   {activeModal === "agreement" && "Service Agreement"}
                 </h1>
-                <p className="text-[#6B6B6B]">
+                <p className="text-[#7A7A7A]">
                   {activeModal === "scope" && "Generate a branded scope document for your client project"}
                   {activeModal === "roadmap" && "Generate a branded project timeline PDF for your client"}
                   {activeModal === "agreement" && "Generate a service agreement for your client project"}
                 </p>
               </div>
               {/* Embedded page with its header + decorative blocks hidden, top padding reduced */}
-              <div className="[&_.mb-12]:hidden [&_.pointer-events-none]:hidden [&>div>div:nth-child(2)]:!pt-4 [&>div]:min-h-0 [&>div]:rounded-xl overflow-hidden">
+              <div className="[&_.mb-12]:hidden [&_.pointer-events-none]:hidden [&>div>div:nth-child(2)]:!pt-4 [&>div]:min-h-0 [&>div]:rounded-lg overflow-hidden">
                 {activeModal === "scope" && <ScopeGeneratorPage />}
                 {activeModal === "agreement" && <ScopeGeneratorPage agreementAlwaysOpen />}
                 {activeModal === "roadmap" && <ProjectRoadmapPage />}
