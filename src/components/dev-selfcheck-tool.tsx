@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   PlusIcon,
   TrashIcon,
@@ -8,7 +8,7 @@ import {
   ChatBubbleLeftIcon,
 } from "@heroicons/react/24/solid";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
-import { inputClass, labelClass } from "@/lib/form-styles";
+import { inputClass, labelClass, selectClass } from "@/lib/form-styles";
 import {
   selfCheckCategories,
   defaultSelfCheckItems,
@@ -16,6 +16,8 @@ import {
   type SelfCheckResult,
   type SelfCheckItem,
 } from "@/data/dev-selfcheck-items";
+import { getPortals } from "@/lib/portal/data";
+import type { PortalData } from "@/lib/portal/types";
 
 let nextId = 1;
 function uid() {
@@ -46,9 +48,9 @@ const resultStyles: Record<SelfCheckResult, { label: string; bg: string; text: s
   na: { label: "N/A", bg: "bg-[#F5F5F5]", text: "text-[#999999]" },
 };
 
-export function DevSelfCheckTool() {
+export function DevSelfCheckTool({ prefillClient }: { prefillClient?: string } = {}) {
   const [projectName, setProjectName] = useState("");
-  const [clientName, setClientName] = useState("");
+  const [clientName, setClientName] = useState(prefillClient || "");
   const [devName, setDevName] = useState("");
   const [items, setItems] = useState<SelfCheckItem[]>(buildDefaultItems);
 
@@ -57,6 +59,12 @@ export function DevSelfCheckTool() {
   const [addingTo, setAddingTo] = useState<string | null>(null);
   const [newItemText, setNewItemText] = useState("");
   const [copiedReport, setCopiedReport] = useState(false);
+  const [portals, setPortals] = useState<PortalData[]>([]);
+  const [linkedPortal, setLinkedPortal] = useState("");
+
+  useEffect(() => {
+    getPortals().then(setPortals).catch(() => {});
+  }, []);
 
   const updateItem = useCallback((id: string, updates: Partial<SelfCheckItem>) => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, ...updates } : item)));
@@ -189,6 +197,27 @@ export function DevSelfCheckTool() {
               <input type="text" value={devName} onChange={(e) => setDevName(e.target.value)} placeholder="e.g. JL" className={inputClass} />
             </div>
           </div>
+          {portals.length > 0 && (
+            <div>
+              <label className={labelClass}>Link to Portal</label>
+              <select
+                className={selectClass}
+                value={linkedPortal}
+                onChange={(e) => {
+                  setLinkedPortal(e.target.value);
+                  const portal = portals.find((p) => p.id === e.target.value);
+                  if (portal) {
+                    setClientName(portal.client_name);
+                  }
+                }}
+              >
+                <option value="">None (standalone check)</option>
+                {portals.map((p) => (
+                  <option key={p.id} value={p.id}>{p.client_name}</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         {/* Stats Bar */}

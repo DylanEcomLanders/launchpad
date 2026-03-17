@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   PlusIcon,
   TrashIcon,
@@ -20,7 +20,9 @@ import {
 } from "@/lib/config";
 import { QaReportPdfDocument } from "@/components/qa-report-pdf-document";
 import { PdfPreview } from "@/components/pdf-preview";
-import { inputClass, labelClass } from "@/lib/form-styles";
+import { inputClass, labelClass, selectClass } from "@/lib/form-styles";
+import { getPortals } from "@/lib/portal/data";
+import type { PortalData } from "@/lib/portal/types";
 
 let nextId = 1;
 function uid() {
@@ -44,10 +46,10 @@ function nextResult(current: QAResult): QAResult {
   return resultCycle[(i + 1) % resultCycle.length];
 }
 
-export function QAChecklistTool() {
+export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = {}) {
   const [formData, setFormData] = useState<QAFormData>({
     projectName: "",
-    clientName: "",
+    clientName: prefillClient || "",
     projectType: "",
     testerName: "",
     testDate: new Date().toISOString().split("T")[0],
@@ -61,6 +63,12 @@ export function QAChecklistTool() {
   const [newItemText, setNewItemText] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [portals, setPortals] = useState<PortalData[]>([]);
+  const [linkedPortal, setLinkedPortal] = useState("");
+
+  useEffect(() => {
+    getPortals().then(setPortals).catch(() => {});
+  }, []);
 
   const updateField = <K extends keyof QAFormData>(key: K, value: QAFormData[K]) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -221,6 +229,27 @@ export function QAChecklistTool() {
               />
             </div>
           </div>
+          {portals.length > 0 && (
+            <div>
+              <label className={labelClass}>Link to Portal</label>
+              <select
+                className={selectClass}
+                value={linkedPortal}
+                onChange={(e) => {
+                  setLinkedPortal(e.target.value);
+                  const portal = portals.find((p) => p.id === e.target.value);
+                  if (portal) {
+                    updateField("clientName", portal.client_name);
+                  }
+                }}
+              >
+                <option value="">None (standalone check)</option>
+                {portals.map((p) => (
+                  <option key={p.id} value={p.id}>{p.client_name}</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         {/* Progress Bar */}

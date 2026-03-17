@@ -25,9 +25,6 @@ import {
   UserGroupIcon,
   RocketLaunchIcon,
   GlobeAltIcon,
-  FunnelIcon,
-  ArrowsRightLeftIcon,
-  SparklesIcon,
   BanknotesIcon,
   ChatBubbleLeftEllipsisIcon,
   LinkIcon,
@@ -59,21 +56,6 @@ const navSections: NavSection[] = [
     title: "Operations",
     items: [
       {
-        label: "Prospect Scraper",
-        href: "/tools/prospect-scraper",
-        icon: <UserGroupIcon className="size-4" />,
-      },
-      {
-        label: "Audit Machine",
-        href: "/tools/store-intel",
-        icon: <MagnifyingGlassIcon className="size-4" />,
-      },
-      {
-        label: "Outreach Generator",
-        href: "/tools/outreach",
-        icon: <PaperAirplaneIcon className="size-4" />,
-      },
-      {
         label: "Proposals",
         href: "/tools/proposals",
         icon: <DocumentDuplicateIcon className="size-4" />,
@@ -89,14 +71,14 @@ const navSections: NavSection[] = [
         icon: <GlobeAltIcon className="size-4" />,
       },
       {
-        label: "QA Checklist",
-        href: "/tools/qa-checklist",
-        icon: <ClipboardDocumentCheckIcon className="size-4" />,
+        label: "Ops Radar",
+        href: "/tools/ops-radar",
+        icon: <SignalIcon className="size-4" />,
       },
       {
-        label: "Dev Self-Check",
-        href: "/tools/dev-selfcheck",
-        icon: <BeakerIcon className="size-4" />,
+        label: "Issues",
+        href: "/tools/issues",
+        icon: <ChatBubbleLeftEllipsisIcon className="size-4" />,
       },
     ],
   },
@@ -156,27 +138,22 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: "Toolbox",
+    title: "In Development",
     items: [
       {
-        label: "Funnel Planner",
-        href: "/tools/funnel-planner",
-        icon: <FunnelIcon className="size-4" />,
+        label: "Prospect Scraper",
+        href: "/tools/prospect-scraper",
+        icon: <UserGroupIcon className="size-4" />,
       },
       {
-        label: "Content Repurposer",
-        href: "/tools/content-repurposer",
-        icon: <ArrowsRightLeftIcon className="size-4" />,
+        label: "Audit Machine",
+        href: "/tools/store-intel",
+        icon: <MagnifyingGlassIcon className="size-4" />,
       },
       {
-        label: "Hook Generator",
-        href: "/tools/hook-generator",
-        icon: <SparklesIcon className="size-4" />,
-      },
-      {
-        label: "Upsell Scanner",
-        href: "/tools/upsell-scanner",
-        icon: <SignalIcon className="size-4" />,
+        label: "Outreach Generator",
+        href: "/tools/outreach",
+        icon: <PaperAirplaneIcon className="size-4" />,
       },
       {
         label: "CRO Test Monitor",
@@ -202,7 +179,7 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(
-    () => Object.fromEntries(navSections.map((s) => [s.title, s.title !== "Toolbox"]))
+    () => Object.fromEntries(navSections.map((s) => [s.title, s.title !== "In Development"]))
   );
   const [now, setNow] = useState(() => new Date());
 
@@ -304,7 +281,7 @@ export function Sidebar() {
               className={`
                 flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm
                 transition-colors duration-150 mt-0.5
-                ${pathname.startsWith("/team")
+                ${pathname === "/team"
                   ? "bg-accent-light text-accent font-medium border-l-2 border-accent"
                   : "hover:bg-[#F7F7F8] text-[#6B6B6B] border-l-2 border-transparent"
                 }
@@ -313,6 +290,40 @@ export function Sidebar() {
               <UserGroupIcon className="size-4" />
               {!collapsed && <span>Team Tools</span>}
             </Link>
+            {!collapsed && (
+              <div className="ml-4 space-y-0.5 mt-0.5">
+                <Link
+                  href="/tools/qa-checklist"
+                  onClick={() => setMobileOpen(false)}
+                  className={`
+                    flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm
+                    transition-colors duration-150
+                    ${pathname === "/tools/qa-checklist"
+                      ? "bg-[#F0F0F0] font-medium border-l-2 border-accent"
+                      : "hover:bg-[#F5F5F5] text-[#6B6B6B] border-l-2 border-transparent"
+                    }
+                  `}
+                >
+                  <ClipboardDocumentCheckIcon className="size-3.5" />
+                  <span className="text-[13px]">QA Checklist</span>
+                </Link>
+                <Link
+                  href="/tools/dev-selfcheck"
+                  onClick={() => setMobileOpen(false)}
+                  className={`
+                    flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm
+                    transition-colors duration-150
+                    ${pathname === "/tools/dev-selfcheck"
+                      ? "bg-[#F0F0F0] font-medium border-l-2 border-accent"
+                      : "hover:bg-[#F5F5F5] text-[#6B6B6B] border-l-2 border-transparent"
+                    }
+                  `}
+                >
+                  <BeakerIcon className="size-3.5" />
+                  <span className="text-[13px]">Dev Self-Check</span>
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Sections */}
@@ -403,7 +414,13 @@ export function Sidebar() {
         {/* Footer */}
         {!collapsed && (
           <div className="px-4 py-3 border-t border-[#E5E5E5]">
-            <span className="text-[11px] text-[#AAAAAA]">Launchpad v0.1</span>
+            <Link
+              href="/changelog"
+              onClick={() => setMobileOpen(false)}
+              className="text-[11px] text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
+            >
+              Launchpad v0.6
+            </Link>
           </div>
         )}
       </aside>

@@ -538,13 +538,13 @@ export default function ContentAnalyticsPage() {
                 : ""}
             </p>
 
-            {/* Cards */}
-            <div className="space-y-3">
+            {/* Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {filtered.map((post) => (
-                <PostCard key={post.id} post={post} />
+                <PostCard key={post.id} post={post} maxEngagement={stats.topEng} />
               ))}
               {filtered.length === 0 && (
-                <p className="text-center text-sm text-[#AAAAAA] py-8">
+                <p className="col-span-full text-center text-sm text-[#AAAAAA] py-8">
                   No posts match current filters.
                 </p>
               )}
@@ -583,42 +583,52 @@ function PlatformBadge({ platform }: { platform: ContentPlatform }) {
   );
 }
 
-function PostCard({ post }: { post: SyncedPost }) {
+function PostCard({ post, maxEngagement }: { post: SyncedPost; maxEngagement: number }) {
   const catLabel =
     contentCategories.find((c) => c.id === post.category)?.label ?? post.category;
 
+  // Performance heatmap: ratio of engagement vs best post
+  const ratio = maxEngagement > 0 ? post.totalEngagement / maxEngagement : 0;
+  const isTopPerformer = ratio > 0.7;
+  const isMidPerformer = ratio > 0.3;
+
   return (
-    <div className="bg-white border border-[#E5E5E5] rounded-lg p-4 hover:border-[#CCCCCC] transition-colors">
+    <div className={`bg-white border rounded-lg p-4 hover:border-[#CCCCCC] transition-colors flex flex-col ${
+      isTopPerformer ? "border-emerald-300 ring-1 ring-emerald-100" : isMidPerformer ? "border-[#E5E5E5]" : "border-[#F0F0F0]"
+    }`}>
       {/* Top row */}
-      <div className="flex items-center gap-2 mb-2">
+      <div className="flex items-center gap-1.5 mb-2">
         <PlatformBadge platform={post.platform} />
-        <span className="text-xs text-[#AAAAAA]">
+        <span className="text-[10px] text-[#AAAAAA] flex-1">
           {formatDate(post.post_date)}
         </span>
-        <span className="px-2 py-0.5 bg-[#F0F0F0] text-[#6B6B6B] text-[10px] font-medium rounded-full">
-          {catLabel}
-        </span>
-        <div className="flex-1" />
         {post.post_url && (
           <a
             href={post.post_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#AAAAAA] hover:text-[#0A0A0A] transition-colors"
+            className="text-[#CCCCCC] hover:text-[#0A0A0A] transition-colors"
             title="View original post"
           >
-            <LinkIcon className="size-3.5" />
+            <LinkIcon className="size-3" />
           </a>
         )}
       </div>
 
       {/* Content */}
-      <p className="text-sm text-[#333] line-clamp-3 mb-3 leading-relaxed">
+      <p className="text-[13px] text-[#333] line-clamp-4 mb-3 leading-relaxed flex-1">
         {post.content}
       </p>
 
-      {/* Metrics */}
-      <div className="flex items-center gap-4 text-xs text-[#AAAAAA]">
+      {/* Category */}
+      <div className="mb-2">
+        <span className="px-2 py-0.5 bg-[#F5F5F5] text-[#6B6B6B] text-[10px] font-medium rounded-full">
+          {catLabel}
+        </span>
+      </div>
+
+      {/* Metrics bar */}
+      <div className="flex items-center gap-3 text-[11px] text-[#AAAAAA] pt-2 border-t border-[#F5F5F5]">
         <span className="flex items-center gap-1">
           <HeartIcon className="size-3" />
           {formatNum(post.likes)}
@@ -631,10 +641,8 @@ function PostCard({ post }: { post: SyncedPost }) {
           <ChatBubbleLeftIcon className="size-3" />
           {formatNum(post.replies)}
         </span>
-        {post.totalEngagement > 0 && (
-          <span className="ml-auto text-[#999] font-medium">
-            {formatNum(post.totalEngagement)} total
-          </span>
+        {isTopPerformer && (
+          <TrophyIcon className="size-3 text-amber-400 ml-auto" title="Top performer" />
         )}
       </div>
     </div>

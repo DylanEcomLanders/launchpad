@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   ArrowPathIcon,
   ExclamationTriangleIcon,
@@ -13,13 +13,14 @@ import {
   type PulseFeedResponse,
   type FeedItemType,
 } from "@/lib/pulse/types";
+import { getPortals } from "@/lib/portal/data";
+import { getIssues } from "@/lib/issues/data";
 
 // ── Workflows Config ────────────────────────────────────────────
 
 const workflows = [
   {
     title: "Win the Client",
-    subtitle: "Find → Research → Reach out → Propose → Price",
     steps: [
       { label: "Find prospects", href: "/tools/prospect-scraper" },
       { label: "Research their store", href: "/tools/store-intel" },
@@ -30,7 +31,6 @@ const workflows = [
   },
   {
     title: "Deliver the Project",
-    subtitle: "Setup → Build → Check → QA → Ship",
     steps: [
       { label: "Kick off project", href: "/tools/project-kickoff" },
       { label: "Dev self-check", href: "/tools/dev-selfcheck" },
@@ -40,7 +40,6 @@ const workflows = [
   },
   {
     title: "Get Paid",
-    subtitle: "Log hours → Invoice → Track expenses",
     steps: [
       { label: "Log dev hours", href: "/tools/dev-hours" },
       { label: "Generate invoice", href: "/tools/invoice-generator" },
@@ -60,6 +59,9 @@ const feedTypeConfig: Record<FeedItemType, { border: string; badge: string; labe
   request: { border: "border-l-violet-500", badge: "bg-violet-50 text-violet-600", label: "Request" },
 };
 
+type FeedFilter = "important" | "all";
+const IMPORTANT_TYPES: FeedItemType[] = ["blocker", "chase", "request", "client"];
+
 // ── Page Component ──────────────────────────────────────────────
 
 export default function PulseDashboard() {
@@ -70,6 +72,51 @@ export default function PulseDashboard() {
   const [feedHours, setFeedHours] = useState(48);
   const [hasMore, setHasMore] = useState(false);
   const [feedTotal, setFeedTotal] = useState(0);
+  const [feedFilter, setFeedFilter] = useState<FeedFilter>("important");
+
+  // Stats state
+  const [stats, setStats] = useState({ portals: 0, overdue: 0, issues: 0, adHoc: 0 });
+  const [needsAttention, setNeedsAttention] = useState<{ type: string; label: string; detail: string; href: string }[]>([]);
+
+  // Load stats
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const [portals, issues, clickupRes] = await Promise.all([
+          getPortals(),
+          getIssues(),
+          fetch("/api/clickup/tasks").then((r) => r.ok ? r.json() : null).catch(() => null),
+        ]);
+
+        const openIssues = issues.filter((i) => i.status === "open" || i.status === "noted");
+        const adHocRequests = portals.flatMap((p) => p.ad_hoc_requests || []).filter((r) => r.status === "open");
+        const overdueCount = clickupRes?.summary?.overdue ?? 0;
+
+        setStats({
+          portals: portals.length,
+          overdue: overdueCount,
+          issues: openIssues.length,
+          adHoc: adHocRequests.length,
+        });
+
+        // Build needs attention list
+        const attention: { type: string; label: string; detail: string; href: string }[] = [];
+        if (overdueCount > 0) {
+          attention.push({ type: "overdue", label: `${overdueCount} overdue task${overdueCount !== 1 ? "s" : ""}`, detail: "ClickUp tasks past deadline", href: "/tools/ops-radar" });
+        }
+        adHocRequests.slice(0, 3).forEach((r) => {
+          attention.push({ type: "adhoc", label: r.title, detail: "Ad hoc request", href: "/tools/client-portal" });
+        });
+        openIssues.slice(0, 3).forEach((i) => {
+          attention.push({ type: "issue", label: i.title, detail: i.type === "bug" ? "Bug report" : i.type === "change-request" ? "Change request" : "Idea", href: "/tools/issues" });
+        });
+        setNeedsAttention(attention);
+      } catch {
+        // Stats are best-effort
+      }
+    }
+    loadStats();
+  }, []);
 
   // Load feed
   const loadFeed = useCallback(async (hours?: number) => {
@@ -102,6 +149,11 @@ export default function PulseDashboard() {
     loadFeed(h);
   };
 
+  const filteredFeed = useMemo(() => {
+    if (feedFilter === "all") return feedItems;
+    return feedItems.filter((item) => IMPORTANT_TYPES.includes(item.channel_type));
+  }, [feedItems, feedFilter]);
+
   // Date formatting
   const today = new Date();
   const dateStr = today.toLocaleDateString("en-GB", {
@@ -116,39 +168,70 @@ export default function PulseDashboard() {
       <DecorativeBlocks />
       <div className="relative z-10 max-w-4xl mx-auto px-6 md:px-12 py-12 md:py-20">
         {/* Header */}
-        <div className="flex items-start justify-between mb-8">
+        <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">
               Mission Control
             </h1>
             <p className="text-sm text-[#6B6B6B]">
-              Mission control for the Ecomlanders team
+              {dateStr}
             </p>
           </div>
-          <span className="text-xs text-[#AAAAAA] mt-2 hidden md:block">
-            {dateStr}
-          </span>
         </div>
 
-        {/* Workflow Lanes */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+        {/* ── Stats Strip ── */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+          <StatCard label="Active Projects" value={stats.portals} href="/tools/client-portal" />
+          <StatCard label="Overdue Tasks" value={stats.overdue} warn={stats.overdue > 0} href="/tools/ops-radar" />
+          <StatCard label="Open Issues" value={stats.issues} href="/tools/issues" />
+          <StatCard label="Ad Hoc Requests" value={stats.adHoc} warn={stats.adHoc > 0} href="/tools/client-portal" />
+        </div>
+
+        {/* ── Needs Attention ── */}
+        {needsAttention.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#6B6B6B] mb-2">
+              Needs Attention
+            </h2>
+            <div className="border border-[#E5E5E5] rounded-lg divide-y divide-[#F0F0F0]">
+              {needsAttention.map((item, i) => (
+                <Link
+                  key={i}
+                  href={item.href}
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-[#FAFAFA] transition-colors"
+                >
+                  <span className={`size-2 rounded-full shrink-0 ${
+                    item.type === "overdue" ? "bg-red-500" : item.type === "adhoc" ? "bg-amber-400" : "bg-blue-400"
+                  }`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{item.label}</p>
+                    <p className="text-[11px] text-[#AAAAAA]">{item.detail}</p>
+                  </div>
+                  <ChevronRightIcon className="size-3.5 text-[#CCCCCC] shrink-0" />
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Workflow Lanes — compact */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8">
           {workflows.map((wf) => (
             <div
               key={wf.title}
-              className="bg-white border border-[#E5E5E5] rounded-lg p-5"
+              className="bg-white border border-[#E5E5E5] rounded-lg p-4"
             >
-              <h2 className="text-sm font-semibold text-[#0A0A0A] mb-0.5">
+              <h2 className="text-xs font-semibold text-[#0A0A0A] mb-2">
                 {wf.title}
               </h2>
-              <p className="text-[11px] text-[#AAAAAA] mb-4">{wf.subtitle}</p>
-              <ol className="space-y-1">
+              <ol className="space-y-0.5">
                 {wf.steps.map((step, i) => (
                   <li key={step.href}>
                     <Link
                       href={step.href}
-                      className="flex items-center gap-2 px-2 py-1.5 -mx-2 rounded-md text-sm text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#0A0A0A] transition-colors group"
+                      className="flex items-center gap-2 px-1.5 py-1 -mx-1.5 rounded text-[13px] text-[#6B6B6B] hover:bg-[#F5F5F5] hover:text-[#0A0A0A] transition-colors group"
                     >
-                      <span className="text-[10px] font-mono text-[#AAAAAA] w-3 shrink-0">
+                      <span className="text-[10px] font-mono text-[#CCCCCC] w-3 shrink-0">
                         {i + 1}.
                       </span>
                       <span className="flex-1">{step.label}</span>
@@ -164,15 +247,28 @@ export default function PulseDashboard() {
         {/* ── Pulse Feed ── */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B]">
+            <div className="flex items-center gap-3">
+              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#6B6B6B]">
                 Feed
               </h2>
-              {feedTotal > 0 && (
-                <span className="text-[10px] font-bold bg-[#F0F0F0] text-[#6B6B6B] px-1.5 py-0.5 rounded">
-                  {feedTotal}
-                </span>
-              )}
+              <div className="flex bg-[#F5F5F5] rounded-md p-0.5">
+                <button
+                  onClick={() => setFeedFilter("important")}
+                  className={`px-2.5 py-1 text-[11px] font-medium rounded transition-colors ${
+                    feedFilter === "important" ? "bg-white text-[#0A0A0A] shadow-sm" : "text-[#6B6B6B]"
+                  }`}
+                >
+                  Important
+                </button>
+                <button
+                  onClick={() => setFeedFilter("all")}
+                  className={`px-2.5 py-1 text-[11px] font-medium rounded transition-colors ${
+                    feedFilter === "all" ? "bg-white text-[#0A0A0A] shadow-sm" : "text-[#6B6B6B]"
+                  }`}
+                >
+                  All {feedTotal > 0 && `(${feedTotal})`}
+                </button>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <select
@@ -225,16 +321,18 @@ export default function PulseDashboard() {
               </div>
             )}
 
-            {!feedLoading && !feedError && feedItems.length === 0 && (
+            {!feedLoading && !feedError && filteredFeed.length === 0 && (
               <div className="bg-white border border-dashed border-[#E5E5E5] rounded-lg p-8 text-center">
-                <p className="text-xs text-[#AAAAAA] mb-1">No activity in the last {feedHours}h</p>
+                <p className="text-xs text-[#AAAAAA] mb-1">
+                  {feedFilter === "important" ? "No important activity" : "No activity"} in the last {feedHours}h
+                </p>
                 <p className="text-[10px] text-[#CCCCCC]">
-                  Messages from channels containing &quot;external&quot; or &quot;internal&quot; will appear here
+                  {feedFilter === "important" ? "Showing blockers, chases, requests, and client messages" : "Messages from Slack channels will appear here"}
                 </p>
               </div>
             )}
 
-            {feedItems.map((item) => {
+            {filteredFeed.map((item) => {
               const cfg = feedTypeConfig[item.channel_type];
               return (
                 <div
@@ -278,6 +376,20 @@ export default function PulseDashboard() {
         </div>
       </div>
     </div>
+  );
+}
+
+// ── Sub-components ───────────────────────────────────────────────
+
+function StatCard({ label, value, warn, href }: { label: string; value: number; warn?: boolean; href: string }) {
+  return (
+    <Link href={href} className="bg-white border border-[#E5E5E5] rounded-lg p-4 hover:border-[#AAAAAA] transition-colors">
+      <div className="flex items-baseline gap-1.5">
+        <span className="text-xl font-semibold tabular-nums">{value}</span>
+        {warn && <span className="size-1.5 rounded-full bg-red-500" />}
+      </div>
+      <p className="text-[11px] text-[#AAAAAA] mt-0.5">{label}</p>
+    </Link>
   );
 }
 

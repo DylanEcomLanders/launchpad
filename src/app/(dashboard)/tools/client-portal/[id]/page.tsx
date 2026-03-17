@@ -11,6 +11,9 @@ import {
   ArrowTopRightOnSquareIcon,
   PaperAirplaneIcon,
   TrashIcon,
+  ClockIcon,
+  ClipboardDocumentCheckIcon,
+  BeakerIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
@@ -268,7 +271,7 @@ export default function PortalDetailPage() {
     { key: "updates", label: `Updates (${updates.length})` },
     { key: "designs", label: `Designs (${reviews.length})` },
     { key: "wins", label: `Wins (${portal.wins?.length || 0})` },
-    { key: "requests", label: `Requests${openRequests > 0 ? ` (${openRequests})` : ""}` },
+    { key: "requests", label: `Ad Hoc${openRequests > 0 ? ` (${openRequests})` : ""}` },
     { key: "approvals", label: `Approvals (${approvals.length})` },
   ];
 
@@ -474,16 +477,6 @@ export default function PortalDetailPage() {
                 ))}
               </select>
             </div>
-            <div>
-              <label className={labelClass}>Assignee</label>
-              <input
-                type="text"
-                value={deliverableAssignee}
-                onChange={(e) => setDeliverableAssignee(e.target.value)}
-                placeholder="e.g., DE"
-                className={inputClass}
-              />
-            </div>
           </FormModal>
         )}
       </div>
@@ -513,24 +506,61 @@ function OverviewSection({
   return (
     <div className="space-y-8">
       {/* Quick actions */}
-      {portal.client_email && (
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => onSendNotification("welcome")}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-[#6B6B6B] border border-[#E5E5E5] rounded-md hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-colors"
-          >
-            <PaperAirplaneIcon className="size-3.5" />
-            Send Welcome Email
-          </button>
-          <button
-            onClick={() => onSendNotification("approval_request")}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-[#6B6B6B] border border-[#E5E5E5] rounded-md hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-colors"
-          >
-            <PaperAirplaneIcon className="size-3.5" />
-            Request Approvals
-          </button>
-        </div>
-      )}
+      <div className="flex flex-wrap gap-2">
+        {portal.client_email && (
+          <>
+            <button
+              onClick={() => onSendNotification("welcome")}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-[#6B6B6B] border border-[#E5E5E5] rounded-md hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-colors"
+            >
+              <PaperAirplaneIcon className="size-3.5" />
+              Send Welcome Email
+            </button>
+            <button
+              onClick={() => onSendNotification("approval_request")}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-[#6B6B6B] border border-[#E5E5E5] rounded-md hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-colors"
+            >
+              <PaperAirplaneIcon className="size-3.5" />
+              Request Approvals
+            </button>
+          </>
+        )}
+        <Link
+          href={`/tools/qa-checklist?client=${encodeURIComponent(portal.client_name)}`}
+          className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-[#6B6B6B] border border-[#E5E5E5] rounded-md hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-colors"
+        >
+          <ClipboardDocumentCheckIcon className="size-3.5" />
+          Run QA Check
+        </Link>
+        <Link
+          href={`/tools/dev-selfcheck?client=${encodeURIComponent(portal.client_name)}`}
+          className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-[#6B6B6B] border border-[#E5E5E5] rounded-md hover:border-[#0A0A0A] hover:text-[#0A0A0A] transition-colors"
+        >
+          <BeakerIcon className="size-3.5" />
+          Run Dev Check
+        </Link>
+      </div>
+
+      {/* Next Touchpoint */}
+      {(() => {
+        const tp = portal.next_touchpoint;
+        const inProgress = portal.phases.find((p) => p.status === "in-progress");
+        const description = tp?.description || inProgress?.name;
+        const date = tp?.date || inProgress?.dates;
+        if (!description) return null;
+        return (
+          <div className="bg-[#0A0A0A] text-white rounded-lg p-4 flex items-center gap-3">
+            <div className="size-8 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+              <ClockIcon className="size-4 text-white/70" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] uppercase tracking-wider text-white/50 mb-0.5">Next Touchpoint</p>
+              <p className="text-sm font-medium truncate">{description}</p>
+              {date && <p className="text-[11px] text-white/50 mt-0.5">{date}</p>}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Project info */}
       <div>
@@ -542,12 +572,6 @@ function OverviewSection({
             label="Current Phase"
             value={portal.current_phase}
             onSave={(v) => onUpdateField("current_phase", v)}
-          />
-          <EditableField
-            label="Progress (%)"
-            value={String(portal.progress)}
-            onSave={(v) => onUpdateField("progress", parseInt(v) || 0)}
-            type="number"
           />
           <EditableField
             label="Slack Channel URL"
@@ -647,35 +671,40 @@ function OverviewSection({
             No deliverables yet
           </p>
         ) : (
-          <div className="border border-[#E5E5E5] rounded-lg divide-y divide-[#F0F0F0]">
-            {portal.deliverables.map((del) => (
-              <div key={del.id} className="flex items-center gap-3 p-3">
-                <span
-                  className={`size-2 rounded-full shrink-0 ${
-                    del.status === "complete"
-                      ? "bg-emerald-400"
-                      : del.status === "in-progress"
-                      ? "bg-blue-400"
-                      : "bg-[#D4D4D4]"
-                  }`}
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{del.name}</p>
-                  <p className="text-[11px] text-[#AAAAAA]">
-                    {del.phase} &middot; {del.assignee}
-                  </p>
-                </div>
-                <span className="text-[10px] font-medium uppercase tracking-wider text-[#AAAAAA]">
-                  {del.status}
-                </span>
-                <button
-                  onClick={() => onRemoveDeliverable(del.id)}
-                  className="p-1 text-[#AAAAAA] hover:text-red-400 transition-colors"
-                >
-                  <TrashIcon className="size-3" />
-                </button>
-              </div>
-            ))}
+          <div className="border border-[#E5E5E5] rounded-lg overflow-hidden">
+            {(() => {
+              const phases = Array.from(new Set(portal.deliverables.map((d) => d.phase || "Unassigned")));
+              return phases.map((phase) => {
+                const phaseDels = portal.deliverables.filter((d) => (d.phase || "Unassigned") === phase);
+                return (
+                  <div key={phase}>
+                    <div className="px-3 py-1.5 bg-[#FAFAFA] border-b border-[#F0F0F0]">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA]">{phase}</span>
+                    </div>
+                    {phaseDels.map((del) => (
+                      <div key={del.id} className="flex items-center gap-3 p-3 border-b border-[#F0F0F0] last:border-0">
+                        <span
+                          className={`size-2 rounded-full shrink-0 ${
+                            del.status === "complete"
+                              ? "bg-emerald-400"
+                              : del.status === "in-progress"
+                              ? "bg-blue-400"
+                              : "bg-[#D4D4D4]"
+                          }`}
+                        />
+                        <p className="text-sm font-medium flex-1 min-w-0 truncate">{del.name}</p>
+                        <button
+                          onClick={() => onRemoveDeliverable(del.id)}
+                          className="p-1 text-[#AAAAAA] hover:text-red-400 transition-colors"
+                        >
+                          <TrashIcon className="size-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                );
+              });
+            })()}
           </div>
         )}
       </div>

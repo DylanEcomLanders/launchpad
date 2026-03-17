@@ -232,13 +232,11 @@ function OverviewView({
   const deadlines = useMemo(() => {
     const items: { client: string; name: string; date: string; portalId: string }[] = [];
     for (const p of portals) {
-      // Phase deadlines
       for (const phase of p.phases) {
         if (phase.deadline && phase.status !== "complete") {
           items.push({ client: p.client_name, name: phase.name, date: phase.deadline, portalId: p.id });
         }
       }
-      // Next touchpoint
       if (p.next_touchpoint?.date) {
         items.push({ client: p.client_name, name: p.next_touchpoint.description || "Touchpoint", date: p.next_touchpoint.date, portalId: p.id });
       }
@@ -257,6 +255,22 @@ function OverviewView({
     return items.sort((a, b) => new Date(b.requested_at).getTime() - new Date(a.requested_at).getTime()).slice(0, 10);
   }, [portals]);
 
+  // ClickUp health summary
+  const [clickupData, setClickupData] = useState<{ overdue: number; total: number } | null>(null);
+  useEffect(() => {
+    fetch("/api/clickup/tasks")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.summary) setClickupData({ overdue: data.summary.overdue, total: data.summary.total });
+      })
+      .catch(() => {});
+  }, []);
+
+  const openRequests = useMemo(
+    () => allRequests.filter((r) => r.status !== "done").length,
+    [allRequests]
+  );
+
   const statusColors: Record<string, string> = {
     open: "text-amber-600 bg-amber-50",
     "in-progress": "text-blue-600 bg-blue-50",
@@ -265,117 +279,33 @@ function OverviewView({
 
   return (
     <div className="space-y-8">
-      {/* Deadlines */}
-      {deadlines.length > 0 && (
-        <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-3 flex items-center gap-1.5">
-            <CalendarDaysIcon className="size-3.5" />
-            Upcoming Deadlines
-          </h3>
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 md:mx-0 md:px-0 scrollbar-hide">
-            {deadlines.map((dl, i) => (
-              <Link
-                key={i}
-                href={`/tools/client-portal/${dl.portalId}`}
-                className="shrink-0 w-44 border border-[#E5E5E5] rounded-lg p-3 hover:border-[#0A0A0A] hover:shadow-sm transition-all"
-              >
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA] mb-1">{dl.client}</p>
-                <p className="text-xs font-semibold mb-1 truncate">{dl.name}</p>
-                <p className="text-[11px] text-[#6B6B6B]">
-                  {new Date(dl.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                </p>
-              </Link>
-            ))}
+      {/* Summary strip */}
+      <div className="flex items-center gap-6 text-sm">
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-lg font-semibold tabular-nums">{portals.length}</span>
+          <span className="text-xs text-[#AAAAAA]">active portals</span>
+        </div>
+        {openRequests > 0 && (
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-lg font-semibold tabular-nums">{openRequests}</span>
+            <span className="text-xs text-[#AAAAAA]">open requests</span>
           </div>
-        </div>
-      )}
-
-      {/* Portal cards with at-a-glance info */}
-      <div>
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-3">
-          Active Portals
-          <span className="ml-2 text-[10px] font-bold bg-[#F0F0F0] text-[#6B6B6B] px-1.5 py-0.5 rounded">
-            {portals.length}
-          </span>
-        </h3>
-        <div className="space-y-3">
-          {portals.map((portal) => {
-            const openReqs = (portal.ad_hoc_requests || []).filter(r => r.status !== "done").length;
-            const currentPhase = portal.phases.find(p => p.status === "in-progress");
-            const nextDeadline = portal.phases
-              .filter(p => p.deadline && p.status !== "complete")
-              .sort((a, b) => new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime())[0];
-
-            return (
-              <Link
-                key={portal.id}
-                href={`/tools/client-portal/${portal.id}`}
-                className="block bg-white border border-[#E5E5E5] rounded-lg p-5 hover:border-[#0A0A0A] hover:shadow-sm transition-all"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-sm font-semibold">{portal.client_name}</h3>
-                      {portal.current_phase && (
-                        <span className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-[#F0F0F0] text-[#6B6B6B] rounded">
-                          {portal.current_phase}
-                        </span>
-                      )}
-                      {openReqs > 0 && (
-                        <span className="px-1.5 py-0.5 text-[9px] font-semibold bg-amber-50 text-amber-600 rounded">
-                          {openReqs} request{openReqs !== 1 ? "s" : ""}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-[#6B6B6B]">{portal.project_type || "No project type set"}</p>
-                  </div>
-
-                  <div className="flex items-center gap-3 shrink-0">
-                    {portal.progress > 0 && (
-                      <span className="text-sm font-bold tabular-nums">{portal.progress}%</span>
-                    )}
-                    <div className="flex items-center gap-1 text-xs text-[#AAAAAA]">
-                      <EyeIcon className="size-3" />
-                      <span className="tabular-nums">{portal.view_count}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* At-a-glance details */}
-                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-[#999999]">
-                  {portal.next_touchpoint?.date && (
-                    <span>Next: {portal.next_touchpoint.date} &mdash; {portal.next_touchpoint.description}</span>
-                  )}
-                  {currentPhase && nextDeadline?.deadline && (
-                    <span>Deadline: {new Date(nextDeadline.deadline).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
-                  )}
-                </div>
-
-                {/* Phase progress */}
-                {portal.phases.length > 0 && (
-                  <div className="mt-3 flex gap-1">
-                    {portal.phases.map((phase) => (
-                      <div
-                        key={phase.id}
-                        className={`h-1 rounded-full flex-1 ${
-                          phase.status === "complete" ? "bg-emerald-400" : phase.status === "in-progress" ? "bg-[#0A0A0A]" : "bg-[#E5E5E5]"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                )}
-              </Link>
-            );
-          })}
-        </div>
+        )}
+        {clickupData && clickupData.overdue > 0 && (
+          <Link href="/tools/ops-radar" className="flex items-baseline gap-1.5 hover:opacity-70 transition-opacity">
+            <span className="text-lg font-semibold tabular-nums">{clickupData.overdue}</span>
+            <span className="text-xs text-[#AAAAAA]">overdue in ClickUp</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 ml-0.5" />
+          </Link>
+        )}
       </div>
 
-      {/* Cross-portal requests */}
+      {/* Ad Hoc Requests — promoted to top */}
       {allRequests.length > 0 && (
         <div>
           <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-3 flex items-center gap-1.5">
             <ChatBubbleLeftRightIcon className="size-3.5" />
-            Recent Requests
+            Ad Hoc Requests
           </h3>
           <div className="border border-[#E5E5E5] rounded-lg divide-y divide-[#F0F0F0]">
             {allRequests.map((req) => (
@@ -398,6 +328,43 @@ function OverviewView({
                 </span>
               </Link>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Upcoming Deadlines */}
+      {deadlines.length > 0 && (
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B6B6B] mb-3 flex items-center gap-1.5">
+            <CalendarDaysIcon className="size-3.5" />
+            Upcoming Deadlines
+          </h3>
+          <div className="border border-[#E5E5E5] rounded-lg divide-y divide-[#F0F0F0]">
+            {deadlines.map((dl, i) => {
+              const daysUntil = Math.ceil(
+                (new Date(dl.date).getTime() - Date.now()) / 86400000
+              );
+              return (
+                <Link
+                  key={i}
+                  href={`/tools/client-portal/${dl.portalId}`}
+                  className="flex items-center gap-3 p-3 hover:bg-[#FAFAFA] transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAAAAA]">{dl.client}</span>
+                    <p className="text-xs font-medium mt-0.5 truncate">{dl.name}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-[11px] text-[#6B6B6B]">
+                      {new Date(dl.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                    </p>
+                    <p className={`text-[10px] tabular-nums ${daysUntil < 0 ? "text-red-500 font-medium" : "text-[#AAAAAA]"}`}>
+                      {daysUntil < 0 ? `${Math.abs(daysUntil)}d overdue` : daysUntil === 0 ? "today" : `${daysUntil}d`}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}
