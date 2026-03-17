@@ -29,17 +29,17 @@ export default function IssuesPage() {
   const [filterType, setFilterType] = useState<IssueType | "all">("all");
   const [filterStatus, setFilterStatus] = useState<IssueStatus | "all">("all");
 
-  const refresh = useCallback(() => {
-    setIssues(getIssues());
+  const refresh = useCallback(async () => {
+    setIssues(await getIssues());
   }, []);
 
   useEffect(() => {
     refresh();
     // Listen for storage changes from the report button
-    const onStorage = () => refresh();
+    const onStorage = () => { refresh(); };
     window.addEventListener("storage", onStorage);
     // Also poll every 2s for same-tab updates
-    const interval = setInterval(refresh, 2000);
+    const interval = setInterval(() => { refresh(); }, 2000);
     return () => {
       window.removeEventListener("storage", onStorage);
       clearInterval(interval);
@@ -52,13 +52,13 @@ export default function IssuesPage() {
     return true;
   });
 
-  function handleStatusChange(id: string, status: IssueStatus) {
-    updateIssueStatus(id, status);
+  async function handleStatusChange(id: string, status: IssueStatus) {
+    await updateIssueStatus(id, status);
     refresh();
   }
 
-  function handleDelete(id: string) {
-    deleteIssue(id);
+  async function handleDelete(id: string) {
+    await deleteIssue(id);
     refresh();
   }
 

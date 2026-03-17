@@ -50,9 +50,9 @@ export default function ChangelogPage() {
   const [roadmapItems, setRoadmapItems] = useState<RoadmapItem[]>([]);
   const [showAddRoadmap, setShowAddRoadmap] = useState(false);
 
-  const reload = useCallback(() => {
-    setChangelog(getChangelog());
-    setRoadmapItems(getRoadmap());
+  const reload = useCallback(async () => {
+    setChangelog(await getChangelog());
+    setRoadmapItems(await getRoadmap());
   }, []);
 
   useEffect(() => { reload(); }, [reload]);
@@ -234,8 +234,8 @@ function RoadmapCard({
         <div className="flex items-center gap-1 shrink-0">
           <select
             value={item.priority}
-            onChange={(e) => {
-              updateRoadmapPriority(item.id, e.target.value as RoadmapPriority);
+            onChange={async (e) => {
+              await updateRoadmapPriority(item.id, e.target.value as RoadmapPriority);
               onUpdate();
             }}
             className="text-[11px] text-[#6B6B6B] bg-[#F5F5F5] border-none rounded px-1.5 py-1 focus:outline-none cursor-pointer"
@@ -245,7 +245,7 @@ function RoadmapCard({
             <option value="exploring">Exploring</option>
           </select>
           <button
-            onClick={() => { deleteRoadmapItem(item.id); onUpdate(); }}
+            onClick={async () => { await deleteRoadmapItem(item.id); onUpdate(); }}
             className="p-1 text-[#AAAAAA] hover:text-red-500 transition-colors"
             title="Remove"
           >
@@ -264,10 +264,10 @@ function AddRoadmapForm({ onSave, onCancel }: { onSave: () => void; onCancel: ()
   const [description, setDescription] = useState("");
   const [addedBy, setAddedBy] = useState("");
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
-    addRoadmapItem({
+    await addRoadmapItem({
       title: title.trim(),
       description: description.trim(),
       priority: "exploring" as RoadmapPriority,

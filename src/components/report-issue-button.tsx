@@ -14,11 +14,11 @@ export function ReportIssueButton() {
   const [type, setType] = useState<IssueType>("bug");
   const [submitted, setSubmitted] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
 
-    createIssue({
+    await createIssue({
       title: title.trim(),
       description: description.trim(),
       type,
