@@ -36,6 +36,24 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-8",
+    date: "18 Mar 2026",
+    version: "0.8.0",
+    title: "Client Portal Overhaul",
+    changes: [
+      { type: "improved", text: "Portal overview redesigned — removed stat cards, added Client Portal pre-header, submit request button, deliverables list, and documents section" },
+      { type: "improved", text: "Sidebar simplified — removed avatar icon, just shows client name" },
+      { type: "improved", text: "Updates tab — 2-column grid layout with video icon for Loom updates" },
+      { type: "improved", text: "Scope tab — now shows deliverables with status indicators" },
+      { type: "improved", text: "Requests — inline form replaced with popup modal" },
+      { type: "improved", text: "Documents — type text labels replaced with icons, preview in popup, downloadable" },
+      { type: "improved", text: "Designs — fullscreen Figma popup modal for in-portal review and commenting" },
+      { type: "improved", text: "Reduced corner radius and switched card backgrounds from grey to white" },
+      { type: "added", text: "Development nav section placeholder" },
+      { type: "added", text: "Next Touchpoint card on portal overview" },
+    ],
+  },
+  {
     id: "cl-7",
     date: "17 Mar 2026",
     version: "0.7.0",

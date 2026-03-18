@@ -17,7 +17,7 @@ import { toLoomEmbed } from "@/lib/portal/loom";
 import { toFigmaEmbed } from "@/lib/portal/review-types";
 
 /* ── Tab type ── */
-type Tab = "overview" | "timeline" | "updates" | "scope" | "designs" | "wins" | "results" | "requests";
+type Tab = "overview" | "timeline" | "updates" | "scope" | "designs" | "development" | "wins" | "results" | "requests";
 
 /* ── SVG Progress Ring ── */
 function ProgressRing({
@@ -59,7 +59,7 @@ function ProgressRing({
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-2xl font-bold tracking-tight">{progress}</span>
-        <span className="text-[10px] font-medium text-[#A0A0A0] -mt-0.5">
+        <span className="text-[10px] font-medium text-[#AAA] -mt-0.5">
           percent
         </span>
       </div>
@@ -76,7 +76,7 @@ function phaseStatusIcon(status: PhaseStatus, size: "sm" | "md" = "md") {
   switch (status) {
     case "complete":
       return (
-        <span className={`inline-flex items-center justify-center ${s} rounded-full bg-accent text-white`}>
+        <span className={`inline-flex items-center justify-center ${s} rounded-full bg-accent text-[#1A1A1A]`}>
           <svg className={check} viewBox="0 0 12 12" fill="none">
             <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -97,7 +97,7 @@ function phaseStatusIcon(status: PhaseStatus, size: "sm" | "md" = "md") {
 
 /* ── UK Time Banner ── */
 
-function UKTimeBanner() {
+function UKTimeBanner({ dark = false }: { dark?: boolean }) {
   const [ukTime, setUkTime] = useState("");
   const [isOnline, setIsOnline] = useState(false);
 
@@ -135,18 +135,34 @@ function UKTimeBanner() {
   if (!ukTime) return null;
 
   return (
-    <div className="flex items-center gap-2 mb-4">
+    <div className="flex items-center gap-2">
       <span
         className={`size-2 rounded-full shrink-0 ${
-          isOnline ? "bg-emerald-400" : "bg-[#C5C5C5]"
+          isOnline ? "bg-[#1A1A1A]" : "bg-[#555]"
         }`}
       />
-      <span className="text-[11px] text-[#7A7A7A]">
-        Our team works UK hours (GMT/BST 9am&ndash;6pm) &middot;{" "}
-        {isOnline ? "Currently online" : "Currently offline"} &middot; UK time: {ukTime}
+      <span className={`text-[11px] ${dark ? "text-[#999]" : "text-[#777]"}`}>
+        {isOnline ? "Online" : "Offline"} &middot; {ukTime} UK
       </span>
     </div>
   );
+}
+
+/* ── Nav Icons ── */
+function NavIcon({ type }: { type: Tab }) {
+  const cls = "size-4";
+  switch (type) {
+    case "overview": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>;
+    case "timeline": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" /></svg>;
+    case "updates": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm6.5 1a.5.5 0 00-.5.5v5a.5.5 0 00.75.43l4-2.5a.5.5 0 000-.86l-4-2.5A.5.5 0 008.5 7z" /></svg>;
+    case "scope": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" /><path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" /></svg>;
+    case "designs": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" /></svg>;
+    case "wins": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clipRule="evenodd" /></svg>;
+    case "results": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zm6-4a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zm6-3a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" /></svg>;
+    case "development": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" /></svg>;
+    case "requests": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" /></svg>;
+    default: return null;
+  }
 }
 
 /* ── Main Component ── */
@@ -169,240 +185,321 @@ export function PortalView({
   onSubmitRequest?: (title: string, description: string) => Promise<void>;
 }) {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showRequestPopup, setShowRequestPopup] = useState(false);
 
   const hasDesigns = reviews.length > 0;
 
-  /* Auto-calculate progress from deliverables */
-  const computedProgress = portal.deliverables.length > 0
-    ? Math.round(portal.deliverables.filter(d => d.status === "complete").length / portal.deliverables.length * 100)
-    : portal.progress;
+  const currentPhase = portal.phases.find((p) => p.status === "in-progress");
 
-  const tabs: { key: Tab; label: string }[] = [
-    { key: "overview", label: "Overview" },
+  const navItems: { key: Tab; label: string }[] = [
+    { key: "overview", label: "Dashboard" },
     { key: "timeline", label: "Timeline" },
     ...(updates.length > 0 ? [{ key: "updates" as Tab, label: "Updates" }] : []),
-    { key: "scope", label: "Scope / Deliverables" },
+    { key: "scope", label: "Scope" },
     ...(hasDesigns ? [{ key: "designs" as Tab, label: "Designs" }] : []),
+    { key: "development", label: "Development" },
     ...(portal.wins && portal.wins.length > 0 ? [{ key: "wins" as Tab, label: "Wins" }] : []),
     ...(portal.show_results ? [{ key: "results" as Tab, label: "Results" }] : []),
     { key: "requests", label: "Requests" },
   ];
 
+  const firstName = portal.client_name.split(" ")[0].split("[")[0].trim();
+
   return (
-    <div>
-      {/* ── Header ── */}
-      <div className="border-b border-[#E5E5EA]">
-        <div className="max-w-3xl mx-auto px-6 md:px-12 pt-10 pb-8 md:pt-12 md:pb-10">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#A0A0A0] mb-3">
-            Client Portal
-          </p>
-          <UKTimeBanner />
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">
-            {portal.client_name}
-          </h1>
-          <p className="text-sm text-[#999999]">
-            Start date: {portal.phases[0]?.dates}
-          </p>
-
-          {/* Progress track with phase labels */}
-          {portal.phases.length > 0 && (() => {
-            const currentIdx = portal.phases.findIndex((p) => p.status === "in-progress");
-            const completedCount = portal.phases.filter((p) => p.status === "complete").length;
-            const currentPhase = currentIdx >= 0 ? portal.phases[currentIdx] : null;
-            const phaseNum = currentIdx >= 0 ? currentIdx + 1 : completedCount;
-
-            return (
-              <div className="mt-8">
-                <div className="flex gap-1">
-                  {portal.phases.map((phase) => (
-                    <div key={phase.id || phase.name} className="flex-1 min-w-0">
-                      <div
-                        className={`h-1.5 rounded-full mb-2 ${
-                          phase.status === "complete"
-                            ? "bg-emerald-400"
-                            : phase.status === "in-progress"
-                            ? "bg-[#1B1B1B]"
-                            : "bg-[#E5E5EA]"
-                        }`}
-                      />
-                      <p
-                        className={`text-[10px] md:text-[11px] font-medium truncate ${
-                          phase.status === "in-progress"
-                            ? "text-[#1B1B1B]"
-                            : phase.status === "complete"
-                            ? "text-[#999999]"
-                            : "text-[#C5C5C5]"
-                        }`}
-                      >
-                        {phase.name}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-[11px] text-[#999999] mt-2">
-                  Phase {phaseNum} of {portal.phases.length}
-                  {currentPhase ? ` \u2014 ${currentPhase.name}` : completedCount === portal.phases.length ? " \u2014 Complete" : ""}
-                </p>
-              </div>
-            );
-          })()}
-        </div>
+    <div className="flex min-h-screen bg-white">
+      {/* ── Mobile header ── */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-[#E8E8E8] px-4 py-3 flex items-center justify-between">
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 rounded-lg hover:bg-[#F5F5F5] text-[#777]">
+          <svg className="size-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" /></svg>
+        </button>
+        <span className="text-sm font-semibold text-[#1A1A1A]">{portal.client_name}</span>
+        <div className="w-8" />
       </div>
 
-      {/* ── Content ── */}
-      <div className="max-w-3xl mx-auto px-6 md:px-12 py-10 md:py-14">
-        {/* Tabs */}
-        <div className="mb-10 -mx-6 px-6 md:mx-0 md:px-0 overflow-x-auto scrollbar-hide">
-          <div className="inline-flex bg-[#F3F3F5] rounded-md p-1 gap-0.5 min-w-max">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`px-3 md:px-5 py-2 text-xs md:text-sm font-medium rounded transition-all duration-200 whitespace-nowrap ${
-                  activeTab === tab.key
-                    ? "bg-accent text-white shadow-sm"
-                    : "text-[#7A7A7A] hover:text-[#1B1B1B]"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+      {/* ── Mobile overlay ── */}
+      {sidebarOpen && (
+        <div className="md:hidden fixed inset-0 z-40 bg-black/50" onClick={() => setSidebarOpen(false)} />
+      )}
+
+      {/* ── Sidebar ── */}
+      <aside className={`fixed md:sticky top-0 left-0 h-screen z-50 md:z-auto w-[220px] bg-white border-r border-[#E8E8E8] flex flex-col transition-transform duration-200 md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        {/* Logo */}
+        <div className="px-5 py-6 border-b border-[#E8E8E8]">
+          <p className="text-sm font-semibold text-[#1A1A1A] truncate">{portal.client_name}</p>
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+          {navItems.map((item) => (
+            <button
+              key={item.key}
+              onClick={() => { setActiveTab(item.key); setSidebarOpen(false); }}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium rounded-lg transition-all duration-150 ${
+                activeTab === item.key
+                  ? "bg-[#1A1A1A] text-white"
+                  : "text-[#999] hover:bg-[#F5F5F5] hover:text-[#1A1A1A]"
+              }`}
+            >
+              <NavIcon type={item.key} />
+              {item.label}
+            </button>
+          ))}
+        </nav>
+
+        {/* Sidebar footer */}
+        <div className="px-5 py-4 border-t border-[#E8E8E8] space-y-2">
+          <UKTimeBanner />
+          <p className="text-[10px] text-[#CCC]">Powered by Ecomlanders</p>
+        </div>
+      </aside>
+
+      {/* ── Main content ── */}
+      <main className="flex-1 min-w-0 pt-14 md:pt-0">
+        <div className="max-w-5xl mx-auto px-6 md:px-10 py-8 md:py-10">
+          {/* Tab content */}
+          <div key={activeTab} className="animate-fadeIn">
+            {activeTab === "overview" && (
+              <DashboardView portal={portal} currentPhase={currentPhase} firstName={firstName} onRequestClick={() => setShowRequestPopup(true)} />
+            )}
+            {activeTab === "timeline" && (
+              <>
+                <PageHeader title="Timeline" subtitle="Your project phases and milestones" />
+                <TimelineTab phases={portal.phases} />
+              </>
+            )}
+            {activeTab === "updates" && (
+              <>
+                <PageHeader title="Updates" subtitle="Video updates from the team" />
+                <UpdatesTab updates={updates} />
+              </>
+            )}
+            {activeTab === "scope" && (
+              <>
+                <PageHeader title="Scope & Deliverables" subtitle="Everything included in your project" />
+                <ScopeTab scope={portal.scope} deliverables={portal.deliverables} documents={portal.documents} />
+              </>
+            )}
+            {activeTab === "designs" && (
+              <>
+                <PageHeader title="Designs" subtitle="Review and approve design work" />
+                <DesignsTab
+                  reviews={reviews}
+                  reviewVersions={reviewVersions}
+                  reviewFeedback={reviewFeedback}
+                  portalToken={portal.token}
+                  clientName={portal.client_name}
+                />
+              </>
+            )}
+            {activeTab === "wins" && (
+              <>
+                <PageHeader title="Wins" subtitle="Results and milestones achieved" />
+                <WinsTab wins={portal.wins || []} />
+              </>
+            )}
+            {activeTab === "results" && portal.show_results && (
+              <>
+                <PageHeader title="Test Results" subtitle="A/B tests and optimisation results" />
+                <ResultsTab results={portal.results} />
+              </>
+            )}
+            {activeTab === "development" && (
+              <>
+                <PageHeader title="Development" subtitle="Development progress and build status" />
+                <div className="text-center py-20">
+                  <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F0F0F0] mb-4">
+                    <svg className="size-5 text-[#AAA]" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <p className="text-sm text-[#777] mb-1">Development updates coming soon</p>
+                  <p className="text-xs text-[#AAA]">Build progress and staging links will appear here</p>
+                </div>
+              </>
+            )}
+            {activeTab === "requests" && (
+              <>
+                <PageHeader title="Requests" subtitle="Track your ad-hoc requests" />
+                <RequestsTab
+                  requests={portal.ad_hoc_requests || []}
+                  onSubmit={onSubmitRequest}
+                  onOpenPopup={() => setShowRequestPopup(true)}
+                />
+              </>
+            )}
           </div>
         </div>
+      </main>
 
-        {/* Tab content */}
-        <div key={activeTab} className="animate-fadeIn">
-          {activeTab === "overview" && (
-            <OverviewTab portal={portal} />
-          )}
-          {activeTab === "timeline" && (
-            <TimelineTab phases={portal.phases} />
-          )}
-          {activeTab === "updates" && <UpdatesTab updates={updates} />}
-          {activeTab === "scope" && (
-            <ScopeTab
-              scope={portal.scope}
-              documents={portal.documents}
-            />
-          )}
-          {activeTab === "designs" && (
-            <DesignsTab
-              reviews={reviews}
-              reviewVersions={reviewVersions}
-              reviewFeedback={reviewFeedback}
-              portalToken={portal.token}
-              clientName={portal.client_name}
-            />
-          )}
-          {activeTab === "wins" && <WinsTab wins={portal.wins || []} />}
-          {activeTab === "results" && portal.show_results && <ResultsTab results={portal.results} />}
-          {activeTab === "requests" && (
-            <RequestsTab
-              requests={portal.ad_hoc_requests || []}
-              onSubmit={onSubmitRequest}
-            />
-          )}
-        </div>
-      </div>
+      {/* Request popup */}
+      {showRequestPopup && (
+        <RequestPopup
+          onSubmit={onSubmitRequest}
+          onClose={() => setShowRequestPopup(false)}
+        />
+      )}
     </div>
   );
 }
 
-/* ── Overview Tab ── */
+/* ── Page Header ── */
+function PageHeader({ title, subtitle }: { title: string; subtitle: string }) {
+  return (
+    <div className="mb-8">
+      <h1 className="text-xl font-bold tracking-tight text-[#1A1A1A] mb-1">{title}</h1>
+      <p className="text-sm text-[#AAA]">{subtitle}</p>
+    </div>
+  );
+}
 
-function OverviewTab({
+/* ── Dashboard View (Overview) ── */
+function DashboardView({
   portal,
+  currentPhase,
+  firstName,
+  onRequestClick,
 }: {
   portal: PortalData;
+  currentPhase?: PortalPhase;
+  firstName: string;
+  onRequestClick: () => void;
 }) {
-  const currentPhase = portal.phases.find((p) => p.status === "in-progress");
+  const [selectedDoc, setSelectedDoc] = useState<PortalDocument | null>(null);
 
   return (
-    <div className="space-y-12">
-      {/* Welcome Section */}
-      <div className="bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg p-6">
-        <h3 className="text-sm font-semibold mb-2">Welcome to your project portal</h3>
-        <p className="text-xs text-[#7A7A7A] leading-relaxed">
-          This is your central hub for tracking project progress. Use the tabs above to view your
-          timeline, scope, designs, and any updates from the team. If you have questions, reply to
-          any update email or reach out to your project manager.
-        </p>
+    <div className="space-y-6">
+      {/* Welcome + Request button */}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-1">Client Portal</p>
+          <h1 className="text-2xl font-bold tracking-tight text-[#1A1A1A] mb-1">
+            Welcome, {firstName}
+          </h1>
+          <p className="text-sm text-[#AAA]">Here&apos;s an overview of your project</p>
+        </div>
+        <button
+          onClick={onRequestClick}
+          className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold bg-[#1A1A1A] text-white rounded-lg hover:bg-[#333] transition-colors"
+        >
+          <svg className="size-3.5" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+          </svg>
+          Submit Request
+        </button>
       </div>
 
-      {/* Next Touchpoint + Current Status */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-        <div className="bg-[#1B1B1B] rounded-lg p-6">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#888] mb-3">
-            Next Touchpoint
-          </p>
-          <p className="text-xl font-bold tracking-tight mb-1 text-white">
+      {/* Current stage + Next touchpoint */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="bg-white border border-[#E8E8E8] rounded-lg p-6">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-3">Current Stage</p>
+          <p className="text-lg font-bold tracking-tight text-[#1A1A1A] mb-1">{portal.current_phase}</p>
+          {currentPhase && (
+            <p className="text-sm text-[#999] leading-relaxed">{currentPhase.description}</p>
+          )}
+          {currentPhase?.dates && (
+            <p className="text-xs text-[#CCC] mt-3">{currentPhase.dates}</p>
+          )}
+        </div>
+
+        <div className="bg-[#1A1A1A] rounded-lg p-6">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/50 mb-3">Next Touchpoint</p>
+          <p className="text-lg font-bold tracking-tight text-white mb-1">
             {portal.next_touchpoint?.date || "\u2014"}
           </p>
-          <p className="text-sm text-[#999] leading-relaxed">
+          <p className="text-sm text-white/60 leading-relaxed">
             {portal.next_touchpoint?.description || "No touchpoint scheduled"}
           </p>
         </div>
-
-        <div className="border border-[#E5E5EA] rounded-lg p-6">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-3">
-            Current Status
-          </p>
-          <p className="text-xl font-bold tracking-tight mb-1">
-            {portal.current_phase}
-          </p>
-          {currentPhase && (
-            <p className="text-sm text-[#7A7A7A] leading-relaxed">
-              {currentPhase.description}
-            </p>
-          )}
-        </div>
       </div>
 
-      {/* Project journey */}
-      <div>
-        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-5">
-          Project Journey
-        </h3>
-        <div className="border border-[#E5E5EA] rounded-lg divide-y divide-[#EDEDEF]">
+      {/* Phase progress bar */}
+      <div className="bg-white border border-[#E8E8E8] rounded-lg p-6">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">Project Phases</p>
+        <div className="flex gap-1.5">
           {portal.phases.map((phase) => (
-              <div key={phase.id || phase.name} className="flex items-start gap-4 p-4">
-                <div className="pt-0.5">
-                  {phaseStatusIcon(phase.status, "sm")}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-4">
-                    <span className={`text-sm font-medium ${phase.status === "upcoming" ? "text-[#BBBBBB]" : ""}`}>
-                      {phase.name}
-                    </span>
-                    <span className="text-xs text-[#A0A0A0] shrink-0">
-                      {phase.dates}
-                    </span>
-                  </div>
-                  <p className={`text-xs mt-0.5 leading-relaxed ${phase.status === "upcoming" ? "text-[#C5C5C5]" : "text-[#999999]"}`}>
-                    {phase.description}
-                  </p>
-                </div>
-              </div>
+            <div key={phase.id || phase.name} className="flex-1 min-w-0">
+              <div
+                className={`h-2 rounded-full mb-2 ${
+                  phase.status === "complete"
+                    ? "bg-[#1A1A1A]"
+                    : phase.status === "in-progress"
+                    ? "bg-[#1A1A1A]"
+                    : "bg-[#F0F0F0]"
+                }`}
+              />
+              <p className={`text-[10px] font-medium truncate ${
+                phase.status === "in-progress"
+                  ? "text-[#1A1A1A]"
+                  : phase.status === "complete"
+                  ? "text-[#999]"
+                  : "text-[#CCC]"
+              }`}>
+                {phase.name}
+              </p>
+            </div>
           ))}
         </div>
       </div>
 
-      {/* What we're building */}
-      <div>
-        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-5">
-          What We&apos;re Building
-        </h3>
-        <div className="border border-[#E5E5EA] rounded-lg p-5">
-          <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-            {portal.scope.map((item, i) => (
-              <div key={i} className="flex items-center gap-2.5 py-1">
-                <span className="size-1 rounded-full bg-[#C5C5C5] shrink-0" />
-                <span className="text-sm text-[#7A7A7A]">{item}</span>
+      {/* What we're building — shows deliverables */}
+      {portal.deliverables.length > 0 && (
+        <div className="bg-white border border-[#E8E8E8] rounded-lg p-6">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">What We&apos;re Building</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
+            {portal.deliverables.map((del, i) => (
+              <div key={del.id || i} className="flex items-center gap-2.5 py-1">
+                {del.status === "complete" ? (
+                  <svg className="size-4 text-[#1A1A1A] shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                  </svg>
+                ) : (
+                  <span className="size-1.5 rounded-full bg-[#CCC] shrink-0" />
+                )}
+                <span className={`text-sm ${del.status === "complete" ? "text-[#999] line-through" : "text-[#777]"}`}>{del.name}</span>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Documents */}
+      {portal.documents.length > 0 && (
+        <div className="bg-white border border-[#E8E8E8] rounded-lg p-6">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">Documents</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {portal.documents.map((doc, i) => (
+              <button
+                key={i}
+                onClick={() => setSelectedDoc(doc)}
+                className="group flex items-center gap-3 bg-white border border-[#E8E8E8] rounded-lg p-3.5 text-left hover:border-[#333] transition-all duration-200"
+              >
+                <div className="shrink-0 size-9 rounded-lg bg-[#F0F0F0] flex items-center justify-center text-[#777]">
+                  <DocTypeIcon type={doc.type} className="size-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-[#1A1A1A] truncate">{doc.name}</p>
+                  <p className="text-[10px] text-[#AAA]">{doc.type} &middot; {doc.date}</p>
+                </div>
+                <svg
+                  className="size-4 text-[#CCC] group-hover:text-[#777] group-hover:translate-x-0.5 transition-all shrink-0"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <path d="M6 3l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Document preview modal */}
+      {selectedDoc && (
+        <DocumentPreview doc={selectedDoc} onClose={() => setSelectedDoc(null)} />
+      )}
     </div>
   );
 }
@@ -417,7 +514,7 @@ function TimelineTab({
   return (
     <div className="relative">
       {/* Vertical line */}
-      <div className="absolute left-[11px] top-4 bottom-4 w-px bg-[#E5E5EA]" />
+      <div className="absolute left-[11px] top-4 bottom-4 w-px bg-[#F0F0F0]" />
 
       <div className="space-y-0">
         {phases.map((phase) => {
@@ -432,19 +529,19 @@ function TimelineTab({
                 <div
                   className={`size-[23px] rounded-full border-2 flex items-center justify-center transition-all ${
                     isComplete
-                      ? "border-emerald-400 bg-white"
+                      ? "border-[#1A1A1A] bg-white"
                       : isActive
-                      ? "border-[#1B1B1B] bg-white"
-                      : "border-[#D4D4D4] bg-white"
+                      ? "border-[#1A1A1A] bg-white"
+                      : "border-[#2A2A35] bg-white"
                   }`}
                 >
                   {isComplete && (
-                    <svg className="size-3 text-emerald-400" viewBox="0 0 12 12" fill="none">
+                    <svg className="size-3 text-[#1A1A1A]" viewBox="0 0 12 12" fill="none">
                       <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   )}
                   {isActive && (
-                    <span className="size-2 rounded-full bg-[#1B1B1B] animate-pulse" />
+                    <span className="size-2 rounded-full bg-[#1A1A1A] animate-pulse" />
                   )}
                 </div>
               </div>
@@ -453,31 +550,31 @@ function TimelineTab({
               <div
                 className={`flex-1 rounded-lg p-5 transition-all ${
                   isActive
-                    ? "ring-1 ring-[#1B1B1B] bg-white"
+                    ? "ring-1 ring-[#1A1A1A] bg-white"
                     : isComplete
-                    ? "ring-1 ring-emerald-300 bg-white"
-                    : "bg-[#F7F8FA]"
+                    ? "border border-[#E8E8E8] bg-white"
+                    : "bg-white border border-[#1A1A22]"
                 }`}
               >
                 <div className="flex items-start justify-between mb-2">
                   <div>
                     <div className="flex items-center gap-2 mb-0.5">
-                      <h3 className={`text-sm font-bold ${!isComplete && !isActive ? "text-[#BBBBBB]" : ""}`}>{phase.name}</h3>
+                      <h3 className={`text-sm font-bold ${!isComplete && !isActive ? "text-[#CCC]" : "text-[#1A1A1A]"}`}>{phase.name}</h3>
                       {isActive && (
-                        <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-[#1B1B1B] text-white rounded-full">
+                        <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-[#1A1A1A]/20 text-[#1A1A1A] rounded-full">
                           Current
                         </span>
                       )}
                       {isComplete && (
-                        <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-600 rounded-full">
+                        <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-[#1A1A1A]/20 text-[#1A1A1A] rounded-full">
                           Complete
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-[#A0A0A0]">
+                    <p className="text-xs text-[#AAA]">
                       {phase.dates}
                       {phase.deadline && (
-                        <span className="ml-2 text-[#999999]">
+                        <span className="ml-2 text-[#AAA]">
                           &middot; Deadline: {new Date(phase.deadline).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                         </span>
                       )}
@@ -485,16 +582,16 @@ function TimelineTab({
                   </div>
                 </div>
 
-                <p className={`text-sm leading-relaxed ${(isComplete || isActive) ? "text-[#7A7A7A]" : "text-[#BBBBBB]"} ${pct > 0 ? "mb-3" : ""}`}>
+                <p className={`text-sm leading-relaxed ${(isComplete || isActive) ? "text-[#777]" : "text-[#CCC]"} ${pct > 0 ? "mb-3" : ""}`}>
                   {phase.description}
                 </p>
 
                 {/* Progress bar */}
                 {pct > 0 && (
-                  <div className="h-1 rounded-full overflow-hidden bg-[#EBEBEB]">
+                  <div className="h-1 rounded-full overflow-hidden bg-[#F0F0F0]">
                     <div
                       className={`h-full rounded-full transition-all duration-700 ${
-                        isComplete ? "bg-emerald-400" : "bg-[#1B1B1B]"
+                        isComplete ? "bg-[#1A1A1A]" : "bg-[#1A1A1A]"
                       }`}
                       style={{ width: `${pct}%` }}
                     />
@@ -515,13 +612,13 @@ function UpdatesTab({ updates }: { updates: PortalUpdate[] }) {
   if (updates.length === 0) {
     return (
       <div className="text-center py-20">
-        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F3F3F5] mb-4">
-          <svg className="size-5 text-[#A0A0A0]" viewBox="0 0 20 20" fill="currentColor">
+        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F0F0F0] mb-4">
+          <svg className="size-5 text-[#AAA]" viewBox="0 0 20 20" fill="currentColor">
             <path d="M2 3a1 1 0 00-1 1v1a1 1 0 001 1h16a1 1 0 001-1V4a1 1 0 00-1-1H2zM2 7.5h16l-.811 7.71a2 2 0 01-1.99 1.79H4.802a2 2 0 01-1.99-1.79L2 7.5z" />
           </svg>
         </div>
-        <p className="text-sm text-[#999999] mb-1">No updates yet</p>
-        <p className="text-xs text-[#C5C5C5]">
+        <p className="text-sm text-[#777] mb-1">No updates yet</p>
+        <p className="text-xs text-[#AAA]">
           Video updates from the team will appear here
         </p>
       </div>
@@ -529,9 +626,9 @@ function UpdatesTab({ updates }: { updates: PortalUpdate[] }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {updates.map((update) => (
-        <div key={update.id} className="border border-[#E5E5EA] rounded-lg overflow-hidden">
+        <div key={update.id} className="bg-white border border-[#E8E8E8] rounded-lg overflow-hidden">
           {/* Video embed */}
           {toLoomEmbed(update.loom_url) && (
             <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
@@ -544,25 +641,24 @@ function UpdatesTab({ updates }: { updates: PortalUpdate[] }) {
           )}
 
           {/* Info */}
-          <div className="p-5">
-            <div className="flex items-start justify-between gap-3 mb-1">
-              <h3 className="text-base font-bold">{update.title}</h3>
-              <p className="text-xs text-[#A0A0A0] shrink-0">
-                {new Date(update.created_at).toLocaleDateString("en-GB", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })}
-              </p>
-            </div>
+          <div className="p-4">
+            <h3 className="text-sm font-bold text-[#1A1A1A] mb-1">{update.title}</h3>
             {update.description && (
-              <p className="text-sm text-[#7A7A7A] leading-relaxed">
+              <p className="text-xs text-[#777] leading-relaxed line-clamp-2">
                 {update.description}
               </p>
             )}
-            <p className="text-[11px] text-[#A0A0A0] mt-2">
-              Posted by {update.posted_by}
-            </p>
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-[10px] text-[#AAA]">
+                {update.posted_by}
+              </p>
+              <p className="text-[10px] text-[#AAA]">
+                {new Date(update.created_at).toLocaleDateString("en-GB", {
+                  day: "numeric",
+                  month: "short",
+                })}
+              </p>
+            </div>
           </div>
         </div>
       ))}
@@ -580,29 +676,76 @@ const typeLabels: Record<string, string> = {
   Other: "DOC",
 };
 
+function DocTypeIcon({ type, className = "size-4" }: { type: string; className?: string }) {
+  switch (type) {
+    case "Roadmap":
+      return <svg className={className} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" clipRule="evenodd" /></svg>;
+    case "Scope":
+      return <svg className={className} viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" /><path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" /></svg>;
+    case "Agreement":
+      return <svg className={className} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 4h3a3 3 0 006 0h3a2 2 0 012 2v9a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2zm2.5 7a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm2.45 4a2.5 2.5 0 10-4.9 0h4.9zM12 9a1 1 0 100 2h3a1 1 0 100-2h-3zm-1 4a1 1 0 011-1h3a1 1 0 110 2h-3a1 1 0 01-1-1z" clipRule="evenodd" /></svg>;
+    case "QA Checklist":
+      return <svg className={className} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" /></svg>;
+    default:
+      return <svg className={className} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" /></svg>;
+  }
+}
+
 function ScopeTab({
   scope,
+  deliverables,
   documents,
 }: {
   scope: string[];
+  deliverables: { id?: string; name: string; status: string; phase?: string }[];
   documents: PortalDocument[];
 }) {
   const [selected, setSelected] = useState<PortalDocument | null>(null);
 
   return (
     <div className="space-y-12">
-      {/* Scope / Deliverables */}
-      {scope.length > 0 && (
+      {/* Deliverables list */}
+      {deliverables.length > 0 && (
         <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-5">
-            Scope / Deliverables
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-5">
+            Deliverables
           </h3>
-          <div className="border border-[#E5E5EA] rounded-lg p-5">
+          <div className="bg-white border border-[#E8E8E8] rounded-lg divide-y divide-[#E8E8E8]">
+            {deliverables.map((del, i) => (
+              <div key={del.id || i} className="flex items-center gap-3 px-5 py-3.5">
+                {del.status === "complete" ? (
+                  <svg className="size-4 text-[#1A1A1A] shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                  </svg>
+                ) : del.status === "in-progress" ? (
+                  <span className="size-4 rounded-full border-2 border-[#1A1A1A] flex items-center justify-center shrink-0">
+                    <span className="size-1.5 rounded-full bg-[#1A1A1A] animate-pulse" />
+                  </span>
+                ) : (
+                  <span className="size-4 rounded-full border-2 border-[#D4D4D4] shrink-0" />
+                )}
+                <span className={`text-sm flex-1 ${del.status === "complete" ? "text-[#999]" : "text-[#1A1A1A]"}`}>{del.name}</span>
+                {del.phase && (
+                  <span className="text-[10px] text-[#AAA] shrink-0">{del.phase}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Scope items (if different from deliverables) */}
+      {scope.length > 0 && deliverables.length === 0 && (
+        <div>
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-5">
+            Scope
+          </h3>
+          <div className="bg-white border border-[#E8E8E8] rounded-lg p-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
               {scope.map((item, i) => (
                 <div key={i} className="flex items-center gap-2.5 py-1">
-                  <span className="size-1 rounded-full bg-[#C5C5C5] shrink-0" />
-                  <span className="text-sm text-[#7A7A7A]">{item}</span>
+                  <span className="size-1.5 rounded-full bg-[#1A1A1A] shrink-0" />
+                  <span className="text-sm text-[#777]">{item}</span>
                 </div>
               ))}
             </div>
@@ -613,7 +756,7 @@ function ScopeTab({
       {/* Documents */}
       {documents.length > 0 && (
         <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-5">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-5">
             Key Documents
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -621,28 +764,28 @@ function ScopeTab({
               <button
                 key={i}
                 onClick={() => setSelected(doc)}
-                className="group text-left border border-[#E5E5EA] rounded-lg p-5 hover:border-[#1B1B1B] hover:shadow-sm transition-all duration-200"
+                className="group text-left bg-white border border-[#E8E8E8] rounded-lg p-5 hover:border-[#333] transition-all duration-200"
               >
                 <div className="flex items-start gap-4">
-                  <div className="shrink-0 size-10 rounded-lg bg-[#1B1B1B] text-white flex items-center justify-center text-[10px] font-bold tracking-wider">
-                    {typeLabels[doc.type] || "DOC"}
+                  <div className="shrink-0 size-10 rounded-lg bg-[#F0F0F0] text-[#777] flex items-center justify-center">
+                    <DocTypeIcon type={doc.type} className="size-5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold mb-1.5 truncate">
+                    <p className="text-sm font-semibold text-[#1A1A1A] mb-1.5 truncate">
                       {doc.name}
                     </p>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-medium text-[#A0A0A0] uppercase tracking-wider">
+                      <span className="text-[10px] font-medium text-[#AAA] uppercase tracking-wider">
                         {doc.type}
                       </span>
-                      <span className="text-[#E5E5EA]">&middot;</span>
-                      <span className="text-[10px] text-[#A0A0A0]">
+                      <span className="text-[#CCC]">&middot;</span>
+                      <span className="text-[10px] text-[#AAA]">
                         {doc.date}
                       </span>
                     </div>
                   </div>
                   <svg
-                    className="size-4 text-[#C5C5C5] group-hover:text-[#1B1B1B] group-hover:translate-x-0.5 transition-all shrink-0 mt-0.5"
+                    className="size-4 text-[#CCC] group-hover:text-[#777] group-hover:translate-x-0.5 transition-all shrink-0 mt-0.5"
                     viewBox="0 0 16 16"
                     fill="none"
                     stroke="currentColor"
@@ -673,13 +816,13 @@ function WinsTab({ wins }: { wins: PortalWin[] }) {
   if (wins.length === 0) {
     return (
       <div className="text-center py-20">
-        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F3F3F5] mb-4">
-          <svg className="size-5 text-[#A0A0A0]" viewBox="0 0 20 20" fill="currentColor">
+        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F0F0F0] mb-4">
+          <svg className="size-5 text-[#AAA]" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clipRule="evenodd" />
           </svg>
         </div>
-        <p className="text-sm text-[#999999] mb-1">No wins recorded yet</p>
-        <p className="text-xs text-[#C5C5C5]">Results and milestones will appear here</p>
+        <p className="text-sm text-[#999] mb-1">No wins recorded yet</p>
+        <p className="text-xs text-[#CCC]">Results and milestones will appear here</p>
       </div>
     );
   }
@@ -688,50 +831,50 @@ function WinsTab({ wins }: { wins: PortalWin[] }) {
     <div className="space-y-10">
       {/* Summary stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <div className="border border-[#E5E5EA] rounded-lg p-5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-2">Total Wins</p>
-          <p className="text-2xl font-bold tracking-tight text-emerald-500">{wins.length}</p>
+        <div className="border border-[#E8E8E8] rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Total Wins</p>
+          <p className="text-2xl font-bold tracking-tight text-[#1A1A1A]">{wins.length}</p>
         </div>
-        <div className="border border-[#E5E5EA] rounded-lg p-5 col-span-1 md:col-span-2">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-2">Latest Win</p>
+        <div className="border border-[#E8E8E8] rounded-lg p-5 col-span-1 md:col-span-2">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Latest Win</p>
           <p className="text-sm font-semibold">{wins[0]?.title}</p>
-          <p className="text-xs text-emerald-500 font-semibold mt-0.5">{wins[0]?.lift}</p>
+          <p className="text-xs text-[#1A1A1A] font-semibold mt-0.5">{wins[0]?.lift}</p>
         </div>
       </div>
 
       {/* Win cards */}
       <div>
-        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-5">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-5">
           All Wins
         </h3>
         <div className="space-y-4">
           {wins.map((win) => (
-            <div key={win.id} className="border border-[#E5E5EA] rounded-lg p-5">
+            <div key={win.id} className="border border-[#E8E8E8] rounded-lg p-5">
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div>
                   <h4 className="text-sm font-semibold mb-0.5">{win.title}</h4>
-                  <p className="text-xs text-[#999999]">{win.metric} · {win.date}</p>
+                  <p className="text-xs text-[#999]">{win.metric} · {win.date}</p>
                 </div>
-                <span className="shrink-0 px-2.5 py-1 text-xs font-bold text-emerald-600 bg-emerald-50 rounded-full">
+                <span className="shrink-0 px-2.5 py-1 text-xs font-bold text-[#1A1A1A] bg-[#F0F0F0] rounded-full">
                   {win.lift}
                 </span>
               </div>
               {/* Before → After bar */}
               <div className="flex items-center gap-3 mb-3">
-                <div className="flex-1 bg-[#F3F3F5] rounded-lg p-3 text-center">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">Before</p>
-                  <p className="text-lg font-bold text-[#999999]">{win.before}</p>
+                <div className="flex-1 bg-[#F0F0F0] rounded-lg p-3 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Before</p>
+                  <p className="text-lg font-bold text-[#999]">{win.before}</p>
                 </div>
-                <svg className="size-5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <svg className="size-5 text-[#1A1A1A] shrink-0" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638l-3.96-4.158a.75.75 0 111.085-1.034l5.25 5.5a.75.75 0 010 1.034l-5.25 5.5a.75.75 0 01-1.085-1.034l3.96-4.158H3.75A.75.75 0 013 10z" clipRule="evenodd" />
                 </svg>
-                <div className="flex-1 bg-emerald-50 border border-emerald-100 rounded-lg p-3 text-center">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 mb-1">After</p>
-                  <p className="text-lg font-bold text-emerald-600">{win.after}</p>
+                <div className="flex-1 bg-[#F0F0F0] border border-[#E8E8E8] rounded-lg p-3 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#1A1A1A] mb-1">After</p>
+                  <p className="text-lg font-bold text-[#1A1A1A]">{win.after}</p>
                 </div>
               </div>
               {win.description && (
-                <p className="text-xs text-[#999999] leading-relaxed">{win.description}</p>
+                <p className="text-xs text-[#999] leading-relaxed">{win.description}</p>
               )}
             </div>
           ))}
@@ -751,40 +894,40 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
   if (results.length === 0) {
     return (
       <div className="text-center py-20">
-        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F3F3F5] mb-4">
-          <svg className="size-5 text-[#A0A0A0]" viewBox="0 0 20 20" fill="currentColor">
+        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F0F0F0] mb-4">
+          <svg className="size-5 text-[#AAA]" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M2 3.75A.75.75 0 012.75 3h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 3.75zm0 4.167a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75zm0 4.166a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75zm0 4.167a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75z" clipRule="evenodd" />
           </svg>
         </div>
-        <p className="text-sm text-[#999999] mb-1">No tests yet</p>
-        <p className="text-xs text-[#C5C5C5]">Results will appear here once testing begins</p>
+        <p className="text-sm text-[#999] mb-1">No tests yet</p>
+        <p className="text-xs text-[#CCC]">Results will appear here once testing begins</p>
       </div>
     );
   }
 
   const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-    running: { label: "Running", color: "text-blue-600", bg: "bg-blue-50" },
-    winner: { label: "Winner", color: "text-emerald-600", bg: "bg-emerald-50" },
-    loser: { label: "No lift", color: "text-red-500", bg: "bg-red-50" },
-    scheduled: { label: "Upcoming", color: "text-amber-600", bg: "bg-amber-50" },
+    running: { label: "Running", color: "text-[#1A1A1A]", bg: "bg-[#F0F0F0]" },
+    winner: { label: "Winner", color: "text-[#1A1A1A]", bg: "bg-[#F0F0F0]" },
+    loser: { label: "No lift", color: "text-[#777]", bg: "bg-[#F0F0F0]" },
+    scheduled: { label: "Upcoming", color: "text-[#777]", bg: "bg-[#F0F0F0]" },
   };
 
   function TestList({ tests }: { tests: PortalTestResult[] }) {
     return (
-      <div className="border border-[#E5E5EA] rounded-lg divide-y divide-[#EDEDEF]">
+      <div className="border border-[#E8E8E8] rounded-lg divide-y divide-[#E8E8E8]">
         {tests.map((test, i) => {
           const config = statusConfig[test.status];
           return (
             <div key={i} className="flex items-center gap-4 p-4">
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium mb-0.5">{test.name}</p>
-                <p className="text-xs text-[#999999]">
+                <p className="text-xs text-[#999]">
                   {test.metric} &middot; {test.status === "scheduled" ? `Starts ${test.startDate}` : `Started ${test.startDate}`}
                 </p>
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 {test.lift && (
-                  <span className="text-sm font-semibold text-emerald-500">{test.lift}</span>
+                  <span className="text-sm font-semibold text-[#1A1A1A]">{test.lift}</span>
                 )}
                 <span className={`px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full ${config.color} ${config.bg}`}>
                   {config.label}
@@ -801,24 +944,24 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
     <div className="space-y-10">
       {/* Summary */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="border border-[#E5E5EA] rounded-lg p-5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-2">Active Tests</p>
+        <div className="border border-[#E8E8E8] rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Active Tests</p>
           <p className="text-2xl font-bold tracking-tight">{running.length}</p>
         </div>
-        <div className="border border-[#E5E5EA] rounded-lg p-5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-2">Winners</p>
-          <p className="text-2xl font-bold tracking-tight text-emerald-500">{completed.filter(r => r.status === "winner").length}</p>
+        <div className="border border-[#E8E8E8] rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Winners</p>
+          <p className="text-2xl font-bold tracking-tight text-[#1A1A1A]">{completed.filter(r => r.status === "winner").length}</p>
         </div>
-        <div className="border border-[#E5E5EA] rounded-lg p-5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-2">Coming Up</p>
-          <p className="text-2xl font-bold tracking-tight text-amber-500">{scheduled.length}</p>
+        <div className="border border-[#E8E8E8] rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Coming Up</p>
+          <p className="text-2xl font-bold tracking-tight text-[#1A1A1A]">{scheduled.length}</p>
         </div>
       </div>
 
       {/* Currently Running */}
       {running.length > 0 && (
         <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-5">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-5">
             Currently Running
           </h3>
           <TestList tests={running} />
@@ -829,10 +972,10 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
       {scheduled.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-5">
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0]">
+            <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA]">
               What&apos;s Coming Next
             </h3>
-            <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-amber-50 text-amber-600 rounded-full">
+            <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-[#F0F0F0] text-[#777] rounded-full">
               {scheduled.length} planned
             </span>
           </div>
@@ -843,7 +986,7 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
       {/* Completed Tests */}
       {completed.length > 0 && (
         <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-5">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-5">
             Completed Tests
           </h3>
           <TestList tests={completed} />
@@ -871,8 +1014,8 @@ function DesignsTab({
   const [feedbackState, setFeedbackState] = useState<Record<string, { show: boolean; comment: string }>>({});
   const [submitting, setSubmitting] = useState<string | null>(null);
   const [localFeedback, setLocalFeedback] = useState<Record<string, DesignReviewFeedback[]>>(reviewFeedback);
-  // Track selected version per review
   const [selectedVersions, setSelectedVersions] = useState<Record<string, string>>({});
+  const [figmaPopupUrl, setFigmaPopupUrl] = useState<string | null>(null);
 
   const handleFeedback = async (reviewId: string, versionId: string, action: "approved" | "changes_requested") => {
     const comment = feedbackState[versionId]?.comment || "";
@@ -916,13 +1059,13 @@ function DesignsTab({
   if (reviews.length === 0) {
     return (
       <div className="text-center py-20">
-        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F3F3F5] mb-4">
-          <svg className="size-5 text-[#A0A0A0]" viewBox="0 0 15 15" fill="currentColor">
+        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F0F0F0] mb-4">
+          <svg className="size-5 text-[#AAA]" viewBox="0 0 15 15" fill="currentColor">
             <path fillRule="evenodd" clipRule="evenodd" d="M7.5 0C5.57 0 4 1.57 4 3.5c0 .62.16 1.2.44 1.7A3.49 3.49 0 003 8.5c0 1.63 1.12 3 2.63 3.38A3.49 3.49 0 007 15a3.5 3.5 0 003.5-3.5V9.95A3.49 3.49 0 0011 3.5C11 1.57 9.43 0 7.5 0zM5 3.5C5 2.12 6.12 1 7.5 1H8v5H7.5A2.5 2.5 0 015 3.5zM7 12v-.5a2.5 2.5 0 112.5-2.5H9v2.5A2 2 0 017 12z" />
           </svg>
         </div>
-        <p className="text-sm text-[#999999] mb-1">No designs shared yet</p>
-        <p className="text-xs text-[#C5C5C5]">Designs will appear here when they&apos;re ready for review</p>
+        <p className="text-sm text-[#999] mb-1">No designs shared yet</p>
+        <p className="text-xs text-[#CCC]">Designs will appear here when they&apos;re ready for review</p>
       </div>
     );
   }
@@ -942,9 +1085,9 @@ function DesignsTab({
             <div className="flex items-center justify-between gap-3 mb-4">
               <h3 className="text-base font-bold">{review.title}</h3>
               <span className={`shrink-0 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full ${
-                review.status === "approved" ? "text-emerald-600 bg-emerald-50" :
-                review.status === "changes_requested" ? "text-amber-600 bg-amber-50" :
-                "text-[#999] bg-[#F3F3F5]"
+                review.status === "approved" ? "text-[#1A1A1A] bg-[#F0F0F0]" :
+                review.status === "changes_requested" ? "text-[#777] bg-[#F0F0F0]" :
+                "text-[#999] bg-[#F0F0F0]"
               }`}>
                 {review.status === "approved" ? "Approved" : review.status === "changes_requested" ? "Amends Needed" : "Pending"}
               </span>
@@ -962,13 +1105,13 @@ function DesignsTab({
                       onClick={() => setSelectedVersions(prev => ({ ...prev, [review.id]: v.id }))}
                       className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
                         isActive
-                          ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
-                          : "bg-white text-[#7A7A7A] border-[#E5E5EA] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"
+                          ? "bg-[#F0F0F0] text-[#1A1A1A] border-[#E8E8E8]"
+                          : "bg-white text-[#777] border-[#E5E5EA] hover:border-[#E8E8E8] hover:text-[#1A1A1A]"
                       }`}
                     >
                       v{v.version_number}
                       {isCurrent && (
-                        <span className={`text-[9px] font-semibold uppercase ${isActive ? "text-emerald-300" : "text-emerald-500"}`}>
+                        <span className={`text-[9px] font-semibold uppercase ${isActive ? "text-[#999]" : "text-[#1A1A1A]"}`}>
                           Current
                         </span>
                       )}
@@ -982,7 +1125,7 @@ function DesignsTab({
             {activeVersion && (
               <div>
                 {toFigmaEmbed(activeVersion.figma_url) && (
-                  <div className="relative w-full rounded-lg overflow-hidden border border-[#E5E5EA]" style={{ paddingBottom: "65%" }}>
+                  <div className="relative w-full rounded-lg overflow-hidden border border-[#E8E8E8]" style={{ paddingBottom: "65%" }}>
                     <iframe
                       src={toFigmaEmbed(activeVersion.figma_url) || ""}
                       className="absolute inset-0 w-full h-full"
@@ -992,20 +1135,28 @@ function DesignsTab({
                 )}
 
                 {/* Open in Figma */}
-                <a
-                  href={activeVersion.figma_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
-                >
-                  <svg className="size-4" viewBox="0 0 15 15" fill="currentColor">
-                    <path fillRule="evenodd" clipRule="evenodd" d="M7.5 0C5.57 0 4 1.57 4 3.5c0 .62.16 1.2.44 1.7A3.49 3.49 0 003 8.5c0 1.63 1.12 3 2.63 3.38A3.49 3.49 0 007 15a3.5 3.5 0 003.5-3.5V9.95A3.49 3.49 0 0011 3.5C11 1.57 9.43 0 7.5 0zM5 3.5C5 2.12 6.12 1 7.5 1H8v5H7.5A2.5 2.5 0 015 3.5zM7 12v-.5a2.5 2.5 0 112.5-2.5H9v2.5A2 2 0 017 12z" />
-                  </svg>
-                  Open in Figma
-                  <svg className="size-3 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                  </svg>
-                </a>
+                <div className="flex items-center gap-2 mt-4">
+                  <button
+                    onClick={() => setFigmaPopupUrl(activeVersion.figma_url)}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold bg-[#1A1A1A] text-white rounded-lg hover:bg-[#333] transition-colors"
+                  >
+                    <svg className="size-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M3.28 2.22a.75.75 0 00-1.06 1.06L5.44 6.5H2.75a.75.75 0 000 1.5h4.5A.75.75 0 008 7.25v-4.5a.75.75 0 00-1.5 0v2.69L3.28 2.22zM13.5 2.75a.75.75 0 00-1.5 0v4.5c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-2.69l3.22-3.22a.75.75 0 00-1.06-1.06L13.5 5.44V2.75zM3.28 17.78l3.22-3.22v2.69a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.69l-3.22 3.22a.75.75 0 101.06 1.06zM13.5 14.56l3.22 3.22a.75.75 0 101.06-1.06l-3.22-3.22h2.69a.75.75 0 000-1.5h-4.5a.75.75 0 00-.75.75v4.5a.75.75 0 001.5 0v-2.69z" />
+                    </svg>
+                    Review &amp; Comment
+                  </button>
+                  <a
+                    href={activeVersion.figma_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium text-[#777] hover:text-[#1A1A1A] transition-colors"
+                  >
+                    Open in new tab
+                    <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                    </svg>
+                  </a>
+                </div>
               </div>
             )}
 
@@ -1017,20 +1168,20 @@ function DesignsTab({
                 <div className="space-y-2 mt-5">
                   {statusFeedback.map((fb) => (
                     <div key={fb.id} className={`rounded-lg p-3 text-xs ${
-                      fb.action === "approved" ? "bg-emerald-50 border border-emerald-100" : "bg-amber-50 border border-amber-100"
+                      fb.action === "approved" ? "bg-[#F0F0F0] border border-[#E8E8E8]" : "bg-[#F0F0F0] border border-[#E8E8E8]"
                     }`}>
                       <div className="flex items-center gap-2">
-                        <span className={`font-semibold ${fb.action === "approved" ? "text-emerald-600" : "text-amber-600"}`}>
+                        <span className={`font-semibold ${fb.action === "approved" ? "text-[#1A1A1A]" : "text-[#777]"}`}>
                           {fb.action === "approved" ? "Approved" : "Changes Requested"}
                         </span>
-                        <span className="text-[#A0A0A0]">&middot;</span>
-                        <span className="text-[#999999]">{fb.submitted_by}</span>
-                        <span className="text-[#A0A0A0]">&middot;</span>
-                        <span className="text-[#999999]">
+                        <span className="text-[#AAA]">&middot;</span>
+                        <span className="text-[#999]">{fb.submitted_by}</span>
+                        <span className="text-[#AAA]">&middot;</span>
+                        <span className="text-[#999]">
                           {new Date(fb.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                         </span>
                       </div>
-                      {fb.comment && <p className="text-[#7A7A7A] mt-1">{fb.comment}</p>}
+                      {fb.comment && <p className="text-[#777] mt-1">{fb.comment}</p>}
                     </div>
                   ))}
                 </div>
@@ -1041,7 +1192,7 @@ function DesignsTab({
             {isCurrentSelected && activeVersion && review.status !== "approved" && (() => {
               const showFb = feedbackState[activeVersion.id]?.show || false;
               return (
-                <div className="border border-[#E5E5EA] rounded-lg p-5 mt-5">
+                <div className="border border-[#E8E8E8] rounded-lg p-5 mt-5">
                   <p className="text-sm font-semibold mb-1">Ready to approve?</p>
                   <p className="text-xs text-[#999] mb-4">Leave any comments in Figma first, then approve or request amends below.</p>
                   {showFb ? (
@@ -1053,27 +1204,27 @@ function DesignsTab({
                           [activeVersion.id]: { ...prev[activeVersion.id], show: true, comment: e.target.value }
                         }))}
                         placeholder="Any notes (optional)"
-                        className="w-full px-3 py-2.5 text-sm border border-[#E5E5EA] rounded-lg resize-none h-20 focus:outline-none focus:ring-1 focus:ring-[#1B1B1B]/10 focus:border-[#C5C5C5]"
+                        className="w-full px-3 py-2.5 text-sm border border-[#E8E8E8] rounded-lg resize-none h-20 focus:outline-none focus:ring-1 focus:ring-[#1B1B1B]/10 focus:border-[#C5C5C5]"
                         autoFocus
                       />
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleFeedback(review.id, activeVersion.id, "approved")}
                           disabled={submitting === activeVersion.id}
-                          className="px-5 py-2.5 text-xs font-semibold bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
+                          className="px-5 py-2.5 text-xs font-semibold bg-[#1A1A1A] text-white rounded-lg hover:bg-[#333] transition-colors disabled:opacity-50"
                         >
                           {submitting === activeVersion.id ? "Saving..." : "Approve"}
                         </button>
                         <button
                           onClick={() => handleFeedback(review.id, activeVersion.id, "changes_requested")}
                           disabled={submitting === activeVersion.id}
-                          className="px-5 py-2.5 text-xs font-semibold bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
+                          className="px-5 py-2.5 text-xs font-semibold bg-[#F0F0F0] text-[#1A1A1A] rounded-lg hover:bg-[#333] transition-colors disabled:opacity-50"
                         >
                           Request Amends
                         </button>
                         <button
                           onClick={() => setFeedbackState(prev => ({ ...prev, [activeVersion.id]: { show: false, comment: "" } }))}
-                          className="px-3 py-2.5 text-xs font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
+                          className="px-3 py-2.5 text-xs font-medium text-[#AAA] hover:text-[#1A1A1A] transition-colors"
                         >
                           Cancel
                         </button>
@@ -1083,13 +1234,13 @@ function DesignsTab({
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setFeedbackState(prev => ({ ...prev, [activeVersion.id]: { show: true, comment: "" } }))}
-                        className="px-5 py-2.5 text-xs font-semibold bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
+                        className="px-5 py-2.5 text-xs font-semibold bg-[#1A1A1A] text-white rounded-lg hover:bg-[#333] transition-colors"
                       >
                         Approve
                       </button>
                       <button
                         onClick={() => setFeedbackState(prev => ({ ...prev, [activeVersion.id]: { show: true, comment: "" } }))}
-                        className="px-5 py-2.5 text-xs font-semibold border border-[#E5E5EA] text-[#7A7A7A] rounded-lg hover:bg-[#F3F3F5] transition-colors"
+                        className="px-5 py-2.5 text-xs font-semibold border border-[#E8E8E8] text-[#777] rounded-lg hover:bg-[#F0F0F0] transition-colors"
                       >
                         Request Amends
                       </button>
@@ -1101,16 +1252,58 @@ function DesignsTab({
 
             {/* Approved banner */}
             {review.status === "approved" && (
-              <div className="flex items-center gap-2 p-4 bg-emerald-50 border border-emerald-100 rounded-lg mt-5">
-                <svg className="size-5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <div className="flex items-center gap-2 p-4 bg-[#F0F0F0] border border-[#E8E8E8] rounded-lg mt-5">
+                <svg className="size-5 text-[#1A1A1A]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-sm font-semibold text-emerald-600">This design has been approved</span>
+                <span className="text-sm font-semibold text-[#1A1A1A]">This design has been approved</span>
               </div>
             )}
           </div>
         );
       })}
+
+      {/* Fullscreen Figma modal */}
+      {figmaPopupUrl && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex flex-col">
+          <div className="flex items-center justify-between px-4 py-3 bg-[#1A1A1A]">
+            <div className="flex items-center gap-3">
+              <svg className="size-4 text-white/60" viewBox="0 0 15 15" fill="currentColor">
+                <path fillRule="evenodd" clipRule="evenodd" d="M7.5 0C5.57 0 4 1.57 4 3.5c0 .62.16 1.2.44 1.7A3.49 3.49 0 003 8.5c0 1.63 1.12 3 2.63 3.38A3.49 3.49 0 007 15a3.5 3.5 0 003.5-3.5V9.95A3.49 3.49 0 0011 3.5C11 1.57 9.43 0 7.5 0zM5 3.5C5 2.12 6.12 1 7.5 1H8v5H7.5A2.5 2.5 0 015 3.5zM7 12v-.5a2.5 2.5 0 112.5-2.5H9v2.5A2 2 0 017 12z" />
+              </svg>
+              <span className="text-sm text-white/80 font-medium">Design Review</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <a
+                href={figmaPopupUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-white/60 hover:text-white transition-colors"
+              >
+                Open in Figma
+                <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                </svg>
+              </a>
+              <button
+                onClick={() => setFigmaPopupUrl(null)}
+                className="inline-flex items-center justify-center size-8 rounded-md text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div className="flex-1 min-h-0">
+            <iframe
+              src={toFigmaEmbed(figmaPopupUrl) || figmaPopupUrl}
+              className="w-full h-full border-0"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1137,7 +1330,7 @@ function ApproveButton({
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder="Add a note (optional)"
-          className={`px-2 py-1 text-xs border border-[#E5E5EA] rounded ${compact ? "w-32" : "w-full"}`}
+          className={`px-2 py-1 text-xs border border-[#E8E8E8] rounded ${compact ? "w-32" : "w-full"}`}
           autoFocus
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -1153,13 +1346,13 @@ function ApproveButton({
               onApprove(comment);
               setShowComment(false);
             }}
-            className="px-2 py-1 text-[10px] font-semibold bg-emerald-500 text-white rounded hover:bg-emerald-600 transition-colors"
+            className="px-2 py-1 text-[10px] font-semibold bg-[#1A1A1A] text-white rounded hover:bg-[#333] transition-colors"
           >
             Confirm
           </button>
           <button
             onClick={() => setShowComment(false)}
-            className="px-2 py-1 text-[10px] font-semibold text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
+            className="px-2 py-1 text-[10px] font-semibold text-[#AAA] hover:text-[#1A1A1A] transition-colors"
           >
             Cancel
           </button>
@@ -1171,8 +1364,8 @@ function ApproveButton({
   return (
     <button
       onClick={() => setShowComment(true)}
-      className={`inline-flex items-center gap-1 font-semibold text-emerald-500 hover:text-emerald-600 transition-colors ${
-        compact ? "text-[10px] px-2 py-1 border border-emerald-200 rounded" : "text-xs"
+      className={`inline-flex items-center gap-1 font-semibold text-[#1A1A1A] hover:text-[#1A1A1A] transition-colors ${
+        compact ? "text-[10px] px-2 py-1 border border-[#E8E8E8] rounded" : "text-xs"
       }`}
     >
       <svg className="size-3" viewBox="0 0 12 12" fill="none">
@@ -1202,30 +1395,30 @@ function DocumentPreview({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-lg bg-white rounded-lg shadow-2xl animate-fadeIn">
+      <div className="relative w-full max-w-lg bg-white border border-[#E8E8E8] rounded-lg shadow-2xl animate-fadeIn">
         {/* Header */}
-        <div className="flex items-start justify-between p-6 border-b border-[#EDEDEF]">
+        <div className="flex items-start justify-between p-6 border-b border-[#E8E8E8]">
           <div className="flex items-start gap-4">
-            <div className="shrink-0 size-12 rounded-lg bg-[#1B1B1B] text-white flex items-center justify-center text-[11px] font-bold tracking-wider">
-              {typeLabels[doc.type] || "DOC"}
+            <div className="shrink-0 size-12 rounded-lg bg-[#F0F0F0] text-[#777] flex items-center justify-center">
+              <DocTypeIcon type={doc.type} className="size-6" />
             </div>
             <div>
-              <h3 className="text-base font-bold mb-1">{doc.name}</h3>
+              <h3 className="text-base font-bold text-[#1A1A1A] mb-1">{doc.name}</h3>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-[#A0A0A0] uppercase tracking-wider font-medium">
+                <span className="text-xs text-[#AAA] uppercase tracking-wider font-medium">
                   {doc.type}
                 </span>
-                <span className="text-[#E5E5EA]">&middot;</span>
-                <span className="text-xs text-[#A0A0A0]">{doc.date}</span>
+                <span className="text-[#CCC]">&middot;</span>
+                <span className="text-xs text-[#AAA]">{doc.date}</span>
               </div>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-md hover:bg-[#F3F3F5] transition-colors text-[#A0A0A0] hover:text-[#1B1B1B]"
+            className="p-1.5 rounded-md hover:bg-[#F0F0F0] transition-colors text-[#AAA] hover:text-[#1A1A1A]"
           >
             <svg className="size-5" viewBox="0 0 20 20" fill="currentColor">
               <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
@@ -1235,25 +1428,25 @@ function DocumentPreview({
 
         {/* Document preview placeholder */}
         <div className="p-6">
-          <div className="border border-[#E5E5EA] rounded-lg bg-[#F7F8FA] p-8 mb-6">
+          <div className="border border-[#E8E8E8] rounded-lg bg-white p-8 mb-6">
             <div className="space-y-4">
-              <div className="h-3 bg-[#E5E5EA] rounded w-2/3" />
+              <div className="h-3 bg-[#F0F0F0] rounded w-2/3" />
               <div className="space-y-2">
-                <div className="h-2 bg-[#EBEBEB] rounded w-full" />
-                <div className="h-2 bg-[#EBEBEB] rounded w-5/6" />
-                <div className="h-2 bg-[#EBEBEB] rounded w-4/6" />
+                <div className="h-2 bg-[#F0F0F0] rounded w-full" />
+                <div className="h-2 bg-[#F0F0F0] rounded w-5/6" />
+                <div className="h-2 bg-[#F0F0F0] rounded w-4/6" />
               </div>
-              <div className="h-px bg-[#E5E5EA]" />
+              <div className="h-px bg-[#F0F0F0]" />
               <div className="space-y-2">
-                <div className="h-2 bg-[#EBEBEB] rounded w-full" />
-                <div className="h-2 bg-[#EBEBEB] rounded w-3/4" />
-                <div className="h-2 bg-[#EBEBEB] rounded w-5/6" />
-                <div className="h-2 bg-[#EBEBEB] rounded w-2/3" />
+                <div className="h-2 bg-[#F0F0F0] rounded w-full" />
+                <div className="h-2 bg-[#F0F0F0] rounded w-3/4" />
+                <div className="h-2 bg-[#F0F0F0] rounded w-5/6" />
+                <div className="h-2 bg-[#F0F0F0] rounded w-2/3" />
               </div>
-              <div className="h-px bg-[#E5E5EA]" />
+              <div className="h-px bg-[#F0F0F0]" />
               <div className="space-y-2">
-                <div className="h-2 bg-[#EBEBEB] rounded w-full" />
-                <div className="h-2 bg-[#EBEBEB] rounded w-4/5" />
+                <div className="h-2 bg-[#F0F0F0] rounded w-full" />
+                <div className="h-2 bg-[#F0F0F0] rounded w-4/5" />
               </div>
             </div>
           </div>
@@ -1262,7 +1455,7 @@ function DocumentPreview({
           <div className="flex items-center gap-3">
             <button
               onClick={handleDownload}
-              className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-[#1B1B1B] text-white text-sm font-medium rounded-lg hover:bg-[#2A2A3E] transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-[#1A1A1A] text-white text-sm font-medium rounded-lg hover:bg-[#1A1A1A] transition-colors"
             >
               <svg className="size-4" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z" />
@@ -1272,7 +1465,7 @@ function DocumentPreview({
             </button>
             <button
               onClick={onClose}
-              className="px-5 py-3 text-sm font-medium text-[#7A7A7A] border border-[#E5E5EA] rounded-lg hover:bg-[#F3F3F5] transition-colors"
+              className="px-5 py-3 text-sm font-medium text-[#777] border border-[#E8E8E8] rounded-lg hover:bg-[#1A1A24] transition-colors"
             >
               Close
             </button>
@@ -1281,7 +1474,7 @@ function DocumentPreview({
 
         {/* Toast */}
         {toast && (
-          <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 px-5 py-3 bg-[#1B1B1B] text-white text-sm font-medium rounded-full shadow-xl whitespace-nowrap animate-fadeIn">
+          <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 px-5 py-3 bg-[#F0F0F0] text-[#1A1A1A] text-sm font-medium rounded-full shadow-xl whitespace-nowrap animate-fadeIn">
             {toast}
           </div>
         )}
@@ -1295,23 +1488,20 @@ function DocumentPreview({
 function RequestsTab({
   requests,
   onSubmit,
+  onOpenPopup,
 }: {
   requests: AdHocRequest[];
   onSubmit?: (title: string, description: string) => Promise<void>;
+  onOpenPopup: () => void;
 }) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-
   const statusColor = (status: AdHocRequest["status"]) => {
     switch (status) {
       case "open":
-        return "bg-amber-100 text-amber-700 border-amber-200";
+        return "bg-[#F0F0F0] text-[#777] border-[#E8E8E8]";
       case "in-progress":
-        return "bg-blue-100 text-blue-700 border-blue-200";
+        return "bg-[#F0F0F0] text-[#777] border-[#E8E8E8]";
       case "done":
-        return "bg-emerald-100 text-emerald-700 border-emerald-200";
+        return "bg-[#F0F0F0] text-[#777] border-[#E8E8E8]";
     }
   };
 
@@ -1326,6 +1516,79 @@ function RequestsTab({
     }
   };
 
+  return (
+    <div className="space-y-6">
+      {/* Submit button */}
+      <button
+        onClick={onOpenPopup}
+        className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold bg-[#1A1A1A] text-white rounded-lg hover:bg-[#333] transition-colors"
+      >
+        <svg className="size-4" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+        </svg>
+        Submit Request
+      </button>
+
+      {/* Existing requests */}
+      {requests.length > 0 && (
+        <div className="bg-white border border-[#E8E8E8] rounded-lg divide-y divide-[#E8E8E8]">
+          {requests.map((req) => (
+            <div key={req.id} className="p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-[#1A1A1A]">{req.title}</p>
+                  {req.description && (
+                    <p className="text-xs text-[#777] mt-1 leading-relaxed">
+                      {req.description}
+                    </p>
+                  )}
+                  <p className="text-[10px] text-[#AAA] mt-2">
+                    {new Date(req.requested_at).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
+                <span
+                  className={`inline-flex items-center px-2 py-0.5 text-[10px] font-semibold rounded-full border shrink-0 ${statusColor(req.status)}`}
+                >
+                  {statusLabel(req.status)}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {requests.length === 0 && (
+        <div className="text-center py-12">
+          <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F0F0F0] mb-4">
+            <svg className="size-5 text-[#AAA]" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <p className="text-sm text-[#777] mb-1">No requests yet</p>
+          <p className="text-xs text-[#AAA]">Submit a request for out-of-scope work that needs quoting</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Request Popup ── */
+
+function RequestPopup({
+  onSubmit,
+  onClose,
+}: {
+  onSubmit?: (title: string, description: string) => Promise<void>;
+  onClose: () => void;
+}) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim() || !onSubmit) return;
@@ -1333,111 +1596,71 @@ function RequestsTab({
     setSubmitting(true);
     try {
       await onSubmit(title.trim(), description.trim());
-      setTitle("");
-      setDescription("");
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 3000);
+      onClose();
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <div className="space-y-10">
-      {/* Submit form */}
-      <div>
-        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-5">
-          Submit a Request
-        </h3>
-        <form onSubmit={handleSubmit} className="border border-[#E5E5EA] rounded-lg p-5 space-y-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md bg-white border border-[#E8E8E8] rounded-lg shadow-2xl animate-fadeIn">
+        <div className="flex items-center justify-between p-6 border-b border-[#E8E8E8]">
+          <h3 className="text-base font-bold text-[#1A1A1A]">Submit a Request</h3>
+          <button onClick={onClose} className="p-1.5 rounded-md hover:bg-[#F0F0F0] transition-colors text-[#AAA] hover:text-[#1A1A1A]">
+            <svg className="size-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+            </svg>
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label htmlFor="req-title" className="block text-xs font-medium text-[#7A7A7A] mb-1.5">
-              Title <span className="text-[#C5C5C5]">*</span>
+            <label htmlFor="popup-req-title" className="block text-xs font-medium text-[#777] mb-1.5">
+              Title <span className="text-[#CCC]">*</span>
             </label>
             <input
-              id="req-title"
+              id="popup-req-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Add announcement bar to homepage"
-              className="w-full px-3 py-2.5 text-sm border border-[#E5E5EA] rounded-lg bg-white placeholder:text-[#C5C5C5] focus:outline-none focus:border-[#1B1B1B] transition-colors"
+              className="w-full px-3 py-2.5 text-sm border border-[#E8E8E8] rounded-lg bg-white text-[#1A1A1A] placeholder:text-[#CCC] focus:outline-none focus:border-[#1A1A1A]/50 transition-colors"
               required
+              autoFocus
             />
           </div>
           <div>
-            <label htmlFor="req-desc" className="block text-xs font-medium text-[#7A7A7A] mb-1.5">
-              Description <span className="text-[#C5C5C5]">(optional)</span>
+            <label htmlFor="popup-req-desc" className="block text-xs font-medium text-[#777] mb-1.5">
+              Description <span className="text-[#CCC]">(optional)</span>
             </label>
             <textarea
-              id="req-desc"
+              id="popup-req-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Add any details, context, or links..."
               rows={3}
-              className="w-full px-3 py-2.5 text-sm border border-[#E5E5EA] rounded-lg bg-white placeholder:text-[#C5C5C5] focus:outline-none focus:border-[#1B1B1B] transition-colors resize-none"
+              className="w-full px-3 py-2.5 text-sm border border-[#E8E8E8] rounded-lg bg-white text-[#1A1A1A] placeholder:text-[#CCC] focus:outline-none focus:border-[#1A1A1A]/50 transition-colors resize-none"
             />
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 pt-2">
             <button
               type="submit"
               disabled={!title.trim() || submitting}
-              className="px-5 py-2.5 text-sm font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#1A1A1A] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 px-5 py-2.5 text-sm font-semibold bg-[#1A1A1A] text-white rounded-lg hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               {submitting ? "Submitting..." : "Submit Request"}
             </button>
-            {showSuccess && (
-              <span className="text-sm text-emerald-600 font-medium animate-fadeIn">
-                Request submitted
-              </span>
-            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2.5 text-sm font-medium text-[#777] border border-[#E8E8E8] rounded-lg hover:bg-[#F5F5F5] transition-colors"
+            >
+              Cancel
+            </button>
           </div>
         </form>
       </div>
-
-      {/* Existing requests */}
-      {requests.length > 0 && (
-        <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A0A0A0] mb-5">
-            Your Requests
-          </h3>
-          <div className="border border-[#E5E5EA] rounded-lg divide-y divide-[#EDEDEF]">
-            {requests.map((req) => (
-              <div key={req.id} className="p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[#1B1B1B]">{req.title}</p>
-                    {req.description && (
-                      <p className="text-xs text-[#7A7A7A] mt-1 leading-relaxed">
-                        {req.description}
-                      </p>
-                    )}
-                    <p className="text-[10px] text-[#A0A0A0] mt-2">
-                      {new Date(req.requested_at).toLocaleDateString("en-GB", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </p>
-                  </div>
-                  <span
-                    className={`inline-flex items-center px-2 py-0.5 text-[10px] font-semibold rounded-full border shrink-0 ${statusColor(req.status)}`}
-                  >
-                    {statusLabel(req.status)}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {requests.length === 0 && (
-        <div className="text-center py-8">
-          <p className="text-sm text-[#A0A0A0]">
-            No requests yet. Use the form above to submit your first request.
-          </p>
-        </div>
-      )}
     </div>
   );
 }
