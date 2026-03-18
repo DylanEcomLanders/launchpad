@@ -7,16 +7,13 @@ import {
   XMarkIcon,
   CheckIcon,
   ClipboardDocumentIcon,
-  EyeIcon,
   ArrowTopRightOnSquareIcon,
-  CalendarDaysIcon,
-  ChatBubbleLeftRightIcon,
+  FunnelIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { DecorativeBlocks } from "@/components/decorative-blocks";
 import { inputClass, labelClass } from "@/lib/form-styles";
-import { getPortals, createPortal, deletePortal, seedDemoPortal } from "@/lib/portal/data";
-import type { PortalData, AdHocRequest } from "@/lib/portal/types";
+import { getPortals, createPortal, deletePortal } from "@/lib/portal/data";
+import type { PortalData } from "@/lib/portal/types";
 
 export default function ClientPortalPage() {
   const [portals, setPortals] = useState<PortalData[]>([]);
@@ -24,9 +21,11 @@ export default function ClientPortalPage() {
   const [showForm, setShowForm] = useState(false);
   const [clientName, setClientName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
-  const [projectType, setProjectType] = useState("");
+  const [projectType, setProjectType] = useState("Full Page Build");
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"overview" | "manage">("overview");
+  const [overdueCount, setOverdueCount] = useState(0);
+  const [filterType, setFilterType] = useState<string>("all");
+  const [filterStage, setFilterStage] = useState<string>("all");
 
   const loadPortals = useCallback(async () => {
     setLoading(true);
@@ -42,6 +41,13 @@ export default function ClientPortalPage() {
 
   useEffect(() => {
     loadPortals();
+    // Fetch overdue from ClickUp
+    fetch("/api/clickup/tasks")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.summary) setOverdueCount(data.summary.overdue ?? 0);
+      })
+      .catch(() => {});
   }, [loadPortals]);
 
   const handleCreate = async () => {
@@ -65,13 +71,8 @@ export default function ClientPortalPage() {
     });
     setClientName("");
     setClientEmail("");
-    setProjectType("");
+    setProjectType("Full Page Build");
     setShowForm(false);
-    loadPortals();
-  };
-
-  const handleSeedDemo = async () => {
-    await seedDemoPortal();
     loadPortals();
   };
 
@@ -87,380 +88,357 @@ export default function ClientPortalPage() {
     setTimeout(() => setCopiedToken(null), 2000);
   };
 
-  return (
-    <div className="relative min-h-screen">
-      <DecorativeBlocks />
-      <div className="relative z-10 max-w-3xl mx-auto px-6 md:px-12 py-16 md:py-24">
-        {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
-            Client Portal
-          </h1>
-          <p className="text-[#7A7A7A]">
-            Manage client-facing project portals — share status, updates, and
-            collect approvals
-          </p>
-        </div>
+  // Aggregate stats
+  const openAdHoc = useMemo(
+    () =>
+      portals.reduce(
+        (sum, p) =>
+          sum + (p.ad_hoc_requests || []).filter((r) => r.status !== "done").length,
+        0
+      ),
+    [portals]
+  );
 
-        {/* Actions bar */}
-        <div className="flex items-center justify-between mb-6">
-          {/* View toggle */}
-          <div className="inline-flex bg-[#F3F3F5] rounded-md p-0.5 gap-0.5">
-            {(["overview", "manage"] as const).map((mode) => (
+  const activeTests = useMemo(
+    () =>
+      portals.reduce(
+        (sum, p) =>
+          sum + (p.results || []).filter((r) => r.status === "running").length,
+        0
+      ),
+    [portals]
+  );
+
+  // Unique stages for filter
+  const uniqueStages = useMemo(() => {
+    const stages = portals.map((p) => p.current_phase).filter(Boolean);
+    return [...new Set(stages)];
+  }, [portals]);
+
+  // Filtered portals
+  const filteredPortals = useMemo(() => {
+    return portals.filter((p) => {
+      if (filterType !== "all") {
+        const isRetainer = p.project_type?.toLowerCase().includes("retainer");
+        if (filterType === "retainer" && !isRetainer) return false;
+        if (filterType === "project" && isRetainer) return false;
+      }
+      if (filterStage !== "all" && p.current_phase !== filterStage) return false;
+      return true;
+    });
+  }, [portals, filterType, filterStage]);
+
+  return (
+    <div className="min-h-screen p-5 md:p-6">
+      {/* Header */}
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Client Portals</h1>
+          <p className="text-sm text-[#7A7A7A]">Overview of all active client projects</p>
+        </div>
+        <button
+          onClick={() => {
+            setShowForm(true);
+            setClientName("");
+            setClientEmail("");
+            setProjectType("Full Page Build");
+          }}
+          className="flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
+        >
+          <PlusIcon className="size-3.5" />
+          New Portal
+        </button>
+      </div>
+
+      {/* ── Stat Panels ── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div className="border border-[#1B1B1B] rounded-lg px-5 py-5">
+          <span className="text-2xl font-semibold tabular-nums text-[#1B1B1B]">{portals.length}</span>
+          <p className="text-[11px] text-[#7A7A7A] mt-1">Active Portals</p>
+        </div>
+        <div className="border border-[#1B1B1B] rounded-lg px-5 py-5">
+          <span className="text-2xl font-semibold tabular-nums text-[#1B1B1B]">{activeTests}</span>
+          <p className="text-[11px] text-[#7A7A7A] mt-1">Active Tests</p>
+        </div>
+        <div className="border border-[#1B1B1B] rounded-lg px-5 py-5">
+          <span className="text-2xl font-semibold tabular-nums text-[#1B1B1B]">{openAdHoc}</span>
+          <p className="text-[11px] text-[#7A7A7A] mt-1">Ad Hoc Requests</p>
+        </div>
+        <div className="border border-[#1B1B1B] rounded-lg px-5 py-5">
+          <span className="text-2xl font-semibold tabular-nums text-[#1B1B1B]">{overdueCount}</span>
+          <p className="text-[11px] text-[#7A7A7A] mt-1">Overdue Tasks</p>
+        </div>
+      </div>
+
+      {/* ── Filters ── */}
+      {portals.length > 0 && (
+        <div className="flex items-center gap-3 mb-4">
+          <FunnelIcon className="size-3.5 text-[#A0A0A0]" />
+          <div className="flex items-center gap-1.5">
+            {["all", "retainer", "project"].map((t) => (
               <button
-                key={mode}
-                onClick={() => setViewMode(mode)}
-                className={`px-3 py-1.5 text-xs font-medium rounded transition-all ${
-                  viewMode === mode
-                    ? "bg-white text-[#1B1B1B] shadow-sm"
-                    : "text-[#7A7A7A] hover:text-[#1B1B1B]"
+                key={t}
+                onClick={() => setFilterType(t)}
+                className={`px-3 py-1 text-[11px] font-medium rounded-full transition-colors ${
+                  filterType === t
+                    ? "bg-[#1B1B1B] text-white"
+                    : "bg-[#F3F3F5] text-[#7A7A7A] hover:bg-[#E5E5EA]"
                 }`}
               >
-                {mode === "overview" ? "Overview" : "Manage"}
+                {t === "all" ? "All" : t === "retainer" ? "Retainer" : "Project"}
               </button>
             ))}
           </div>
-
-          <div className="flex items-center gap-3">
+          {uniqueStages.length > 0 && (
+            <>
+              <div className="w-px h-4 bg-[#E5E5EA]" />
+              <select
+                value={filterStage}
+                onChange={(e) => setFilterStage(e.target.value)}
+                className="text-[11px] font-medium text-[#7A7A7A] bg-[#F3F3F5] border-none rounded-full px-3 py-1 cursor-pointer hover:bg-[#E5E5EA] transition-colors"
+              >
+                <option value="all">All Stages</option>
+                {uniqueStages.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </>
+          )}
+          {(filterType !== "all" || filterStage !== "all") && (
             <button
-              onClick={handleSeedDemo}
-              className="text-xs font-medium text-[#A0A0A0] hover:text-[#2563EB] transition-colors"
+              onClick={() => { setFilterType("all"); setFilterStage("all"); }}
+              className="text-[11px] text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
             >
-              Seed Demo
+              Clear
             </button>
-            <button
-              onClick={() => setShowForm(true)}
-              className="flex items-center gap-1 text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
-            >
-              <PlusIcon className="size-3.5" />
-              New Portal
+          )}
+        </div>
+      )}
+
+      {/* ── Create Form (inline) ── */}
+      {showForm && (
+        <div className="bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg p-5 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold">Create Portal</h3>
+            <button onClick={() => setShowForm(false)} className="text-[#A0A0A0] hover:text-[#1B1B1B]">
+              <XMarkIcon className="size-4" />
             </button>
           </div>
-        </div>
-
-        {/* Create Form */}
-        {showForm && (
-          <div className="bg-[#F7F8FA] border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-5 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold">Create Portal</h3>
-              <button
-                onClick={() => setShowForm(false)}
-                className="text-[#A0A0A0] hover:text-[#1B1B1B]"
-              >
-                <XMarkIcon className="size-4" />
-              </button>
-            </div>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className={labelClass}>Client Name *</label>
-                  <input type="text" value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="e.g., Nutribloom" className={inputClass} />
-                </div>
-                <div>
-                  <label className={labelClass}>Client Email</label>
-                  <input type="email" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} placeholder="client@example.com" className={inputClass} />
-                </div>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className={labelClass}>Client Name *</label>
+                <input
+                  type="text"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  placeholder="e.g., Nutribloom"
+                  className={inputClass}
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Client Email</label>
+                <input
+                  type="email"
+                  value={clientEmail}
+                  onChange={(e) => setClientEmail(e.target.value)}
+                  placeholder="client@example.com"
+                  className={inputClass}
+                />
               </div>
               <div>
                 <label className={labelClass}>Project Type</label>
-                <input type="text" value={projectType} onChange={(e) => setProjectType(e.target.value)} placeholder="Full Page Build" className={inputClass} />
-              </div>
-              <button
-                onClick={handleCreate}
-                disabled={!clientName.trim()}
-                className="flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <CheckIcon className="size-3.5" />
-                Create Portal
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Loading */}
-        {loading && (
-          <div className="space-y-4">
-            {[1, 2].map((i) => (
-              <div key={i} className="bg-white border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-5 animate-pulse">
-                <div className="h-4 bg-[#EDEDEF] rounded w-1/3 mb-2" />
-                <div className="h-3 bg-[#EDEDEF] rounded w-2/3 mb-4" />
-                <div className="h-1 bg-[#EDEDEF] rounded w-full" />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {!loading && portals.length === 0 && !showForm && (
-          <div className="bg-white border border-dashed border-[#E5E5EA] rounded-lg p-8 text-center">
-            <p className="text-xs text-[#A0A0A0] mb-3">No portals yet</p>
-            <div className="flex items-center justify-center gap-3">
-              <button onClick={() => setShowForm(true)} className="text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors">
-                + Create your first portal
-              </button>
-              <span className="text-[10px] text-[#E5E5EA]">or</span>
-              <button onClick={handleSeedDemo} className="text-xs font-medium text-[#2563EB] hover:text-[#1D4ED8] transition-colors">
-                Seed demo portal
-              </button>
-            </div>
-          </div>
-        )}
-
-        {!loading && portals.length > 0 && viewMode === "overview" && (
-          <OverviewView portals={portals} copiedToken={copiedToken} onCopyLink={copyLink} />
-        )}
-
-        {!loading && portals.length > 0 && viewMode === "manage" && (
-          <ManageView portals={portals} copiedToken={copiedToken} onCopyLink={copyLink} onDelete={handleDelete} />
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ── Overview View: at-a-glance info ── */
-
-function OverviewView({
-  portals,
-  copiedToken,
-  onCopyLink,
-}: {
-  portals: PortalData[];
-  copiedToken: string | null;
-  onCopyLink: (token: string) => void;
-}) {
-  // Aggregate upcoming deadlines across all portals
-  const deadlines = useMemo(() => {
-    const items: { client: string; name: string; date: string; portalId: string }[] = [];
-    for (const p of portals) {
-      for (const phase of p.phases) {
-        if (phase.deadline && phase.status !== "complete") {
-          items.push({ client: p.client_name, name: phase.name, date: phase.deadline, portalId: p.id });
-        }
-      }
-      if (p.next_touchpoint?.date) {
-        items.push({ client: p.client_name, name: p.next_touchpoint.description || "Touchpoint", date: p.next_touchpoint.date, portalId: p.id });
-      }
-    }
-    return items.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0, 8);
-  }, [portals]);
-
-  // Cross-portal ad-hoc requests
-  const allRequests = useMemo(() => {
-    const items: (AdHocRequest & { client: string; portalId: string })[] = [];
-    for (const p of portals) {
-      for (const req of (p.ad_hoc_requests || [])) {
-        items.push({ ...req, client: p.client_name, portalId: p.id });
-      }
-    }
-    return items.sort((a, b) => new Date(b.requested_at).getTime() - new Date(a.requested_at).getTime()).slice(0, 10);
-  }, [portals]);
-
-  // ClickUp health summary
-  const [clickupData, setClickupData] = useState<{ overdue: number; total: number } | null>(null);
-  useEffect(() => {
-    fetch("/api/clickup/tasks")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data?.summary) setClickupData({ overdue: data.summary.overdue, total: data.summary.total });
-      })
-      .catch(() => {});
-  }, []);
-
-  const openRequests = useMemo(
-    () => allRequests.filter((r) => r.status !== "done").length,
-    [allRequests]
-  );
-
-  const statusColors: Record<string, string> = {
-    open: "text-amber-600 bg-amber-50",
-    "in-progress": "text-blue-600 bg-blue-50",
-    done: "text-emerald-600 bg-emerald-50",
-  };
-
-  return (
-    <div className="space-y-8">
-      {/* Summary strip */}
-      <div className="flex items-center gap-6 text-sm">
-        <div className="flex items-baseline gap-1.5">
-          <span className="text-lg font-semibold tabular-nums">{portals.length}</span>
-          <span className="text-xs text-[#A0A0A0]">active portals</span>
-        </div>
-        {openRequests > 0 && (
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-lg font-semibold tabular-nums">{openRequests}</span>
-            <span className="text-xs text-[#A0A0A0]">open requests</span>
-          </div>
-        )}
-        {clickupData && clickupData.overdue > 0 && (
-          <Link href="/tools/ops-radar" className="flex items-baseline gap-1.5 hover:opacity-70 transition-opacity">
-            <span className="text-lg font-semibold tabular-nums">{clickupData.overdue}</span>
-            <span className="text-xs text-[#A0A0A0]">overdue in ClickUp</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 ml-0.5" />
-          </Link>
-        )}
-      </div>
-
-      {/* Ad Hoc Requests — promoted to top */}
-      {allRequests.length > 0 && (
-        <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3 flex items-center gap-1.5">
-            <ChatBubbleLeftRightIcon className="size-3.5" />
-            Ad Hoc Requests
-          </h3>
-          <div className="border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg divide-y divide-[#EDEDEF]">
-            {allRequests.map((req) => (
-              <Link
-                key={req.id}
-                href={`/tools/client-portal/${req.portalId}`}
-                className="flex items-center gap-3 p-3 hover:bg-[#F7F8FA] transition-colors"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">{req.client}</span>
-                    <span className={`text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${statusColors[req.status]}`}>
-                      {req.status}
-                    </span>
-                  </div>
-                  <p className="text-xs font-medium mt-0.5">{req.title}</p>
-                </div>
-                <span className="text-[10px] text-[#A0A0A0] shrink-0 tabular-nums">
-                  {new Date(req.requested_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Upcoming Deadlines */}
-      {deadlines.length > 0 && (
-        <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3 flex items-center gap-1.5">
-            <CalendarDaysIcon className="size-3.5" />
-            Upcoming Deadlines
-          </h3>
-          <div className="border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg divide-y divide-[#EDEDEF]">
-            {deadlines.map((dl, i) => {
-              const daysUntil = Math.ceil(
-                (new Date(dl.date).getTime() - Date.now()) / 86400000
-              );
-              return (
-                <Link
-                  key={i}
-                  href={`/tools/client-portal/${dl.portalId}`}
-                  className="flex items-center gap-3 p-3 hover:bg-[#F7F8FA] transition-colors"
+                <select
+                  value={projectType}
+                  onChange={(e) => setProjectType(e.target.value)}
+                  className={inputClass}
                 >
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">{dl.client}</span>
-                    <p className="text-xs font-medium mt-0.5 truncate">{dl.name}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-[11px] text-[#7A7A7A]">
-                      {new Date(dl.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                    </p>
-                    <p className={`text-[10px] tabular-nums ${daysUntil < 0 ? "text-red-500 font-medium" : "text-[#A0A0A0]"}`}>
-                      {daysUntil < 0 ? `${Math.abs(daysUntil)}d overdue` : daysUntil === 0 ? "today" : `${daysUntil}d`}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
+                  <option value="Full Page Build">Full Page Build</option>
+                  <option value="Retainer">Retainer</option>
+                  <option value="Landing Page">Landing Page</option>
+                  <option value="CRO Audit">CRO Audit</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+            <button
+              onClick={handleCreate}
+              disabled={!clientName.trim()}
+              className="flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <CheckIcon className="size-3.5" />
+              Create Portal
+            </button>
           </div>
+        </div>
+      )}
+
+      {/* ── Loading ── */}
+      {loading && (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="border border-[#E5E5EA] rounded-lg p-4 animate-pulse">
+              <div className="h-4 bg-[#EDEDEF] rounded w-1/4 mb-2" />
+              <div className="h-3 bg-[#EDEDEF] rounded w-1/2" />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Empty state ── */}
+      {!loading && portals.length === 0 && !showForm && (
+        <div className="border border-dashed border-[#E5E5EA] rounded-lg p-12 text-center">
+          <p className="text-sm text-[#7A7A7A] mb-1">No client portals yet</p>
+          <p className="text-xs text-[#A0A0A0] mb-4">Create your first portal to start tracking projects</p>
+          <button
+            onClick={() => setShowForm(true)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
+          >
+            <PlusIcon className="size-3.5" />
+            New Portal
+          </button>
+        </div>
+      )}
+
+      {/* ── Portal List ── */}
+      {!loading && portals.length > 0 && (
+        <div className="space-y-4">
+          {filteredPortals.length === 0 ? (
+            <div className="border border-dashed border-[#E5E5EA] rounded-lg p-8 text-center">
+              <p className="text-sm text-[#7A7A7A]">No portals match the current filters</p>
+            </div>
+          ) : (
+            filteredPortals.map((portal) => (
+              <PortalCard
+                key={portal.id}
+                portal={portal}
+                copiedToken={copiedToken}
+                onCopyLink={copyLink}
+                onDelete={handleDelete}
+              />
+            ))
+          )}
         </div>
       )}
     </div>
   );
 }
 
-/* ── Manage View: edit/delete/copy actions ── */
+/* ── Portal Card ── */
 
-function ManageView({
-  portals,
+function PortalCard({
+  portal,
   copiedToken,
   onCopyLink,
   onDelete,
 }: {
-  portals: PortalData[];
+  portal: PortalData;
   copiedToken: string | null;
   onCopyLink: (token: string) => void;
   onDelete: (id: string) => void;
 }) {
+  const isRetainer = portal.project_type?.toLowerCase().includes("retainer");
+
+  // Find next upcoming/in-progress phase
+  const nextPhase = portal.phases.find((p) => p.status === "in-progress") ||
+    portal.phases.find((p) => p.status === "upcoming");
+
+  // Touchpoint
+  const touchpoint = portal.next_touchpoint;
+  const hasTouchpoint = touchpoint?.date || touchpoint?.description;
+
+  // Open ad-hoc count
+  const openRequests = (portal.ad_hoc_requests || []).filter((r) => r.status !== "done").length;
+
+  // Running tests
+  const runningTests = (portal.results || []).filter((r) => r.status === "running").length;
+
   return (
-    <div className="space-y-4">
-      {portals.map((portal) => (
-        <div key={portal.id} className="bg-white border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-5">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-sm font-semibold">{portal.client_name}</h3>
-                {portal.current_phase && (
-                  <span className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-[#EDEDEF] text-[#7A7A7A] rounded">
-                    {portal.current_phase}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-[#7A7A7A]">{portal.project_type || "No project type set"}</p>
-              {portal.client_email && <p className="text-[11px] text-[#A0A0A0] mt-0.5">{portal.client_email}</p>}
-            </div>
-            <div className="flex items-center gap-1 text-xs text-[#A0A0A0]">
-              <EyeIcon className="size-3" />
-              <span className="tabular-nums">{portal.view_count}</span>
-            </div>
-          </div>
+    <Link
+      href={`/tools/client-portal/${portal.id}`}
+      className="block border border-[#E5E5EA] rounded-xl p-5 hover:border-[#C5C5C5] hover:shadow-sm transition-all group"
+    >
+      {/* Top row: name + badge + actions */}
+      <div className="flex items-center gap-3">
+        <h3 className="text-sm font-semibold text-[#1B1B1B] truncate">{portal.client_name}</h3>
+        <span className={`shrink-0 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded-full ${
+          isRetainer
+            ? "bg-blue-50 text-blue-600"
+            : "bg-emerald-50 text-emerald-600"
+        }`}>
+          {isRetainer ? "Retainer" : "Project"}
+        </span>
 
-          {portal.phases.length > 0 && (
-            <div className="mt-4 flex gap-1">
-              {portal.phases.map((phase) => (
-                <div
-                  key={phase.id}
-                  className={`h-1 rounded-full flex-1 ${
-                    phase.status === "complete" ? "bg-emerald-400" : phase.status === "in-progress" ? "bg-[#1B1B1B]" : "bg-[#E5E5EA]"
-                  }`}
-                />
-              ))}
-            </div>
-          )}
-
-          <div className="mt-4 pt-4 border-t border-[#EDEDEF] flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => onCopyLink(portal.token)}
-                className="flex items-center gap-1 text-[11px] font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
-              >
-                <ClipboardDocumentIcon className="size-3.5" />
-                {copiedToken === portal.token ? "Copied!" : "Copy Link"}
-              </button>
-              <a
-                href={`/portal/${portal.token}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-[11px] font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
-              >
-                <ArrowTopRightOnSquareIcon className="size-3.5" />
-                Preview
-              </a>
-            </div>
-            <div className="flex items-center gap-2">
-              <Link
-                href={`/tools/client-portal/${portal.id}`}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
-              >
-                Manage
-                <svg className="size-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </Link>
-              <button
-                onClick={() => onDelete(portal.id)}
-                className="p-1.5 text-[#A0A0A0] hover:text-red-400 transition-colors"
-                title="Delete portal"
-              >
-                <TrashIcon className="size-3.5" />
-              </button>
-            </div>
-          </div>
+        {/* Actions — right aligned */}
+        <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCopyLink(portal.token); }}
+            className="p-1.5 text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors opacity-0 group-hover:opacity-100"
+            title="Copy portal link"
+          >
+            <ClipboardDocumentIcon className="size-3.5" />
+          </button>
+          <a
+            href={`/portal/${portal.token}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="p-1.5 text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors opacity-0 group-hover:opacity-100"
+            title="Preview portal"
+          >
+            <ArrowTopRightOnSquareIcon className="size-3.5" />
+          </a>
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(portal.id); }}
+            className="p-1.5 text-[#A0A0A0] hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+            title="Delete portal"
+          >
+            <TrashIcon className="size-3.5" />
+          </button>
+          <span className="px-3 py-1.5 text-[11px] font-medium text-[#1B1B1B] border border-[#E5E5EA] rounded-md group-hover:bg-[#1B1B1B] group-hover:text-white group-hover:border-[#1B1B1B] transition-colors">
+            Manage
+          </span>
         </div>
-      ))}
-    </div>
+      </div>
+
+      {/* Fields row */}
+      <div className="grid grid-cols-5 gap-3 mt-4 pt-4 border-t border-[#EDEDEF]">
+        <div>
+          <p className="text-[10px] text-[#A0A0A0] uppercase tracking-wider mb-0.5">Stage</p>
+          <p className="text-[12px] font-medium text-[#1B1B1B] truncate">
+            {portal.current_phase || "—"}
+          </p>
+        </div>
+        <div>
+          <p className="text-[10px] text-[#A0A0A0] uppercase tracking-wider mb-0.5">Next Phase</p>
+          <p className="text-[12px] font-medium text-[#1B1B1B] truncate">
+            {nextPhase?.deadline
+              ? new Date(nextPhase.deadline).toLocaleDateString("en-GB", { day: "numeric", month: "short" })
+              : nextPhase?.dates || "—"}
+          </p>
+        </div>
+        <div>
+          <p className="text-[10px] text-[#A0A0A0] uppercase tracking-wider mb-0.5">Touchpoint</p>
+          <p className="text-[12px] font-medium text-[#1B1B1B] truncate">
+            {touchpoint?.date
+              ? new Date(touchpoint.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })
+              : touchpoint?.description || "—"}
+          </p>
+        </div>
+        <div>
+          <p className="text-[10px] text-[#A0A0A0] uppercase tracking-wider mb-0.5">Tests</p>
+          <p className={`text-[12px] font-medium truncate ${runningTests > 0 ? "text-emerald-600" : "text-[#1B1B1B]"}`}>
+            {runningTests > 0 ? `${runningTests} running` : "—"}
+          </p>
+        </div>
+        <div>
+          <p className="text-[10px] text-[#A0A0A0] uppercase tracking-wider mb-0.5">Requests</p>
+          <p className={`text-[12px] font-medium truncate ${openRequests > 0 ? "text-amber-600" : "text-[#1B1B1B]"}`}>
+            {openRequests > 0 ? `${openRequests} open` : "—"}
+          </p>
+        </div>
+      </div>
+    </Link>
   );
 }

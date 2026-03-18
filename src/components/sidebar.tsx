@@ -67,6 +67,7 @@ const navSections: NavSection[] = [
     icon: <RocketLaunchIcon className="size-4" />,
     defaultOpen: true,
     items: [
+      { label: "Revenue", href: "/tools/revenue" },
       { label: "Lead Scraper", href: "/tools/prospect-scraper" },
       { label: "Audit Engine", href: "/tools/store-intel" },
       { label: "Portfolio", href: "/tools/portfolio" },

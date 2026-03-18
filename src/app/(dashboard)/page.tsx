@@ -5,7 +5,6 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   ArrowPathIcon,
   ExclamationTriangleIcon,
-  ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import {
   type PulseFeedItem,
@@ -15,7 +14,6 @@ import {
 import { getPortals } from "@/lib/portal/data";
 import { getIssues } from "@/lib/issues/data";
 import type { OpsRadarData, OpsTask } from "@/lib/clickup/types";
-import { TEAM_MEMBERS } from "@/lib/clickup/constants";
 
 // ── Helpers ─────────────────────────────────────────────────────
 
@@ -35,34 +33,6 @@ function getWeekStart(): Date {
 
 const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-function severityColor(days: number): string {
-  if (days > 7) return "bg-red-500";
-  if (days >= 3) return "bg-amber-400";
-  return "bg-[#A0A0A0]";
-}
-
-function barColor(count: number): string {
-  if (count > 12) return "bg-red-500";
-  if (count > 8) return "bg-amber-400";
-  return "bg-[#1B1B1B]";
-}
-
-function groupByClient(tasks: OpsTask[]): { client: string; tasks: OpsTask[] }[] {
-  const map = new Map<string, OpsTask[]>();
-  for (const t of tasks) {
-    const list = map.get(t.client) ?? [];
-    list.push(t);
-    map.set(t.client, list);
-  }
-  return Array.from(map.entries())
-    .map(([client, tasks]) => ({ client, tasks }))
-    .sort((a, b) => {
-      const aMax = Math.max(...a.tasks.map((t) => t.daysOverdue));
-      const bMax = Math.max(...b.tasks.map((t) => t.daysOverdue));
-      return bMax - aMax;
-    });
-}
-
 // ── Feed Config ─────────────────────────────────────────────────
 
 const feedTypeConfig: Record<FeedItemType, { border: string; badge: string; label: string }> = {
@@ -74,8 +44,7 @@ const feedTypeConfig: Record<FeedItemType, { border: string; badge: string; labe
   request: { border: "border-l-violet-500", badge: "bg-violet-50 text-violet-600", label: "Request" },
 };
 
-type FeedFilter = "important" | "all";
-const IMPORTANT_TYPES: FeedItemType[] = ["blocker", "chase", "request", "client"];
+const ALL_FEED_TYPES: FeedItemType[] = ["client", "internal", "status", "chase", "blocker", "request"];
 
 // ── Page Component ──────────────────────────────────────────────
 
@@ -87,11 +56,10 @@ export default function MissionControl() {
   const [feedHours, setFeedHours] = useState(48);
   const [hasMore, setHasMore] = useState(false);
   const [feedTotal, setFeedTotal] = useState(0);
-  const [feedFilter, setFeedFilter] = useState<FeedFilter>("important");
+  const [feedTypeFilter, setFeedTypeFilter] = useState<FeedItemType | "all">("all");
 
   // Stats state
   const [stats, setStats] = useState({ portals: 0, overdue: 0, issues: 0, adHoc: 0 });
-  const [needsAttention, setNeedsAttention] = useState<{ type: string; label: string; detail: string; href: string }[]>([]);
 
   // Ops radar state
   const [opsData, setOpsData] = useState<OpsRadarData | null>(null);
@@ -109,27 +77,19 @@ export default function MissionControl() {
         if (clickupRes) setOpsData(clickupRes);
 
         const openIssues = issues.filter((i) => i.status === "open" || i.status === "noted");
-        const adHocRequests = portals.flatMap((p) => p.ad_hoc_requests || []).filter((r) => r.status === "open");
+        const allAdHoc = portals.flatMap((p) =>
+          (p.ad_hoc_requests || [])
+            .filter((r: { status: string }) => r.status === "open")
+            .map((r: { title: string; status: string }) => ({ title: r.title, client: p.client_name || "Unknown", status: r.status }))
+        );
         const overdueCount = clickupRes?.summary?.overdue ?? 0;
 
         setStats({
           portals: portals.length,
           overdue: overdueCount,
           issues: openIssues.length,
-          adHoc: adHocRequests.length,
+          adHoc: allAdHoc.length,
         });
-
-        const attention: { type: string; label: string; detail: string; href: string }[] = [];
-        if (overdueCount > 0) {
-          attention.push({ type: "overdue", label: `${overdueCount} overdue task${overdueCount !== 1 ? "s" : ""}`, detail: "ClickUp tasks past deadline", href: "/tools/ops-radar" });
-        }
-        adHocRequests.slice(0, 3).forEach((r) => {
-          attention.push({ type: "adhoc", label: r.title, detail: "Ad hoc request", href: "/tools/client-portal" });
-        });
-        openIssues.slice(0, 3).forEach((i) => {
-          attention.push({ type: "issue", label: i.title, detail: i.type === "bug" ? "Bug report" : i.type === "change-request" ? "Change request" : "Idea", href: "/tools/issues" });
-        });
-        setNeedsAttention(attention);
       } catch {
         // Stats are best-effort
       }
@@ -137,41 +97,39 @@ export default function MissionControl() {
     loadStats();
   }, []);
 
-  // Derived ops radar data
-  const opsDerived = useMemo(() => {
+  // Derived ops radar data — split into design and dev deadlines per day
+  const weekData = useMemo(() => {
     if (!opsData) return null;
 
     const weekStart = getWeekStart();
     const today = new Date();
 
-    const weekDays: { date: Date; count: number }[] = [];
+    const days: {
+      date: Date;
+      designTasks: { name: string; client: string; assignees: string[] }[];
+      devTasks: { name: string; client: string; assignees: string[] }[];
+    }[] = [];
+
     for (let i = 0; i < 7; i++) {
       const day = new Date(weekStart);
       day.setDate(day.getDate() + i);
-      const count = opsData.tasks.filter((t) => {
-        const dd = t.designDeadline ? new Date(t.designDeadline) : null;
-        const dv = t.devDeadline ? new Date(t.devDeadline) : null;
-        return (dd && sameDay(dd, day)) || (dv && sameDay(dv, day));
-      }).length;
-      weekDays.push({ date: day, count });
+
+      const designTasks: { name: string; client: string; assignees: string[] }[] = [];
+      const devTasks: { name: string; client: string; assignees: string[] }[] = [];
+
+      for (const t of opsData.tasks) {
+        if (t.designDeadline && sameDay(new Date(t.designDeadline), day)) {
+          designTasks.push({ name: t.name, client: t.client, assignees: t.assignees });
+        }
+        if (t.devDeadline && sameDay(new Date(t.devDeadline), day)) {
+          devTasks.push({ name: t.name, client: t.client, assignees: t.assignees });
+        }
+      }
+
+      days.push({ date: day, designTasks, devTasks });
     }
 
-    const overdue = opsData.tasks
-      .filter((t) => t.daysOverdue > 0)
-      .sort((a, b) => b.daysOverdue - a.daysOverdue);
-
-    const teamLoad = TEAM_MEMBERS.map((member) => {
-      const count = opsData.summary.byAssignee[member.name] ?? 0;
-      const memberOverdue = opsData.tasks.filter(
-        (t) => t.assignees.includes(member.name) && t.daysOverdue > 0
-      ).length;
-      return { name: member.name, role: member.role, count, overdue: memberOverdue };
-    });
-
-    const designTeam = teamLoad.filter((m) => m.role === "design").sort((a, b) => b.count - a.count);
-    const devTeam = teamLoad.filter((m) => m.role === "dev").sort((a, b) => b.count - a.count);
-
-    return { weekDays, overdueTasks: overdue, designTeam, devTeam, today };
+    return { days, today };
   }, [opsData]);
 
   // Load feed
@@ -206,9 +164,9 @@ export default function MissionControl() {
   };
 
   const filteredFeed = useMemo(() => {
-    if (feedFilter === "all") return feedItems;
-    return feedItems.filter((item) => IMPORTANT_TYPES.includes(item.channel_type));
-  }, [feedItems, feedFilter]);
+    if (feedTypeFilter === "all") return feedItems;
+    return feedItems.filter((item) => item.channel_type === feedTypeFilter);
+  }, [feedItems, feedTypeFilter]);
 
   const today = new Date();
   const dateStr = today.toLocaleDateString("en-GB", {
@@ -219,9 +177,9 @@ export default function MissionControl() {
   });
 
   return (
-    <div className="min-h-screen p-6 md:p-8">
+    <div className="min-h-screen p-5 md:p-6">
       {/* Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Mission Control</h1>
           <p className="text-sm text-[#7A7A7A]">{dateStr}</p>
@@ -229,243 +187,200 @@ export default function MissionControl() {
       </div>
 
       {/* ── Stats Strip ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <StatCard label="Active Projects" value={stats.portals} href="/tools/client-portal" />
         <StatCard label="Overdue Tasks" value={stats.overdue} warn={stats.overdue > 0} href="/tools/ops-radar" />
         <StatCard label="Open Issues" value={stats.issues} href="/tools/issues" />
         <StatCard label="Ad Hoc Requests" value={stats.adHoc} warn={stats.adHoc > 0} href="/tools/client-portal" />
       </div>
 
-      {/* ── Main Grid: 2 columns on desktop ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        {/* ── Left column (2/3) ── */}
-        <div className="lg:col-span-2 space-y-6">
-
-          {/* Needs Attention */}
-          {needsAttention.length > 0 && (
-            <div>
-              <SectionHeader title="Needs Attention" />
-              <div className="border border-[#E5E5EA] rounded-lg divide-y divide-[#EDEDEF] shadow-[var(--shadow-soft)]">
-                {needsAttention.map((item, i) => (
-                  <Link
+      {/* ── This Week — Design & Dev split ── */}
+      {weekData && (
+        <div className="mb-4">
+          <SectionHeader title="This Week" />
+          <div className="border border-[#E5E5EA] rounded-lg overflow-hidden">
+            {/* Day headers */}
+            <div className="grid grid-cols-7 border-b border-[#EDEDEF]">
+              {weekData.days.map(({ date }, i) => {
+                const isToday = sameDay(date, weekData.today);
+                const isPast = date < weekData.today && !isToday;
+                return (
+                  <div
                     key={i}
-                    href={item.href}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-[#F7F8FA] transition-colors"
+                    className={`text-center py-2 ${isToday ? "bg-[#1B1B1B] text-white" : isPast ? "opacity-40" : ""} ${i > 0 ? "border-l border-[#EDEDEF]" : ""}`}
                   >
-                    <span className={`size-2 rounded-full shrink-0 ${
-                      item.type === "overdue" ? "bg-red-500" : item.type === "adhoc" ? "bg-amber-400" : "bg-blue-400"
-                    }`} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{item.label}</p>
-                      <p className="text-[11px] text-[#A0A0A0]">{item.detail}</p>
+                    <div className={`text-[10px] uppercase tracking-wider font-medium ${isToday ? "text-white/70" : "text-[#A0A0A0]"}`}>
+                      {DAY_NAMES[i]}
                     </div>
-                    <ChevronRightIcon className="size-3.5 text-[#C5C5C5] shrink-0" />
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Pulse Feed — contained with scroll */}
-          <div className="flex flex-col min-h-0">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <SectionHeader title="Feed" />
-                <div className="flex bg-[#F3F3F5] rounded-md p-0.5 -mt-1">
-                  <button
-                    onClick={() => setFeedFilter("important")}
-                    className={`px-2.5 py-1 text-[11px] font-medium rounded transition-colors ${
-                      feedFilter === "important" ? "bg-white text-[#1B1B1B] shadow-sm" : "text-[#7A7A7A]"
-                    }`}
-                  >
-                    Important
-                  </button>
-                  <button
-                    onClick={() => setFeedFilter("all")}
-                    className={`px-2.5 py-1 text-[11px] font-medium rounded transition-colors ${
-                      feedFilter === "all" ? "bg-white text-[#1B1B1B] shadow-sm" : "text-[#7A7A7A]"
-                    }`}
-                  >
-                    All {feedTotal > 0 && `(${feedTotal})`}
-                  </button>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <select
-                  value={feedHours}
-                  onChange={(e) => handleHoursChange(Number(e.target.value))}
-                  className="px-2 py-1 text-[11px] border border-[#E5E5EA] rounded-md bg-white text-[#7A7A7A]"
-                >
-                  <option value={24}>24h</option>
-                  <option value={48}>48h</option>
-                  <option value={168}>7d</option>
-                </select>
-                <button
-                  onClick={() => loadFeed()}
-                  disabled={feedLoading}
-                  className="p-1.5 text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors disabled:opacity-40"
-                  title="Refresh feed"
-                >
-                  <ArrowPathIcon className={`size-3.5 ${feedLoading ? "animate-spin" : ""}`} />
-                </button>
-              </div>
+                    <div className={`text-[10px] tabular-nums ${isToday ? "text-white/50" : "text-[#C5C5C5]"}`}>
+                      {date.getDate()}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
-            <div className="border border-[#E5E5EA] rounded-lg shadow-[var(--shadow-soft)] overflow-hidden">
-              <div className="max-h-[500px] overflow-y-auto scrollbar-thin divide-y divide-[#EDEDEF]">
-                {feedLoading && feedItems.length === 0 && (
-                  <div className="p-4 space-y-3">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="animate-pulse">
-                        <div className="h-3 bg-[#EDEDEF] rounded w-1/3 mb-2" />
-                        <div className="h-4 bg-[#EDEDEF] rounded w-full mb-2" />
-                        <div className="h-3 bg-[#EDEDEF] rounded w-1/4" />
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {feedError && (
-                  <div className="flex items-start gap-2 bg-red-50 p-4">
-                    <ExclamationTriangleIcon className="size-4 text-red-400 mt-0.5 shrink-0" />
-                    <div>
-                      <p className="text-xs text-red-800 font-medium">Failed to load feed</p>
-                      <p className="text-[11px] text-red-600 mt-0.5">{feedError}</p>
-                      <button onClick={() => loadFeed()} className="text-[11px] font-medium text-red-600 hover:text-red-800 mt-1 underline">Try again</button>
-                    </div>
-                  </div>
-                )}
-
-                {!feedLoading && !feedError && filteredFeed.length === 0 && (
-                  <div className="p-8 text-center">
-                    <p className="text-xs text-[#A0A0A0] mb-1">
-                      {feedFilter === "important" ? "No important activity" : "No activity"} in the last {feedHours}h
-                    </p>
-                  </div>
-                )}
-
-                {filteredFeed.map((item) => {
-                  const cfg = feedTypeConfig[item.channel_type];
-                  return (
-                    <div key={item.id} className={`border-l-2 ${cfg.border} px-4 py-3 hover:bg-[#F7F8FA] transition-colors`}>
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium text-[#7A7A7A]">#{item.channel_name}</span>
-                          <span className={`text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${cfg.badge}`}>{cfg.label}</span>
-                        </div>
-                        <span className="text-[11px] text-[#A0A0A0] tabular-nums">{relativeTime(item.timestamp)}</span>
-                      </div>
-                      <p className="text-sm text-[#3A3A3A] leading-relaxed mb-1">{item.message}</p>
-                      <span className="text-[11px] text-[#A0A0A0]">{item.author}</span>
-                    </div>
-                  );
-                })}
+            {/* Design row */}
+            <div className="grid grid-cols-7 border-b border-[#EDEDEF]">
+              <div className="col-span-7 px-3 py-1 bg-[#F7F8FA] border-b border-[#EDEDEF]">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">Design</span>
               </div>
+              {weekData.days.map(({ date, designTasks }, i) => {
+                const isToday = sameDay(date, weekData.today);
+                const isPast = date < weekData.today && !isToday;
+                return (
+                  <div
+                    key={i}
+                    className={`min-h-[36px] p-1 ${i > 0 ? "border-l border-[#EDEDEF]" : ""} ${isPast ? "opacity-40" : ""}`}
+                  >
+                    {designTasks.length === 0 ? (
+                      <span className="text-[9px] text-[#D4D4D4]">—</span>
+                    ) : (
+                      <div className="space-y-1">
+                        {designTasks.map((t, j) => (
+                          <div key={j} className="text-[9px] leading-tight">
+                            <p className="font-medium text-[#1B1B1B] truncate">{t.client}</p>
+                            <p className="text-[#A0A0A0] truncate">{t.name}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
 
-              {hasMore && !feedLoading && (
-                <button
-                  onClick={() => handleHoursChange(Math.min(feedHours * 2, 168))}
-                  className="w-full py-2 text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] border-t border-[#EDEDEF] hover:bg-[#F3F3F5] transition-colors"
-                >
-                  Load more
-                </button>
-              )}
+            {/* Dev row */}
+            <div className="grid grid-cols-7">
+              <div className="col-span-7 px-3 py-1 bg-[#F7F8FA] border-b border-[#EDEDEF]">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">Dev</span>
+              </div>
+              {weekData.days.map(({ date, devTasks }, i) => {
+                const isToday = sameDay(date, weekData.today);
+                const isPast = date < weekData.today && !isToday;
+                return (
+                  <div
+                    key={i}
+                    className={`min-h-[36px] p-1 ${i > 0 ? "border-l border-[#EDEDEF]" : ""} ${isPast ? "opacity-40" : ""}`}
+                  >
+                    {devTasks.length === 0 ? (
+                      <span className="text-[9px] text-[#D4D4D4]">—</span>
+                    ) : (
+                      <div className="space-y-1">
+                        {devTasks.map((t, j) => (
+                          <div key={j} className="text-[9px] leading-tight">
+                            <p className="font-medium text-[#1B1B1B] truncate">{t.client}</p>
+                            <p className="text-[#A0A0A0] truncate">{t.name}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
+      )}
 
-        {/* ── Right column (1/3) ── */}
-        <div className="space-y-6">
-
-          {/* This Week — Deadlines */}
-          {opsDerived && (
-            <div>
-              <SectionHeader title="Deadlines This Week" />
-              <div className="border border-[#E5E5EA] rounded-lg p-4 shadow-[var(--shadow-soft)]">
-                <div className="grid grid-cols-7 gap-1">
-                  {opsDerived.weekDays.map(({ date, count }, i) => {
-                    const isToday = sameDay(date, opsDerived.today);
-                    const isPast = date < opsDerived.today && !isToday;
-                    const dayNum = date.getDate();
-                    return (
-                      <div
-                        key={i}
-                        className={`text-center py-2.5 rounded-md ${
-                          isToday ? "bg-[#1B1B1B] text-white" : isPast ? "opacity-40" : ""
-                        }`}
-                      >
-                        <div className={`text-[10px] uppercase tracking-wider ${isToday ? "text-white/70" : "text-[#A0A0A0]"}`}>
-                          {DAY_NAMES[i]}
-                        </div>
-                        <div className={`text-[10px] tabular-nums ${isToday ? "text-white/50" : "text-[#C5C5C5]"}`}>
-                          {dayNum}
-                        </div>
-                        <div className={`text-sm font-semibold tabular-nums mt-1 ${isToday ? "text-white" : count > 0 ? "text-[#1B1B1B]" : "text-[#D4D4D4]"}`}>
-                          {count > 0 ? count : "—"}
-                        </div>
-                        {count > 0 && (
-                          <div className={`text-[9px] mt-0.5 ${isToday ? "text-white/60" : "text-[#A0A0A0]"}`}>
-                            {count === 1 ? "task" : "tasks"}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-                <p className="text-[10px] text-[#C5C5C5] text-center mt-3">Design & dev deadlines from ClickUp</p>
-              </div>
-            </div>
-          )}
-
-          {/* Team Load */}
-          {opsDerived && (
-            <div>
-              <SectionHeader title="Team Load" />
-              <div className="border border-[#E5E5EA] rounded-lg shadow-[var(--shadow-soft)] divide-y divide-[#EDEDEF]">
-                {/* Design */}
-                <div className="p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-2">Design</p>
-                  <div className="space-y-1.5">
-                    {opsDerived.designTeam.map(({ name, count, overdue }) => (
-                      <TeamMemberRow key={name} name={name} count={count} overdue={overdue} />
-                    ))}
-                  </div>
-                </div>
-                {/* Dev */}
-                <div className="p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-2">Development</p>
-                  <div className="space-y-1.5">
-                    {opsDerived.devTeam.map(({ name, count, overdue }) => (
-                      <TeamMemberRow key={name} name={name} count={count} overdue={overdue} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Quick Links */}
-          <div>
-            <SectionHeader title="Workflows" />
-            <div className="space-y-2">
-              {[
-                { title: "Win the Client", steps: ["Find prospects", "Research store", "Send outreach", "Write proposal"], href: "/tools/prospect-scraper" },
-                { title: "Deliver the Project", steps: ["Kick off", "Dev check", "QA checklist", "Client portal"], href: "/tools/project-kickoff" },
-                { title: "Get Paid", steps: ["Log hours", "Generate invoice", "Track expenses"], href: "/tools/dev-hours" },
-              ].map((wf) => (
-                <Link
-                  key={wf.title}
-                  href={wf.href}
-                  className="block border border-[#E5E5EA] rounded-lg p-3 hover:border-[#A0A0A0] transition-colors shadow-[var(--shadow-soft)]"
+      {/* ── Feed (full width) ── */}
+      <div className="border border-[#E5E5EA] rounded-lg overflow-hidden flex flex-col lg:max-h-[280px]">
+        {/* Feed toolbar — inside container */}
+        <div className="flex items-center justify-between px-4 py-2 border-b border-[#EDEDEF] shrink-0">
+          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
+            {[{ key: "all" as const, label: "All" }, ...ALL_FEED_TYPES.map((t) => ({ key: t, label: feedTypeConfig[t].label }))].map(({ key, label }) => {
+              const count = key === "all" ? feedTotal : feedItems.filter((i) => i.channel_type === key).length;
+              if (key !== "all" && count === 0) return null;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setFeedTypeFilter(key)}
+                  className={`px-2.5 py-1 text-[11px] rounded-md transition-colors whitespace-nowrap ${
+                    feedTypeFilter === key
+                      ? "font-medium text-[#1B1B1B] bg-[#F3F3F5]"
+                      : "text-[#A0A0A0] hover:text-[#7A7A7A]"
+                  }`}
                 >
-                  <p className="text-xs font-semibold mb-1">{wf.title}</p>
-                  <p className="text-[11px] text-[#A0A0A0]">{wf.steps.join(" → ")}</p>
-                </Link>
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0 ml-2">
+            <select
+              value={feedHours}
+              onChange={(e) => handleHoursChange(Number(e.target.value))}
+              className="px-1.5 py-1 text-[11px] text-[#A0A0A0] bg-transparent border-0 outline-none cursor-pointer"
+            >
+              <option value={24}>24h</option>
+              <option value={48}>48h</option>
+              <option value={168}>7d</option>
+            </select>
+            <button
+              onClick={() => loadFeed()}
+              disabled={feedLoading}
+              className="p-1 text-[#C5C5C5] hover:text-[#7A7A7A] transition-colors disabled:opacity-40"
+              title="Refresh"
+            >
+              <ArrowPathIcon className={`size-3 ${feedLoading ? "animate-spin" : ""}`} />
+            </button>
+          </div>
+        </div>
+
+        {/* Feed items */}
+        <div className="flex-1 overflow-y-auto scrollbar-thin">
+          {feedLoading && feedItems.length === 0 && (
+            <div className="p-4 space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-3 bg-[#EDEDEF] rounded w-1/4 mb-2" />
+                  <div className="h-3 bg-[#EDEDEF] rounded w-3/4" />
+                </div>
               ))}
             </div>
-          </div>
+          )}
+
+          {feedError && (
+            <div className="flex items-start gap-2 p-4">
+              <ExclamationTriangleIcon className="size-4 text-red-400 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-xs text-red-800 font-medium">Failed to load feed</p>
+                <button onClick={() => loadFeed()} className="text-[11px] text-red-600 hover:text-red-800 mt-1 underline">Try again</button>
+              </div>
+            </div>
+          )}
+
+          {!feedLoading && !feedError && filteredFeed.length === 0 && (
+            <div className="p-8 text-center">
+              <p className="text-xs text-[#A0A0A0]">
+                {feedTypeFilter !== "all" ? `No ${feedTypeConfig[feedTypeFilter].label.toLowerCase()} messages` : "No activity"} in the last {feedHours}h
+              </p>
+            </div>
+          )}
+
+          {filteredFeed.map((item, idx) => {
+            const cfg = feedTypeConfig[item.channel_type];
+            return (
+              <div key={item.id} className={`px-4 py-3 hover:bg-[#FAFAFA] transition-colors ${idx > 0 ? "border-t border-[#F3F3F5]" : ""}`}>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[12px] font-medium text-[#1B1B1B]">{item.author}</span>
+                  <span className={`text-[9px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded ${cfg.badge}`}>{cfg.label}</span>
+                  <span className="text-[10px] text-[#C5C5C5] ml-auto tabular-nums">{relativeTime(item.timestamp)}</span>
+                </div>
+                <p className="text-[13px] text-[#5A5A5A] leading-relaxed">{item.message}</p>
+              </div>
+            );
+          })}
         </div>
+
+        {hasMore && !feedLoading && (
+          <button
+            onClick={() => handleHoursChange(Math.min(feedHours * 2, 168))}
+            className="w-full py-2 text-[11px] text-[#A0A0A0] hover:text-[#7A7A7A] border-t border-[#EDEDEF] hover:bg-[#FAFAFA] transition-colors"
+          >
+            Load more
+          </button>
+        )}
       </div>
     </div>
   );
@@ -475,9 +390,9 @@ export default function MissionControl() {
 
 function StatCard({ label, value, warn, href }: { label: string; value: number; warn?: boolean; href: string }) {
   return (
-    <Link href={href} className="border border-[#E5E5EA] rounded-lg p-4 hover:border-[#A0A0A0] transition-colors shadow-[var(--shadow-soft)]">
+    <Link href={href} className="border border-[#E5E5EA] rounded-lg px-3 py-2.5 hover:border-[#A0A0A0] transition-colors">
       <div className="flex items-baseline gap-1.5">
-        <span className="text-xl font-semibold tabular-nums">{value}</span>
+        <span className="text-lg font-semibold tabular-nums">{value}</span>
         {warn && <span className="size-1.5 rounded-full bg-red-500" />}
       </div>
       <p className="text-[11px] text-[#A0A0A0] mt-0.5">{label}</p>
@@ -491,30 +406,6 @@ function SectionHeader({ title, count }: { title: string; count?: number }) {
       <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">{title}</h2>
       {count !== undefined && (
         <span className="text-[11px] text-[#A0A0A0] tabular-nums">{count}</span>
-      )}
-    </div>
-  );
-}
-
-function TeamMemberRow({ name, count, overdue }: { name: string; count: number; overdue: number }) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className="text-[12px] w-28 truncate">{name}</span>
-      {count === 0 ? (
-        <span className="flex-1 text-[11px] text-[#D4D4D4]">No tasks</span>
-      ) : (
-        <div className="flex-1 h-1.5 bg-[#EDEDEF] rounded-full overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all ${barColor(count)}`}
-            style={{ width: `${Math.max((count / 20) * 100, 4)}%` }}
-          />
-        </div>
-      )}
-      <span className={`text-[11px] w-6 text-right tabular-nums ${count > 12 ? "text-red-600 font-semibold" : count > 8 ? "text-amber-600" : "text-[#A0A0A0]"}`}>
-        {count}
-      </span>
-      {overdue > 0 && (
-        <span className="text-[10px] font-medium text-red-600 tabular-nums">{overdue} late</span>
       )}
     </div>
   );
