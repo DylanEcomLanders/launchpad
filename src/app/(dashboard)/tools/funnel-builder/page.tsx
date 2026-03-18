@@ -548,6 +548,20 @@ export default function FunnelBuilderPage() {
                 </div>
               )}
 
+              {/* Preview URL */}
+              <div>
+                <label className={labelClass}>
+                  {nodeData.nodeType === "traffic" ? "Ad Preview URL" : "Page URL"}
+                </label>
+                <input
+                  type="url"
+                  value={nodeData.previewUrl || ""}
+                  onChange={(e) => updateNodeData("previewUrl", e.target.value)}
+                  className={inputClass}
+                  placeholder={nodeData.nodeType === "traffic" ? "https://fb.me/ad/..." : "https://store.com/..."}
+                />
+              </div>
+
               {/* Metrics (performance mode only) */}
               {activeFunnel.mode === "performance" && (
                 <div className="pt-3 border-t border-[#E5E5EA]">

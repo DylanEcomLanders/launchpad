@@ -37,6 +37,7 @@ export interface FunnelNodeData {
   label: string;
   status: FunnelNodeStatus;
   warmth?: TrafficWarmth;
+  previewUrl?: string; // Ad creative link (traffic) or page URL (page)
   metrics?: FunnelNodeMetrics;
 }
 

@@ -41,6 +41,18 @@ function TrafficNodeComponent({ data, selected }: NodeProps & { data: FunnelNode
             {data.metrics.traffic.toLocaleString()} visits
           </p>
         )}
+        {data.previewUrl && (
+          <a
+            href={data.previewUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1 mt-1.5 text-[10px] font-medium text-[#2563EB] hover:underline truncate"
+          >
+            <svg className="size-2.5 shrink-0" viewBox="0 0 16 16" fill="currentColor"><path d="M4.5 2A2.5 2.5 0 002 4.5v7A2.5 2.5 0 004.5 14h7a2.5 2.5 0 002.5-2.5v-3a.5.5 0 00-1 0v3A1.5 1.5 0 0111.5 13h-7A1.5 1.5 0 013 11.5v-7A1.5 1.5 0 014.5 3h3a.5.5 0 000-1h-3zM9 2.5a.5.5 0 01.5-.5h4a.5.5 0 01.5.5v4a.5.5 0 01-1 0V3.707L8.354 8.354a.5.5 0 11-.708-.708L12.293 3H9.5a.5.5 0 01-.5-.5z" /></svg>
+            Ad Preview
+          </a>
+        )}
       </div>
       <Handle type="source" position={Position.Right} className="!w-2 !h-2 !bg-[#1B1B1B] !border-0" />
     </div>
