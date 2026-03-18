@@ -37,6 +37,27 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-10",
+    date: "18 Mar 2026",
+    version: "0.9.0",
+    title: "Funnel Builder, Business Settings & Full Supabase Migration",
+    changes: [
+      { type: "added", text: "Visual Funnel Builder — drag-and-drop e-commerce funnel mapping with React Flow canvas, custom traffic/page nodes, arrow connections" },
+      { type: "added", text: "4 funnel templates — Standard DTC, Quiz Funnel, Advertorial, Organic Content" },
+      { type: "added", text: "Funnel performance mode — overlay traffic, CVR, AOV, drop-off metrics on each node with colour-coded indicators" },
+      { type: "added", text: "Traffic warmth selector — tag traffic sources as Cold/Warm/Hot with colour badges" },
+      { type: "added", text: "Ad preview + page URL links on funnel nodes — clickable links to view ad creatives or live pages" },
+      { type: "added", text: "Undo/redo in Funnel Builder — Cmd+Z / Cmd+Shift+Z with 50-level history" },
+      { type: "added", text: "PNG export for funnels" },
+      { type: "added", text: "Business Settings page — configurable deliverable turnaround times, revision/support phase durations, working day toggles" },
+      { type: "added", text: "Centralised date helpers — all date formatting and business day logic in one module" },
+      { type: "improved", text: "Full Supabase migration — all data layers now persist to Supabase with localStorage fallback (prospects, roadmap, portfolio, settings, pulse, content DB, feedback, outreach, funnels)" },
+      { type: "improved", text: "Generic supabase-store helper for consistent data persistence pattern" },
+      { type: "improved", text: "Funnel node cards restyled — more spacious, separated header bar, hover shadows, pill-style preview links" },
+      { type: "improved", text: "Ecomlanders logomark favicon" },
+    ],
+  },
+  {
     id: "cl-9",
     date: "18 Mar 2026",
     version: "0.8.1",
