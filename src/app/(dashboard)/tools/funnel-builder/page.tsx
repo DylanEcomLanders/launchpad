@@ -31,6 +31,7 @@ import type {
   FunnelNodeData,
   FunnelMode,
   FunnelNodeStatus,
+  TrafficWarmth,
   TrafficSource,
   PageNodeType,
   SerializedNode,
@@ -527,6 +528,23 @@ export default function FunnelBuilderPage() {
                   <option value="live">Live</option>
                 </select>
               </div>
+
+              {/* Warmth (traffic nodes only) */}
+              {nodeData.nodeType === "traffic" && (
+                <div>
+                  <label className={labelClass}>Traffic Warmth</label>
+                  <select
+                    value={nodeData.warmth || ""}
+                    onChange={(e) => updateNodeData("warmth", e.target.value)}
+                    className={selectClass}
+                  >
+                    <option value="">No warmth set</option>
+                    <option value="cold">Cold</option>
+                    <option value="warm">Warm</option>
+                    <option value="hot">Hot</option>
+                  </select>
+                </div>
+              )}
 
               {/* Metrics (performance mode only) */}
               {activeFunnel.mode === "performance" && (

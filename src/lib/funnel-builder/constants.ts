@@ -41,6 +41,12 @@ export const pageNodeTypes: PageNodeType[] = [
   "Advertorial", "About / Header / Blog", "Cart", "Checkout", "Upsell", "Thank You",
 ];
 
+export const warmthColors: Record<string, { bg: string; text: string; border: string; label: string }> = {
+  cold: { bg: "#EFF6FF", text: "#2563EB", border: "#BFDBFE", label: "Cold" },
+  warm: { bg: "#FFF7ED", text: "#EA580C", border: "#FED7AA", label: "Warm" },
+  hot: { bg: "#FEF2F2", text: "#DC2626", border: "#FECACA", label: "Hot" },
+};
+
 export const statusColors: Record<string, { bg: string; text: string; dot: string }> = {
   planned: { bg: "#F5F5F5", text: "#777", dot: "#CCC" },
   "in-progress": { bg: "#EFF6FF", text: "#2563EB", dot: "#3B82F6" },

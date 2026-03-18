@@ -22,6 +22,7 @@ export type PageNodeType =
   | "Thank You";
 
 export type FunnelNodeStatus = "planned" | "in-progress" | "live";
+export type TrafficWarmth = "cold" | "warm" | "hot";
 
 export interface FunnelNodeMetrics {
   traffic?: number;
@@ -35,6 +36,7 @@ export interface FunnelNodeData {
   subType: TrafficSource | PageNodeType;
   label: string;
   status: FunnelNodeStatus;
+  warmth?: TrafficWarmth;
   metrics?: FunnelNodeMetrics;
 }
 

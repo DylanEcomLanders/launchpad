@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useRef, useEffect } from "react";
 import {
   ReactFlow,
   Background,
@@ -38,6 +38,14 @@ const defaultEdgeOptions = {
   markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16, color: "#CCC" },
 };
 
+/* ── Undo / Redo history ── */
+interface Snapshot {
+  nodes: Node[];
+  edges: Edge[];
+}
+
+const MAX_HISTORY = 50;
+
 export default function FunnelCanvas({
   initialNodes,
   initialEdges,
@@ -50,37 +58,121 @@ export default function FunnelCanvas({
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges as unknown as Edge[]);
   const reactFlowRef = useRef<HTMLDivElement>(null);
 
+  // Undo/redo stacks
+  const history = useRef<Snapshot[]>([]);
+  const future = useRef<Snapshot[]>([]);
+  const isUndoRedo = useRef(false);
+
+  // Keep refs in sync for undo snapshots
+  const nodesRef = useRef(nodes);
+  const edgesRef = useRef(edges);
+  nodesRef.current = nodes;
+  edgesRef.current = edges;
+
+  // Push a snapshot before a meaningful change
+  const pushSnapshot = useCallback(() => {
+    if (isUndoRedo.current) return;
+    history.current.push({
+      nodes: JSON.parse(JSON.stringify(nodesRef.current)),
+      edges: JSON.parse(JSON.stringify(edgesRef.current)),
+    });
+    if (history.current.length > MAX_HISTORY) history.current.shift();
+    future.current = []; // clear redo stack on new action
+  }, []);
+
+  const undo = useCallback(() => {
+    if (history.current.length === 0) return;
+    const snap = history.current.pop()!;
+    future.current.push({
+      nodes: JSON.parse(JSON.stringify(nodesRef.current)),
+      edges: JSON.parse(JSON.stringify(edgesRef.current)),
+    });
+    isUndoRedo.current = true;
+    setNodes(snap.nodes);
+    setEdges(snap.edges);
+    setTimeout(() => {
+      isUndoRedo.current = false;
+      onNodesChangeCallback?.(snap.nodes);
+      onEdgesChangeCallback?.(snap.edges);
+    }, 0);
+  }, [setNodes, setEdges, onNodesChangeCallback, onEdgesChangeCallback]);
+
+  const redo = useCallback(() => {
+    if (future.current.length === 0) return;
+    const snap = future.current.pop()!;
+    history.current.push({
+      nodes: JSON.parse(JSON.stringify(nodesRef.current)),
+      edges: JSON.parse(JSON.stringify(edgesRef.current)),
+    });
+    isUndoRedo.current = true;
+    setNodes(snap.nodes);
+    setEdges(snap.edges);
+    setTimeout(() => {
+      isUndoRedo.current = false;
+      onNodesChangeCallback?.(snap.nodes);
+      onEdgesChangeCallback?.(snap.edges);
+    }, 0);
+  }, [setNodes, setEdges, onNodesChangeCallback, onEdgesChangeCallback]);
+
+  // Keyboard listener: Cmd/Ctrl+Z = undo, Cmd/Ctrl+Shift+Z = redo
+  useEffect(() => {
+    if (readOnly) return;
+    const handler = (e: KeyboardEvent) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod || e.key.toLowerCase() !== "z") return;
+      e.preventDefault();
+      if (e.shiftKey) {
+        redo();
+      } else {
+        undo();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [readOnly, undo, redo]);
+
   // Sync changes back to parent
   const handleNodesChange = useCallback(
     (changes: Parameters<typeof onNodesChange>[0]) => {
+      // Snapshot before removes/adds (not position drags)
+      const hasStructural = changes.some(
+        (c) => c.type === "remove" || c.type === "add"
+      );
+      if (hasStructural) pushSnapshot();
+
       onNodesChange(changes);
-      // Defer callback to next tick so state is updated
       setTimeout(() => {
-        onNodesChangeCallback?.(nodes);
+        onNodesChangeCallback?.(nodesRef.current);
       }, 0);
     },
-    [onNodesChange, onNodesChangeCallback, nodes]
+    [onNodesChange, onNodesChangeCallback, pushSnapshot]
   );
 
   const handleEdgesChange = useCallback(
     (changes: Parameters<typeof onEdgesChange>[0]) => {
+      const hasStructural = changes.some(
+        (c) => c.type === "remove" || c.type === "add"
+      );
+      if (hasStructural) pushSnapshot();
+
       onEdgesChange(changes);
       setTimeout(() => {
-        onEdgesChangeCallback?.(edges);
+        onEdgesChangeCallback?.(edgesRef.current);
       }, 0);
     },
-    [onEdgesChange, onEdgesChangeCallback, edges]
+    [onEdgesChange, onEdgesChangeCallback, pushSnapshot]
   );
 
   const onConnect = useCallback(
     (params: Connection) => {
+      pushSnapshot();
       setEdges((eds) => {
         const newEdges = addEdge({ ...params, ...defaultEdgeOptions }, eds);
         setTimeout(() => onEdgesChangeCallback?.(newEdges), 0);
         return newEdges;
       });
     },
-    [setEdges, onEdgesChangeCallback]
+    [setEdges, onEdgesChangeCallback, pushSnapshot]
   );
 
   const onSelectionChange = useCallback(
@@ -100,6 +192,8 @@ export default function FunnelCanvas({
       const bounds = reactFlowRef.current?.getBoundingClientRect();
       if (!bounds) return;
 
+      pushSnapshot();
+
       const newNode: Node = {
         id: `node_${Date.now().toString(36)}`,
         type: data.nodeType === "traffic" ? "trafficNode" : "pageNode",
@@ -113,7 +207,7 @@ export default function FunnelCanvas({
         return updated;
       });
     },
-    [setNodes, onNodesChangeCallback]
+    [setNodes, onNodesChangeCallback, pushSnapshot]
   );
 
   const onDragOver = useCallback((event: React.DragEvent) => {
