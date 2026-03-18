@@ -53,13 +53,17 @@ export function formatFilenameDate(): string {
 
 /* ── Business day arithmetic ── */
 
-/** Add `n` business days (skipping weekends) to a YYYY-MM-DD string. */
-export function addBusinessDays(dateStr: string, n: number): string {
+/** Default working days: Mon–Fri */
+const DEFAULT_WORKING = new Set([1, 2, 3, 4, 5]);
+
+/** Add `n` working days to a YYYY-MM-DD string. Optionally pass custom working day numbers. */
+export function addBusinessDays(dateStr: string, n: number, workingDays?: Set<number>): string {
+  const wd = workingDays || DEFAULT_WORKING;
   const d = new Date(dateStr + "T00:00:00");
   let added = 0;
   while (added < n) {
     d.setDate(d.getDate() + 1);
-    if (d.getDay() !== 0 && d.getDay() !== 6) added++;
+    if (wd.has(d.getDay())) added++;
   }
   return formatYMD(d);
 }
@@ -71,13 +75,14 @@ export function addDays(dateStr: string, days: number): string {
   return formatYMD(d);
 }
 
-/** Count business days between two YYYY-MM-DD strings (inclusive). */
-export function businessDaysBetween(startStr: string, endStr: string): number {
+/** Count working days between two YYYY-MM-DD strings (inclusive). */
+export function businessDaysBetween(startStr: string, endStr: string, workingDays?: Set<number>): number {
+  const wd = workingDays || DEFAULT_WORKING;
   const current = new Date(startStr + "T00:00:00");
   const end = new Date(endStr + "T00:00:00");
   let count = 0;
   while (current <= end) {
-    if (current.getDay() !== 0 && current.getDay() !== 6) count++;
+    if (wd.has(current.getDay())) count++;
     current.setDate(current.getDate() + 1);
   }
   return Math.max(1, count);

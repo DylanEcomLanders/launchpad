@@ -12,6 +12,7 @@ import {
   businessDaysBetween,
   calendarDaysBetween,
 } from "./dates";
+import { getSettings, getDeliverableTimeEstimates, getWorkingDayNumbers } from "./settings";
 
 /* ── Touchpoint type ── */
 
@@ -36,17 +37,18 @@ export interface Touchpoint {
 export function computeDesignDevDays(
   types: (DeliverableType | "")[]
 ): { designDays: number; devDays: number } {
+  const estimates = getDeliverableTimeEstimates();
   const valid = types.filter(
-    (t): t is DeliverableType => t !== "" && t in deliverableTimeEstimates
+    (t): t is DeliverableType => t !== "" && t in estimates
   );
   if (valid.length === 0) return { designDays: 0, devDays: 0 };
 
   const rawDesign = valid.reduce(
-    (sum, t) => sum + deliverableTimeEstimates[t].designDays,
+    (sum, t) => sum + (estimates[t]?.designDays || 0),
     0
   );
   const rawDev = valid.reduce(
-    (sum, t) => sum + deliverableTimeEstimates[t].devDays,
+    (sum, t) => sum + (estimates[t]?.devDays || 0),
     0
   );
   const count = valid.length;
@@ -56,8 +58,6 @@ export function computeDesignDevDays(
     devDays: Math.max(1, Math.ceil(rawDev / Math.sqrt(count))),
   };
 }
-
-const REVISION_BUSINESS_DAYS = 4;
 
 /* ── Date helpers — re-exported from @/lib/dates ── */
 export { addDays, addBusinessDays, businessDaysBetween, calendarDaysBetween } from "./dates";
@@ -134,16 +134,18 @@ export function computeAllPhases(
   designDays: number,
   devDays: number
 ): RoadmapPhase[] {
-  const designEnd = addBusinessDays(kickoffDate, designDays - 1);
-  const revisionStart = addBusinessDays(designEnd, 1);
-  const revisionEnd = addBusinessDays(
-    revisionStart,
-    REVISION_BUSINESS_DAYS - 1
-  );
-  const devStart = addBusinessDays(revisionEnd, 1);
-  const devEnd = addBusinessDays(devStart, devDays - 1);
-  const launchDate = addBusinessDays(devEnd, 1);
-  const supportEnd = addDays(launchDate, 29);
+  const settings = getSettings();
+  const wd = getWorkingDayNumbers(settings);
+  const revisionBizDays = settings.revisionDays;
+  const supportCalDays = settings.supportDays;
+
+  const designEnd = addBusinessDays(kickoffDate, designDays - 1, wd);
+  const revisionStart = addBusinessDays(designEnd, 1, wd);
+  const revisionEnd = addBusinessDays(revisionStart, revisionBizDays - 1, wd);
+  const devStart = addBusinessDays(revisionEnd, 1, wd);
+  const devEnd = addBusinessDays(devStart, devDays - 1, wd);
+  const launchDate = addBusinessDays(devEnd, 1, wd);
+  const supportEnd = addDays(launchDate, supportCalDays - 1);
 
   const dateMap: Record<RoadmapPhaseName, { start: string; end: string }> = {
     Kickoff: { start: kickoffDate, end: kickoffDate },
