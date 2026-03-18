@@ -2323,12 +2323,12 @@ function DevelopmentSection({
   const [pageName, setPageName] = useState("");
   const [stagingUrl, setStagingUrl] = useState("");
   const [pageDesc, setPageDesc] = useState("");
-  const [activeReviewId, setActiveReviewId] = useState(pageReviews[0]?.id || "");
+  const [activeReviewId, setActiveReviewId] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   // Sync activeReviewId when pageReviews change
   useEffect(() => {
-    if (pageReviews.length > 0 && !pageReviews.find((r) => r.id === activeReviewId)) {
+    if (pageReviews.length > 0 && (!activeReviewId || !pageReviews.find((r) => r.id === activeReviewId))) {
       setActiveReviewId(pageReviews[0].id);
     }
   }, [pageReviews, activeReviewId]);
