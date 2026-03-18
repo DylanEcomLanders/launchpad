@@ -1297,7 +1297,7 @@ function DesignsTab({
           </div>
           <div className="flex-1 min-h-0">
             <iframe
-              src={toFigmaEmbed(figmaPopupUrl) || figmaPopupUrl}
+              src={figmaPopupUrl}
               className="w-full h-full border-0"
               allowFullScreen
             />
