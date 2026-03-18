@@ -1015,7 +1015,6 @@ function DesignsTab({
   const [submitting, setSubmitting] = useState<string | null>(null);
   const [localFeedback, setLocalFeedback] = useState<Record<string, DesignReviewFeedback[]>>(reviewFeedback);
   const [selectedVersions, setSelectedVersions] = useState<Record<string, string>>({});
-  const [figmaPopupUrl, setFigmaPopupUrl] = useState<string | null>(null);
 
   const handleFeedback = async (reviewId: string, versionId: string, action: "approved" | "changes_requested") => {
     const comment = feedbackState[versionId]?.comment || "";
@@ -1131,32 +1130,20 @@ function DesignsTab({
                       className="absolute inset-0 w-full h-full"
                       allowFullScreen
                     />
+                    <a
+                      href={activeVersion.figma_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute bottom-3 right-3 inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold bg-[#1A1A1A] text-white rounded-lg hover:bg-[#333] transition-colors shadow-lg"
+                    >
+                      <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                      </svg>
+                      Review &amp; Comment in Figma
+                    </a>
                   </div>
                 )}
 
-                {/* Open in Figma */}
-                <div className="flex items-center gap-2 mt-4">
-                  <button
-                    onClick={() => setFigmaPopupUrl(activeVersion.figma_url)}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold bg-[#1A1A1A] text-white rounded-lg hover:bg-[#333] transition-colors"
-                  >
-                    <svg className="size-4" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M3.28 2.22a.75.75 0 00-1.06 1.06L5.44 6.5H2.75a.75.75 0 000 1.5h4.5A.75.75 0 008 7.25v-4.5a.75.75 0 00-1.5 0v2.69L3.28 2.22zM13.5 2.75a.75.75 0 00-1.5 0v4.5c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-2.69l3.22-3.22a.75.75 0 00-1.06-1.06L13.5 5.44V2.75zM3.28 17.78l3.22-3.22v2.69a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.69l-3.22 3.22a.75.75 0 101.06 1.06zM13.5 14.56l3.22 3.22a.75.75 0 101.06-1.06l-3.22-3.22h2.69a.75.75 0 000-1.5h-4.5a.75.75 0 00-.75.75v4.5a.75.75 0 001.5 0v-2.69z" />
-                    </svg>
-                    Review &amp; Comment
-                  </button>
-                  <a
-                    href={activeVersion.figma_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium text-[#777] hover:text-[#1A1A1A] transition-colors"
-                  >
-                    Open in new tab
-                    <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                    </svg>
-                  </a>
-                </div>
               </div>
             )}
 
@@ -1263,47 +1250,6 @@ function DesignsTab({
         );
       })}
 
-      {/* Fullscreen Figma modal */}
-      {figmaPopupUrl && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex flex-col">
-          <div className="flex items-center justify-between px-4 py-3 bg-[#1A1A1A]">
-            <div className="flex items-center gap-3">
-              <svg className="size-4 text-white/60" viewBox="0 0 15 15" fill="currentColor">
-                <path fillRule="evenodd" clipRule="evenodd" d="M7.5 0C5.57 0 4 1.57 4 3.5c0 .62.16 1.2.44 1.7A3.49 3.49 0 003 8.5c0 1.63 1.12 3 2.63 3.38A3.49 3.49 0 007 15a3.5 3.5 0 003.5-3.5V9.95A3.49 3.49 0 0011 3.5C11 1.57 9.43 0 7.5 0zM5 3.5C5 2.12 6.12 1 7.5 1H8v5H7.5A2.5 2.5 0 015 3.5zM7 12v-.5a2.5 2.5 0 112.5-2.5H9v2.5A2 2 0 017 12z" />
-              </svg>
-              <span className="text-sm text-white/80 font-medium">Design Review</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <a
-                href={figmaPopupUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-white/60 hover:text-white transition-colors"
-              >
-                Open in Figma
-                <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                </svg>
-              </a>
-              <button
-                onClick={() => setFigmaPopupUrl(null)}
-                className="inline-flex items-center justify-center size-8 rounded-md text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-              >
-                <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="flex-1 min-h-0">
-            <iframe
-              src={figmaPopupUrl}
-              className="w-full h-full border-0"
-              allowFullScreen
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }
