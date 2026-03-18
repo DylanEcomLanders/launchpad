@@ -10,7 +10,7 @@ import {
   DocumentDuplicateIcon,
 } from "@heroicons/react/24/outline";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
-import FunnelCanvas from "@/components/funnel-builder/FunnelCanvas";
+import FunnelCanvas, { type FunnelCanvasHandle } from "@/components/funnel-builder/FunnelCanvas";
 import { inputClass, selectClass, labelClass } from "@/lib/form-styles";
 import {
   getFunnels,
@@ -66,6 +66,7 @@ export default function FunnelBuilderPage() {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const canvasHandle = useRef<FunnelCanvasHandle>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Current canvas state refs (updated on change)
@@ -182,7 +183,7 @@ export default function FunnelBuilderPage() {
         : n
     );
     nodesRef.current = updatedNodes;
-    // Force re-render by updating the funnel
+    canvasHandle.current?.setNodes(updatedNodes);
     const saved = updateFunnel(activeFunnel.id, {
       nodes: updatedNodes as unknown as SerializedNode[],
       edges: edgesRef.current as unknown as SerializedEdge[],
@@ -208,6 +209,7 @@ export default function FunnelBuilderPage() {
         : n
     );
     nodesRef.current = updatedNodes;
+    canvasHandle.current?.setNodes(updatedNodes);
     const saved = updateFunnel(activeFunnel.id, {
       nodes: updatedNodes as unknown as SerializedNode[],
       edges: edgesRef.current as unknown as SerializedEdge[],
@@ -224,6 +226,8 @@ export default function FunnelBuilderPage() {
     );
     nodesRef.current = updatedNodes;
     edgesRef.current = updatedEdges;
+    canvasHandle.current?.setNodes(updatedNodes);
+    canvasHandle.current?.setEdges(updatedEdges);
     setSelectedNode(null);
     const saved = updateFunnel(activeFunnel.id, {
       nodes: updatedNodes as unknown as SerializedNode[],
@@ -614,6 +618,7 @@ export default function FunnelBuilderPage() {
       {/* Canvas */}
       <div ref={canvasRef} className="flex-1 relative">
         <FunnelCanvas
+          ref={canvasHandle}
           key={activeFunnel.id}
           initialNodes={activeFunnel.nodes}
           initialEdges={activeFunnel.edges}

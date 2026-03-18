@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useEffect } from "react";
+import { useCallback, useRef, useEffect, useImperativeHandle, forwardRef } from "react";
 import {
   ReactFlow,
   Background,
@@ -46,17 +46,28 @@ interface Snapshot {
 
 const MAX_HISTORY = 50;
 
-export default function FunnelCanvas({
+export interface FunnelCanvasHandle {
+  setNodes: (nodes: Node[]) => void;
+  setEdges: (edges: Edge[]) => void;
+}
+
+const FunnelCanvasInner = forwardRef<FunnelCanvasHandle, FunnelCanvasProps>(function FunnelCanvasInner({
   initialNodes,
   initialEdges,
   onNodesChange: onNodesChangeCallback,
   onEdgesChange: onEdgesChangeCallback,
   onNodeSelect,
   readOnly = false,
-}: FunnelCanvasProps) {
+}, ref) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes as unknown as Node[]);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges as unknown as Edge[]);
   const reactFlowRef = useRef<HTMLDivElement>(null);
+
+  // Expose setNodes/setEdges to parent
+  useImperativeHandle(ref, () => ({
+    setNodes: (n: Node[]) => setNodes(n),
+    setEdges: (e: Edge[]) => setEdges(e),
+  }), [setNodes, setEdges]);
 
   // Undo/redo stacks
   const history = useRef<Snapshot[]>([]);
@@ -250,7 +261,6 @@ export default function FunnelCanvas({
       </ReactFlow>
     </div>
   );
-}
+});
 
-/** Expose setNodes/setEdges for parent to update externally */
-export { useNodesState, useEdgesState };
+export default FunnelCanvasInner;
