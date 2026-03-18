@@ -107,6 +107,7 @@ export interface PortalData {
   created_at: string;
   updated_at: string;
   view_count: number;
+  deleted_at?: string | null; // ISO date — soft delete (trash bin)
 }
 
 export type PortalInsert = Omit<PortalData, "id" | "token" | "created_at" | "updated_at" | "view_count">;

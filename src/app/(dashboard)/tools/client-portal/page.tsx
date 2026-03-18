@@ -12,7 +12,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { inputClass, labelClass } from "@/lib/form-styles";
-import { getPortals, createPortal, deletePortal } from "@/lib/portal/data";
+import { getPortals, createPortal, deletePortal, getTrashedPortals, restorePortal, permanentlyDeletePortal } from "@/lib/portal/data";
 import type { PortalData } from "@/lib/portal/types";
 
 export default function ClientPortalPage() {
@@ -77,6 +77,9 @@ export default function ClientPortalPage() {
   };
 
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [showTrash, setShowTrash] = useState(false);
+  const [trashedPortals, setTrashedPortals] = useState<PortalData[]>([]);
+  const [confirmPermanentId, setConfirmPermanentId] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
     if (confirmDeleteId !== id) {
@@ -86,6 +89,27 @@ export default function ClientPortalPage() {
     await deletePortal(id);
     setPortals((prev) => prev.filter((p) => p.id !== id));
     setConfirmDeleteId(null);
+  };
+
+  const loadTrash = useCallback(async () => {
+    const trashed = await getTrashedPortals();
+    setTrashedPortals(trashed);
+  }, []);
+
+  const handleRestore = async (id: string) => {
+    await restorePortal(id);
+    setTrashedPortals((prev) => prev.filter((p) => p.id !== id));
+    loadPortals();
+  };
+
+  const handlePermanentDelete = async (id: string) => {
+    if (confirmPermanentId !== id) {
+      setConfirmPermanentId(id);
+      return;
+    }
+    await permanentlyDeletePortal(id);
+    setTrashedPortals((prev) => prev.filter((p) => p.id !== id));
+    setConfirmPermanentId(null);
   };
 
   const copyLink = (token: string) => {
@@ -138,22 +162,40 @@ export default function ClientPortalPage() {
           <h1 className="text-2xl font-bold tracking-tight">Client Portals</h1>
           <p className="text-sm text-[#7A7A7A]">Overview of all active client projects</p>
         </div>
-        <button
-          onClick={() => {
-            setShowForm(true);
-            setClientName("");
-            setClientEmail("");
-            setProjectType("Full Page Build");
-          }}
-          className="flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
-        >
-          <PlusIcon className="size-3.5" />
-          New Portal
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              setShowTrash(!showTrash);
+              if (!showTrash) loadTrash();
+            }}
+            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border transition-colors ${
+              showTrash
+                ? "bg-red-50 text-red-600 border-red-200"
+                : "text-[#7A7A7A] border-[#E5E5EA] hover:bg-[#F5F5F5]"
+            }`}
+          >
+            <TrashIcon className="size-3.5" />
+            Trash
+          </button>
+          {!showTrash && (
+            <button
+              onClick={() => {
+                setShowForm(true);
+                setClientName("");
+                setClientEmail("");
+                setProjectType("Full Page Build");
+              }}
+              className="flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
+            >
+              <PlusIcon className="size-3.5" />
+              New Portal
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ── Stat Panels ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+      {!showTrash && <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         <div className="border border-[#1B1B1B] rounded-lg px-5 py-5">
           <span className="text-2xl font-semibold tabular-nums text-[#1B1B1B]">{portals.length}</span>
           <p className="text-[11px] text-[#7A7A7A] mt-1">Active Portals</p>
@@ -170,10 +212,10 @@ export default function ClientPortalPage() {
           <span className="text-2xl font-semibold tabular-nums text-[#1B1B1B]">{overdueCount}</span>
           <p className="text-[11px] text-[#7A7A7A] mt-1">Overdue Tasks</p>
         </div>
-      </div>
+      </div>}
 
       {/* ── Filters ── */}
-      {portals.length > 0 && (
+      {!showTrash && portals.length > 0 && (
         <div className="flex items-center gap-3 mb-4">
           <FunnelIcon className="size-3.5 text-[#A0A0A0]" />
           <div className="flex items-center gap-1.5">
@@ -277,7 +319,7 @@ export default function ClientPortalPage() {
       )}
 
       {/* ── Loading ── */}
-      {loading && (
+      {!showTrash && loading && (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
             <div key={i} className="border border-[#E5E5EA] rounded-lg p-4 animate-pulse">
@@ -289,7 +331,7 @@ export default function ClientPortalPage() {
       )}
 
       {/* ── Empty state ── */}
-      {!loading && portals.length === 0 && !showForm && (
+      {!showTrash && !loading && portals.length === 0 && !showForm && (
         <div className="border border-dashed border-[#E5E5EA] rounded-lg p-12 text-center">
           <p className="text-sm text-[#7A7A7A] mb-1">No client portals yet</p>
           <p className="text-xs text-[#A0A0A0] mb-4">Create your first portal to start tracking projects</p>
@@ -304,7 +346,7 @@ export default function ClientPortalPage() {
       )}
 
       {/* ── Portal List ── */}
-      {!loading && portals.length > 0 && (
+      {!showTrash && !loading && portals.length > 0 && (
         <div className="space-y-4">
           {filteredPortals.length === 0 ? (
             <div className="border border-dashed border-[#E5E5EA] rounded-lg p-8 text-center">
@@ -322,6 +364,61 @@ export default function ClientPortalPage() {
                 onCancelDelete={() => setConfirmDeleteId(null)}
               />
             ))
+          )}
+        </div>
+      )}
+
+      {/* ── Trash Bin ── */}
+      {showTrash && (
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <TrashIcon className="size-4 text-red-400" />
+            <h2 className="text-sm font-semibold text-[#1B1B1B]">Trash</h2>
+            <span className="text-xs text-[#AAA]">({trashedPortals.length} portals)</span>
+          </div>
+
+          {trashedPortals.length === 0 ? (
+            <div className="border border-dashed border-[#E5E5EA] rounded-lg p-12 text-center">
+              <p className="text-sm text-[#7A7A7A]">Trash is empty</p>
+              <p className="text-xs text-[#A0A0A0] mt-1">Deleted portals will appear here</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {trashedPortals.map((portal) => (
+                <div
+                  key={portal.id}
+                  className="flex items-center justify-between border border-[#E5E5EA] rounded-lg p-4 bg-[#FAFAFA]"
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-[#1B1B1B]">{portal.client_name}</p>
+                    <p className="text-xs text-[#7A7A7A]">
+                      {portal.project_type} · Deleted{" "}
+                      {portal.deleted_at
+                        ? new Date(portal.deleted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })
+                        : ""}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleRestore(portal.id)}
+                      className="px-3 py-1.5 text-xs font-medium text-[#1B1B1B] border border-[#E5E5EA] rounded-lg hover:bg-white transition-colors"
+                    >
+                      Restore
+                    </button>
+                    <button
+                      onClick={() => handlePermanentDelete(portal.id)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                        confirmPermanentId === portal.id
+                          ? "bg-red-500 text-white"
+                          : "text-red-500 border border-red-200 hover:bg-red-50"
+                      }`}
+                    >
+                      {confirmPermanentId === portal.id ? "Confirm Delete" : "Delete Forever"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}

@@ -204,14 +204,15 @@ export async function getPortals(): Promise<PortalData[]> {
       });
       // Include localStorage-only portals (not in Supabase)
       const localOnly = lsPortals.filter((p) => !supabaseIds.has(p.id));
-      return [...localOnly, ...supabasePortals];
+      return [...localOnly, ...supabasePortals].filter((p) => !p.deleted_at);
     } catch {
       // fall through to localStorage
     }
   }
   if (typeof window === "undefined") return [];
   const stored = localStorage.getItem(LS_PORTALS);
-  return stored ? JSON.parse(stored) : [];
+  const all: PortalData[] = stored ? JSON.parse(stored) : [];
+  return all.filter((p) => !p.deleted_at);
 }
 
 export async function getPortalById(id: string): Promise<PortalData | null> {
@@ -357,21 +358,105 @@ export async function updatePortal(
   }
 }
 
+/** Soft-delete — moves portal to trash (sets deleted_at timestamp) */
 export async function deletePortal(id: string): Promise<void> {
+  const now = new Date().toISOString();
+
   if (isSupabaseConfigured()) {
     try {
-      const { error } = await supabase
+      await supabase
+        .from("client_portals")
+        .update({ deleted_at: now })
+        .eq("id", id);
+    } catch {
+      // fall through
+    }
+  }
+
+  // Always update localStorage
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem(LS_PORTALS);
+    const all: PortalData[] = stored ? JSON.parse(stored) : [];
+    const updated = all.map((p) =>
+      p.id === id ? { ...p, deleted_at: now } : p
+    );
+    localStorage.setItem(LS_PORTALS, JSON.stringify(updated));
+  }
+}
+
+/** Restore a soft-deleted portal from trash */
+export async function restorePortal(id: string): Promise<void> {
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase
+        .from("client_portals")
+        .update({ deleted_at: null })
+        .eq("id", id);
+    } catch {
+      // fall through
+    }
+  }
+
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem(LS_PORTALS);
+    const all: PortalData[] = stored ? JSON.parse(stored) : [];
+    const updated = all.map((p) =>
+      p.id === id ? { ...p, deleted_at: null } : p
+    );
+    localStorage.setItem(LS_PORTALS, JSON.stringify(updated));
+  }
+}
+
+/** Permanently delete a portal (no recovery) */
+export async function permanentlyDeletePortal(id: string): Promise<void> {
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase
         .from("client_portals")
         .delete()
         .eq("id", id);
-      if (error) throw error;
-      return;
     } catch {
-      // fall through to localStorage
+      // fall through
     }
   }
-  const all = await getPortals();
-  localStorage.setItem(LS_PORTALS, JSON.stringify(all.filter((p) => p.id !== id)));
+
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem(LS_PORTALS);
+    const all: PortalData[] = stored ? JSON.parse(stored) : [];
+    localStorage.setItem(LS_PORTALS, JSON.stringify(all.filter((p) => p.id !== id)));
+  }
+}
+
+/** Get trashed portals */
+export async function getTrashedPortals(): Promise<PortalData[]> {
+  const all = await getAllPortalsIncludingTrashed();
+  return all.filter((p) => p.deleted_at);
+}
+
+/** Internal: get all portals including trashed ones */
+async function getAllPortalsIncludingTrashed(): Promise<PortalData[]> {
+  let lsPortals: PortalData[] = [];
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem(LS_PORTALS);
+    if (stored) lsPortals = JSON.parse(stored);
+  }
+
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from("client_portals")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      const supabaseIds = new Set((data ?? []).map((r: Record<string, unknown>) => r.id));
+      const supabasePortals = (data ?? []).map((row: Record<string, unknown>) => mapPortalRow(row));
+      const localOnly = lsPortals.filter((p) => !supabaseIds.has(p.id));
+      return [...localOnly, ...supabasePortals];
+    } catch {
+      // fall through
+    }
+  }
+  return lsPortals;
 }
 
 export async function incrementViewCount(token: string): Promise<void> {
@@ -436,6 +521,7 @@ function mapPortalRow(row: any): PortalData {
     created_at: row.created_at || "",
     updated_at: row.updated_at || "",
     view_count: row.view_count || 0,
+    deleted_at: row.deleted_at || null,
   };
 }
 
