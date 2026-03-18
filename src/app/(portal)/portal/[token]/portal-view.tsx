@@ -561,11 +561,24 @@ function TimelineTab({
                     </div>
                     <p className="text-xs text-[#AAA]">
                       {phase.dates}
-                      {phase.deadline && (
-                        <span className="ml-2 text-[#AAA]">
-                          &middot; Deadline: {new Date(phase.deadline).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                      {isComplete && phase.completedDate && phase.deadline && new Date(phase.completedDate) < new Date(phase.deadline) ? (
+                        <>
+                          <span className="ml-2 line-through text-[#CCC]">
+                            Deadline: {new Date(phase.deadline + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                          </span>
+                          <span className="ml-1.5 text-green-600 font-medium">
+                            Completed {new Date(phase.completedDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                          </span>
+                        </>
+                      ) : isComplete && phase.completedDate ? (
+                        <span className="ml-2 text-green-600">
+                          &middot; Completed {new Date(phase.completedDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                         </span>
-                      )}
+                      ) : phase.deadline ? (
+                        <span className="ml-2 text-[#AAA]">
+                          &middot; Deadline: {new Date(phase.deadline + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                        </span>
+                      ) : null}
                     </p>
                   </div>
                 </div>
@@ -684,7 +697,7 @@ function ScopeTab({
   deliverables,
   documents,
 }: {
-  scope: string[];
+  scope: (string | { description: string; type: string })[];
   deliverables: { id?: string; name: string; status: string; phase?: string }[];
   documents: PortalDocument[];
 }) {
@@ -730,12 +743,19 @@ function ScopeTab({
           </h3>
           <div className="bg-white border border-[#E8E8E8] rounded-lg p-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
-              {scope.map((item, i) => (
-                <div key={i} className="flex items-center gap-2.5 py-1">
-                  <span className="size-1.5 rounded-full bg-[#1A1A1A] shrink-0" />
-                  <span className="text-sm text-[#777]">{item}</span>
-                </div>
-              ))}
+              {scope.map((item, i) => {
+                const desc = typeof item === "string" ? item : item.description;
+                const typ = typeof item === "string" ? "" : item.type;
+                return (
+                  <div key={i} className="flex items-center gap-2.5 py-1">
+                    <span className="size-1.5 rounded-full bg-[#1A1A1A] shrink-0" />
+                    <span className="text-sm text-[#777] flex-1">{desc}</span>
+                    {typ && (
+                      <span className="shrink-0 px-2 py-0.5 text-[9px] font-medium text-[#999] bg-[#F0F0F0] rounded-full">{typ}</span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -1112,14 +1132,9 @@ function DesignsTab({
 
   if (reviews.length === 0) {
     return (
-      <div className="text-center py-20">
-        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F0F0F0] mb-4">
-          <svg className="size-5 text-[#AAA]" viewBox="0 0 15 15" fill="currentColor">
-            <path fillRule="evenodd" clipRule="evenodd" d="M7.5 0C5.57 0 4 1.57 4 3.5c0 .62.16 1.2.44 1.7A3.49 3.49 0 003 8.5c0 1.63 1.12 3 2.63 3.38A3.49 3.49 0 007 15a3.5 3.5 0 003.5-3.5V9.95A3.49 3.49 0 0011 3.5C11 1.57 9.43 0 7.5 0zM5 3.5C5 2.12 6.12 1 7.5 1H8v5H7.5A2.5 2.5 0 015 3.5zM7 12v-.5a2.5 2.5 0 112.5-2.5H9v2.5A2 2 0 017 12z" />
-          </svg>
-        </div>
-        <p className="text-sm text-[#999] mb-1">No designs shared yet</p>
-        <p className="text-xs text-[#CCC]">Designs will appear here when they&apos;re ready for review</p>
+      <div className="bg-white border border-dashed border-[#E8E8E8] rounded-lg p-8 text-center">
+        <p className="text-sm text-[#999] mb-1">Design updates coming soon</p>
+        <p className="text-xs text-[#CCC]">Wireframes and mockups will appear here when they&apos;re ready for your review</p>
       </div>
     );
   }
@@ -1389,8 +1404,12 @@ function DocumentPreview({
   const [toast, setToast] = useState("");
 
   function handleDownload() {
-    setToast("Download coming soon — documents will be linked when your portal goes live");
-    setTimeout(() => setToast(""), 3000);
+    if (doc.url) {
+      window.open(doc.url, "_blank");
+    } else {
+      setToast("Document not yet available");
+      setTimeout(() => setToast(""), 3000);
+    }
   }
 
   return (
@@ -1456,13 +1475,17 @@ function DocumentPreview({
           <div className="flex items-center gap-3">
             <button
               onClick={handleDownload}
-              className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-[#1A1A1A] text-white text-sm font-medium rounded-lg hover:bg-[#1A1A1A] transition-colors"
+              className={`flex-1 flex items-center justify-center gap-2 px-5 py-3 text-sm font-medium rounded-lg transition-colors ${
+                doc.url
+                  ? "bg-[#1A1A1A] text-white hover:bg-[#333]"
+                  : "bg-[#F0F0F0] text-[#AAA] cursor-not-allowed"
+              }`}
             >
               <svg className="size-4" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z" />
                 <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" />
               </svg>
-              Download PDF
+              {doc.url ? "Download PDF" : "Not yet available"}
             </button>
             <button
               onClick={onClose}

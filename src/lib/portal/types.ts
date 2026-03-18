@@ -12,6 +12,7 @@ export interface PortalPhase {
   tasks: number;
   completed: number;
   deadline?: string; // ISO date — used for dashboard deadline tracking
+  completedDate?: string; // ISO date — set when phase marked complete
 }
 
 export interface PortalDeliverable {
@@ -26,7 +27,10 @@ export interface PortalDocument {
   name: string;
   type: "Roadmap" | "Scope" | "Agreement" | "QA Checklist" | "Other";
   date: string;
+  url?: string; // link to downloadable file
 }
+
+export type ScopeItem = string | { description: string; type: string };
 
 export type TestStatus = "scheduled" | "live" | "complete";
 export type TestResult = "winner" | "loser" | "inconclusive";
@@ -90,7 +94,7 @@ export interface PortalData {
   progress: number;
   next_touchpoint: { date: string; description: string };
   phases: PortalPhase[];
-  scope: string[];
+  scope: ScopeItem[];
   deliverables: PortalDeliverable[];
   documents: PortalDocument[];
   results: PortalTestResult[];

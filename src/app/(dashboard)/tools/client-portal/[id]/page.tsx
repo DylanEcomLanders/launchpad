@@ -42,7 +42,9 @@ import type {
   MetricSnapshot,
   TestingTier,
   AdHocRequest,
+  ScopeItem,
 } from "@/lib/portal/types";
+import { deliverableTypes } from "@/lib/config";
 import type {
   DesignReview,
   DesignReviewVersion,
@@ -185,7 +187,11 @@ export default function PortalDetailPage() {
     const updatedPhases = portal.phases.map((p) => {
       if (p.id !== phaseId) return p;
       const nextStatus = order[(order.indexOf(p.status) + 1) % order.length];
-      return { ...p, status: nextStatus };
+      return {
+        ...p,
+        status: nextStatus,
+        completedDate: nextStatus === "complete" ? new Date().toISOString().slice(0, 10) : undefined,
+      };
     });
     // Auto-sync current_phase to the in-progress phase
     const inProgress = updatedPhases.find((p) => p.status === "in-progress");
@@ -202,9 +208,10 @@ export default function PortalDetailPage() {
     await updatePortal(portal.id, { next_touchpoint: updated });
   };
 
-  const handleAddScope = async (item: string) => {
+  const handleAddScope = async (item: string, type?: string) => {
     if (!portal || !item.trim()) return;
-    const updatedScope = [...portal.scope, item.trim()];
+    const newItem = type ? { description: item.trim(), type } : item.trim();
+    const updatedScope = [...portal.scope, newItem];
     setPortal({ ...portal, scope: updatedScope });
     await updatePortal(portal.id, { scope: updatedScope });
   };
@@ -214,6 +221,13 @@ export default function PortalDetailPage() {
     const updatedScope = portal.scope.filter((_, i) => i !== index);
     setPortal({ ...portal, scope: updatedScope });
     await updatePortal(portal.id, { scope: updatedScope });
+  };
+
+  const handleUpdateDocUrl = async (index: number, url: string) => {
+    if (!portal) return;
+    const updatedDocs = portal.documents.map((d, i) => i === index ? { ...d, url } : d);
+    setPortal({ ...portal, documents: updatedDocs });
+    await updatePortal(portal.id, { documents: updatedDocs });
   };
 
   const copyLink = () => {
@@ -340,6 +354,7 @@ export default function PortalDetailPage() {
             onUpdateTouchpoint={handleUpdateTouchpoint}
             onAddScope={handleAddScope}
             onRemoveScope={handleRemoveScope}
+            onUpdateDocUrl={handleUpdateDocUrl}
           />
         )}
 
@@ -453,6 +468,7 @@ function OverviewSection({
   onUpdateTouchpoint,
   onAddScope,
   onRemoveScope,
+  onUpdateDocUrl,
 }: {
   portal: PortalData;
   onUpdateField: (field: string, value: string | number | boolean) => void;
@@ -461,10 +477,12 @@ function OverviewSection({
   onRemovePhase: (id: string) => void;
   onCyclePhaseStatus: (id: string) => void;
   onUpdateTouchpoint: (field: "date" | "description", value: string) => void;
-  onAddScope: (item: string) => void;
+  onAddScope: (item: string, type?: string) => void;
   onRemoveScope: (index: number) => void;
+  onUpdateDocUrl: (index: number, url: string) => void;
 }) {
   const [scopeInput, setScopeInput] = useState("");
+  const [scopeType, setScopeType] = useState("");
   const [showBlockerForm, setShowBlockerForm] = useState(false);
   const [blockerType, setBlockerType] = useState<"client" | "internal" | "external">("client");
   const [blockerReason, setBlockerReason] = useState("");
@@ -669,9 +687,19 @@ function OverviewSection({
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">{phase.name}</p>
-                  {phase.dates && (
-                    <p className="text-[11px] text-[#A0A0A0]">{phase.dates}</p>
-                  )}
+                  <p className="text-[11px] text-[#A0A0A0]">
+                    {phase.dates}
+                    {phase.status === "complete" && phase.completedDate && phase.deadline && new Date(phase.completedDate) < new Date(phase.deadline) && (
+                      <span className="ml-1.5 text-green-600 font-medium">
+                        &middot; Completed early ({new Date(phase.completedDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })})
+                      </span>
+                    )}
+                    {phase.status === "complete" && phase.completedDate && (!phase.deadline || new Date(phase.completedDate) >= new Date(phase.deadline)) && (
+                      <span className="ml-1.5 text-[#999]">
+                        &middot; Completed {new Date(phase.completedDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                      </span>
+                    )}
+                  </p>
                 </div>
                 <button
                   onClick={() => onCyclePhaseStatus(phase.id)}
@@ -700,17 +728,24 @@ function OverviewSection({
           </h3>
         </div>
         <div className="border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg divide-y divide-[#EDEDEF]">
-          {(portal.scope || []).map((item, i) => (
-            <div key={i} className="flex items-center gap-3 p-3">
-              <p className="text-sm font-medium flex-1 min-w-0 truncate">{item}</p>
-              <button
-                onClick={() => onRemoveScope(i)}
-                className="p-1 text-[#A0A0A0] hover:text-red-400 transition-colors"
-              >
-                <TrashIcon className="size-3" />
-              </button>
-            </div>
-          ))}
+          {(portal.scope || []).map((item, i) => {
+            const desc = typeof item === "string" ? item : item.description;
+            const typ = typeof item === "string" ? "" : item.type;
+            return (
+              <div key={i} className="flex items-center gap-3 p-3">
+                <p className="text-sm font-medium flex-1 min-w-0 truncate">{desc}</p>
+                {typ && (
+                  <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-[#777] bg-[#F0F0F0] rounded-full">{typ}</span>
+                )}
+                <button
+                  onClick={() => onRemoveScope(i)}
+                  className="p-1 text-[#A0A0A0] hover:text-red-400 transition-colors"
+                >
+                  <TrashIcon className="size-3" />
+                </button>
+              </div>
+            );
+          })}
           <div className="flex items-center gap-2 p-3">
             <input
               type="text"
@@ -720,16 +755,28 @@ function OverviewSection({
               className="flex-1 px-2 py-1 text-sm border border-[#E5E5EA] rounded"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && scopeInput.trim()) {
-                  onAddScope(scopeInput);
+                  onAddScope(scopeInput, scopeType || undefined);
                   setScopeInput("");
+                  setScopeType("");
                 }
               }}
             />
+            <select
+              value={scopeType}
+              onChange={(e) => setScopeType(e.target.value)}
+              className="px-2 py-1 text-sm border border-[#E5E5EA] rounded text-[#777]"
+            >
+              <option value="">Type</option>
+              {deliverableTypes.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
             <button
               onClick={() => {
                 if (scopeInput.trim()) {
-                  onAddScope(scopeInput);
+                  onAddScope(scopeInput, scopeType || undefined);
                   setScopeInput("");
+                  setScopeType("");
                 }
               }}
               disabled={!scopeInput.trim()}
@@ -741,6 +788,45 @@ function OverviewSection({
           </div>
         </div>
       </div>
+
+      {/* Documents */}
+      {(portal.documents || []).length > 0 && (
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
+            Documents ({portal.documents.length})
+          </h3>
+          <div className="border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg divide-y divide-[#EDEDEF]">
+            {portal.documents.map((doc, i) => (
+              <div key={i} className="p-3 space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium flex-1 min-w-0 truncate">{doc.name}</p>
+                  <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-[#777] bg-[#F0F0F0] rounded-full">{doc.type}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="url"
+                    placeholder="Paste document URL..."
+                    defaultValue={doc.url || ""}
+                    onBlur={(e) => {
+                      const val = e.target.value.trim();
+                      if (val !== (doc.url || "")) onUpdateDocUrl(i, val);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                    }}
+                    className="flex-1 px-2 py-1 text-xs border border-[#E5E5EA] rounded text-[#777] placeholder:text-[#CCC]"
+                  />
+                  {doc.url && (
+                    <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-[10px] font-medium text-[#777] hover:text-[#1B1B1B] transition-colors">
+                      Open
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -354,7 +354,7 @@ export default function ProjectKickoffPage() {
         progress: 0,
         next_touchpoint: { date: kickoffDate, description: "Project kickoff call" },
         phases: portalPhases,
-        scope: validDeliverables.map((d) => d.description),
+        scope: validDeliverables.map((d) => ({ description: d.description, type: d.type || "" })),
         deliverables: portalDeliverables,
         documents: portalDocs,
         results: [],
