@@ -157,14 +157,14 @@ export default function FunnelBuilderPage() {
   );
 
   /* ── Mode / Name / Client ── */
-  const updateField = async (field: string, value: string) => {
+  const updateField = (field: string, value: string) => {
     if (!activeFunnel) return;
-    const updated = await updateFunnel(activeFunnel.id, { [field]: value });
-    if (updated) setActiveFunnel(updated);
+    setActiveFunnel({ ...activeFunnel, [field]: value });
+    updateFunnel(activeFunnel.id, { [field]: value });
   };
 
   /* ── Selected node editing ── */
-  const updateNodeData = async (field: string, value: string | number) => {
+  const updateNodeData = (field: string, value: string | number) => {
     if (!selectedNode || !activeFunnel) return;
     const updatedNodes = nodesRef.current.map((n) =>
       n.id === selectedNode.id
@@ -185,14 +185,13 @@ export default function FunnelBuilderPage() {
     );
     nodesRef.current = updatedNodes;
     canvasHandle.current?.setNodes(updatedNodes);
-    const saved = await updateFunnel(activeFunnel.id, {
-      nodes: updatedNodes as unknown as SerializedNode[],
-      edges: edgesRef.current as unknown as SerializedEdge[],
-    });
-    if (saved) setActiveFunnel(saved);
+    // Update selectedNode in place so the editor panel stays in sync
+    const updatedSelected = updatedNodes.find((n) => n.id === selectedNode.id);
+    if (updatedSelected) setSelectedNode(updatedSelected);
+    debouncedSave();
   };
 
-  const updateNodeMetric = async (field: string, value: string) => {
+  const updateNodeMetric = (field: string, value: string) => {
     if (!selectedNode || !activeFunnel) return;
     const num = value === "" ? undefined : Number(value);
     const updatedNodes = nodesRef.current.map((n) =>
@@ -211,11 +210,9 @@ export default function FunnelBuilderPage() {
     );
     nodesRef.current = updatedNodes;
     canvasHandle.current?.setNodes(updatedNodes);
-    const saved = await updateFunnel(activeFunnel.id, {
-      nodes: updatedNodes as unknown as SerializedNode[],
-      edges: edgesRef.current as unknown as SerializedEdge[],
-    });
-    if (saved) setActiveFunnel(saved);
+    const updatedSelected = updatedNodes.find((n) => n.id === selectedNode.id);
+    if (updatedSelected) setSelectedNode(updatedSelected);
+    debouncedSave();
   };
 
   const deleteNode = async () => {
