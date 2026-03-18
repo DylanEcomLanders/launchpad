@@ -17,14 +17,7 @@ import {
   phaseDuration,
 } from "@/lib/roadmap-defaults";
 import { ecomlanders } from "@/lib/agreement-terms";
-
-/* ── Helpers ── */
-
-function formatShortDate(dateStr: string): string {
-  if (!dateStr) return "—";
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-}
+import { formatDayMonth as formatShortDate } from "@/lib/dates";
 
 /* ── Colours for the 6 Gantt bars (monochromatic, dark → light) ── */
 const phaseColors = [

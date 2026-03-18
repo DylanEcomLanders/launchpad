@@ -5,6 +5,13 @@ import {
   type RoadmapPhase,
   type DeliverableType,
 } from "./config";
+import {
+  formatYMD,
+  addDays,
+  addBusinessDays,
+  businessDaysBetween,
+  calendarDaysBetween,
+} from "./dates";
 
 /* ── Touchpoint type ── */
 
@@ -52,57 +59,8 @@ export function computeDesignDevDays(
 
 const REVISION_BUSINESS_DAYS = 4;
 
-/* ── Date helpers ── */
-
-function formatYMD(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-/** Add `days` calendar days to a YYYY-MM-DD string. */
-export function addDays(dateStr: string, days: number): string {
-  const d = new Date(dateStr + "T00:00:00");
-  d.setDate(d.getDate() + days);
-  return formatYMD(d);
-}
-
-/** Add `n` business days (skipping weekends) to a YYYY-MM-DD string. */
-export function addBusinessDays(dateStr: string, n: number): string {
-  const d = new Date(dateStr + "T00:00:00");
-  let added = 0;
-  while (added < n) {
-    d.setDate(d.getDate() + 1);
-    if (d.getDay() !== 0 && d.getDay() !== 6) added++;
-  }
-  return formatYMD(d);
-}
-
-/** Count business days between two YYYY-MM-DD strings (inclusive). */
-export function businessDaysBetween(
-  startStr: string,
-  endStr: string
-): number {
-  const current = new Date(startStr + "T00:00:00");
-  const end = new Date(endStr + "T00:00:00");
-  let count = 0;
-  while (current <= end) {
-    if (current.getDay() !== 0 && current.getDay() !== 6) count++;
-    current.setDate(current.getDate() + 1);
-  }
-  return Math.max(1, count);
-}
-
-/** Count calendar days between two YYYY-MM-DD strings (inclusive). */
-export function calendarDaysBetween(
-  startStr: string,
-  endStr: string
-): number {
-  const a = new Date(startStr + "T00:00:00").getTime();
-  const b = new Date(endStr + "T00:00:00").getTime();
-  return Math.max(1, Math.round((b - a) / (1000 * 60 * 60 * 24)) + 1);
-}
+/* ── Date helpers — re-exported from @/lib/dates ── */
+export { addDays, addBusinessDays, businessDaysBetween, calendarDaysBetween } from "./dates";
 
 /** Return the midpoint business day between two YYYY-MM-DD strings. */
 function midpointBusinessDay(startStr: string, endStr: string): string {

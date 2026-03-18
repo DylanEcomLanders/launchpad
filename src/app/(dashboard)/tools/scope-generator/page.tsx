@@ -58,10 +58,7 @@ const emptyAgreement = (): AgreementDetails => ({
   signerDate: "",
 });
 
-function formatFilenameDate(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
+import { formatFilenameDate } from "@/lib/dates";
 
 function clientSlug(name: string): string {
   return name

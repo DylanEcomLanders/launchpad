@@ -54,15 +54,7 @@ export function PdfLogo({ height = 13, color = "#0A0A0A" }: { height?: number; c
   );
 }
 
-export function formatDate(dateStr: string): string {
-  if (!dateStr) return "—";
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
+export { formatFormalDate as formatDate } from "./dates";
 
 export const shared = StyleSheet.create({
   page: {
