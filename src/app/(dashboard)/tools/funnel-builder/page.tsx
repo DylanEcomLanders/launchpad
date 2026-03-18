@@ -74,12 +74,14 @@ export default function FunnelBuilderPage() {
   const edgesRef = useRef<Edge[]>([]);
 
   useEffect(() => {
-    setFunnels(getFunnels());
+    getFunnels().then(setFunnels);
   }, []);
+
+  const reloadFunnels = () => getFunnels().then(setFunnels);
 
   /* ── CRUD ── */
 
-  const handleCreate = (templateId?: string) => {
+  const handleCreate = async (templateId?: string) => {
     const tmpl = templateId
       ? funnelTemplates.find((t) => t.id === templateId)
       : null;
@@ -87,25 +89,25 @@ export default function FunnelBuilderPage() {
       ? templateToNodes(tmpl)
       : { nodes: [], edges: [] };
 
-    const funnel = createFunnel({
+    const funnel = await createFunnel({
       name: tmpl ? `${tmpl.name} Funnel` : "New Funnel",
       clientName: "",
       mode: "strategy",
       nodes: initial.nodes,
       edges: initial.edges,
     });
-    setFunnels(getFunnels());
+    await reloadFunnels();
     setActiveFunnel(funnel);
     setSelectedNode(null);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (deleteConfirm !== id) {
       setDeleteConfirm(id);
       return;
     }
-    deleteFunnel(id);
-    setFunnels(getFunnels());
+    await deleteFunnel(id);
+    await reloadFunnels();
     if (activeFunnel?.id === id) {
       setActiveFunnel(null);
       setSelectedNode(null);
@@ -113,17 +115,16 @@ export default function FunnelBuilderPage() {
     setDeleteConfirm(null);
   };
 
-  const handleBack = () => {
-    // Save before leaving
+  const handleBack = async () => {
     if (activeFunnel) {
-      updateFunnel(activeFunnel.id, {
+      await updateFunnel(activeFunnel.id, {
         nodes: nodesRef.current as unknown as SerializedNode[],
         edges: edgesRef.current as unknown as SerializedEdge[],
       });
     }
     setActiveFunnel(null);
     setSelectedNode(null);
-    setFunnels(getFunnels());
+    await reloadFunnels();
   };
 
   /* ── Auto-save ── */
@@ -156,14 +157,14 @@ export default function FunnelBuilderPage() {
   );
 
   /* ── Mode / Name / Client ── */
-  const updateField = (field: string, value: string) => {
+  const updateField = async (field: string, value: string) => {
     if (!activeFunnel) return;
-    const updated = updateFunnel(activeFunnel.id, { [field]: value });
+    const updated = await updateFunnel(activeFunnel.id, { [field]: value });
     if (updated) setActiveFunnel(updated);
   };
 
   /* ── Selected node editing ── */
-  const updateNodeData = (field: string, value: string | number) => {
+  const updateNodeData = async (field: string, value: string | number) => {
     if (!selectedNode || !activeFunnel) return;
     const updatedNodes = nodesRef.current.map((n) =>
       n.id === selectedNode.id
@@ -184,14 +185,14 @@ export default function FunnelBuilderPage() {
     );
     nodesRef.current = updatedNodes;
     canvasHandle.current?.setNodes(updatedNodes);
-    const saved = updateFunnel(activeFunnel.id, {
+    const saved = await updateFunnel(activeFunnel.id, {
       nodes: updatedNodes as unknown as SerializedNode[],
       edges: edgesRef.current as unknown as SerializedEdge[],
     });
     if (saved) setActiveFunnel(saved);
   };
 
-  const updateNodeMetric = (field: string, value: string) => {
+  const updateNodeMetric = async (field: string, value: string) => {
     if (!selectedNode || !activeFunnel) return;
     const num = value === "" ? undefined : Number(value);
     const updatedNodes = nodesRef.current.map((n) =>
@@ -210,14 +211,14 @@ export default function FunnelBuilderPage() {
     );
     nodesRef.current = updatedNodes;
     canvasHandle.current?.setNodes(updatedNodes);
-    const saved = updateFunnel(activeFunnel.id, {
+    const saved = await updateFunnel(activeFunnel.id, {
       nodes: updatedNodes as unknown as SerializedNode[],
       edges: edgesRef.current as unknown as SerializedEdge[],
     });
     if (saved) setActiveFunnel(saved);
   };
 
-  const deleteNode = () => {
+  const deleteNode = async () => {
     if (!selectedNode || !activeFunnel) return;
     const nodeId = selectedNode.id;
     const updatedNodes = nodesRef.current.filter((n) => n.id !== nodeId);
@@ -229,7 +230,7 @@ export default function FunnelBuilderPage() {
     canvasHandle.current?.setNodes(updatedNodes);
     canvasHandle.current?.setEdges(updatedEdges);
     setSelectedNode(null);
-    const saved = updateFunnel(activeFunnel.id, {
+    const saved = await updateFunnel(activeFunnel.id, {
       nodes: updatedNodes as unknown as SerializedNode[],
       edges: updatedEdges as unknown as SerializedEdge[],
     });
