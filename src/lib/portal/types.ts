@@ -28,12 +28,27 @@ export interface PortalDocument {
   date: string;
 }
 
+export type TestStatus = "scheduled" | "live" | "complete";
+export type TestResult = "winner" | "loser" | "inconclusive";
+export type TestingTier = "T1" | "T2" | "T3"; // 1/week, 2/week, 4/week
+
+export interface MetricSnapshot {
+  control?: string;
+  variant?: string;
+}
+
 export interface PortalTestResult {
+  id: string;
   name: string;
-  status: "running" | "winner" | "loser" | "scheduled";
+  status: TestStatus;
+  result?: TestResult;
   metric: string;
-  lift?: string;
+  cvr?: MetricSnapshot;
+  aov?: MetricSnapshot;
+  rpv?: MetricSnapshot;
+  figma_url?: string;
   startDate: string;
+  endDate?: string;
 }
 
 export interface PortalWin {
@@ -56,6 +71,14 @@ export interface AdHocRequest {
   created_by: string;
 }
 
+export type BlockerType = "client" | "internal" | "external";
+
+export interface PortalBlocker {
+  type: BlockerType;
+  reason: string;
+  since: string; // ISO date
+}
+
 export interface PortalData {
   id: string;
   token: string;
@@ -70,10 +93,12 @@ export interface PortalData {
   deliverables: PortalDeliverable[];
   documents: PortalDocument[];
   results: PortalTestResult[];
+  testing_tier?: TestingTier | null;
   wins: PortalWin[];
   show_results: boolean;
   slack_channel_url: string;
   ad_hoc_requests: AdHocRequest[];
+  blocker?: PortalBlocker | null;
   created_at: string;
   updated_at: string;
   view_count: number;

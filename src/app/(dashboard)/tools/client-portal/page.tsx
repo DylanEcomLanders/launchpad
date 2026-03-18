@@ -99,13 +99,8 @@ export default function ClientPortalPage() {
     [portals]
   );
 
-  const activeTests = useMemo(
-    () =>
-      portals.reduce(
-        (sum, p) =>
-          sum + (p.results || []).filter((r) => r.status === "running").length,
-        0
-      ),
+  const blockedCount = useMemo(
+    () => portals.filter((p) => p.blocker).length,
     [portals]
   );
 
@@ -156,9 +151,9 @@ export default function ClientPortalPage() {
           <span className="text-2xl font-semibold tabular-nums text-[#1B1B1B]">{portals.length}</span>
           <p className="text-[11px] text-[#7A7A7A] mt-1">Active Portals</p>
         </div>
-        <div className="border border-[#1B1B1B] rounded-lg px-5 py-5">
-          <span className="text-2xl font-semibold tabular-nums text-[#1B1B1B]">{activeTests}</span>
-          <p className="text-[11px] text-[#7A7A7A] mt-1">Active Tests</p>
+        <div className={`border rounded-lg px-5 py-5 ${blockedCount > 0 ? "border-red-300 bg-red-50/50" : "border-[#1B1B1B]"}`}>
+          <span className={`text-2xl font-semibold tabular-nums ${blockedCount > 0 ? "text-red-600" : "text-[#1B1B1B]"}`}>{blockedCount}</span>
+          <p className="text-[11px] text-[#7A7A7A] mt-1">Blocked</p>
         </div>
         <div className="border border-[#1B1B1B] rounded-lg px-5 py-5">
           <span className="text-2xl font-semibold tabular-nums text-[#1B1B1B]">{openAdHoc}</span>
@@ -339,6 +334,7 @@ function PortalCard({
   onDelete: (id: string) => void;
 }) {
   const isRetainer = portal.project_type?.toLowerCase().includes("retainer");
+  const blocker = portal.blocker;
 
   // Find next upcoming/in-progress phase
   const nextPhase = portal.phases.find((p) => p.status === "in-progress") ||
@@ -351,14 +347,36 @@ function PortalCard({
   // Open ad-hoc count
   const openRequests = (portal.ad_hoc_requests || []).filter((r) => r.status !== "done").length;
 
-  // Running tests
-  const runningTests = (portal.results || []).filter((r) => r.status === "running").length;
+  // Live tests
+  const runningTests = (portal.results || []).filter((r) => r.status === "live").length;
+
+  // Days blocked
+  const daysBlocked = blocker?.since
+    ? Math.max(0, Math.floor((Date.now() - new Date(blocker.since).getTime()) / 86400000))
+    : 0;
 
   return (
     <Link
       href={`/tools/client-portal/${portal.id}`}
-      className="block border border-[#E5E5EA] rounded-xl p-5 hover:border-[#C5C5C5] hover:shadow-sm transition-all group"
+      className={`block border rounded-xl p-5 hover:shadow-sm transition-all group ${
+        blocker ? "border-red-300 bg-red-50/30" : "border-[#E5E5EA] hover:border-[#C5C5C5]"
+      }`}
     >
+      {/* Blocker banner */}
+      {blocker && (
+        <div className="flex items-center gap-2 mb-3 pb-3 border-b border-red-200">
+          <span className="size-2 rounded-full bg-red-500 animate-pulse shrink-0" />
+          <span className="text-[11px] font-semibold text-red-600 uppercase tracking-wider">
+            Blocked — {blocker.type === "client" ? "Client" : blocker.type === "internal" ? "Internal" : "External"}
+          </span>
+          <span className="text-[11px] text-red-400">{blocker.reason}</span>
+          <span className="ml-auto text-[10px] font-medium text-red-500 bg-red-100 px-2 py-0.5 rounded-full">
+            {new Date(blocker.since).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+            {daysBlocked > 0 && ` (${daysBlocked}d)`}
+          </span>
+        </div>
+      )}
+
       {/* Top row: name + badge + actions */}
       <div className="flex items-center gap-3">
         <h3 className="text-sm font-semibold text-[#1B1B1B] truncate">{portal.client_name}</h3>
@@ -379,16 +397,13 @@ function PortalCard({
           >
             <ClipboardDocumentIcon className="size-3.5" />
           </button>
-          <a
-            href={`/portal/${portal.token}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.open(`/portal/${portal.token}`, '_blank'); }}
             className="p-1.5 text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors opacity-0 group-hover:opacity-100"
             title="Preview portal"
           >
             <ArrowTopRightOnSquareIcon className="size-3.5" />
-          </a>
+          </button>
           <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(portal.id); }}
             className="p-1.5 text-[#A0A0A0] hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"

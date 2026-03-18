@@ -442,21 +442,17 @@ function DashboardView({
         </div>
       </div>
 
-      {/* What we're building — shows deliverables */}
-      {portal.deliverables.length > 0 && (
+      {/* What you're getting — shows scope items */}
+      {portal.scope.length > 0 && (
         <div className="bg-white border border-[#E8E8E8] rounded-lg p-6">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">What We&apos;re Building</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">What You&apos;re Getting</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
-            {portal.deliverables.map((del, i) => (
-              <div key={del.id || i} className="flex items-center gap-2.5 py-1">
-                {del.status === "complete" ? (
-                  <svg className="size-4 text-[#1A1A1A] shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
-                  </svg>
-                ) : (
-                  <span className="size-1.5 rounded-full bg-[#CCC] shrink-0" />
-                )}
-                <span className={`text-sm ${del.status === "complete" ? "text-[#999] line-through" : "text-[#777]"}`}>{del.name}</span>
+            {portal.scope.map((item, i) => (
+              <div key={i} className="flex items-center gap-2.5 py-1">
+                <svg className="size-4 text-[#1A1A1A] shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                </svg>
+                <span className="text-sm text-[#555]">{item}</span>
               </div>
             ))}
           </div>
@@ -887,9 +883,9 @@ function WinsTab({ wins }: { wins: PortalWin[] }) {
 /* ── Results Tab ── */
 
 function ResultsTab({ results }: { results: PortalTestResult[] }) {
-  const running = results.filter(r => r.status === "running");
+  const live = results.filter(r => r.status === "live");
   const scheduled = results.filter(r => r.status === "scheduled");
-  const completed = results.filter(r => r.status === "winner" || r.status === "loser");
+  const completed = results.filter(r => r.status === "complete");
 
   if (results.length === 0) {
     return (
@@ -905,37 +901,76 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
     );
   }
 
-  const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-    running: { label: "Running", color: "text-[#1A1A1A]", bg: "bg-[#F0F0F0]" },
-    winner: { label: "Winner", color: "text-[#1A1A1A]", bg: "bg-[#F0F0F0]" },
-    loser: { label: "No lift", color: "text-[#777]", bg: "bg-[#F0F0F0]" },
-    scheduled: { label: "Upcoming", color: "text-[#777]", bg: "bg-[#F0F0F0]" },
+  const resultBadge = (test: PortalTestResult) => {
+    if (test.status === "live") return { label: "Live", color: "text-[#1A1A1A]", bg: "bg-[#F0F0F0]" };
+    if (test.status === "scheduled") return { label: "Upcoming", color: "text-[#777]", bg: "bg-[#F0F0F0]" };
+    if (test.result === "winner") return { label: "Winner", color: "text-emerald-700", bg: "bg-emerald-50" };
+    if (test.result === "loser") return { label: "No Lift", color: "text-[#777]", bg: "bg-[#F0F0F0]" };
+    return { label: "Inconclusive", color: "text-amber-700", bg: "bg-amber-50" };
   };
 
-  function TestList({ tests }: { tests: PortalTestResult[] }) {
+  function TestCard({ test }: { test: PortalTestResult }) {
+    const badge = resultBadge(test);
+    const figmaEmbed = test.figma_url ? toFigmaEmbed(test.figma_url) : null;
+
     return (
-      <div className="border border-[#E8E8E8] rounded-lg divide-y divide-[#E8E8E8]">
-        {tests.map((test, i) => {
-          const config = statusConfig[test.status];
-          return (
-            <div key={i} className="flex items-center gap-4 p-4">
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium mb-0.5">{test.name}</p>
-                <p className="text-xs text-[#999]">
-                  {test.metric} &middot; {test.status === "scheduled" ? `Starts ${test.startDate}` : `Started ${test.startDate}`}
-                </p>
-              </div>
-              <div className="flex items-center gap-3 shrink-0">
-                {test.lift && (
-                  <span className="text-sm font-semibold text-[#1A1A1A]">{test.lift}</span>
-                )}
-                <span className={`px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full ${config.color} ${config.bg}`}>
-                  {config.label}
-                </span>
-              </div>
+      <div className="border border-[#E8E8E8] rounded-lg overflow-hidden">
+        {figmaEmbed && (
+          <div className="relative h-40 bg-[#F7F7F7]">
+            <iframe
+              src={figmaEmbed}
+              className="w-full h-full border-0 pointer-events-none"
+              allowFullScreen
+            />
+            {test.figma_url && (
+              <a
+                href={test.figma_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute bottom-2 right-2 px-3 py-1.5 text-[10px] font-semibold bg-[#1A1A1A] text-white rounded-md hover:bg-[#333] transition-colors shadow-lg"
+              >
+                View in Figma
+              </a>
+            )}
+          </div>
+        )}
+        <div className="p-4">
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <p className="text-sm font-medium">{test.name}</p>
+            <span className={`px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full shrink-0 ${badge.color} ${badge.bg}`}>
+              {badge.label}
+            </span>
+          </div>
+          <p className="text-xs text-[#999] mb-1">{test.metric}</p>
+          {(test.cvr || test.aov || test.rpv) && (
+            <div className="grid grid-cols-3 gap-3 mt-2 mb-2 pt-2 border-t border-[#F0F0F0]">
+              {[
+                { label: "CVR", data: test.cvr },
+                { label: "AOV", data: test.aov },
+                { label: "RPV", data: test.rpv },
+              ].map(({ label, data }) => (
+                <div key={label}>
+                  <p className="text-[9px] font-semibold uppercase tracking-wider text-[#CCC] mb-0.5">{label}</p>
+                  {data ? (
+                    <div className="flex items-baseline gap-1">
+                      {data.control && <span className="text-[10px] text-[#CCC] line-through">{data.control}</span>}
+                      {data.variant && <span className="text-xs font-semibold text-[#1A1A1A]">{data.variant}</span>}
+                    </div>
+                  ) : (
+                    <span className="text-[10px] text-[#E8E8E8]">—</span>
+                  )}
+                </div>
+              ))}
             </div>
-          );
-        })}
+          )}
+          <p className="text-xs text-[#CCC]">
+            {test.status === "scheduled"
+              ? `Starts ${test.startDate}`
+              : test.endDate
+                ? `${test.startDate} → ${test.endDate}`
+                : `Started ${test.startDate}`}
+          </p>
+        </div>
       </div>
     );
   }
@@ -945,12 +980,12 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
       {/* Summary */}
       <div className="grid grid-cols-3 gap-4">
         <div className="border border-[#E8E8E8] rounded-lg p-5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Active Tests</p>
-          <p className="text-2xl font-bold tracking-tight">{running.length}</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Live Tests</p>
+          <p className="text-2xl font-bold tracking-tight">{live.length}</p>
         </div>
         <div className="border border-[#E8E8E8] rounded-lg p-5">
           <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Winners</p>
-          <p className="text-2xl font-bold tracking-tight text-[#1A1A1A]">{completed.filter(r => r.status === "winner").length}</p>
+          <p className="text-2xl font-bold tracking-tight text-[#1A1A1A]">{completed.filter(r => r.result === "winner").length}</p>
         </div>
         <div className="border border-[#E8E8E8] rounded-lg p-5">
           <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Coming Up</p>
@@ -958,17 +993,19 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
         </div>
       </div>
 
-      {/* Currently Running */}
-      {running.length > 0 && (
+      {/* Live Tests */}
+      {live.length > 0 && (
         <div>
           <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-5">
-            Currently Running
+            Currently Live
           </h3>
-          <TestList tests={running} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {live.map(test => <TestCard key={test.id} test={test} />)}
+          </div>
         </div>
       )}
 
-      {/* What's Coming Next */}
+      {/* Scheduled */}
       {scheduled.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-5">
@@ -979,7 +1016,9 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
               {scheduled.length} planned
             </span>
           </div>
-          <TestList tests={scheduled} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {scheduled.map(test => <TestCard key={test.id} test={test} />)}
+          </div>
         </div>
       )}
 
@@ -989,7 +1028,9 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
           <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-5">
             Completed Tests
           </h3>
-          <TestList tests={completed} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {completed.map(test => <TestCard key={test.id} test={test} />)}
+          </div>
         </div>
       )}
     </div>

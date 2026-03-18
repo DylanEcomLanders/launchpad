@@ -2,6 +2,7 @@ import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import type {
   PortalData,
   PortalInsert,
+  PortalTestResult,
   PortalUpdate,
   PortalUpdateInsert,
   PortalApproval,
@@ -66,11 +67,11 @@ const DEMO_DOCUMENTS = [
   { name: "Lumière – QA Checklist", type: "QA Checklist" as const, date: "20 Mar 2026" },
 ];
 
-const DEMO_RESULTS = [
-  { name: "Homepage hero CTA copy test", status: "winner" as const, metric: "Click-through rate", lift: "+18.3%", startDate: "5 Mar" },
-  { name: "PDP image gallery layout", status: "winner" as const, metric: "Add-to-cart rate", lift: "+12.4%", startDate: "28 Feb" },
-  { name: "Collection page filter position", status: "running" as const, metric: "Collection click-through", startDate: "10 Mar" },
-  { name: "Sticky add-to-cart bar", status: "scheduled" as const, metric: "Conversion rate", startDate: "14 Mar" },
+const DEMO_RESULTS: PortalTestResult[] = [
+  { id: "test-1", name: "Homepage hero CTA copy test", status: "complete", result: "winner", metric: "Click-through rate", cvr: { control: "2.1%", variant: "2.8%" }, aov: { control: "$84", variant: "$86" }, rpv: { control: "$1.76", variant: "$2.41" }, startDate: "5 Mar", endDate: "12 Mar" },
+  { id: "test-2", name: "PDP image gallery layout", status: "complete", result: "winner", metric: "Add-to-cart rate", cvr: { control: "3.4%", variant: "3.9%" }, aov: { control: "$92", variant: "$97" }, rpv: { control: "$3.13", variant: "$3.78" }, startDate: "28 Feb", endDate: "8 Mar" },
+  { id: "test-3", name: "Collection page filter position", status: "live", metric: "Collection click-through", cvr: { control: "2.6%", variant: "2.9%" }, aov: { control: "$78", variant: "$81" }, rpv: { control: "$2.03", variant: "$2.35" }, startDate: "10 Mar" },
+  { id: "test-4", name: "Sticky add-to-cart bar", status: "scheduled", metric: "Conversion rate", startDate: "17 Mar" },
 ];
 
 const DEMO_WINS = [
@@ -116,6 +117,7 @@ export async function seedDemoPortal(): Promise<PortalData> {
     deliverables: DEMO_DELIVERABLES,
     documents: DEMO_DOCUMENTS,
     results: DEMO_RESULTS,
+    testing_tier: "T2",
     wins: DEMO_WINS,
     show_results: true,
     slack_channel_url: "",
@@ -168,6 +170,18 @@ function uid(): string {
 // ═══════════════════════════════════════════════════════════════════
 
 export async function getPortals(): Promise<PortalData[]> {
+  // Read localStorage overrides (blocker, etc.) that may not be in Supabase
+  const lsOverrides: Record<string, Partial<PortalData>> = {};
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem(LS_PORTALS);
+    if (stored) {
+      const lsPortals: PortalData[] = JSON.parse(stored);
+      for (const p of lsPortals) {
+        if (p.blocker) lsOverrides[p.id] = { blocker: p.blocker };
+      }
+    }
+  }
+
   if (isSupabaseConfigured()) {
     try {
       const { data, error } = await supabase
@@ -175,7 +189,13 @@ export async function getPortals(): Promise<PortalData[]> {
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []).map(mapPortalRow);
+      return (data ?? []).map((row) => {
+        const portal = mapPortalRow(row);
+        // Merge localStorage overrides
+        const overrides = lsOverrides[portal.id];
+        if (overrides) Object.assign(portal, overrides);
+        return portal;
+      });
     } catch {
       // fall through to localStorage
     }
@@ -194,7 +214,19 @@ export async function getPortalById(id: string): Promise<PortalData | null> {
         .eq("id", id)
         .single();
       if (error) throw error;
-      return data ? mapPortalRow(data) : null;
+      if (data) {
+        const portal = mapPortalRow(data);
+        // Merge localStorage overrides (blocker, etc.)
+        if (typeof window !== "undefined") {
+          const stored = localStorage.getItem(LS_PORTALS);
+          if (stored) {
+            const lsPortal = (JSON.parse(stored) as PortalData[]).find((p) => p.id === id);
+            if (lsPortal?.blocker) portal.blocker = lsPortal.blocker;
+          }
+        }
+        return portal;
+      }
+      return null;
     } catch {
       // fall through to localStorage
     }
@@ -282,16 +314,19 @@ export async function updatePortal(
         .update({ ...updates, updated_at: new Date().toISOString() })
         .eq("id", id);
       if (error) throw error;
-      return;
     } catch {
-      // fall through to localStorage
+      // Supabase failed — localStorage below will handle it
     }
   }
-  const all = await getPortals();
-  const updated = all.map((p) =>
-    p.id === id ? { ...p, ...updates, updated_at: new Date().toISOString() } : p
-  );
-  localStorage.setItem(LS_PORTALS, JSON.stringify(updated));
+  // Always update localStorage to keep it in sync
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem(LS_PORTALS);
+    const all: PortalData[] = stored ? JSON.parse(stored) : [];
+    const updated = all.map((p) =>
+      p.id === id ? { ...p, ...updates, updated_at: new Date().toISOString() } : p
+    );
+    localStorage.setItem(LS_PORTALS, JSON.stringify(updated));
+  }
 }
 
 export async function deletePortal(id: string): Promise<void> {
@@ -330,6 +365,22 @@ export async function incrementViewCount(token: string): Promise<void> {
   }
 }
 
+/* ── Migrate old test results format to new ── */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function migrateTestResults(results: any[]): PortalTestResult[] {
+  return results.map((r, i) => {
+    // Already new format
+    if (r.status === "live" || r.status === "scheduled" || r.status === "complete") {
+      return { ...r, id: r.id || `test-${i}` };
+    }
+    // Old format migration
+    if (r.status === "running") return { ...r, id: r.id || `test-${i}`, status: "live" as const };
+    if (r.status === "winner") return { ...r, id: r.id || `test-${i}`, status: "complete" as const, result: "winner" as const };
+    if (r.status === "loser") return { ...r, id: r.id || `test-${i}`, status: "complete" as const, result: "loser" as const };
+    return { ...r, id: r.id || `test-${i}` };
+  });
+}
+
 /* ── Map Supabase row to PortalData ── */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapPortalRow(row: any): PortalData {
@@ -346,11 +397,13 @@ function mapPortalRow(row: any): PortalData {
     scope: row.scope || [],
     deliverables: row.deliverables || [],
     documents: row.documents || [],
-    results: row.results || [],
+    results: migrateTestResults(row.results || []),
+    testing_tier: row.testing_tier || null,
     wins: row.wins || [],
     show_results: row.show_results ?? false,
     slack_channel_url: row.slack_channel_url || "",
     ad_hoc_requests: row.ad_hoc_requests || [],
+    blocker: row.blocker || null,
     created_at: row.created_at || "",
     updated_at: row.updated_at || "",
     view_count: row.view_count || 0,

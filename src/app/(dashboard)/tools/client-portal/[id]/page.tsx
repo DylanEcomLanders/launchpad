@@ -37,6 +37,10 @@ import type {
   PortalApproval,
   PortalPhase,
   PortalWin,
+  PortalBlocker,
+  PortalTestResult,
+  MetricSnapshot,
+  TestingTier,
   AdHocRequest,
 } from "@/lib/portal/types";
 import type {
@@ -323,6 +327,10 @@ export default function PortalDetailPage() {
           <OverviewSection
             portal={portal}
             onUpdateField={handleUpdateField}
+            onSetBlocker={async (blocker) => {
+              await updatePortal(portal.id, { blocker } as Partial<PortalData>);
+              setPortal({ ...portal, blocker } as PortalData);
+            }}
             onAddPhase={() => setShowPhaseForm(true)}
             onRemovePhase={handleRemovePhase}
             onCyclePhaseStatus={handleCyclePhaseStatus}
@@ -364,11 +372,15 @@ export default function PortalDetailPage() {
           </div>
         )}
 
-        {activeTab === "testing" && (
-          <div className="bg-white border border-dashed border-[#E5E5EA] rounded-lg p-8 text-center">
-            <p className="text-sm text-[#7A7A7A] mb-1">Testing</p>
-            <p className="text-xs text-[#A0A0A0]">QA checklists, browser testing, and client UAT sign-off.</p>
-          </div>
+        {activeTab === "testing" && portal && (
+          <TestingSection
+            portal={portal}
+            onUpdateResults={async (results) => {
+              await updatePortal(portal.id, { results } as Partial<PortalData>);
+              setPortal({ ...portal, results } as PortalData);
+            }}
+            onUpdateField={handleUpdateField}
+          />
         )}
 
         {/* Phase form modal */}
@@ -431,6 +443,7 @@ export default function PortalDetailPage() {
 function OverviewSection({
   portal,
   onUpdateField,
+  onSetBlocker,
   onAddPhase,
   onRemovePhase,
   onCyclePhaseStatus,
@@ -440,6 +453,7 @@ function OverviewSection({
 }: {
   portal: PortalData;
   onUpdateField: (field: string, value: string | number | boolean) => void;
+  onSetBlocker: (blocker: PortalBlocker | null) => void;
   onAddPhase: () => void;
   onRemovePhase: (id: string) => void;
   onCyclePhaseStatus: (id: string) => void;
@@ -448,8 +462,102 @@ function OverviewSection({
   onRemoveScope: (index: number) => void;
 }) {
   const [scopeInput, setScopeInput] = useState("");
+  const [showBlockerForm, setShowBlockerForm] = useState(false);
+  const [blockerType, setBlockerType] = useState<"client" | "internal" | "external">("client");
+  const [blockerReason, setBlockerReason] = useState("");
+
+  const blocker = portal.blocker;
+  const daysBlocked = blocker?.since
+    ? Math.max(0, Math.floor((Date.now() - new Date(blocker.since).getTime()) / 86400000))
+    : 0;
+
   return (
     <div className="space-y-8">
+      {/* Blocker banner */}
+      {blocker && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="size-2 rounded-full bg-red-500 animate-pulse shrink-0" />
+              <span className="text-xs font-semibold text-red-600 uppercase tracking-wider">
+                Blocked — {blocker.type === "client" ? "Client" : blocker.type === "internal" ? "Internal" : "External"}
+              </span>
+              <span className="text-[10px] font-medium text-red-500 bg-red-100 px-2 py-0.5 rounded-full">
+                Since {new Date(blocker.since).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                {daysBlocked > 0 && ` (${daysBlocked}d)`}
+              </span>
+            </div>
+            <button
+              onClick={() => onSetBlocker(null)}
+              className="text-[11px] font-medium text-red-400 hover:text-red-600 transition-colors"
+            >
+              Clear
+            </button>
+          </div>
+          <p className="text-sm text-red-600 mt-1.5">{blocker.reason}</p>
+        </div>
+      )}
+
+      {/* Flag blocker button */}
+      {!blocker && !showBlockerForm && (
+        <button
+          onClick={() => setShowBlockerForm(true)}
+          className="flex items-center gap-1.5 text-[11px] font-medium text-[#A0A0A0] hover:text-red-500 transition-colors"
+        >
+          <svg className="size-3.5" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M3.5 2.75a.75.75 0 00-1.5 0v14.5a.75.75 0 001.5 0v-4.392l1.657-.348a6.449 6.449 0 014.271.572 7.948 7.948 0 005.965.524l2.078-.64A.75.75 0 0018 11.75V3.885a.75.75 0 00-.962-.72l-2.367.728a6.449 6.449 0 01-4.846-.425 7.948 7.948 0 00-5.262-.703L3.5 2.98V2.75z" />
+          </svg>
+          Flag as blocked
+        </button>
+      )}
+
+      {/* Blocker form */}
+      {!blocker && showBlockerForm && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold text-red-600">Flag Blocker</p>
+            <button onClick={() => setShowBlockerForm(false)} className="text-red-300 hover:text-red-500">
+              <XMarkIcon className="size-4" />
+            </button>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {(["client", "internal", "external"] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setBlockerType(t)}
+                className={`px-3 py-1 text-[11px] font-medium rounded-full transition-colors ${
+                  blockerType === t
+                    ? "bg-red-500 text-white"
+                    : "bg-white text-red-400 border border-red-200 hover:bg-red-100"
+                }`}
+              >
+                {t === "client" ? "Client" : t === "internal" ? "Internal" : "External"}
+              </button>
+            ))}
+          </div>
+          <input
+            type="text"
+            value={blockerReason}
+            onChange={(e) => setBlockerReason(e.target.value)}
+            placeholder="e.g., Waiting on brand assets from client"
+            className="w-full px-3 py-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-red-300"
+            autoFocus
+          />
+          <button
+            onClick={() => {
+              if (!blockerReason.trim()) return;
+              onSetBlocker({ type: blockerType, reason: blockerReason.trim(), since: new Date().toISOString() });
+              setShowBlockerForm(false);
+              setBlockerReason("");
+            }}
+            disabled={!blockerReason.trim()}
+            className="px-4 py-2 text-xs font-semibold bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-40"
+          >
+            Flag Blocker
+          </button>
+        </div>
+      )}
+
       {/* Next Touchpoint */}
       {(() => {
         const tp = portal.next_touchpoint;
@@ -1703,6 +1811,316 @@ function FormModal({
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ── Testing Section ── */
+
+function TestingSection({
+  portal,
+  onUpdateResults,
+  onUpdateField,
+}: {
+  portal: PortalData;
+  onUpdateResults: (results: PortalTestResult[]) => Promise<void>;
+  onUpdateField: (field: string, value: string | number | boolean) => void;
+}) {
+  const [showForm, setShowForm] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [name, setName] = useState("");
+  const [metric, setMetric] = useState("");
+  const [status, setStatus] = useState<"scheduled" | "live" | "complete">("scheduled");
+  const [result, setResult] = useState<"winner" | "loser" | "inconclusive">("winner");
+  const [cvrControl, setCvrControl] = useState("");
+  const [cvrVariant, setCvrVariant] = useState("");
+  const [aovControl, setAovControl] = useState("");
+  const [aovVariant, setAovVariant] = useState("");
+  const [rpvControl, setRpvControl] = useState("");
+  const [rpvVariant, setRpvVariant] = useState("");
+  const [figmaUrl, setFigmaUrl] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  const tests = portal.results || [];
+  const live = tests.filter((t) => t.status === "live");
+  const scheduled = tests.filter((t) => t.status === "scheduled");
+  const complete = tests.filter((t) => t.status === "complete");
+
+  const resetForm = () => {
+    setName(""); setMetric(""); setStatus("scheduled"); setResult("winner");
+    setCvrControl(""); setCvrVariant(""); setAovControl(""); setAovVariant("");
+    setRpvControl(""); setRpvVariant("");
+    setFigmaUrl(""); setStartDate(""); setEndDate("");
+    setEditId(null); setShowForm(false);
+  };
+
+  const handleEdit = (test: PortalTestResult) => {
+    setEditId(test.id);
+    setName(test.name);
+    setMetric(test.metric);
+    setStatus(test.status);
+    setResult(test.result || "winner");
+    setCvrControl(test.cvr?.control || ""); setCvrVariant(test.cvr?.variant || "");
+    setAovControl(test.aov?.control || ""); setAovVariant(test.aov?.variant || "");
+    setRpvControl(test.rpv?.control || ""); setRpvVariant(test.rpv?.variant || "");
+    setFigmaUrl(test.figma_url || "");
+    setStartDate(test.startDate);
+    setEndDate(test.endDate || "");
+    setShowForm(true);
+  };
+
+  const buildSnapshot = (ctrl: string, variant: string): MetricSnapshot | undefined => {
+    if (!ctrl.trim() && !variant.trim()) return undefined;
+    return { control: ctrl.trim() || undefined, variant: variant.trim() || undefined };
+  };
+
+  const handleSave = async () => {
+    if (!name.trim() || !metric.trim()) return;
+    const test: PortalTestResult = {
+      id: editId || crypto.randomUUID(),
+      name: name.trim(),
+      metric: metric.trim(),
+      status,
+      ...(status === "complete" ? { result } : {}),
+      cvr: buildSnapshot(cvrControl, cvrVariant),
+      aov: buildSnapshot(aovControl, aovVariant),
+      rpv: buildSnapshot(rpvControl, rpvVariant),
+      figma_url: figmaUrl.trim() || undefined,
+      startDate: startDate.trim(),
+      endDate: endDate.trim() || undefined,
+    };
+    const updated = editId
+      ? tests.map((t) => (t.id === editId ? test : t))
+      : [...tests, test];
+    await onUpdateResults(updated);
+    resetForm();
+  };
+
+  const handleDelete = async (id: string) => {
+    await onUpdateResults(tests.filter((t) => t.id !== id));
+  };
+
+  const tierLabels: Record<string, string> = { T1: "1 test/week", T2: "2 tests/week", T3: "4 tests/week" };
+
+  return (
+    <div className="space-y-6">
+      {/* Testing Tier */}
+      <div className="bg-white border border-[#E5E5EA] rounded-lg p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">Testing Tier</p>
+        <div className="flex items-center gap-1.5">
+          {(["T1", "T2", "T3"] as const).map((tier) => (
+            <button
+              key={tier}
+              onClick={() => onUpdateField("testing_tier", portal.testing_tier === tier ? "" : tier)}
+              className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors ${
+                portal.testing_tier === tier
+                  ? "bg-[#1B1B1B] text-white"
+                  : "bg-[#F3F3F5] text-[#7A7A7A] hover:bg-[#E5E5EA]"
+              }`}
+            >
+              {tier} <span className="text-[10px] opacity-60 ml-1">{tierLabels[tier]}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Add Test */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
+          Tests ({tests.length})
+        </h3>
+        <button
+          onClick={() => { resetForm(); setShowForm(true); }}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+        >
+          <PlusIcon className="size-3.5" /> Add Test
+        </button>
+      </div>
+
+      {/* Test Form */}
+      {showForm && (
+        <div className="bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold">{editId ? "Edit Test" : "Add Test"}</h3>
+            <button onClick={resetForm} className="text-[#A0A0A0] hover:text-[#1B1B1B]">
+              <XMarkIcon className="size-4" />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>Test Name *</label>
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Homepage hero CTA test" className={inputClass} autoFocus />
+            </div>
+            <div>
+              <label className={labelClass}>Metric *</label>
+              <input type="text" value={metric} onChange={(e) => setMetric(e.target.value)} placeholder="e.g., Conversion rate" className={inputClass} />
+            </div>
+          </div>
+          <div>
+            <label className={labelClass}>Status</label>
+            <div className="flex items-center gap-1.5 mt-1">
+              {(["scheduled", "live", "complete"] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setStatus(s)}
+                  className={`px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors ${
+                    status === s ? "bg-[#1B1B1B] text-white" : "bg-white text-[#7A7A7A] border border-[#E5E5EA] hover:bg-[#F3F3F5]"
+                  }`}
+                >
+                  {s === "scheduled" ? "Scheduled" : s === "live" ? "Live" : "Complete"}
+                </button>
+              ))}
+            </div>
+          </div>
+          {status === "complete" && (
+            <div>
+              <label className={labelClass}>Result</label>
+              <div className="flex items-center gap-1.5 mt-1">
+                {(["winner", "loser", "inconclusive"] as const).map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setResult(r)}
+                    className={`px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors ${
+                      result === r
+                        ? r === "winner" ? "bg-emerald-500 text-white" : r === "loser" ? "bg-red-500 text-white" : "bg-amber-500 text-white"
+                        : "bg-white text-[#7A7A7A] border border-[#E5E5EA] hover:bg-[#F3F3F5]"
+                    }`}
+                  >
+                    {r === "winner" ? "Winner" : r === "loser" ? "Loser" : "Inconclusive"}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {status !== "scheduled" && (
+            <div>
+              <label className={labelClass}>Metrics Snapshot</label>
+              <div className="grid grid-cols-3 gap-3 mt-1">
+                <div className="space-y-1.5">
+                  <p className="text-[10px] font-semibold text-[#999] uppercase tracking-wider">CVR</p>
+                  <input type="text" value={cvrControl} onChange={(e) => setCvrControl(e.target.value)} placeholder="Control" className={inputClass} />
+                  <input type="text" value={cvrVariant} onChange={(e) => setCvrVariant(e.target.value)} placeholder="Variant" className={inputClass} />
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-[10px] font-semibold text-[#999] uppercase tracking-wider">AOV</p>
+                  <input type="text" value={aovControl} onChange={(e) => setAovControl(e.target.value)} placeholder="Control" className={inputClass} />
+                  <input type="text" value={aovVariant} onChange={(e) => setAovVariant(e.target.value)} placeholder="Variant" className={inputClass} />
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-[10px] font-semibold text-[#999] uppercase tracking-wider">RPV</p>
+                  <input type="text" value={rpvControl} onChange={(e) => setRpvControl(e.target.value)} placeholder="Control" className={inputClass} />
+                  <input type="text" value={rpvVariant} onChange={(e) => setRpvVariant(e.target.value)} placeholder="Variant" className={inputClass} />
+                </div>
+              </div>
+            </div>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className={labelClass}>Start Date</label>
+              <input type="text" value={startDate} onChange={(e) => setStartDate(e.target.value)} placeholder="e.g., 5 Mar" className={inputClass} />
+            </div>
+            <div>
+              <label className={labelClass}>End Date</label>
+              <input type="text" value={endDate} onChange={(e) => setEndDate(e.target.value)} placeholder="e.g., 12 Mar" className={inputClass} />
+            </div>
+            <div>
+              <label className={labelClass}>Figma URL</label>
+              <input type="text" value={figmaUrl} onChange={(e) => setFigmaUrl(e.target.value)} placeholder="https://figma.com/..." className={inputClass} />
+            </div>
+          </div>
+          <button
+            onClick={handleSave}
+            disabled={!name.trim() || !metric.trim()}
+            className="flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <CheckIcon className="size-3.5" />
+            {editId ? "Update Test" : "Add Test"}
+          </button>
+        </div>
+      )}
+
+      {/* Test Groups */}
+      {[
+        { label: "Live", items: live },
+        { label: "Scheduled", items: scheduled },
+        { label: "Complete", items: complete },
+      ].map(({ label, items }) =>
+        items.length > 0 ? (
+          <div key={label}>
+            <div className="flex items-center gap-2 mb-3">
+              {label === "Live" && <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />}
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">{label} ({items.length})</p>
+            </div>
+            <div className="space-y-2">
+              {items.map((test) => (
+                <div key={test.id} className="bg-white border border-[#E5E5EA] rounded-lg p-4 group/card">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-[#1B1B1B] truncate">{test.name}</p>
+                        {test.status === "complete" && test.result && (
+                          <span className={`px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded-full ${
+                            test.result === "winner" ? "bg-emerald-50 text-emerald-600" :
+                            test.result === "loser" ? "bg-red-50 text-red-500" :
+                            "bg-amber-50 text-amber-600"
+                          }`}>
+                            {test.result}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-[#A0A0A0] mt-0.5">
+                        {test.metric} · {test.startDate}{test.endDate ? ` – ${test.endDate}` : ""}
+                      </p>
+                      {(test.cvr || test.aov || test.rpv) && (
+                        <div className="grid grid-cols-3 gap-3 mt-3 pt-3 border-t border-[#F0F0F0]">
+                          {[
+                            { label: "CVR", data: test.cvr },
+                            { label: "AOV", data: test.aov },
+                            { label: "RPV", data: test.rpv },
+                          ].map(({ label, data }) => (
+                            <div key={label}>
+                              <p className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">{label}</p>
+                              {data ? (
+                                <div className="flex items-baseline gap-1.5">
+                                  {data.control && <span className="text-xs text-[#999] line-through">{data.control}</span>}
+                                  {data.variant && <span className="text-sm font-semibold text-[#1B1B1B]">{data.variant}</span>}
+                                </div>
+                              ) : (
+                                <span className="text-xs text-[#CCC]">—</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
+                      <button onClick={() => handleEdit(test)} className="p-1 text-[#A0A0A0] hover:text-[#1B1B1B]" title="Edit">
+                        <svg className="size-3.5" viewBox="0 0 20 20" fill="currentColor"><path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" /></svg>
+                      </button>
+                      <button onClick={() => handleDelete(test.id)} className="p-1 text-[#A0A0A0] hover:text-red-400" title="Delete">
+                        <TrashIcon className="size-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                  {test.figma_url && toFigmaEmbed(test.figma_url) && (
+                    <div className="mt-3 relative w-full rounded-md overflow-hidden border border-[#E8E8E8]" style={{ paddingBottom: "35%" }}>
+                      <iframe src={toFigmaEmbed(test.figma_url) || ""} className="absolute inset-0 w-full h-full" loading="lazy" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null
+      )}
+
+      {tests.length === 0 && !showForm && (
+        <div className="border border-dashed border-[#E5E5EA] rounded-lg p-8 text-center">
+          <p className="text-sm text-[#7A7A7A] mb-1">No tests yet</p>
+          <p className="text-xs text-[#A0A0A0]">Add your first CRO test to start tracking results</p>
+        </div>
+      )}
     </div>
   );
 }
