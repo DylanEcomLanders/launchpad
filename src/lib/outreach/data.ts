@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import type { OutreachSequence, OutreachSequenceInsert } from "./types";
 
 /* ── Local-storage key ── */
@@ -13,34 +13,40 @@ function uid(): string {
 // ═══════════════════════════════════════════════════════════════════
 
 export async function getSequences(): Promise<OutreachSequence[]> {
-  try {
-    const { data, error } = await supabase
-      .from("outreach_sequences")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (error) throw error;
-    return (data ?? []).map(mapRow);
-  } catch {
-    if (typeof window === "undefined") return [];
-    const stored = localStorage.getItem(LS_SEQUENCES);
-    return stored ? JSON.parse(stored) : [];
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from("outreach_sequences")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []).map(mapRow);
+    } catch {
+      /* fall through to localStorage */
+    }
   }
+  if (typeof window === "undefined") return [];
+  const stored = localStorage.getItem(LS_SEQUENCES);
+  return stored ? JSON.parse(stored) : [];
 }
 
 export async function getSequenceById(id: string): Promise<OutreachSequence | null> {
-  try {
-    const { data, error } = await supabase
-      .from("outreach_sequences")
-      .select("*")
-      .eq("id", id)
-      .single();
-    if (error) throw error;
-    return data ? mapRow(data) : null;
-  } catch {
-    if (typeof window === "undefined") return null;
-    const all = await getSequences();
-    return all.find((s) => s.id === id) ?? null;
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from("outreach_sequences")
+        .select("*")
+        .eq("id", id)
+        .single();
+      if (error) throw error;
+      return data ? mapRow(data) : null;
+    } catch {
+      /* fall through */
+    }
   }
+  if (typeof window === "undefined") return null;
+  const all = await getSequences();
+  return all.find((s) => s.id === id) ?? null;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -62,21 +68,24 @@ export async function createSequence(input: OutreachSequenceInsert): Promise<Out
     updated_at: now,
   };
 
-  try {
-    const { data, error } = await supabase
-      .from("outreach_sequences")
-      .insert(row)
-      .select()
-      .single();
-    if (error) throw error;
-    return mapRow(data);
-  } catch {
-    const sequence = row as OutreachSequence;
-    const existing = await getSequences();
-    existing.unshift(sequence);
-    localStorage.setItem(LS_SEQUENCES, JSON.stringify(existing));
-    return sequence;
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from("outreach_sequences")
+        .insert(row)
+        .select()
+        .single();
+      if (error) throw error;
+      return mapRow(data);
+    } catch {
+      /* fall through */
+    }
   }
+  const sequence = row as OutreachSequence;
+  const existing = await getSequences();
+  existing.unshift(sequence);
+  localStorage.setItem(LS_SEQUENCES, JSON.stringify(existing));
+  return sequence;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -88,19 +97,23 @@ export async function updateSequence(
   updates: Partial<Pick<OutreachSequence, "steps">>
 ): Promise<void> {
   const now = new Date().toISOString();
-  try {
-    const { error } = await supabase
-      .from("outreach_sequences")
-      .update({ ...updates, updated_at: now })
-      .eq("id", id);
-    if (error) throw error;
-  } catch {
-    const all = await getSequences();
-    const updated = all.map((s) =>
-      s.id === id ? { ...s, ...updates, updated_at: now } : s
-    );
-    localStorage.setItem(LS_SEQUENCES, JSON.stringify(updated));
+  if (isSupabaseConfigured()) {
+    try {
+      const { error } = await supabase
+        .from("outreach_sequences")
+        .update({ ...updates, updated_at: now })
+        .eq("id", id);
+      if (error) throw error;
+      return;
+    } catch {
+      /* fall through */
+    }
   }
+  const all = await getSequences();
+  const updated = all.map((s) =>
+    s.id === id ? { ...s, ...updates, updated_at: now } : s
+  );
+  localStorage.setItem(LS_SEQUENCES, JSON.stringify(updated));
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -108,16 +121,20 @@ export async function updateSequence(
 // ═══════════════════════════════════════════════════════════════════
 
 export async function deleteSequence(id: string): Promise<void> {
-  try {
-    const { error } = await supabase
-      .from("outreach_sequences")
-      .delete()
-      .eq("id", id);
-    if (error) throw error;
-  } catch {
-    const all = await getSequences();
-    localStorage.setItem(LS_SEQUENCES, JSON.stringify(all.filter((s) => s.id !== id)));
+  if (isSupabaseConfigured()) {
+    try {
+      const { error } = await supabase
+        .from("outreach_sequences")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+      return;
+    } catch {
+      /* fall through */
+    }
   }
+  const all = await getSequences();
+  localStorage.setItem(LS_SEQUENCES, JSON.stringify(all.filter((s) => s.id !== id)));
 }
 
 // ═══════════════════════════════════════════════════════════════════

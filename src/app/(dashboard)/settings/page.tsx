@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { CheckIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { getSettings, saveSettings, DEFAULT_SETTINGS, type BusinessSettings, type DeliverableEstimate } from "@/lib/settings";
+import { getSettings, saveSettings, loadSettings, DEFAULT_SETTINGS, type BusinessSettings, type DeliverableEstimate } from "@/lib/settings";
 import { inputClass, labelClass } from "@/lib/form-styles";
 
 const dayLabels = [
@@ -21,11 +21,11 @@ export default function SettingsPage() {
   const [newName, setNewName] = useState("");
 
   useEffect(() => {
-    setSettings(getSettings());
+    loadSettings().then(setSettings);
   }, []);
 
-  const handleSave = () => {
-    saveSettings(settings);
+  const handleSave = async () => {
+    await saveSettings(settings);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };

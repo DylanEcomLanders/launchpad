@@ -1,9 +1,12 @@
 /* ── Business Settings ──
  * Configurable values that drive project timelines, deliverable estimates,
- * and working day calculations. Stored in localStorage (Supabase later).
+ * and working day calculations. Uses Supabase (data jsonb) + localStorage fallback.
  */
 
+import { createStore } from "@/lib/supabase-store";
+
 const LS_KEY = "launchpad-business-settings";
+const SETTINGS_ID = "business-settings-singleton";
 
 export interface DeliverableEstimate {
   name: string;
@@ -53,20 +56,61 @@ export const DEFAULT_SETTINGS: BusinessSettings = {
   },
 };
 
+/* ── Store instance (data jsonb pattern) ── */
+const store = createStore<BusinessSettings & { id: string }>({
+  table: "business_settings",
+  lsKey: LS_KEY,
+});
+
+/**
+ * Synchronous read — returns from localStorage cache.
+ * Call `loadSettings()` once on mount to hydrate from Supabase.
+ */
 export function getSettings(): BusinessSettings {
   if (typeof window === "undefined") return DEFAULT_SETTINGS;
   const stored = localStorage.getItem(LS_KEY);
   if (!stored) return DEFAULT_SETTINGS;
   try {
-    return { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
+    const parsed = JSON.parse(stored);
+    // Handle both array (store format) and direct object (legacy format)
+    if (Array.isArray(parsed)) {
+      const item = parsed.find((i: { id: string }) => i.id === SETTINGS_ID);
+      if (item) {
+        const { id: _id, ...settings } = item;
+        return { ...DEFAULT_SETTINGS, ...settings };
+      }
+      return DEFAULT_SETTINGS;
+    }
+    return { ...DEFAULT_SETTINGS, ...parsed };
   } catch {
     return DEFAULT_SETTINGS;
   }
 }
 
-export function saveSettings(settings: BusinessSettings): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(LS_KEY, JSON.stringify(settings));
+/**
+ * Async load — fetches from Supabase and caches to localStorage.
+ * Call once on app/page mount.
+ */
+export async function loadSettings(): Promise<BusinessSettings> {
+  try {
+    const items = await store.getAll();
+    const item = items.find((i) => i.id === SETTINGS_ID);
+    if (item) {
+      const { id: _id, ...settings } = item;
+      return { ...DEFAULT_SETTINGS, ...settings };
+    }
+  } catch {
+    /* fall through to sync */
+  }
+  return getSettings();
+}
+
+/**
+ * Save settings — writes to both Supabase and localStorage.
+ */
+export async function saveSettings(settings: BusinessSettings): Promise<void> {
+  const item = { ...settings, id: SETTINGS_ID };
+  await store.saveAll([item]);
 }
 
 /** Convert settings.deliverableEstimates to the Record format used by config.ts */

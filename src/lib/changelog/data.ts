@@ -1,6 +1,7 @@
 /* ── Changelog & Roadmap data layer (Supabase + localStorage fallback) ── */
 
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { createStore } from "@/lib/supabase-store";
 
 export type ChangeType = "added" | "improved" | "fixed" | "removed";
 export type RoadmapPriority = "next" | "planned" | "exploring";
@@ -181,6 +182,15 @@ const seedRoadmap: RoadmapItem[] = [
 ];
 
 // ═══════════════════════════════════════════════════════════════════
+// Roadmap store (data jsonb pattern)
+// ═══════════════════════════════════════════════════════════════════
+
+const roadmapStore = createStore<RoadmapItem>({
+  table: "roadmap_items",
+  lsKey: ROADMAP_KEY,
+});
+
+// ═══════════════════════════════════════════════════════════════════
 // Row mappers
 // ═══════════════════════════════════════════════════════════════════
 
@@ -192,18 +202,6 @@ function mapChangelogRow(row: any): ChangelogEntry {
     version: row.version || "",
     title: row.title || "",
     changes: row.changes || [],
-  };
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapRoadmapRow(row: any): RoadmapItem {
-  return {
-    id: row.id,
-    title: row.title || "",
-    description: row.description || "",
-    priority: row.priority || "planned",
-    addedBy: row.added_by || row.addedBy,
-    addedAt: row.added_at || row.addedAt || "",
   };
 }
 
@@ -283,19 +281,11 @@ export async function addChangelogEntry(
 // ═══════════════════════════════════════════════════════════════════
 
 export async function getRoadmap(): Promise<RoadmapItem[]> {
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from("roadmap")
-        .select("*")
-        .order("created_at", { ascending: true });
-      if (error) throw error;
-      if (data && data.length > 0) return data.map(mapRoadmapRow);
-    } catch {
-      /* fall through to localStorage */
-    }
-  }
-  return ensureSeeded(ROADMAP_KEY, seedRoadmap);
+  const items = await roadmapStore.getAll();
+  if (items.length > 0) return items;
+  // Seed if empty
+  await roadmapStore.saveAll(seedRoadmap);
+  return seedRoadmap;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -305,34 +295,12 @@ export async function getRoadmap(): Promise<RoadmapItem[]> {
 export async function addRoadmapItem(
   item: Omit<RoadmapItem, "id" | "addedAt">
 ): Promise<RoadmapItem> {
-  const id = `rm-${Date.now()}`;
-  const addedAt = new Date().toISOString().slice(0, 10);
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from("roadmap")
-        .insert({
-          id,
-          title: item.title,
-          description: item.description,
-          priority: item.priority,
-          added_by: item.addedBy || null,
-          added_at: addedAt,
-        })
-        .select()
-        .single();
-      if (error) throw error;
-      return mapRoadmapRow(data);
-    } catch {
-      /* fall through */
-    }
-  }
-  const items = ensureSeeded(ROADMAP_KEY, seedRoadmap);
-  const newItem: RoadmapItem = { ...item, id, addedAt };
-  items.push(newItem);
-  localStorage.setItem(ROADMAP_KEY, JSON.stringify(items));
-  return newItem;
+  const newItem: RoadmapItem = {
+    ...item,
+    id: `rm-${Date.now()}`,
+    addedAt: new Date().toISOString().slice(0, 10),
+  };
+  return roadmapStore.create(newItem);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -340,20 +308,7 @@ export async function addRoadmapItem(
 // ═══════════════════════════════════════════════════════════════════
 
 export async function deleteRoadmapItem(id: string): Promise<void> {
-  if (isSupabaseConfigured()) {
-    try {
-      const { error } = await supabase
-        .from("roadmap")
-        .delete()
-        .eq("id", id);
-      if (error) throw error;
-      return;
-    } catch {
-      /* fall through */
-    }
-  }
-  const items = ensureSeeded(ROADMAP_KEY, seedRoadmap).filter((i) => i.id !== id);
-  localStorage.setItem(ROADMAP_KEY, JSON.stringify(items));
+  await roadmapStore.remove(id);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -364,22 +319,5 @@ export async function updateRoadmapPriority(
   id: string,
   priority: RoadmapPriority
 ): Promise<void> {
-  if (isSupabaseConfigured()) {
-    try {
-      const { error } = await supabase
-        .from("roadmap")
-        .update({ priority })
-        .eq("id", id);
-      if (error) throw error;
-      return;
-    } catch {
-      /* fall through */
-    }
-  }
-  const items = ensureSeeded(ROADMAP_KEY, seedRoadmap);
-  const item = items.find((i) => i.id === id);
-  if (item) {
-    item.priority = priority;
-    localStorage.setItem(ROADMAP_KEY, JSON.stringify(items));
-  }
+  await roadmapStore.update(id, { priority } as Partial<RoadmapItem>);
 }
