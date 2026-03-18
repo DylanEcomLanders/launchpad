@@ -337,13 +337,28 @@ export default function ProjectKickoffPage() {
         assignee: "",
       }));
 
-      // Build document list
+      // Generate PDFs and convert to data URLs for client download
+      const toDataUrl = async (doc: ReactElement<DocumentProps>): Promise<string> => {
+        const blob = await pdf(doc).toBlob();
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(blob);
+        });
+      };
+
+      const [scopeUrl, roadmapUrl] = await Promise.all([
+        toDataUrl(<ScopePdfDocument data={scopeFormData} />),
+        toDataUrl(<RoadmapPdfDocument data={roadmapFormData} />),
+      ]);
+
       const portalDocs: PDoc[] = [
-        { name: `${clientName} – Project Roadmap`, type: "Roadmap" as const, date: today },
-        { name: `${clientName} – Scope of Work`, type: "Scope" as const, date: today },
+        { name: `${clientName} – Project Roadmap`, type: "Roadmap" as const, date: today, url: roadmapUrl },
+        { name: `${clientName} – Scope of Work`, type: "Scope" as const, date: today, url: scopeUrl },
       ];
       if (isAgreementValid) {
-        portalDocs.push({ name: `${clientName} – Service Agreement`, type: "Agreement" as const, date: today });
+        const agreementUrl = await toDataUrl(<AgreementPdfDocument data={scopeFormData} />);
+        portalDocs.push({ name: `${clientName} – Service Agreement`, type: "Agreement" as const, date: today, url: agreementUrl });
       }
 
       const input: PortalInsert = {

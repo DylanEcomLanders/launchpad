@@ -198,7 +198,7 @@ export function PortalView({
     { key: "timeline", label: "Timeline" },
     ...(updates.length > 0 ? [{ key: "updates" as Tab, label: "Updates" }] : []),
     { key: "scope", label: "Scope" },
-    ...(hasDesigns ? [{ key: "designs" as Tab, label: "Designs" }] : []),
+    { key: "designs" as Tab, label: "Designs" },
     { key: "development", label: "Development" },
     ...(portal.wins && portal.wins.length > 0 ? [{ key: "wins" as Tab, label: "Wins" }] : []),
     ...(portal.show_results ? [{ key: "results" as Tab, label: "Results" }] : []),
@@ -735,8 +735,8 @@ function ScopeTab({
         </div>
       )}
 
-      {/* Scope items (if different from deliverables) */}
-      {scope.length > 0 && deliverables.length === 0 && (
+      {/* Scope items */}
+      {scope.length > 0 && (
         <div>
           <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-5">
             Scope
@@ -1405,7 +1405,12 @@ function DocumentPreview({
 
   function handleDownload() {
     if (doc.url) {
-      window.open(doc.url, "_blank");
+      const a = document.createElement("a");
+      a.href = doc.url;
+      a.download = `${doc.name}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     } else {
       setToast("Document not yet available");
       setTimeout(() => setToast(""), 3000);

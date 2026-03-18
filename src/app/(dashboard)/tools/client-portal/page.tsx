@@ -76,9 +76,16 @@ export default function ClientPortalPage() {
     loadPortals();
   };
 
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
   const handleDelete = async (id: string) => {
+    if (confirmDeleteId !== id) {
+      setConfirmDeleteId(id);
+      return;
+    }
     await deletePortal(id);
     setPortals((prev) => prev.filter((p) => p.id !== id));
+    setConfirmDeleteId(null);
   };
 
   const copyLink = (token: string) => {
@@ -311,6 +318,8 @@ export default function ClientPortalPage() {
                 copiedToken={copiedToken}
                 onCopyLink={copyLink}
                 onDelete={handleDelete}
+                confirmDeleteId={confirmDeleteId}
+                onCancelDelete={() => setConfirmDeleteId(null)}
               />
             ))
           )}
@@ -327,11 +336,15 @@ function PortalCard({
   copiedToken,
   onCopyLink,
   onDelete,
+  confirmDeleteId,
+  onCancelDelete,
 }: {
   portal: PortalData;
   copiedToken: string | null;
   onCopyLink: (token: string) => void;
   onDelete: (id: string) => void;
+  confirmDeleteId: string | null;
+  onCancelDelete: () => void;
 }) {
   const isRetainer = portal.project_type?.toLowerCase().includes("retainer");
   const blocker = portal.blocker;
@@ -404,13 +417,23 @@ function PortalCard({
           >
             <ArrowTopRightOnSquareIcon className="size-3.5" />
           </button>
-          <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(portal.id); }}
-            className="p-1.5 text-[#A0A0A0] hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
-            title="Delete portal"
-          >
-            <TrashIcon className="size-3.5" />
-          </button>
+          {confirmDeleteId === portal.id ? (
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(portal.id); }}
+              onBlur={() => onCancelDelete()}
+              className="px-2 py-1 text-[10px] font-medium text-white bg-red-500 rounded hover:bg-red-600 transition-colors"
+            >
+              Confirm
+            </button>
+          ) : (
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(portal.id); }}
+              className="p-1.5 text-[#A0A0A0] hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+              title="Delete portal"
+            >
+              <TrashIcon className="size-3.5" />
+            </button>
+          )}
           <span className="px-3 py-1.5 text-[11px] font-medium text-[#1B1B1B] border border-[#E5E5EA] rounded-md group-hover:bg-[#1B1B1B] group-hover:text-white group-hover:border-[#1B1B1B] transition-colors">
             Manage
           </span>
