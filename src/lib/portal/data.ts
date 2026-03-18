@@ -177,7 +177,11 @@ export async function getPortals(): Promise<PortalData[]> {
     if (stored) {
       const lsPortals: PortalData[] = JSON.parse(stored);
       for (const p of lsPortals) {
-        if (p.blocker) lsOverrides[p.id] = { blocker: p.blocker };
+        const overrides: Partial<PortalData> = {};
+        if (p.blocker) overrides.blocker = p.blocker;
+        if (p.results) overrides.results = migrateTestResults(p.results);
+        if (p.testing_tier) overrides.testing_tier = p.testing_tier;
+        if (Object.keys(overrides).length > 0) lsOverrides[p.id] = overrides;
       }
     }
   }
@@ -222,6 +226,8 @@ export async function getPortalById(id: string): Promise<PortalData | null> {
           if (stored) {
             const lsPortal = (JSON.parse(stored) as PortalData[]).find((p) => p.id === id);
             if (lsPortal?.blocker) portal.blocker = lsPortal.blocker;
+            if (lsPortal?.results) portal.results = migrateTestResults(lsPortal.results);
+            if (lsPortal?.testing_tier) portal.testing_tier = lsPortal.testing_tier;
           }
         }
         return portal;
@@ -245,7 +251,20 @@ export async function getPortalByToken(token: string): Promise<PortalData | null
         .eq("token", token)
         .single();
       if (error) throw error;
-      return data ? mapPortalRow(data) : null;
+      if (data) {
+        const portal = mapPortalRow(data);
+        if (typeof window !== "undefined") {
+          const stored = localStorage.getItem(LS_PORTALS);
+          if (stored) {
+            const lsPortal = (JSON.parse(stored) as PortalData[]).find((p) => p.token === token);
+            if (lsPortal?.blocker) portal.blocker = lsPortal.blocker;
+            if (lsPortal?.results) portal.results = migrateTestResults(lsPortal.results);
+            if (lsPortal?.testing_tier) portal.testing_tier = lsPortal.testing_tier;
+          }
+        }
+        return portal;
+      }
+      return null;
     } catch {
       // fall through to localStorage
     }
