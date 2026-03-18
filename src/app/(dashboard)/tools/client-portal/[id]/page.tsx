@@ -24,12 +24,14 @@ import {
 import { isLoomUrl, toLoomEmbed } from "@/lib/portal/loom";
 import {
   getReviews,
+  getPageReviews,
   createReview,
   addVersion,
   getVersions,
   getFeedback,
   deleteReview,
 } from "@/lib/portal/reviews";
+import { PageReviewViewer } from "@/components/page-review";
 import { isFigmaUrl, toFigmaEmbed } from "@/lib/portal/review-types";
 import type {
   PortalData,
@@ -62,6 +64,9 @@ export default function PortalDetailPage() {
   const [updates, setUpdates] = useState<PortalUpdate[]>([]);
   const [approvals, setApprovals] = useState<PortalApproval[]>([]);
   const [reviews, setReviews] = useState<DesignReview[]>([]);
+  const [pageReviews, setPageReviews] = useState<DesignReview[]>([]);
+  const [pageReviewVersions, setPageReviewVersions] = useState<Record<string, DesignReviewVersion[]>>({});
+  const [pageReviewFeedback, setPageReviewFeedback] = useState<Record<string, DesignReviewFeedback[]>>({});
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<DashTab>("overview");
   const [copied, setCopied] = useState(false);
@@ -85,16 +90,30 @@ export default function PortalDetailPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [p, u, a, r] = await Promise.all([
+      const [p, u, a, r, pr] = await Promise.all([
         getPortalById(portalId),
         getUpdates(portalId),
         getApprovals(portalId),
         getReviews(portalId),
+        getPageReviews(portalId),
       ]);
       setPortal(p);
       setUpdates(u);
       setApprovals(a);
-      setReviews(r);
+      setReviews(r.filter((rev) => !rev.review_type || rev.review_type === "design"));
+      setPageReviews(pr);
+      // Load versions + feedback for each page review
+      if (pr.length > 0) {
+        const versionMap: Record<string, DesignReviewVersion[]> = {};
+        const feedbackMap: Record<string, DesignReviewFeedback[]> = {};
+        await Promise.all(pr.map(async (rev) => {
+          const [v, f] = await Promise.all([getVersions(rev.id), getFeedback(rev.id)]);
+          versionMap[rev.id] = v;
+          feedbackMap[rev.id] = f;
+        }));
+        setPageReviewVersions(versionMap);
+        setPageReviewFeedback(feedbackMap);
+      }
     } catch {
       // Silent
     } finally {
@@ -376,11 +395,14 @@ export default function PortalDetailPage() {
           />
         )}
 
-        {activeTab === "development" && (
-          <div className="bg-white border border-dashed border-[#E5E5EA] rounded-lg p-8 text-center">
-            <p className="text-sm text-[#7A7A7A] mb-1">Development</p>
-            <p className="text-xs text-[#A0A0A0]">Track development progress, staging links, and build status here.</p>
-          </div>
+        {activeTab === "development" && portal && (
+          <DevelopmentSection
+            portal={portal}
+            pageReviews={pageReviews}
+            pageReviewVersions={pageReviewVersions}
+            pageReviewFeedback={pageReviewFeedback}
+            onReload={load}
+          />
         )}
 
         {activeTab === "testing" && portal && (
@@ -2278,6 +2300,255 @@ function TestingSection({
           <p className="text-xs text-[#A0A0A0]">Select a testing tier and add your first test</p>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ── Development Section (Page Reviews) ── */
+
+function DevelopmentSection({
+  portal,
+  pageReviews,
+  pageReviewVersions,
+  pageReviewFeedback,
+  onReload,
+}: {
+  portal: PortalData;
+  pageReviews: DesignReview[];
+  pageReviewVersions: Record<string, DesignReviewVersion[]>;
+  pageReviewFeedback: Record<string, DesignReviewFeedback[]>;
+  onReload: () => void;
+}) {
+  const [showForm, setShowForm] = useState(false);
+  const [pageName, setPageName] = useState("");
+  const [stagingUrl, setStagingUrl] = useState("");
+  const [pageDesc, setPageDesc] = useState("");
+  const [activeReviewId, setActiveReviewId] = useState(pageReviews[0]?.id || "");
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
+  // Sync activeReviewId when pageReviews change
+  useEffect(() => {
+    if (pageReviews.length > 0 && !pageReviews.find((r) => r.id === activeReviewId)) {
+      setActiveReviewId(pageReviews[0].id);
+    }
+  }, [pageReviews, activeReviewId]);
+
+  const handleCreatePageReview = async () => {
+    if (!pageName.trim() || !stagingUrl.trim()) return;
+    const review = await createReview({
+      portal_id: portal.id,
+      title: pageName.trim(),
+      description: pageDesc.trim(),
+      review_type: "page",
+    });
+    // Add first version with staging URL
+    await addVersion({
+      review_id: review.id,
+      version_number: 1,
+      figma_url: "",
+      staging_url: stagingUrl.trim(),
+      notes: "",
+    });
+    setPageName("");
+    setStagingUrl("");
+    setPageDesc("");
+    setShowForm(false);
+    onReload();
+  };
+
+  const handleDeletePageReview = async (id: string) => {
+    if (confirmDelete !== id) {
+      setConfirmDelete(id);
+      return;
+    }
+    await deleteReview(id);
+    setConfirmDelete(null);
+    onReload();
+  };
+
+  const handleAddVersion = async (reviewId: string, url: string) => {
+    const versions = pageReviewVersions[reviewId] || [];
+    await addVersion({
+      review_id: reviewId,
+      version_number: versions.length + 1,
+      figma_url: "",
+      staging_url: url.trim(),
+      notes: "",
+    });
+    onReload();
+  };
+
+  const activeReview = pageReviews.find((r) => r.id === activeReviewId);
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-[#1B1B1B]">Page Reviews</h3>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D]"
+        >
+          + New Page Review
+        </button>
+      </div>
+
+      {/* Create form */}
+      {showForm && (
+        <div className="border border-[#E5E5EA] rounded-lg p-4 bg-white space-y-3">
+          <div>
+            <label className={labelClass}>Page Name</label>
+            <input
+              type="text"
+              value={pageName}
+              onChange={(e) => setPageName(e.target.value)}
+              className={inputClass}
+              placeholder="e.g. Homepage, PDP, Collection..."
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Staging URL</label>
+            <input
+              type="url"
+              value={stagingUrl}
+              onChange={(e) => setStagingUrl(e.target.value)}
+              className={inputClass}
+              placeholder="https://staging.mystore.com/..."
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Description (optional)</label>
+            <input
+              type="text"
+              value={pageDesc}
+              onChange={(e) => setPageDesc(e.target.value)}
+              className={inputClass}
+              placeholder="What to review..."
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleCreatePageReview}
+              disabled={!pageName.trim() || !stagingUrl.trim()}
+              className="px-4 py-2 text-xs font-medium bg-[#1B1B1B] text-white rounded-lg disabled:opacity-30"
+            >
+              Create
+            </button>
+            <button
+              onClick={() => setShowForm(false)}
+              className="px-4 py-2 text-xs text-[#7A7A7A]"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Review selector pills */}
+      {pageReviews.length > 1 && (
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {pageReviews.map((r) => (
+            <button
+              key={r.id}
+              onClick={() => setActiveReviewId(r.id)}
+              className={`px-3 py-1.5 text-[11px] font-medium rounded-full transition-colors ${
+                activeReviewId === r.id
+                  ? "bg-[#1B1B1B] text-white"
+                  : "bg-[#F3F3F5] text-[#7A7A7A] hover:bg-[#E5E5EA]"
+              }`}
+            >
+              {r.title}
+              {r.status === "approved" && " ✓"}
+              {r.status === "changes_requested" && " !"}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Active review viewer */}
+      {activeReview && (
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-sm font-semibold text-[#1B1B1B]">{activeReview.title}</p>
+              {activeReview.description && (
+                <p className="text-xs text-[#7A7A7A] mt-0.5">{activeReview.description}</p>
+              )}
+            </div>
+            <button
+              onClick={() => handleDeletePageReview(activeReview.id)}
+              className={`px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors ${
+                confirmDelete === activeReview.id
+                  ? "bg-red-500 text-white"
+                  : "text-[#AAA] border border-[#E5E5EA] hover:text-red-500 hover:border-red-200"
+              }`}
+            >
+              {confirmDelete === activeReview.id ? "Confirm Delete" : "Delete"}
+            </button>
+          </div>
+
+          <PageReviewViewer
+            review={activeReview}
+            versions={pageReviewVersions[activeReview.id] || []}
+            feedback={pageReviewFeedback[activeReview.id] || []}
+            isAdmin={true}
+            submittedBy="Admin"
+            onDataChange={onReload}
+          />
+
+          {/* Add new version */}
+          <AddVersionForm onAdd={(url) => handleAddVersion(activeReview.id, url)} />
+        </div>
+      )}
+
+      {/* Empty state */}
+      {pageReviews.length === 0 && !showForm && (
+        <div className="border border-dashed border-[#E5E5EA] rounded-lg p-8 text-center">
+          <p className="text-sm text-[#7A7A7A] mb-1">No page reviews yet</p>
+          <p className="text-xs text-[#A0A0A0]">Add a staging URL to start collecting feedback</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AddVersionForm({ onAdd }: { onAdd: (url: string) => void }) {
+  const [show, setShow] = useState(false);
+  const [url, setUrl] = useState("");
+
+  if (!show) {
+    return (
+      <button
+        onClick={() => setShow(true)}
+        className="mt-3 text-[11px] text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+      >
+        + Add new version
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-3 flex items-center gap-2">
+      <input
+        type="url"
+        value={url}
+        onChange={(e) => setUrl(e.target.value)}
+        placeholder="New staging URL..."
+        className="flex-1 px-2 py-1.5 text-xs border border-[#E5E5EA] rounded"
+      />
+      <button
+        onClick={() => { onAdd(url); setUrl(""); setShow(false); }}
+        disabled={!url.trim()}
+        className="px-3 py-1.5 text-[10px] font-medium bg-[#1B1B1B] text-white rounded disabled:opacity-30"
+      >
+        Add
+      </button>
+      <button
+        onClick={() => { setShow(false); setUrl(""); }}
+        className="text-[10px] text-[#7A7A7A]"
+      >
+        Cancel
+      </button>
     </div>
   );
 }

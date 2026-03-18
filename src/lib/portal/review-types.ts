@@ -3,12 +3,15 @@
 export type ReviewStatus = "pending" | "changes_requested" | "approved";
 export type FeedbackAction = "approved" | "changes_requested" | "comment";
 
+export type ReviewType = "design" | "page";
+
 export interface DesignReview {
   id: string;
   portal_id: string;
   title: string;
   description: string;
   status: ReviewStatus;
+  review_type?: ReviewType; // "design" (default) or "page" for staging URL reviews
   created_at: string;
   updated_at: string;
 }
@@ -20,6 +23,7 @@ export interface DesignReviewVersion {
   review_id: string;
   version_number: number;
   figma_url: string;
+  staging_url?: string; // for page reviews — the staging/preview URL
   notes: string;
   created_at: string;
 }
@@ -36,6 +40,8 @@ export interface DesignReviewFeedback {
   created_at: string;
   pin_x?: number; // percentage (0-100) from left edge
   pin_y?: number; // percentage (0-100) from top edge
+  pin_number?: number; // sequential pin number within version
+  resolved?: boolean; // whether this pin has been resolved
 }
 
 export type DesignReviewFeedbackInsert = Omit<DesignReviewFeedback, "id" | "created_at">;

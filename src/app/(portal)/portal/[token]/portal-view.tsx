@@ -14,6 +14,7 @@ import type {
   PhaseStatus,
 } from "@/lib/portal/types";
 import type { DesignReview, DesignReviewVersion, DesignReviewFeedback } from "@/lib/portal/review-types";
+import { PageReviewViewer } from "@/components/page-review";
 import { toLoomEmbed } from "@/lib/portal/loom";
 import { toFigmaEmbed } from "@/lib/portal/review-types";
 
@@ -173,6 +174,7 @@ export function PortalView({
   updates = [],
   approvals = [],
   reviews = [],
+  pageReviews = [],
   reviewVersions = {},
   reviewFeedback = {},
   onSubmitRequest,
@@ -181,6 +183,7 @@ export function PortalView({
   updates?: PortalUpdate[];
   approvals?: PortalApproval[];
   reviews?: DesignReview[];
+  pageReviews?: DesignReview[];
   reviewVersions?: Record<string, DesignReviewVersion[]>;
   reviewFeedback?: Record<string, DesignReviewFeedback[]>;
   onSubmitRequest?: (title: string, description: string) => Promise<void>;
@@ -190,6 +193,7 @@ export function PortalView({
   const [showRequestPopup, setShowRequestPopup] = useState(false);
 
   const hasDesigns = reviews.length > 0;
+  const hasPageReviews = pageReviews.length > 0;
 
   const currentPhase = portal.phases.find((p) => p.status === "in-progress");
 
@@ -307,16 +311,41 @@ export function PortalView({
             )}
             {activeTab === "development" && (
               <>
-                <PageHeader title="Development" subtitle="Development progress and build status" />
-                <div className="text-center py-20">
-                  <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F0F0F0] mb-4">
-                    <svg className="size-5 text-[#AAA]" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
+                <PageHeader title="Development" subtitle="Review staging pages and leave feedback" />
+                {hasPageReviews ? (
+                  <div className="space-y-6">
+                    {pageReviews.map((review) => (
+                      <div key={review.id}>
+                        <div className="mb-3">
+                          <p className="text-sm font-semibold text-[#1B1B1B]">{review.title}</p>
+                          {review.description && (
+                            <p className="text-xs text-[#7A7A7A] mt-0.5">{review.description}</p>
+                          )}
+                        </div>
+                        <PageReviewViewer
+                          review={review}
+                          versions={reviewVersions[review.id] || []}
+                          feedback={Object.values(reviewFeedback)
+                            .flat()
+                            .filter((f) => f.review_id === review.id)}
+                          isAdmin={false}
+                          submittedBy={portal.client_name}
+                          onDataChange={() => window.location.reload()}
+                        />
+                      </div>
+                    ))}
                   </div>
-                  <p className="text-sm text-[#777] mb-1">Development updates coming soon</p>
-                  <p className="text-xs text-[#AAA]">Build progress and staging links will appear here</p>
-                </div>
+                ) : (
+                  <div className="text-center py-20">
+                    <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F0F0F0] mb-4">
+                      <svg className="size-5 text-[#AAA]" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <p className="text-sm text-[#777] mb-1">Development updates coming soon</p>
+                    <p className="text-xs text-[#AAA]">Build progress and staging links will appear here</p>
+                  </div>
+                )}
               </>
             )}
             {activeTab === "requests" && (

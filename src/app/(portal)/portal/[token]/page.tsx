@@ -21,6 +21,7 @@ export default function PortalPage() {
   const [updates, setUpdates] = useState<PortalUpdate[]>([]);
   const [approvals, setApprovals] = useState<PortalApproval[]>([]);
   const [reviews, setReviews] = useState<DesignReview[]>([]);
+  const [pageReviews, setPageReviews] = useState<DesignReview[]>([]);
   const [reviewVersions, setReviewVersions] = useState<Record<string, DesignReviewVersion[]>>({});
   const [reviewFeedback, setReviewFeedback] = useState<Record<string, DesignReviewFeedback[]>>({});
   const [loading, setLoading] = useState(true);
@@ -58,7 +59,8 @@ export default function PortalPage() {
           }
         }
 
-        setReviews(allReviews);
+        setReviews(allReviews.filter((r) => !r.review_type || r.review_type === "design"));
+        setPageReviews(allReviews.filter((r) => r.review_type === "page"));
         setReviewVersions(versionMap);
         setReviewFeedback(feedbackMap);
       }
@@ -158,6 +160,7 @@ export default function PortalPage() {
       updates={updates}
       approvals={approvals}
       reviews={reviews}
+      pageReviews={pageReviews}
       reviewVersions={reviewVersions}
       reviewFeedback={reviewFeedback}
       onSubmitRequest={handleSubmitRequest}

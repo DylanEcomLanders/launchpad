@@ -7,6 +7,7 @@ import type {
   DesignReviewFeedback,
   DesignReviewFeedbackInsert,
   ReviewStatus,
+  ReviewType,
 } from "./review-types";
 
 /* ── Local-storage keys ── */
@@ -231,4 +232,77 @@ export async function addFeedback(
     localStorage.setItem(LS_FEEDBACK, JSON.stringify(all));
     return row;
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Page Reviews (staging URL reviews — extends design review system)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Get reviews filtered by type (design or page) */
+export async function getReviewsByType(
+  portalId: string,
+  reviewType: ReviewType
+): Promise<DesignReview[]> {
+  const all = await getReviews(portalId);
+  if (reviewType === "design") {
+    return all.filter((r) => !r.review_type || r.review_type === "design");
+  }
+  return all.filter((r) => r.review_type === reviewType);
+}
+
+/** Get page reviews for a portal */
+export async function getPageReviews(portalId: string): Promise<DesignReview[]> {
+  return getReviewsByType(portalId, "page");
+}
+
+/** Get feedback for a specific version */
+export async function getVersionFeedback(
+  versionId: string
+): Promise<DesignReviewFeedback[]> {
+  try {
+    const { data, error } = await supabase
+      .from("design_review_feedback")
+      .select("*")
+      .eq("version_id", versionId)
+      .order("created_at", { ascending: true });
+    if (error) throw error;
+    return data ?? [];
+  } catch {
+    if (typeof window === "undefined") return [];
+    const stored = localStorage.getItem(LS_FEEDBACK);
+    const all: DesignReviewFeedback[] = stored ? JSON.parse(stored) : [];
+    return all
+      .filter((f) => f.version_id === versionId)
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  }
+}
+
+/** Toggle resolved status on a feedback pin */
+export async function updateFeedbackResolved(
+  feedbackId: string,
+  resolved: boolean
+): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from("design_review_feedback")
+      .update({ resolved })
+      .eq("id", feedbackId);
+    if (error) throw error;
+  } catch {
+    const stored = localStorage.getItem(LS_FEEDBACK);
+    const all: DesignReviewFeedback[] = stored ? JSON.parse(stored) : [];
+    const updated = all.map((f) =>
+      f.id === feedbackId ? { ...f, resolved } : f
+    );
+    localStorage.setItem(LS_FEEDBACK, JSON.stringify(updated));
+  }
+}
+
+/** Get the next pin number for a version */
+export async function getNextPinNumber(versionId: string): Promise<number> {
+  const feedback = await getVersionFeedback(versionId);
+  const pins = feedback.filter((f) => f.pin_x != null && f.pin_y != null);
+  if (pins.length === 0) return 1;
+  const maxNum = Math.max(...pins.map((p) => p.pin_number || 0));
+  return maxNum + 1;
 }
