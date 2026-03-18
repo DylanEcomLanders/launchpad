@@ -223,12 +223,6 @@ export default function PortalDetailPage() {
     await updatePortal(portal.id, { scope: updatedScope });
   };
 
-  const handleUpdateDocUrl = async (index: number, url: string) => {
-    if (!portal) return;
-    const updatedDocs = portal.documents.map((d, i) => i === index ? { ...d, url } : d);
-    setPortal({ ...portal, documents: updatedDocs });
-    await updatePortal(portal.id, { documents: updatedDocs });
-  };
 
   const copyLink = () => {
     if (!portal) return;
@@ -354,7 +348,6 @@ export default function PortalDetailPage() {
             onUpdateTouchpoint={handleUpdateTouchpoint}
             onAddScope={handleAddScope}
             onRemoveScope={handleRemoveScope}
-            onUpdateDocUrl={handleUpdateDocUrl}
           />
         )}
 
@@ -468,7 +461,6 @@ function OverviewSection({
   onUpdateTouchpoint,
   onAddScope,
   onRemoveScope,
-  onUpdateDocUrl,
 }: {
   portal: PortalData;
   onUpdateField: (field: string, value: string | number | boolean) => void;
@@ -479,7 +471,6 @@ function OverviewSection({
   onUpdateTouchpoint: (field: "date" | "description", value: string) => void;
   onAddScope: (item: string, type?: string) => void;
   onRemoveScope: (index: number) => void;
-  onUpdateDocUrl: (index: number, url: string) => void;
 }) {
   const [scopeInput, setScopeInput] = useState("");
   const [scopeType, setScopeType] = useState("");
@@ -797,31 +788,14 @@ function OverviewSection({
           </h3>
           <div className="border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg divide-y divide-[#EDEDEF]">
             {portal.documents.map((doc, i) => (
-              <div key={i} className="p-3 space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium flex-1 min-w-0 truncate">{doc.name}</p>
-                  <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-[#777] bg-[#F0F0F0] rounded-full">{doc.type}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="url"
-                    placeholder="Paste document URL..."
-                    defaultValue={doc.url || ""}
-                    onBlur={(e) => {
-                      const val = e.target.value.trim();
-                      if (val !== (doc.url || "")) onUpdateDocUrl(i, val);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                    }}
-                    className="flex-1 px-2 py-1 text-xs border border-[#E5E5EA] rounded text-[#777] placeholder:text-[#CCC]"
-                  />
-                  {doc.url && (
-                    <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-[10px] font-medium text-[#777] hover:text-[#1B1B1B] transition-colors">
-                      Open
-                    </a>
-                  )}
-                </div>
+              <div key={i} className="flex items-center gap-2 p-3">
+                <p className="text-sm font-medium flex-1 min-w-0 truncate">{doc.name}</p>
+                <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-[#777] bg-[#F0F0F0] rounded-full">{doc.type}</span>
+                {doc.url ? (
+                  <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-green-600 bg-green-50 rounded-full">Linked</span>
+                ) : (
+                  <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-[#AAA] bg-[#F8F8F8] rounded-full">Pending</span>
+                )}
               </div>
             ))}
           </div>
