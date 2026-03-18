@@ -33,8 +33,8 @@ export type TestResult = "winner" | "loser" | "inconclusive";
 export type TestingTier = "T1" | "T2" | "T3"; // 1/week, 2/week, 4/week
 
 export interface MetricSnapshot {
-  control?: string;
-  variant?: string;
+  a?: string; // Variant A (control)
+  b?: string; // Variant B
 }
 
 export interface PortalTestResult {
@@ -47,6 +47,7 @@ export interface PortalTestResult {
   aov?: MetricSnapshot;
   rpv?: MetricSnapshot;
   figma_url?: string;
+  week: string; // e.g. "W12 — 18 Mar"
   startDate: string;
   endDate?: string;
 }

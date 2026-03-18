@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Logo } from "@/components/logo";
 import type {
   PortalData,
   PortalPhase,
@@ -138,7 +139,7 @@ function UKTimeBanner({ dark = false }: { dark?: boolean }) {
     <div className="flex items-center gap-2">
       <span
         className={`size-2 rounded-full shrink-0 ${
-          isOnline ? "bg-[#1A1A1A]" : "bg-[#555]"
+          isOnline ? "bg-green-500" : "bg-red-500"
         }`}
       />
       <span className={`text-[11px] ${dark ? "text-[#999]" : "text-[#777]"}`}>
@@ -213,7 +214,7 @@ export function PortalView({
         <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 rounded-lg hover:bg-[#F5F5F5] text-[#777]">
           <svg className="size-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" /></svg>
         </button>
-        <span className="text-sm font-semibold text-[#1A1A1A]">{portal.client_name}</span>
+        <Logo height={14} />
         <div className="w-8" />
       </div>
 
@@ -226,7 +227,7 @@ export function PortalView({
       <aside className={`fixed md:sticky top-0 left-0 h-screen z-50 md:z-auto w-[220px] bg-white border-r border-[#E8E8E8] flex flex-col transition-transform duration-200 md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         {/* Logo */}
         <div className="px-5 py-6 border-b border-[#E8E8E8]">
-          <p className="text-sm font-semibold text-[#1A1A1A] truncate">{portal.client_name}</p>
+          <Logo height={14} />
         </div>
 
         {/* Nav */}
@@ -393,7 +394,7 @@ function DashboardView({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div className="bg-white border border-[#E8E8E8] rounded-lg p-6">
           <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-3">Current Stage</p>
-          <p className="text-lg font-bold tracking-tight text-[#1A1A1A] mb-1">{portal.current_phase}</p>
+          <p className="text-lg font-bold tracking-tight text-[#1A1A1A] mb-1">{currentPhase?.name || portal.current_phase}</p>
           {currentPhase && (
             <p className="text-sm text-[#999] leading-relaxed">{currentPhase.description}</p>
           )}
@@ -405,7 +406,15 @@ function DashboardView({
         <div className="bg-[#1A1A1A] rounded-lg p-6">
           <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/50 mb-3">Next Touchpoint</p>
           <p className="text-lg font-bold tracking-tight text-white mb-1">
-            {portal.next_touchpoint?.date || "\u2014"}
+            {(() => {
+              const d = portal.next_touchpoint?.date;
+              if (!d) return "\u2014";
+              if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
+                const dt = new Date(d + "T00:00:00");
+                return dt.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+              }
+              return d;
+            })()}
           </p>
           <p className="text-sm text-white/60 leading-relaxed">
             {portal.next_touchpoint?.description || "No touchpoint scheduled"}
@@ -441,23 +450,6 @@ function DashboardView({
           ))}
         </div>
       </div>
-
-      {/* What you're getting — shows scope items */}
-      {portal.scope.length > 0 && (
-        <div className="bg-white border border-[#E8E8E8] rounded-lg p-6">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">What You&apos;re Getting</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
-            {portal.scope.map((item, i) => (
-              <div key={i} className="flex items-center gap-2.5 py-1">
-                <svg className="size-4 text-[#1A1A1A] shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
-                </svg>
-                <span className="text-sm text-[#555]">{item}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Documents */}
       {portal.documents.length > 0 && (
@@ -562,7 +554,7 @@ function TimelineTab({
                         </span>
                       )}
                       {isComplete && (
-                        <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-[#1A1A1A]/20 text-[#1A1A1A] rounded-full">
+                        <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-green-100 text-green-700 rounded-full">
                           Complete
                         </span>
                       )}
@@ -887,6 +879,21 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
   const scheduled = results.filter(r => r.status === "scheduled");
   const completed = results.filter(r => r.status === "complete");
 
+  // Group by week, most recent first
+  const weekGroups = results.reduce<Record<string, PortalTestResult[]>>((acc, test) => {
+    const w = test.week || "Other";
+    if (!acc[w]) acc[w] = [];
+    acc[w].push(test);
+    return acc;
+  }, {});
+  const sortedWeeks = Object.keys(weekGroups).sort((a, b) => {
+    if (a === "Other") return 1;
+    if (b === "Other") return -1;
+    const numA = parseInt(a.replace(/\D/g, "")) || 0;
+    const numB = parseInt(b.replace(/\D/g, "")) || 0;
+    return numB - numA;
+  });
+
   if (results.length === 0) {
     return (
       <div className="text-center py-20">
@@ -909,37 +916,30 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
     return { label: "Inconclusive", color: "text-amber-700", bg: "bg-amber-50" };
   };
 
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
   function TestCard({ test }: { test: PortalTestResult }) {
     const badge = resultBadge(test);
-    const figmaEmbed = test.figma_url ? toFigmaEmbed(test.figma_url) : null;
 
     return (
       <div className="border border-[#E8E8E8] rounded-lg overflow-hidden">
-        {figmaEmbed && (
-          <div className="relative h-40 bg-[#F7F7F7]">
-            <iframe
-              src={figmaEmbed}
-              className="w-full h-full border-0 pointer-events-none"
-              allowFullScreen
-            />
-            {test.figma_url && (
-              <a
-                href={test.figma_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="absolute bottom-2 right-2 px-3 py-1.5 text-[10px] font-semibold bg-[#1A1A1A] text-white rounded-md hover:bg-[#333] transition-colors shadow-lg"
-              >
-                View in Figma
-              </a>
-            )}
-          </div>
-        )}
         <div className="p-4">
           <div className="flex items-start justify-between gap-3 mb-2">
             <p className="text-sm font-medium">{test.name}</p>
-            <span className={`px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full shrink-0 ${badge.color} ${badge.bg}`}>
-              {badge.label}
-            </span>
+            <div className="flex items-center gap-2 shrink-0">
+              {test.figma_url && (
+                <button
+                  onClick={() => setPreviewUrl(test.figma_url!)}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-semibold text-[#777] bg-[#F7F7F7] rounded-md hover:bg-[#EBEBEB] transition-colors"
+                >
+                  <svg className="size-3" viewBox="0 0 24 24" fill="none"><path d="M5 5.5A3.5 3.5 0 018.5 2H12v7H8.5A3.5 3.5 0 015 5.5z" fill="#F24E1E"/><path d="M12 2h3.5a3.5 3.5 0 010 7H12V2z" fill="#FF7262"/><path d="M12 9.5h3.5a3.5 3.5 0 010 7H12V9.5z" fill="#1ABCFE"/><path d="M5 19.5A3.5 3.5 0 018.5 16H12v3.5a3.5 3.5 0 11-7 0z" fill="#0ACF83"/><path d="M5 12.5A3.5 3.5 0 018.5 9H12v7H8.5A3.5 3.5 0 015 12.5z" fill="#A259FF"/></svg>
+                  Design
+                </button>
+              )}
+              <span className={`px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full ${badge.color} ${badge.bg}`}>
+                {badge.label}
+              </span>
+            </div>
           </div>
           <p className="text-xs text-[#999] mb-1">{test.metric}</p>
           {(test.cvr || test.aov || test.rpv) && (
@@ -948,19 +948,35 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
                 { label: "CVR", data: test.cvr },
                 { label: "AOV", data: test.aov },
                 { label: "RPV", data: test.rpv },
-              ].map(({ label, data }) => (
-                <div key={label}>
-                  <p className="text-[9px] font-semibold uppercase tracking-wider text-[#CCC] mb-0.5">{label}</p>
-                  {data ? (
-                    <div className="flex items-baseline gap-1">
-                      {data.control && <span className="text-[10px] text-[#CCC] line-through">{data.control}</span>}
-                      {data.variant && <span className="text-xs font-semibold text-[#1A1A1A]">{data.variant}</span>}
-                    </div>
-                  ) : (
-                    <span className="text-[10px] text-[#E8E8E8]">—</span>
-                  )}
-                </div>
-              ))}
+              ].map(({ label, data }) => {
+                const lift = (() => {
+                  if (!data?.a || !data?.b) return null;
+                  const nA = parseFloat(data.a.replace(/[^0-9.\-]/g, ""));
+                  const nB = parseFloat(data.b.replace(/[^0-9.\-]/g, ""));
+                  if (isNaN(nA) || isNaN(nB) || nA === 0) return null;
+                  const pct = ((nB - nA) / nA) * 100;
+                  return { value: `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`, positive: pct >= 0 };
+                })();
+                return (
+                  <div key={label}>
+                    <p className="text-[9px] font-semibold uppercase tracking-wider text-[#CCC] mb-1">{label}</p>
+                    {data ? (
+                      <div className="flex items-baseline gap-1 flex-wrap">
+                        <span className="text-[10px] text-[#AAA]">{data.a}</span>
+                        <svg className="size-2 text-[#CCC] shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" /></svg>
+                        <span className="text-[11px] font-semibold text-[#1A1A1A]">{data.b}</span>
+                        {lift && (
+                          <span className={`text-[9px] font-semibold ${lift.positive ? "text-emerald-500" : "text-red-400"}`}>
+                            {lift.value}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-[10px] text-[#E8E8E8]">—</span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
           <p className="text-xs text-[#CCC]">
@@ -993,43 +1009,41 @@ function ResultsTab({ results }: { results: PortalTestResult[] }) {
         </div>
       </div>
 
-      {/* Live Tests */}
-      {live.length > 0 && (
-        <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-5">
-            Currently Live
+      {/* Tests grouped by week */}
+      {sortedWeeks.map((weekLabel) => (
+        <div key={weekLabel}>
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">
+            {weekLabel}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {live.map(test => <TestCard key={test.id} test={test} />)}
+            {weekGroups[weekLabel].map(test => <TestCard key={test.id} test={test} />)}
           </div>
         </div>
-      )}
+      ))}
 
-      {/* Scheduled */}
-      {scheduled.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-5">
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA]">
-              What&apos;s Coming Next
-            </h3>
-            <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-[#F0F0F0] text-[#777] rounded-full">
-              {scheduled.length} planned
-            </span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {scheduled.map(test => <TestCard key={test.id} test={test} />)}
-          </div>
-        </div>
-      )}
-
-      {/* Completed Tests */}
-      {completed.length > 0 && (
-        <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-5">
-            Completed Tests
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {completed.map(test => <TestCard key={test.id} test={test} />)}
+      {/* Figma preview popup */}
+      {previewUrl && toFigmaEmbed(previewUrl) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setPreviewUrl(null)}>
+          <div className="relative w-full max-w-4xl mx-4 bg-white rounded-xl overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-3 border-b border-[#E8E8E8]">
+              <p className="text-sm font-semibold text-[#1A1A1A]">Design Preview</p>
+              <div className="flex items-center gap-3">
+                <a
+                  href={previewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[11px] font-semibold text-[#777] hover:text-[#1A1A1A] transition-colors"
+                >
+                  Open in Figma
+                </a>
+                <button onClick={() => setPreviewUrl(null)} className="text-[#AAA] hover:text-[#1A1A1A] transition-colors">
+                  <svg className="size-5" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
+                </button>
+              </div>
+            </div>
+            <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+              <iframe src={toFigmaEmbed(previewUrl) || ""} className="absolute inset-0 w-full h-full border-0" allowFullScreen />
+            </div>
           </div>
         </div>
       )}

@@ -36,6 +36,23 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-9",
+    date: "18 Mar 2026",
+    version: "0.8.1",
+    title: "Project Kickoff → Portal Pipeline & Data Persistence",
+    changes: [
+      { type: "added", text: "Project Kickoff now creates a client portal — one-click 'Create Client Portal' button auto-populates phases, scope, documents, and touchpoints from the kickoff form" },
+      { type: "added", text: "CRO test results — A/B testing with week-based grouping, CVR/AOV/RPV snapshots with % lift indicators, Figma design preview popups" },
+      { type: "improved", text: "Current phase synced with timeline — admin uses dropdown selector from phases, auto-updates when phase status changes" },
+      { type: "improved", text: "Client portal timeline — complete phase tags now green, online/offline indicator green/red" },
+      { type: "improved", text: "Touchpoint date format — shows '19 Mar' instead of ISO dates" },
+      { type: "fixed", text: "Supabase data persistence — added missing wins, testing_tier, blocker columns. Portals now persist across all browsers and devices" },
+      { type: "fixed", text: "localStorage-only portals now visible in portal list even when Supabase is configured" },
+      { type: "removed", text: "Removed 'What You're Getting' scope box from client dashboard" },
+      { type: "improved", text: "Renamed 'Project Documents' to 'Project Kickoff' in sidebar" },
+    ],
+  },
+  {
     id: "cl-8",
     date: "18 Mar 2026",
     version: "0.8.0",

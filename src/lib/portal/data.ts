@@ -68,10 +68,10 @@ const DEMO_DOCUMENTS = [
 ];
 
 const DEMO_RESULTS: PortalTestResult[] = [
-  { id: "test-1", name: "Homepage hero CTA copy test", status: "complete", result: "winner", metric: "Click-through rate", cvr: { control: "2.1%", variant: "2.8%" }, aov: { control: "$84", variant: "$86" }, rpv: { control: "$1.76", variant: "$2.41" }, startDate: "5 Mar", endDate: "12 Mar" },
-  { id: "test-2", name: "PDP image gallery layout", status: "complete", result: "winner", metric: "Add-to-cart rate", cvr: { control: "3.4%", variant: "3.9%" }, aov: { control: "$92", variant: "$97" }, rpv: { control: "$3.13", variant: "$3.78" }, startDate: "28 Feb", endDate: "8 Mar" },
-  { id: "test-3", name: "Collection page filter position", status: "live", metric: "Collection click-through", cvr: { control: "2.6%", variant: "2.9%" }, aov: { control: "$78", variant: "$81" }, rpv: { control: "$2.03", variant: "$2.35" }, startDate: "10 Mar" },
-  { id: "test-4", name: "Sticky add-to-cart bar", status: "scheduled", metric: "Conversion rate", startDate: "17 Mar" },
+  { id: "test-4", name: "Sticky add-to-cart bar", status: "scheduled", metric: "Conversion rate", week: "W12 — 17 Mar", startDate: "17 Mar" },
+  { id: "test-3", name: "Collection page filter position", status: "live", metric: "Collection click-through", cvr: { a: "2.6%", b: "2.9%" }, aov: { a: "$78", b: "$81" }, rpv: { a: "$2.03", b: "$2.35" }, week: "W11 — 10 Mar", startDate: "10 Mar" },
+  { id: "test-1", name: "Homepage hero CTA copy test", status: "complete", result: "winner", metric: "Click-through rate", cvr: { a: "2.1%", b: "2.8%" }, aov: { a: "$84", b: "$86" }, rpv: { a: "$1.76", b: "$2.41" }, week: "W10 — 3 Mar", startDate: "5 Mar", endDate: "12 Mar" },
+  { id: "test-2", name: "PDP image gallery layout", status: "complete", result: "winner", metric: "Add-to-cart rate", cvr: { a: "3.4%", b: "3.9%" }, aov: { a: "$92", b: "$97" }, rpv: { a: "$3.13", b: "$3.78" }, week: "W9 — 24 Feb", startDate: "28 Feb", endDate: "8 Mar" },
 ];
 
 const DEMO_WINS = [
@@ -170,12 +170,13 @@ function uid(): string {
 // ═══════════════════════════════════════════════════════════════════
 
 export async function getPortals(): Promise<PortalData[]> {
-  // Read localStorage overrides (blocker, etc.) that may not be in Supabase
+  // Read all localStorage portals (overrides + locally-created portals)
+  let lsPortals: PortalData[] = [];
   const lsOverrides: Record<string, Partial<PortalData>> = {};
   if (typeof window !== "undefined") {
     const stored = localStorage.getItem(LS_PORTALS);
     if (stored) {
-      const lsPortals: PortalData[] = JSON.parse(stored);
+      lsPortals = JSON.parse(stored);
       for (const p of lsPortals) {
         const overrides: Partial<PortalData> = {};
         if (p.blocker) overrides.blocker = p.blocker;
@@ -193,13 +194,17 @@ export async function getPortals(): Promise<PortalData[]> {
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []).map((row) => {
+      const supabaseIds = new Set((data ?? []).map((r) => r.id));
+      const supabasePortals = (data ?? []).map((row) => {
         const portal = mapPortalRow(row);
         // Merge localStorage overrides
         const overrides = lsOverrides[portal.id];
         if (overrides) Object.assign(portal, overrides);
         return portal;
       });
+      // Include localStorage-only portals (not in Supabase)
+      const localOnly = lsPortals.filter((p) => !supabaseIds.has(p.id));
+      return [...localOnly, ...supabasePortals];
     } catch {
       // fall through to localStorage
     }
@@ -232,14 +237,18 @@ export async function getPortalById(id: string): Promise<PortalData | null> {
         }
         return portal;
       }
-      return null;
     } catch {
       // fall through to localStorage
     }
   }
+  // Check localStorage (fallback or localStorage-only portals)
   if (typeof window === "undefined") return null;
-  const all = await getPortals();
-  return all.find((p) => p.id === id) ?? null;
+  const stored = localStorage.getItem(LS_PORTALS);
+  if (stored) {
+    const found = (JSON.parse(stored) as PortalData[]).find((p) => p.id === id);
+    if (found) return found;
+  }
+  return null;
 }
 
 export async function getPortalByToken(token: string): Promise<PortalData | null> {
@@ -388,15 +397,16 @@ export async function incrementViewCount(token: string): Promise<void> {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function migrateTestResults(results: any[]): PortalTestResult[] {
   return results.map((r, i) => {
+    const base = { ...r, id: r.id || `test-${i}`, week: r.week || "" };
     // Already new format
     if (r.status === "live" || r.status === "scheduled" || r.status === "complete") {
-      return { ...r, id: r.id || `test-${i}` };
+      return base;
     }
     // Old format migration
-    if (r.status === "running") return { ...r, id: r.id || `test-${i}`, status: "live" as const };
-    if (r.status === "winner") return { ...r, id: r.id || `test-${i}`, status: "complete" as const, result: "winner" as const };
-    if (r.status === "loser") return { ...r, id: r.id || `test-${i}`, status: "complete" as const, result: "loser" as const };
-    return { ...r, id: r.id || `test-${i}` };
+    if (r.status === "running") return { ...base, status: "live" as const };
+    if (r.status === "winner") return { ...base, status: "complete" as const, result: "winner" as const };
+    if (r.status === "loser") return { ...base, status: "complete" as const, result: "loser" as const };
+    return base;
   });
 }
 

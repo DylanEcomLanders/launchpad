@@ -46,7 +46,7 @@ const navSections: NavSection[] = [
     defaultOpen: true,
     items: [
       { label: "Proposals", href: "/tools/proposals" },
-      { label: "Project Documents", href: "/tools/project-kickoff" },
+      { label: "Project Kickoff", href: "/tools/project-kickoff" },
       { label: "Client Portals", href: "/tools/client-portal" },
     ],
   },

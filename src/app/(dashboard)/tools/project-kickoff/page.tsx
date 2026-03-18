@@ -36,6 +36,9 @@ import { computeAllPhases, computeDesignDevDays } from "@/lib/roadmap-defaults";
 import { pdf, type DocumentProps } from "@react-pdf/renderer";
 import type { ReactElement } from "react";
 import { inputClass, selectClass, labelClass, textareaClass } from "@/lib/form-styles";
+import { createPortal } from "@/lib/portal/data";
+import type { PortalInsert, PortalPhase as PPhase, PortalDeliverable as PDel, PortalDocument as PDoc } from "@/lib/portal/types";
+import { useRouter } from "next/navigation";
 
 /* ── Helpers ── */
 
@@ -112,11 +115,14 @@ export default function ProjectKickoffPage() {
   const [activeModal, setActiveModal] = useState<"scope" | "roadmap" | "agreement" | null>(null);
 
   /* Generation state */
+  const router = useRouter();
   const [generating, setGenerating] = useState(false);
   const [showOutputs, setShowOutputs] = useState(false);
   const [downloadingAll, setDownloadingAll] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedSlack, setCopiedSlack] = useState(false);
+  const [creatingPortal, setCreatingPortal] = useState(false);
+  const [portalCreated, setPortalCreated] = useState(false);
 
   /* ── Close modal on Escape ── */
   const closeModal = useCallback(() => setActiveModal(null), []);
@@ -295,6 +301,77 @@ export default function ProjectKickoffPage() {
       console.error("PDF generation failed:", err);
     } finally {
       setDownloadingAll(false);
+    }
+  };
+
+  /* ── Create Client Portal from form data ── */
+  const handleCreatePortal = async () => {
+    if (!isFormValid || creatingPortal) return;
+    setCreatingPortal(true);
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const fmtDate = (d: string) => {
+        if (!d) return "";
+        const dt = new Date(d + "T00:00:00");
+        return dt.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+      };
+
+      // Map computed phases → PortalPhases (first = in-progress, rest = upcoming)
+      const portalPhases: PPhase[] = phases.map((p, i) => ({
+        id: `phase-${i}`,
+        name: p.name,
+        status: i === 0 ? ("in-progress" as const) : ("upcoming" as const),
+        dates: `${fmtDate(p.startDate)} – ${fmtDate(p.endDate)}`,
+        description: p.description,
+        tasks: 0,
+        completed: 0,
+        deadline: p.endDate,
+      }));
+
+      // Map deliverables
+      const portalDeliverables: PDel[] = validDeliverables.map((d, i) => ({
+        id: `d-${i + 1}`,
+        name: d.description,
+        phase: "Design",
+        status: "not-started" as const,
+        assignee: "",
+      }));
+
+      // Build document list
+      const portalDocs: PDoc[] = [
+        { name: `${clientName} – Project Roadmap`, type: "Roadmap" as const, date: today },
+        { name: `${clientName} – Scope of Work`, type: "Scope" as const, date: today },
+      ];
+      if (isAgreementValid) {
+        portalDocs.push({ name: `${clientName} – Service Agreement`, type: "Agreement" as const, date: today });
+      }
+
+      const input: PortalInsert = {
+        client_name: clientName,
+        client_email: agreement.clientContactEmail || "",
+        project_type: projectType,
+        current_phase: portalPhases[0]?.name || "Kickoff",
+        progress: 0,
+        next_touchpoint: { date: kickoffDate, description: "Project kickoff call" },
+        phases: portalPhases,
+        scope: validDeliverables.map((d) => d.description),
+        deliverables: portalDeliverables,
+        documents: portalDocs,
+        results: [],
+        wins: [],
+        show_results: false,
+        slack_channel_url: "",
+        ad_hoc_requests: [],
+      };
+
+      const portal = await createPortal(input);
+      setPortalCreated(true);
+      setTimeout(() => router.push(`/tools/client-portal/${portal.id}`), 500);
+    } catch (err) {
+      console.error("Portal creation failed:", err);
+      alert("Failed to create portal. Check the console for details.");
+    } finally {
+      setCreatingPortal(false);
     }
   };
 
@@ -801,23 +878,47 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
           <div className="mt-12 pt-12 border-t border-[#E5E5EA] space-y-8">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold">Kickoff Pack</h2>
-              <button
-                onClick={handleDownloadAll}
-                disabled={downloadingAll}
-                className="flex items-center gap-2 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-accent-hover transition-colors disabled:opacity-40"
-              >
-                {downloadingAll ? (
-                  <>
-                    <ArrowPathIcon className="size-3.5 animate-spin" />
-                    Downloading...
-                  </>
-                ) : (
-                  <>
-                    <RocketLaunchIcon className="size-3.5" />
-                    Download All PDFs
-                  </>
-                )}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleCreatePortal}
+                  disabled={creatingPortal || portalCreated}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-[#E5E5EA] text-[#1B1B1B] text-xs font-medium rounded-lg hover:bg-[#F5F5F5] transition-colors disabled:opacity-40"
+                >
+                  {portalCreated ? (
+                    <>
+                      <CheckIcon className="size-3.5 text-green-600" />
+                      Portal Created
+                    </>
+                  ) : creatingPortal ? (
+                    <>
+                      <ArrowPathIcon className="size-3.5 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <PlusIcon className="size-3.5" />
+                      Create Client Portal
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={handleDownloadAll}
+                  disabled={downloadingAll}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-accent-hover transition-colors disabled:opacity-40"
+                >
+                  {downloadingAll ? (
+                    <>
+                      <ArrowPathIcon className="size-3.5 animate-spin" />
+                      Downloading...
+                    </>
+                  ) : (
+                    <>
+                      <RocketLaunchIcon className="size-3.5" />
+                      Download All PDFs
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* PDFs */}
