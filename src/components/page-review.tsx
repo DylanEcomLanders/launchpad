@@ -267,13 +267,25 @@ export function PageReviewViewer({
             viewportMode === "mobile" ? "max-w-[375px] mx-auto" : ""
           }`}
         >
+          {/* Open in new tab bar */}
+          <div className="flex items-center justify-between px-3 py-1.5 bg-[#FAFAFA] border-b border-[#E5E5EA]">
+            <p className="text-[10px] text-[#AAA] truncate max-w-[60%]">{stagingUrl}</p>
+            <a
+              href={stagingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] font-medium text-[#2563EB] hover:underline"
+            >
+              Open in new tab
+            </a>
+          </div>
+
           {!iframeError ? (
             <>
               <iframe
                 src={stagingUrl}
                 className="w-full border-0"
                 style={{ height: viewportMode === "desktop" ? "70vh" : "667px" }}
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                 onError={() => setIframeError(true)}
               />
               {/* Pin overlay */}
