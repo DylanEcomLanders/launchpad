@@ -100,6 +100,7 @@ export interface PortalData {
   results: PortalTestResult[];
   testing_tier?: TestingTier | null;
   intelligems_key?: string;
+  intelligems_selected_tests?: string[]; // IDs of Intelligems tests we're running (cherry-picked)
   wins: PortalWin[];
   show_results: boolean;
   slack_channel_url: string;

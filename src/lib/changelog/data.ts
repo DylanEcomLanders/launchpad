@@ -51,6 +51,8 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Designs tab always visible in client portal with placeholder state" },
       { type: "improved", text: "Development tab — page reviews with staging URLs, version tracking, and inline feedback" },
       { type: "improved", text: "Scope tab shows deliverable type alongside description" },
+      { type: "added", text: "Intelligems cherry-pick — select which tests are yours, only selected show in client portal" },
+      { type: "improved", text: "Client Development tab — clean version-controlled staging links with Review Page buttons, no iframe" },
       { type: "fixed", text: "Page reviews not appearing after creation — activeReviewId sync issue" },
       { type: "fixed", text: "Deleted portals reappearing — now uses Supabase soft-delete with deleted_at column" },
     ],

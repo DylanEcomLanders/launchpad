@@ -195,7 +195,7 @@ export default function PortalDetailPage() {
     setPortal({ ...portal, phases: updatedPhases });
   };
 
-  const handleUpdateField = async (field: string, value: string | number | boolean) => {
+  const handleUpdateField = async (field: string, value: string | number | boolean | string[]) => {
     if (!portal) return;
     await updatePortal(portal.id, { [field]: value });
     setPortal({ ...portal, [field]: value } as PortalData);
@@ -486,7 +486,7 @@ function OverviewSection({
   onRemoveScope,
 }: {
   portal: PortalData;
-  onUpdateField: (field: string, value: string | number | boolean) => void;
+  onUpdateField: (field: string, value: string | number | boolean | string[]) => void;
   onSetBlocker: (blocker: PortalBlocker | null) => void;
   onAddPhase: () => void;
   onRemovePhase: (id: string) => void;
@@ -1920,7 +1920,7 @@ function TestingSection({
 }: {
   portal: PortalData;
   onUpdateResults: (results: PortalTestResult[]) => Promise<void>;
-  onUpdateField: (field: string, value: string | number | boolean) => void;
+  onUpdateField: (field: string, value: string | number | boolean | string[]) => void;
 }) {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -2076,13 +2076,17 @@ function TestingSection({
         <p className="text-[10px] text-[#AAA] mt-1.5">Paste the client&apos;s Intelligems API key to auto-pull A/B test results</p>
       </div>
 
-      {/* Intelligems Test Cards */}
+      {/* Intelligems Test Cards with cherry-pick */}
       {portal.intelligems_key && (
         <div>
           <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
-            Intelligems Tests (Live)
+            Intelligems Tests — Select Our Tests
           </h3>
-          <IntelligemsTestCards apiKey={portal.intelligems_key} />
+          <IntelligemsTestCards
+            apiKey={portal.intelligems_key}
+            selectedTests={portal.intelligems_selected_tests || []}
+            onSelectionChange={(ids) => onUpdateField("intelligems_selected_tests", ids)}
+          />
         </div>
       )}
 

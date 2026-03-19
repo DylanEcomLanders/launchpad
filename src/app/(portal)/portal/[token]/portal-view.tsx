@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Logo } from "@/components/logo";
-import { IntelligemsTestCards } from "@/components/intelligems-tests";
+import { IntelligemsClientCards } from "@/components/intelligems-tests";
 import type {
   PortalData,
   PortalPhase,
@@ -15,7 +15,7 @@ import type {
   PhaseStatus,
 } from "@/lib/portal/types";
 import type { DesignReview, DesignReviewVersion, DesignReviewFeedback } from "@/lib/portal/review-types";
-import { PageReviewViewer } from "@/components/page-review";
+
 import { toLoomEmbed } from "@/lib/portal/loom";
 import { toFigmaEmbed } from "@/lib/portal/review-types";
 
@@ -309,7 +309,10 @@ export function PortalView({
                 <PageHeader title="Test Results" subtitle="A/B tests and optimisation results" />
                 {portal.intelligems_key && (
                   <div className="mb-6">
-                    <IntelligemsTestCards apiKey={portal.intelligems_key} compact />
+                    <IntelligemsClientCards
+                      apiKey={portal.intelligems_key}
+                      selectedTests={portal.intelligems_selected_tests}
+                    />
                   </div>
                 )}
                 <ResultsTab results={portal.results} />
@@ -319,27 +322,101 @@ export function PortalView({
               <>
                 <PageHeader title="Development" subtitle="Review staging pages and leave feedback" />
                 {hasPageReviews ? (
-                  <div className="space-y-6">
-                    {pageReviews.map((review) => (
-                      <div key={review.id}>
-                        <div className="mb-3">
-                          <p className="text-sm font-semibold text-[#1B1B1B]">{review.title}</p>
-                          {review.description && (
-                            <p className="text-xs text-[#7A7A7A] mt-0.5">{review.description}</p>
+                  <div className="space-y-4">
+                    {pageReviews.map((review) => {
+                      const versions = reviewVersions[review.id] || [];
+                      const latestVersion = versions[versions.length - 1];
+                      const fb = Object.values(reviewFeedback)
+                        .flat()
+                        .filter((f) => f.review_id === review.id);
+
+                      return (
+                        <div key={review.id} className="border border-[#E8E8E8] rounded-xl bg-white overflow-hidden">
+                          {/* Page Header */}
+                          <div className="flex items-center justify-between px-5 py-3 border-b border-[#F0F0F0]">
+                            <div>
+                              <p className="text-sm font-semibold text-[#1A1A1A]">{review.title}</p>
+                              {review.description && (
+                                <p className="text-xs text-[#7A7A7A] mt-0.5">{review.description}</p>
+                              )}
+                            </div>
+                            <span className={`px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border ${
+                              review.status === "approved"
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                : review.status === "changes_requested"
+                                ? "bg-amber-50 text-amber-700 border-amber-200"
+                                : "bg-blue-50 text-blue-700 border-blue-200"
+                            }`}>
+                              {review.status === "changes_requested" ? "Changes Requested" : review.status === "approved" ? "Approved" : "In Review"}
+                            </span>
+                          </div>
+
+                          {/* Version History */}
+                          <div className="px-5 py-3">
+                            {versions.length > 0 ? (
+                              <div className="space-y-2">
+                                {[...versions].reverse().map((v, i) => {
+                                  const isLatest = v.id === latestVersion?.id;
+                                  const vDate = new Date(v.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+                                  return (
+                                    <div key={v.id} className={`flex items-center justify-between p-3 rounded-lg ${isLatest ? "bg-[#F7F8FA] border border-[#E5E5EA]" : "bg-white"}`}>
+                                      <div className="flex items-center gap-3">
+                                        <span className={`inline-flex items-center justify-center size-7 rounded-full text-[11px] font-bold ${isLatest ? "bg-[#1A1A1A] text-white" : "bg-[#F0F0F0] text-[#777]"}`}>
+                                          V{v.version_number}
+                                        </span>
+                                        <div>
+                                          <p className="text-xs font-medium text-[#1A1A1A]">
+                                            Version {v.version_number}
+                                            {isLatest && <span className="ml-2 text-[10px] text-emerald-600 font-semibold">Latest</span>}
+                                          </p>
+                                          <p className="text-[10px] text-[#AAA]">{vDate}{v.notes ? ` — ${v.notes}` : ""}</p>
+                                        </div>
+                                      </div>
+                                      {v.staging_url && (
+                                        <a
+                                          href={v.staging_url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-white bg-[#1A1A1A] rounded-lg hover:bg-[#333] transition-colors"
+                                        >
+                                          <svg className="size-3" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5zm7.25-.75a.75.75 0 01.75-.75h3.5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0V6.31l-5.47 5.47a.75.75 0 01-1.06-1.06l5.47-5.47H12.25a.75.75 0 01-.75-.75z" clipRule="evenodd" />
+                                          </svg>
+                                          Review Page
+                                        </a>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <p className="text-xs text-[#AAA] text-center py-4">Staging link coming soon</p>
+                            )}
+                          </div>
+
+                          {/* Feedback */}
+                          {fb.length > 0 && (
+                            <div className="px-5 py-3 border-t border-[#F0F0F0] bg-[#FAFAFA]">
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Feedback</p>
+                              <div className="space-y-2">
+                                {fb.map((item) => (
+                                  <div key={item.id} className="flex items-start gap-2">
+                                    <div className={`size-2 rounded-full mt-1.5 shrink-0 ${item.resolved ? "bg-emerald-400" : "bg-amber-400"}`} />
+                                    <div>
+                                      <p className="text-xs text-[#1A1A1A]">{item.comment}</p>
+                                      <p className="text-[10px] text-[#AAA]">
+                                        {item.submitted_by} · {new Date(item.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                                        {item.resolved && " · Resolved"}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                           )}
                         </div>
-                        <PageReviewViewer
-                          review={review}
-                          versions={reviewVersions[review.id] || []}
-                          feedback={Object.values(reviewFeedback)
-                            .flat()
-                            .filter((f) => f.review_id === review.id)}
-                          isAdmin={false}
-                          submittedBy={portal.client_name}
-                          onDataChange={() => window.location.reload()}
-                        />
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="text-center py-20">
