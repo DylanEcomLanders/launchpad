@@ -55,6 +55,13 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Client Development tab — clean version-controlled staging links with Review Page buttons, no iframe" },
       { type: "fixed", text: "Page reviews not appearing after creation — activeReviewId sync issue" },
       { type: "fixed", text: "Deleted portals reappearing — now uses Supabase soft-delete with deleted_at column" },
+      { type: "added", text: "Page Copy Audit tool — evaluate DTC product page copy against conversion framework with section scoring, rewrite suggestions, and VOC research" },
+      { type: "added", text: "DTC Copywriting Guide training data — 7-part framework covering mindset, tone, page architecture, trust building, advanced techniques" },
+      { type: "improved", text: "Team Hub promoted to top-level nav below Mission Control" },
+      { type: "improved", text: "Admin Development tab simplified to clean version control (no iframe/pin viewer)" },
+      { type: "added", text: "Business Settings page — configurable deliverable turnaround times, revision/support durations, working days" },
+      { type: "added", text: "Centralised date helpers in src/lib/dates.ts — all tools now share addBusinessDays with configurable working days" },
+      { type: "improved", text: "Sidebar version bumped to v0.10" },
     ],
   },
   {
