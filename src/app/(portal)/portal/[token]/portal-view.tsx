@@ -303,6 +303,7 @@ export function PortalView({
                   <div className="mb-6">
                     <IntelligemsClientCards
                       apiKey={portal.intelligems_key}
+                      assignments={portal.intelligems_assignments}
                       selectedTests={portal.intelligems_selected_tests}
                     />
                   </div>

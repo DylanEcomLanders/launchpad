@@ -1,5 +1,11 @@
 /* ── Portal types ── */
 
+export interface IntelligemsAssignment {
+  testId: string; // Intelligems experience ID
+  week: string; // e.g. "W12 — 16 Mar"
+  figma_url?: string; // Optional Figma design URL for this test
+}
+
 export type PhaseStatus = "complete" | "in-progress" | "upcoming";
 export type DeliverableStatus = "complete" | "in-progress" | "not-started";
 
@@ -102,7 +108,8 @@ export interface PortalData {
   results: PortalTestResult[];
   testing_tier?: TestingTier | null;
   intelligems_key?: string;
-  intelligems_selected_tests?: string[]; // IDs of Intelligems tests we're running (cherry-picked)
+  intelligems_selected_tests?: string[]; // Legacy — IDs only
+  intelligems_assignments?: IntelligemsAssignment[]; // Assigned tests with week + figma
   wins: PortalWin[];
   show_results: boolean;
   slack_channel_url: string;

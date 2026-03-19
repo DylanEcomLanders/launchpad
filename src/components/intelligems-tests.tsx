@@ -294,21 +294,27 @@ function TestCard({
   );
 }
 
-/* ── Admin Component (with cherry-pick) ── */
+/* ── Assignment type ── */
+
+export interface IntelligemsAssignment {
+  testId: string;
+  week: string;
+  figma_url?: string;
+}
+
+/* ── Admin Component (with assignments) ── */
 
 export function IntelligemsTestCards({
   apiKey,
-  compact = false,
-  selectedTests,
-  onSelectionChange,
+  assignments,
+  onAssignmentsChange,
 }: {
   apiKey: string | undefined;
-  compact?: boolean;
-  selectedTests?: string[];
-  onSelectionChange?: (ids: string[]) => void;
+  assignments: IntelligemsAssignment[];
+  onAssignmentsChange: (assignments: IntelligemsAssignment[]) => void;
 }) {
   const { tests, loading, error } = useIntelligemsTests(apiKey);
-  const selectable = !!onSelectionChange;
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   if (!apiKey) return null;
 
@@ -337,53 +343,113 @@ export function IntelligemsTestCards({
     );
   }
 
-  const handleToggle = (id: string) => {
-    if (!onSelectionChange || !selectedTests) return;
-    const next = selectedTests.includes(id)
-      ? selectedTests.filter((t) => t !== id)
-      : [...selectedTests, id];
-    onSelectionChange(next);
+  const isAssigned = (id: string) => assignments.some((a) => a.testId === id);
+  const getAssignment = (id: string) => assignments.find((a) => a.testId === id);
+
+  const handleToggleAssign = (id: string) => {
+    if (isAssigned(id)) {
+      onAssignmentsChange(assignments.filter((a) => a.testId !== id));
+    } else {
+      // Auto-generate week label from test start date
+      const test = tests.find((t) => t.id === id);
+      const weekLabel = test?.startedAt || "";
+      onAssignmentsChange([...assignments, { testId: id, week: weekLabel }]);
+      setExpandedId(id);
+    }
   };
 
-  // If selectable, show selected count
-  const selectedCount = selectedTests?.length || 0;
+  const handleUpdateAssignment = (id: string, field: "week" | "figma_url", value: string) => {
+    onAssignmentsChange(
+      assignments.map((a) => (a.testId === id ? { ...a, [field]: value } : a))
+    );
+  };
+
+  const assignedCount = assignments.length;
 
   return (
     <div className="space-y-3">
-      {selectable && (
-        <div className="flex items-center justify-between">
-          <p className="text-[10px] text-[#AAA]">
-            Select tests that your team is running. Only selected tests show in the client portal.
-          </p>
-          <span className="text-[10px] font-semibold text-[#777]">
-            {selectedCount} selected
-          </span>
-        </div>
-      )}
-      {tests.map((test) => (
-        <TestCard
-          key={test.id}
-          test={test}
-          compact={compact}
-          selectable={selectable}
-          selected={selectedTests?.includes(test.id)}
-          onToggle={handleToggle}
-        />
-      ))}
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] text-[#AAA]">
+          Select tests your team is running, assign to weeks, and add Figma design links.
+        </p>
+        <span className="text-[10px] font-semibold text-[#777]">
+          {assignedCount} assigned
+        </span>
+      </div>
+      {tests.map((test) => {
+        const assigned = isAssigned(test.id);
+        const assignment = getAssignment(test.id);
+        const isExpanded = expandedId === test.id && assigned;
+
+        return (
+          <div key={test.id}>
+            <TestCard
+              test={test}
+              compact={false}
+              selectable
+              selected={assigned}
+              onToggle={handleToggleAssign}
+            />
+            {/* Assignment details (expanded when assigned) */}
+            {assigned && (
+              <div
+                className="ml-8 mr-2 -mt-1 border border-t-0 border-[#E8E8E8] rounded-b-lg bg-[#FAFAFA] px-4 py-3 cursor-pointer"
+                onClick={() => setExpandedId(isExpanded ? null : test.id)}
+              >
+                {isExpanded ? (
+                  <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] block mb-1">Week</label>
+                        <input
+                          type="text"
+                          value={assignment?.week || ""}
+                          onChange={(e) => handleUpdateAssignment(test.id, "week", e.target.value)}
+                          placeholder="e.g. W12 — 16 Mar"
+                          className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded bg-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] block mb-1">Figma Design URL</label>
+                        <input
+                          type="text"
+                          value={assignment?.figma_url || ""}
+                          onChange={(e) => handleUpdateAssignment(test.id, "figma_url", e.target.value)}
+                          placeholder="https://www.figma.com/design/..."
+                          className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded bg-white font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3 text-[10px] text-[#999]">
+                    <span>{assignment?.week || "No week assigned"}</span>
+                    {assignment?.figma_url && <span className="text-emerald-600">Figma linked ✓</span>}
+                    <span className="ml-auto text-[#CCC]">Click to edit</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
 
-/* ── Client-Facing Component (only shows selected tests) ── */
+/* ── Client-Facing Component (shows assigned tests with Figma preview) ── */
 
 export function IntelligemsClientCards({
   apiKey,
+  assignments,
   selectedTests,
 }: {
   apiKey: string | undefined;
-  selectedTests?: string[];
+  assignments?: IntelligemsAssignment[];
+  selectedTests?: string[]; // Legacy support
 }) {
   const { tests, loading, error } = useIntelligemsTests(apiKey);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   if (!apiKey) return null;
 
@@ -396,12 +462,16 @@ export function IntelligemsClientCards({
     );
   }
 
-  if (error) return null; // Don't show errors to clients
+  if (error) return null;
 
-  // Filter to only selected tests (if selection exists)
-  const visibleTests = selectedTests && selectedTests.length > 0
-    ? tests.filter((t) => selectedTests.includes(t.id))
-    : tests;
+  // Use assignments if available, fall back to legacy selectedTests
+  const assignedIds = assignments && assignments.length > 0
+    ? assignments.map((a) => a.testId)
+    : selectedTests || [];
+
+  const visibleTests = assignedIds.length > 0
+    ? tests.filter((t) => assignedIds.includes(t.id))
+    : [];
 
   if (visibleTests.length === 0) {
     return (
@@ -411,11 +481,82 @@ export function IntelligemsClientCards({
     );
   }
 
+  // Group by week if assignments exist
+  const getWeek = (testId: string) => assignments?.find((a) => a.testId === testId)?.week || "";
+  const getFigma = (testId: string) => assignments?.find((a) => a.testId === testId)?.figma_url || "";
+
+  // Convert Figma URL to embed
+  const toEmbed = (url: string) => {
+    if (!url) return null;
+    try {
+      return `https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(url)}`;
+    } catch { return null; }
+  };
+
+  // Group tests by week
+  const weekGroups: Record<string, typeof visibleTests> = {};
+  for (const test of visibleTests) {
+    const week = getWeek(test.id) || "Unassigned";
+    if (!weekGroups[week]) weekGroups[week] = [];
+    weekGroups[week].push(test);
+  }
+
+  const sortedWeeks = Object.keys(weekGroups).sort((a, b) => {
+    const numA = parseInt(a.replace(/\D/g, "")) || 0;
+    const numB = parseInt(b.replace(/\D/g, "")) || 0;
+    return numB - numA;
+  });
+
   return (
-    <div className="space-y-3">
-      {visibleTests.map((test) => (
-        <TestCard key={test.id} test={test} compact />
-      ))}
-    </div>
+    <>
+      <div className="space-y-6">
+        {sortedWeeks.map((week) => (
+          <div key={week}>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">{week}</p>
+            <div className="space-y-3">
+              {weekGroups[week].map((test) => {
+                const figma = getFigma(test.id);
+                return (
+                  <div key={test.id}>
+                    <TestCard test={test} compact />
+                    {figma && (
+                      <div className="flex justify-end -mt-1 mr-2">
+                        <button
+                          onClick={() => setPreviewUrl(figma)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-[#777] hover:text-[#1A1A1A] transition-colors"
+                        >
+                          <svg className="size-3" viewBox="0 0 24 24" fill="none"><path d="M5 5.5A3.5 3.5 0 018.5 2H12v7H8.5A3.5 3.5 0 015 5.5z" fill="#F24E1E"/><path d="M12 2h3.5a3.5 3.5 0 010 7H12V2z" fill="#FF7262"/><path d="M12 9.5h3.5a3.5 3.5 0 010 7H12V9.5z" fill="#1ABCFE"/><path d="M5 19.5A3.5 3.5 0 018.5 16H12v3.5a3.5 3.5 0 11-7 0z" fill="#0ACF83"/><path d="M5 12.5A3.5 3.5 0 018.5 9H12v7H8.5A3.5 3.5 0 015 12.5z" fill="#A259FF"/></svg>
+                          View Design
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Figma preview popup */}
+      {previewUrl && toEmbed(previewUrl) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setPreviewUrl(null)}>
+          <div className="relative w-full max-w-4xl mx-4 bg-white rounded-xl overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-3 border-b border-[#E8E8E8]">
+              <p className="text-sm font-semibold text-[#1A1A1A]">Design Preview</p>
+              <div className="flex items-center gap-3">
+                <a href={previewUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] font-semibold text-[#777] hover:text-[#1A1A1A] transition-colors">Open in Figma</a>
+                <button onClick={() => setPreviewUrl(null)} className="text-[#AAA] hover:text-[#1A1A1A] transition-colors">
+                  <svg className="size-5" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
+                </button>
+              </div>
+            </div>
+            <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+              <iframe src={toEmbed(previewUrl) || ""} className="absolute inset-0 w-full h-full border-0" allowFullScreen />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

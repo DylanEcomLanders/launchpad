@@ -2115,16 +2115,16 @@ function TestingSection({
         <p className="text-[10px] text-[#AAA] mt-1.5">Paste the client&apos;s Intelligems API key to auto-pull A/B test results</p>
       </div>
 
-      {/* Intelligems Test Cards with cherry-pick */}
+      {/* Intelligems Test Cards with assignments */}
       {portal.intelligems_key && (
         <div>
           <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
-            Intelligems Tests — Select Our Tests
+            Intelligems Tests — Assign Our Tests
           </h3>
           <IntelligemsTestCards
             apiKey={portal.intelligems_key}
-            selectedTests={portal.intelligems_selected_tests || []}
-            onSelectionChange={(ids) => onUpdateField("intelligems_selected_tests", ids)}
+            assignments={portal.intelligems_assignments || []}
+            onAssignmentsChange={(assignments) => onUpdateField("intelligems_assignments", assignments)}
           />
         </div>
       )}
