@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { inputClass, labelClass } from "@/lib/form-styles";
 
 type SectionResult = {
@@ -69,19 +69,14 @@ export default function PageCopyAuditPage() {
     setVocDone(true);
   };
 
-  /* ── Upload + Analyse ── */
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  /* ── Shared analyse function ── */
+  const analyseImage = useCallback(async (file: File) => {
     const previewUrl = URL.createObjectURL(file);
     const id = crypto.randomUUID();
     const name = sectionName;
 
-    // Add to list immediately
     const newSection: SectionResult = { id, name, previewUrl, analysis: null, analysing: true };
     setSections((prev) => [...prev, newSection]);
-    if (fileRef.current) fileRef.current.value = "";
 
     // Kick off VOC if brand name exists and not done yet
     if (brandName.trim() && !vocDone && !vocLoading) {
@@ -119,7 +114,33 @@ export default function PageCopyAuditPage() {
         prev.map((s) => s.id === id ? { ...s, analysing: false } : s)
       );
     }
+  }, [sectionName, brandName, brief, vocData, vocDone, vocLoading]);
+
+  /* ── File upload ── */
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (fileRef.current) fileRef.current.value = "";
+    analyseImage(file);
   };
+
+  /* ── Paste from clipboard (Cmd+V) ── */
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of Array.from(items)) {
+        if (item.type.startsWith("image/")) {
+          e.preventDefault();
+          const file = item.getAsFile();
+          if (file) analyseImage(file);
+          return;
+        }
+      }
+    };
+    window.addEventListener("paste", handlePaste);
+    return () => window.removeEventListener("paste", handlePaste);
+  }, [analyseImage]);
 
   const removeSection = (id: string) => {
     setSections((prev) => prev.filter((s) => s.id !== id));
