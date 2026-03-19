@@ -54,6 +54,12 @@ export default function PageCopyAuditPage() {
   const [pendingPreview, setPendingPreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Chat
+  const [chatMessages, setChatMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
   const briefReady = briefLocked && brief.trim().length > 0;
 
   /* ── Run VOC in background ── */
@@ -169,6 +175,35 @@ export default function PageCopyAuditPage() {
     setSections((prev) => prev.filter((s) => s.id !== id));
   };
 
+  /* ── Chat ── */
+  const sendChat = async () => {
+    if (!chatInput.trim() || chatLoading) return;
+    const msg = chatInput.trim();
+    setChatInput("");
+    setChatMessages((prev) => [...prev, { role: "user", content: msg }]);
+    setChatLoading(true);
+
+    try {
+      const res = await fetch("/api/copy-audit/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: msg,
+          brief: brief,
+          vocData,
+          history: chatMessages,
+        }),
+      });
+      if (!res.ok) throw new Error("Chat failed");
+      const data = await res.json();
+      setChatMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
+    } catch {
+      setChatMessages((prev) => [...prev, { role: "assistant", content: "Something went wrong. Try again." }]);
+    }
+    setChatLoading(false);
+    setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+  };
+
   return (
     <div className="max-w-5xl mx-auto py-10 px-4">
       <div className="mb-8">
@@ -235,6 +270,64 @@ export default function PageCopyAuditPage() {
           </div>
         </div>
       </div>
+
+      {/* ── Chat ── */}
+      {briefReady && (
+        <div className="border border-[#E5E5EA] rounded-xl bg-white mb-6 overflow-hidden">
+          <div className="px-5 py-3 border-b border-[#F0F0F0]">
+            <p className="text-xs font-semibold text-[#1A1A1A]">Ask about the copy</p>
+            <p className="text-[10px] text-[#AAA] mt-0.5">Has full context of your brief{vocData ? " + VOC research" : ""}</p>
+          </div>
+
+          {/* Messages */}
+          {chatMessages.length > 0 && (
+            <div className="max-h-80 overflow-y-auto px-5 py-3 space-y-3">
+              {chatMessages.map((msg, i) => (
+                <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                  <div className={`max-w-[85%] px-3.5 py-2.5 rounded-xl text-xs leading-relaxed whitespace-pre-wrap ${
+                    msg.role === "user"
+                      ? "bg-[#1B1B1B] text-white rounded-br-sm"
+                      : "bg-[#F3F3F5] text-[#333] rounded-bl-sm"
+                  }`}>
+                    {msg.content}
+                  </div>
+                </div>
+              ))}
+              {chatLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-[#F3F3F5] px-4 py-3 rounded-xl rounded-bl-sm">
+                    <div className="flex gap-1">
+                      <div className="size-1.5 bg-[#AAA] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <div className="size-1.5 bg-[#AAA] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <div className="size-1.5 bg-[#AAA] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div ref={chatEndRef} />
+            </div>
+          )}
+
+          {/* Input */}
+          <div className="flex items-center gap-2 px-4 py-3 border-t border-[#F0F0F0]">
+            <input
+              type="text"
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); } }}
+              placeholder="Ask about the copy, angles, structure, VOC insights..."
+              className="flex-1 px-3 py-2 text-xs border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#999] placeholder:text-[#CCC]"
+            />
+            <button
+              onClick={sendChat}
+              disabled={!chatInput.trim() || chatLoading}
+              className="px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] disabled:opacity-30"
+            >
+              Send
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── VOC Data (collapsed) ── */}
       {vocData && (
