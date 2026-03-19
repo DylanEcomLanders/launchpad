@@ -5,12 +5,12 @@ import { COPY_AUDIT_SYSTEM_PROMPT } from "@/lib/copy-audit/training-prompt";
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || "" });
 
 /**
- * Analyse a single page section screenshot.
+ * Analyse a single page section screenshot — flag-based, no scoring.
  * POST { imageBase64, imageType, sectionName, brief, vocData }
  */
 export async function POST(req: NextRequest) {
   try {
-    const { imageBase64, imageType, sectionName, brief, vocData, previousAnalysis } = await req.json();
+    const { imageBase64, imageType, sectionName, brief, vocData } = await req.json();
 
     if (!imageBase64) {
       return NextResponse.json({ error: "No image provided" }, { status: 400 });
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       },
       {
         type: "text",
-        text: `You are analysing the "${sectionName}" section of a DTC product page.
+        text: `You are checking the "${sectionName}" section of a DTC product page.
 
 PROJECT BRIEF:
 ${brief.additionalContext || `- Brand: ${brief.clientName}
@@ -44,52 +44,33 @@ Pain Points: ${vocData.painPoints?.join("; ") || "N/A"}
 Objections: ${vocData.objections?.join("; ") || "N/A"}
 Key Phrases Customers Use: ${vocData.keyPhrases?.join(", ") || "N/A"}` : ""}
 
-${previousAnalysis ? `PREVIOUS ANALYSIS OF THIS SECTION:
-This section was previously analysed and scored ${previousAnalysis.score}/10.
-Previous issues identified: ${previousAnalysis.issues?.join("; ") || "None"}
-Previous suggestions: ${previousAnalysis.suggestions?.map((s: any) => `"${s.copy}" — ${s.direction}`).join("; ") || "None"}
+YOUR TASK:
+1. Read EVERY word visible in this screenshot.
+2. Check against the BANNED PHRASES list. Flag any matches as red flags.
+3. Check against the STRUCTURAL CHECKLIST for "${sectionName}". Flag missing elements as warnings.
+4. Confirm elements that pass the checklist.
+5. If VOC data is provided, list specific customer phrases/pain points that are NOT used in the visible copy.
 
-IMPORTANT: If the copy has been updated to address previous issues, the score MUST reflect the improvement. Do not score lower than before unless the changes made things worse. Use the criteria-based scoring from the framework — count actual points met.` : ""}
+IMPORTANT:
+- Quote the EXACT text from the screenshot. Word for word.
+- Only flag what you can SEE. If the screenshot only shows part of the page, don't flag missing elements you can't verify.
+- Be binary. Something violates a rule or it doesn't. No "could be improved" or "consider changing" — that's subjective and not your job.
+- If a banned phrase IS substantiated right next to it (e.g. "premium quality — SGS lab tested"), don't flag it.
+- Consider the brief. If the brief says "broad multi-angle approach", don't flag the page for covering multiple angles.
 
-BRIEF ANALYSIS — READ THIS CAREFULLY:
-Before analysing the copy, you MUST first understand the brief's intent:
-- Is the brief focused on ONE specific angle/pain point, or does it cover MULTIPLE angles?
-- If the page addresses multiple angles (e.g. energy + immunity + digestion), your suggestions must respect ALL of those angles — do NOT collapse everything into a single narrative or fixate on one angle.
-- If the brief is angle-specific (e.g. "this page targets people switching from competitor X"), then your suggestions should be laser-focused on that angle.
-- Look at what the page is TRYING to do with its copy. If it's covering multiple benefits or audience segments, your feedback should help them do that BETTER — not tell them to narrow down.
-- The goal is to make the existing approach more effective, not to change the approach entirely.
-
-SCORING RULES:
-- Use the CRITERIA-BASED scoring from the system prompt. Count actual points met for this section type.
-- Each criterion is worth specific points. Add them up. Don't guess.
-- If this is a re-analysis after improvements, explicitly state which criteria are NOW met that weren't before.
-
-CRITICAL INSTRUCTIONS:
-1. Read EVERY word of text visible in this screenshot carefully.
-2. Quote the EXACT copy from the screenshot when referencing it — word for word.
-3. Be SUGGESTIVE, not prescriptive. Don't write the copy for them. Instead:
-   - Explain WHY specific copy is weak (what DTC principle it violates)
-   - Point them in the right direction (what approach would be stronger)
-   - Reference the brief to show how the copy could better serve the stated goals
-4. In "suggestions", quote the exact weak copy, explain the problem, and give directional guidance — NOT an exact rewrite.
-5. RESPECT THE PAGE'S APPROACH:
-   - If the page covers multiple angles, evaluate each angle on its own merits
-   - Don't suggest narrowing when the brief calls for breadth
-   - Don't suggest broadening when the brief calls for a specific angle
-   - Evaluate whether each angle is being communicated effectively on its own terms
-6. If VOC data is available, highlight relevant customer language — but only where it genuinely fits the angles being addressed. Don't force VOC data into angles where it doesn't belong.
-7. Be brutally honest but fair. If the copy is weak, explain exactly why. If it's strong on one angle but weak on another, say so specifically.
-8. Consider the brief holistically — does the copy achieve what the brief set out to do? Where does it fall short of the brief's intent?
-
-Return ONLY valid JSON with this structure:
+Return ONLY valid JSON:
 {
-  "score": 7,
-  "working": ["'Exact quote from the design' — why this works, which angle it serves, and what DTC principle it follows"],
-  "issues": ["'Exact quote from the design' — why this is weak, which angle it undermines, and what approach would strengthen it"],
-  "suggestions": [
-    {"copy": "Exact text from the screenshot that needs work", "problem": "Why this doesn't work — the specific issue and which angle/goal from the brief it fails to serve", "direction": "The approach they should take to make this copy more effective for the intended angle — what to focus on, what's missing, what would make it more compelling — without writing the exact words for them"}
+  "redFlags": [
+    {"quote": "exact text from screenshot", "rule": "rule name", "why": "one sentence: what's wrong and what it should have instead"}
   ],
-  "vocInsight": "Specific customer language or pain points from VOC data that are relevant to the angles this section is addressing — only include what genuinely fits"
+  "warnings": [
+    {"quote": "exact text or 'Missing: [element]'", "rule": "rule name", "why": "one sentence explanation"}
+  ],
+  "passing": [
+    {"element": "what's working", "why": "one sentence: which rule it satisfies"}
+  ],
+  "vocGaps": ["'exact customer phrase' — not used on page", "specific objection not addressed"],
+  "summary": "X red flags · Y warnings · Z passing"
 }
 
 No markdown code blocks. Just raw JSON.`,

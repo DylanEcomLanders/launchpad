@@ -3,17 +3,19 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { inputClass, labelClass } from "@/lib/form-styles";
 
+type FlagItem = { quote: string; rule: string; why: string };
+type PassItem = { element: string; why: string };
+
 type SectionResult = {
   id: string;
   name: string;
   previewUrl: string;
   analysis: {
-    score: number;
-    working: string[];
-    issues: string[];
-    suggestions: { copy: string; problem: string; direction: string }[];
-    rewrites?: { before: string; after: string }[];
-    vocInsight?: string;
+    redFlags: FlagItem[];
+    warnings: FlagItem[];
+    passing: PassItem[];
+    vocGaps: string[];
+    summary: string;
   } | null;
   analysing: boolean;
 };
@@ -38,8 +40,6 @@ const SECTION_PRESETS = [
   "Full Page",
 ];
 
-const scoreColor = (s: number) => (s >= 8 ? "text-emerald-600" : s >= 6 ? "text-amber-600" : "text-red-500");
-const scoreBg = (s: number) => (s >= 8 ? "bg-emerald-500" : s >= 6 ? "bg-amber-500" : "bg-red-500");
 
 export default function PageCopyAuditPage() {
   const [brief, setBrief] = useState("");
@@ -208,9 +208,9 @@ export default function PageCopyAuditPage() {
   return (
     <div className="max-w-5xl mx-auto py-10 px-4">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">Page Copy Audit</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Copy Checker</h1>
         <p className="text-sm text-[#7A7A7A] mt-1">
-          Paste your brief, then feed screenshots section by section for AI copy analysis
+          Flag weak phrases, missing elements, and copy that shouldn&apos;t ship
         </p>
       </div>
 
@@ -422,7 +422,7 @@ export default function PageCopyAuditPage() {
                 <div className="flex items-center gap-3">
                   <p className="text-sm font-semibold text-[#1A1A1A]">{s.name}</p>
                   {s.analysis && (
-                    <span className={`text-sm font-bold ${scoreColor(s.analysis.score)}`}>{s.analysis.score}/10</span>
+                    <span className="text-[11px] text-[#777]">{s.analysis.summary}</span>
                   )}
                 </div>
                 <button onClick={() => removeSection(s.id)} className="text-[10px] text-[#CCC] hover:text-red-500">Remove</button>
@@ -439,65 +439,72 @@ export default function PageCopyAuditPage() {
                   {s.analysing && (
                     <div className="flex items-center gap-3 py-8 justify-center">
                       <div className="animate-spin size-5 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full" />
-                      <p className="text-xs text-[#777]">Analysing copy...</p>
+                      <p className="text-xs text-[#777]">Checking copy...</p>
                     </div>
                   )}
 
                   {s.analysis && (
-                    <div className="space-y-4">
-                      {/* Score bar */}
-                      <div className="h-1.5 bg-[#F0F0F0] rounded-full overflow-hidden">
-                        <div className={`h-full ${scoreBg(s.analysis.score)} rounded-full`} style={{ width: `${s.analysis.score * 10}%` }} />
-                      </div>
-
-                      {/* Working */}
-                      {s.analysis.working.length > 0 && (
+                    <div className="space-y-5">
+                      {/* Red Flags */}
+                      {s.analysis.redFlags.length > 0 && (
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 mb-2">What&apos;s Working</p>
-                          {s.analysis.working.map((w, i) => (
-                            <div key={i} className="flex items-start gap-2 mb-1.5">
-                              <svg className="size-3.5 text-emerald-500 shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
-                              </svg>
-                              <p className="text-xs text-[#555] leading-relaxed">{w}</p>
-                            </div>
-                          ))}
+                          <div className="flex items-center gap-2 mb-2.5">
+                            <div className="size-2 rounded-full bg-red-500" />
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-red-500">
+                              {s.analysis.redFlags.length} Red Flag{s.analysis.redFlags.length !== 1 ? "s" : ""} — Must Fix
+                            </p>
+                          </div>
+                          <div className="space-y-2">
+                            {s.analysis.redFlags.map((flag, i) => (
+                              <div key={i} className="border border-red-100 bg-red-50/30 rounded-lg px-3.5 py-2.5">
+                                <p className="text-xs font-medium text-[#1A1A1A] italic mb-1">&ldquo;{flag.quote}&rdquo;</p>
+                                <p className="text-[10px] font-semibold text-red-500 mb-0.5">{flag.rule}</p>
+                                <p className="text-xs text-[#666] leading-relaxed">{flag.why}</p>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
 
-                      {/* Issues */}
-                      {s.analysis.issues.length > 0 && (
+                      {/* Warnings */}
+                      {s.analysis.warnings.length > 0 && (
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-red-500 mb-2">Issues</p>
-                          {s.analysis.issues.map((issue, i) => (
-                            <div key={i} className="flex items-start gap-2 mb-1.5">
-                              <svg className="size-3.5 text-red-400 shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-                              </svg>
-                              <p className="text-xs text-[#555] leading-relaxed">{issue}</p>
-                            </div>
-                          ))}
+                          <div className="flex items-center gap-2 mb-2.5">
+                            <div className="size-2 rounded-full bg-amber-500" />
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-600">
+                              {s.analysis.warnings.length} Warning{s.analysis.warnings.length !== 1 ? "s" : ""} — Should Review
+                            </p>
+                          </div>
+                          <div className="space-y-2">
+                            {s.analysis.warnings.map((warn, i) => (
+                              <div key={i} className="border border-amber-100 bg-amber-50/30 rounded-lg px-3.5 py-2.5">
+                                <p className="text-xs font-medium text-[#1A1A1A] italic mb-1">&ldquo;{warn.quote}&rdquo;</p>
+                                <p className="text-[10px] font-semibold text-amber-600 mb-0.5">{warn.rule}</p>
+                                <p className="text-xs text-[#666] leading-relaxed">{warn.why}</p>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
 
-                      {/* Suggestions */}
-                      {s.analysis.suggestions?.length > 0 && (
+                      {/* Passing */}
+                      {s.analysis.passing.length > 0 && (
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Suggestions</p>
-                          <div className="space-y-3">
-                            {s.analysis.suggestions.map((sg, i) => (
-                              <div key={i} className="rounded-lg border border-[#F0F0F0] overflow-hidden">
-                                <div className="px-3 py-2.5 bg-[#FAFAFA] border-b border-[#F0F0F0]">
-                                  <p className="text-[9px] font-semibold uppercase text-[#AAA] mb-0.5">Current Copy</p>
-                                  <p className="text-xs text-[#555] italic">&ldquo;{sg.copy}&rdquo;</p>
-                                </div>
-                                <div className="px-3 py-2.5 border-b border-[#F0F0F0]">
-                                  <p className="text-[9px] font-semibold uppercase text-red-400 mb-0.5">Problem</p>
-                                  <p className="text-xs text-[#555] leading-relaxed">{sg.problem}</p>
-                                </div>
-                                <div className="px-3 py-2.5 bg-emerald-50/30">
-                                  <p className="text-[9px] font-semibold uppercase text-emerald-600 mb-0.5">Direction</p>
-                                  <p className="text-xs text-[#555] leading-relaxed">{sg.direction}</p>
+                          <div className="flex items-center gap-2 mb-2.5">
+                            <div className="size-2 rounded-full bg-emerald-500" />
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600">
+                              {s.analysis.passing.length} Passing
+                            </p>
+                          </div>
+                          <div className="space-y-1.5">
+                            {s.analysis.passing.map((pass, i) => (
+                              <div key={i} className="flex items-start gap-2">
+                                <svg className="size-3.5 text-emerald-500 shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                                </svg>
+                                <div>
+                                  <p className="text-xs font-medium text-[#1A1A1A]">{pass.element}</p>
+                                  <p className="text-[10px] text-[#888]">{pass.why}</p>
                                 </div>
                               </div>
                             ))}
@@ -505,11 +512,22 @@ export default function PageCopyAuditPage() {
                         </div>
                       )}
 
-                      {/* VOC Insight */}
-                      {s.analysis.vocInsight && (
-                        <div className="bg-blue-50/50 rounded-lg px-3 py-2.5 border border-blue-100">
-                          <p className="text-[9px] font-semibold uppercase text-blue-600 mb-1">VOC Insight</p>
-                          <p className="text-xs text-[#555] leading-relaxed">{s.analysis.vocInsight}</p>
+                      {/* VOC Gaps */}
+                      {s.analysis.vocGaps && s.analysis.vocGaps.length > 0 && (
+                        <div className="bg-blue-50/50 rounded-lg px-3.5 py-3 border border-blue-100">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-600 mb-2">VOC Gaps — Customer Language Not Used</p>
+                          <div className="space-y-1">
+                            {s.analysis.vocGaps.map((gap, i) => (
+                              <p key={i} className="text-xs text-[#555] leading-relaxed">• {gap}</p>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* No issues */}
+                      {s.analysis.redFlags.length === 0 && s.analysis.warnings.length === 0 && (
+                        <div className="bg-emerald-50/50 rounded-lg px-3.5 py-3 border border-emerald-100 text-center">
+                          <p className="text-xs font-medium text-emerald-700">Clean — no flags raised for this section</p>
                         </div>
                       )}
                     </div>
@@ -522,10 +540,10 @@ export default function PageCopyAuditPage() {
       )}
 
       {/* Empty state */}
-      {sections.length === 0 && (
+      {sections.length === 0 && !briefReady && (
         <div className="border-2 border-dashed border-[#E5E5EA] rounded-xl p-12 text-center">
-          <p className="text-sm text-[#AAA]">Upload a screenshot to get started</p>
-          <p className="text-xs text-[#CCC] mt-1">Screenshot each section of your page design and upload above</p>
+          <p className="text-sm text-[#AAA]">Lock your brief to get started</p>
+          <p className="text-xs text-[#CCC] mt-1">Then upload screenshots section by section to check for issues</p>
         </div>
       )}
     </div>

@@ -92,7 +92,7 @@ const navSections: NavSection[] = [
     defaultOpen: false,
     items: [
       { label: "Funnel Builder", href: "/tools/funnel-builder" },
-      { label: "Page Copy Audit", href: "/tools/page-copy-audit" },
+      { label: "Copy Checker", href: "/tools/page-copy-audit" },
       { label: "CRO Monitor", href: "/tools/cro-monitor" },
       { label: "CRO Audit", href: "/tools/cro-audit" },
     ],
