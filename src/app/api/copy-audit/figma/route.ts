@@ -89,10 +89,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No frames found in Figma file" }, { status: 400 });
     }
 
-    // Render at 0.5x scale to keep dimensions under 8000px
+    // Render at 1x scale with section splitting to keep each image under 8000px
     const idsParam = nodeIds.join(",");
     const imgRes = await fetch(
-      `https://api.figma.com/v1/images/${fileKey}?ids=${idsParam}&format=jpg&scale=0.5`,
+      `https://api.figma.com/v1/images/${fileKey}?ids=${idsParam}&format=jpg&scale=1`,
       { headers: { "X-Figma-Token": FIGMA_TOKEN } }
     );
 
@@ -103,8 +103,27 @@ export async function POST(req: NextRequest) {
     const imgData = await imgRes.json();
     const images = Object.values(imgData.images || {}).filter(Boolean) as string[];
 
-    // Also extract text content from the file for additional context
-    const textContent = extractTextFromNodes(nodeId ? findNode(fileData.document, nodeId) : fileData.document?.children?.[0]);
+    // Extract text content per section for labelled context
+    const textContent: string[] = [];
+    const rootNode = nodeId ? findNode(fileData.document, nodeId) : fileData.document?.children?.[0];
+
+    if (rootNode) {
+      // If we split into sub-sections, extract text per section
+      if (nodeIds.length > 1) {
+        for (const nid of nodeIds) {
+          const sectionNode = findNode(rootNode, nid);
+          if (sectionNode) {
+            const sectionTexts = extractTextFromNodes(sectionNode);
+            if (sectionTexts.length > 0) {
+              const sectionName = sectionNode.name || "Section";
+              textContent.push(`[${sectionName}]: ${sectionTexts.join(" | ")}`);
+            }
+          }
+        }
+      } else {
+        textContent.push(...extractTextFromNodes(rootNode));
+      }
+    }
 
     return NextResponse.json({ images, textContent, fileName: fileData.name });
   } catch (err) {
