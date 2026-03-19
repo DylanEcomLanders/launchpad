@@ -31,8 +31,9 @@ import {
   getVersions,
   getFeedback,
   deleteReview,
+  updateReviewStatus,
+  updateFeedbackResolved,
 } from "@/lib/portal/reviews";
-import { PageReviewViewer } from "@/components/page-review";
 import { isFigmaUrl, toFigmaEmbed } from "@/lib/portal/review-types";
 import type {
   PortalData,
@@ -2498,41 +2499,127 @@ function DevelopmentSection({
         </div>
       )}
 
-      {/* Active review viewer */}
-      {activeReview && (
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-sm font-semibold text-[#1B1B1B]">{activeReview.title}</p>
-              {activeReview.description && (
-                <p className="text-xs text-[#7A7A7A] mt-0.5">{activeReview.description}</p>
-              )}
+      {/* Active review — version control */}
+      {activeReview && (() => {
+        const versions = pageReviewVersions[activeReview.id] || [];
+        const feedback = pageReviewFeedback[activeReview.id] || [];
+        const latestVersion = versions[versions.length - 1];
+
+        return (
+          <div className="border border-[#E8E8E8] rounded-xl bg-white overflow-hidden">
+            {/* Page Header */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-[#F0F0F0]">
+              <div>
+                <p className="text-sm font-semibold text-[#1A1A1A]">{activeReview.title}</p>
+                {activeReview.description && (
+                  <p className="text-xs text-[#7A7A7A] mt-0.5">{activeReview.description}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={activeReview.status}
+                  onChange={async (e) => {
+                    await updateReviewStatus(activeReview.id, e.target.value as "pending" | "approved" | "changes_requested");
+                    onReload();
+                  }}
+                  className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-full border bg-white cursor-pointer"
+                >
+                  <option value="pending">In Review</option>
+                  <option value="approved">Approved</option>
+                  <option value="changes_requested">Changes Requested</option>
+                </select>
+                <button
+                  onClick={() => handleDeletePageReview(activeReview.id)}
+                  className={`px-2.5 py-1 text-[10px] font-medium rounded-lg transition-colors ${
+                    confirmDelete === activeReview.id
+                      ? "bg-red-500 text-white"
+                      : "text-[#CCC] hover:text-red-500"
+                  }`}
+                >
+                  {confirmDelete === activeReview.id ? "Confirm" : "Delete"}
+                </button>
+              </div>
             </div>
-            <button
-              onClick={() => handleDeletePageReview(activeReview.id)}
-              className={`px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors ${
-                confirmDelete === activeReview.id
-                  ? "bg-red-500 text-white"
-                  : "text-[#AAA] border border-[#E5E5EA] hover:text-red-500 hover:border-red-200"
-              }`}
-            >
-              {confirmDelete === activeReview.id ? "Confirm Delete" : "Delete"}
-            </button>
+
+            {/* Version History */}
+            <div className="px-5 py-3">
+              {versions.length > 0 ? (
+                <div className="space-y-2">
+                  {[...versions].reverse().map((v) => {
+                    const isLatest = v.id === latestVersion?.id;
+                    const vDate = new Date(v.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+                    return (
+                      <div key={v.id} className={`flex items-center justify-between p-3 rounded-lg ${isLatest ? "bg-[#F7F8FA] border border-[#E5E5EA]" : "bg-white"}`}>
+                        <div className="flex items-center gap-3">
+                          <span className={`inline-flex items-center justify-center size-7 rounded-full text-[11px] font-bold ${isLatest ? "bg-[#1A1A1A] text-white" : "bg-[#F0F0F0] text-[#777]"}`}>
+                            V{v.version_number}
+                          </span>
+                          <div>
+                            <p className="text-xs font-medium text-[#1A1A1A]">
+                              Version {v.version_number}
+                              {isLatest && <span className="ml-2 text-[10px] text-emerald-600 font-semibold">Latest</span>}
+                            </p>
+                            <p className="text-[10px] text-[#AAA]">{vDate}{v.notes ? ` — ${v.notes}` : ""}</p>
+                          </div>
+                        </div>
+                        {v.staging_url && (
+                          <a
+                            href={v.staging_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-[#777] border border-[#E5E5EA] rounded-lg hover:text-[#1A1A1A] hover:border-[#999] transition-colors"
+                          >
+                            <svg className="size-3" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5zm7.25-.75a.75.75 0 01.75-.75h3.5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0V6.31l-5.47 5.47a.75.75 0 01-1.06-1.06l5.47-5.47H12.25a.75.75 0 01-.75-.75z" clipRule="evenodd" />
+                            </svg>
+                            Open
+                          </a>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-[#AAA] text-center py-4">No versions yet</p>
+              )}
+
+              {/* Add new version inline */}
+              <AddVersionForm onAdd={(url) => handleAddVersion(activeReview.id, url)} />
+            </div>
+
+            {/* Feedback */}
+            {feedback.length > 0 && (
+              <div className="px-5 py-3 border-t border-[#F0F0F0] bg-[#FAFAFA]">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Client Feedback</p>
+                <div className="space-y-2">
+                  {feedback.map((item) => (
+                    <div key={item.id} className="flex items-start gap-2">
+                      <div className={`size-2 rounded-full mt-1.5 shrink-0 ${item.resolved ? "bg-emerald-400" : "bg-amber-400"}`} />
+                      <div className="flex-1">
+                        <p className="text-xs text-[#1A1A1A]">{item.comment}</p>
+                        <p className="text-[10px] text-[#AAA]">
+                          {item.submitted_by} · {new Date(item.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                        </p>
+                      </div>
+                      <button
+                        onClick={async () => {
+                          await updateFeedbackResolved(item.id, !item.resolved);
+                          onReload();
+                        }}
+                        className={`text-[10px] font-medium px-2 py-0.5 rounded transition-colors ${
+                          item.resolved ? "text-emerald-600 hover:text-[#777]" : "text-[#AAA] hover:text-emerald-600"
+                        }`}
+                      >
+                        {item.resolved ? "Resolved" : "Resolve"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-
-          <PageReviewViewer
-            review={activeReview}
-            versions={pageReviewVersions[activeReview.id] || []}
-            feedback={pageReviewFeedback[activeReview.id] || []}
-            isAdmin={true}
-            submittedBy="Admin"
-            onDataChange={onReload}
-          />
-
-          {/* Add new version */}
-          <AddVersionForm onAdd={(url) => handleAddVersion(activeReview.id, url)} />
-        </div>
-      )}
+        );
+      })()}
 
       {/* Empty state */}
       {pageReviews.length === 0 && !showForm && (
