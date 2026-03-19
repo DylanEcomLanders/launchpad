@@ -58,8 +58,10 @@ export default function PageCopyAuditPage() {
   const [niche, setNiche] = useState("");
   const [includeVoc, setIncludeVoc] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState("");
   const [result, setResult] = useState<AuditResult | null>(null);
   const [activeSection, setActiveSection] = useState(0);
+  const [error, setError] = useState("");
 
   const embedUrl = figmaUrl ? toFigmaEmbed(figmaUrl) : null;
 
@@ -67,171 +69,69 @@ export default function PageCopyAuditPage() {
     if (!figmaUrl.trim()) return;
     setLoading(true);
     setResult(null);
+    setError("");
 
-    // Simulate audit (in production, this would call an AI API)
-    await new Promise((r) => setTimeout(r, 2500));
+    try {
+      // Step 1: Extract images + text from Figma
+      setLoadingStep("Extracting design from Figma...");
+      const figmaRes = await fetch("/api/copy-audit/figma", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ figmaUrl }),
+      });
+      const figmaData = await figmaRes.json();
+      if (!figmaRes.ok) throw new Error(figmaData.error || "Figma extraction failed");
 
-    // Demo result — in production, AI would analyse the Figma design
-    const demoResult: AuditResult = {
-      sections: [
-        {
-          name: "Hero Section",
-          score: 6,
-          working: [
-            "Headline is visible and prominent",
-            "Subhead provides supporting context",
-          ],
-          issues: [
-            "Headline leads with product name instead of customer outcome",
-            "No specific promise or timeline in the hero",
-            "Missing social proof bar beneath hero",
-          ],
-          rewrites: [
-            {
-              before: "Introducing [Product Name] — The Ultimate Formula",
-              after: "Finally, [specific outcome] without [common frustration]",
-            },
-            {
-              before: "Shop Now",
-              after: "Start Your 7-Day Trial — Risk Free",
-            },
-          ],
-          vocInsight: includeVoc ? "Customers frequently mention wanting to 'simplify their routine' — use this language in the hero hook." : undefined,
-        },
-        {
-          name: "Benefit Callouts",
-          score: 5,
-          working: [
-            "Benefits are present on the page",
-          ],
-          issues: [
-            "Callouts use full sentences instead of 4-8 word phrases",
-            "Leading with ingredients instead of outcomes",
-            "No icons or emojis to aid scanning",
-            "Structure is not parallel — mixing nouns and verbs",
-          ],
-          rewrites: [
-            {
-              before: "Contains powerful antioxidants that may help support your immune system",
-              after: "Immune defence in every scoop",
-            },
-            {
-              before: "Made with premium quality ingredients for energy",
-              after: "Sustained energy & focus",
-            },
-          ],
-        },
-        {
-          name: "Product Description",
-          score: 7,
-          working: [
-            "Explains what the product is clearly",
-            "Mentions who it's for",
-          ],
-          issues: [
-            "Missing trust signal (no certification or testing mentioned)",
-            "No closing hook connecting to daily life",
-            "Slightly over 150 words — could be tighter",
-          ],
-          rewrites: [
-            {
-              before: "Our premium formula is designed for optimal results",
-              after: "Third-party tested against 500+ contaminants. Mix one scoop, feel the difference by day 7.",
-            },
-          ],
-        },
-        {
-          name: "Trust & Social Proof",
-          score: 4,
-          working: [
-            "Has some customer reviews",
-          ],
-          issues: [
-            "No review count or star rating visible above the fold",
-            "Missing expert endorsement with specific credentials",
-            "No third-party certifications named",
-            "Guarantee buried in footer instead of near CTA",
-            "Reviews lack specificity — 'I love it!' doesn't convert",
-          ],
-          rewrites: [
-            {
-              before: "Customers love our product",
-              after: "12,500+ verified 5-star reviews",
-            },
-            {
-              before: "Satisfaction guaranteed",
-              after: "100% refund within 90 days — no questions asked",
-            },
-          ],
-        },
-        {
-          name: "Page Flow & Architecture",
-          score: 6,
-          working: [
-            "Has a clear hero → benefits → CTA structure",
-            "CTA is visible",
-          ],
-          issues: [
-            "Missing comparison table vs alternatives",
-            "No results timeline (Week 1, Month 1, Month 2+)",
-            "FAQ section doesn't address key objection categories",
-            "Subscription value stack doesn't clearly beat one-time option",
-          ],
-          rewrites: [],
-        },
-        {
-          name: "Tone & Voice",
-          score: 7,
-          working: [
-            "Generally warm and approachable",
-            "Avoids overly corporate language in most sections",
-          ],
-          issues: [
-            "Uses 'premium' and 'high-quality' without backing them",
-            "Some passive voice in product description",
-            "Science section is too jargon-heavy — needs translation to plain language",
-          ],
-          rewrites: [
-            {
-              before: "Our premium, high-quality ingredients have been carefully selected",
-              after: "Every ingredient is third-party tested and dosed based on clinical research",
-            },
-          ],
-        },
-      ],
-      overallScore: 5.8,
-      grade: "C",
-      topPriorities: [
-        "Add social proof at scale above the fold — review count + star rating immediately builds trust",
-        "Rewrite hero to lead with customer outcome, not product name — this is the single biggest conversion lever",
-        "Surface the guarantee near the CTA, not in the footer — risk reversal removes the final purchase barrier",
-      ],
-      vocData: includeVoc
-        ? {
-            painPoints: [
-              '"I was taking 6 different supplements every morning — it was a nightmare"',
-              '"I never know if these things actually work or if I\'m wasting money"',
-              '"The taste of most greens powders is absolutely horrible"',
-            ],
-            objections: [
-              '"Is this actually third-party tested or do they just say that?"',
-              '"Seems expensive compared to just buying a multivitamin"',
-              '"How long before I actually notice anything?"',
-            ],
-            keyPhrases: [
-              "simplify my routine",
-              "actually feel a difference",
-              "no more pill fatigue",
-              "worth the price",
-              "trusted by real people",
-            ],
+      // Step 2: VOC research (parallel with analysis if enabled)
+      let vocData = null;
+      if (includeVoc && brandName.trim()) {
+        setLoadingStep("Researching customer reviews...");
+        try {
+          const vocRes = await fetch("/api/copy-audit/voc", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ brandName, productType }),
+          });
+          if (vocRes.ok) {
+            const vocResult = await vocRes.json();
+            vocData = vocResult.vocData;
           }
-        : undefined,
-    };
+        } catch {
+          // VOC failed — continue without it
+        }
+      }
 
-    setResult(demoResult);
-    setActiveSection(0);
-    setLoading(false);
+      // Step 3: Claude Vision analysis
+      setLoadingStep("Analysing copy against DTC framework...");
+      const analyseRes = await fetch("/api/copy-audit/analyse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          images: figmaData.images,
+          textContent: figmaData.textContent,
+          brandName,
+          productType,
+          niche,
+          vocData,
+        }),
+      });
+      const analyseData = await analyseRes.json();
+      if (!analyseRes.ok) throw new Error(analyseData.error || "Analysis failed");
+
+      // Merge VOC data if it wasn't included in the analysis response
+      const audit = analyseData.audit;
+      if (vocData && !audit.vocData) {
+        audit.vocData = vocData;
+      }
+
+      setResult(audit);
+      setActiveSection(0);
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+      setLoadingStep("");
+    }
   };
 
   return (
@@ -328,12 +228,20 @@ export default function PageCopyAuditPage() {
         </div>
       )}
 
+      {/* Error State */}
+      {error && (
+        <div className="border border-red-200 rounded-xl bg-red-50 p-6 mb-6">
+          <p className="text-sm font-medium text-red-700">Audit Failed</p>
+          <p className="text-xs text-red-500 mt-1">{error}</p>
+        </div>
+      )}
+
       {/* Loading State */}
       {loading && (
         <div className="border border-[#E5E5EA] rounded-xl bg-white p-12 text-center">
           <div className="animate-spin size-8 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full mx-auto mb-4" />
-          <p className="text-sm font-medium text-[#1A1A1A]">Analysing page copy...</p>
-          <p className="text-xs text-[#AAA] mt-1">Reading design, evaluating against DTC framework, researching VOC data</p>
+          <p className="text-sm font-medium text-[#1A1A1A]">{loadingStep || "Analysing page copy..."}</p>
+          <p className="text-xs text-[#AAA] mt-1">This may take 15-30 seconds</p>
         </div>
       )}
 
