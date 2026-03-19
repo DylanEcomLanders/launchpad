@@ -30,20 +30,27 @@ export async function POST(req: NextRequest) {
         text: `You are analysing the "${sectionName}" section of a DTC product page.
 
 PROJECT BRIEF:
-- Brand: ${brief.clientName}
+${brief.additionalContext || `- Brand: ${brief.clientName}
 - Product: ${brief.productName}
 - Product Type: ${brief.productType || "N/A"}
 - Niche: ${brief.niche || "N/A"}
 - Target Audience: ${brief.targetAudience || "N/A"}
 - USPs: ${brief.usps || "N/A"}
 - Competitors: ${brief.competitors || "N/A"}
-- Page Goal: ${brief.pageGoal || "Drive purchase"}
-- Additional Context: ${brief.additionalContext || "None"}
+- Page Goal: ${brief.pageGoal || "Drive purchase"}`}
 
 ${vocData ? `VOICE OF CUSTOMER DATA:
 Pain Points: ${vocData.painPoints?.join("; ") || "N/A"}
 Objections: ${vocData.objections?.join("; ") || "N/A"}
 Key Phrases Customers Use: ${vocData.keyPhrases?.join(", ") || "N/A"}` : ""}
+
+BRIEF ANALYSIS — READ THIS CAREFULLY:
+Before analysing the copy, you MUST first understand the brief's intent:
+- Is the brief focused on ONE specific angle/pain point, or does it cover MULTIPLE angles?
+- If the page addresses multiple angles (e.g. energy + immunity + digestion), your suggestions must respect ALL of those angles — do NOT collapse everything into a single narrative or fixate on one angle.
+- If the brief is angle-specific (e.g. "this page targets people switching from competitor X"), then your suggestions should be laser-focused on that angle.
+- Look at what the page is TRYING to do with its copy. If it's covering multiple benefits or audience segments, your feedback should help them do that BETTER — not tell them to narrow down.
+- The goal is to make the existing approach more effective, not to change the approach entirely.
 
 CRITICAL INSTRUCTIONS:
 1. Read EVERY word of text visible in this screenshot carefully.
@@ -51,21 +58,26 @@ CRITICAL INSTRUCTIONS:
 3. Be SUGGESTIVE, not prescriptive. Don't write the copy for them. Instead:
    - Explain WHY specific copy is weak (what DTC principle it violates)
    - Point them in the right direction (what approach would be stronger)
-   - Reference the brief to show how the copy misses the mark for the target audience
-4. In "suggestions", quote the exact weak copy, explain the problem, and give directional guidance on how to improve it — NOT an exact rewrite.
-5. If VOC data is available, highlight customer language and pain points they should consider incorporating.
-6. Be brutally honest. If the copy is weak, explain exactly why with specific examples from the screenshot.
-7. Consider the brief context — does the copy speak to the target audience? Does it address their pain points? Does it communicate the USPs effectively?
+   - Reference the brief to show how the copy could better serve the stated goals
+4. In "suggestions", quote the exact weak copy, explain the problem, and give directional guidance — NOT an exact rewrite.
+5. RESPECT THE PAGE'S APPROACH:
+   - If the page covers multiple angles, evaluate each angle on its own merits
+   - Don't suggest narrowing when the brief calls for breadth
+   - Don't suggest broadening when the brief calls for a specific angle
+   - Evaluate whether each angle is being communicated effectively on its own terms
+6. If VOC data is available, highlight relevant customer language — but only where it genuinely fits the angles being addressed. Don't force VOC data into angles where it doesn't belong.
+7. Be brutally honest but fair. If the copy is weak, explain exactly why. If it's strong on one angle but weak on another, say so specifically.
+8. Consider the brief holistically — does the copy achieve what the brief set out to do? Where does it fall short of the brief's intent?
 
 Return ONLY valid JSON with this structure:
 {
   "score": 7,
-  "working": ["'Exact quote from the design' — why this works and what DTC principle it follows"],
-  "issues": ["'Exact quote from the design' — why this is weak, what principle it violates, and what approach would be stronger"],
+  "working": ["'Exact quote from the design' — why this works, which angle it serves, and what DTC principle it follows"],
+  "issues": ["'Exact quote from the design' — why this is weak, which angle it undermines, and what approach would strengthen it"],
   "suggestions": [
-    {"copy": "Exact text from the screenshot that needs work", "problem": "Why this doesn't work — the specific DTC principle being violated", "direction": "The approach they should take instead — what to focus on, what angle to use, what the copy should achieve — without writing the exact words for them"}
+    {"copy": "Exact text from the screenshot that needs work", "problem": "Why this doesn't work — the specific issue and which angle/goal from the brief it fails to serve", "direction": "The approach they should take to make this copy more effective for the intended angle — what to focus on, what's missing, what would make it more compelling — without writing the exact words for them"}
   ],
-  "vocInsight": "Specific customer language, pain points, or objections from the VOC data that should be woven into this section and why"
+  "vocInsight": "Specific customer language or pain points from VOC data that are relevant to the angles this section is addressing — only include what genuinely fits"
 }
 
 No markdown code blocks. Just raw JSON.`,
