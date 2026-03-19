@@ -99,6 +99,7 @@ export interface PortalData {
   documents: PortalDocument[];
   results: PortalTestResult[];
   testing_tier?: TestingTier | null;
+  intelligems_key?: string;
   wins: PortalWin[];
   show_results: boolean;
   slack_channel_url: string;

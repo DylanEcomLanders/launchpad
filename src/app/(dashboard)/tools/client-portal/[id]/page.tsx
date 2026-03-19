@@ -22,6 +22,7 @@ import {
   getApprovals,
 } from "@/lib/portal/data";
 import { isLoomUrl, toLoomEmbed } from "@/lib/portal/loom";
+import { IntelligemsTestCards } from "@/components/intelligems-tests";
 import {
   getReviews,
   getPageReviews,
@@ -2057,10 +2058,38 @@ function TestingSection({
         </div>
       </div>
 
-      {/* Add Test */}
+      {/* Intelligems Integration */}
+      <div className="bg-white border border-[#E5E5EA] rounded-lg p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">Intelligems API</p>
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={portal.intelligems_key || ""}
+            onChange={(e) => onUpdateField("intelligems_key", e.target.value)}
+            placeholder="ig_live_..."
+            className={`${inputClass} flex-1 font-mono text-xs`}
+          />
+          {portal.intelligems_key && (
+            <span className="text-[10px] text-emerald-600 font-medium whitespace-nowrap">Connected</span>
+          )}
+        </div>
+        <p className="text-[10px] text-[#AAA] mt-1.5">Paste the client&apos;s Intelligems API key to auto-pull A/B test results</p>
+      </div>
+
+      {/* Intelligems Test Cards */}
+      {portal.intelligems_key && (
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
+            Intelligems Tests (Live)
+          </h3>
+          <IntelligemsTestCards apiKey={portal.intelligems_key} />
+        </div>
+      )}
+
+      {/* Add Manual Test */}
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
-          Tests ({tests.length})
+          Manual Tests ({tests.length})
         </h3>
         <button
           onClick={() => { resetForm(); setShowForm(true); }}

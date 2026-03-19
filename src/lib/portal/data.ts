@@ -182,6 +182,7 @@ export async function getPortals(): Promise<PortalData[]> {
         if (p.blocker) overrides.blocker = p.blocker;
         if (p.results) overrides.results = migrateTestResults(p.results);
         if (p.testing_tier) overrides.testing_tier = p.testing_tier;
+        if (p.intelligems_key) overrides.intelligems_key = p.intelligems_key;
         if (Object.keys(overrides).length > 0) lsOverrides[p.id] = overrides;
       }
     }
@@ -234,6 +235,7 @@ export async function getPortalById(id: string): Promise<PortalData | null> {
             if (lsPortal?.blocker) portal.blocker = lsPortal.blocker;
             if (lsPortal?.results) portal.results = migrateTestResults(lsPortal.results);
             if (lsPortal?.testing_tier) portal.testing_tier = lsPortal.testing_tier;
+            if (lsPortal?.intelligems_key) portal.intelligems_key = lsPortal.intelligems_key;
           }
         }
         return portal;
@@ -270,6 +272,7 @@ export async function getPortalByToken(token: string): Promise<PortalData | null
             if (lsPortal?.blocker) portal.blocker = lsPortal.blocker;
             if (lsPortal?.results) portal.results = migrateTestResults(lsPortal.results);
             if (lsPortal?.testing_tier) portal.testing_tier = lsPortal.testing_tier;
+            if (lsPortal?.intelligems_key) portal.intelligems_key = lsPortal.intelligems_key;
           }
         }
         return portal;

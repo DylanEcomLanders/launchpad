@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Logo } from "@/components/logo";
+import { IntelligemsTestCards } from "@/components/intelligems-tests";
 import type {
   PortalData,
   PortalPhase,
@@ -306,6 +307,11 @@ export function PortalView({
             {activeTab === "results" && portal.show_results && (
               <>
                 <PageHeader title="Test Results" subtitle="A/B tests and optimisation results" />
+                {portal.intelligems_key && (
+                  <div className="mb-6">
+                    <IntelligemsTestCards apiKey={portal.intelligems_key} compact />
+                  </div>
+                )}
                 <ResultsTab results={portal.results} />
               </>
             )}
