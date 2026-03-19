@@ -1950,6 +1950,50 @@ function FormModal({
   );
 }
 
+/* ── Intelligems API Key Input with Save Button ── */
+
+function IntelligemsKeyInput({ currentKey, onSave }: { currentKey: string; onSave: (key: string) => void }) {
+  const [key, setKey] = useState(currentKey);
+  const [saved, setSaved] = useState(false);
+  const isDirty = key !== currentKey;
+
+  useEffect(() => { setKey(currentKey); }, [currentKey]);
+
+  const handleSave = () => {
+    onSave(key.trim());
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  return (
+    <div className="bg-white border border-[#E5E5EA] rounded-lg p-4">
+      <p className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">Intelligems API</p>
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          value={key}
+          onChange={(e) => setKey(e.target.value)}
+          placeholder="ig_live_..."
+          className={`${inputClass} flex-1 font-mono text-xs`}
+        />
+        {isDirty ? (
+          <button
+            onClick={handleSave}
+            className="px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] whitespace-nowrap"
+          >
+            Save
+          </button>
+        ) : saved ? (
+          <span className="text-[10px] text-emerald-600 font-medium whitespace-nowrap">Saved ✓</span>
+        ) : currentKey ? (
+          <span className="text-[10px] text-emerald-600 font-medium whitespace-nowrap">Connected</span>
+        ) : null}
+      </div>
+      <p className="text-[10px] text-[#AAA] mt-1.5">Paste the client&apos;s Intelligems API key to auto-pull A/B test results</p>
+    </div>
+  );
+}
+
 /* ── Testing Section ── */
 
 function TestingSection({
@@ -2098,22 +2142,10 @@ function TestingSection({
       </div>
 
       {/* Intelligems Integration */}
-      <div className="bg-white border border-[#E5E5EA] rounded-lg p-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">Intelligems API</p>
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            value={portal.intelligems_key || ""}
-            onChange={(e) => onUpdateField("intelligems_key", e.target.value)}
-            placeholder="ig_live_..."
-            className={`${inputClass} flex-1 font-mono text-xs`}
-          />
-          {portal.intelligems_key && (
-            <span className="text-[10px] text-emerald-600 font-medium whitespace-nowrap">Connected</span>
-          )}
-        </div>
-        <p className="text-[10px] text-[#AAA] mt-1.5">Paste the client&apos;s Intelligems API key to auto-pull A/B test results</p>
-      </div>
+      <IntelligemsKeyInput
+        currentKey={portal.intelligems_key || ""}
+        onSave={(key) => onUpdateField("intelligems_key", key)}
+      />
 
       {/* Intelligems Test Cards with assignments */}
       {portal.intelligems_key && (
