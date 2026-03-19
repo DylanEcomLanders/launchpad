@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     // Get rendered images
     const idsParam = nodeIds.join(",");
     const imgRes = await fetch(
-      `https://api.figma.com/v1/images/${fileKey}?ids=${idsParam}&format=png&scale=2`,
+      `https://api.figma.com/v1/images/${fileKey}?ids=${idsParam}&format=jpg&scale=1`,
       { headers: { "X-Figma-Token": FIGMA_TOKEN } }
     );
 

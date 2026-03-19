@@ -27,8 +27,10 @@ export async function POST(req: NextRequest) {
         const imgRes = await fetch(imgUrl);
         if (!imgRes.ok) continue;
         const buffer = await imgRes.arrayBuffer();
+        // Skip images over 4.5MB (Claude limit is 5MB)
+        if (buffer.byteLength > 4_500_000) continue;
         const base64 = Buffer.from(buffer).toString("base64");
-        const contentType = imgRes.headers.get("content-type") || "image/png";
+        const contentType = imgRes.headers.get("content-type") || "image/jpeg";
 
         content.push({
           type: "image",
