@@ -46,24 +46,26 @@ Objections: ${vocData.objections?.join("; ") || "N/A"}
 Key Phrases Customers Use: ${vocData.keyPhrases?.join(", ") || "N/A"}` : ""}
 
 CRITICAL INSTRUCTIONS:
-1. Read EVERY word of text visible in this screenshot. Do not miss any copy.
-2. In "before" fields, quote the EXACT text from the screenshot — word for word, character for character.
-3. In "after" fields, write your improved version that follows DTC best practices and incorporates customer language from the VOC data.
-4. In "issues", always quote the specific problematic text: 'exact words here' — then explain why it fails.
-5. In "working", quote the specific text that's effective and explain why.
-6. Give at least 2-3 specific rewrite suggestions with exact before/after pairs.
-7. If VOC data is available, suggest copy that uses the customers' own language and addresses their pain points.
-8. Be brutally honest. If the copy is weak, say so and explain exactly why.
+1. Read EVERY word of text visible in this screenshot carefully.
+2. Quote the EXACT copy from the screenshot when referencing it — word for word.
+3. Be SUGGESTIVE, not prescriptive. Don't write the copy for them. Instead:
+   - Explain WHY specific copy is weak (what DTC principle it violates)
+   - Point them in the right direction (what approach would be stronger)
+   - Reference the brief to show how the copy misses the mark for the target audience
+4. In "suggestions", quote the exact weak copy, explain the problem, and give directional guidance on how to improve it — NOT an exact rewrite.
+5. If VOC data is available, highlight customer language and pain points they should consider incorporating.
+6. Be brutally honest. If the copy is weak, explain exactly why with specific examples from the screenshot.
+7. Consider the brief context — does the copy speak to the target audience? Does it address their pain points? Does it communicate the USPs effectively?
 
 Return ONLY valid JSON with this structure:
 {
   "score": 7,
-  "working": ["'Exact quote from the design' — why this works"],
-  "issues": ["'Exact quote from the design' — why this is weak and what principle it violates"],
-  "rewrites": [
-    {"before": "Exact text from the screenshot", "after": "Your improved version using DTC principles and customer language"}
+  "working": ["'Exact quote from the design' — why this works and what DTC principle it follows"],
+  "issues": ["'Exact quote from the design' — why this is weak, what principle it violates, and what approach would be stronger"],
+  "suggestions": [
+    {"copy": "Exact text from the screenshot that needs work", "problem": "Why this doesn't work — the specific DTC principle being violated", "direction": "The approach they should take instead — what to focus on, what angle to use, what the copy should achieve — without writing the exact words for them"}
   ],
-  "vocInsight": "How to incorporate customer language from the VOC research into this section"
+  "vocInsight": "Specific customer language, pain points, or objections from the VOC data that should be woven into this section and why"
 }
 
 No markdown code blocks. Just raw JSON.`,

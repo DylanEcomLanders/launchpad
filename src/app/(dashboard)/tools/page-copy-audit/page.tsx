@@ -11,7 +11,8 @@ type SectionResult = {
     score: number;
     working: string[];
     issues: string[];
-    rewrites: { before: string; after: string }[];
+    suggestions: { copy: string; problem: string; direction: string }[];
+    rewrites?: { before: string; after: string }[];
     vocInsight?: string;
   } | null;
   analysing: boolean;
@@ -48,7 +49,12 @@ export default function PageCopyAuditPage() {
   const [vocData, setVocData] = useState<VocData | null>(null);
   const [vocLoading, setVocLoading] = useState(false);
   const [vocDone, setVocDone] = useState(false);
+  const [briefLocked, setBriefLocked] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pendingPreview, setPendingPreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const briefReady = briefLocked && brief.trim().length > 0;
 
   /* ── Run VOC in background ── */
   const runVoc = async (brand: string) => {
@@ -116,31 +122,48 @@ export default function PageCopyAuditPage() {
     }
   }, [sectionName, brandName, brief, vocData, vocDone, vocLoading]);
 
+  /* ── Stage a file (from upload or paste) ── */
+  const stageFile = (file: File) => {
+    setPendingFile(file);
+    setPendingPreview(URL.createObjectURL(file));
+  };
+
   /* ── File upload ── */
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (fileRef.current) fileRef.current.value = "";
-    analyseImage(file);
+    if (briefReady) {
+      stageFile(file);
+    }
+  };
+
+  /* ── Analyse the staged file ── */
+  const handleAnalyse = () => {
+    if (!pendingFile || !briefReady) return;
+    analyseImage(pendingFile);
+    setPendingFile(null);
+    setPendingPreview(null);
   };
 
   /* ── Paste from clipboard (Cmd+V) ── */
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
+      if (!briefReady) return;
       const items = e.clipboardData?.items;
       if (!items) return;
       for (const item of Array.from(items)) {
         if (item.type.startsWith("image/")) {
           e.preventDefault();
           const file = item.getAsFile();
-          if (file) analyseImage(file);
+          if (file) stageFile(file);
           return;
         }
       }
     };
     window.addEventListener("paste", handlePaste);
     return () => window.removeEventListener("paste", handlePaste);
-  }, [analyseImage]);
+  }, [briefReady]);
 
   const removeSection = (id: string) => {
     setSections((prev) => prev.filter((s) => s.id !== id));
@@ -156,7 +179,36 @@ export default function PageCopyAuditPage() {
       </div>
 
       {/* ── Brief + Brand ── */}
-      <div className="border border-[#E5E5EA] rounded-xl bg-white p-5 mb-6">
+      <div className={`border rounded-xl bg-white p-5 mb-6 ${briefLocked ? "border-emerald-200" : "border-[#E5E5EA]"}`}>
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="text-sm font-semibold text-[#1A1A1A]">Client Brief</h2>
+            <p className="text-xs text-[#AAA] mt-0.5">
+              {briefLocked ? "Brief locked — analysing against this context" : "Paste or type the full brief before analysing"}
+            </p>
+          </div>
+          {briefLocked ? (
+            <button
+              onClick={() => setBriefLocked(false)}
+              className="px-3 py-1.5 text-[11px] font-medium text-[#7A7A7A] border border-[#E5E5EA] rounded-lg hover:bg-[#F5F5F5]"
+            >
+              Edit Brief
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                if (!brief.trim()) return;
+                setBriefLocked(true);
+                if (brandName.trim()) runVoc(brandName);
+              }}
+              disabled={!brief.trim()}
+              className="px-4 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] disabled:opacity-30"
+            >
+              Lock Brief & Start
+            </button>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-4">
           <div>
             <label className={labelClass}>Brand Name</label>
@@ -164,23 +216,20 @@ export default function PageCopyAuditPage() {
               type="text"
               value={brandName}
               onChange={(e) => setBrandName(e.target.value)}
+              disabled={briefLocked}
               className={inputClass}
               placeholder="e.g. AG1"
             />
             {vocLoading && <p className="text-[10px] text-[#AAA] mt-1">Researching VOC...</p>}
             {vocDone && vocData && <p className="text-[10px] text-emerald-600 mt-1">VOC data loaded ✓</p>}
-            {brandName.trim() && !vocDone && !vocLoading && (
-              <button onClick={() => runVoc(brandName)} className="text-[10px] text-blue-600 mt-1 hover:underline">
-                Run VOC Research
-              </button>
-            )}
           </div>
           <div>
-            <label className={labelClass}>Client Brief</label>
+            <label className={labelClass}>Brief</label>
             <textarea
               value={brief}
               onChange={(e) => setBrief(e.target.value)}
-              className={inputClass + " min-h-[100px]"}
+              disabled={briefLocked}
+              className={inputClass + " min-h-[120px]"}
               placeholder="Paste the full brief here — product details, target audience, USPs, competitors, page goals, tone preferences, anything relevant..."
             />
           </div>
@@ -215,25 +264,59 @@ export default function PageCopyAuditPage() {
       )}
 
       {/* ── Upload Section ── */}
-      <div className="border border-[#E5E5EA] rounded-xl bg-white p-5 mb-6">
-        <div className="flex items-end gap-3">
-          <div className="flex-1">
-            <label className={labelClass}>Section</label>
-            <select value={sectionName} onChange={(e) => setSectionName(e.target.value)} className={inputClass}>
-              {SECTION_PRESETS.map((p) => <option key={p} value={p}>{p}</option>)}
-            </select>
+      {briefReady && (
+        <div className="border border-[#E5E5EA] rounded-xl bg-white p-5 mb-6">
+          <div className="flex items-end gap-3 mb-4">
+            <div className="flex-1">
+              <label className={labelClass}>Section</label>
+              <select value={sectionName} onChange={(e) => setSectionName(e.target.value)} className={inputClass}>
+                {SECTION_PRESETS.map((p) => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+            <div>
+              <input ref={fileRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="px-4 py-2 text-xs font-medium text-[#7A7A7A] border border-[#E5E5EA] rounded-lg hover:bg-[#F5F5F5]"
+              >
+                Choose File
+              </button>
+            </div>
           </div>
-          <div>
-            <input ref={fileRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
-            <button
+
+          {/* Staged preview + analyse */}
+          {pendingPreview ? (
+            <div className="border border-[#E8E8E8] rounded-lg overflow-hidden">
+              <img src={pendingPreview} alt="Preview" className="w-full max-h-64 object-contain bg-[#FAFAFA]" />
+              <div className="flex items-center justify-between px-4 py-3 border-t border-[#F0F0F0]">
+                <p className="text-xs text-[#777]">{sectionName}</p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => { setPendingFile(null); setPendingPreview(null); }}
+                    className="px-3 py-1.5 text-[11px] text-[#AAA] hover:text-[#1A1A1A]"
+                  >
+                    Clear
+                  </button>
+                  <button
+                    onClick={handleAnalyse}
+                    className="px-5 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D]"
+                  >
+                    Analyse
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div
+              className="border-2 border-dashed border-[#E5E5EA] rounded-lg p-8 text-center cursor-pointer hover:border-[#999] transition-colors"
               onClick={() => fileRef.current?.click()}
-              className="px-5 py-2.5 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D]"
             >
-              Upload & Analyse
-            </button>
-          </div>
+              <p className="text-sm text-[#AAA]">Paste a screenshot (Cmd+V) or click to upload</p>
+              <p className="text-xs text-[#CCC] mt-1">Screenshot each section of your design individually</p>
+            </div>
+          )}
         </div>
-      </div>
+      )}
 
       {/* ── Results ── */}
       {sections.length > 0 && (
@@ -303,20 +386,24 @@ export default function PageCopyAuditPage() {
                         </div>
                       )}
 
-                      {/* Rewrites */}
-                      {s.analysis.rewrites.length > 0 && (
+                      {/* Suggestions */}
+                      {s.analysis.suggestions?.length > 0 && (
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Suggested Rewrites</p>
-                          <div className="space-y-2">
-                            {s.analysis.rewrites.map((rw, i) => (
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Suggestions</p>
+                          <div className="space-y-3">
+                            {s.analysis.suggestions.map((sg, i) => (
                               <div key={i} className="rounded-lg border border-[#F0F0F0] overflow-hidden">
-                                <div className="px-3 py-2 bg-red-50/50 border-b border-[#F0F0F0]">
-                                  <p className="text-[9px] font-semibold uppercase text-red-400 mb-0.5">Before</p>
-                                  <p className="text-xs text-[#555] line-through">{rw.before}</p>
+                                <div className="px-3 py-2.5 bg-[#FAFAFA] border-b border-[#F0F0F0]">
+                                  <p className="text-[9px] font-semibold uppercase text-[#AAA] mb-0.5">Current Copy</p>
+                                  <p className="text-xs text-[#555] italic">&ldquo;{sg.copy}&rdquo;</p>
                                 </div>
-                                <div className="px-3 py-2 bg-emerald-50/50">
-                                  <p className="text-[9px] font-semibold uppercase text-emerald-600 mb-0.5">After</p>
-                                  <p className="text-xs text-[#1A1A1A] font-medium">{rw.after}</p>
+                                <div className="px-3 py-2.5 border-b border-[#F0F0F0]">
+                                  <p className="text-[9px] font-semibold uppercase text-red-400 mb-0.5">Problem</p>
+                                  <p className="text-xs text-[#555] leading-relaxed">{sg.problem}</p>
+                                </div>
+                                <div className="px-3 py-2.5 bg-emerald-50/30">
+                                  <p className="text-[9px] font-semibold uppercase text-emerald-600 mb-0.5">Direction</p>
+                                  <p className="text-xs text-[#555] leading-relaxed">{sg.direction}</p>
                                 </div>
                               </div>
                             ))}
