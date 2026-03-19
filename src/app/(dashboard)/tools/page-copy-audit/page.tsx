@@ -112,6 +112,7 @@ export default function PageCopyAuditPage() {
           sectionName: name,
           brief: { clientName: brandName, productName: "", productType: "", niche: "", targetAudience: "", usps: "", competitors: "", pageGoal: "", additionalContext: brief },
           vocData,
+          previousAnalysis: sections.find((s) => s.id === id)?.analysis || null,
         }),
       });
 

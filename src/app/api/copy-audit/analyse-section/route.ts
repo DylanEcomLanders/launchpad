@@ -10,7 +10,7 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || "" });
  */
 export async function POST(req: NextRequest) {
   try {
-    const { imageBase64, imageType, sectionName, brief, vocData } = await req.json();
+    const { imageBase64, imageType, sectionName, brief, vocData, previousAnalysis } = await req.json();
 
     if (!imageBase64) {
       return NextResponse.json({ error: "No image provided" }, { status: 400 });
@@ -44,6 +44,13 @@ Pain Points: ${vocData.painPoints?.join("; ") || "N/A"}
 Objections: ${vocData.objections?.join("; ") || "N/A"}
 Key Phrases Customers Use: ${vocData.keyPhrases?.join(", ") || "N/A"}` : ""}
 
+${previousAnalysis ? `PREVIOUS ANALYSIS OF THIS SECTION:
+This section was previously analysed and scored ${previousAnalysis.score}/10.
+Previous issues identified: ${previousAnalysis.issues?.join("; ") || "None"}
+Previous suggestions: ${previousAnalysis.suggestions?.map((s: any) => `"${s.copy}" — ${s.direction}`).join("; ") || "None"}
+
+IMPORTANT: If the copy has been updated to address previous issues, the score MUST reflect the improvement. Do not score lower than before unless the changes made things worse. Use the criteria-based scoring from the framework — count actual points met.` : ""}
+
 BRIEF ANALYSIS — READ THIS CAREFULLY:
 Before analysing the copy, you MUST first understand the brief's intent:
 - Is the brief focused on ONE specific angle/pain point, or does it cover MULTIPLE angles?
@@ -51,6 +58,11 @@ Before analysing the copy, you MUST first understand the brief's intent:
 - If the brief is angle-specific (e.g. "this page targets people switching from competitor X"), then your suggestions should be laser-focused on that angle.
 - Look at what the page is TRYING to do with its copy. If it's covering multiple benefits or audience segments, your feedback should help them do that BETTER — not tell them to narrow down.
 - The goal is to make the existing approach more effective, not to change the approach entirely.
+
+SCORING RULES:
+- Use the CRITERIA-BASED scoring from the system prompt. Count actual points met for this section type.
+- Each criterion is worth specific points. Add them up. Don't guess.
+- If this is a re-analysis after improvements, explicitly state which criteria are NOW met that weren't before.
 
 CRITICAL INSTRUCTIONS:
 1. Read EVERY word of text visible in this screenshot carefully.
