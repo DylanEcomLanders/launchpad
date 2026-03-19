@@ -80,7 +80,6 @@ const navSections: NavSection[] = [
     icon: <UserGroupIcon className="size-4" />,
     defaultOpen: true,
     items: [
-      { label: "Team Hub", href: "/team" },
       { label: "QA Checklist", href: "/tools/qa-checklist" },
       { label: "Dev Self-Check", href: "/tools/dev-selfcheck" },
       { label: "Feedback", href: "/tools/feedback" },
@@ -196,6 +195,20 @@ export function Sidebar() {
             >
               <HomeIcon className="size-4" />
               {!collapsed && <span>Mission Control</span>}
+            </Link>
+            <Link
+              href="/team"
+              onClick={() => setMobileOpen(false)}
+              className={`
+                flex items-center gap-2.5 px-2.5 py-2 mt-1 rounded-lg text-sm transition-all duration-200
+                ${pathname === "/team"
+                  ? "bg-white text-[#1B1B1B] font-medium shadow-[var(--shadow-nav-active)]"
+                  : "text-[#7A7A7A] hover:bg-white/60 hover:text-[#1B1B1B]"
+                }
+              `}
+            >
+              <UserGroupIcon className="size-4" />
+              {!collapsed && <span>Team Hub</span>}
             </Link>
           </div>
 
