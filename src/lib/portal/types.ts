@@ -11,6 +11,8 @@ export interface PortalPhase {
   description: string;
   tasks: number;
   completed: number;
+  startDate?: string; // ISO date — editable phase start
+  endDate?: string; // ISO date — editable phase end
   deadline?: string; // ISO date — used for dashboard deadline tracking
   completedDate?: string; // ISO date — set when phase marked complete
 }

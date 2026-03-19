@@ -196,7 +196,7 @@ export default function PortalDetailPage() {
     setPortal({ ...portal, phases: updatedPhases });
   };
 
-  const handleUpdateField = async (field: string, value: string | number | boolean | string[]) => {
+  const handleUpdateField = async (field: string, value: unknown) => {
     if (!portal) return;
     await updatePortal(portal.id, { [field]: value });
     setPortal({ ...portal, [field]: value } as PortalData);
@@ -487,7 +487,7 @@ function OverviewSection({
   onRemoveScope,
 }: {
   portal: PortalData;
-  onUpdateField: (field: string, value: string | number | boolean | string[]) => void;
+  onUpdateField: (field: string, value: unknown) => void;
   onSetBlocker: (blocker: PortalBlocker | null) => void;
   onAddPhase: () => void;
   onRemovePhase: (id: string) => void;
@@ -690,45 +690,78 @@ function OverviewSection({
         ) : (
           <div className="border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg divide-y divide-[#EDEDEF]">
             {portal.phases.map((phase) => (
-              <div key={phase.id} className="flex items-center gap-3 p-3">
-                <span
-                  className={`size-2 rounded-full shrink-0 ${
-                    phase.status === "complete"
-                      ? "bg-emerald-400"
-                      : phase.status === "in-progress"
-                      ? "bg-[#1B1B1B]"
-                      : "bg-[#D4D4D4]"
-                  }`}
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{phase.name}</p>
-                  <p className="text-[11px] text-[#A0A0A0]">
-                    {phase.dates}
-                    {phase.status === "complete" && phase.completedDate && phase.deadline && new Date(phase.completedDate) < new Date(phase.deadline) && (
-                      <span className="ml-1.5 text-green-600 font-medium">
-                        &middot; Completed early ({new Date(phase.completedDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })})
-                      </span>
-                    )}
-                    {phase.status === "complete" && phase.completedDate && (!phase.deadline || new Date(phase.completedDate) >= new Date(phase.deadline)) && (
-                      <span className="ml-1.5 text-[#999]">
-                        &middot; Completed {new Date(phase.completedDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                      </span>
-                    )}
-                  </p>
+              <div key={phase.id} className="p-3">
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`size-2 rounded-full shrink-0 ${
+                      phase.status === "complete"
+                        ? "bg-emerald-400"
+                        : phase.status === "in-progress"
+                        ? "bg-[#1B1B1B]"
+                        : "bg-[#D4D4D4]"
+                    }`}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{phase.name}</p>
+                  </div>
+                  <button
+                    onClick={() => onCyclePhaseStatus(phase.id)}
+                    className="text-[10px] font-medium uppercase tracking-wider text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors cursor-pointer"
+                    title="Click to cycle status"
+                  >
+                    {phase.status}
+                  </button>
+                  <button
+                    onClick={() => onRemovePhase(phase.id)}
+                    className="p-1 text-[#A0A0A0] hover:text-red-400 transition-colors"
+                  >
+                    <TrashIcon className="size-3" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => onCyclePhaseStatus(phase.id)}
-                  className="text-[10px] font-medium uppercase tracking-wider text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors cursor-pointer"
-                  title="Click to cycle status"
-                >
-                  {phase.status}
-                </button>
-                <button
-                  onClick={() => onRemovePhase(phase.id)}
-                  className="p-1 text-[#A0A0A0] hover:text-red-400 transition-colors"
-                >
-                  <TrashIcon className="size-3" />
-                </button>
+                {/* Editable dates */}
+                <div className="flex items-center gap-2 mt-1.5 ml-5">
+                  <input
+                    type="date"
+                    value={phase.startDate || ""}
+                    onChange={(e) => {
+                      const updated = portal.phases.map((p) =>
+                        p.id === phase.id
+                          ? {
+                              ...p,
+                              startDate: e.target.value,
+                              dates: `${e.target.value ? new Date(e.target.value + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "?"} — ${p.endDate ? new Date(p.endDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "?"}`,
+                            }
+                          : p
+                      );
+                      onUpdateField("phases", updated);
+                    }}
+                    className="text-[11px] text-[#777] bg-transparent border border-[#E5E5EA] rounded px-1.5 py-0.5 w-[120px]"
+                  />
+                  <span className="text-[10px] text-[#CCC]">—</span>
+                  <input
+                    type="date"
+                    value={phase.endDate || ""}
+                    onChange={(e) => {
+                      const updated = portal.phases.map((p) =>
+                        p.id === phase.id
+                          ? {
+                              ...p,
+                              endDate: e.target.value,
+                              deadline: e.target.value,
+                              dates: `${p.startDate ? new Date(p.startDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "?"} — ${e.target.value ? new Date(e.target.value + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "?"}`,
+                            }
+                          : p
+                      );
+                      onUpdateField("phases", updated);
+                    }}
+                    className="text-[11px] text-[#777] bg-transparent border border-[#E5E5EA] rounded px-1.5 py-0.5 w-[120px]"
+                  />
+                  {phase.status === "complete" && phase.completedDate && phase.deadline && new Date(phase.completedDate) < new Date(phase.deadline) && (
+                    <span className="text-[10px] text-green-600 font-medium">
+                      Completed early ({new Date(phase.completedDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })})
+                    </span>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -1418,13 +1451,18 @@ function DesignsSection({
         title: title.trim(),
         description: description.trim(),
       });
-      await addVersion({
+      const v1 = await addVersion({
         review_id: review.id,
         version_number: 1,
         figma_url: figmaUrl.trim(),
         notes: "",
       });
       onReviewsChange([review, ...reviews]);
+      // Auto-select the new review and load its V1
+      setExpandedReview(review.id);
+      setVersions([v1]);
+      setSelectedVersionId(v1.id);
+      setFeedbackList([]);
       setTitle("");
       setDescription("");
       setFigmaUrl("");
@@ -1921,7 +1959,7 @@ function TestingSection({
 }: {
   portal: PortalData;
   onUpdateResults: (results: PortalTestResult[]) => Promise<void>;
-  onUpdateField: (field: string, value: string | number | boolean | string[]) => void;
+  onUpdateField: (field: string, value: unknown) => void;
 }) {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);

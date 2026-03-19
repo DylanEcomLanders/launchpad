@@ -66,51 +66,57 @@ export function useIntelligemsTests(apiKey: string | undefined) {
       const listData = await listRes.json();
       const experiences = listData.experiencesList || [];
 
+      // Fetch all test details in parallel (batches of 5 to avoid rate limits)
       const results: IntelligemsTest[] = [];
-      for (const exp of experiences.slice(0, 20)) {
-        try {
-          const detailRes = await fetch(
-            `/api/intelligems?key=${encodeURIComponent(apiKey)}&id=${exp.id}`
-          );
-          if (!detailRes.ok) continue;
-          const detailData = await detailRes.json();
-          const metrics = detailData.analytics?.metrics || [];
+      const batchSize = 5;
+      for (let i = 0; i < experiences.length; i += batchSize) {
+        const batch = experiences.slice(i, i + batchSize);
+        const batchResults = await Promise.allSettled(
+          batch.map(async (exp: Record<string, unknown>) => {
+            const detailRes = await fetch(
+              `/api/intelligems?key=${encodeURIComponent(apiKey)}&id=${exp.id}`
+            );
+            if (!detailRes.ok) return null;
+            const detailData = await detailRes.json();
+            const metrics = detailData.analytics?.metrics || [];
 
-          const varNames: Record<string, string> = {};
-          for (const v of exp.variations || []) {
-            varNames[v.id] = v.name || "Unknown";
-          }
+            const varNames: Record<string, string> = {};
+            for (const v of (exp.variations as { id: string; name: string }[]) || []) {
+              varNames[v.id] = v.name || "Unknown";
+            }
 
-          const variations: VariationMetrics[] = metrics.map(
-            (m: Record<string, unknown>) => ({
-              variation_id: m.variation_id as string,
-              name: varNames[m.variation_id as string] || (m.variation_id as string).slice(0, 8),
-              conversion_rate: (m.conversion_rate as { value: number })?.value || 0,
-              aov: (m.net_revenue_per_order as { value: number })?.value || 0,
-              rpv: (m.net_revenue_per_visitor as { value: number })?.value || 0,
-              atc_rate: (m.add_to_cart_rate as { value: number })?.value || 0,
-              visitors: (m.n_visitors as { value: number })?.value || 0,
-              orders: (m.n_orders as { value: number })?.value || 0,
-              revenue: (m.net_revenue as { value: number })?.value || 0,
-            })
-          );
-
-          const startedAt = exp.startedAtTs
-            ? new Date(exp.startedAtTs).toLocaleDateString("en-GB", {
-                day: "numeric",
-                month: "short",
+            const variations: VariationMetrics[] = metrics.map(
+              (m: Record<string, unknown>) => ({
+                variation_id: m.variation_id as string,
+                name: varNames[m.variation_id as string] || (m.variation_id as string).slice(0, 8),
+                conversion_rate: (m.conversion_rate as { value: number })?.value || 0,
+                aov: (m.net_revenue_per_order as { value: number })?.value || 0,
+                rpv: (m.net_revenue_per_visitor as { value: number })?.value || 0,
+                atc_rate: (m.add_to_cart_rate as { value: number })?.value || 0,
+                visitors: (m.n_visitors as { value: number })?.value || 0,
+                orders: (m.n_orders as { value: number })?.value || 0,
+                revenue: (m.net_revenue as { value: number })?.value || 0,
               })
-            : "—";
+            );
 
-          results.push({
-            id: exp.id,
-            name: exp.name,
-            status: exp.status,
-            startedAt,
-            variations,
-          });
-        } catch {
-          continue;
+            const startedAt = exp.startedAtTs
+              ? new Date(exp.startedAtTs as number).toLocaleDateString("en-GB", {
+                  day: "numeric",
+                  month: "short",
+                })
+              : "—";
+
+            return {
+              id: exp.id as string,
+              name: exp.name as string,
+              status: exp.status as string,
+              startedAt,
+              variations,
+            };
+          })
+        );
+        for (const r of batchResults) {
+          if (r.status === "fulfilled" && r.value) results.push(r.value);
         }
       }
 
