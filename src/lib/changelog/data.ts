@@ -37,6 +37,25 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-11",
+    date: "19 Mar 2026",
+    version: "0.10.0",
+    title: "Intelligems Integration & Portal Improvements",
+    changes: [
+      { type: "added", text: "Intelligems API integration — auto-pulls live A/B test data (CVR, AOV, RPV, visitors, orders, revenue) per client" },
+      { type: "added", text: "API proxy route for secure Intelligems data fetching from client portals" },
+      { type: "added", text: "Intelligems API key field per portal in admin Testing tab" },
+      { type: "added", text: "Live test cards with variation metrics table, lift indicators, and baseline comparisons" },
+      { type: "added", text: "Portal soft-delete with trash bin — deleted portals recoverable for 30 days" },
+      { type: "added", text: "Two-step delete confirmation on portal cards" },
+      { type: "added", text: "Designs tab always visible in client portal with placeholder state" },
+      { type: "improved", text: "Development tab — page reviews with staging URLs, version tracking, and inline feedback" },
+      { type: "improved", text: "Scope tab shows deliverable type alongside description" },
+      { type: "fixed", text: "Page reviews not appearing after creation — activeReviewId sync issue" },
+      { type: "fixed", text: "Deleted portals reappearing — now uses Supabase soft-delete with deleted_at column" },
+    ],
+  },
+  {
     id: "cl-10",
     date: "18 Mar 2026",
     version: "0.9.0",
