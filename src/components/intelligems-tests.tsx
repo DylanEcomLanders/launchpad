@@ -66,16 +66,24 @@ export function useIntelligemsTests(apiKey: string | undefined) {
       const listData = await listRes.json();
       const experiences = listData.experiencesList || [];
 
-      // Fetch all test details in parallel (batches of 5 to avoid rate limits)
+      // Fetch all test details in parallel (batches of 3 with delays to avoid 429s)
       const results: IntelligemsTest[] = [];
-      const batchSize = 5;
+      const batchSize = 3;
       for (let i = 0; i < experiences.length; i += batchSize) {
+        if (i > 0) await new Promise((r) => setTimeout(r, 500)); // 500ms between batches
         const batch = experiences.slice(i, i + batchSize);
         const batchResults = await Promise.allSettled(
           batch.map(async (exp: Record<string, unknown>) => {
-            const detailRes = await fetch(
+            let detailRes = await fetch(
               `/api/intelligems?key=${encodeURIComponent(apiKey)}&id=${exp.id}`
             );
+            // Retry once on 429
+            if (detailRes.status === 429) {
+              await new Promise((r) => setTimeout(r, 1000));
+              detailRes = await fetch(
+                `/api/intelligems?key=${encodeURIComponent(apiKey)}&id=${exp.id}`
+              );
+            }
             if (!detailRes.ok) return null;
             const detailData = await detailRes.json();
             const metrics = detailData.analytics?.metrics || [];
