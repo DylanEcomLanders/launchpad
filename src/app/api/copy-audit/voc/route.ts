@@ -17,6 +17,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Brand name required" }, { status: 400 });
     }
 
+    // productType might be a full brief — extract key terms for search
+    const briefText = productType || "";
+    // Use first 100 chars of brief for search context, or just brand name
+    const searchContext = briefText.length > 100
+      ? briefText.slice(0, 100).split(/[.\n]/).filter(Boolean)[0] || brandName
+      : briefText || brandName;
+
     const scrapedContent: string[] = [];
 
     // Scrape Trustpilot
@@ -46,7 +53,7 @@ export async function POST(req: NextRequest) {
 
     // Scrape Reddit
     try {
-      const redditSearchUrl = `https://www.reddit.com/search.json?q=${encodeURIComponent(brandName + " " + productType)}&sort=relevance&limit=10`;
+      const redditSearchUrl = `https://www.reddit.com/search.json?q=${encodeURIComponent(brandName + " " + searchContext)}&sort=relevance&limit=10`;
       const redditRes = await fetch(redditSearchUrl, {
         headers: { "User-Agent": "EcomlandersBot/1.0" },
       });
@@ -74,9 +81,12 @@ export async function POST(req: NextRequest) {
         messages: [
           {
             role: "user",
-            content: `Research Voice of Customer data for: ${brandName} (${productType}).
+            content: `Research Voice of Customer data for: ${brandName}
 
-Based on your knowledge of this brand and product category, provide VOC insights.
+BRIEF CONTEXT:
+${briefText || "No brief provided"}
+
+Based on your knowledge of this brand and the product described in the brief, provide VOC insights. Make sure the insights are relevant to the SPECIFIC product described — not other products the brand may sell.
 
 Return ONLY valid JSON:
 {
@@ -107,15 +117,21 @@ Return ONLY valid JSON:
       messages: [
         {
           role: "user",
-          content: `Analyse this scraped customer feedback for ${brandName} (${productType}) and extract VOC insights.
+          content: `Analyse this scraped customer feedback for ${brandName} and extract VOC insights.
 
+BRIEF CONTEXT (use this to determine which product/angle to focus on):
+${briefText || "No brief provided"}
+
+IMPORTANT: Only include VOC insights relevant to the specific product in the brief. Ignore reviews about other products from this brand.
+
+SCRAPED DATA:
 ${scrapedContent.join("\n\n")}
 
 Return ONLY valid JSON:
 {
-  "painPoints": ["5 customer pain point quotes - use their actual words"],
-  "objections": ["5 common customer objections"],
-  "keyPhrases": ["5-8 key phrases/language patterns to use in copy"]
+  "painPoints": ["5 customer pain point quotes - use their actual words, relevant to the product in the brief"],
+  "objections": ["5 common customer objections about this specific product"],
+  "keyPhrases": ["5-8 key phrases/language patterns customers use when discussing this product"]
 }`,
         },
       ],

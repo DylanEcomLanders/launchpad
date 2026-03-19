@@ -64,7 +64,7 @@ export default function PageCopyAuditPage() {
       const res = await fetch("/api/copy-audit/voc", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ brandName: brand, productType: "" }),
+        body: JSON.stringify({ brandName: brand, productType: brief }),
       });
       if (res.ok) {
         const data = await res.json();
