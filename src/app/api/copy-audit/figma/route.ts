@@ -41,20 +41,47 @@ export async function POST(req: NextRequest) {
     const fileData = await fileRes.json();
 
     // Collect node IDs to render as images
+    // Strategy: find sub-sections within frames to avoid rendering
+    // one massive tall image that exceeds Claude's 8000px limit
     let nodeIds: string[] = [];
 
     if (nodeId) {
-      // Specific node requested
-      nodeIds = [nodeId];
+      // Specific node — try to get its children (sections) if it's a tall frame
+      const targetNode = findNode(fileData.document, nodeId);
+      if (targetNode?.children?.length > 1) {
+        // Use child frames/sections instead of the parent
+        const childFrames = targetNode.children
+          .filter((n: any) => n.type === "FRAME" || n.type === "SECTION" || n.type === "GROUP" || n.type === "COMPONENT")
+          .slice(0, 8);
+        if (childFrames.length > 1) {
+          nodeIds = childFrames.map((n: any) => n.id);
+        } else {
+          nodeIds = [nodeId];
+        }
+      } else {
+        nodeIds = [nodeId];
+      }
     } else {
       // Get top-level frames from first page
       const firstPage = fileData.document?.children?.[0];
       if (firstPage?.children) {
-        // Get top-level frames (max 5 to avoid huge requests)
-        nodeIds = firstPage.children
-          .filter((n: { type: string }) => n.type === "FRAME" || n.type === "COMPONENT" || n.type === "SECTION")
-          .slice(0, 5)
-          .map((n: { id: string }) => n.id);
+        const topFrames = firstPage.children
+          .filter((n: any) => n.type === "FRAME" || n.type === "COMPONENT" || n.type === "SECTION");
+
+        // If there's only 1-2 top-level frames, they're probably full page designs
+        // In that case, get their children (sections) instead
+        if (topFrames.length <= 2 && topFrames[0]?.children?.length > 1) {
+          const sectionFrames = topFrames[0].children
+            .filter((n: any) => n.type === "FRAME" || n.type === "SECTION" || n.type === "GROUP" || n.type === "COMPONENT")
+            .slice(0, 8);
+          if (sectionFrames.length > 1) {
+            nodeIds = sectionFrames.map((n: any) => n.id);
+          } else {
+            nodeIds = topFrames.slice(0, 3).map((n: any) => n.id);
+          }
+        } else {
+          nodeIds = topFrames.slice(0, 5).map((n: any) => n.id);
+        }
       }
     }
 
@@ -62,10 +89,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No frames found in Figma file" }, { status: 400 });
     }
 
-    // Get rendered images
+    // Render at 0.5x scale to keep dimensions under 8000px
     const idsParam = nodeIds.join(",");
     const imgRes = await fetch(
-      `https://api.figma.com/v1/images/${fileKey}?ids=${idsParam}&format=jpg&scale=1`,
+      `https://api.figma.com/v1/images/${fileKey}?ids=${idsParam}&format=jpg&scale=0.5`,
       { headers: { "X-Figma-Token": FIGMA_TOKEN } }
     );
 
