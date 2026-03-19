@@ -66,20 +66,27 @@ export function useIntelligemsTests(apiKey: string | undefined) {
       const listData = await listRes.json();
       const experiences = listData.experiencesList || [];
 
-      // Fetch all test details in parallel (batches of 3 with delays to avoid 429s)
+      // Fetch test details sequentially with delay to avoid 429s
       const results: IntelligemsTest[] = [];
-      const batchSize = 3;
+      const batchSize = 2;
       for (let i = 0; i < experiences.length; i += batchSize) {
-        if (i > 0) await new Promise((r) => setTimeout(r, 500)); // 500ms between batches
+        if (i > 0) await new Promise((r) => setTimeout(r, 1200)); // 1.2s between batches
         const batch = experiences.slice(i, i + batchSize);
         const batchResults = await Promise.allSettled(
           batch.map(async (exp: Record<string, unknown>) => {
             let detailRes = await fetch(
               `/api/intelligems?key=${encodeURIComponent(apiKey)}&id=${exp.id}`
             );
-            // Retry once on 429
+            // Retry twice on 429 with increasing delay
             if (detailRes.status === 429) {
-              await new Promise((r) => setTimeout(r, 1000));
+              await new Promise((r) => setTimeout(r, 2000));
+              detailRes = await fetch(
+                `/api/intelligems?key=${encodeURIComponent(apiKey)}&id=${exp.id}`
+              );
+            }
+            // Second retry
+            if (detailRes.status === 429) {
+              await new Promise((r) => setTimeout(r, 3000));
               detailRes = await fetch(
                 `/api/intelligems?key=${encodeURIComponent(apiKey)}&id=${exp.id}`
               );
