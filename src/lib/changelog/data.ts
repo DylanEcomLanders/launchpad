@@ -37,6 +37,24 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-13",
+    date: "20 Mar 2026",
+    version: "0.12.0",
+    title: "Retainer vs Project Portal Modes",
+    changes: [
+      { type: "added", text: "Two portal modes: Retainer Client (weekly test cycle) and Project Client (linear page build)" },
+      { type: "added", text: "New portal creation flow — two-card selection for client type with tailored fields" },
+      { type: "added", text: "Retainer creation includes testing tier (T1/T2/T3) and optional Intelligems API key" },
+      { type: "added", text: "client_type field on PortalData — drives entire portal UX (retainer vs regular)" },
+      { type: "added", text: "Auto-migration for existing portals — detects retainer from project_type" },
+      { type: "improved", text: "Admin portal default tab is Testing for retainer clients, Overview for project clients" },
+      { type: "improved", text: "Tab order adapts to client type — Testing first for retainers" },
+      { type: "improved", text: "Client portal sidebar adapts — retainers see Testing instead of Timeline" },
+      { type: "improved", text: "Portal cards show Retainer/Project badge with client type" },
+      { type: "fixed", text: "Changelog entries now auto-merge from seed data into localStorage" },
+    ],
+  },
+  {
     id: "cl-12",
     date: "20 Mar 2026",
     version: "0.11.0",

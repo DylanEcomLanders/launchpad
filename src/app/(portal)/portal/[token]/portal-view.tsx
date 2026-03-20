@@ -194,7 +194,8 @@ export function PortalView({
   funnels?: FunnelData[];
   onSubmitRequest?: (title: string, description: string) => Promise<void>;
 }) {
-  const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const isRetainerPortal = portal.client_type === "retainer";
+  const [activeTab, setActiveTab] = useState<Tab>(isRetainerPortal ? "testing" : "overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showRequestPopup, setShowRequestPopup] = useState(false);
   const [selectedProjectIdx, setSelectedProjectIdx] = useState(0);
@@ -204,7 +205,7 @@ export function PortalView({
 
   const hasProjects = portal.projects && portal.projects.length > 0;
   const selectedProject: PortalProject | null = hasProjects ? portal.projects[selectedProjectIdx] ?? portal.projects[0] : null;
-  const isRetainer = selectedProject?.type === "retainer";
+  const isRetainer = selectedProject?.type === "retainer" || portal.client_type === "retainer";
 
   // Derive phases/scope/documents/deliverables from selected project when available
   const activePhases = selectedProject?.phases ?? portal.phases;
@@ -217,19 +218,28 @@ export function PortalView({
 
   const currentPhase = portal.phases.find((p) => p.status === "in-progress");
 
-  const navItems: { key: Tab; label: string }[] = [
-    { key: "overview", label: "Dashboard" },
-    ...(isRetainer
-      ? [{ key: "testing" as Tab, label: "Testing" }]
-      : [{ key: "timeline" as Tab, label: "Timeline" }]),
-    ...(updates.length > 0 ? [{ key: "updates" as Tab, label: "Updates" }] : []),
-    { key: "scope", label: "Scope" },
-    { key: "designs" as Tab, label: "Designs" },
-    { key: "development", label: "Development" },
-    ...(portal.show_results ? [{ key: "results" as Tab, label: "Results" }] : []),
-    ...(funnels.length > 0 ? [{ key: "funnels" as Tab, label: "Funnels" }] : []),
-    { key: "requests", label: "Requests" },
-  ];
+  const navItems: { key: Tab; label: string }[] = isRetainer
+    ? [
+        { key: "overview", label: "Dashboard" },
+        { key: "testing" as Tab, label: "Testing" },
+        ...(updates.length > 0 ? [{ key: "updates" as Tab, label: "Updates" }] : []),
+        { key: "scope", label: "Scope" },
+        { key: "designs" as Tab, label: "Designs" },
+        { key: "development", label: "Development" },
+        ...(funnels.length > 0 ? [{ key: "funnels" as Tab, label: "Funnels" }] : []),
+        { key: "requests", label: "Requests" },
+      ]
+    : [
+        { key: "overview", label: "Dashboard" },
+        { key: "timeline" as Tab, label: "Timeline" },
+        ...(updates.length > 0 ? [{ key: "updates" as Tab, label: "Updates" }] : []),
+        { key: "scope", label: "Scope" },
+        { key: "designs" as Tab, label: "Designs" },
+        { key: "development", label: "Development" },
+        ...(portal.show_results ? [{ key: "results" as Tab, label: "Results" }] : []),
+        ...(funnels.length > 0 ? [{ key: "funnels" as Tab, label: "Funnels" }] : []),
+        { key: "requests", label: "Requests" },
+      ];
 
   const firstName = portal.client_name.split(" ")[0].split("[")[0].trim();
 

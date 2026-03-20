@@ -64,7 +64,10 @@ export default function ClientPortalPage() {
   const [showForm, setShowForm] = useState(false);
   const [clientName, setClientName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
+  const [clientType, setClientType] = useState<"retainer" | "regular" | null>(null);
   const [projectType, setProjectType] = useState("Full Page Build");
+  const [testingTier, setTestingTier] = useState<"T1" | "T2" | "T3">("T1");
+  const [igKey, setIgKey] = useState("");
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [overdueCount, setOverdueCount] = useState(0);
   const [filterType, setFilterType] = useState<string>("all");
@@ -103,11 +106,27 @@ export default function ClientPortalPage() {
   }, [loadPortals]);
 
   const handleCreate = async () => {
-    if (!clientName.trim()) return;
+    if (!clientName.trim() || !clientType) return;
+    const isRetainer = clientType === "retainer";
+    const firstProject = {
+      id: crypto.randomUUID(),
+      name: isRetainer ? "CRO Retainer" : projectType.trim() || "Page Build",
+      type: (isRetainer ? "retainer" : "page-build") as "retainer" | "page-build",
+      status: "active" as const,
+      created_at: new Date().toISOString(),
+      phases: [] as any[],
+      deliverables: [] as any[],
+      current_phase: "",
+      progress: 0,
+      testing_tier: isRetainer ? testingTier : undefined,
+      scope: [] as any[],
+      documents: [] as any[],
+    };
     await createPortal({
       client_name: clientName.trim(),
       client_email: clientEmail.trim(),
-      project_type: projectType.trim() || "Full Page Build",
+      client_type: clientType,
+      project_type: isRetainer ? "Retainer" : projectType.trim() || "Full Page Build",
       current_phase: "",
       progress: 0,
       next_touchpoint: { date: "", description: "" },
@@ -116,14 +135,20 @@ export default function ClientPortalPage() {
       deliverables: [],
       documents: [],
       results: [],
+      testing_tier: isRetainer ? testingTier : undefined,
+      intelligems_key: isRetainer ? igKey.trim() || undefined : undefined,
       wins: [],
-      show_results: false,
+      show_results: isRetainer,
       slack_channel_url: "",
       ad_hoc_requests: [],
+      projects: [firstProject],
     });
     setClientName("");
     setClientEmail("");
+    setClientType(null);
     setProjectType("Full Page Build");
+    setTestingTier("T1");
+    setIgKey("");
     setShowForm(false);
     loadPortals();
   };
@@ -633,62 +658,134 @@ export default function ClientPortalPage() {
         </>
       )}
 
-      {/* ── Create Form (inline) ── */}
+      {/* ── Create Form ── */}
       {showForm && (
-        <div className="bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg p-5 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold">Create Portal</h3>
-            <button onClick={() => setShowForm(false)} className="text-[#A0A0A0] hover:text-[#1B1B1B]">
+        <div className="bg-[#F7F8FA] border border-[#E5E5EA] rounded-xl p-6 mb-6">
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="text-sm font-semibold">New Client Portal</h3>
+            <button onClick={() => { setShowForm(false); setClientType(null); }} className="text-[#A0A0A0] hover:text-[#1B1B1B]">
               <XMarkIcon className="size-4" />
             </button>
           </div>
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className={labelClass}>Client Name *</label>
-                <input
-                  type="text"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  placeholder="e.g., Nutribloom"
-                  className={inputClass}
-                  autoFocus
-                />
-              </div>
-              <div>
-                <label className={labelClass}>Client Email</label>
-                <input
-                  type="email"
-                  value={clientEmail}
-                  onChange={(e) => setClientEmail(e.target.value)}
-                  placeholder="client@example.com"
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className={labelClass}>Project Type</label>
-                <select
-                  value={projectType}
-                  onChange={(e) => setProjectType(e.target.value)}
-                  className={inputClass}
+
+          {/* Step 1: Choose client type */}
+          {!clientType && (
+            <div>
+              <p className="text-xs text-[#7A7A7A] mb-4">What type of client is this?</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button
+                  onClick={() => setClientType("retainer")}
+                  className="border-2 border-[#E5E5EA] rounded-xl p-5 text-left hover:border-[#1B1B1B] transition-colors group"
                 >
-                  <option value="Full Page Build">Full Page Build</option>
-                  <option value="Retainer">Retainer</option>
-                  <option value="Landing Page">Landing Page</option>
-                  <option value="CRO Audit">CRO Audit</option>
-                  <option value="Other">Other</option>
-                </select>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="size-10 rounded-lg bg-emerald-50 flex items-center justify-center">
+                      <BeakerIcon className="size-5 text-emerald-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-[#1A1A1A] group-hover:text-[#1A1A1A]">Retainer Client</p>
+                      <p className="text-[10px] text-[#AAA]">Weekly A/B testing cycle</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-[#777] leading-relaxed">
+                    CRO retainer with weekly test cadence. Tier-based testing (1, 2, or 4 tests per week). Page builds available as add-ons.
+                  </p>
+                </button>
+                <button
+                  onClick={() => setClientType("regular")}
+                  className="border-2 border-[#E5E5EA] rounded-xl p-5 text-left hover:border-[#1B1B1B] transition-colors group"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="size-10 rounded-lg bg-blue-50 flex items-center justify-center">
+                      <FunnelIcon className="size-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-[#1A1A1A] group-hover:text-[#1A1A1A]">Project Client</p>
+                      <p className="text-[10px] text-[#AAA]">Page build or one-off project</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-[#777] leading-relaxed">
+                    Full page build, landing page, or CRO audit. Linear checkpoint flow. Can add more projects later.
+                  </p>
+                </button>
               </div>
             </div>
-            <button
-              onClick={handleCreate}
-              disabled={!clientName.trim()}
-              className="flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <CheckIcon className="size-3.5" />
-              Create Portal
-            </button>
-          </div>
+          )}
+
+          {/* Step 2: Client details */}
+          {clientType && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-2">
+                <button onClick={() => setClientType(null)} className="text-[10px] text-[#AAA] hover:text-[#1A1A1A]">&larr; Back</button>
+                <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                  clientType === "retainer" ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
+                }`}>
+                  {clientType === "retainer" ? "Retainer" : "Project"}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Client Name *</label>
+                  <input type="text" value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="e.g., Nutribloom" className={inputClass} autoFocus />
+                </div>
+                <div>
+                  <label className={labelClass}>Client Email</label>
+                  <input type="email" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} placeholder="client@example.com" className={inputClass} />
+                </div>
+              </div>
+
+              {/* Retainer-specific fields */}
+              {clientType === "retainer" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass}>Testing Tier</label>
+                    <div className="flex gap-2">
+                      {(["T1", "T2", "T3"] as const).map((t) => (
+                        <button
+                          key={t}
+                          onClick={() => setTestingTier(t)}
+                          className={`flex-1 py-2.5 text-xs font-semibold rounded-lg border transition-colors ${
+                            testingTier === t ? "bg-[#1B1B1B] text-white border-[#1B1B1B]" : "bg-white text-[#777] border-[#E5E5EA] hover:border-[#999]"
+                          }`}
+                        >
+                          {t}
+                          <span className="block text-[9px] font-normal mt-0.5 opacity-60">
+                            {t === "T1" ? "1/week" : t === "T2" ? "2/week" : "4/week"}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Intelligems API Key (optional)</label>
+                    <input type="text" value={igKey} onChange={(e) => setIgKey(e.target.value)} placeholder="ig_live_..." className={inputClass} />
+                  </div>
+                </div>
+              )}
+
+              {/* Regular-specific fields */}
+              {clientType === "regular" && (
+                <div>
+                  <label className={labelClass}>Project Type</label>
+                  <select value={projectType} onChange={(e) => setProjectType(e.target.value)} className={inputClass}>
+                    <option value="Full Page Build">Full Page Build</option>
+                    <option value="Landing Page">Landing Page</option>
+                    <option value="CRO Audit">CRO Audit</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              )}
+
+              <button
+                onClick={handleCreate}
+                disabled={!clientName.trim()}
+                className="flex items-center gap-1.5 px-5 py-2.5 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40"
+              >
+                <CheckIcon className="size-3.5" />
+                Create Portal
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -817,7 +914,7 @@ function PortalCard({
   confirmDeleteId: string | null;
   onCancelDelete: () => void;
 }) {
-  const isRetainer = portal.project_type?.toLowerCase().includes("retainer");
+  const isRetainer = portal.client_type === "retainer" || portal.project_type?.toLowerCase().includes("retainer");
   const blocker = portal.blocker;
 
   // Find next upcoming/in-progress phase

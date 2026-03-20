@@ -118,12 +118,15 @@ export interface PortalProject {
   documents?: PortalDocument[];
 }
 
+export type ClientType = "retainer" | "regular";
+
 export interface PortalData {
   id: string;
   token: string;
   client_name: string;
   client_email: string;
-  project_type: string;
+  client_type: ClientType; // Drives entire portal UX
+  project_type: string; // Legacy — kept for backward compat
   current_phase: string;
   progress: number;
   next_touchpoint: { date: string; description: string };
@@ -150,7 +153,7 @@ export interface PortalData {
   projects: PortalProject[];
 }
 
-export type PortalInsert = Omit<PortalData, "id" | "token" | "created_at" | "updated_at" | "view_count" | "projects"> & { projects?: PortalProject[] };
+export type PortalInsert = Omit<PortalData, "id" | "token" | "created_at" | "updated_at" | "view_count" | "projects"> & { projects?: PortalProject[]; client_type?: ClientType };
 
 /* ── Updates ── */
 

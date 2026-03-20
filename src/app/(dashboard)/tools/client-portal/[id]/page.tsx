@@ -76,6 +76,7 @@ export default function PortalDetailPage() {
   const [funnels, setFunnels] = useState<FunnelData[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<DashTab>("overview");
+  const [defaultTabSet, setDefaultTabSet] = useState(false);
   const [copied, setCopied] = useState(false);
 
   // Update form
@@ -112,6 +113,11 @@ export default function PortalDetailPage() {
         getFunnelsByClientId(portalId),
       ]);
       setPortal(p);
+      // Set default tab based on client type (only on first load)
+      if (!defaultTabSet && p) {
+        if (p.client_type === "retainer") setActiveTab("testing");
+        setDefaultTabSet(true);
+      }
       setUpdates(u);
       setApprovals(a);
       setFunnels(fnls);
@@ -404,14 +410,25 @@ export default function PortalDetailPage() {
 
   const openRequests = (portal.ad_hoc_requests || []).filter(r => r.status !== "done").length;
 
-  const dashTabs: { key: DashTab; label: string }[] = [
-    { key: "overview", label: "Overview" },
-    { key: "updates", label: "Updates" },
-    { key: "designs", label: "Designs" },
-    { key: "development", label: "Development" },
-    { key: "testing", label: "Testing" },
-    { key: "funnels", label: "Funnels" },
-  ];
+  const isRetainerPortal = portal.client_type === "retainer";
+
+  const dashTabs: { key: DashTab; label: string }[] = isRetainerPortal
+    ? [
+        { key: "testing", label: "Testing" },
+        { key: "overview", label: "Overview" },
+        { key: "updates", label: "Updates" },
+        { key: "designs", label: "Designs" },
+        { key: "development", label: "Development" },
+        { key: "funnels", label: "Funnels" },
+      ]
+    : [
+        { key: "overview", label: "Overview" },
+        { key: "updates", label: "Updates" },
+        { key: "designs", label: "Designs" },
+        { key: "development", label: "Development" },
+        { key: "testing", label: "Testing" },
+        { key: "funnels", label: "Funnels" },
+      ];
 
   return (
     <div className="min-h-screen">
@@ -427,9 +444,16 @@ export default function PortalDetailPage() {
           </Link>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-                {portal.client_name}
-              </h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+                  {portal.client_name}
+                </h1>
+                <span className={`px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full ${
+                  isRetainerPortal ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
+                }`}>
+                  {isRetainerPortal ? "Retainer" : "Project"}
+                </span>
+              </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <button
