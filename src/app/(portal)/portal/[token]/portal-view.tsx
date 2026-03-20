@@ -195,20 +195,39 @@ export function PortalView({
   onSubmitRequest?: (title: string, description: string) => Promise<void>;
 }) {
   const isRetainerPortal = portal.client_type === "retainer";
-  const [activeTab, setActiveTab] = useState<Tab>(isRetainerPortal ? "testing" : "overview");
+  const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showRequestPopup, setShowRequestPopup] = useState(false);
-  const [selectedProjectIdx, setSelectedProjectIdx] = useState(0);
+  const [selectedProjectIdx, setSelectedProjectIdx] = useState(-1); // -1 = home/hub view
+  const [drillView, setDrillView] = useState<"home" | "project" | "retainer">("home");
 
   const hasDesigns = reviews.length > 0;
   const hasPageReviews = pageReviews.length > 0;
 
   const hasProjects = portal.projects && portal.projects.length > 0;
-  const selectedProject: PortalProject | null = hasProjects ? portal.projects[selectedProjectIdx] ?? portal.projects[0] : null;
-  const isRetainer = selectedProject?.type === "retainer" || portal.client_type === "retainer";
+  const selectedProject: PortalProject | null = selectedProjectIdx >= 0 && hasProjects ? portal.projects[selectedProjectIdx] ?? null : null;
+  const isRetainer = selectedProject?.type === "retainer" || (drillView === "retainer");
+
+  // Drill into a project
+  const openProject = (idx: number) => {
+    setSelectedProjectIdx(idx);
+    const proj = portal.projects?.[idx];
+    if (proj?.type === "retainer") {
+      setDrillView("retainer");
+      setActiveTab("testing");
+    } else {
+      setDrillView("project");
+      setActiveTab("timeline");
+    }
+  };
+
+  const goHome = () => {
+    setSelectedProjectIdx(-1);
+    setDrillView("home");
+    setActiveTab("overview");
+  };
 
   // Derive phases/scope/documents/deliverables from selected project when available
-  // Use project data only if it has content, otherwise fall back to portal-level data
   const activePhases = (selectedProject?.phases?.length ? selectedProject.phases : null) ?? portal.phases;
   const activeScope = (selectedProject?.scope?.length ? selectedProject.scope : null) ?? portal.scope;
   const activeDocuments = (selectedProject?.documents?.length ? selectedProject.documents : null) ?? portal.documents;
@@ -219,27 +238,30 @@ export function PortalView({
 
   const currentPhase = portal.phases.find((p) => p.status === "in-progress");
 
-  const navItems: { key: Tab; label: string }[] = isRetainer
+  // Open requests count
+  const openRequestCount = (portal.ad_hoc_requests || []).filter(r => r.status !== "done").length;
+
+  // Nav items depend on drill view
+  const navItems: { key: Tab; label: string }[] = drillView === "home"
     ? [
-        { key: "overview", label: "Dashboard" },
-        { key: "testing" as Tab, label: "Testing" },
+        { key: "overview", label: "Home" },
         ...(updates.length > 0 ? [{ key: "updates" as Tab, label: "Updates" }] : []),
-        { key: "scope", label: "Scope" },
-        { key: "designs" as Tab, label: "Designs" },
-        { key: "development", label: "Development" },
-        ...(funnels.length > 0 ? [{ key: "funnels" as Tab, label: "Funnels" }] : []),
         { key: "requests", label: "Requests" },
       ]
-    : [
-        { key: "overview", label: "Dashboard" },
-        { key: "timeline" as Tab, label: "Timeline" },
-        ...(updates.length > 0 ? [{ key: "updates" as Tab, label: "Updates" }] : []),
+    : drillView === "retainer"
+    ? [
+        { key: "testing" as Tab, label: "Testing" },
         { key: "scope", label: "Scope" },
         { key: "designs" as Tab, label: "Designs" },
         { key: "development", label: "Development" },
-        ...(portal.show_results ? [{ key: "results" as Tab, label: "Results" }] : []),
         ...(funnels.length > 0 ? [{ key: "funnels" as Tab, label: "Funnels" }] : []),
-        { key: "requests", label: "Requests" },
+      ]
+    : [
+        { key: "timeline" as Tab, label: "Timeline" },
+        { key: "scope", label: "Scope" },
+        { key: "designs" as Tab, label: "Designs" },
+        { key: "development", label: "Development" },
+        ...(funnels.length > 0 ? [{ key: "funnels" as Tab, label: "Funnels" }] : []),
       ];
 
   const firstName = portal.client_name.split(" ")[0].split("[")[0].trim();
@@ -267,31 +289,18 @@ export function PortalView({
           <Logo height={14} />
         </div>
 
-        {/* Project selector */}
-        {hasProjects && portal.projects.length > 1 && (
-          <div className="px-3 pt-3 pb-1 space-y-1">
-            <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#CCC] px-2 mb-1.5">Projects</p>
-            {portal.projects.map((proj, idx) => (
-              <button
-                key={proj.id}
-                onClick={() => {
-                  setSelectedProjectIdx(idx);
-                  // Reset to overview if on a tab that doesn't exist for this project type
-                  if (proj.type === "retainer" && activeTab === "timeline") setActiveTab("testing");
-                  if (proj.type !== "retainer" && activeTab === "testing") setActiveTab("timeline");
-                }}
-                className={`w-full text-left px-2.5 py-1.5 text-[11px] font-medium rounded-md transition-all duration-150 truncate ${
-                  idx === selectedProjectIdx
-                    ? "bg-[#F0F0F0] text-[#1A1A1A]"
-                    : "text-[#AAA] hover:bg-[#F5F5F5] hover:text-[#777]"
-                }`}
-              >
-                {proj.name}
-                {proj.status === "paused" && (
-                  <span className="ml-1.5 text-[9px] text-[#CCC]">Paused</span>
-                )}
-              </button>
-            ))}
+        {/* Back to home when drilled in */}
+        {drillView !== "home" && (
+          <div className="px-3 pt-3 pb-1">
+            <button
+              onClick={() => { goHome(); setSidebarOpen(false); }}
+              className="w-full text-left px-2.5 py-2 text-[11px] font-medium text-[#AAA] hover:text-[#1A1A1A] rounded-md hover:bg-[#F5F5F5] transition-all flex items-center gap-1.5"
+            >
+              <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" /></svg>
+              Home
+            </button>
+            <p className="px-2.5 mt-2 text-[10px] font-semibold text-[#1A1A1A] truncate">{selectedProject?.name}</p>
+            <p className="px-2.5 text-[9px] text-[#CCC] uppercase tracking-wider">{selectedProject?.type === "retainer" ? "Retainer" : "Project"}</p>
           </div>
         )}
 
@@ -325,7 +334,15 @@ export function PortalView({
         <div className="max-w-5xl mx-auto px-6 md:px-10 py-8 md:py-10">
           {/* Tab content */}
           <div key={activeTab} className="animate-fadeIn">
-            {activeTab === "overview" && (
+            {activeTab === "overview" && drillView === "home" && (
+              <ClientHub
+                portal={portal}
+                updates={updates}
+                onOpenProject={openProject}
+                onRequestClick={() => setShowRequestPopup(true)}
+              />
+            )}
+            {activeTab === "overview" && drillView !== "home" && (
               <DashboardView
                 portal={portal}
                 currentPhase={activeCurrentPhase}
@@ -594,6 +611,245 @@ function PageHeader({ title, subtitle }: { title: string; subtitle: string }) {
     <div className="mb-8">
       <h1 className="text-xl font-bold tracking-tight text-[#1A1A1A] mb-1">{title}</h1>
       <p className="text-sm text-[#AAA]">{subtitle}</p>
+    </div>
+  );
+}
+
+/* ── Client Hub (Home) ── */
+function ClientHub({
+  portal,
+  updates,
+  onOpenProject,
+  onRequestClick,
+}: {
+  portal: PortalData;
+  updates: PortalUpdate[];
+  onOpenProject: (idx: number) => void;
+  onRequestClick: () => void;
+}) {
+  const firstName = portal.client_name.split(" ")[0].split("[")[0].trim();
+  const projects = portal.projects || [];
+  const retainerProjects = projects.filter(p => p.type === "retainer" && p.status !== "complete");
+  const pageProjects = projects.filter(p => p.type !== "retainer");
+  const activePageProjects = pageProjects.filter(p => p.status === "active");
+  const completedPageProjects = pageProjects.filter(p => p.status === "complete");
+  const openRequests = (portal.ad_hoc_requests || []).filter(r => r.status !== "done");
+  const hasRetainer = retainerProjects.length > 0 || portal.client_type === "retainer";
+
+  // Touchpoint
+  const touchpoint = portal.next_touchpoint;
+  const touchpointDate = (() => {
+    const d = touchpoint?.date;
+    if (!d) return null;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
+      const dt = new Date(d + "T00:00:00");
+      return dt.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+    }
+    return d;
+  })();
+
+  // Current phase for fallback display
+  const currentPhase = portal.phases.find(p => p.status === "in-progress");
+
+  return (
+    <div>
+      {/* Welcome */}
+      <div className="mb-10">
+        <h1 className="text-2xl font-bold tracking-tight text-[#1A1A1A]">
+          Welcome, {firstName}
+        </h1>
+        <p className="text-sm text-[#999] mt-1">
+          Here&apos;s an overview of everything we&apos;re working on together.
+        </p>
+      </div>
+
+      {/* Next touchpoint */}
+      {touchpoint?.date && (
+        <div className="mb-8 pb-8 border-b border-[#F0F0F0]">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#CCC] mb-2">Next Touchpoint</p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-[#1A1A1A]">{touchpoint.description || "Scheduled call"}</p>
+            <p className="text-sm font-medium text-[#1A1A1A]">{touchpointDate}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Retainer section */}
+      {hasRetainer && (
+        <div className="mb-8 pb-8 border-b border-[#F0F0F0]">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#CCC] mb-3">Retainer</p>
+          {retainerProjects.length > 0 ? retainerProjects.map((proj, _) => {
+            const idx = projects.indexOf(proj);
+            const tier = proj.testing_tier || portal.testing_tier;
+            const liveTests = (portal.results || []).filter(r => r.status === "live").length;
+            const completedTests = (portal.results || []).filter(r => r.status === "complete").length;
+            return (
+              <button
+                key={proj.id}
+                onClick={() => onOpenProject(idx)}
+                className="w-full text-left group"
+              >
+                <div className="flex items-center justify-between py-3 hover:bg-[#FAFAFA] -mx-2 px-2 rounded-lg transition-colors">
+                  <div>
+                    <p className="text-sm font-medium text-[#1A1A1A] group-hover:text-[#000]">{proj.name}</p>
+                    <p className="text-xs text-[#AAA] mt-0.5">
+                      {tier && <span className="mr-3">{tier} · {tier === "T1" ? "1" : tier === "T2" ? "2" : "4"} tests/week</span>}
+                      {liveTests > 0 && <span className="text-emerald-600">{liveTests} live</span>}
+                      {completedTests > 0 && <span className="ml-3">{completedTests} completed</span>}
+                    </p>
+                  </div>
+                  <svg className="size-4 text-[#CCC] group-hover:text-[#999]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+                </div>
+              </button>
+            );
+          }) : (
+            <button
+              onClick={() => {
+                // If no retainer project in array, open with portal-level retainer data
+                if (projects.length > 0) onOpenProject(0);
+              }}
+              className="w-full text-left group"
+            >
+              <div className="flex items-center justify-between py-3 hover:bg-[#FAFAFA] -mx-2 px-2 rounded-lg transition-colors">
+                <div>
+                  <p className="text-sm font-medium text-[#1A1A1A]">CRO Testing</p>
+                  <p className="text-xs text-[#AAA] mt-0.5">
+                    {portal.testing_tier && <span>{portal.testing_tier} · {portal.testing_tier === "T1" ? "1" : portal.testing_tier === "T2" ? "2" : "4"} tests/week</span>}
+                  </p>
+                </div>
+                <svg className="size-4 text-[#CCC] group-hover:text-[#999]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+              </div>
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Active projects */}
+      {activePageProjects.length > 0 && (
+        <div className="mb-8 pb-8 border-b border-[#F0F0F0]">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#CCC] mb-3">Active Projects</p>
+          {activePageProjects.map((proj) => {
+            const idx = projects.indexOf(proj);
+            const phase = (proj.phases?.length ? proj.phases : portal.phases).find(p => p.status === "in-progress");
+            const progress = proj.progress || portal.progress || 0;
+            return (
+              <button
+                key={proj.id}
+                onClick={() => onOpenProject(idx)}
+                className="w-full text-left group"
+              >
+                <div className="flex items-center justify-between py-3 hover:bg-[#FAFAFA] -mx-2 px-2 rounded-lg transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[#1A1A1A] group-hover:text-[#000]">{proj.name}</p>
+                    <p className="text-xs text-[#AAA] mt-0.5">
+                      {phase ? phase.name : proj.current_phase || portal.current_phase || "In progress"}
+                      {progress > 0 && <span className="ml-3">{progress}%</span>}
+                    </p>
+                  </div>
+                  {/* Mini progress bar */}
+                  {progress > 0 && (
+                    <div className="w-16 h-1 bg-[#F0F0F0] rounded-full mr-3 shrink-0">
+                      <div className="h-full bg-[#1A1A1A] rounded-full" style={{ width: `${progress}%` }} />
+                    </div>
+                  )}
+                  <svg className="size-4 text-[#CCC] group-hover:text-[#999] shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* If no projects array but portal has phases (legacy), show as single project */}
+      {projects.length === 0 && portal.phases.length > 0 && (
+        <div className="mb-8 pb-8 border-b border-[#F0F0F0]">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#CCC] mb-3">Active Projects</p>
+          <div className="py-3">
+            <p className="text-sm font-medium text-[#1A1A1A]">{portal.project_type || "Page Build"}</p>
+            <p className="text-xs text-[#AAA] mt-0.5">
+              {currentPhase?.name || portal.current_phase || "In progress"}
+              {portal.progress > 0 && <span className="ml-3">{portal.progress}%</span>}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Completed projects */}
+      {completedPageProjects.length > 0 && (
+        <div className="mb-8 pb-8 border-b border-[#F0F0F0]">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#CCC] mb-3">Completed</p>
+          {completedPageProjects.map((proj) => {
+            const idx = projects.indexOf(proj);
+            return (
+              <button
+                key={proj.id}
+                onClick={() => onOpenProject(idx)}
+                className="w-full text-left group"
+              >
+                <div className="flex items-center justify-between py-2.5 hover:bg-[#FAFAFA] -mx-2 px-2 rounded-lg transition-colors">
+                  <div className="flex items-center gap-2">
+                    <svg className="size-3.5 text-emerald-500" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg>
+                    <p className="text-sm text-[#777]">{proj.name}</p>
+                  </div>
+                  <svg className="size-4 text-[#CCC] group-hover:text-[#999]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Open requests */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#CCC]">
+            Open Requests {openRequests.length > 0 && `(${openRequests.length})`}
+          </p>
+          <button
+            onClick={onRequestClick}
+            className="text-[11px] font-medium text-[#AAA] hover:text-[#1A1A1A] transition-colors"
+          >
+            + Submit Request
+          </button>
+        </div>
+        {openRequests.length > 0 ? (
+          <div className="space-y-0">
+            {openRequests.slice(0, 5).map((req) => (
+              <div key={req.id} className="flex items-center justify-between py-2.5 border-b border-[#F5F5F5] last:border-0">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-[#1A1A1A] truncate">{req.title}</p>
+                  <p className="text-[10px] text-[#CCC] mt-0.5">
+                    {new Date(req.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                  </p>
+                </div>
+                <span className={`text-[10px] font-semibold uppercase tracking-wider ${
+                  req.status === "in-progress" ? "text-blue-600" : "text-[#AAA]"
+                }`}>
+                  {req.status === "in-progress" ? "In Progress" : "Open"}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-[#CCC] py-2">No open requests</p>
+        )}
+      </div>
+
+      {/* Recent updates */}
+      {updates.length > 0 && (
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#CCC] mb-3">Recent Updates</p>
+          {updates.slice(0, 3).map((u) => (
+            <div key={u.id} className="py-2.5 border-b border-[#F5F5F5] last:border-0">
+              <p className="text-sm font-medium text-[#1A1A1A]">{u.title}</p>
+              <p className="text-xs text-[#999] mt-0.5 line-clamp-1">{u.description}</p>
+              <p className="text-[10px] text-[#CCC] mt-1">
+                {new Date(u.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
