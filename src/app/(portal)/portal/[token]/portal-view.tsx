@@ -13,14 +13,16 @@ import type {
   PortalApproval,
   AdHocRequest,
   PhaseStatus,
+  PortalProject,
 } from "@/lib/portal/types";
 import type { DesignReview, DesignReviewVersion, DesignReviewFeedback } from "@/lib/portal/review-types";
+import type { FunnelData } from "@/lib/funnel-builder/types";
 
 import { toLoomEmbed } from "@/lib/portal/loom";
 import { toFigmaEmbed } from "@/lib/portal/review-types";
 
 /* ── Tab type ── */
-type Tab = "overview" | "timeline" | "updates" | "scope" | "designs" | "development" | "results" | "requests";
+type Tab = "overview" | "timeline" | "testing" | "updates" | "scope" | "designs" | "development" | "results" | "requests" | "funnels";
 
 /* ── SVG Progress Ring ── */
 function ProgressRing({
@@ -162,7 +164,9 @@ function NavIcon({ type }: { type: Tab }) {
     case "designs": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" /></svg>;
     case "results": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zm6-4a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zm6-3a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" /></svg>;
     case "development": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" /></svg>;
+    case "testing": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" /></svg>;
     case "requests": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" /></svg>;
+    case "funnels": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd" /></svg>;
     default: return null;
   }
 }
@@ -177,6 +181,7 @@ export function PortalView({
   pageReviews = [],
   reviewVersions = {},
   reviewFeedback = {},
+  funnels = [],
   onSubmitRequest,
 }: {
   portal: PortalData;
@@ -186,25 +191,43 @@ export function PortalView({
   pageReviews?: DesignReview[];
   reviewVersions?: Record<string, DesignReviewVersion[]>;
   reviewFeedback?: Record<string, DesignReviewFeedback[]>;
+  funnels?: FunnelData[];
   onSubmitRequest?: (title: string, description: string) => Promise<void>;
 }) {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showRequestPopup, setShowRequestPopup] = useState(false);
+  const [selectedProjectIdx, setSelectedProjectIdx] = useState(0);
 
   const hasDesigns = reviews.length > 0;
   const hasPageReviews = pageReviews.length > 0;
+
+  const hasProjects = portal.projects && portal.projects.length > 0;
+  const selectedProject: PortalProject | null = hasProjects ? portal.projects[selectedProjectIdx] ?? portal.projects[0] : null;
+  const isRetainer = selectedProject?.type === "retainer";
+
+  // Derive phases/scope/documents/deliverables from selected project when available
+  const activePhases = selectedProject?.phases ?? portal.phases;
+  const activeScope = selectedProject?.scope ?? portal.scope;
+  const activeDocuments = selectedProject?.documents ?? portal.documents;
+  const activeDeliverables = selectedProject?.deliverables ?? portal.deliverables;
+  const activeCurrentPhase = activePhases.find((p) => p.status === "in-progress");
+  const activeProgress = selectedProject?.progress ?? portal.progress;
+  const activeCurrentPhaseName = selectedProject?.current_phase ?? portal.current_phase;
 
   const currentPhase = portal.phases.find((p) => p.status === "in-progress");
 
   const navItems: { key: Tab; label: string }[] = [
     { key: "overview", label: "Dashboard" },
-    { key: "timeline", label: "Timeline" },
+    ...(isRetainer
+      ? [{ key: "testing" as Tab, label: "Testing" }]
+      : [{ key: "timeline" as Tab, label: "Timeline" }]),
     ...(updates.length > 0 ? [{ key: "updates" as Tab, label: "Updates" }] : []),
     { key: "scope", label: "Scope" },
     { key: "designs" as Tab, label: "Designs" },
     { key: "development", label: "Development" },
     ...(portal.show_results ? [{ key: "results" as Tab, label: "Results" }] : []),
+    ...(funnels.length > 0 ? [{ key: "funnels" as Tab, label: "Funnels" }] : []),
     { key: "requests", label: "Requests" },
   ];
 
@@ -232,6 +255,34 @@ export function PortalView({
         <div className="px-5 py-6 border-b border-[#E8E8E8]">
           <Logo height={14} />
         </div>
+
+        {/* Project selector */}
+        {hasProjects && portal.projects.length > 1 && (
+          <div className="px-3 pt-3 pb-1 space-y-1">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#CCC] px-2 mb-1.5">Projects</p>
+            {portal.projects.map((proj, idx) => (
+              <button
+                key={proj.id}
+                onClick={() => {
+                  setSelectedProjectIdx(idx);
+                  // Reset to overview if on a tab that doesn't exist for this project type
+                  if (proj.type === "retainer" && activeTab === "timeline") setActiveTab("testing");
+                  if (proj.type !== "retainer" && activeTab === "testing") setActiveTab("timeline");
+                }}
+                className={`w-full text-left px-2.5 py-1.5 text-[11px] font-medium rounded-md transition-all duration-150 truncate ${
+                  idx === selectedProjectIdx
+                    ? "bg-[#F0F0F0] text-[#1A1A1A]"
+                    : "text-[#AAA] hover:bg-[#F5F5F5] hover:text-[#777]"
+                }`}
+              >
+                {proj.name}
+                {proj.status === "paused" && (
+                  <span className="ml-1.5 text-[9px] text-[#CCC]">Paused</span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
@@ -264,12 +315,32 @@ export function PortalView({
           {/* Tab content */}
           <div key={activeTab} className="animate-fadeIn">
             {activeTab === "overview" && (
-              <DashboardView portal={portal} currentPhase={currentPhase} firstName={firstName} onRequestClick={() => setShowRequestPopup(true)} />
+              <DashboardView
+                portal={portal}
+                currentPhase={activeCurrentPhase}
+                currentPhaseName={activeCurrentPhaseName}
+                phases={activePhases}
+                documents={activeDocuments}
+                progress={activeProgress}
+                isRetainer={isRetainer}
+                testingTier={selectedProject?.testing_tier ?? portal.testing_tier}
+                firstName={firstName}
+                onRequestClick={() => setShowRequestPopup(true)}
+              />
             )}
-            {activeTab === "timeline" && (
+            {activeTab === "timeline" && !isRetainer && (
               <>
                 <PageHeader title="Timeline" subtitle="Your project phases and milestones" />
-                <TimelineTab phases={portal.phases} />
+                <TimelineTab phases={activePhases} />
+              </>
+            )}
+            {activeTab === "testing" && isRetainer && (
+              <>
+                <PageHeader title="Weekly Testing" subtitle="Your testing cadence and schedule" />
+                <WeeklyTestingTab
+                  results={portal.results}
+                  testingTier={selectedProject?.testing_tier ?? portal.testing_tier}
+                />
               </>
             )}
             {activeTab === "updates" && (
@@ -281,7 +352,7 @@ export function PortalView({
             {activeTab === "scope" && (
               <>
                 <PageHeader title="Scope & Deliverables" subtitle="Everything included in your project" />
-                <ScopeTab scope={portal.scope} deliverables={portal.deliverables} documents={portal.documents} />
+                <ScopeTab scope={activeScope} deliverables={activeDeliverables} documents={activeDocuments} />
               </>
             )}
             {activeTab === "designs" && (
@@ -424,6 +495,63 @@ export function PortalView({
                 )}
               </>
             )}
+            {activeTab === "funnels" && funnels.length > 0 && (
+              <>
+                <PageHeader title="Funnels" subtitle="Your customer journey maps" />
+                <div className="space-y-3">
+                  {funnels.map((funnel) => (
+                    <div
+                      key={funnel.id}
+                      className="border border-[#E8E8E8] rounded-xl bg-white overflow-hidden"
+                    >
+                      <div className="px-5 py-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm font-semibold text-[#1A1A1A]">
+                            {funnel.name || "Untitled Funnel"}
+                          </p>
+                          <span className={`px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border ${
+                            funnel.mode === "performance"
+                              ? "bg-[#F0F0F0] text-[#555] border-[#E0E0E0]"
+                              : "bg-white text-[#999] border-[#E5E5EA]"
+                          }`}>
+                            {funnel.mode}
+                          </span>
+                        </div>
+                        {funnel.created_at && (
+                          <p className="text-[11px] text-[#AAA] mb-3">
+                            Created {new Date(funnel.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                          </p>
+                        )}
+                        {funnel.nodes.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {funnel.nodes.map((node) => (
+                              <span
+                                key={node.id}
+                                className={`inline-flex items-center gap-1 px-2 py-1 text-[11px] rounded-md border ${
+                                  node.data.nodeType === "traffic"
+                                    ? "bg-[#FAFAFA] text-[#777] border-[#E8E8E8]"
+                                    : "bg-white text-[#555] border-[#E5E5EA]"
+                                }`}
+                              >
+                                <span className={`size-1.5 rounded-full ${
+                                  node.data.status === "live" ? "bg-emerald-400"
+                                    : node.data.status === "in-progress" ? "bg-amber-400"
+                                    : "bg-[#D4D4D4]"
+                                }`} />
+                                {node.data.label}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {funnel.nodes.length === 0 && (
+                          <p className="text-xs text-[#AAA]">No nodes added yet</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
             {activeTab === "requests" && (
               <>
                 <PageHeader title="Requests" subtitle="Track your ad-hoc requests" />
@@ -463,15 +591,29 @@ function PageHeader({ title, subtitle }: { title: string; subtitle: string }) {
 function DashboardView({
   portal,
   currentPhase,
+  currentPhaseName,
+  phases,
+  documents,
+  progress,
+  isRetainer,
+  testingTier,
   firstName,
   onRequestClick,
 }: {
   portal: PortalData;
   currentPhase?: PortalPhase;
+  currentPhaseName: string;
+  phases: PortalPhase[];
+  documents: PortalDocument[];
+  progress: number;
+  isRetainer: boolean;
+  testingTier?: import("@/lib/portal/types").TestingTier | null;
   firstName: string;
   onRequestClick: () => void;
 }) {
   const [selectedDoc, setSelectedDoc] = useState<PortalDocument | null>(null);
+
+  const tierLabel: Record<string, string> = { T1: "1 test / week", T2: "2 tests / week", T3: "4 tests / week" };
 
   return (
     <div className="space-y-6">
@@ -495,73 +637,133 @@ function DashboardView({
         </button>
       </div>
 
-      {/* Current stage + Next touchpoint */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div className="bg-white border border-[#E8E8E8] rounded-lg p-6">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-3">Current Stage</p>
-          <p className="text-lg font-bold tracking-tight text-[#1A1A1A] mb-1">{currentPhase?.name || portal.current_phase}</p>
-          {currentPhase && (
-            <p className="text-sm text-[#999] leading-relaxed">{currentPhase.description}</p>
-          )}
-          {currentPhase?.dates && (
-            <p className="text-xs text-[#CCC] mt-3">{currentPhase.dates}</p>
-          )}
-        </div>
+      {/* Retainer dashboard variant */}
+      {isRetainer ? (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Testing tier */}
+            <div className="bg-white border border-[#E8E8E8] rounded-lg p-6">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-3">Testing Tier</p>
+              <p className="text-lg font-bold tracking-tight text-[#1A1A1A] mb-1">{testingTier || "—"}</p>
+              <p className="text-sm text-[#999]">{testingTier ? tierLabel[testingTier] || testingTier : "Not configured"}</p>
+            </div>
 
-        <div className="bg-[#1A1A1A] rounded-lg p-6">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/50 mb-3">Next Touchpoint</p>
-          <p className="text-lg font-bold tracking-tight text-white mb-1">
-            {(() => {
-              const d = portal.next_touchpoint?.date;
-              if (!d) return "\u2014";
-              if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
-                const dt = new Date(d + "T00:00:00");
-                return dt.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-              }
-              return d;
-            })()}
-          </p>
-          <p className="text-sm text-white/60 leading-relaxed">
-            {portal.next_touchpoint?.description || "No touchpoint scheduled"}
-          </p>
-        </div>
-      </div>
-
-      {/* Phase progress bar */}
-      <div className="bg-white border border-[#E8E8E8] rounded-lg p-6">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">Project Phases</p>
-        <div className="flex gap-1.5">
-          {portal.phases.map((phase) => (
-            <div key={phase.id || phase.name} className="flex-1 min-w-0">
-              <div
-                className={`h-2 rounded-full mb-2 ${
-                  phase.status === "complete"
-                    ? "bg-[#1A1A1A]"
-                    : phase.status === "in-progress"
-                    ? "bg-[#1A1A1A]"
-                    : "bg-[#F0F0F0]"
-                }`}
-              />
-              <p className={`text-[10px] font-medium truncate ${
-                phase.status === "in-progress"
-                  ? "text-[#1A1A1A]"
-                  : phase.status === "complete"
-                  ? "text-[#999]"
-                  : "text-[#CCC]"
-              }`}>
-                {phase.name}
+            {/* Next touchpoint */}
+            <div className="bg-[#1A1A1A] rounded-lg p-6">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/50 mb-3">Next Touchpoint</p>
+              <p className="text-lg font-bold tracking-tight text-white mb-1">
+                {(() => {
+                  const d = portal.next_touchpoint?.date;
+                  if (!d) return "\u2014";
+                  if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
+                    const dt = new Date(d + "T00:00:00");
+                    return dt.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+                  }
+                  return d;
+                })()}
+              </p>
+              <p className="text-sm text-white/60 leading-relaxed">
+                {portal.next_touchpoint?.description || "No touchpoint scheduled"}
               </p>
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+
+          {/* Current week tests summary */}
+          {portal.results.length > 0 && (() => {
+            const liveTests = portal.results.filter(r => r.status === "live");
+            const scheduledTests = portal.results.filter(r => r.status === "scheduled");
+            const winners = portal.results.filter(r => r.result === "winner");
+            return (
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-white border border-[#E8E8E8] rounded-lg p-5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Live Now</p>
+                  <p className="text-2xl font-bold tracking-tight text-[#1A1A1A]">{liveTests.length}</p>
+                </div>
+                <div className="bg-white border border-[#E8E8E8] rounded-lg p-5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Upcoming</p>
+                  <p className="text-2xl font-bold tracking-tight text-[#1A1A1A]">{scheduledTests.length}</p>
+                </div>
+                <div className="bg-white border border-[#E8E8E8] rounded-lg p-5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Winners</p>
+                  <p className="text-2xl font-bold tracking-tight text-[#1A1A1A]">{winners.length}</p>
+                </div>
+              </div>
+            );
+          })()}
+        </>
+      ) : (
+        <>
+          {/* Current stage + Next touchpoint */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="bg-white border border-[#E8E8E8] rounded-lg p-6">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-3">Current Stage</p>
+              <p className="text-lg font-bold tracking-tight text-[#1A1A1A] mb-1">{currentPhase?.name || currentPhaseName}</p>
+              {currentPhase && (
+                <p className="text-sm text-[#999] leading-relaxed">{currentPhase.description}</p>
+              )}
+              {currentPhase?.dates && (
+                <p className="text-xs text-[#CCC] mt-3">{currentPhase.dates}</p>
+              )}
+            </div>
+
+            <div className="bg-[#1A1A1A] rounded-lg p-6">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/50 mb-3">Next Touchpoint</p>
+              <p className="text-lg font-bold tracking-tight text-white mb-1">
+                {(() => {
+                  const d = portal.next_touchpoint?.date;
+                  if (!d) return "\u2014";
+                  if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
+                    const dt = new Date(d + "T00:00:00");
+                    return dt.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+                  }
+                  return d;
+                })()}
+              </p>
+              <p className="text-sm text-white/60 leading-relaxed">
+                {portal.next_touchpoint?.description || "No touchpoint scheduled"}
+              </p>
+            </div>
+          </div>
+
+          {/* Phase progress bar */}
+          {phases.length > 0 && (
+            <div className="bg-white border border-[#E8E8E8] rounded-lg p-6">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">Project Phases</p>
+              <div className="flex gap-1.5">
+                {phases.map((phase) => (
+                  <div key={phase.id || phase.name} className="flex-1 min-w-0">
+                    <div
+                      className={`h-2 rounded-full mb-2 ${
+                        phase.status === "complete"
+                          ? "bg-[#1A1A1A]"
+                          : phase.status === "in-progress"
+                          ? "bg-[#1A1A1A]"
+                          : "bg-[#F0F0F0]"
+                      }`}
+                    />
+                    <p className={`text-[10px] font-medium truncate ${
+                      phase.status === "in-progress"
+                        ? "text-[#1A1A1A]"
+                        : phase.status === "complete"
+                        ? "text-[#999]"
+                        : "text-[#CCC]"
+                    }`}>
+                      {phase.name}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
       {/* Documents */}
-      {portal.documents.length > 0 && (
+      {documents.length > 0 && (
         <div className="bg-white border border-[#E8E8E8] rounded-lg p-6">
           <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">Documents</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {portal.documents.map((doc, i) => (
+            {documents.map((doc, i) => (
               <button
                 key={i}
                 onClick={() => setSelectedDoc(doc)}
@@ -1613,6 +1815,121 @@ function DocumentPreview({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/* ── Weekly Testing Tab (Retainer) ── */
+
+function WeeklyTestingTab({
+  results,
+  testingTier,
+}: {
+  results: PortalTestResult[];
+  testingTier?: import("@/lib/portal/types").TestingTier | null;
+}) {
+  const tierLabel: Record<string, string> = { T1: "1 test / week", T2: "2 tests / week", T3: "4 tests / week" };
+
+  // Group tests by week
+  const weekGroups = results.reduce<Record<string, PortalTestResult[]>>((acc, test) => {
+    const w = test.week || "Other";
+    if (!acc[w]) acc[w] = [];
+    acc[w].push(test);
+    return acc;
+  }, {});
+  const sortedWeeks = Object.keys(weekGroups).sort((a, b) => {
+    if (a === "Other") return 1;
+    if (b === "Other") return -1;
+    const numA = parseInt(a.replace(/\D/g, "")) || 0;
+    const numB = parseInt(b.replace(/\D/g, "")) || 0;
+    return numB - numA;
+  });
+
+  const live = results.filter(r => r.status === "live");
+  const scheduled = results.filter(r => r.status === "scheduled");
+  const completed = results.filter(r => r.status === "complete");
+  const winners = completed.filter(r => r.result === "winner");
+
+  if (results.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F0F0F0] mb-4">
+          <svg className="size-5 text-[#AAA]" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+          </svg>
+        </div>
+        <p className="text-sm text-[#777] mb-1">No tests scheduled yet</p>
+        <p className="text-xs text-[#AAA]">Weekly tests will appear here as they are scheduled</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      {/* Tier + stats row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {testingTier && (
+          <div className="bg-white border border-[#E8E8E8] rounded-lg p-5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Tier</p>
+            <p className="text-lg font-bold tracking-tight text-[#1A1A1A]">{testingTier}</p>
+            <p className="text-[10px] text-[#999] mt-0.5">{tierLabel[testingTier]}</p>
+          </div>
+        )}
+        <div className="bg-white border border-[#E8E8E8] rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Live</p>
+          <p className="text-2xl font-bold tracking-tight text-[#1A1A1A]">{live.length}</p>
+        </div>
+        <div className="bg-white border border-[#E8E8E8] rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Upcoming</p>
+          <p className="text-2xl font-bold tracking-tight text-[#1A1A1A]">{scheduled.length}</p>
+        </div>
+        <div className="bg-white border border-[#E8E8E8] rounded-lg p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-2">Winners</p>
+          <p className="text-2xl font-bold tracking-tight text-[#1A1A1A]">{winners.length}</p>
+        </div>
+      </div>
+
+      {/* Tests grouped by week */}
+      {sortedWeeks.map((weekLabel) => {
+        const tests = weekGroups[weekLabel];
+        return (
+          <div key={weekLabel}>
+            <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">{weekLabel}</h3>
+            <div className="bg-white border border-[#E8E8E8] rounded-lg divide-y divide-[#E8E8E8]">
+              {tests.map((test) => {
+                const badge = test.status === "live"
+                  ? { label: "Live", cls: "bg-[#1A1A1A] text-white" }
+                  : test.status === "scheduled"
+                  ? { label: "Upcoming", cls: "bg-[#F0F0F0] text-[#777]" }
+                  : test.result === "winner"
+                  ? { label: "Winner", cls: "bg-emerald-50 text-emerald-700" }
+                  : test.result === "loser"
+                  ? { label: "No Lift", cls: "bg-[#F0F0F0] text-[#777]" }
+                  : { label: "Inconclusive", cls: "bg-amber-50 text-amber-700" };
+
+                return (
+                  <div key={test.id} className="px-5 py-4 flex items-center justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-[#1A1A1A] truncate">{test.name}</p>
+                      <p className="text-xs text-[#999] mt-0.5">{test.metric}</p>
+                      <p className="text-[10px] text-[#CCC] mt-1">
+                        {test.status === "scheduled"
+                          ? `Starts ${test.startDate}`
+                          : test.endDate
+                            ? `${test.startDate} \u2192 ${test.endDate}`
+                            : `Started ${test.startDate}`}
+                      </p>
+                    </div>
+                    <span className={`shrink-0 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full ${badge.cls}`}>
+                      {badge.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

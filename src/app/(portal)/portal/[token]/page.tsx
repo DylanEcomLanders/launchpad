@@ -10,6 +10,8 @@ import {
   incrementViewCount,
 } from "@/lib/portal/data";
 import { getReviews, getVersions, getFeedback } from "@/lib/portal/reviews";
+import { getFunnelsByClientId } from "@/lib/funnel-builder/data";
+import type { FunnelData } from "@/lib/funnel-builder/types";
 import { DEMO_PORTALS } from "@/lib/portal-types";
 import { PortalView } from "./portal-view";
 import type { PortalData, PortalUpdate, PortalApproval, AdHocRequest } from "@/lib/portal/types";
@@ -24,6 +26,7 @@ export default function PortalPage() {
   const [pageReviews, setPageReviews] = useState<DesignReview[]>([]);
   const [reviewVersions, setReviewVersions] = useState<Record<string, DesignReviewVersion[]>>({});
   const [reviewFeedback, setReviewFeedback] = useState<Record<string, DesignReviewFeedback[]>>({});
+  const [funnels, setFunnels] = useState<FunnelData[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -63,6 +66,10 @@ export default function PortalPage() {
         setPageReviews(allReviews.filter((r) => r.review_type === "page"));
         setReviewVersions(versionMap);
         setReviewFeedback(feedbackMap);
+
+        // Load funnels
+        const fnls = await getFunnelsByClientId(p.id);
+        setFunnels(fnls);
       }
 
       // Fall back to legacy demo data
@@ -163,6 +170,7 @@ export default function PortalPage() {
       pageReviews={pageReviews}
       reviewVersions={reviewVersions}
       reviewFeedback={reviewFeedback}
+      funnels={funnels}
       onSubmitRequest={handleSubmitRequest}
     />
   );

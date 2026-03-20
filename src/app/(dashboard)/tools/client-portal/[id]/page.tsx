@@ -23,6 +23,8 @@ import {
 } from "@/lib/portal/data";
 import { isLoomUrl, toLoomEmbed } from "@/lib/portal/loom";
 import { IntelligemsTestCards } from "@/components/intelligems-tests";
+import { getFunnelsByClientId } from "@/lib/funnel-builder/data";
+import type { FunnelData } from "@/lib/funnel-builder/types";
 import {
   getReviews,
   getPageReviews,
@@ -47,6 +49,8 @@ import type {
   TestingTier,
   AdHocRequest,
   ScopeItem,
+  PortalProject,
+  ProjectType,
 } from "@/lib/portal/types";
 import { deliverableTypes } from "@/lib/config";
 import type {
@@ -55,7 +59,7 @@ import type {
   DesignReviewFeedback,
 } from "@/lib/portal/review-types";
 
-type DashTab = "overview" | "updates" | "designs" | "development" | "testing";
+type DashTab = "overview" | "updates" | "designs" | "development" | "testing" | "funnels";
 
 export default function PortalDetailPage() {
   const params = useParams();
@@ -69,6 +73,7 @@ export default function PortalDetailPage() {
   const [pageReviews, setPageReviews] = useState<DesignReview[]>([]);
   const [pageReviewVersions, setPageReviewVersions] = useState<Record<string, DesignReviewVersion[]>>({});
   const [pageReviewFeedback, setPageReviewFeedback] = useState<Record<string, DesignReviewFeedback[]>>({});
+  const [funnels, setFunnels] = useState<FunnelData[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<DashTab>("overview");
   const [copied, setCopied] = useState(false);
@@ -88,20 +93,28 @@ export default function PortalDetailPage() {
 
   const [phaseDeadline, setPhaseDeadline] = useState("");
 
+  // Multi-project state
+  const [selectedProjectIdx, setSelectedProjectIdx] = useState(0);
+  const [showAddProjectModal, setShowAddProjectModal] = useState(false);
+  const [newProjectName, setNewProjectName] = useState("");
+  const [newProjectType, setNewProjectType] = useState<ProjectType>("page-build");
+  const [newProjectScope, setNewProjectScope] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [p, u, a, r, pr] = await Promise.all([
+      const [p, u, a, r, pr, fnls] = await Promise.all([
         getPortalById(portalId),
         getUpdates(portalId),
         getApprovals(portalId),
         getReviews(portalId),
         getPageReviews(portalId),
+        getFunnelsByClientId(portalId),
       ]);
       setPortal(p);
       setUpdates(u);
       setApprovals(a);
+      setFunnels(fnls);
       setReviews(r.filter((rev) => !rev.review_type || rev.review_type === "design"));
       setPageReviews(pr);
       // Load versions + feedback for each page review
@@ -244,6 +257,107 @@ export default function PortalDetailPage() {
     await updatePortal(portal.id, { scope: updatedScope });
   };
 
+  // ── Multi-project handlers ──
+
+  const selectedProject: PortalProject | null =
+    portal?.projects?.[selectedProjectIdx] ?? null;
+
+  const handleAddProject = async () => {
+    if (!portal || !newProjectName.trim()) return;
+    const newProject: PortalProject = {
+      id: crypto.randomUUID(),
+      name: newProjectName.trim(),
+      type: newProjectType,
+      status: "active",
+      created_at: new Date().toISOString(),
+      phases: [],
+      deliverables: [],
+      scope: newProjectScope.trim()
+        ? newProjectScope.split("\n").filter(Boolean).map((s) => s.trim())
+        : [],
+      documents: [],
+      progress: 0,
+    };
+    const updatedProjects = [...(portal.projects || []), newProject];
+    setPortal({ ...portal, projects: updatedProjects });
+    await updatePortal(portal.id, { projects: updatedProjects });
+    setSelectedProjectIdx(updatedProjects.length - 1);
+    setNewProjectName("");
+    setNewProjectType("page-build");
+    setNewProjectScope("");
+    setShowAddProjectModal(false);
+  };
+
+  const updateSelectedProject = async (patch: Partial<PortalProject>) => {
+    if (!portal || !selectedProject) return;
+    const updatedProjects = portal.projects.map((p, i) =>
+      i === selectedProjectIdx ? { ...p, ...patch } : p
+    );
+    setPortal({ ...portal, projects: updatedProjects });
+    await updatePortal(portal.id, { projects: updatedProjects });
+  };
+
+  const handleProjectAddPhase = async () => {
+    if (!phaseName.trim() || !selectedProject) return;
+    const newPhase: PortalPhase = {
+      id: crypto.randomUUID(),
+      name: phaseName.trim(),
+      status: "upcoming",
+      dates: phaseDates.trim(),
+      description: phaseDescription.trim(),
+      tasks: 0,
+      completed: 0,
+      deadline: phaseDeadline || undefined,
+    };
+    await updateSelectedProject({ phases: [...(selectedProject.phases || []), newPhase] });
+    setPhaseName("");
+    setPhaseDates("");
+    setPhaseDescription("");
+    setPhaseDeadline("");
+    setShowPhaseForm(false);
+  };
+
+  const handleProjectRemovePhase = async (phaseId: string) => {
+    if (!selectedProject) return;
+    await updateSelectedProject({
+      phases: (selectedProject.phases || []).filter((p) => p.id !== phaseId),
+    });
+  };
+
+  const handleProjectCyclePhaseStatus = async (phaseId: string) => {
+    if (!selectedProject) return;
+    const order: PortalPhase["status"][] = ["upcoming", "in-progress", "complete"];
+    const updatedPhases = (selectedProject.phases || []).map((p) => {
+      if (p.id !== phaseId) return p;
+      const nextStatus = order[(order.indexOf(p.status) + 1) % order.length];
+      return {
+        ...p,
+        status: nextStatus,
+        completedDate: nextStatus === "complete" ? new Date().toISOString().slice(0, 10) : undefined,
+      };
+    });
+    const inProgress = updatedPhases.find((p) => p.status === "in-progress");
+    const currentPhase = inProgress?.name || updatedPhases.filter((p) => p.status === "complete").pop()?.name || selectedProject.current_phase || "";
+    await updateSelectedProject({ phases: updatedPhases, current_phase: currentPhase });
+  };
+
+  const handleProjectAddScope = async (item: string, type?: string) => {
+    if (!selectedProject || !item.trim()) return;
+    const newItem = type ? { description: item.trim(), type } : item.trim();
+    await updateSelectedProject({ scope: [...(selectedProject.scope || []), newItem] });
+  };
+
+  const handleProjectRemoveScope = async (index: number) => {
+    if (!selectedProject) return;
+    await updateSelectedProject({
+      scope: (selectedProject.scope || []).filter((_, i) => i !== index),
+    });
+  };
+
+  const handleProjectUpdateField = async (field: string, value: unknown) => {
+    if (!selectedProject) return;
+    await updateSelectedProject({ [field]: value } as Partial<PortalProject>);
+  };
 
   const copyLink = () => {
     if (!portal) return;
@@ -296,6 +410,7 @@ export default function PortalDetailPage() {
     { key: "designs", label: "Designs" },
     { key: "development", label: "Development" },
     { key: "testing", label: "Testing" },
+    { key: "funnels", label: "Funnels" },
   ];
 
   return (
@@ -337,6 +452,41 @@ export default function PortalDetailPage() {
           </div>
         </div>
 
+        {/* Project selector */}
+        {(portal.projects?.length > 0 || true) && (
+          <div className="flex items-center gap-2 flex-wrap mb-5">
+            {(portal.projects || []).map((proj, idx) => (
+              <button
+                key={proj.id}
+                onClick={() => setSelectedProjectIdx(idx)}
+                className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
+                  selectedProjectIdx === idx
+                    ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
+                    : "bg-white text-[#7A7A7A] border-[#E5E5EA] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"
+                }`}
+              >
+                {proj.name}
+                <span
+                  className={`inline-block size-1.5 rounded-full ${
+                    proj.status === "active"
+                      ? "bg-emerald-400"
+                      : proj.status === "paused"
+                      ? "bg-amber-400"
+                      : "bg-[#CCC]"
+                  }`}
+                />
+              </button>
+            ))}
+            <button
+              onClick={() => setShowAddProjectModal(true)}
+              className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#A0A0A0] border border-dashed border-[#D4D4D4] rounded-full hover:border-[#1B1B1B] hover:text-[#1B1B1B] transition-colors"
+            >
+              <PlusIcon className="size-3" />
+              Add Project
+            </button>
+          </div>
+        )}
+
         {/* Tab bar */}
         <div className="flex gap-0.5 bg-[#F3F3F5] rounded-md p-1 mb-8">
           {dashTabs.map((tab) => (
@@ -358,17 +508,19 @@ export default function PortalDetailPage() {
         {activeTab === "overview" && (
           <OverviewSection
             portal={portal}
-            onUpdateField={handleUpdateField}
+            selectedProject={selectedProject}
+            onUpdateField={selectedProject ? handleProjectUpdateField : handleUpdateField}
             onSetBlocker={async (blocker) => {
               await updatePortal(portal.id, { blocker } as Partial<PortalData>);
               setPortal({ ...portal, blocker } as PortalData);
             }}
             onAddPhase={() => setShowPhaseForm(true)}
-            onRemovePhase={handleRemovePhase}
-            onCyclePhaseStatus={handleCyclePhaseStatus}
+            onRemovePhase={selectedProject ? handleProjectRemovePhase : handleRemovePhase}
+            onCyclePhaseStatus={selectedProject ? handleProjectCyclePhaseStatus : handleCyclePhaseStatus}
             onUpdateTouchpoint={handleUpdateTouchpoint}
-            onAddScope={handleAddScope}
-            onRemoveScope={handleRemoveScope}
+            onAddScope={selectedProject ? handleProjectAddScope : handleAddScope}
+            onRemoveScope={selectedProject ? handleProjectRemoveScope : handleRemoveScope}
+            onUpdateSelectedProject={selectedProject ? updateSelectedProject : undefined}
           />
         )}
 
@@ -418,12 +570,67 @@ export default function PortalDetailPage() {
           />
         )}
 
+        {activeTab === "funnels" && portal && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-semibold tracking-tight">Funnels</h2>
+              <Link
+                href={`/tools/funnel-builder?clientId=${portal.id}&clientName=${encodeURIComponent(portal.client_name)}`}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
+              >
+                <PlusIcon className="size-3.5" />
+                Create Funnel
+              </Link>
+            </div>
+            {funnels.length === 0 ? (
+              <div className="text-center py-16 border border-dashed border-[#E5E5EA] rounded-xl">
+                <p className="text-sm text-[#7A7A7A] mb-1">No funnels linked to this client yet</p>
+                <p className="text-xs text-[#A0A0A0]">Create a funnel to map out the customer journey</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {funnels.map((funnel) => (
+                  <Link
+                    key={funnel.id}
+                    href={`/tools/funnel-builder?id=${funnel.id}`}
+                    className="flex items-center justify-between p-4 border border-[#E5E5EA] rounded-xl hover:border-[#1B1B1B] transition-colors group"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-[#1B1B1B] group-hover:underline truncate">
+                        {funnel.name || "Untitled Funnel"}
+                      </p>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border ${
+                          funnel.mode === "performance"
+                            ? "bg-[#F0F0F0] text-[#555] border-[#E0E0E0]"
+                            : "bg-white text-[#999] border-[#E5E5EA]"
+                        }`}>
+                          {funnel.mode}
+                        </span>
+                        <span className="text-[11px] text-[#A0A0A0]">
+                          {funnel.nodes.length} node{funnel.nodes.length !== 1 ? "s" : ""}
+                        </span>
+                        {funnel.created_at && (
+                          <span className="text-[11px] text-[#A0A0A0]">
+                            {new Date(funnel.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <ArrowTopRightOnSquareIcon className="size-4 text-[#CCC] group-hover:text-[#1B1B1B] transition-colors shrink-0" />
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Phase form modal */}
         {showPhaseForm && (
           <FormModal
             title="Add Phase"
             onClose={() => setShowPhaseForm(false)}
-            onSubmit={handleAddPhase}
+            onSubmit={selectedProject ? handleProjectAddPhase : handleAddPhase}
             disabled={!phaseName.trim()}
           >
             <div>
@@ -468,6 +675,53 @@ export default function PortalDetailPage() {
           </FormModal>
         )}
 
+        {/* Add Project modal */}
+        {showAddProjectModal && (
+          <FormModal
+            title="Add Project"
+            onClose={() => setShowAddProjectModal(false)}
+            onSubmit={handleAddProject}
+            disabled={!newProjectName.trim()}
+          >
+            <div>
+              <label className={labelClass}>Project Name *</label>
+              <input
+                type="text"
+                value={newProjectName}
+                onChange={(e) => setNewProjectName(e.target.value)}
+                placeholder="e.g., PDP Build — March 2026"
+                className={inputClass}
+                autoFocus
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Type</label>
+              <select
+                value={newProjectType}
+                onChange={(e) => setNewProjectType(e.target.value as ProjectType)}
+                className={inputClass}
+              >
+                <option value="page-build">Page Build</option>
+                <option value="retainer">Retainer</option>
+                <option value="landing-page">Landing Page</option>
+                <option value="cro-audit">CRO Audit</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelClass}>Scope Items</label>
+              <textarea
+                value={newProjectScope}
+                onChange={(e) => setNewProjectScope(e.target.value)}
+                placeholder="One item per line, e.g.&#10;Homepage redesign&#10;PDP template&#10;Collection page"
+                rows={4}
+                className={textareaClass}
+              />
+              <p className="text-[10px] text-[#AAA] mt-1">One item per line (optional)</p>
+            </div>
+          </FormModal>
+        )}
+
       </div>
     </div>
   );
@@ -477,6 +731,7 @@ export default function PortalDetailPage() {
 
 function OverviewSection({
   portal,
+  selectedProject,
   onUpdateField,
   onSetBlocker,
   onAddPhase,
@@ -485,8 +740,10 @@ function OverviewSection({
   onUpdateTouchpoint,
   onAddScope,
   onRemoveScope,
+  onUpdateSelectedProject,
 }: {
   portal: PortalData;
+  selectedProject: PortalProject | null;
   onUpdateField: (field: string, value: unknown) => void;
   onSetBlocker: (blocker: PortalBlocker | null) => void;
   onAddPhase: () => void;
@@ -495,6 +752,7 @@ function OverviewSection({
   onUpdateTouchpoint: (field: "date" | "description", value: string) => void;
   onAddScope: (item: string, type?: string) => void;
   onRemoveScope: (index: number) => void;
+  onUpdateSelectedProject?: (patch: Partial<PortalProject>) => Promise<void>;
 }) {
   const [scopeInput, setScopeInput] = useState("");
   const [scopeType, setScopeType] = useState("");
@@ -506,6 +764,13 @@ function OverviewSection({
   const daysBlocked = blocker?.since
     ? Math.max(0, Math.floor((Date.now() - new Date(blocker.since).getTime()) / 86400000))
     : 0;
+
+  // Resolve data source: selected project or portal-level fallback
+  const phases = selectedProject?.phases ?? portal.phases;
+  const scope = selectedProject?.scope ?? portal.scope;
+  const documents = selectedProject?.documents ?? portal.documents;
+  const currentPhase = selectedProject?.current_phase ?? portal.current_phase;
+  const isRetainer = selectedProject?.type === "retainer";
 
   return (
     <div className="space-y-8">
@@ -597,7 +862,7 @@ function OverviewSection({
       {/* Next Touchpoint */}
       {(() => {
         const tp = portal.next_touchpoint;
-        const inProgress = portal.phases.find((p) => p.status === "in-progress");
+        const inProgress = phases.find((p) => p.status === "in-progress");
         const description = tp?.description || inProgress?.name;
         const date = tp?.date || inProgress?.dates;
         if (!description) return null;
@@ -621,21 +886,45 @@ function OverviewSection({
           Project Info
         </h3>
         <div className="bg-white border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-4 space-y-3">
-          <div className="flex items-center justify-between py-1">
-            <p className="text-[11px] font-medium text-[#7A7A7A]">Current Phase</p>
-            <select
-              value={portal.current_phase}
-              onChange={(e) => onUpdateField("current_phase", e.target.value)}
-              className="text-sm text-right bg-transparent border border-[#E5E5EA] rounded px-2 py-1 text-[#1B1B1B] focus:outline-none focus:ring-1 focus:ring-[#1B1B1B]"
-            >
-              {portal.phases.length === 0 && (
-                <option value={portal.current_phase}>{portal.current_phase}</option>
-              )}
-              {portal.phases.map((p) => (
-                <option key={p.id} value={p.name}>{p.name}</option>
-              ))}
-            </select>
-          </div>
+          {!isRetainer && (
+            <div className="flex items-center justify-between py-1">
+              <p className="text-[11px] font-medium text-[#7A7A7A]">Current Phase</p>
+              <select
+                value={currentPhase}
+                onChange={(e) => onUpdateField("current_phase", e.target.value)}
+                className="text-sm text-right bg-transparent border border-[#E5E5EA] rounded px-2 py-1 text-[#1B1B1B] focus:outline-none focus:ring-1 focus:ring-[#1B1B1B]"
+              >
+                {phases.length === 0 && (
+                  <option value={currentPhase}>{currentPhase}</option>
+                )}
+                {phases.map((p) => (
+                  <option key={p.id} value={p.name}>{p.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          {selectedProject && (
+            <div className="flex items-center justify-between py-1">
+              <p className="text-[11px] font-medium text-[#7A7A7A]">Project Type</p>
+              <span className="px-2 py-0.5 text-[10px] font-medium text-[#777] bg-[#F0F0F0] rounded-full capitalize">
+                {selectedProject.type.replace("-", " ")}
+              </span>
+            </div>
+          )}
+          {selectedProject && (
+            <div className="flex items-center justify-between py-1">
+              <p className="text-[11px] font-medium text-[#7A7A7A]">Status</p>
+              <select
+                value={selectedProject.status}
+                onChange={(e) => onUpdateSelectedProject?.({ status: e.target.value as PortalProject["status"] })}
+                className="text-sm text-right bg-transparent border border-[#E5E5EA] rounded px-2 py-1 text-[#1B1B1B] focus:outline-none focus:ring-1 focus:ring-[#1B1B1B]"
+              >
+                <option value="active">Active</option>
+                <option value="paused">Paused</option>
+                <option value="complete">Complete</option>
+              </select>
+            </div>
+          )}
           <EditableField
             label="Next Touchpoint"
             value={portal.next_touchpoint?.description || ""}
@@ -669,11 +958,47 @@ function OverviewSection({
         </div>
       </div>
 
-      {/* Phases */}
+      {/* Retainer view */}
+      {isRetainer && selectedProject && (
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
+            Weekly Test Cadence
+          </h3>
+          <div className="bg-white border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-medium text-[#7A7A7A]">Testing Tier</p>
+              <div className="flex items-center gap-1.5">
+                {(["T1", "T2", "T3"] as const).map((tier) => (
+                  <button
+                    key={tier}
+                    onClick={() => onUpdateSelectedProject?.({ testing_tier: tier })}
+                    className={`px-3 py-1 text-[11px] font-semibold rounded-full transition-colors ${
+                      selectedProject.testing_tier === tier
+                        ? "bg-[#1B1B1B] text-white"
+                        : "bg-[#F0F0F0] text-[#777] hover:bg-[#E8E8E8]"
+                    }`}
+                  >
+                    {tier}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="text-[10px] text-[#AAA]">
+              {selectedProject.testing_tier === "T1" && "1 test per week"}
+              {selectedProject.testing_tier === "T2" && "2 tests per week"}
+              {selectedProject.testing_tier === "T3" && "4 tests per week"}
+              {!selectedProject.testing_tier && "Select a tier to set the weekly cadence"}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Phases (non-retainer) */}
+      {!isRetainer && (
       <div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
-            Phases ({portal.phases.length})
+            Phases ({phases.length})
           </h3>
           <button
             onClick={onAddPhase}
@@ -683,13 +1008,13 @@ function OverviewSection({
             Add
           </button>
         </div>
-        {portal.phases.length === 0 ? (
+        {phases.length === 0 ? (
           <p className="text-xs text-[#A0A0A0] bg-[#F7F8FA] border border-dashed border-[#E5E5EA] rounded-lg p-4 text-center">
             No phases yet — add your first phase
           </p>
         ) : (
           <div className="border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg divide-y divide-[#EDEDEF]">
-            {portal.phases.map((phase) => (
+            {phases.map((phase) => (
               <div key={phase.id} className="p-3">
                 <div className="flex items-center gap-3">
                   <span
@@ -724,7 +1049,7 @@ function OverviewSection({
                     type="date"
                     value={phase.startDate || ""}
                     onChange={(e) => {
-                      const updated = portal.phases.map((p) =>
+                      const updated = phases.map((p) =>
                         p.id === phase.id
                           ? {
                               ...p,
@@ -742,7 +1067,7 @@ function OverviewSection({
                     type="date"
                     value={phase.endDate || ""}
                     onChange={(e) => {
-                      const updated = portal.phases.map((p) =>
+                      const updated = phases.map((p) =>
                         p.id === phase.id
                           ? {
                               ...p,
@@ -767,16 +1092,17 @@ function OverviewSection({
           </div>
         )}
       </div>
+      )}
 
       {/* Scope / Deliverables */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
-            Scope / Deliverables ({portal.scope?.length || 0})
+            Scope / Deliverables ({scope?.length || 0})
           </h3>
         </div>
         <div className="border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg divide-y divide-[#EDEDEF]">
-          {(portal.scope || []).map((item, i) => {
+          {(scope || []).map((item, i) => {
             const desc = typeof item === "string" ? item : item.description;
             const typ = typeof item === "string" ? "" : item.type;
             return (
@@ -838,13 +1164,13 @@ function OverviewSection({
       </div>
 
       {/* Documents */}
-      {(portal.documents || []).length > 0 && (
+      {(documents || []).length > 0 && (
         <div>
           <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
-            Documents ({portal.documents.length})
+            Documents ({documents.length})
           </h3>
           <div className="border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg divide-y divide-[#EDEDEF]">
-            {portal.documents.map((doc, i) => (
+            {documents.map((doc, i) => (
               <div key={i} className="flex items-center gap-2 p-3">
                 <p className="text-sm font-medium flex-1 min-w-0 truncate">{doc.name}</p>
                 <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-[#777] bg-[#F0F0F0] rounded-full">{doc.type}</span>
