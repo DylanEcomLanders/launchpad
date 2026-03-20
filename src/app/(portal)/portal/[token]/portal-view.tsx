@@ -253,15 +253,13 @@ export function PortalView({
     ? [
         { key: "testing" as Tab, label: "Testing" },
         { key: "scope", label: "Scope" },
-        { key: "designs" as Tab, label: "Designs" },
-        { key: "development", label: "Development" },
-        ...(funnels.length > 0 ? [{ key: "funnels" as Tab, label: "Funnels" }] : []),
       ]
     : [
+        { key: "overview" as Tab, label: "Overview" },
         { key: "timeline" as Tab, label: "Timeline" },
-        { key: "scope", label: "Scope" },
         { key: "designs" as Tab, label: "Designs" },
         { key: "development", label: "Development" },
+        { key: "scope", label: "Scope & Docs" },
         ...(funnels.length > 0 ? [{ key: "funnels" as Tab, label: "Funnels" }] : []),
       ];
 
