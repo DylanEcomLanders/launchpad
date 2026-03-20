@@ -208,13 +208,14 @@ export function PortalView({
   const isRetainer = selectedProject?.type === "retainer" || portal.client_type === "retainer";
 
   // Derive phases/scope/documents/deliverables from selected project when available
-  const activePhases = selectedProject?.phases ?? portal.phases;
-  const activeScope = selectedProject?.scope ?? portal.scope;
-  const activeDocuments = selectedProject?.documents ?? portal.documents;
-  const activeDeliverables = selectedProject?.deliverables ?? portal.deliverables;
+  // Use project data only if it has content, otherwise fall back to portal-level data
+  const activePhases = (selectedProject?.phases?.length ? selectedProject.phases : null) ?? portal.phases;
+  const activeScope = (selectedProject?.scope?.length ? selectedProject.scope : null) ?? portal.scope;
+  const activeDocuments = (selectedProject?.documents?.length ? selectedProject.documents : null) ?? portal.documents;
+  const activeDeliverables = (selectedProject?.deliverables?.length ? selectedProject.deliverables : null) ?? portal.deliverables;
   const activeCurrentPhase = activePhases.find((p) => p.status === "in-progress");
-  const activeProgress = selectedProject?.progress ?? portal.progress;
-  const activeCurrentPhaseName = selectedProject?.current_phase ?? portal.current_phase;
+  const activeProgress = selectedProject?.progress || portal.progress;
+  const activeCurrentPhaseName = selectedProject?.current_phase || portal.current_phase;
 
   const currentPhase = portal.phases.find((p) => p.status === "in-progress");
 

@@ -790,10 +790,10 @@ function OverviewSection({
     : 0;
 
   // Resolve data source: selected project or portal-level fallback
-  const phases = selectedProject?.phases ?? portal.phases;
-  const scope = selectedProject?.scope ?? portal.scope;
-  const documents = selectedProject?.documents ?? portal.documents;
-  const currentPhase = selectedProject?.current_phase ?? portal.current_phase;
+  const phases = (selectedProject?.phases?.length ? selectedProject.phases : null) ?? portal.phases;
+  const scope = (selectedProject?.scope?.length ? selectedProject.scope : null) ?? portal.scope;
+  const documents = (selectedProject?.documents?.length ? selectedProject.documents : null) ?? portal.documents;
+  const currentPhase = selectedProject?.current_phase || portal.current_phase;
   const isRetainer = selectedProject?.type === "retainer";
 
   return (
