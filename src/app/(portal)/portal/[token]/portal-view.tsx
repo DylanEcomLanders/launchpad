@@ -208,11 +208,12 @@ export function PortalView({
   const selectedProject: PortalProject | null = selectedProjectIdx >= 0 && hasProjects ? portal.projects[selectedProjectIdx] ?? null : null;
   const isRetainer = selectedProject?.type === "retainer" || (drillView === "retainer");
 
-  // Drill into a project
+  // Drill into a project (idx=-1 for portal-level fallback)
   const openProject = (idx: number) => {
     setSelectedProjectIdx(idx);
-    const proj = portal.projects?.[idx];
-    if (proj?.type === "retainer") {
+    const proj = idx >= 0 ? portal.projects?.[idx] : null;
+    const isRet = proj?.type === "retainer" || (idx === -1 && portal.client_type === "retainer");
+    if (isRet) {
       setDrillView("retainer");
       setActiveTab("testing");
     } else {
@@ -706,7 +707,7 @@ function ClientHub({
             <button
               onClick={() => {
                 // If no retainer project in array, open with portal-level retainer data
-                if (projects.length > 0) onOpenProject(0);
+                onOpenProject(projects.length > 0 ? 0 : -1);
               }}
               className="w-full text-left group"
             >
