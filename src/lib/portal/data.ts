@@ -105,6 +105,7 @@ export async function seedDemoPortal(): Promise<PortalData> {
   const portal = await createPortal({
     client_name: "Lumière Skincare",
     client_email: "sarah@lumiere-skin.com",
+    client_type: "retainer",
     project_type: "Full Page Build + CRO Retainer",
     current_phase: "Development",
     progress: 58,
