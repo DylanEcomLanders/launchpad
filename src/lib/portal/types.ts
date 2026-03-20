@@ -92,6 +92,32 @@ export interface PortalBlocker {
   since: string; // ISO date
 }
 
+/* ── Projects (multi-project per client) ── */
+
+export type ProjectType = "page-build" | "retainer" | "landing-page" | "cro-audit" | "other";
+export type ProjectStatus = "active" | "complete" | "paused";
+
+export interface PortalProject {
+  id: string;
+  name: string; // "PDP Build — March 2026" or "CRO Retainer"
+  type: ProjectType;
+  status: ProjectStatus;
+  created_at: string;
+
+  // Page build fields (linear timeline)
+  phases?: PortalPhase[];
+  deliverables?: PortalDeliverable[];
+  current_phase?: string;
+  progress?: number;
+
+  // Retainer fields (cyclical)
+  testing_tier?: TestingTier | null;
+
+  // Shared
+  scope?: ScopeItem[];
+  documents?: PortalDocument[];
+}
+
 export interface PortalData {
   id: string;
   token: string;
@@ -119,9 +145,12 @@ export interface PortalData {
   updated_at: string;
   view_count: number;
   deleted_at?: string | null; // ISO date — soft delete (trash bin)
+
+  // Multi-project support
+  projects: PortalProject[];
 }
 
-export type PortalInsert = Omit<PortalData, "id" | "token" | "created_at" | "updated_at" | "view_count">;
+export type PortalInsert = Omit<PortalData, "id" | "token" | "created_at" | "updated_at" | "view_count" | "projects"> & { projects?: PortalProject[] };
 
 /* ── Updates ── */
 

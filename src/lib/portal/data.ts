@@ -501,7 +501,7 @@ function migrateTestResults(results: any[]): PortalTestResult[] {
 /* ── Map Supabase row to PortalData ── */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapPortalRow(row: any): PortalData {
-  return {
+  const portal: PortalData = {
     id: row.id,
     token: row.token,
     client_name: row.client_name || "",
@@ -523,9 +523,34 @@ function mapPortalRow(row: any): PortalData {
     blocker: row.blocker || null,
     created_at: row.created_at || "",
     updated_at: row.updated_at || "",
+    intelligems_key: row.intelligems_key || "",
+    intelligems_selected_tests: row.intelligems_selected_tests || undefined,
+    intelligems_assignments: row.intelligems_assignments || undefined,
     view_count: row.view_count || 0,
     deleted_at: row.deleted_at || null,
+    projects: row.projects || [],
   };
+
+  // Auto-migrate: if projects is empty but legacy fields exist, create projects[0]
+  if (portal.projects.length === 0 && (portal.project_type || portal.phases?.length > 0)) {
+    const isRetainer = (portal.project_type || "").toLowerCase().includes("retainer");
+    portal.projects = [{
+      id: `proj-${portal.id.slice(0, 8)}`,
+      name: portal.project_type || "Project",
+      type: isRetainer ? "retainer" : "page-build",
+      status: "active",
+      created_at: portal.created_at || new Date().toISOString(),
+      phases: portal.phases,
+      deliverables: portal.deliverables,
+      current_phase: portal.current_phase,
+      progress: portal.progress,
+      testing_tier: portal.testing_tier,
+      scope: portal.scope,
+      documents: portal.documents,
+    }];
+  }
+
+  return portal;
 }
 
 // ═══════════════════════════════════════════════════════════════════
