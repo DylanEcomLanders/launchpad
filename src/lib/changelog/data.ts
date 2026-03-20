@@ -37,6 +37,26 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-12",
+    date: "20 Mar 2026",
+    version: "0.11.0",
+    title: "Multi-Project Portals & Client Evolution",
+    changes: [
+      { type: "added", text: "Multi-project per client — one portal holds all work (page builds, retainers, audits)" },
+      { type: "added", text: "PortalProject type with per-project phases, scope, deliverables, documents" },
+      { type: "added", text: "Project selector pills in admin portal — switch between projects for the same client" },
+      { type: "added", text: "Add Project modal — create page builds or retainers within an existing portal" },
+      { type: "added", text: "Retainer view — weekly test cadence with tier selector (replaces linear timeline)" },
+      { type: "added", text: "Client portal project selector — clients with 2+ projects can switch between them" },
+      { type: "added", text: "Funnels tab in admin portal — view/create funnels linked to client" },
+      { type: "added", text: "Funnels tab in client portal — read-only view of funnel nodes" },
+      { type: "added", text: "Auto-migration — legacy single-project portals automatically get projects[0] on load" },
+      { type: "improved", text: "Testing tab dashboard redesign — card layout with big RPV lift numbers instead of dense table" },
+      { type: "improved", text: "Results summary — winners/underperformed/inconclusive as big number cards" },
+      { type: "improved", text: "Client dashboard adapts per project type (retainer shows test stats, build shows progress)" },
+    ],
+  },
+  {
     id: "cl-11",
     date: "19 Mar 2026",
     version: "0.10.0",
