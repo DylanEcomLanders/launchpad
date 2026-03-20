@@ -346,9 +346,11 @@ export default function ProjectKickoffPage() {
         portalDocs.push({ name: `${clientName} – Service Agreement`, type: "Agreement" as const, date: today, url: agreementUrl });
       }
 
+      const isRetainerType = projectType.toLowerCase().includes("retainer");
       const input: PortalInsert = {
         client_name: clientName,
         client_email: agreement.clientContactEmail || "",
+        client_type: isRetainerType ? "retainer" : "regular",
         project_type: projectType,
         current_phase: portalPhases[0]?.name || "Kickoff",
         progress: 0,
