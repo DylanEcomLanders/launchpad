@@ -9,11 +9,54 @@ import {
   ClipboardDocumentIcon,
   ArrowTopRightOnSquareIcon,
   FunnelIcon,
+  BeakerIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { inputClass, labelClass } from "@/lib/form-styles";
 import { getPortals, createPortal, deletePortal, getTrashedPortals, restorePortal, permanentlyDeletePortal } from "@/lib/portal/data";
 import type { PortalData } from "@/lib/portal/types";
+
+type IntelligemsTest = {
+  id: string;
+  name: string;
+  status: string;
+  startedAt?: string;
+  portalName: string;
+  portalId: string;
+  variations: { name: string; cvr: number; aov: number; rpv: number; visitors: number; orders: number; revenue: number }[];
+};
+
+/** Fetch all Intelligems tests across portals that have an API key */
+async function fetchAllIntelligemsTests(portals: PortalData[]): Promise<IntelligemsTest[]> {
+  const portalsWithKey = portals.filter((p) => p.intelligems_key?.trim());
+  if (portalsWithKey.length === 0) return [];
+
+  const allTests: IntelligemsTest[] = [];
+
+  for (const portal of portalsWithKey) {
+    try {
+      const res = await fetch("/api/intelligems/tests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ apiKey: portal.intelligems_key }),
+      });
+      if (!res.ok) continue;
+      const data = await res.json();
+      const tests = data.tests || [];
+      for (const t of tests) {
+        allTests.push({
+          ...t,
+          portalName: portal.client_name,
+          portalId: portal.id,
+        });
+      }
+    } catch {
+      // Skip this portal
+    }
+  }
+
+  return allTests;
+}
 
 export default function ClientPortalPage() {
   const [portals, setPortals] = useState<PortalData[]>([]);
@@ -26,12 +69,20 @@ export default function ClientPortalPage() {
   const [overdueCount, setOverdueCount] = useState(0);
   const [filterType, setFilterType] = useState<string>("all");
   const [filterStage, setFilterStage] = useState<string>("all");
+  const [igTests, setIgTests] = useState<IntelligemsTest[]>([]);
+  const [igLoading, setIgLoading] = useState(false);
 
   const loadPortals = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getPortals();
       setPortals(data);
+      // Fetch Intelligems tests in background
+      setIgLoading(true);
+      fetchAllIntelligemsTests(data).then((tests) => {
+        setIgTests(tests);
+        setIgLoading(false);
+      }).catch(() => setIgLoading(false));
     } catch {
       // Silent fail
     } finally {
@@ -208,11 +259,89 @@ export default function ClientPortalPage() {
           <span className="text-2xl font-semibold tabular-nums text-[#1B1B1B]">{openAdHoc}</span>
           <p className="text-[11px] text-[#7A7A7A] mt-1">Ad Hoc Requests</p>
         </div>
-        <div className="border border-[#1B1B1B] rounded-lg px-5 py-5">
-          <span className="text-2xl font-semibold tabular-nums text-[#1B1B1B]">{overdueCount}</span>
-          <p className="text-[11px] text-[#7A7A7A] mt-1">Overdue Tasks</p>
+        <div className={`border rounded-lg px-5 py-5 ${igTests.filter((t) => t.status === "started").length > 0 ? "border-emerald-300 bg-emerald-50/30" : "border-[#1B1B1B]"}`}>
+          <span className={`text-2xl font-semibold tabular-nums ${igTests.filter((t) => t.status === "started").length > 0 ? "text-emerald-600" : "text-[#1B1B1B]"}`}>
+            {igTests.filter((t) => t.status === "started").length}
+          </span>
+          <p className="text-[11px] text-[#7A7A7A] mt-1">Live Tests</p>
         </div>
       </div>}
+
+      {/* ── CRO Testing Overview ── */}
+      {!showTrash && igTests.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <BeakerIcon className="size-4 text-[#777]" />
+            <h2 className="text-sm font-semibold text-[#1A1A1A]">Live Tests</h2>
+            <span className="text-[10px] text-[#AAA]">
+              {igTests.filter((t) => t.status === "started").length} active across {new Set(igTests.filter((t) => t.status === "started").map((t) => t.portalId)).size} client{new Set(igTests.filter((t) => t.status === "started").map((t) => t.portalId)).size !== 1 ? "s" : ""}
+            </span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-[#E8E8E8]">
+                  <th className="text-left text-[10px] font-semibold uppercase tracking-wider text-[#AAA] pb-2 pr-4">Test</th>
+                  <th className="text-left text-[10px] font-semibold uppercase tracking-wider text-[#AAA] pb-2 pr-4">Client</th>
+                  <th className="text-center text-[10px] font-semibold uppercase tracking-wider text-[#AAA] pb-2 px-2">Status</th>
+                  <th className="text-right text-[10px] font-semibold uppercase tracking-wider text-[#AAA] pb-2 px-2">CVR (A→B)</th>
+                  <th className="text-right text-[10px] font-semibold uppercase tracking-wider text-[#AAA] pb-2 px-2">AOV (A→B)</th>
+                  <th className="text-right text-[10px] font-semibold uppercase tracking-wider text-[#AAA] pb-2 px-2">RPV (A→B)</th>
+                  <th className="text-right text-[10px] font-semibold uppercase tracking-wider text-[#AAA] pb-2 pl-2">Visitors</th>
+                </tr>
+              </thead>
+              <tbody>
+                {igTests
+                  .filter((t) => t.status === "started")
+                  .map((t) => {
+                    const a = t.variations[0];
+                    const b = t.variations[1];
+                    const cvrLift = a && b && a.cvr > 0 ? ((b.cvr - a.cvr) / a.cvr * 100) : null;
+                    const aovLift = a && b && a.aov > 0 ? ((b.aov - a.aov) / a.aov * 100) : null;
+                    const rpvLift = a && b && a.rpv > 0 ? ((b.rpv - a.rpv) / a.rpv * 100) : null;
+                    const totalVisitors = (a?.visitors || 0) + (b?.visitors || 0);
+                    const liftColor = (v: number | null) => !v ? "text-[#AAA]" : v > 0 ? "text-emerald-600" : "text-red-500";
+                    const fmtLift = (v: number | null) => !v ? "—" : `${v >= 0 ? "+" : ""}${v.toFixed(1)}%`;
+
+                    return (
+                      <tr key={t.id} className="border-b border-[#F5F5F5] hover:bg-[#FAFAFA] cursor-pointer" onClick={() => window.location.href = `/tools/client-portal/${t.portalId}`}>
+                        <td className="py-2.5 pr-4 font-medium text-[#1A1A1A] truncate max-w-[200px]">{t.name}</td>
+                        <td className="py-2.5 pr-4 text-[#777] truncate max-w-[120px]">{t.portalName}</td>
+                        <td className="py-2.5 px-2 text-center">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-600">
+                            <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            Live
+                          </span>
+                        </td>
+                        <td className={`py-2.5 px-2 text-right tabular-nums ${liftColor(cvrLift)}`}>
+                          {a ? `${(a.cvr * 100).toFixed(1)}%` : "—"} → {b ? `${(b.cvr * 100).toFixed(1)}%` : "—"}
+                          {cvrLift !== null && <span className="ml-1 text-[10px]">{fmtLift(cvrLift)}</span>}
+                        </td>
+                        <td className={`py-2.5 px-2 text-right tabular-nums ${liftColor(aovLift)}`}>
+                          ${a?.aov?.toFixed(0) || "0"} → ${b?.aov?.toFixed(0) || "0"}
+                          {aovLift !== null && <span className="ml-1 text-[10px]">{fmtLift(aovLift)}</span>}
+                        </td>
+                        <td className={`py-2.5 px-2 text-right tabular-nums ${liftColor(rpvLift)}`}>
+                          ${a?.rpv?.toFixed(2) || "0"} → ${b?.rpv?.toFixed(2) || "0"}
+                          {rpvLift !== null && <span className="ml-1 text-[10px]">{fmtLift(rpvLift)}</span>}
+                        </td>
+                        <td className="py-2.5 pl-2 text-right tabular-nums text-[#777]">
+                          {totalVisitors > 1000 ? `${(totalVisitors / 1000).toFixed(1)}K` : totalVisitors}
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+      {!showTrash && igLoading && portals.some((p) => p.intelligems_key?.trim()) && (
+        <div className="flex items-center gap-2 mb-6 text-xs text-[#AAA]">
+          <div className="animate-spin size-3 border border-[#E5E5EA] border-t-[#777] rounded-full" />
+          Loading test data...
+        </div>
+      )}
 
       {/* ── Filters ── */}
       {!showTrash && portals.length > 0 && (
