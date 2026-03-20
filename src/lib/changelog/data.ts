@@ -291,7 +291,7 @@ function mapChangelogRow(row: any): ChangelogEntry {
 
 // ── Local helpers ──
 
-function ensureSeeded<T>(key: string, seed: T[]): T[] {
+function ensureSeeded<T extends { id: string }>(key: string, seed: T[]): T[] {
   if (typeof window === "undefined") return seed;
   const raw = localStorage.getItem(key);
   if (!raw) {
@@ -299,7 +299,16 @@ function ensureSeeded<T>(key: string, seed: T[]): T[] {
     return seed;
   }
   try {
-    return JSON.parse(raw) as T[];
+    const stored = JSON.parse(raw) as T[];
+    // Merge any new seed entries not already in localStorage
+    const storedIds = new Set(stored.map((s) => s.id));
+    const newEntries = seed.filter((s) => !storedIds.has(s.id));
+    if (newEntries.length > 0) {
+      const merged = [...newEntries, ...stored];
+      localStorage.setItem(key, JSON.stringify(merged));
+      return merged;
+    }
+    return stored;
   } catch {
     return seed;
   }
