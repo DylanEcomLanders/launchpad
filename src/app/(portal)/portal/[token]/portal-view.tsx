@@ -819,7 +819,7 @@ function ClientHub({
                 <div className="min-w-0 flex-1">
                   <p className="text-sm text-[#1A1A1A] truncate">{req.title}</p>
                   <p className="text-[10px] text-[#CCC] mt-0.5">
-                    {new Date(req.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                    {new Date(req.requested_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                   </p>
                 </div>
                 <span className={`text-[10px] font-semibold uppercase tracking-wider ${
