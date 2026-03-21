@@ -37,6 +37,22 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-14",
+    date: "21 Mar 2026",
+    version: "0.13.0",
+    title: "Sales Engine — Separate Growth Dashboard",
+    changes: [
+      { type: "added", text: "Sales Engine: new dashboard at /sales-engine with own sidebar and layout" },
+      { type: "added", text: "App switcher in both sidebars to toggle between Launchpad and Sales Engine" },
+      { type: "added", text: "Pipeline CRM: Kanban board with drag-and-drop deal management (lead → won)" },
+      { type: "added", text: "Content Calendar: plan, draft, schedule content with board view and account filtering (Dylan/Ajay)" },
+      { type: "added", text: "Migrated tools: Content Engine, Hooks, Repurpose, Leads, Outreach, Revenue, Audit Engine, Portfolio, Price Lists" },
+      { type: "added", text: "Command Centre dashboard with pipeline value, content stats, follow-up tracking" },
+      { type: "added", text: "Deal form with stage, value, owner, source, follow-up date, notes" },
+      { type: "added", text: "Content form with platform, account, funnel stage, schedule date, body editor" },
+    ],
+  },
+  {
     id: "cl-13",
     date: "20 Mar 2026",
     version: "0.12.0",
