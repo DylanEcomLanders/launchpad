@@ -130,8 +130,22 @@ export async function loadSettings(): Promise<BusinessSettings> {
  * Save settings — writes to both Supabase and localStorage.
  */
 export async function saveSettings(settings: BusinessSettings): Promise<void> {
-  const item = { ...settings, id: SETTINGS_ID };
-  await store.saveAll([item]);
+  // Save to localStorage
+  if (typeof window !== "undefined") {
+    localStorage.setItem(LS_KEY, JSON.stringify([{ ...settings, id: SETTINGS_ID }]));
+  }
+  // Save to Supabase directly (business_settings uses updated_at not created_at)
+  try {
+    const { isSupabaseConfigured, supabase } = await import("@/lib/supabase");
+    if (isSupabaseConfigured()) {
+      const { id: _id, ...rest } = { ...settings, id: SETTINGS_ID };
+      await supabase.from("business_settings").upsert({
+        id: SETTINGS_ID,
+        data: rest,
+        updated_at: new Date().toISOString(),
+      });
+    }
+  } catch { /* localStorage fallback */ }
 }
 
 /** Convert settings.deliverableEstimates to the Record format used by config.ts */
