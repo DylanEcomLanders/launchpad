@@ -18,6 +18,7 @@ import {
   BeakerIcon,
 } from "@heroicons/react/24/solid";
 import { Logo, LogoMark } from "@/components/logo";
+import { AppSwitcher } from "@/components/app-switcher";
 
 interface NavItem {
   label: string;
@@ -152,9 +153,12 @@ export function Sidebar() {
         {/* Logo area */}
         <div className="flex items-center justify-between px-4 h-14">
           {!collapsed && (
-            <Link href="/" className="flex items-center" onClick={() => setMobileOpen(false)}>
-              <Logo height={16} />
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link href="/" className="flex items-center" onClick={() => setMobileOpen(false)}>
+                <LogoMark size={18} />
+              </Link>
+              <AppSwitcher collapsed={collapsed} />
+            </div>
           )}
           {collapsed && (
             <Link href="/" className="mx-auto" onClick={() => setMobileOpen(false)}>
