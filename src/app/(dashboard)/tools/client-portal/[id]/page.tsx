@@ -3130,10 +3130,10 @@ function TeamAssignment({ portal, onUpdateField }: { portal: PortalData; onUpdat
               key={m.id}
               onClick={() => toggleMember(m.id)}
               className={`flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-left transition-colors ${
-                isAssigned ? "bg-[#1B1B1B] text-white" : "bg-[#F5F5F5] text-[#777] hover:bg-[#EBEBEB]"
+                isAssigned ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-[#F5F5F5] text-[#777] hover:bg-[#EBEBEB] border border-transparent"
               }`}
             >
-              <div className={`size-1.5 rounded-full ${isAssigned ? "bg-emerald-400" : "bg-[#CCC]"}`} />
+              <div className={`size-1.5 rounded-full ${isAssigned ? "bg-emerald-500" : "bg-[#CCC]"}`} />
               <span className="text-[11px] font-medium">{m.name}</span>
               <span className="text-[9px] opacity-60 ml-auto">{m.role}</span>
             </button>

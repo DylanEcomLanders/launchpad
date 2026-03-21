@@ -86,19 +86,26 @@ export async function POST(req: NextRequest) {
         let assignees: number[] = [];
         try {
           const { isSupabaseConfigured, supabase } = await import("@/lib/supabase");
-          const { getSettings } = await import("@/lib/settings");
           if (isSupabaseConfigured()) {
+            // Get portal team member IDs
             const { data: portals } = await supabase
               .from("client_portals")
               .select("team_member_ids")
               .or(`slack_channel_url.ilike.%${channelId}%`)
               .is("deleted_at", null)
               .limit(1);
+
             if (portals?.[0]?.team_member_ids?.length) {
-              const settings = getSettings();
-              const team = settings.team || [];
+              // Get team directory from business_settings
+              const { data: settingsRows } = await supabase
+                .from("business_settings")
+                .select("data")
+                .eq("id", "business-settings-singleton")
+                .limit(1);
+              const team = settingsRows?.[0]?.data?.team || [];
+
               for (const memberId of portals[0].team_member_ids) {
-                const member = team.find((m) => m.id === memberId);
+                const member = team.find((m: { id: string; clickup_id?: string }) => m.id === memberId);
                 if (member?.clickup_id) {
                   assignees.push(Number(member.clickup_id));
                 }
