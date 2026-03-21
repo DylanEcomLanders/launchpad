@@ -64,6 +64,7 @@ export async function POST(req: NextRequest) {
       title,
       description,
       priority,
+      ticket_type: "unassigned",
       attachment_url: attachment,
       status: "open",
       notes: "",

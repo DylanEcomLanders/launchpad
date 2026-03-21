@@ -5,9 +5,18 @@ import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import {
   getTickets, updateTicketStatus, saveTicket, getChannelMappings, saveChannelMapping, deleteChannelMapping,
   TICKET_STATUSES, ticketAge,
-  type Ticket, type TicketStatus, type TicketPriority, type ChannelMapping,
+  type Ticket, type TicketStatus, type TicketPriority, type TicketType, type ChannelMapping,
 } from "@/lib/slack-tickets";
+import { loadSettings, type TeamMember } from "@/lib/settings";
 import { inputClass, labelClass } from "@/lib/form-styles";
+
+const TICKET_TYPES: { key: TicketType; label: string; color: string }[] = [
+  { key: "unassigned", label: "Unassigned", color: "#CCC" },
+  { key: "design", label: "Design", color: "#8B5CF6" },
+  { key: "dev", label: "Dev", color: "#3B82F6" },
+  { key: "cro", label: "CRO", color: "#10B981" },
+  { key: "other", label: "Other", color: "#777" },
+];
 
 const priorityColors: Record<TicketPriority, string> = {
   low: "#10B981",
@@ -19,6 +28,7 @@ const priorityColors: Record<TicketPriority, string> = {
 export default function TicketsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [mappings, setMappings] = useState<ChannelMapping[]>([]);
+  const [team, setTeam] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<TicketStatus | "all">("all");
   const [filterClient, setFilterClient] = useState("all");
@@ -29,9 +39,10 @@ export default function TicketsPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [t, m] = await Promise.all([getTickets(), getChannelMappings()]);
+    const [t, m, s] = await Promise.all([getTickets(), getChannelMappings(), loadSettings()]);
     setTickets(t);
     setMappings(m);
+    setTeam(s.team || []);
     setLoading(false);
   }, []);
 
@@ -187,6 +198,14 @@ export default function TicketsPage() {
                     <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full" style={{ backgroundColor: si.color + "15", color: si.color }}>
                       {si.label}
                     </span>
+                    {ticket.ticket_type && ticket.ticket_type !== "unassigned" && (() => {
+                      const tt = TICKET_TYPES.find((t) => t.key === ticket.ticket_type);
+                      return tt ? (
+                        <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full" style={{ backgroundColor: tt.color + "15", color: tt.color }}>
+                          {tt.label}
+                        </span>
+                      ) : null;
+                    })()}
                   </div>
                   <p className="text-[10px] text-[#999] mt-0.5 line-clamp-1">{ticket.description}</p>
                   <div className="flex items-center gap-3 mt-1">
@@ -229,6 +248,7 @@ export default function TicketsPage() {
       {selectedTicket && (
         <TicketDetailModal
           ticket={selectedTicket}
+          team={team}
           onClose={() => setSelectedTicket(null)}
           onStatusChange={async (status) => {
             await updateTicketStatus(selectedTicket.id, status);
@@ -236,17 +256,24 @@ export default function TicketsPage() {
             load();
           }}
           onSaveNotes={(notes) => handleUpdateNotes(selectedTicket, notes)}
+          onSaveTicket={async (updated) => {
+            await saveTicket({ ...updated, updated_at: new Date().toISOString() });
+            setSelectedTicket(null);
+            load();
+          }}
         />
       )}
     </div>
   );
 }
 
-function TicketDetailModal({ ticket, onClose, onStatusChange, onSaveNotes }: {
+function TicketDetailModal({ ticket, team, onClose, onStatusChange, onSaveNotes, onSaveTicket }: {
   ticket: Ticket;
+  team: TeamMember[];
   onClose: () => void;
   onStatusChange: (status: TicketStatus) => void;
   onSaveNotes: (notes: string) => void;
+  onSaveTicket: (ticket: Ticket) => void;
 }) {
   const [notes, setNotes] = useState(ticket.notes);
   const si = TICKET_STATUSES.find((s) => s.key === ticket.status) || TICKET_STATUSES[0];
@@ -306,6 +333,42 @@ function TicketDetailModal({ ticket, onClose, onStatusChange, onSaveNotes }: {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Type */}
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Type</p>
+            <div className="flex gap-1.5">
+              {TICKET_TYPES.filter((t) => t.key !== "unassigned").map((t) => (
+                <button
+                  key={t.key}
+                  onClick={() => onSaveTicket({ ...ticket, ticket_type: t.key })}
+                  className={`px-3 py-1.5 text-[10px] font-semibold rounded-lg border transition-colors ${
+                    ticket.ticket_type === t.key
+                      ? "text-white border-transparent"
+                      : "text-[#777] border-[#E5E5EA] hover:border-[#999]"
+                  }`}
+                  style={ticket.ticket_type === t.key ? { backgroundColor: t.color } : {}}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Assignee */}
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Assignee</p>
+            <select
+              value={ticket.assignee_id || ""}
+              onChange={(e) => onSaveTicket({ ...ticket, assignee_id: e.target.value || undefined })}
+              className="text-xs text-[#777] border border-[#E5E5EA] rounded-lg px-2.5 py-1.5 w-full"
+            >
+              <option value="">Unassigned</option>
+              {team.map((m) => (
+                <option key={m.id} value={m.id}>{m.name} — {m.role}</option>
+              ))}
+            </select>
           </div>
 
           {/* Internal notes */}

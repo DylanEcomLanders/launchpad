@@ -6,6 +6,7 @@ import { createStore } from "@/lib/supabase-store";
 
 export type TicketPriority = "low" | "medium" | "high" | "urgent";
 export type TicketStatus = "open" | "in_progress" | "quoted" | "resolved";
+export type TicketType = "design" | "dev" | "cro" | "other" | "unassigned";
 
 export interface Ticket {
   id: string;
@@ -17,8 +18,10 @@ export interface Ticket {
   title: string;
   description: string;
   priority: TicketPriority;
+  ticket_type: TicketType; // Set internally by team, not by client
   attachment_url: string;
   status: TicketStatus;
+  assignee_id?: string; // Team member ID from settings
   notes: string; // internal notes
   created_at: string;
   updated_at: string;
