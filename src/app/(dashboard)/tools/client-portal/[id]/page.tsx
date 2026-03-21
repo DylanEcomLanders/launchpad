@@ -24,6 +24,7 @@ import {
 import { isLoomUrl, toLoomEmbed } from "@/lib/portal/loom";
 import { IntelligemsTestCards } from "@/components/intelligems-tests";
 import { getFunnelsByClientId } from "@/lib/funnel-builder/data";
+import { loadSettings, type TeamMember } from "@/lib/settings";
 import type { FunnelData } from "@/lib/funnel-builder/types";
 import {
   getReviews,
@@ -979,6 +980,15 @@ function OverviewSection({
               />
             </button>
           </div>
+          {/* Slack Channel */}
+          <EditableField
+            label="Slack Channel ID"
+            value={portal.slack_channel_url || ""}
+            onSave={(v) => onUpdateField("slack_channel_url", v)}
+            placeholder="e.g., C0123456789"
+          />
+          {/* Team Assignment */}
+          <TeamAssignment portal={portal} onUpdateField={onUpdateField} />
         </div>
       </div>
 
@@ -3089,6 +3099,47 @@ function AddVersionForm({ onAdd }: { onAdd: (url: string) => void }) {
       >
         Cancel
       </button>
+    </div>
+  );
+}
+
+/* ── Team Assignment ── */
+function TeamAssignment({ portal, onUpdateField }: { portal: PortalData; onUpdateField: (field: string, value: unknown) => void }) {
+  const [team, setTeam] = useState<TeamMember[]>([]);
+  const assigned = portal.team_member_ids || [];
+
+  useEffect(() => {
+    loadSettings().then((s) => setTeam(s.team || []));
+  }, []);
+
+  const toggleMember = (id: string) => {
+    const updated = assigned.includes(id) ? assigned.filter((m) => m !== id) : [...assigned, id];
+    onUpdateField("team_member_ids", updated);
+  };
+
+  if (team.length === 0) return null;
+
+  return (
+    <div className="py-2">
+      <p className="text-[11px] font-medium text-[#7A7A7A] mb-2">Team</p>
+      <div className="space-y-1">
+        {team.map((m) => {
+          const isAssigned = assigned.includes(m.id);
+          return (
+            <button
+              key={m.id}
+              onClick={() => toggleMember(m.id)}
+              className={`flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-left transition-colors ${
+                isAssigned ? "bg-[#1B1B1B] text-white" : "bg-[#F5F5F5] text-[#777] hover:bg-[#EBEBEB]"
+              }`}
+            >
+              <div className={`size-1.5 rounded-full ${isAssigned ? "bg-emerald-400" : "bg-[#CCC]"}`} />
+              <span className="text-[11px] font-medium">{m.name}</span>
+              <span className="text-[9px] opacity-60 ml-auto">{m.role}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
