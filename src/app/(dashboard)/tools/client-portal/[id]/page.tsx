@@ -535,6 +535,7 @@ export default function PortalDetailPage() {
             portal={portal}
             selectedProject={selectedProject}
             onUpdateField={selectedProject ? handleProjectUpdateField : handleUpdateField}
+            onUpdatePortal={handleUpdateField}
             onSetBlocker={async (blocker) => {
               await updatePortal(portal.id, { blocker } as Partial<PortalData>);
               setPortal({ ...portal, blocker } as PortalData);
@@ -758,6 +759,7 @@ function OverviewSection({
   portal,
   selectedProject,
   onUpdateField,
+  onUpdatePortal,
   onSetBlocker,
   onAddPhase,
   onRemovePhase,
@@ -770,6 +772,7 @@ function OverviewSection({
   portal: PortalData;
   selectedProject: PortalProject | null;
   onUpdateField: (field: string, value: unknown) => void;
+  onUpdatePortal: (field: string, value: unknown) => void;
   onSetBlocker: (blocker: PortalBlocker | null) => void;
   onAddPhase: () => void;
   onRemovePhase: (id: string) => void;
@@ -984,11 +987,11 @@ function OverviewSection({
           <EditableField
             label="Slack Channel ID"
             value={portal.slack_channel_url || ""}
-            onSave={(v) => onUpdateField("slack_channel_url", v)}
+            onSave={(v) => onUpdatePortal("slack_channel_url", v)}
             placeholder="e.g., C0123456789"
           />
           {/* Team Assignment */}
-          <TeamAssignment portal={portal} onUpdateField={onUpdateField} />
+          <TeamAssignment portal={portal} onUpdateField={onUpdatePortal} />
         </div>
       </div>
 
