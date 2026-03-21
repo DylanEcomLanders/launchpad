@@ -60,8 +60,10 @@ const navSections: NavSection[] = [
   {
     title: "Research",
     icon: <MagnifyingGlassIcon className="size-4" />,
-    defaultOpen: false,
+    defaultOpen: true,
     items: [
+      { label: "Social Intel", href: "/sales-engine/research/social" },
+      { label: "Ecom Prospecting", href: "/sales-engine/research/prospects" },
       { label: "Audit Engine", href: "/sales-engine/research" },
       { label: "Scraper", href: "/sales-engine/research/scraper" },
     ],
