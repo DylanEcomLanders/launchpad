@@ -84,9 +84,32 @@ export async function getChannelMappings(): Promise<ChannelMapping[]> {
 }
 
 export async function getClientForChannel(channelId: string): Promise<string | null> {
+  // First check explicit mappings
   const mappings = await mappingStore.getAll();
   const found = mappings.find((m) => m.channel_id === channelId);
-  return found?.client_name || null;
+  if (found) return found.client_name;
+
+  // Then check portal slack_channel_url fields (contains channel ID in URL)
+  try {
+    const { isSupabaseConfigured, supabase } = await import("@/lib/supabase");
+    if (isSupabaseConfigured()) {
+      const { data } = await supabase
+        .from("client_portals")
+        .select("client_name, slack_channel_url")
+        .is("deleted_at", null);
+      if (data) {
+        for (const portal of data) {
+          const url = portal.slack_channel_url || "";
+          // Slack channel URLs contain the channel ID, or the field might just be the channel ID
+          if (url.includes(channelId) || url === channelId) {
+            return portal.client_name;
+          }
+        }
+      }
+    }
+  } catch { /* fall through */ }
+
+  return null;
 }
 
 export async function saveChannelMapping(mapping: ChannelMapping): Promise<void> {

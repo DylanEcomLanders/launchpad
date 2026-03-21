@@ -73,6 +73,27 @@ export async function POST(req: NextRequest) {
 
     await saveTicket(ticket);
 
+    // Create ClickUp task
+    try {
+      const clickupToken = process.env.CLICKUP_API_TOKEN;
+      const ticketListId = "901522309688"; // Project Delivery > Tickets
+      if (clickupToken) {
+        const priorityMap: Record<string, number> = { urgent: 1, high: 2, medium: 3, low: 4 };
+        await fetch(`https://api.clickup.com/api/v2/list/${ticketListId}/task`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: clickupToken },
+          body: JSON.stringify({
+            name: `[${clientName}] ${title}`,
+            description: `${description}${attachment ? `\n\nAttachment: ${attachment}` : ""}\n\n---\nSubmitted by: ${userName}\nChannel: #${channelName}\nTicket ID: ${ticket.id}`,
+            priority: priorityMap[priority] || 3,
+            tags: ["slack-ticket"],
+          }),
+        });
+      }
+    } catch {
+      // Non-critical — ticket is saved regardless
+    }
+
     // Post confirmation message in channel
     try {
       const priorityEmoji: Record<string, string> = {
