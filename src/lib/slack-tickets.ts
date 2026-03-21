@@ -23,6 +23,7 @@ export interface Ticket {
   status: TicketStatus;
   assignee_id?: string; // Team member ID from settings
   notes: string; // internal notes
+  clickup_task_id?: string; // Created on triage, not on submission
   created_at: string;
   updated_at: string;
   resolved_at?: string;

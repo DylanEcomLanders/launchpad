@@ -257,7 +257,28 @@ export default function TicketsPage() {
           }}
           onSaveNotes={(notes) => handleUpdateNotes(selectedTicket, notes)}
           onSaveTicket={async (updated) => {
+            const prev = selectedTicket;
             await saveTicket({ ...updated, updated_at: new Date().toISOString() });
+
+            // If ticket_type just changed from unassigned → design/dev, create ClickUp task
+            const wasUnassigned = !prev?.ticket_type || prev.ticket_type === "unassigned";
+            const nowAssigned = updated.ticket_type && updated.ticket_type !== "unassigned";
+            if (wasUnassigned && nowAssigned && !updated.clickup_task_id) {
+              try {
+                const res = await fetch("/api/tickets/create-clickup", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ ticketId: updated.id }),
+                });
+                if (res.ok) {
+                  const data = await res.json();
+                  if (data.taskId) {
+                    await saveTicket({ ...updated, clickup_task_id: data.taskId, updated_at: new Date().toISOString() });
+                  }
+                }
+              } catch { /* non-critical */ }
+            }
+
             setSelectedTicket(null);
             load();
           }}
