@@ -286,6 +286,19 @@ export function Sidebar() {
                 Issues
               </Link>
               <Link
+                href="/tools/tickets"
+                onClick={() => setMobileOpen(false)}
+                className={`
+                  flex items-center gap-2 px-2.5 py-1.5 text-[12px] font-semibold uppercase tracking-wider rounded-md transition-all duration-150 mt-1
+                  ${pathname === "/tools/tickets"
+                    ? "text-[#1B1B1B] bg-white shadow-[var(--shadow-soft)]"
+                    : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
+                  }
+                `}
+              >
+                Tickets
+              </Link>
+              <Link
                 href="/settings"
                 onClick={() => setMobileOpen(false)}
                 className={`
