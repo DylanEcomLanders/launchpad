@@ -3110,39 +3110,75 @@ function AddVersionForm({ onAdd }: { onAdd: (url: string) => void }) {
 function TeamAssignment({ portal, onUpdateField }: { portal: PortalData; onUpdateField: (field: string, value: unknown) => void }) {
   const [team, setTeam] = useState<TeamMember[]>([]);
   const assigned = portal.team_member_ids || [];
+  // Filter to only valid IDs
+  const validAssigned = assigned.filter(id => team.some(m => m.id === id));
 
   useEffect(() => {
-    loadSettings().then((s) => setTeam(s.team || []));
+    loadSettings().then((s) => {
+      setTeam(s.team || []);
+      // Auto-clean orphaned IDs
+      const validIds = new Set((s.team || []).map(m => m.id));
+      const currentAssigned = portal.team_member_ids || [];
+      const cleaned = currentAssigned.filter(id => validIds.has(id));
+      if (cleaned.length !== currentAssigned.length) {
+        onUpdateField("team_member_ids", cleaned);
+      }
+    });
   }, []);
 
-  const toggleMember = (id: string) => {
-    const updated = assigned.includes(id) ? assigned.filter((m) => m !== id) : [...assigned, id];
-    onUpdateField("team_member_ids", updated);
+  const addMember = (id: string) => {
+    if (!id || validAssigned.includes(id)) return;
+    onUpdateField("team_member_ids", [...validAssigned, id]);
+  };
+
+  const removeMember = (id: string) => {
+    onUpdateField("team_member_ids", validAssigned.filter(m => m !== id));
   };
 
   if (team.length === 0) return null;
 
+  const unassigned = team.filter(m => !validAssigned.includes(m.id));
+
   return (
     <div className="py-2">
       <p className="text-[11px] font-medium text-[#7A7A7A] mb-2">Team</p>
-      <div className="space-y-1">
-        {team.map((m) => {
-          const isAssigned = assigned.includes(m.id);
-          return (
-            <button
-              key={m.id}
-              onClick={() => toggleMember(m.id)}
-              className={`flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-left transition-colors ${
-                isAssigned ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-[#F5F5F5] text-[#777] hover:bg-[#EBEBEB] border border-transparent"
-              }`}
-            >
-              <div className={`size-1.5 rounded-full ${isAssigned ? "bg-emerald-500" : "bg-[#CCC]"}`} />
-              <span className="text-[11px] font-medium">{m.name}</span>
-              <span className="text-[9px] opacity-60 ml-auto">{m.role}</span>
-            </button>
-          );
-        })}
-      </div>
+
+      {/* Assigned members */}
+      {validAssigned.length > 0 && (
+        <div className="space-y-1 mb-2">
+          {validAssigned.map(id => {
+            const m = team.find(t => t.id === id);
+            if (!m) return null;
+            return (
+              <div key={m.id} className="flex items-center gap-2 px-2.5 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg">
+                <div className="size-1.5 rounded-full bg-emerald-500" />
+                <span className="text-[11px] font-medium text-emerald-700">{m.name}</span>
+                <span className="text-[9px] text-emerald-500 ml-auto">{m.role}</span>
+                <button
+                  onClick={() => removeMember(m.id)}
+                  className="text-emerald-300 hover:text-red-400 transition-colors ml-1"
+                >
+                  <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Add dropdown */}
+      {unassigned.length > 0 && (
+        <select
+          value=""
+          onChange={(e) => addMember(e.target.value)}
+          className="w-full text-[11px] text-[#777] px-2.5 py-1.5 border border-[#E5E5EA] rounded-lg bg-white cursor-pointer"
+        >
+          <option value="">+ Add team member...</option>
+          {unassigned.map(m => (
+            <option key={m.id} value={m.id}>{m.name} — {m.role}</option>
+          ))}
+        </select>
+      )}
     </div>
   );
 }
