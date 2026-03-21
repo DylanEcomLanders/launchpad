@@ -529,6 +529,7 @@ function mapPortalRow(row: any): PortalData {
     intelligems_key: row.intelligems_key || "",
     intelligems_selected_tests: row.intelligems_selected_tests || undefined,
     intelligems_assignments: row.intelligems_assignments || undefined,
+    team_member_ids: row.team_member_ids || [],
     view_count: row.view_count || 0,
     deleted_at: row.deleted_at || null,
     projects: row.projects || [],
