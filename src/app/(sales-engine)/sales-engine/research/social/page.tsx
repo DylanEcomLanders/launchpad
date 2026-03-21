@@ -183,14 +183,24 @@ function parseLinkedinPost(raw: any): PostData {
   };
 }
 
+/* ── Hardwired accounts ── */
+const OUR_ACCOUNTS = [
+  { platform: "twitter" as Platform, handle: "dylanevxns", label: "Dylan (X)" },
+  { platform: "twitter" as Platform, handle: "1ajaay", label: "Ajay (X)" },
+  { platform: "linkedin" as Platform, handle: "https://www.linkedin.com/in/dylan-evans-730908197/", label: "Dylan (LinkedIn)" },
+  { platform: "linkedin" as Platform, handle: "https://www.linkedin.com/in/ajay-landing-pages-and-cro-shopify-brands/", label: "Ajay (LinkedIn)" },
+  { platform: "tiktok" as Platform, handle: "dylandoesecom", label: "Dylan (TikTok)" },
+];
+
 export default function SocialIntelPage() {
-  const [platform, setPlatform] = useState<Platform>("instagram");
+  const [platform, setPlatform] = useState<Platform>("twitter");
   const [username, setUsername] = useState("");
   const [profiles, setProfiles] = useState<ProfileData[]>([]);
   const [posts, setPosts] = useState<Record<string, PostData[]>>({});
   const [loading, setLoading] = useState(false);
   const [loadingPosts, setLoadingPosts] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [scraping, setScraping] = useState<string | null>(null);
 
   const scrapeProfile = async () => {
     if (!username.trim()) return;
@@ -245,6 +255,56 @@ export default function SocialIntelPage() {
     }
     setLoading(false);
     setUsername("");
+  };
+
+  const scrapeAccount = async (acct: typeof OUR_ACCOUNTS[0]) => {
+    setScraping(acct.label);
+    setError("");
+    try {
+      let action: string;
+      let params: Record<string, unknown>;
+      let parser: (raw: any) => ProfileData;
+
+      switch (acct.platform) {
+        case "instagram":
+          action = "instagram-profile";
+          params = { usernames: [acct.handle] };
+          parser = parseIgProfile;
+          break;
+        case "tiktok":
+          action = "tiktok-profile";
+          params = { profiles: [acct.handle] };
+          parser = parseTtProfile;
+          break;
+        case "twitter":
+          action = "twitter-profile";
+          params = { handles: [acct.handle] };
+          parser = parseTwitterProfile;
+          break;
+        case "linkedin":
+          action = "linkedin-profile";
+          params = { urls: [acct.handle] };
+          parser = parseLinkedinProfile;
+          break;
+      }
+
+      const res = await fetch("/api/apify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, params }),
+      });
+
+      if (!res.ok) throw new Error((await res.json()).error);
+      const data = await res.json();
+
+      if (data.results?.length > 0) {
+        const parsed = data.results.map(parser);
+        setProfiles((prev) => [...parsed, ...prev.filter((p) => !parsed.some((np: ProfileData) => np.username === p.username))]);
+      }
+    } catch (err: any) {
+      setError(err.message || "Scrape failed");
+    }
+    setScraping(null);
   };
 
   const scrapePosts = async (profile: ProfileData) => {
@@ -345,6 +405,57 @@ export default function SocialIntelPage() {
           </button>
         </div>
         {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
+      </div>
+
+      {/* Our Accounts — quick scrape */}
+      <div className="border border-[#E5E5EA] rounded-xl bg-white p-5 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <p className="text-xs font-semibold text-[#1A1A1A]">Our Accounts</p>
+            <p className="text-[10px] text-[#AAA]">Quick-scrape Dylan &amp; Ajay&apos;s profiles</p>
+          </div>
+          <button
+            onClick={async () => {
+              for (const acct of OUR_ACCOUNTS) {
+                await scrapeAccount(acct);
+              }
+            }}
+            disabled={!!scraping}
+            className="text-[11px] font-medium text-[#777] hover:text-[#1A1A1A] disabled:opacity-30"
+          >
+            {scraping ? `Scraping ${scraping}...` : "Scrape All"}
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {OUR_ACCOUNTS.map((acct) => {
+            const alreadyLoaded = profiles.some((p) =>
+              p.platform === acct.platform && (p.username === acct.handle || p.url.includes(acct.handle.replace("https://www.linkedin.com/in/", "")))
+            );
+            return (
+              <button
+                key={acct.label}
+                onClick={() => scrapeAccount(acct)}
+                disabled={!!scraping || alreadyLoaded}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-lg border transition-colors ${
+                  alreadyLoaded
+                    ? "bg-emerald-50 text-emerald-600 border-emerald-200"
+                    : scraping === acct.label
+                    ? "bg-[#F7F8FA] text-[#777] border-[#E5E5EA] animate-pulse"
+                    : "text-[#777] border-[#E5E5EA] hover:border-[#999] hover:text-[#1A1A1A]"
+                }`}
+              >
+                <span className={`size-1.5 rounded-full ${
+                  acct.platform === "twitter" ? "bg-sky-500"
+                  : acct.platform === "linkedin" ? "bg-blue-600"
+                  : acct.platform === "tiktok" ? "bg-cyan-500"
+                  : "bg-pink-500"
+                }`} />
+                {acct.label}
+                {alreadyLoaded && " ✓"}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Profiles */}
