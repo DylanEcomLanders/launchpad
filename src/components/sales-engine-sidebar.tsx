@@ -13,10 +13,8 @@ import {
   ClockIcon,
 } from "@heroicons/react/24/solid";
 import {
-  PencilSquareIcon,
   FunnelIcon,
   MagnifyingGlassIcon,
-  ArchiveBoxIcon,
 } from "@heroicons/react/24/outline";
 import { Logo, LogoMark } from "@/components/logo";
 import { AppSwitcher } from "@/components/app-switcher";
@@ -35,46 +33,12 @@ interface NavSection {
 
 const navSections: NavSection[] = [
   {
-    title: "Content",
-    icon: <PencilSquareIcon className="size-4" />,
-    defaultOpen: true,
-    items: [
-      { label: "Calendar", href: "/sales-engine/content" },
-      { label: "Create", href: "/sales-engine/content/create" },
-      { label: "Analytics", href: "/sales-engine/content/analytics" },
-      { label: "Repurpose", href: "/sales-engine/content/repurpose" },
-      { label: "Hooks", href: "/sales-engine/content/hooks" },
-    ],
-  },
-  {
-    title: "Pipeline",
-    icon: <FunnelIcon className="size-4" />,
-    defaultOpen: true,
-    items: [
-      { label: "Deals", href: "/sales-engine/pipeline" },
-      { label: "Leads", href: "/sales-engine/pipeline/leads" },
-      { label: "Outreach", href: "/sales-engine/pipeline/outreach" },
-      { label: "Revenue", href: "/sales-engine/pipeline/revenue" },
-    ],
-  },
-  {
     title: "Research",
     icon: <MagnifyingGlassIcon className="size-4" />,
     defaultOpen: true,
     items: [
-      { label: "Social Intel", href: "/sales-engine/research/social" },
+      { label: "Store Audit", href: "/sales-engine/research" },
       { label: "Ecom Prospecting", href: "/sales-engine/research/prospects" },
-      { label: "Audit Engine", href: "/sales-engine/research" },
-      { label: "Scraper", href: "/sales-engine/research/scraper" },
-    ],
-  },
-  {
-    title: "Assets",
-    icon: <ArchiveBoxIcon className="size-4" />,
-    defaultOpen: false,
-    items: [
-      { label: "Portfolio", href: "/sales-engine/assets/portfolio" },
-      { label: "Price Lists", href: "/sales-engine/assets/price-lists" },
     ],
   },
 ];
@@ -129,7 +93,21 @@ export function SalesEngineSidebar() {
           `}
         >
           <HomeIcon className="size-4" />
-          {!collapsed && <span className="text-[12.5px] font-semibold">Command Centre</span>}
+          {!collapsed && <span className="text-[12.5px] font-semibold">Dashboard</span>}
+        </Link>
+        <Link
+          href="/sales-engine/leads"
+          onClick={() => setMobileOpen(false)}
+          className={`
+            flex items-center gap-2 px-2.5 py-2 rounded-lg transition-all duration-150 mt-1
+            ${pathname === "/sales-engine/leads"
+              ? "bg-white shadow-[var(--shadow-soft)] text-[#1B1B1B]"
+              : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
+            }
+          `}
+        >
+          <FunnelIcon className="size-4" />
+          {!collapsed && <span className="text-[12.5px] font-semibold">Leads</span>}
         </Link>
       </div>
 

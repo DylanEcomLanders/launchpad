@@ -1,51 +1,76 @@
 /* ── Sales Engine Types ── */
 
-export type DealStage = "lead" | "qualified" | "proposal" | "negotiation" | "won" | "lost";
-export type DealOwner = "dylan" | "ajay";
+export type AccountOwner = "dylan" | "ajay";
+export type SocialPlatform = "tiktok" | "instagram";
 
-export interface Deal {
+/* ── Accounts ── */
+export interface SocialAccount {
+  owner: AccountOwner;
+  platform: SocialPlatform;
+  handle: string;
+  label: string;
+}
+
+export const ACCOUNTS: SocialAccount[] = [
+  { owner: "dylan", platform: "tiktok", handle: "dylandoesecom", label: "Dylan (TikTok)" },
+  { owner: "dylan", platform: "instagram", handle: "ecomlanders", label: "Dylan (Instagram)" },
+  // Add more as needed
+];
+
+/* ── Snapshots (profile metrics over time) ── */
+export interface SocialSnapshot {
   id: string;
-  name: string;
+  account_id: AccountOwner;
+  platform: SocialPlatform;
+  username: string;
+  followers: number;
+  following: number;
+  posts_count: number;
+  engagement_rate: number;
+  profile_pic: string;
+  bio: string;
+  scraped_at: string;
+}
+
+/* ── Posts ── */
+export interface SocialPost {
+  id: string;
+  account_id: AccountOwner;
+  platform: SocialPlatform;
+  caption: string;
+  likes: number;
+  comments: number;
+  shares: number;
+  views: number;
+  engagement_rate: number;
+  posted_at: string;
+  url: string;
+  post_type: string;
+  hashtags: string[];
+  hook: string; // first line of caption
+  scraped_at: string;
+}
+
+/* ── Leads ── */
+export type LeadStatus = "new" | "contacted" | "interested" | "not_interested";
+
+export interface Lead {
+  id: string;
   brand_name: string;
   contact_name: string;
   contact_email: string;
-  stage: DealStage;
-  value: number;
-  currency: "GBP" | "USD" | "EUR";
+  status: LeadStatus;
   source: string;
-  prospect_id?: string;
   notes: string;
-  next_follow_up?: string; // ISO date
-  owner: DealOwner;
+  follow_up_date?: string;
+  store_url?: string;
   created_at: string;
   updated_at: string;
 }
 
-export type ContentPlatform = "twitter" | "linkedin" | "tiktok" | "instagram" | "youtube";
-export type ContentStatus = "idea" | "drafted" | "scheduled" | "published";
-export type FunnelStage = "tofu" | "mofu" | "bofu";
-
-export interface ContentItem {
-  id: string;
-  title: string;
-  body: string;
-  platform: ContentPlatform;
-  account_id: DealOwner;
-  status: ContentStatus;
-  scheduled_date?: string;
-  published_url?: string;
-  funnel_stage: FunnelStage;
-  category: string;
-  notes: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export const DEAL_STAGES: { key: DealStage; label: string; color: string }[] = [
-  { key: "lead", label: "Lead", color: "#AAA" },
-  { key: "qualified", label: "Qualified", color: "#3B82F6" },
-  { key: "proposal", label: "Proposal", color: "#8B5CF6" },
-  { key: "negotiation", label: "Negotiation", color: "#F59E0B" },
-  { key: "won", label: "Won", color: "#10B981" },
-  { key: "lost", label: "Lost", color: "#EF4444" },
+export const LEAD_STATUSES: { key: LeadStatus; label: string; color: string }[] = [
+  { key: "new", label: "New", color: "#3B82F6" },
+  { key: "contacted", label: "Contacted", color: "#F59E0B" },
+  { key: "interested", label: "Interested", color: "#10B981" },
+  { key: "not_interested", label: "Not Interested", color: "#AAA" },
 ];

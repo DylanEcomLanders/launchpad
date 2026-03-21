@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { MagnifyingGlassIcon, ArrowPathIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { inputClass, labelClass } from "@/lib/form-styles";
-import { saveDeal, createNewDeal } from "@/lib/sales-engine/pipeline-data";
+import { saveLead, createNewLead } from "@/lib/sales-engine/leads-data";
 
 interface StoreResult {
   url: string;
@@ -118,14 +118,14 @@ export default function EcomProspectingPage() {
   };
 
   const addToPipeline = async (store: StoreResult) => {
-    const deal = createNewDeal({
-      name: `${store.name} — CRO Opportunity`,
+    const lead = createNewLead({
       brand_name: store.name,
       contact_email: store.email,
       source: "Ecom Prospecting",
-      notes: `Store: ${store.url}\nProducts: ${store.products_count}\nCountry: ${store.country}\n${store.description}`,
+      store_url: store.url,
+      notes: `Products: ${store.products_count}\nCountry: ${store.country}\n${store.description}`,
     });
-    await saveDeal(deal);
+    await saveLead(lead);
     setAddedToPipeline((prev) => new Set([...prev, store.url]));
   };
 
