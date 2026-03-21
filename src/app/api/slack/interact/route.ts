@@ -78,7 +78,34 @@ export async function POST(req: NextRequest) {
       const clickupToken = process.env.CLICKUP_API_TOKEN;
       const ticketListId = "901522309688"; // Project Delivery > Tickets
       if (clickupToken) {
+        // Map priorities: Slack modal values → ClickUp priority levels
         const priorityMap: Record<string, number> = { urgent: 1, high: 2, medium: 3, low: 4 };
+
+        // Look up portal team members for auto-assignment
+        let assignees: number[] = [];
+        try {
+          const { isSupabaseConfigured, supabase } = await import("@/lib/supabase");
+          const { getSettings } = await import("@/lib/settings");
+          if (isSupabaseConfigured()) {
+            const { data: portals } = await supabase
+              .from("client_portals")
+              .select("team_member_ids")
+              .or(`slack_channel_url.ilike.%${channelId}%`)
+              .is("deleted_at", null)
+              .limit(1);
+            if (portals?.[0]?.team_member_ids?.length) {
+              const settings = getSettings();
+              const team = settings.team || [];
+              for (const memberId of portals[0].team_member_ids) {
+                const member = team.find((m) => m.id === memberId);
+                if (member?.clickup_id) {
+                  assignees.push(Number(member.clickup_id));
+                }
+              }
+            }
+          }
+        } catch { /* non-critical */ }
+
         await fetch(`https://api.clickup.com/api/v2/list/${ticketListId}/task`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: clickupToken },
@@ -87,6 +114,7 @@ export async function POST(req: NextRequest) {
             description: `${description}${attachment ? `\n\nAttachment: ${attachment}` : ""}\n\n---\nSubmitted by: ${userName}\nChannel: #${channelName}\nTicket ID: ${ticket.id}`,
             priority: priorityMap[priority] || 3,
             tags: ["slack-ticket"],
+            ...(assignees.length > 0 ? { assignees } : {}),
           }),
         });
       }

@@ -8,6 +8,16 @@ import { createStore } from "@/lib/supabase-store";
 const LS_KEY = "launchpad-business-settings";
 const SETTINGS_ID = "business-settings-singleton";
 
+export interface TeamMember {
+  id: string;
+  name: string;
+  role: string; // e.g. "Developer", "Designer", "CRO Strategist"
+  email: string;
+  slack_id: string; // Slack user ID (U0XXXXXXX)
+  clickup_id: string; // ClickUp user ID
+  avatar_url?: string;
+}
+
 export interface DeliverableEstimate {
   name: string;
   designDays: number;
@@ -15,6 +25,9 @@ export interface DeliverableEstimate {
 }
 
 export interface BusinessSettings {
+  /* Team directory */
+  team: TeamMember[];
+
   /* Deliverable turnaround times */
   deliverableEstimates: DeliverableEstimate[];
 
@@ -35,6 +48,7 @@ export interface BusinessSettings {
 }
 
 export const DEFAULT_SETTINGS: BusinessSettings = {
+  team: [],
   deliverableEstimates: [
     { name: "PDP (Product Page)", designDays: 4, devDays: 4 },
     { name: "Collection Page", designDays: 2, devDays: 2 },
@@ -137,4 +151,20 @@ export function getWorkingDayNumbers(settings?: BusinessSettings): Set<number> {
   if (s.workingDays.fri) days.add(5);
   if (s.workingDays.sat) days.add(6);
   return days;
+}
+
+/** Get team members */
+export function getTeam(settings?: BusinessSettings): TeamMember[] {
+  const s = settings || getSettings();
+  return s.team || [];
+}
+
+/** Find team member by ClickUp ID */
+export function getTeamMemberByClickupId(clickupId: string, settings?: BusinessSettings): TeamMember | undefined {
+  return getTeam(settings).find((m) => m.clickup_id === clickupId);
+}
+
+/** Find team member by Slack ID */
+export function getTeamMemberBySlackId(slackId: string, settings?: BusinessSettings): TeamMember | undefined {
+  return getTeam(settings).find((m) => m.slack_id === slackId);
 }

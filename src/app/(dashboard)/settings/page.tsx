@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { CheckIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { getSettings, saveSettings, loadSettings, DEFAULT_SETTINGS, type BusinessSettings, type DeliverableEstimate } from "@/lib/settings";
+import { getSettings, saveSettings, loadSettings, DEFAULT_SETTINGS, type BusinessSettings, type DeliverableEstimate, type TeamMember } from "@/lib/settings";
 import { inputClass, labelClass } from "@/lib/form-styles";
 
 const dayLabels = [
@@ -19,6 +19,8 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState<BusinessSettings>(DEFAULT_SETTINGS);
   const [saved, setSaved] = useState(false);
   const [newName, setNewName] = useState("");
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [newMember, setNewMember] = useState<Omit<TeamMember, "id">>({ name: "", role: "", email: "", slack_id: "", clickup_id: "" });
 
   useEffect(() => {
     loadSettings().then(setSettings);
@@ -233,6 +235,96 @@ export default function SettingsPage() {
             </button>
           ))}
         </div>
+      </section>
+
+      {/* Team Directory */}
+      <section className="mb-10">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
+          Team Directory
+        </h2>
+        <p className="text-xs text-[#A0A0A0] mb-4">
+          Team members with their Slack and ClickUp IDs. Used for ticket assignment and portal team display.
+        </p>
+
+        {(settings.team || []).length > 0 && (
+          <div className="border border-[#E5E5EA] rounded-lg overflow-hidden mb-4">
+            <div className="grid grid-cols-[1fr_120px_120px_120px_40px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA]">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Name / Role</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Email</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Slack ID</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">ClickUp ID</span>
+              <span />
+            </div>
+            {(settings.team || []).map((member, i) => (
+              <div key={member.id} className="grid grid-cols-[1fr_120px_120px_120px_40px] gap-2 px-4 py-2.5 border-b border-[#EDEDEF] last:border-0 items-center">
+                <div>
+                  <p className="text-sm font-medium text-[#1A1A1A]">{member.name}</p>
+                  <p className="text-[10px] text-[#AAA]">{member.role}</p>
+                </div>
+                <p className="text-xs text-[#777] truncate">{member.email || "—"}</p>
+                <p className="text-xs text-[#777] font-mono truncate">{member.slack_id || "—"}</p>
+                <p className="text-xs text-[#777] font-mono truncate">{member.clickup_id || "—"}</p>
+                <button
+                  onClick={() => setSettings({ ...settings, team: (settings.team || []).filter((_, idx) => idx !== i) })}
+                  className="p-1 text-[#A0A0A0] hover:text-red-400 transition-colors"
+                >
+                  <TrashIcon className="size-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {showAddMember ? (
+          <div className="border border-[#E5E5EA] rounded-lg p-4 bg-[#FAFAFA] space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] block mb-1">Name *</label>
+                <input type="text" value={newMember.name} onChange={(e) => setNewMember({ ...newMember, name: e.target.value })} className="w-full text-sm px-2 py-1.5 border border-[#E5E5EA] rounded" placeholder="e.g. Dylan Evans" />
+              </div>
+              <div>
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] block mb-1">Role *</label>
+                <input type="text" value={newMember.role} onChange={(e) => setNewMember({ ...newMember, role: e.target.value })} className="w-full text-sm px-2 py-1.5 border border-[#E5E5EA] rounded" placeholder="e.g. Developer" />
+              </div>
+              <div>
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] block mb-1">Email</label>
+                <input type="email" value={newMember.email} onChange={(e) => setNewMember({ ...newMember, email: e.target.value })} className="w-full text-sm px-2 py-1.5 border border-[#E5E5EA] rounded" placeholder="dylan@ecomlanders.com" />
+              </div>
+              <div>
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] block mb-1">Slack ID</label>
+                <input type="text" value={newMember.slack_id} onChange={(e) => setNewMember({ ...newMember, slack_id: e.target.value })} className="w-full text-sm px-2 py-1.5 border border-[#E5E5EA] rounded font-mono" placeholder="U0XXXXXXX" />
+              </div>
+              <div className="col-span-2">
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] block mb-1">ClickUp ID</label>
+                <input type="text" value={newMember.clickup_id} onChange={(e) => setNewMember({ ...newMember, clickup_id: e.target.value })} className="w-full text-sm px-2 py-1.5 border border-[#E5E5EA] rounded font-mono" placeholder="User ID from ClickUp" />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  if (!newMember.name.trim() || !newMember.role.trim()) return;
+                  const member: TeamMember = { ...newMember, id: crypto.randomUUID() };
+                  setSettings({ ...settings, team: [...(settings.team || []), member] });
+                  setNewMember({ name: "", role: "", email: "", slack_id: "", clickup_id: "" });
+                  setShowAddMember(false);
+                }}
+                disabled={!newMember.name.trim() || !newMember.role.trim()}
+                className="px-3 py-1.5 text-xs font-medium bg-[#1B1B1B] text-white rounded-lg disabled:opacity-30"
+              >
+                Add Member
+              </button>
+              <button onClick={() => setShowAddMember(false)} className="px-3 py-1.5 text-xs text-[#7A7A7A]">Cancel</button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowAddMember(true)}
+            className="flex items-center gap-1.5 text-xs text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+          >
+            <PlusIcon className="size-3.5" />
+            Add team member
+          </button>
+        )}
       </section>
     </div>
   );

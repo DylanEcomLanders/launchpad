@@ -148,6 +148,7 @@ export interface PortalData {
   updated_at: string;
   view_count: number;
   deleted_at?: string | null; // ISO date — soft delete (trash bin)
+  team_member_ids?: string[]; // IDs from settings.team — who's working on this client
 
   // Multi-project support
   projects: PortalProject[];
