@@ -55,16 +55,14 @@ export async function POST(req: NextRequest) {
 
           const role = (member.role || "").toLowerCase();
 
-          // Leadership roles get assigned to everything
-          const isLeadership = role.includes("founder") || role.includes("co-founder") || role.includes("coo") || role.includes("ceo") || role.includes("operations");
-
-          if (ticketType === "design" && (role.includes("design") || isLeadership)) {
+          // Only assign the specific role — no leadership auto-assign
+          if (ticketType === "design" && (role.includes("design"))) {
             assignees.push(Number(member.clickup_id));
-          } else if (ticketType === "dev" && (role.includes("develop") || role.includes("head of dev") || isLeadership)) {
+          } else if (ticketType === "dev" && (role.includes("develop") || role.includes("head of dev"))) {
             assignees.push(Number(member.clickup_id));
-          } else if (ticketType === "cro" && (role.includes("cro") || role.includes("strateg") || isLeadership)) {
+          } else if (ticketType === "cro" && (role.includes("cro") || role.includes("strateg"))) {
             assignees.push(Number(member.clickup_id));
-          } else if (ticketType === "other" && isLeadership) {
+          } else if (ticketType === "qa" && role.includes("qa")) {
             assignees.push(Number(member.clickup_id));
           }
         }
