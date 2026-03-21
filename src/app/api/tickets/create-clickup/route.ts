@@ -11,29 +11,20 @@ const TICKET_LIST_ID = "901522309688"; // Project Delivery > Tickets
  */
 export async function POST(req: NextRequest) {
   try {
-    const { ticketId } = await req.json();
+    const body = await req.json();
+    // Accept ticket data directly from frontend (avoids race condition with Supabase save)
+    const ticket = body.ticket || null;
+    const ticketId = body.ticketId || ticket?.id;
+
     if (!ticketId || !CLICKUP_TOKEN) {
-      return NextResponse.json({ error: "Missing ticketId or ClickUp token" }, { status: 400 });
+      return NextResponse.json({ error: "Missing ticket data or ClickUp token" }, { status: 400 });
     }
 
     if (!isSupabaseConfigured()) {
       return NextResponse.json({ error: "Supabase not configured" }, { status: 500 });
     }
 
-    // Get the ticket
-    const { data: ticketRows } = await supabase
-      .from("tickets")
-      .select("*")
-      .eq("id", ticketId)
-      .limit(1);
-
-    const ticketRow = ticketRows?.[0];
-    if (!ticketRow) {
-      return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
-    }
-
-    const ticket = ticketRow.data || ticketRow;
-    const ticketType = ticket.ticket_type; // "design" | "dev" | etc.
+    const ticketType = ticket?.ticket_type; // "design" | "dev" | etc.
 
     // Find the portal by channel_id
     let assignees: number[] = [];

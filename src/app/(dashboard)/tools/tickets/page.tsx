@@ -268,7 +268,7 @@ export default function TicketsPage() {
                 const res = await fetch("/api/tickets/create-clickup", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ ticketId: updated.id }),
+                  body: JSON.stringify({ ticketId: updated.id, ticket: updated }),
                 });
                 if (res.ok) {
                   const data = await res.json();
