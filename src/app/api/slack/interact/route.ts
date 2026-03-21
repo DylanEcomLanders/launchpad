@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
         },
         body: JSON.stringify({
           channel: channelId,
-          text: `${priorityEmoji[priority] || "🟡"} *Ticket logged* — ${title}\n>${description.slice(0, 200)}${description.length > 200 ? "..." : ""}\n\n_Priority: ${priority} · Submitted by <@${userId}> · ID: \`${ticket.id.slice(0, 8)}\`_${attachment ? `\n<${attachment}|View attachment>` : ""}`,
+          text: `✅ *Ticket logged* — ${title}\n>${description.slice(0, 200)}${description.length > 200 ? "..." : ""}\n\n_Priority: ${priority} · Submitted by <@${userId}>_${attachment ? `\n<${attachment}|View attachment>` : ""}`,
         }),
       });
     } catch {
