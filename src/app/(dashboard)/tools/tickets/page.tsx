@@ -36,6 +36,8 @@ export default function TicketsPage() {
   const [newChannelId, setNewChannelId] = useState("");
   const [newClientName, setNewClientName] = useState("");
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [showTrash, setShowTrash] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -48,11 +50,13 @@ export default function TicketsPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  const clients = [...new Set(tickets.map((t) => t.client_name))].sort();
+  const activeTickets = tickets.filter((t) => !t.deleted_at);
+  const trashedTickets = tickets.filter((t) => !!t.deleted_at);
+  const clients = [...new Set(activeTickets.map((t) => t.client_name))].sort();
 
-  const filtered = tickets
-    .filter((t) => filterStatus === "all" || t.status === filterStatus)
-    .filter((t) => filterClient === "all" || t.client_name === filterClient)
+  const filtered = (showTrash ? trashedTickets : activeTickets)
+    .filter((t) => showTrash || filterStatus === "all" || t.status === filterStatus)
+    .filter((t) => showTrash || filterClient === "all" || t.client_name === filterClient)
     .sort((a, b) => {
       // Open first, then by priority, then by age
       const statusOrder = { open: 0, in_progress: 1, quoted: 2, resolved: 3 };
@@ -62,8 +66,22 @@ export default function TicketsPage() {
       return b.created_at.localeCompare(a.created_at);
     });
 
-  const openCount = tickets.filter((t) => t.status === "open").length;
-  const inProgressCount = tickets.filter((t) => t.status === "in_progress").length;
+  const openCount = activeTickets.filter((t) => t.status === "open").length;
+  const inProgressCount = activeTickets.filter((t) => t.status === "in_progress").length;
+
+  const handleDelete = async (ticket: Ticket) => {
+    if (confirmDeleteId !== ticket.id) { setConfirmDeleteId(ticket.id); return; }
+    await saveTicket({ ...ticket, deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() });
+    setConfirmDeleteId(null);
+    setSelectedTicket(null);
+    load();
+  };
+
+  const handleRestore = async (ticket: Ticket) => {
+    const { deleted_at: _, ...rest } = ticket as Ticket & { deleted_at?: string };
+    await saveTicket({ ...rest, deleted_at: undefined, updated_at: new Date().toISOString() } as Ticket);
+    load();
+  };
 
   const handleAddMapping = async () => {
     if (!newChannelId.trim() || !newClientName.trim()) return;
@@ -83,11 +101,22 @@ export default function TicketsPage() {
     <div className="max-w-4xl mx-auto py-10 px-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Tickets</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight">{showTrash ? "Trash" : "Tickets"}</h1>
+            <button
+              onClick={() => { setShowTrash(!showTrash); setConfirmDeleteId(null); }}
+              className={`text-[10px] font-medium px-2.5 py-1 rounded-full transition-colors ${
+                showTrash ? "bg-[#1B1B1B] text-white" : "bg-[#F3F3F5] text-[#777] hover:bg-[#E5E5EA]"
+              }`}
+            >
+              {showTrash ? `← Back` : `Trash${trashedTickets.length > 0 ? ` (${trashedTickets.length})` : ""}`}
+            </button>
+          </div>
           <p className="text-sm text-[#7A7A7A] mt-0.5">
-            {openCount > 0 ? `${openCount} open` : "No open tickets"}
-            {inProgressCount > 0 ? ` · ${inProgressCount} in progress` : ""}
-            {` · ${tickets.length} total`}
+            {showTrash
+              ? `${trashedTickets.length} deleted ticket${trashedTickets.length !== 1 ? "s" : ""}`
+              : `${openCount > 0 ? `${openCount} open` : "No open tickets"}${inProgressCount > 0 ? ` · ${inProgressCount} in progress` : ""} · ${activeTickets.length} total`
+            }
           </p>
         </div>
         <button
@@ -233,6 +262,24 @@ export default function TicketsPage() {
                 >
                   {TICKET_STATUSES.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
                 </select>
+
+                {showTrash ? (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleRestore(ticket); }}
+                    className="text-[10px] font-medium text-emerald-600 hover:text-emerald-700 px-2 py-1 shrink-0"
+                  >
+                    Restore
+                  </button>
+                ) : (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDelete(ticket); }}
+                    className={`text-[10px] font-medium px-2 py-1 shrink-0 transition-colors ${
+                      confirmDeleteId === ticket.id ? "text-red-500" : "text-[#CCC] hover:text-red-400"
+                    }`}
+                  >
+                    {confirmDeleteId === ticket.id ? "Confirm" : "Delete"}
+                  </button>
+                )}
               </div>
             );
           })}
