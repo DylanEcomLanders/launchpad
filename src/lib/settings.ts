@@ -106,16 +106,23 @@ export function getSettings(): BusinessSettings {
  * Call once on app/page mount.
  */
 export async function loadSettings(): Promise<BusinessSettings> {
+  // Try Supabase first
   try {
     const items = await store.getAll();
     const item = items.find((i) => i.id === SETTINGS_ID);
     if (item) {
       const { id: _id, ...settings } = item;
-      return { ...DEFAULT_SETTINGS, ...settings };
+      const merged = { ...DEFAULT_SETTINGS, ...settings };
+      // Also update localStorage so getSettings() sync reads work
+      if (typeof window !== "undefined") {
+        localStorage.setItem(LS_KEY, JSON.stringify([{ ...merged, id: SETTINGS_ID }]));
+      }
+      return merged;
     }
   } catch {
     /* fall through to sync */
   }
+  // Fall back to localStorage
   return getSettings();
 }
 
