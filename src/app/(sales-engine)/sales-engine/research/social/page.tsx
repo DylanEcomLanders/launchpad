@@ -4,7 +4,7 @@ import { useState } from "react";
 import { PlusIcon, ArrowPathIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { inputClass, labelClass } from "@/lib/form-styles";
 
-type Platform = "instagram" | "tiktok";
+type Platform = "instagram" | "tiktok" | "twitter" | "linkedin";
 
 interface ProfileData {
   platform: Platform;
@@ -112,6 +112,77 @@ function parseTtPost(raw: any): PostData {
   };
 }
 
+function parseTwitterProfile(raw: any): ProfileData {
+  return {
+    platform: "twitter",
+    username: raw.userName || raw.screen_name || raw.username || "",
+    fullName: raw.name || raw.displayName || "",
+    bio: raw.description || raw.bio || "",
+    followers: raw.followers || raw.followersCount || raw.public_metrics?.followers_count || 0,
+    following: raw.following || raw.friendsCount || raw.public_metrics?.following_count || 0,
+    posts: raw.statusesCount || raw.tweetsCount || raw.public_metrics?.tweet_count || 0,
+    engagementRate: 0,
+    profilePic: raw.profileImageUrl || raw.profile_image_url || "",
+    verified: raw.isVerified || raw.verified || raw.isBlueVerified || false,
+    url: `https://x.com/${raw.userName || raw.screen_name || raw.username || ""}`,
+  };
+}
+
+function parseTwitterPost(raw: any): PostData {
+  const likes = raw.likeCount || raw.favoriteCount || raw.public_metrics?.like_count || 0;
+  const comments = raw.replyCount || raw.public_metrics?.reply_count || 0;
+  const shares = raw.retweetCount || raw.public_metrics?.retweet_count || 0;
+  const views = raw.viewCount || raw.impressionCount || 0;
+  return {
+    id: raw.id || raw.tweetId || "",
+    caption: (raw.text || raw.full_text || "").slice(0, 200),
+    likes,
+    comments,
+    shares,
+    views,
+    timestamp: raw.createdAt || raw.created_at || "",
+    type: "tweet",
+    url: raw.url || raw.tweetUrl || "",
+    thumbnail: "",
+    engagementRate: views > 0 ? ((likes + comments + shares) / views * 100) : 0,
+  };
+}
+
+function parseLinkedinProfile(raw: any): ProfileData {
+  return {
+    platform: "linkedin",
+    username: raw.publicIdentifier || raw.profileUrl || "",
+    fullName: `${raw.firstName || ""} ${raw.lastName || ""}`.trim() || raw.fullName || "",
+    bio: raw.headline || raw.summary || "",
+    followers: raw.followersCount || raw.connectionsCount || 0,
+    following: 0,
+    posts: 0,
+    engagementRate: 0,
+    profilePic: raw.profilePicture || raw.avatar || "",
+    verified: false,
+    url: raw.profileUrl || raw.url || "",
+  };
+}
+
+function parseLinkedinPost(raw: any): PostData {
+  const likes = raw.numLikes || raw.socialDetail?.totalSocialActivityCounts?.numLikes || 0;
+  const comments = raw.numComments || raw.socialDetail?.totalSocialActivityCounts?.numComments || 0;
+  const shares = raw.numShares || 0;
+  return {
+    id: raw.urn || raw.id || "",
+    caption: (raw.commentary || raw.text || raw.title || "").slice(0, 200),
+    likes,
+    comments,
+    shares,
+    views: raw.numImpressions || raw.views || 0,
+    timestamp: raw.postedAt || raw.publishedAt || "",
+    type: raw.type || "post",
+    url: raw.postUrl || raw.url || "",
+    thumbnail: "",
+    engagementRate: 0,
+  };
+}
+
 export default function SocialIntelPage() {
   const [platform, setPlatform] = useState<Platform>("instagram");
   const [username, setUsername] = useState("");
@@ -126,10 +197,33 @@ export default function SocialIntelPage() {
     setLoading(true);
     setError("");
     try {
-      const action = platform === "instagram" ? "instagram-profile" : "tiktok-profile";
-      const params = platform === "instagram"
-        ? { usernames: [username.trim().replace("@", "")] }
-        : { profiles: [username.trim().replace("@", "")] };
+      const clean = username.trim().replace("@", "");
+      let action: string;
+      let params: Record<string, unknown>;
+      let parser: (raw: any) => ProfileData;
+
+      switch (platform) {
+        case "instagram":
+          action = "instagram-profile";
+          params = { usernames: [clean] };
+          parser = parseIgProfile;
+          break;
+        case "tiktok":
+          action = "tiktok-profile";
+          params = { profiles: [clean] };
+          parser = parseTtProfile;
+          break;
+        case "twitter":
+          action = "twitter-profile";
+          params = { handles: [clean] };
+          parser = parseTwitterProfile;
+          break;
+        case "linkedin":
+          action = "linkedin-profile";
+          params = { urls: [clean.startsWith("http") ? clean : `https://www.linkedin.com/in/${clean}`] };
+          parser = parseLinkedinProfile;
+          break;
+      }
 
       const res = await fetch("/api/apify", {
         method: "POST",
@@ -141,9 +235,7 @@ export default function SocialIntelPage() {
       const data = await res.json();
 
       if (data.results?.length > 0) {
-        const parsed = platform === "instagram"
-          ? data.results.map(parseIgProfile)
-          : data.results.map(parseTtProfile);
+        const parsed = data.results.map(parser);
         setProfiles((prev) => [...parsed, ...prev.filter((p) => !parsed.some((np: ProfileData) => np.username === p.username))]);
       } else {
         setError("No profile found");
@@ -158,10 +250,32 @@ export default function SocialIntelPage() {
   const scrapePosts = async (profile: ProfileData) => {
     setLoadingPosts(profile.username);
     try {
-      const action = profile.platform === "instagram" ? "instagram-posts" : "tiktok-posts";
-      const params = profile.platform === "instagram"
-        ? { username: profile.username, limit: 30 }
-        : { profiles: [profile.username], limit: 30 };
+      let action: string;
+      let params: Record<string, unknown>;
+      let parser: (raw: any) => PostData;
+
+      switch (profile.platform) {
+        case "instagram":
+          action = "instagram-posts";
+          params = { username: profile.username, limit: 30 };
+          parser = parseIgPost;
+          break;
+        case "tiktok":
+          action = "tiktok-posts";
+          params = { profiles: [profile.username], limit: 30 };
+          parser = parseTtPost;
+          break;
+        case "twitter":
+          action = "twitter-posts";
+          params = { handle: profile.username, limit: 30 };
+          parser = parseTwitterPost;
+          break;
+        case "linkedin":
+          action = "linkedin-posts";
+          params = { url: profile.url, limit: 30 };
+          parser = parseLinkedinPost;
+          break;
+      }
 
       const res = await fetch("/api/apify", {
         method: "POST",
@@ -171,11 +285,7 @@ export default function SocialIntelPage() {
 
       if (!res.ok) throw new Error((await res.json()).error);
       const data = await res.json();
-
-      const parsed = profile.platform === "instagram"
-        ? (data.results || []).map(parseIgPost)
-        : (data.results || []).map(parseTtPost);
-
+      const parsed = (data.results || []).map(parser);
       setPosts((prev) => ({ ...prev, [profile.username]: parsed }));
     } catch {
       // silent
@@ -201,7 +311,7 @@ export default function SocialIntelPage() {
           <div>
             <label className={labelClass}>Platform</label>
             <div className="flex gap-1">
-              {(["instagram", "tiktok"] as const).map((p) => (
+              {(["instagram", "tiktok", "twitter", "linkedin"] as const).map((p) => (
                 <button
                   key={p}
                   onClick={() => setPlatform(p)}
@@ -209,7 +319,7 @@ export default function SocialIntelPage() {
                     platform === p ? "bg-[#1B1B1B] text-white border-[#1B1B1B]" : "bg-white text-[#777] border-[#E5E5EA]"
                   }`}
                 >
-                  {p === "instagram" ? "Instagram" : "TikTok"}
+                  {p === "instagram" ? "Instagram" : p === "tiktok" ? "TikTok" : p === "twitter" ? "X / Twitter" : "LinkedIn"}
                 </button>
               ))}
             </div>
@@ -222,7 +332,7 @@ export default function SocialIntelPage() {
               onChange={(e) => setUsername(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") scrapeProfile(); }}
               className={inputClass}
-              placeholder="@username"
+              placeholder={platform === "linkedin" ? "linkedin.com/in/username or username" : "@username"}
             />
           </div>
           <button
@@ -270,9 +380,12 @@ export default function SocialIntelPage() {
                         </p>
                         {profile.verified && <span className="text-blue-500 text-xs">✓</span>}
                         <span className={`text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${
-                          profile.platform === "instagram" ? "bg-pink-50 text-pink-500" : "bg-cyan-50 text-cyan-600"
+                          profile.platform === "instagram" ? "bg-pink-50 text-pink-500"
+                          : profile.platform === "tiktok" ? "bg-cyan-50 text-cyan-600"
+                          : profile.platform === "twitter" ? "bg-sky-50 text-sky-600"
+                          : "bg-blue-50 text-blue-600"
                         }`}>
-                          {profile.platform}
+                          {profile.platform === "twitter" ? "X" : profile.platform}
                         </span>
                       </div>
                       <p className="text-xs text-[#999]">@{profile.username}</p>

@@ -73,6 +73,46 @@ export async function POST(req: NextRequest) {
         break;
       }
 
+      case "twitter-profile": {
+        // Scrape Twitter/X user profile
+        const handles = Array.isArray(params.handles) ? params.handles : [params.handles];
+        results = await runActor("apidojo~twitter-user-scraper", {
+          startUrls: handles.map((h: string) => ({ url: h.startsWith("http") ? h : `https://x.com/${h.replace("@", "")}` })),
+          maxItems: 1,
+        });
+        break;
+      }
+
+      case "twitter-posts": {
+        // Scrape tweets from a user
+        const handle = (params.handle || params.username || "").replace("@", "");
+        results = await runActor("apidojo~tweet-scraper", {
+          startUrls: [{ url: `https://x.com/${handle}` }],
+          maxItems: params.limit || 30,
+          sort: "Latest",
+        });
+        break;
+      }
+
+      case "linkedin-profile": {
+        // Scrape LinkedIn profile
+        const urls = Array.isArray(params.urls) ? params.urls : [params.urls];
+        results = await runActor("harvestapi~linkedin-profile-scraper", {
+          profileUrls: urls,
+        });
+        break;
+      }
+
+      case "linkedin-posts": {
+        // Scrape LinkedIn posts from a profile
+        const url = params.url || params.profileUrl || "";
+        results = await runActor("harvestapi~linkedin-profile-scraper", {
+          profileUrls: [url],
+          scrapeActivities: true,
+        });
+        break;
+      }
+
       case "shopify-store": {
         // Scrape info about a Shopify store
         const urls = Array.isArray(params.urls) ? params.urls : [params.urls];
