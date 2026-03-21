@@ -255,23 +255,29 @@ export default function SettingsPage() {
               <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">ClickUp ID</span>
               <span />
             </div>
-            {(settings.team || []).map((member, i) => (
-              <div key={member.id} className="grid grid-cols-[1fr_120px_120px_120px_40px] gap-2 px-4 py-2.5 border-b border-[#EDEDEF] last:border-0 items-center">
-                <div>
-                  <p className="text-sm font-medium text-[#1A1A1A]">{member.name}</p>
-                  <p className="text-[10px] text-[#AAA]">{member.role}</p>
+            {(settings.team || []).map((member, i) => {
+              const updateMember = (field: keyof typeof member, value: string) => {
+                const updated = (settings.team || []).map((m, idx) => idx === i ? { ...m, [field]: value } : m);
+                setSettings({ ...settings, team: updated });
+              };
+              return (
+                <div key={member.id} className="grid grid-cols-[1fr_120px_120px_120px_40px] gap-2 px-4 py-2.5 border-b border-[#EDEDEF] last:border-0 items-center">
+                  <div className="space-y-0.5">
+                    <input type="text" value={member.name} onChange={(e) => updateMember("name", e.target.value)} className="text-sm font-medium text-[#1A1A1A] bg-transparent border-0 border-b border-transparent hover:border-[#E5E5EA] focus:border-[#999] focus:outline-none w-full px-0 py-0" />
+                    <input type="text" value={member.role} onChange={(e) => updateMember("role", e.target.value)} className="text-[10px] text-[#AAA] bg-transparent border-0 border-b border-transparent hover:border-[#E5E5EA] focus:border-[#999] focus:outline-none w-full px-0 py-0" placeholder="Role" />
+                  </div>
+                  <input type="text" value={member.email} onChange={(e) => updateMember("email", e.target.value)} className="text-xs text-[#777] bg-transparent border-0 border-b border-transparent hover:border-[#E5E5EA] focus:border-[#999] focus:outline-none w-full px-0 py-0 truncate" placeholder="email" />
+                  <input type="text" value={member.slack_id} onChange={(e) => updateMember("slack_id", e.target.value)} className="text-xs text-[#777] font-mono bg-transparent border-0 border-b border-transparent hover:border-[#E5E5EA] focus:border-[#999] focus:outline-none w-full px-0 py-0 truncate" placeholder="Slack ID" />
+                  <input type="text" value={member.clickup_id} onChange={(e) => updateMember("clickup_id", e.target.value)} className="text-xs text-[#777] font-mono bg-transparent border-0 border-b border-transparent hover:border-[#E5E5EA] focus:border-[#999] focus:outline-none w-full px-0 py-0 truncate" placeholder="ClickUp ID" />
+                  <button
+                    onClick={() => setSettings({ ...settings, team: (settings.team || []).filter((_, idx) => idx !== i) })}
+                    className="p-1 text-[#A0A0A0] hover:text-red-400 transition-colors"
+                  >
+                    <TrashIcon className="size-3.5" />
+                  </button>
                 </div>
-                <p className="text-xs text-[#777] truncate">{member.email || "—"}</p>
-                <p className="text-xs text-[#777] font-mono truncate">{member.slack_id || "—"}</p>
-                <p className="text-xs text-[#777] font-mono truncate">{member.clickup_id || "—"}</p>
-                <button
-                  onClick={() => setSettings({ ...settings, team: (settings.team || []).filter((_, idx) => idx !== i) })}
-                  className="p-1 text-[#A0A0A0] hover:text-red-400 transition-colors"
-                >
-                  <TrashIcon className="size-3.5" />
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
