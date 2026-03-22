@@ -106,18 +106,23 @@ export function getSettings(): BusinessSettings {
  * Call once on app/page mount.
  */
 export async function loadSettings(): Promise<BusinessSettings> {
-  // Try Supabase first
+  // Always try Supabase first — don't trust localStorage for team IDs
   try {
-    const items = await store.getAll();
-    const item = items.find((i) => i.id === SETTINGS_ID);
-    if (item) {
-      const { id: _id, ...settings } = item;
-      const merged = { ...DEFAULT_SETTINGS, ...settings };
-      // Also update localStorage so getSettings() sync reads work
-      if (typeof window !== "undefined") {
-        localStorage.setItem(LS_KEY, JSON.stringify([{ ...merged, id: SETTINGS_ID }]));
+    const { isSupabaseConfigured, supabase } = await import("@/lib/supabase");
+    if (isSupabaseConfigured()) {
+      const { data, error } = await supabase
+        .from("business_settings")
+        .select("data")
+        .eq("id", SETTINGS_ID)
+        .limit(1);
+      if (!error && data?.[0]?.data) {
+        const merged = { ...DEFAULT_SETTINGS, ...data[0].data };
+        // Sync to localStorage
+        if (typeof window !== "undefined") {
+          localStorage.setItem(LS_KEY, JSON.stringify([{ ...merged, id: SETTINGS_ID }]));
+        }
+        return merged;
       }
-      return merged;
     }
   } catch {
     /* fall through to sync */
