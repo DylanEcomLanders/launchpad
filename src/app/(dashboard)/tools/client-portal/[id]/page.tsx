@@ -78,6 +78,7 @@ export default function PortalDetailPage() {
   const [funnels, setFunnels] = useState<FunnelData[]>([]);
   const [portalTickets, setPortalTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
+  const [team, setTeam] = useState<TeamMember[]>([]);
   const [activeTab, setActiveTab] = useState<DashTab>("overview");
   const [defaultTabSet, setDefaultTabSet] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -98,7 +99,7 @@ export default function PortalDetailPage() {
   const [phaseDeadline, setPhaseDeadline] = useState("");
 
   // Multi-project state
-  const [selectedProjectIdx, setSelectedProjectIdx] = useState(0);
+  const [selectedProjectIdx, setSelectedProjectIdx] = useState(-1); // -1 = show projects list
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const [newProjectName, setNewProjectName] = useState("");
   const [newProjectType, setNewProjectType] = useState<ProjectType>("page-build");
@@ -152,6 +153,7 @@ export default function PortalDetailPage() {
 
   useEffect(() => {
     load();
+    loadSettings().then((s) => setTeam(s.team || []));
   }, [load]);
 
   // ── Handlers ──
@@ -462,6 +464,7 @@ export default function PortalDetailPage() {
                   {isRetainerPortal ? "Retainer" : "Project"}
                 </span>
               </div>
+              {portal.client_email && <p className="text-xs text-[#AAA] mt-1">{portal.client_email}</p>}
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <button
@@ -484,15 +487,104 @@ export default function PortalDetailPage() {
                 onClick={() => { load(); }}
                 className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#1B1B1B] text-white text-[11px] font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
               >
-                <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H4.28a.75.75 0 00-.75.75v3.955a.75.75 0 001.5 0v-2.134l.312.312a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm-10.624-2.85a5.5 5.5 0 019.201-2.465l.312.31H11.77a.75.75 0 000 1.5h3.955a.75.75 0 00.75-.75V3.214a.75.75 0 00-1.5 0v2.134l-.312-.312A7 7 0 003.95 8.174a.75.75 0 001.449.39z" clipRule="evenodd" /></svg>
                 Save
               </button>
             </div>
           </div>
         </div>
 
-        {/* Project selector */}
-        {(portal.projects?.length > 0 || true) && (
+        {/* ── Client Details Bar ── */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+          {/* Team */}
+          <div className="px-3.5 py-3 border border-[#E5E5EA] rounded-xl bg-white">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Team</p>
+            {(() => {
+              const assigned = portal.team_member_ids || [];
+              if (assigned.length === 0) return <p className="text-[10px] text-[#CCC]">No team assigned</p>;
+              return (
+                <div className="flex flex-wrap gap-1">
+                  {assigned.map((id) => {
+                    const m = team.find((t) => t.id === id);
+                    if (!m) return null;
+                    return <span key={id} className="text-[10px] font-medium text-[#1A1A1A] bg-[#F3F3F5] px-2 py-0.5 rounded-full">{m.name}</span>;
+                  })}
+                </div>
+              );
+            })()}
+          </div>
+          {/* Slack */}
+          <div className="px-3.5 py-3 border border-[#E5E5EA] rounded-xl bg-white">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Slack Channel</p>
+            <p className="text-xs text-[#1A1A1A] font-mono">{portal.slack_channel_url || <span className="text-[#CCC]">Not set</span>}</p>
+          </div>
+          {/* Next Touchpoint */}
+          <div className="px-3.5 py-3 border border-[#E5E5EA] rounded-xl bg-white">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Next Touchpoint</p>
+            {portal.next_touchpoint?.date ? (() => {
+              const days = Math.ceil((new Date(portal.next_touchpoint.date + "T00:00:00").getTime() - Date.now()) / 86400000);
+              return (
+                <div>
+                  <p className={`text-xs font-medium ${days < 0 ? "text-red-500" : days <= 2 ? "text-amber-600" : "text-[#1A1A1A]"}`}>
+                    {new Date(portal.next_touchpoint.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                    <span className="ml-1.5 text-[10px] font-normal">{days < 0 ? `${Math.abs(days)}d overdue` : days === 0 ? "Today" : `in ${days}d`}</span>
+                  </p>
+                  {portal.next_touchpoint.description && <p className="text-[10px] text-[#999] mt-0.5">{portal.next_touchpoint.description}</p>}
+                </div>
+              );
+            })() : <p className="text-[10px] text-[#CCC]">Not set</p>}
+          </div>
+        </div>
+
+        {/* ── Projects List ── */}
+        {!selectedProject && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Projects</h3>
+            </div>
+            <div className="divide-y divide-[#F0F0F0]">
+              {(portal.projects || []).map((proj, idx) => {
+                const startDate = proj.created_at ? new Date(proj.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
+                return (
+                  <button
+                    key={proj.id}
+                    onClick={() => setSelectedProjectIdx(idx)}
+                    className="flex items-center justify-between w-full px-3.5 py-3.5 hover:bg-[#F7F8FA] transition-colors text-left rounded-lg"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-[#1A1A1A]">{proj.name}</p>
+                      <p className="text-[10px] text-[#AAA]">
+                        {proj.type === "retainer" ? "Retainer" : "Page Build"}
+                        {startDate ? ` · Started ${startDate}` : ""}
+                        {proj.current_phase ? ` · ${proj.current_phase}` : ""}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={`size-1.5 rounded-full ${proj.status === "active" ? "bg-emerald-500" : proj.status === "paused" ? "bg-amber-500" : "bg-[#CCC]"}`} />
+                      <svg className="size-4 text-[#DDD]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+                    </div>
+                  </button>
+                );
+              })}
+              {(portal.projects || []).length === 0 && (
+                <p className="text-xs text-[#CCC] py-4">No projects yet — add one below</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Back to projects when drilled in */}
+        {selectedProject && (
+          <button
+            onClick={() => setSelectedProjectIdx(-1)}
+            className="inline-flex items-center gap-1 text-xs font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors mb-4"
+          >
+            <ArrowLeftIcon className="size-3" />
+            Back to projects
+          </button>
+        )}
+
+        {/* Legacy project selector pills (hidden when using new list) */}
+        {selectedProject && false && (portal.projects?.length > 0 || true) && (
           <div className="flex items-center gap-2 flex-wrap mb-5">
             {(portal.projects || []).map((proj, idx) => (
               <button
@@ -526,8 +618,8 @@ export default function PortalDetailPage() {
           </div>
         )}
 
-        {/* Tab bar */}
-        <div className="flex gap-0.5 bg-[#F3F3F5] rounded-md p-1 mb-8">
+        {/* Tab bar — only when drilled into a project */}
+        {selectedProject && <div className="flex gap-0.5 bg-[#F3F3F5] rounded-md p-1 mb-8">
           {dashTabs.map((tab) => (
             <button
               key={tab.key}
@@ -541,10 +633,10 @@ export default function PortalDetailPage() {
               {tab.label}
             </button>
           ))}
-        </div>
+        </div>}
 
-        {/* Tab content */}
-        {activeTab === "overview" && (
+        {/* Tab content — only when drilled into a project */}
+        {selectedProject && activeTab === "overview" && (
           <OverviewSection
             portal={portal}
             selectedProject={selectedProject}
