@@ -42,58 +42,34 @@ const teamZones = [
 
 const navSections: NavSection[] = [
   {
-    title: "Projects",
-    icon: <FolderIcon className="size-4" />,
-    defaultOpen: true,
-    items: [
-      { label: "Proposals", href: "/tools/proposals" },
-      { label: "Project Kickoff", href: "/tools/project-kickoff" },
-      { label: "Client Portals", href: "/tools/client-portal" },
-    ],
-  },
-  {
     title: "Finance",
     icon: <BanknotesIcon className="size-4" />,
     defaultOpen: true,
     items: [
       { label: "Price Calculator", href: "/tools/price-calculator" },
-      { label: "Dev Hours Log", href: "/tools/dev-hours" },
       { label: "Invoice Generator", href: "/tools/invoice-generator" },
       { label: "Payment Link", href: "/tools/payment-link" },
+      { label: "Dev Hours Log", href: "/tools/dev-hours" },
       { label: "Expenses", href: "/tools/expenses" },
     ],
   },
   {
-    title: "Sales",
-    icon: <RocketLaunchIcon className="size-4" />,
-    defaultOpen: true,
-    items: [
-      { label: "Revenue", href: "/tools/revenue" },
-      { label: "Lead Scraper", href: "/tools/prospect-scraper" },
-      { label: "Audit Engine", href: "/tools/store-intel" },
-      { label: "Portfolio", href: "/tools/portfolio" },
-      { label: "Price Lists", href: "/tools/price-lists" },
-      { label: "Content Engine", href: "/tools/content-db" },
-    ],
-  },
-  {
-    title: "Team",
+    title: "Training",
     icon: <UserGroupIcon className="size-4" />,
     defaultOpen: true,
     items: [
+      { label: "Playbooks", href: "/tools/playbooks" },
       { label: "QA Checklist", href: "/tools/qa-checklist" },
       { label: "Dev Self-Check", href: "/tools/dev-selfcheck" },
       { label: "Feedback", href: "/tools/feedback" },
-      { label: "Playbooks", href: "/tools/playbooks" },
     ],
   },
   {
-    title: "CRO",
+    title: "CRO Lab",
     icon: <BeakerIcon className="size-4" />,
     defaultOpen: false,
     items: [
       { label: "Funnel Builder", href: "/tools/funnel-builder" },
-      { label: "Copy Checker", href: "/tools/page-copy-audit" },
       { label: "CRO Monitor", href: "/tools/cro-monitor" },
       { label: "CRO Audit", href: "/tools/cro-audit" },
     ],
@@ -185,7 +161,21 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto scrollbar-thin py-2">
-          {/* Mission Control */}
+          {/* Hero CTAs */}
+          {!collapsed && (
+            <div className="px-3 mb-2">
+              <Link
+                href="/tools/project-kickoff"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center justify-center gap-2 px-3 py-2.5 mb-2 bg-[#1B1B1B] text-white text-[12px] font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors"
+              >
+                <RocketLaunchIcon className="size-3.5" />
+                Project Kickoff
+              </Link>
+            </div>
+          )}
+
+          {/* Main nav */}
           <div className="px-3 mb-4">
             <Link
               href="/"
@@ -200,6 +190,34 @@ export function Sidebar() {
             >
               <HomeIcon className="size-4" />
               {!collapsed && <span>Mission Control</span>}
+            </Link>
+            <Link
+              href="/tools/client-portal"
+              onClick={() => setMobileOpen(false)}
+              className={`
+                flex items-center gap-2.5 px-2.5 py-2 mt-1 rounded-lg text-sm transition-all duration-200
+                ${pathname === "/tools/client-portal" || pathname.startsWith("/tools/client-portal/")
+                  ? "bg-white text-[#1B1B1B] font-medium shadow-[var(--shadow-nav-active)]"
+                  : "text-[#7A7A7A] hover:bg-white/60 hover:text-[#1B1B1B]"
+                }
+              `}
+            >
+              <FolderIcon className="size-4" />
+              {!collapsed && <span>Portals</span>}
+            </Link>
+            <Link
+              href="/tools/tickets"
+              onClick={() => setMobileOpen(false)}
+              className={`
+                flex items-center gap-2.5 px-2.5 py-2 mt-1 rounded-lg text-sm transition-all duration-200
+                ${pathname === "/tools/tickets"
+                  ? "bg-white text-[#1B1B1B] font-medium shadow-[var(--shadow-nav-active)]"
+                  : "text-[#7A7A7A] hover:bg-white/60 hover:text-[#1B1B1B]"
+                }
+              `}
+            >
+              <svg className="size-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.5 3A2.5 2.5 0 003 5.5v2.879a2.5 2.5 0 00.732 1.767l6.5 6.5a2.5 2.5 0 003.536 0l2.878-2.878a2.5 2.5 0 000-3.536l-6.5-6.5A2.5 2.5 0 008.38 3H5.5zM6 7a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" /></svg>
+              {!collapsed && <span>Tickets</span>}
             </Link>
             <Link
               href="/team"
@@ -273,36 +291,10 @@ export function Sidebar() {
           {!collapsed && (
             <div className="px-5 mt-2">
               <Link
-                href="/tools/issues"
-                onClick={() => setMobileOpen(false)}
-                className={`
-                  flex items-center gap-2 px-2.5 py-1.5 text-[12px] font-semibold uppercase tracking-wider rounded-md transition-all duration-150
-                  ${pathname === "/tools/issues"
-                    ? "text-[#1B1B1B] bg-white shadow-[var(--shadow-soft)]"
-                    : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
-                  }
-                `}
-              >
-                Issues
-              </Link>
-              <Link
-                href="/tools/tickets"
-                onClick={() => setMobileOpen(false)}
-                className={`
-                  flex items-center gap-2 px-2.5 py-1.5 text-[12px] font-semibold uppercase tracking-wider rounded-md transition-all duration-150 mt-1
-                  ${pathname === "/tools/tickets"
-                    ? "text-[#1B1B1B] bg-white shadow-[var(--shadow-soft)]"
-                    : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
-                  }
-                `}
-              >
-                Tickets
-              </Link>
-              <Link
                 href="/settings"
                 onClick={() => setMobileOpen(false)}
                 className={`
-                  flex items-center gap-2 px-2.5 py-1.5 text-[12px] font-semibold uppercase tracking-wider rounded-md transition-all duration-150 mt-1
+                  flex items-center gap-2 px-2.5 py-1.5 text-[12px] font-semibold uppercase tracking-wider rounded-md transition-all duration-150
                   ${pathname === "/settings"
                     ? "text-[#1B1B1B] bg-white shadow-[var(--shadow-soft)]"
                     : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"

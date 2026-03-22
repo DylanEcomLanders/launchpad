@@ -33,12 +33,33 @@ interface NavSection {
 
 const navSections: NavSection[] = [
   {
+    title: "Pipeline",
+    icon: <FunnelIcon className="size-4" />,
+    defaultOpen: true,
+    items: [
+      { label: "Deals", href: "/sales-engine/deals" },
+      { label: "Revenue", href: "/sales-engine/revenue" },
+      { label: "Portfolio", href: "/sales-engine/portfolio" },
+      { label: "Price Lists", href: "/sales-engine/price-lists" },
+    ],
+  },
+  {
+    title: "Content",
+    icon: <svg className="size-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h9.621a1.5 1.5 0 011.06.44l2.379 2.379A1.5 1.5 0 0117 5.879V16.5a1.5 1.5 0 01-1.5 1.5h-12A1.5 1.5 0 012 16.5v-13zm4.75 7a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5zm0-3a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z" clipRule="evenodd" /></svg>,
+    defaultOpen: true,
+    items: [
+      { label: "Content Engine", href: "/sales-engine/content-engine" },
+      { label: "Calendar", href: "/sales-engine/calendar" },
+    ],
+  },
+  {
     title: "Research",
     icon: <MagnifyingGlassIcon className="size-4" />,
     defaultOpen: true,
     items: [
       { label: "Store Audit", href: "/sales-engine/research" },
       { label: "Ecom Prospecting", href: "/sales-engine/research/prospects" },
+      { label: "Social Intel", href: "/sales-engine/social" },
     ],
   },
 ];
@@ -78,6 +99,19 @@ export function SalesEngineSidebar() {
           {collapsed ? <ChevronRightIcon className="size-3.5" /> : <ChevronLeftIcon className="size-3.5" />}
         </button>
       </div>
+
+      {/* Hero CTA */}
+      {!collapsed && (
+        <div className="px-3 mb-2">
+          <Link
+            href="/tools/proposals"
+            onClick={() => setMobileOpen(false)}
+            className="flex items-center justify-center gap-2 px-3 py-2.5 bg-[#1B1B1B] text-white text-[12px] font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors"
+          >
+            Send Proposal
+          </Link>
+        </div>
+      )}
 
       {/* Command Centre */}
       <div className="px-3 mb-2">
