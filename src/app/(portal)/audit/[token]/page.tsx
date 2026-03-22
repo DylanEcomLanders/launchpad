@@ -56,34 +56,33 @@ export default async function PublicAuditPage({ params }: { params: Promise<{ to
             <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-[#1A1A1A] mb-4 pb-2 border-b border-[#E8E8E8]">
               Page Speed (Mobile)
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              <div className="border border-[#E8E8E8] rounded-xl px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Performance</p>
-                <p className={`text-2xl font-bold tabular-nums ${audit.speed_data.score >= 90 ? "text-emerald-600" : audit.speed_data.score >= 50 ? "text-amber-600" : "text-red-500"}`}>
-                  {audit.speed_data.score}<span className="text-sm text-[#AAA]">/100</span>
-                </p>
-              </div>
-              <div className="border border-[#E8E8E8] rounded-xl px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">First Paint</p>
-                <p className="text-lg font-bold tabular-nums text-[#1A1A1A]">{audit.speed_data.fcp}</p>
-              </div>
-              <div className="border border-[#E8E8E8] rounded-xl px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Largest Paint</p>
-                <p className="text-lg font-bold tabular-nums text-[#1A1A1A]">{audit.speed_data.lcp}</p>
-              </div>
-              <div className="border border-[#E8E8E8] rounded-xl px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Blocking Time</p>
-                <p className="text-lg font-bold tabular-nums text-[#1A1A1A]">{audit.speed_data.tbt}</p>
-              </div>
-              <div className="border border-[#E8E8E8] rounded-xl px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Layout Shift</p>
-                <p className="text-lg font-bold tabular-nums text-[#1A1A1A]">{audit.speed_data.cls}</p>
-              </div>
-              <div className="border border-[#E8E8E8] rounded-xl px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Speed Index</p>
-                <p className="text-lg font-bold tabular-nums text-[#1A1A1A]">{audit.speed_data.si}</p>
-              </div>
-            </div>
+            {(() => {
+              const sd = audit.speed_data;
+              const parseMs = (v: string) => parseFloat(v.replace(/[^0-9.]/g, "")) || 0;
+              const metrics = [
+                { label: "Performance", value: `${sd.score}/100`, benchmark: "90+", pass: sd.score >= 90, warn: sd.score >= 50 },
+                { label: "First Paint", value: sd.fcp, benchmark: "< 1.8s", pass: parseMs(sd.fcp) <= 1.8, warn: parseMs(sd.fcp) <= 3 },
+                { label: "Largest Paint", value: sd.lcp, benchmark: "< 2.5s", pass: parseMs(sd.lcp) <= 2.5, warn: parseMs(sd.lcp) <= 4 },
+                { label: "Blocking Time", value: sd.tbt, benchmark: "< 200ms", pass: parseMs(sd.tbt) <= 200, warn: parseMs(sd.tbt) <= 600 },
+                { label: "Layout Shift", value: sd.cls, benchmark: "< 0.1", pass: parseMs(sd.cls) <= 0.1, warn: parseMs(sd.cls) <= 0.25 },
+                { label: "Speed Index", value: sd.si, benchmark: "< 3.4s", pass: parseMs(sd.si) <= 3.4, warn: parseMs(sd.si) <= 5.8 },
+              ];
+              return (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {metrics.map((m) => (
+                    <div key={m.label} className="border border-[#E8E8E8] rounded-xl px-4 py-3">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">{m.label}</p>
+                      <div className="flex items-end gap-2">
+                        <p className={`text-lg font-bold tabular-nums ${m.pass ? "text-emerald-600" : m.warn ? "text-amber-600" : "text-red-500"}`}>{m.value}</p>
+                        <p className={`text-[10px] mb-0.5 ${m.pass ? "text-emerald-500" : "text-[#CCC]"}`}>
+                          {m.pass ? "✓" : `Goal: ${m.benchmark}`}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </section>
         )}
 

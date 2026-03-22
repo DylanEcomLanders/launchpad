@@ -196,7 +196,7 @@ Speed Index: ${speedData.si}
 PAGE CONTENT:
 ${pageMarkdown}
 
-Analyse the page structure, copy, CTAs, social proof, navigation, and overall conversion architecture. Be specific — reference actual elements you can see.${speedData ? " Include page speed findings in your audit — slow pages kill conversion." : ""}`,
+Analyse the page structure, copy, CTAs, social proof, navigation, and overall conversion architecture. Be specific — reference actual elements you can see. DO NOT include page speed or performance issues in the CRO issues — speed data is displayed separately. Focus purely on conversion architecture.`,
     });
 
     // Step 3: Load knowledge base and run Claude analysis
