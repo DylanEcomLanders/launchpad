@@ -281,56 +281,78 @@ export function PortalView({
         <div className="md:hidden fixed inset-0 z-40 bg-black/50" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* ── Sidebar ── */}
-      <aside className={`fixed md:sticky top-0 left-0 h-screen z-50 md:z-auto w-[220px] bg-white border-r border-[#E8E8E8] flex flex-col transition-transform duration-200 md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        {/* Logo */}
-        <div className="px-5 py-6 border-b border-[#E8E8E8]">
-          <Logo height={14} />
-        </div>
-
-        {/* Back to home when drilled in */}
-        {drillView !== "home" && (
-          <div className="px-3 pt-3 pb-1">
-            <button
-              onClick={() => { goHome(); setSidebarOpen(false); }}
-              className="w-full text-left px-2.5 py-2 text-[11px] font-medium text-[#AAA] hover:text-[#1A1A1A] rounded-md hover:bg-[#F5F5F5] transition-all flex items-center gap-1.5"
-            >
-              <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" /></svg>
-              Home
-            </button>
-            <p className="px-2.5 mt-2 text-[10px] font-semibold text-[#1A1A1A] truncate">{selectedProject?.name}</p>
-            <p className="px-2.5 text-[9px] text-[#CCC] uppercase tracking-wider">{selectedProject?.type === "retainer" ? "Retainer" : "Project"}</p>
+      {/* ── Sidebar (home view only) ── */}
+      {drillView === "home" && (
+        <aside className={`fixed md:sticky top-0 left-0 h-screen z-50 md:z-auto w-[220px] bg-white border-r border-[#E8E8E8] flex flex-col transition-transform duration-200 md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+          <div className="px-5 py-6 border-b border-[#E8E8E8]">
+            <Logo height={14} />
           </div>
-        )}
-
-        {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          {navItems.map((item) => (
-            <button
-              key={item.key}
-              onClick={() => { setActiveTab(item.key); setSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium rounded-lg transition-all duration-150 ${
-                activeTab === item.key
-                  ? "bg-[#1A1A1A] text-white"
-                  : "text-[#999] hover:bg-[#F5F5F5] hover:text-[#1A1A1A]"
-              }`}
-            >
-              <NavIcon type={item.key} />
-              {item.label}
-            </button>
-          ))}
-        </nav>
-
-        {/* Sidebar footer */}
-        <div className="px-5 py-4 border-t border-[#E8E8E8] space-y-2">
-          <UKTimeBanner />
-          <p className="text-[10px] text-[#CCC]">Powered by Ecomlanders</p>
-        </div>
-      </aside>
+          <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+            {navItems.map((item) => (
+              <button
+                key={item.key}
+                onClick={() => { setActiveTab(item.key); setSidebarOpen(false); }}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium rounded-lg transition-all duration-150 ${
+                  activeTab === item.key
+                    ? "bg-[#1A1A1A] text-white"
+                    : "text-[#999] hover:bg-[#F5F5F5] hover:text-[#1A1A1A]"
+                }`}
+              >
+                <NavIcon type={item.key} />
+                {item.label}
+              </button>
+            ))}
+          </nav>
+          <div className="px-5 py-4 border-t border-[#E8E8E8] space-y-2">
+            <UKTimeBanner />
+            <p className="text-[10px] text-[#CCC]">Powered by Ecomlanders</p>
+          </div>
+        </aside>
+      )}
 
       {/* ── Main content ── */}
       <main className="flex-1 min-w-0 pt-14 md:pt-0">
         <div className="max-w-5xl mx-auto px-6 md:px-10 py-8 md:py-10">
+
+        {/* Project tabs (when drilled in) */}
+        {drillView !== "home" && (
+          <div className="mb-6">
+            {/* Back + project name */}
+            <div className="flex items-center gap-3 mb-4">
+              <button
+                onClick={goHome}
+                className="flex items-center gap-1 text-xs font-medium text-[#AAA] hover:text-[#1A1A1A] transition-colors"
+              >
+                <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" /></svg>
+                Home
+              </button>
+              <span className="text-[#E5E5EA]">·</span>
+              <span className="text-xs font-semibold text-[#1A1A1A]">{selectedProject?.name}</span>
+              <span className={`text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${
+                selectedProject?.type === "retainer" ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
+              }`}>
+                {selectedProject?.type === "retainer" ? "Retainer" : "Project"}
+              </span>
+            </div>
+            {/* Tab bar */}
+            <div className="flex items-center gap-1 border-b border-[#E8E8E8]">
+              {navItems.map((item) => (
+                <button
+                  key={item.key}
+                  onClick={() => setActiveTab(item.key)}
+                  className={`px-4 py-2.5 text-xs font-semibold transition-colors relative ${
+                    activeTab === item.key
+                      ? "text-[#1A1A1A]"
+                      : "text-[#AAA] hover:text-[#777]"
+                  }`}
+                >
+                  {item.label}
+                  {activeTab === item.key && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1A1A1A] rounded-full" />}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
           {/* Tab content */}
           <div key={activeTab} className="animate-fadeIn">
             {activeTab === "overview" && drillView === "home" && (
@@ -683,16 +705,15 @@ function ClientHub({
             const liveTests = (portal.results || []).filter(r => r.status === "live").length;
             const completedTests = (portal.results || []).filter(r => r.status === "complete").length;
             return (
-              <button
+              <div
                 key={proj.id}
-                onClick={() => onOpenProject(idx)}
-                className="w-full text-left group"
+                className="border border-[#E8E8E8] rounded-xl p-4 mb-2 hover:border-[#C5C5C5] transition-colors"
               >
-                <div className="flex items-center justify-between py-3.5 px-4 -mx-2 border border-transparent hover:border-[#E5E5EA] hover:bg-[#FAFAFA] rounded-xl transition-all cursor-pointer">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     {proj.status === "active" && <span className="size-2 rounded-full bg-emerald-500 shrink-0" />}
                     <div>
-                      <p className="text-sm font-semibold text-[#1A1A1A] group-hover:text-[#000]">{proj.name}</p>
+                      <p className="text-sm font-semibold text-[#1A1A1A]">{proj.name}</p>
                       <p className="text-xs text-[#AAA] mt-0.5">
                         {proj.created_at && <span className="mr-3">Started {new Date(proj.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>}
                         {tier && <span className="mr-3">· {tier} · {tier === "T1" ? "1" : tier === "T2" ? "2" : "4"} tests/week</span>}
@@ -701,9 +722,15 @@ function ClientHub({
                       </p>
                     </div>
                   </div>
-                  <svg className="size-4 text-[#DDD] group-hover:text-[#999] shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+                  <button
+                    onClick={() => onOpenProject(idx)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium border border-[#E5E5EA] rounded-lg text-[#777] hover:text-[#1A1A1A] hover:border-[#999] transition-colors shrink-0"
+                  >
+                    View
+                    <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+                  </button>
                 </div>
-              </button>
+              </div>
             );
           }) : (
             <button
@@ -736,16 +763,15 @@ function ClientHub({
             const phase = (proj.phases?.length ? proj.phases : portal.phases).find(p => p.status === "in-progress");
             const progress = proj.progress || portal.progress || 0;
             return (
-              <button
+              <div
                 key={proj.id}
-                onClick={() => onOpenProject(idx)}
-                className="w-full text-left group"
+                className="border border-[#E8E8E8] rounded-xl p-4 mb-2 hover:border-[#C5C5C5] transition-colors"
               >
-                <div className="flex items-center justify-between py-3.5 px-4 -mx-2 border border-transparent hover:border-[#E5E5EA] hover:bg-[#FAFAFA] rounded-xl transition-all cursor-pointer">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     {proj.status === "active" && <span className="size-2 rounded-full bg-emerald-500 shrink-0" />}
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-[#1A1A1A] group-hover:text-[#000]">{proj.name}</p>
+                      <p className="text-sm font-semibold text-[#1A1A1A]">{proj.name}</p>
                       <p className="text-xs text-[#AAA] mt-0.5">
                         {proj.created_at && <span className="mr-2">Started {new Date(proj.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} ·</span>}
                         {phase ? phase.name : proj.current_phase || portal.current_phase || "In progress"}
@@ -753,14 +779,20 @@ function ClientHub({
                       </p>
                     </div>
                   </div>
-                  {progress > 0 && (
-                    <div className="w-16 h-1 bg-[#F0F0F0] rounded-full mr-3 shrink-0">
-                      <div className="h-full bg-[#1A1A1A] rounded-full" style={{ width: `${progress}%` }} />
-                    </div>
-                  )}
-                  <svg className="size-4 text-[#DDD] group-hover:text-[#999] shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+                  <button
+                    onClick={() => onOpenProject(idx)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium border border-[#E5E5EA] rounded-lg text-[#777] hover:text-[#1A1A1A] hover:border-[#999] transition-colors shrink-0"
+                  >
+                    View
+                    <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+                  </button>
                 </div>
-              </button>
+                {progress > 0 && (
+                  <div className="mt-3 h-1 bg-[#F0F0F0] rounded-full overflow-hidden">
+                    <div className="h-full bg-[#1A1A1A] rounded-full" style={{ width: `${progress}%` }} />
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
