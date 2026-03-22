@@ -495,18 +495,27 @@ export default function PortalDetailPage() {
 
         {/* ── Client Details ── */}
         <div className="border border-[#E5E5EA] rounded-xl bg-white divide-y divide-[#F0F0F0] mb-6 overflow-hidden">
-          {/* Team */}
+          {/* Designers */}
           <div className="flex items-center justify-between px-4 py-3">
-            <p className="text-xs font-medium text-[#777]">Team</p>
+            <p className="text-xs font-medium text-[#777]">Designers</p>
             <div className="flex flex-wrap gap-1.5 justify-end">
               {(() => {
-                const assigned = portal.team_member_ids || [];
-                if (assigned.length === 0) return <span className="text-[10px] text-[#CCC]">Not assigned</span>;
-                return assigned.map((id) => {
-                  const m = team.find((t) => t.id === id);
-                  if (!m) return null;
-                  return <span key={id} className="text-[10px] font-medium text-[#1A1A1A] bg-[#F3F3F5] px-2 py-0.5 rounded-full">{m.name} <span className="text-[#AAA]">{m.role}</span></span>;
-                });
+                const assigned = (portal.team_member_ids || []).map(id => team.find(t => t.id === id)).filter(Boolean);
+                const designers = assigned.filter(m => m && m.role.toLowerCase().includes("design"));
+                if (designers.length === 0) return <span className="text-[10px] text-[#CCC]">Not assigned</span>;
+                return designers.map(m => m && <span key={m.id} className="text-[10px] font-medium text-[#1A1A1A] bg-[#F3F3F5] px-2 py-0.5 rounded-full">{m.name}</span>);
+              })()}
+            </div>
+          </div>
+          {/* Developers */}
+          <div className="flex items-center justify-between px-4 py-3">
+            <p className="text-xs font-medium text-[#777]">Developers</p>
+            <div className="flex flex-wrap gap-1.5 justify-end">
+              {(() => {
+                const assigned = (portal.team_member_ids || []).map(id => team.find(t => t.id === id)).filter(Boolean);
+                const devs = assigned.filter(m => m && (m.role.toLowerCase().includes("develop") || m.role.toLowerCase().includes("head of dev")));
+                if (devs.length === 0) return <span className="text-[10px] text-[#CCC]">Not assigned</span>;
+                return devs.map(m => m && <span key={m.id} className="text-[10px] font-medium text-[#1A1A1A] bg-[#F3F3F5] px-2 py-0.5 rounded-full">{m.name}</span>);
               })()}
             </div>
           </div>
