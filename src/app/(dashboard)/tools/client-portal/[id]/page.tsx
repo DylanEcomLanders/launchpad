@@ -24,7 +24,7 @@ import {
 import { isLoomUrl, toLoomEmbed } from "@/lib/portal/loom";
 import { IntelligemsTestCards } from "@/components/intelligems-tests";
 import { getFunnelsByClientId } from "@/lib/funnel-builder/data";
-import { loadSettings, type TeamMember } from "@/lib/settings";
+import { loadSettings, getNextTouchpointDate, type TeamMember } from "@/lib/settings";
 import { getTickets, type Ticket } from "@/lib/slack-tickets";
 import type { FunnelData } from "@/lib/funnel-builder/types";
 import {
@@ -3347,32 +3347,21 @@ function ClientDetailsPanel({ portal, team, onUpdateField }: { portal: PortalDat
         )}
       </div>
 
-      {/* Next Touchpoint */}
+      {/* Next Touchpoint (auto-calculated) */}
       <div className="flex items-center justify-between px-4 py-3">
         <p className="text-xs font-medium text-[#777]">Next Touchpoint</p>
-        {editingTp ? (
-          <div className="flex items-center gap-2">
-            <input type="date" value={tpDate} onChange={(e) => setTpDate(e.target.value)} className="text-xs px-2 py-1 border border-[#E5E5EA] rounded" />
-            <input type="text" value={tpDesc} onChange={(e) => setTpDesc(e.target.value)} className="text-xs px-2 py-1 border border-[#E5E5EA] rounded w-36" placeholder="Description" />
-            <button onClick={() => { onUpdateField("next_touchpoint", { date: tpDate, description: tpDesc }); setEditingTp(false); }} className="text-[10px] font-medium text-emerald-600">Save</button>
-            <button onClick={() => setEditingTp(false)} className="text-[10px] text-[#AAA]">Cancel</button>
-          </div>
-        ) : (
-          <button onClick={() => setEditingTp(true)} className="text-right hover:text-blue-600 transition-colors">
-            {portal.next_touchpoint?.date ? (() => {
-              const days = Math.ceil((new Date(portal.next_touchpoint.date + "T00:00:00").getTime() - Date.now()) / 86400000);
-              return (
-                <div>
-                  <p className={`text-xs font-medium ${days < 0 ? "text-red-500" : days <= 2 ? "text-amber-600" : "text-[#1A1A1A]"}`}>
-                    {new Date(portal.next_touchpoint.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                    <span className="ml-1.5 text-[10px] font-normal">{days < 0 ? `${Math.abs(days)}d overdue` : days === 0 ? "Today" : `in ${days}d`}</span>
-                  </p>
-                  {portal.next_touchpoint.description && <p className="text-[10px] text-[#999] mt-0.5">{portal.next_touchpoint.description}</p>}
-                </div>
-              );
-            })() : <span className="text-[10px] text-[#CCC]">Click to set</span>}
-          </button>
-        )}
+        {(() => {
+          const nextDate = getNextTouchpointDate();
+          if (!nextDate) return <span className="text-[10px] text-[#CCC]">No touchpoint days set</span>;
+          const days = Math.ceil((new Date(nextDate + "T00:00:00").getTime() - Date.now()) / 86400000);
+          const dayName = new Date(nextDate + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+          return (
+            <p className={`text-xs font-medium ${days === 0 ? "text-emerald-600" : days === 1 ? "text-amber-600" : "text-[#1A1A1A]"}`}>
+              {dayName}
+              <span className="ml-1.5 text-[10px] font-normal text-[#AAA]">{days === 0 ? "Today" : days === 1 ? "Tomorrow" : `in ${days}d`}</span>
+            </p>
+          );
+        })()}
       </div>
 
       {/* Client Email */}

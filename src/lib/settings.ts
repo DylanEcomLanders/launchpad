@@ -45,6 +45,17 @@ export interface BusinessSettings {
     sat: boolean;
     sun: boolean;
   };
+
+  /* Touchpoint days (which days of the week are touchpoint days) */
+  touchpointDays: {
+    mon: boolean;
+    tue: boolean;
+    wed: boolean;
+    thu: boolean;
+    fri: boolean;
+    sat: boolean;
+    sun: boolean;
+  };
 }
 
 export const DEFAULT_SETTINGS: BusinessSettings = {
@@ -64,6 +75,15 @@ export const DEFAULT_SETTINGS: BusinessSettings = {
     tue: true,
     wed: true,
     thu: true,
+    fri: true,
+    sat: false,
+    sun: false,
+  },
+  touchpointDays: {
+    mon: true,
+    tue: false,
+    wed: true,
+    thu: false,
     fri: true,
     sat: false,
     sun: false,
@@ -193,4 +213,51 @@ export function getTeamMemberByClickupId(clickupId: string, settings?: BusinessS
 /** Find team member by Slack ID */
 export function getTeamMemberBySlackId(slackId: string, settings?: BusinessSettings): TeamMember | undefined {
   return getTeam(settings).find((m) => m.slack_id === slackId);
+}
+
+/** Get touchpoint day numbers (0=Sun, 6=Sat) */
+export function getTouchpointDayNumbers(settings?: BusinessSettings): Set<number> {
+  const s = settings || getSettings();
+  const tp = s.touchpointDays || DEFAULT_SETTINGS.touchpointDays;
+  const days = new Set<number>();
+  if (tp.sun) days.add(0);
+  if (tp.mon) days.add(1);
+  if (tp.tue) days.add(2);
+  if (tp.wed) days.add(3);
+  if (tp.thu) days.add(4);
+  if (tp.fri) days.add(5);
+  if (tp.sat) days.add(6);
+  return days;
+}
+
+/** Get the next touchpoint date from today (YYYY-MM-DD) */
+export function getNextTouchpointDate(settings?: BusinessSettings): string {
+  const tpDays = getTouchpointDayNumbers(settings);
+  if (tpDays.size === 0) return "";
+  const d = new Date();
+  // Move to next day first (today doesn't count if it's already past)
+  d.setDate(d.getDate() + 1);
+  for (let i = 0; i < 7; i++) {
+    if (tpDays.has(d.getDay())) {
+      return d.toISOString().split("T")[0];
+    }
+    d.setDate(d.getDate() + 1);
+  }
+  return "";
+}
+
+/** Get all touchpoint dates between two dates */
+export function getTouchpointDatesBetween(startDate: string, endDate: string, settings?: BusinessSettings): string[] {
+  const tpDays = getTouchpointDayNumbers(settings);
+  if (tpDays.size === 0) return [];
+  const dates: string[] = [];
+  const d = new Date(startDate + "T00:00:00");
+  const end = new Date(endDate + "T00:00:00");
+  while (d <= end) {
+    if (tpDays.has(d.getDay())) {
+      dates.push(d.toISOString().split("T")[0]);
+    }
+    d.setDate(d.getDate() + 1);
+  }
+  return dates;
 }

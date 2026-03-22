@@ -237,6 +237,34 @@ export default function SettingsPage() {
         </div>
       </section>
 
+      {/* Touchpoint Days */}
+      <section className="mb-10">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
+          Touchpoint Days
+        </h2>
+        <p className="text-xs text-[#A0A0A0] mb-4">
+          Days when client touchpoints are scheduled. The system auto-calculates the next touchpoint for each client.
+        </p>
+        <div className="flex gap-2">
+          {dayLabels.map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => {
+                const tp = settings.touchpointDays || { mon: true, tue: false, wed: true, thu: false, fri: true, sat: false, sun: false };
+                setSettings({ ...settings, touchpointDays: { ...tp, [key]: !tp[key] } });
+              }}
+              className={`flex-1 py-3 text-sm font-medium rounded-lg border transition-colors ${
+                (settings.touchpointDays || { mon: true, tue: false, wed: true, thu: false, fri: true, sat: false, sun: false })[key]
+                  ? "bg-emerald-600 text-white border-emerald-600"
+                  : "bg-white text-[#AAA] border-[#E5E5EA] hover:border-[#999]"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </section>
+
       {/* Team Directory */}
       <section className="mb-10">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
