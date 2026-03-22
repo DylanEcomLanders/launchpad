@@ -42,7 +42,7 @@ export default async function PublicAuditPage({ params }: { params: Promise<{ to
             PREPARED BY ECOMLANDERS · CONFIDENTIAL
           </p>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#1A1A1A] mb-2">
-            Homepage CRO Audit
+            CRO Audit
           </h1>
           <p className="text-lg text-[#777] mb-4 capitalize">{audit.brand_name}</p>
           <p className="text-xs text-[#AAA]">

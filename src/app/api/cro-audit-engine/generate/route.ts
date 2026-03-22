@@ -22,7 +22,7 @@ async function getKnowledgeBase(): Promise<string> {
   return DEFAULT_AUDIT_KNOWLEDGE;
 }
 
-const AUDIT_SYSTEM_PROMPT = `You are a senior CRO strategist conducting a professional homepage audit for a DTC/ecommerce brand. You produce genuinely useful, specific analysis — not generic advice.
+const AUDIT_SYSTEM_PROMPT = `You are a senior CRO strategist conducting a professional page audit for a DTC/ecommerce brand. You produce genuinely useful, specific analysis — not generic advice.
 
 Your audit follows this exact structure:
 
@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
 
     userContent.push({
       type: "text",
-      text: `Conduct a comprehensive CRO audit of this homepage.
+      text: `Conduct a comprehensive CRO audit of this page. Identify whether it is a homepage, product page, collection page, or landing page and tailor your analysis accordingly.
 
 URL: ${url}
 
