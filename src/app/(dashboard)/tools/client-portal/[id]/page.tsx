@@ -496,6 +496,44 @@ export default function PortalDetailPage() {
         {/* ── Client Details (editable) ── */}
         <ClientDetailsPanel portal={portal} team={team} onUpdateField={handleUpdateField} />
 
+        {/* ── Tickets Snapshot (client level) ── */}
+        {portalTickets.length > 0 && !selectedProject && (() => {
+          const openTickets = portalTickets.filter(t => t.status !== "resolved" && !t.deleted_at);
+          if (openTickets.length === 0) return null;
+          const typeColors: Record<string, string> = { design: "#7C3AED", dev: "#2563EB", cro: "#059669", qa: "#D97706" };
+          const statusColors: Record<string, string> = { open: "#EF4444", in_progress: "#F59E0B", quoted: "#8B5CF6", resolved: "#10B981" };
+          return (
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Open Tickets ({openTickets.length})</h3>
+              </div>
+              <div className="border border-[#E5E5EA] rounded-xl bg-white divide-y divide-[#F0F0F0] overflow-hidden">
+                {openTickets.slice(0, 5).map(t => (
+                  <div key={t.id} className="flex items-center justify-between px-4 py-2.5">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: statusColors[t.status] || "#CCC" }} />
+                      <span className="text-xs font-medium text-[#1A1A1A] truncate">{t.title}</span>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {t.ticket_type && t.ticket_type !== "unassigned" && (
+                        <span className="text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded-full" style={{ backgroundColor: (typeColors[t.ticket_type] || "#999") + "15", color: typeColors[t.ticket_type] || "#999" }}>
+                          {t.ticket_type}
+                        </span>
+                      )}
+                      <span className="text-[9px] text-[#BBB]">{t.status.replace("_", " ")}</span>
+                    </div>
+                  </div>
+                ))}
+                {openTickets.length > 5 && (
+                  <div className="px-4 py-2 text-center">
+                    <span className="text-[10px] text-[#AAA]">+ {openTickets.length - 5} more</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* ── Projects List ── */}
         {!selectedProject && (
           <div className="mb-6">
@@ -1022,43 +1060,6 @@ function OverviewSection({
               />
             </button>
           </div>
-          {/* Slack Channel */}
-          <EditableField
-            label="Slack Channel ID"
-            value={portal.slack_channel_url || ""}
-            onSave={(v) => onUpdatePortal("slack_channel_url", v)}
-            placeholder="e.g., C0123456789"
-          />
-          {/* Team Assignment */}
-          <TeamAssignment portal={portal} onUpdateField={onUpdatePortal} />
-
-          {/* Slack Tickets */}
-          {tickets.length > 0 && (
-            <div className="py-2">
-              <p className="text-[11px] font-medium text-[#7A7A7A] mb-2">Tickets ({tickets.filter(t => t.status !== "resolved").length} open)</p>
-              <div className="space-y-1">
-                {tickets.filter(t => t.status !== "resolved").slice(0, 5).map(t => {
-                  const typeColors: Record<string, string> = { design: "#7C3AED", dev: "#2563EB", cro: "#059669", qa: "#D97706" };
-                  const statusColors: Record<string, string> = { open: "#EF4444", in_progress: "#F59E0B", quoted: "#8B5CF6", resolved: "#10B981" };
-                  return (
-                    <div key={t.id} className="flex items-center gap-2 px-2.5 py-1.5 bg-[#F5F5F5] rounded-lg">
-                      <div className="size-1.5 rounded-full" style={{ backgroundColor: statusColors[t.status] || "#CCC" }} />
-                      <span className="text-[11px] font-medium text-[#1A1A1A] flex-1 truncate">{t.title}</span>
-                      {t.ticket_type && t.ticket_type !== "unassigned" && (
-                        <span className="text-[8px] font-semibold uppercase px-1.5 py-0.5 rounded-full" style={{ backgroundColor: (typeColors[t.ticket_type] || "#999") + "15", color: typeColors[t.ticket_type] || "#999" }}>
-                          {t.ticket_type}
-                        </span>
-                      )}
-                      <span className="text-[9px] text-[#BBB]">{t.status.replace("_", " ")}</span>
-                    </div>
-                  );
-                })}
-                {tickets.filter(t => t.status !== "resolved").length > 5 && (
-                  <p className="text-[10px] text-[#AAA] pl-2">+ {tickets.filter(t => t.status !== "resolved").length - 5} more</p>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
