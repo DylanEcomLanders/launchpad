@@ -103,7 +103,8 @@ export async function POST(req: NextRequest) {
     // Step 0: PageSpeed Insights (mobile)
     let speedData: { score: number; fcp: string; lcp: string; tbt: string; cls: string; si: string } | null = null;
     try {
-      const psRes = await fetch(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&strategy=mobile&category=performance`);
+      const psKey = process.env.GOOGLE_PAGESPEED_KEY;
+      const psRes = await fetch(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&strategy=mobile&category=performance${psKey ? `&key=${psKey}` : ""}`);
       if (psRes.ok) {
         const ps = await psRes.json();
         const lh = ps.lighthouseResult || {};
