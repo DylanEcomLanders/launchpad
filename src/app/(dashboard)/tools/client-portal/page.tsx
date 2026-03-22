@@ -278,10 +278,10 @@ export default function ClientPortalPage() {
                 setClientEmail("");
                 setProjectType("Full Page Build");
               }}
-              className="flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors whitespace-nowrap"
             >
-              <PlusIcon className="size-3.5" />
-              New Portal
+              <PlusIcon className="size-3.5 shrink-0" />
+              New
             </button>
           )}
         </div>
