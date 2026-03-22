@@ -10,11 +10,15 @@ import {
   ArrowTopRightOnSquareIcon,
   FunnelIcon,
   BeakerIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { inputClass, labelClass } from "@/lib/form-styles";
 import { getPortals, createPortal, deletePortal, getTrashedPortals, restorePortal, permanentlyDeletePortal } from "@/lib/portal/data";
 import type { PortalData } from "@/lib/portal/types";
+import { getTickets, type Ticket } from "@/lib/slack-tickets";
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 type IntelligemsTest = {
   id: string;
@@ -74,7 +78,9 @@ export default function ClientPortalPage() {
   const [filterStage, setFilterStage] = useState<string>("all");
   const [igTests, setIgTests] = useState<IntelligemsTest[]>([]);
   const [igLoading, setIgLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "testing">("overview");
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [activeTab, setActiveTab] = useState<"overview" | "testing" | "tickets" | "delivery" | "clients">("overview");
+  const [activeChart, setActiveChart] = useState(0);
 
   const loadPortals = useCallback(async () => {
     setLoading(true);
@@ -96,7 +102,7 @@ export default function ClientPortalPage() {
 
   useEffect(() => {
     loadPortals();
-    // Fetch overdue from ClickUp
+    getTickets().then(setTickets).catch(() => {});
     fetch("/api/clickup/tasks")
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
@@ -212,6 +218,16 @@ export default function ClientPortalPage() {
     [portals]
   );
 
+  const openTickets = useMemo(
+    () => tickets.filter((t) => !t.deleted_at && t.status !== "resolved"),
+    [tickets]
+  );
+
+  const blockedPortals = useMemo(
+    () => portals.filter((p) => p.blocker),
+    [portals]
+  );
+
   // Unique stages for filter
   const uniqueStages = useMemo(() => {
     const stages = portals.map((p) => p.current_phase).filter(Boolean);
@@ -271,215 +287,166 @@ export default function ClientPortalPage() {
         </div>
       </div>
 
-      {/* ── Overview Stats ── */}
-      {!showTrash && (() => {
-        const liveTests = igTests.filter((t) => t.status === "started");
-        const completedTests = igTests.filter((t) => t.status === "ended");
-        // Calculate average RPV lift from completed tests with data
-        const rpvLifts = completedTests.map((t) => {
-          const a = t.variations[0];
-          const b = t.variations[1];
-          if (!a || !b || a.rpv === 0) return null;
-          return ((b.rpv - a.rpv) / a.rpv) * 100;
-        }).filter((v): v is number => v !== null && !isNaN(v));
-        const avgRpvLift = rpvLifts.length > 0 ? rpvLifts.reduce((a, b) => a + b, 0) / rpvLifts.length : null;
-        // Total revenue from all tests
-        const totalRevenue = igTests.reduce((sum, t) => sum + t.variations.reduce((vs, v) => vs + (v.revenue || 0), 0), 0);
-
-        return (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-            <div className="border border-[#E5E5EA] rounded-xl px-5 py-4 bg-white">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Active Portals</p>
-              <span className="text-2xl font-bold tabular-nums text-[#1A1A1A]">{portals.length}</span>
-            </div>
-            <div className={`border rounded-xl px-5 py-4 bg-white ${blockedCount > 0 ? "border-red-200" : "border-[#E5E5EA]"}`}>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Blocked</p>
-              <span className={`text-2xl font-bold tabular-nums ${blockedCount > 0 ? "text-red-500" : "text-[#1A1A1A]"}`}>{blockedCount}</span>
-            </div>
-            <div className={`border rounded-xl px-5 py-4 bg-white ${liveTests.length > 0 ? "border-emerald-200" : "border-[#E5E5EA]"}`}>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Live Tests</p>
-              <span className={`text-2xl font-bold tabular-nums ${liveTests.length > 0 ? "text-emerald-600" : "text-[#1A1A1A]"}`}>{liveTests.length}</span>
-            </div>
-            <div className="border border-[#E5E5EA] rounded-xl px-5 py-4 bg-white">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Avg RPV Lift</p>
-              <span className={`text-2xl font-bold tabular-nums ${avgRpvLift !== null && avgRpvLift > 0 ? "text-emerald-600" : avgRpvLift !== null && avgRpvLift < 0 ? "text-red-500" : "text-[#1A1A1A]"}`}>
-                {avgRpvLift !== null ? `${avgRpvLift >= 0 ? "+" : ""}${avgRpvLift.toFixed(1)}%` : "—"}
-              </span>
-            </div>
-            <div className="border border-[#E5E5EA] rounded-xl px-5 py-4 bg-white">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Test Revenue</p>
-              <span className="text-2xl font-bold tabular-nums text-[#1A1A1A]">
-                {totalRevenue > 0 ? `$${totalRevenue >= 1000 ? `${(totalRevenue / 1000).toFixed(1)}K` : totalRevenue.toFixed(0)}` : "—"}
-              </span>
-            </div>
-          </div>
-        );
-      })()}
+      {/* Stats removed — replaced by chart in Overview tab */}
 
       {/* ── Tab Navigation ── */}
       {!showTrash && (
         <div className="flex items-center gap-1 mb-6 border-b border-[#E8E8E8]">
-          {(["overview", "testing"] as const).map((tab) => (
+          {([
+            { key: "overview" as const, label: "Overview" },
+            { key: "testing" as const, label: "Testing" },
+            { key: "tickets" as const, label: `Tickets${openTickets.length > 0 ? ` (${openTickets.length})` : ""}` },
+            { key: "delivery" as const, label: "Delivery" },
+            { key: "clients" as const, label: "Clients" },
+          ]).map(({ key, label }) => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
+              key={key}
+              onClick={() => setActiveTab(key)}
               className={`px-4 py-2.5 text-xs font-semibold transition-colors relative ${
-                activeTab === tab
+                activeTab === key
                   ? "text-[#1A1A1A]"
                   : "text-[#AAA] hover:text-[#777]"
               }`}
             >
-              {tab === "overview" ? "Overview" : "Testing"}
-              {activeTab === tab && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1A1A1A] rounded-full" />}
+              {label}
+              {activeTab === key && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1A1A1A] rounded-full" />}
             </button>
           ))}
         </div>
       )}
 
       {/* ═══════ OVERVIEW TAB ═══════ */}
-      {!showTrash && activeTab === "overview" && (
-        <>
-          {/* Upcoming Touchpoints */}
-          {(() => {
-            const touchpoints = portals
-              .filter((p) => p.next_touchpoint?.date)
-              .map((p) => ({
-                client: p.client_name,
-                portalId: p.id,
-                date: p.next_touchpoint!.date,
-                description: p.next_touchpoint!.description || "",
-                daysAway: Math.ceil((new Date(p.next_touchpoint!.date + "T00:00:00").getTime() - Date.now()) / 86400000),
-              }))
-              .sort((a, b) => a.daysAway - b.daysAway);
+      {!showTrash && activeTab === "overview" && (() => {
+        const liveTests = igTests.filter((t) => t.status === "started");
+        const completedTests = igTests.filter((t) => t.status === "ended");
+        const getRpvLift = (t: IntelligemsTest) => { const a = t.variations[0], b = t.variations[1]; if (!a || !b || a.rpv === 0) return null; return ((b.rpv - a.rpv) / a.rpv) * 100; };
+        const winners = completedTests.filter((t) => { const l = getRpvLift(t); return l !== null && l > 5; });
+        const totalRevenue = igTests.reduce((sum, t) => sum + t.variations.reduce((vs, v) => vs + (v.revenue || 0), 0), 0);
 
-            if (touchpoints.length === 0) return null;
+        // Chart data
+        const chartData = [
+          { label: "Active Portals", value: portals.length, suffix: "", color: "#1A1A1A" },
+          { label: "Live Tests", value: liveTests.length, suffix: "", color: "#10B981" },
+          { label: "Test Winners", value: winners.length, suffix: `/ ${completedTests.length}`, color: "#10B981" },
+          { label: "Open Tickets", value: openTickets.length, suffix: "", color: openTickets.length > 0 ? "#F59E0B" : "#1A1A1A" },
+          { label: "Blocked", value: blockedCount, suffix: "", color: blockedCount > 0 ? "#EF4444" : "#1A1A1A" },
+          { label: "Test Revenue", value: totalRevenue, suffix: "", color: "#1A1A1A", isCurrency: true },
+        ];
+        const currentMetric = chartData[activeChart % chartData.length];
 
-            return (
-              <div className="mb-6">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Upcoming Touchpoints</h3>
+        // Touchpoints
+        const touchpoints = portals
+          .filter((p) => p.next_touchpoint?.date)
+          .map((p) => ({ client: p.client_name, portalId: p.id, date: p.next_touchpoint!.date, description: p.next_touchpoint!.description || "", daysAway: Math.ceil((new Date(p.next_touchpoint!.date + "T00:00:00").getTime() - Date.now()) / 86400000) }))
+          .sort((a, b) => a.daysAway - b.daysAway);
+
+        return (
+          <div className="space-y-6">
+            {/* ── Rotating Metric ── */}
+            <div className="border border-[#E5E5EA] rounded-xl bg-white p-6 overflow-hidden">
+              <div className="flex items-center justify-between mb-4">
+                <button onClick={() => setActiveChart((activeChart - 1 + chartData.length) % chartData.length)} className="p-1 text-[#CCC] hover:text-[#1A1A1A] transition-colors">
+                  <ChevronLeftIcon className="size-4" />
+                </button>
+                <div className="text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">{currentMetric.label}</p>
+                  <p className="text-4xl font-bold tabular-nums" style={{ color: currentMetric.color }}>
+                    {(currentMetric as { isCurrency?: boolean }).isCurrency
+                      ? `$${currentMetric.value >= 1000 ? `${(currentMetric.value / 1000).toFixed(1)}K` : currentMetric.value.toFixed(0)}`
+                      : currentMetric.value}
+                    {currentMetric.suffix && <span className="text-lg text-[#AAA] ml-1">{currentMetric.suffix}</span>}
+                  </p>
+                </div>
+                <button onClick={() => setActiveChart((activeChart + 1) % chartData.length)} className="p-1 text-[#CCC] hover:text-[#1A1A1A] transition-colors">
+                  <ChevronRightIcon className="size-4" />
+                </button>
+              </div>
+              {/* Dots */}
+              <div className="flex items-center justify-center gap-1.5">
+                {chartData.map((_, i) => (
+                  <button key={i} onClick={() => setActiveChart(i)} className={`size-1.5 rounded-full transition-colors ${i === activeChart % chartData.length ? "bg-[#1A1A1A]" : "bg-[#E5E5EA]"}`} />
+                ))}
+              </div>
+            </div>
+
+            {/* ── Tickets Snapshot ── */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Open Tickets ({openTickets.length})</h3>
+                <button onClick={() => setActiveTab("tickets")} className="text-[10px] text-[#AAA] hover:text-[#1A1A1A] transition-colors">View all →</button>
+              </div>
+              {openTickets.length > 0 ? (
                 <div className="border border-[#E5E5EA] rounded-xl bg-white divide-y divide-[#F0F0F0] overflow-hidden">
-                  {touchpoints.map((tp, i) => (
-                    <Link key={i} href={`/tools/client-portal/${tp.portalId}`} className="flex items-center justify-between px-4 py-3 hover:bg-[#FAFAFA] transition-colors">
-                      <div className="flex items-center gap-3">
-                        <span className={`size-2 rounded-full ${tp.daysAway < 0 ? "bg-red-500" : tp.daysAway <= 2 ? "bg-amber-500" : "bg-emerald-500"}`} />
-                        <span className="text-xs font-medium text-[#1A1A1A]">{tp.client}</span>
-                        {tp.description && <span className="text-xs text-[#999]">· {tp.description}</span>}
+                  {openTickets.slice(0, 4).map((t) => {
+                    const age = Math.max(0, Math.floor((Date.now() - new Date(t.created_at).getTime()) / 3600000));
+                    const ageStr = age >= 24 ? `${Math.floor(age / 24)}d` : `${age}h`;
+                    return (
+                      <div key={t.id} className="flex items-center justify-between px-4 py-2.5">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className={`size-1.5 rounded-full shrink-0 ${t.priority === "urgent" ? "bg-red-500" : t.priority === "high" ? "bg-amber-500" : "bg-[#CCC]"}`} />
+                          <span className="text-xs font-medium text-[#1A1A1A] truncate">{t.title}</span>
+                          <span className="text-[10px] text-[#AAA] shrink-0">{t.client_name}</span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {t.ticket_type && t.ticket_type !== "unassigned" && (
+                            <span className={`text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded ${t.ticket_type === "design" ? "bg-purple-50 text-purple-600" : "bg-blue-50 text-blue-600"}`}>{t.ticket_type}</span>
+                          )}
+                          <span className="text-[10px] text-[#CCC]">{ageStr}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[11px] font-medium ${tp.daysAway < 0 ? "text-red-500" : tp.daysAway <= 2 ? "text-amber-600" : "text-[#777]"}`}>
-                          {tp.daysAway < 0 ? `${Math.abs(tp.daysAway)}d overdue` : tp.daysAway === 0 ? "Today" : `${tp.daysAway}d`}
-                        </span>
-                        <span className="text-[11px] text-[#CCC]">
-                          {new Date(tp.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-[#CCC]">No open tickets</p>
+              )}
+            </div>
+
+            {/* ── Blocked Clients ── */}
+            {blockedPortals.length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-3">Blocked ({blockedPortals.length})</h3>
+                <div className="border border-red-100 rounded-xl bg-red-50/30 divide-y divide-red-100 overflow-hidden">
+                  {blockedPortals.map((p) => {
+                    const daysBlocked = p.blocker?.since ? Math.max(0, Math.floor((Date.now() - new Date(p.blocker.since).getTime()) / 86400000)) : 0;
+                    return (
+                      <Link key={p.id} href={`/tools/client-portal/${p.id}`} className="flex items-center justify-between px-4 py-2.5 hover:bg-red-50 transition-colors">
+                        <div className="flex items-center gap-2">
+                          <span className="size-1.5 rounded-full bg-red-500 animate-pulse" />
+                          <span className="text-xs font-medium text-[#1A1A1A]">{p.client_name}</span>
+                          <span className="text-[10px] text-red-500">{p.blocker?.reason}</span>
+                        </div>
+                        <span className="text-[10px] text-red-400">{daysBlocked}d</span>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
-            );
-          })()}
+            )}
 
-          {/* Open Ad Hoc Requests */}
-          {(() => {
-            const requests = portals.flatMap((p) =>
-              (p.ad_hoc_requests || [])
-                .filter((r) => r.status !== "done")
-                .map((r) => ({ ...r, client: p.client_name, portalId: p.id }))
-            );
-
-            if (requests.length === 0) return null;
-
-            return (
-              <div className="mb-6">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Open Requests ({requests.length})</h3>
+            {/* ── Upcoming Touchpoints ── */}
+            {touchpoints.length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Upcoming Touchpoints</h3>
                 <div className="border border-[#E5E5EA] rounded-xl bg-white divide-y divide-[#F0F0F0] overflow-hidden">
-                  {requests.map((r, i) => (
-                    <Link key={i} href={`/tools/client-portal/${r.portalId}`} className="flex items-center justify-between px-4 py-3 hover:bg-[#FAFAFA] transition-colors">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <span className="text-xs font-medium text-[#1A1A1A] truncate">{r.title}</span>
-                        <span className="text-xs text-[#AAA]">· {r.client}</span>
+                  {touchpoints.slice(0, 5).map((tp, i) => (
+                    <Link key={i} href={`/tools/client-portal/${tp.portalId}`} className="flex items-center justify-between px-4 py-2.5 hover:bg-[#FAFAFA] transition-colors">
+                      <div className="flex items-center gap-3">
+                        <span className={`size-1.5 rounded-full ${tp.daysAway < 0 ? "bg-red-500" : tp.daysAway <= 2 ? "bg-amber-500" : "bg-emerald-500"}`} />
+                        <span className="text-xs font-medium text-[#1A1A1A]">{tp.client}</span>
+                        {tp.description && <span className="text-[10px] text-[#999]">· {tp.description}</span>}
                       </div>
-                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
-                        r.status === "in-progress" ? "bg-blue-50 text-blue-600" : "bg-[#F3F3F5] text-[#777]"
-                      }`}>
-                        {r.status || "pending"}
+                      <span className={`text-[10px] font-medium ${tp.daysAway < 0 ? "text-red-500" : tp.daysAway <= 2 ? "text-amber-600" : "text-[#999]"}`}>
+                        {tp.daysAway < 0 ? `${Math.abs(tp.daysAway)}d overdue` : tp.daysAway === 0 ? "Today" : `${tp.daysAway}d`}
                       </span>
                     </Link>
                   ))}
                 </div>
               </div>
-            );
-          })()}
-
-          {/* Clients by Stage */}
-          {portals.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Clients by Stage</h3>
-              <div className="flex flex-wrap gap-2">
-                {(() => {
-                  const stageMap: Record<string, number> = {};
-                  portals.forEach((p) => {
-                    const stage = p.current_phase || "Not set";
-                    stageMap[stage] = (stageMap[stage] || 0) + 1;
-                  });
-                  return Object.entries(stageMap).map(([stage, count]) => (
-                    <div key={stage} className="border border-[#E5E5EA] rounded-lg px-4 py-3 bg-white">
-                      <span className="text-lg font-bold tabular-nums text-[#1A1A1A]">{count}</span>
-                      <p className="text-[10px] text-[#999] mt-0.5">{stage}</p>
-                    </div>
-                  ));
-                })()}
-              </div>
-            </div>
-          )}
-
-          {/* Filters */}
-          {portals.length > 0 && (
-            <div className="flex items-center gap-3 mb-4">
-              <FunnelIcon className="size-3.5 text-[#A0A0A0]" />
-              <div className="flex items-center gap-1.5">
-                {["all", "retainer", "project"].map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => setFilterType(t)}
-                    className={`px-3 py-1 text-[11px] font-medium rounded-full transition-colors ${
-                      filterType === t
-                        ? "bg-[#1B1B1B] text-white"
-                        : "bg-[#F3F3F5] text-[#7A7A7A] hover:bg-[#E5E5EA]"
-                    }`}
-                  >
-                    {t === "all" ? "All" : t === "retainer" ? "Retainer" : "Project"}
-                  </button>
-                ))}
-              </div>
-              {uniqueStages.length > 0 && (
-                <>
-                  <div className="w-px h-4 bg-[#E5E5EA]" />
-                  <select
-                    value={filterStage}
-                    onChange={(e) => setFilterStage(e.target.value)}
-                    className="text-[11px] font-medium text-[#7A7A7A] bg-[#F3F3F5] border-none rounded-full px-3 py-1 cursor-pointer hover:bg-[#E5E5EA] transition-colors"
-                  >
-                    <option value="all">All Stages</option>
-                    {uniqueStages.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                </>
-              )}
-              {(filterType !== "all" || filterStage !== "all") && (
-                <button
-                  onClick={() => { setFilterType("all"); setFilterStage("all"); }}
-                  className="text-[11px] text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-          )}
-        </>
-      )}
+            )}
+          </div>
+        );
+      })()}
 
       {/* ═══════ TESTING TAB ═══════ */}
       {!showTrash && activeTab === "testing" && (
@@ -658,6 +625,148 @@ export default function ClientPortalPage() {
         </>
       )}
 
+      {/* ═══════ TICKETS TAB ═══════ */}
+      {!showTrash && activeTab === "tickets" && (
+        <div className="space-y-4">
+          {tickets.filter(t => !t.deleted_at).length === 0 ? (
+            <div className="border border-dashed border-[#E5E5EA] rounded-xl p-12 text-center">
+              <p className="text-sm text-[#7A7A7A]">No tickets yet</p>
+              <p className="text-xs text-[#AAA] mt-1">Tickets appear when clients use /ticket in Slack</p>
+            </div>
+          ) : (
+            <div className="border border-[#E5E5EA] rounded-xl bg-white overflow-hidden">
+              <div className="grid grid-cols-[1fr_100px_80px_80px_60px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA]">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Title</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Client</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Type</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Priority</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Age</span>
+              </div>
+              {tickets.filter(t => !t.deleted_at).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((t) => {
+                const age = Math.max(0, Math.floor((Date.now() - new Date(t.created_at).getTime()) / 3600000));
+                const ageStr = age >= 24 ? `${Math.floor(age / 24)}d` : `${age}h`;
+                return (
+                  <Link key={t.id} href="/tools/tickets" className="grid grid-cols-[1fr_100px_80px_80px_60px] gap-2 px-4 py-2.5 border-b border-[#F0F0F0] last:border-0 hover:bg-[#FAFAFA] transition-colors items-center">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className={`size-1.5 rounded-full shrink-0 ${t.status === "resolved" ? "bg-emerald-400" : t.status === "in_progress" ? "bg-blue-400" : "bg-[#CCC]"}`} />
+                      <span className="text-xs font-medium text-[#1A1A1A] truncate">{t.title}</span>
+                    </div>
+                    <span className="text-[10px] text-[#777] truncate">{t.client_name}</span>
+                    <span className={`text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded w-fit ${
+                      t.ticket_type === "design" ? "bg-purple-50 text-purple-600" : t.ticket_type === "dev" ? "bg-blue-50 text-blue-600" : "bg-[#F3F3F5] text-[#AAA]"
+                    }`}>{t.ticket_type || "—"}</span>
+                    <span className={`text-[10px] font-medium ${t.priority === "urgent" ? "text-red-500" : t.priority === "high" ? "text-amber-600" : "text-[#999]"}`}>{t.priority}</span>
+                    <span className="text-[10px] text-[#CCC]">{ageStr}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ═══════ DELIVERY TAB ═══════ */}
+      {!showTrash && activeTab === "delivery" && (
+        <div className="space-y-6">
+          {/* Blocked */}
+          {blockedPortals.length > 0 && (
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-3">Blocked ({blockedPortals.length})</h3>
+              <div className="border border-red-100 rounded-xl bg-red-50/30 divide-y divide-red-100 overflow-hidden">
+                {blockedPortals.map((p) => {
+                  const daysBlocked = p.blocker?.since ? Math.max(0, Math.floor((Date.now() - new Date(p.blocker.since).getTime()) / 86400000)) : 0;
+                  return (
+                    <Link key={p.id} href={`/tools/client-portal/${p.id}`} className="flex items-center justify-between px-4 py-2.5 hover:bg-red-50 transition-colors">
+                      <div className="flex items-center gap-2">
+                        <span className="size-1.5 rounded-full bg-red-500 animate-pulse" />
+                        <span className="text-xs font-medium text-[#1A1A1A]">{p.client_name}</span>
+                        <span className="text-[10px] text-red-500">{p.blocker?.reason}</span>
+                      </div>
+                      <span className="text-[10px] text-red-400">{daysBlocked}d blocked</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Phase Progress */}
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Phase Progress</h3>
+            {portals.filter(p => p.current_phase).length > 0 ? (
+              <div className="border border-[#E5E5EA] rounded-xl bg-white divide-y divide-[#F0F0F0] overflow-hidden">
+                {portals.filter(p => p.current_phase).map((p) => {
+                  const totalPhases = p.phases.length;
+                  const completedPhases = p.phases.filter(ph => ph.status === "complete").length;
+                  const pct = totalPhases > 0 ? Math.round((completedPhases / totalPhases) * 100) : 0;
+                  return (
+                    <Link key={p.id} href={`/tools/client-portal/${p.id}`} className="flex items-center gap-4 px-4 py-3 hover:bg-[#FAFAFA] transition-colors">
+                      <span className="text-xs font-medium text-[#1A1A1A] w-32 shrink-0">{p.client_name}</span>
+                      <div className="flex-1 h-1.5 bg-[#F0F0F0] rounded-full overflow-hidden">
+                        <div className="h-full bg-[#1A1A1A] rounded-full transition-all" style={{ width: `${pct}%` }} />
+                      </div>
+                      <span className="text-[10px] text-[#999] w-20 text-right shrink-0">{p.current_phase}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-xs text-[#CCC]">No active projects with phases</p>
+            )}
+          </div>
+
+          {/* Clients by Stage */}
+          {portals.length > 0 && (
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Clients by Stage</h3>
+              <div className="flex flex-wrap gap-2">
+                {(() => {
+                  const stageMap: Record<string, number> = {};
+                  portals.forEach((p) => { stageMap[p.current_phase || "Not set"] = (stageMap[p.current_phase || "Not set"] || 0) + 1; });
+                  return Object.entries(stageMap).map(([stage, count]) => (
+                    <div key={stage} className="border border-[#E5E5EA] rounded-lg px-4 py-3 bg-white">
+                      <span className="text-lg font-bold tabular-nums text-[#1A1A1A]">{count}</span>
+                      <p className="text-[10px] text-[#999] mt-0.5">{stage}</p>
+                    </div>
+                  ));
+                })()}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ═══════ CLIENTS TAB ═══════ */}
+      {!showTrash && activeTab === "clients" && (
+        <>
+          {/* Filters */}
+          {portals.length > 0 && (
+            <div className="flex items-center gap-3 mb-4">
+              <FunnelIcon className="size-3.5 text-[#A0A0A0]" />
+              <div className="flex items-center gap-1.5">
+                {["all", "retainer", "project"].map((t) => (
+                  <button key={t} onClick={() => setFilterType(t)} className={`px-3 py-1 text-[11px] font-medium rounded-full transition-colors ${filterType === t ? "bg-[#1B1B1B] text-white" : "bg-[#F3F3F5] text-[#7A7A7A] hover:bg-[#E5E5EA]"}`}>
+                    {t === "all" ? "All" : t === "retainer" ? "Retainer" : "Project"}
+                  </button>
+                ))}
+              </div>
+              {uniqueStages.length > 0 && (
+                <>
+                  <div className="w-px h-4 bg-[#E5E5EA]" />
+                  <select value={filterStage} onChange={(e) => setFilterStage(e.target.value)} className="text-[11px] font-medium text-[#7A7A7A] bg-[#F3F3F5] border-none rounded-full px-3 py-1 cursor-pointer hover:bg-[#E5E5EA] transition-colors">
+                    <option value="all">All Stages</option>
+                    {uniqueStages.map((s) => (<option key={s} value={s}>{s}</option>))}
+                  </select>
+                </>
+              )}
+              {(filterType !== "all" || filterStage !== "all") && (
+                <button onClick={() => { setFilterType("all"); setFilterStage("all"); }} className="text-[11px] text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors">Clear</button>
+              )}
+            </div>
+          )}
+        </>
+      )}
+
       {/* ── Create Form ── */}
       {showForm && (
         <div className="bg-[#F7F8FA] border border-[#E5E5EA] rounded-xl p-6 mb-6">
@@ -790,7 +899,7 @@ export default function ClientPortalPage() {
       )}
 
       {/* ── Loading ── */}
-      {!showTrash && activeTab === "overview" && loading && (
+      {!showTrash && activeTab === "clients" && loading && (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
             <div key={i} className="border border-[#E5E5EA] rounded-lg p-4 animate-pulse">
@@ -802,7 +911,7 @@ export default function ClientPortalPage() {
       )}
 
       {/* ── Empty state ── */}
-      {!showTrash && activeTab === "overview" && !loading && portals.length === 0 && !showForm && (
+      {!showTrash && activeTab === "clients" && !loading && portals.length === 0 && !showForm && (
         <div className="border border-dashed border-[#E5E5EA] rounded-lg p-12 text-center">
           <p className="text-sm text-[#7A7A7A] mb-1">No client portals yet</p>
           <p className="text-xs text-[#A0A0A0] mb-4">Create your first portal to start tracking projects</p>
@@ -817,7 +926,7 @@ export default function ClientPortalPage() {
       )}
 
       {/* ── Portal List ── */}
-      {!showTrash && activeTab === "overview" && !loading && portals.length > 0 && (
+      {!showTrash && activeTab === "clients" && !loading && portals.length > 0 && (
         <div className="space-y-4">
           {filteredPortals.length === 0 ? (
             <div className="border border-dashed border-[#E5E5EA] rounded-lg p-8 text-center">
