@@ -546,21 +546,24 @@ export default function PortalDetailPage() {
 
 
         {/* Tab bar — only when drilled into a project */}
-        {selectedProject && <div className="flex gap-0.5 bg-[#F3F3F5] rounded-md p-1 mb-8">
-          {dashTabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 px-3 py-2 text-sm font-medium rounded transition-all ${
-                activeTab === tab.key
-                  ? "bg-white text-[#1B1B1B] shadow-sm"
-                  : "text-[#7A7A7A] hover:text-[#1B1B1B]"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>}
+        {selectedProject && (
+          <div className="flex items-center gap-1 mb-6 border-b border-[#E8E8E8]">
+            {dashTabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`px-4 py-2.5 text-xs font-semibold transition-colors relative ${
+                  activeTab === tab.key
+                    ? "text-[#1A1A1A]"
+                    : "text-[#AAA] hover:text-[#777]"
+                }`}
+              >
+                {tab.label}
+                {activeTab === tab.key && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1A1A1A] rounded-full" />}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Tab content — only when drilled into a project */}
         {selectedProject && activeTab === "overview" && (
