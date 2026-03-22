@@ -427,63 +427,21 @@ export default function ClientPortalPage() {
               )}
             </div>
 
-            {/* ── Portals List (minimal) ── */}
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Clients</h3>
-              <div className="border border-[#E5E5EA] rounded-xl bg-white divide-y divide-[#F0F0F0] overflow-hidden">
-                {portals.length > 0 ? portals.map((p) => {
-                  const isBlocked = !!p.blocker;
-                  const isRetainer = p.client_type === "retainer" || p.project_type?.toLowerCase().includes("retainer");
-                  const tp = p.next_touchpoint;
-                  const tpDays = tp?.date ? Math.ceil((new Date(tp.date + "T00:00:00").getTime() - Date.now()) / 86400000) : null;
-                  return (
-                    <Link
-                      key={p.id}
-                      href={`/tools/client-portal/${p.id}`}
-                      className={`flex items-center justify-between px-4 py-3.5 hover:bg-[#FAFAFA] transition-colors ${isBlocked ? "bg-red-50/40" : ""}`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        {isBlocked && <span className="size-1.5 rounded-full bg-red-500 animate-pulse shrink-0" />}
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-[#1A1A1A] truncate">{p.client_name}</p>
-                          <p className="text-[10px] text-[#AAA]">
-                            {isRetainer ? "Retainer" : p.project_type || "Project"}
-                            {p.current_phase ? ` · ${p.current_phase}` : ""}
-                            {isBlocked ? ` · Blocked: ${p.blocker?.reason}` : ""}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 shrink-0">
-                        {tpDays !== null && (
-                          <span className={`text-[10px] ${tpDays < 0 ? "text-red-500" : tpDays <= 2 ? "text-amber-500" : "text-[#CCC]"}`}>
-                            {tpDays < 0 ? `${Math.abs(tpDays)}d overdue` : tpDays === 0 ? "Today" : `${tpDays}d`}
-                          </span>
-                        )}
-                        <svg className="size-4 text-[#DDD]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
-                      </div>
-                    </Link>
-                  );
-                }) : (
-                  <div className="px-4 py-6 text-center">
-                    <p className="text-xs text-[#CCC]">No clients yet</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* ── Upcoming Touchpoints ── */}
+            {/* ── Upcoming Touchpoints (3-column) ── */}
             {touchpoints.length > 0 && (
               <div>
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Upcoming Touchpoints</h3>
-                <div className="border border-[#E5E5EA] rounded-xl bg-white divide-y divide-[#F0F0F0] overflow-hidden">
-                  {touchpoints.slice(0, 5).map((tp, i) => (
-                    <Link key={i} href={`/tools/client-portal/${tp.portalId}`} className="flex items-center justify-between px-4 py-2.5 hover:bg-[#FAFAFA] transition-colors">
-                      <div className="flex items-center gap-3">
-                        <span className={`size-1.5 rounded-full ${tp.daysAway < 0 ? "bg-red-500" : tp.daysAway <= 2 ? "bg-amber-500" : "bg-emerald-500"}`} />
-                        <span className="text-xs font-medium text-[#1A1A1A]">{tp.client}</span>
-                        {tp.description && <span className="text-[10px] text-[#999]">· {tp.description}</span>}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {touchpoints.slice(0, 6).map((tp, i) => (
+                    <Link key={i} href={`/tools/client-portal/${tp.portalId}`} className="flex items-center justify-between px-3.5 py-3 border border-[#E5E5EA] rounded-xl bg-white hover:border-[#C5C5C5] transition-colors">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className={`size-1.5 rounded-full shrink-0 ${tp.daysAway < 0 ? "bg-red-500" : tp.daysAway <= 2 ? "bg-amber-500" : "bg-emerald-500"}`} />
+                        <div className="min-w-0">
+                          <p className="text-xs font-medium text-[#1A1A1A] truncate">{tp.client}</p>
+                          {tp.description && <p className="text-[10px] text-[#999] truncate">{tp.description}</p>}
+                        </div>
                       </div>
-                      <span className={`text-[10px] font-medium ${tp.daysAway < 0 ? "text-red-500" : tp.daysAway <= 2 ? "text-amber-600" : "text-[#999]"}`}>
+                      <span className={`text-[10px] font-medium shrink-0 ml-2 ${tp.daysAway < 0 ? "text-red-500" : tp.daysAway <= 2 ? "text-amber-600" : "text-[#999]"}`}>
                         {tp.daysAway < 0 ? `${Math.abs(tp.daysAway)}d overdue` : tp.daysAway === 0 ? "Today" : `${tp.daysAway}d`}
                       </span>
                     </Link>
@@ -491,6 +449,50 @@ export default function ClientPortalPage() {
                 </div>
               </div>
             )}
+
+            {/* ── Clients List (no border, scrollable) ── */}
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Clients</h3>
+              {portals.length > 0 ? (
+                <div className="space-y-1">
+                  {portals.map((p) => {
+                    const isBlocked = !!p.blocker;
+                    const isRetainer = p.client_type === "retainer" || p.project_type?.toLowerCase().includes("retainer");
+                    const tp = p.next_touchpoint;
+                    const tpDays = tp?.date ? Math.ceil((new Date(tp.date + "T00:00:00").getTime() - Date.now()) / 86400000) : null;
+                    return (
+                      <Link
+                        key={p.id}
+                        href={`/tools/client-portal/${p.id}`}
+                        className={`flex items-center justify-between px-3.5 py-3 rounded-lg hover:bg-[#F7F8FA] transition-colors ${isBlocked ? "bg-red-50/40" : ""}`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          {isBlocked && <span className="size-1.5 rounded-full bg-red-500 animate-pulse shrink-0" />}
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-[#1A1A1A] truncate">{p.client_name}</p>
+                            <p className="text-[10px] text-[#AAA]">
+                              {isRetainer ? "Retainer" : p.project_type || "Project"}
+                              {p.current_phase ? ` · ${p.current_phase}` : ""}
+                              {isBlocked ? ` · Blocked: ${p.blocker?.reason}` : ""}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                          {tpDays !== null && (
+                            <span className={`text-[10px] ${tpDays < 0 ? "text-red-500" : tpDays <= 2 ? "text-amber-500" : "text-[#CCC]"}`}>
+                              {tpDays < 0 ? `${Math.abs(tpDays)}d overdue` : tpDays === 0 ? "Today" : `${tpDays}d`}
+                            </span>
+                          )}
+                          <svg className="size-4 text-[#DDD]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-[#CCC]">No clients yet</p>
+              )}
+            </div>
           </div>
         );
       })()}
