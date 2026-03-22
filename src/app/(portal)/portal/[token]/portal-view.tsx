@@ -688,17 +688,20 @@ function ClientHub({
                 onClick={() => onOpenProject(idx)}
                 className="w-full text-left group"
               >
-                <div className="flex items-center justify-between py-3 hover:bg-[#FAFAFA] -mx-2 px-2 rounded-lg transition-colors">
-                  <div>
-                    <p className="text-sm font-medium text-[#1A1A1A] group-hover:text-[#000]">{proj.name}</p>
-                    <p className="text-xs text-[#AAA] mt-0.5">
-                      {proj.created_at && <span className="mr-3">Started {new Date(proj.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>}
-                      {tier && <span className="mr-3">· {tier} · {tier === "T1" ? "1" : tier === "T2" ? "2" : "4"} tests/week</span>}
-                      {liveTests > 0 && <span className="text-emerald-600">{liveTests} live</span>}
-                      {completedTests > 0 && <span className="ml-3">{completedTests} completed</span>}
-                    </p>
+                <div className="flex items-center justify-between py-3.5 px-4 -mx-2 border border-transparent hover:border-[#E5E5EA] hover:bg-[#FAFAFA] rounded-xl transition-all cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    {proj.status === "active" && <span className="size-2 rounded-full bg-emerald-500 shrink-0" />}
+                    <div>
+                      <p className="text-sm font-semibold text-[#1A1A1A] group-hover:text-[#000]">{proj.name}</p>
+                      <p className="text-xs text-[#AAA] mt-0.5">
+                        {proj.created_at && <span className="mr-3">Started {new Date(proj.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>}
+                        {tier && <span className="mr-3">· {tier} · {tier === "T1" ? "1" : tier === "T2" ? "2" : "4"} tests/week</span>}
+                        {liveTests > 0 && <span className="text-emerald-600">{liveTests} live</span>}
+                        {completedTests > 0 && <span className="ml-3">{completedTests} completed</span>}
+                      </p>
+                    </div>
                   </div>
-                  <svg className="size-4 text-[#CCC] group-hover:text-[#999]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+                  <svg className="size-4 text-[#DDD] group-hover:text-[#999] shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
                 </div>
               </button>
             );
@@ -738,22 +741,24 @@ function ClientHub({
                 onClick={() => onOpenProject(idx)}
                 className="w-full text-left group"
               >
-                <div className="flex items-center justify-between py-3 hover:bg-[#FAFAFA] -mx-2 px-2 rounded-lg transition-colors">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[#1A1A1A] group-hover:text-[#000]">{proj.name}</p>
-                    <p className="text-xs text-[#AAA] mt-0.5">
-                      {proj.created_at && <span className="mr-2">Started {new Date(proj.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} ·</span>}
-                      {phase ? phase.name : proj.current_phase || portal.current_phase || "In progress"}
-                      {progress > 0 && <span className="ml-3">{progress}%</span>}
-                    </p>
+                <div className="flex items-center justify-between py-3.5 px-4 -mx-2 border border-transparent hover:border-[#E5E5EA] hover:bg-[#FAFAFA] rounded-xl transition-all cursor-pointer">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    {proj.status === "active" && <span className="size-2 rounded-full bg-emerald-500 shrink-0" />}
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-[#1A1A1A] group-hover:text-[#000]">{proj.name}</p>
+                      <p className="text-xs text-[#AAA] mt-0.5">
+                        {proj.created_at && <span className="mr-2">Started {new Date(proj.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} ·</span>}
+                        {phase ? phase.name : proj.current_phase || portal.current_phase || "In progress"}
+                        {progress > 0 && <span className="ml-3">{progress}%</span>}
+                      </p>
+                    </div>
                   </div>
-                  {/* Mini progress bar */}
                   {progress > 0 && (
                     <div className="w-16 h-1 bg-[#F0F0F0] rounded-full mr-3 shrink-0">
                       <div className="h-full bg-[#1A1A1A] rounded-full" style={{ width: `${progress}%` }} />
                     </div>
                   )}
-                  <svg className="size-4 text-[#CCC] group-hover:text-[#999] shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+                  <svg className="size-4 text-[#DDD] group-hover:text-[#999] shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
                 </div>
               </button>
             );
