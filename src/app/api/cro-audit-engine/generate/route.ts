@@ -1,8 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { DEFAULT_AUDIT_KNOWLEDGE } from "@/lib/cro-audit-engine/knowledge-base";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || "" });
 const FIRECRAWL_KEY = process.env.FIRECRAWL_API_KEY || "";
+
+// Load knowledge base from Supabase if available, fallback to default
+async function getKnowledgeBase(): Promise<string> {
+  try {
+    const { isSupabaseConfigured, supabase } = await import("@/lib/supabase");
+    if (isSupabaseConfigured()) {
+      const { data } = await supabase
+        .from("business_settings")
+        .select("data")
+        .eq("id", "business-settings-singleton")
+        .limit(1);
+      const kb = data?.[0]?.data?.audit_knowledge_base;
+      if (kb && typeof kb === "string" && kb.trim().length > 100) return kb;
+    }
+  } catch { /* fallback */ }
+  return DEFAULT_AUDIT_KNOWLEDGE;
+}
 
 const AUDIT_SYSTEM_PROMPT = `You are a senior CRO strategist conducting a professional homepage audit for a DTC/ecommerce brand. You produce genuinely useful, specific analysis — not generic advice.
 
@@ -72,15 +90,15 @@ export async function POST(req: NextRequest) {
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${FIRECRAWL_KEY}` },
           body: JSON.stringify({
             url,
-            formats: ["markdown", "screenshot"],
-            waitFor: 3000,
-            timeout: 30000,
+            formats: ["markdown", "screenshot@fullPage"],
+            waitFor: 5000,
+            timeout: 45000,
           }),
         });
 
         if (scrapeRes.ok) {
           const scrapeData = await scrapeRes.json();
-          pageMarkdown = scrapeData.data?.markdown?.slice(0, 15000) || "";
+          pageMarkdown = scrapeData.data?.markdown?.slice(0, 25000) || "";
           screenshotUrl = scrapeData.data?.screenshot || "";
         }
       } catch (e) {
@@ -128,11 +146,13 @@ ${pageMarkdown}
 Analyse the page structure, copy, CTAs, social proof, navigation, and overall conversion architecture. Be specific — reference actual elements you can see.`,
     });
 
-    // Step 3: Claude analysis
+    // Step 3: Load knowledge base and run Claude analysis
+    const knowledgeBase = await getKnowledgeBase();
+
     const response = await client.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 4096,
-      system: AUDIT_SYSTEM_PROMPT,
+      system: AUDIT_SYSTEM_PROMPT + "\n\n## CRO KNOWLEDGE BASE\n" + knowledgeBase,
       messages: [{ role: "user", content: userContent }],
     });
 
