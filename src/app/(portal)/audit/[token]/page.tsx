@@ -18,12 +18,14 @@ export default async function PublicAuditPage({ params }: { params: Promise<{ to
   const { token } = await params;
   const audit = await getAuditByToken(token);
 
-  if (!audit || audit.status !== "published") {
+  if (!audit) {
     notFound();
   }
 
-  // Increment view count
-  await incrementViewCount(token);
+  // Only increment view count for published audits (not draft previews)
+  if (audit.status === "published") {
+    await incrementViewCount(token);
+  }
 
   const date = new Date(audit.created_at).toLocaleDateString("en-GB", { month: "long", year: "numeric" });
   const issueCount = audit.issues?.length || 0;
