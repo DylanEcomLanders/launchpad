@@ -35,6 +35,25 @@ export default function SocialAnalyticsPage() {
   const [chartMetric, setChartMetric] = useState<ChartMetric>("impressions");
   const [lastFetched, setLastFetched] = useState<string | null>(null);
   const [fromCache, setFromCache] = useState(false);
+  const [analysis, setAnalysis] = useState<any>(null);
+  const [analysing, setAnalysing] = useState(false);
+
+  const runAnalysis = async () => {
+    if (!tweets.length || !profile || !stats) return;
+    setAnalysing(true);
+    try {
+      const res = await fetch("/api/social/analyse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tweets, profile, stats }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAnalysis(data.analysis);
+      }
+    } catch { /* silent */ }
+    setAnalysing(false);
+  };
 
   const fetchData = async (o: string, refresh = false) => {
     setLoading(true);
@@ -188,19 +207,124 @@ export default function SocialAnalyticsPage() {
             </div>
           </div>
 
-          {/* Top Tweet */}
-          {stats.topTweet && (
-            <div className="border border-[#E8E8E8] rounded-xl p-4 mb-6 bg-[#FAFAFA]">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Top Tweet (by views)</p>
-              <p className="text-sm text-[#1A1A1A] leading-relaxed mb-2">{stats.topTweet.text}</p>
-              <div className="flex items-center gap-4 text-xs text-[#777]">
-                <span>{fmt(stats.topTweet.impressions)} views</span>
-                <span>{stats.topTweet.likes} likes</span>
-                <span>{stats.topTweet.retweets} RTs</span>
-                <span className="text-emerald-600 font-semibold">{stats.topTweet.engagementRate.toFixed(1)}%</span>
-              </div>
+          {/* AI Content Analysis */}
+          <div className="border border-[#E8E8E8] rounded-xl mb-6 overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#F0F0F0]">
+              <p className="text-xs font-semibold text-[#1A1A1A]">Content Intelligence</p>
+              <button
+                onClick={runAnalysis}
+                disabled={analysing || !tweets.length}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-medium bg-[#1A1A1A] text-white rounded-lg hover:bg-[#2D2D2D] disabled:opacity-30"
+              >
+                {analysing ? (
+                  <><ArrowPathIcon className="size-3 animate-spin" /> Analysing...</>
+                ) : analysis ? "Re-analyse" : "Analyse Content"}
+              </button>
             </div>
-          )}
+
+            {analysing && (
+              <div className="px-4 py-8 text-center">
+                <div className="animate-spin size-5 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full mx-auto mb-2" />
+                <p className="text-xs text-[#AAA]">Analysing {tweets.length} tweets...</p>
+              </div>
+            )}
+
+            {analysis && !analysing && (
+              <div className="p-4 space-y-5">
+                {/* Key Insight */}
+                {analysis.keyInsight && (
+                  <div className="bg-[#FAFAFA] rounded-lg px-4 py-3">
+                    <p className="text-xs font-semibold text-[#1A1A1A] mb-1">Key Insight</p>
+                    <p className="text-sm text-[#555] leading-relaxed">{analysis.keyInsight}</p>
+                  </div>
+                )}
+
+                {/* Content Themes */}
+                {analysis.themes?.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Content Themes</p>
+                    <div className="space-y-2">
+                      {analysis.themes.map((t: any, i: number) => (
+                        <div key={i} className="flex items-center justify-between py-2 border-b border-[#F5F5F5] last:border-0">
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs font-medium text-[#1A1A1A]">{t.theme}</span>
+                            <span className="text-[9px] text-[#CCC]">{t.count} posts</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className={`text-[10px] font-semibold ${t.avgEngagement >= 4 ? "text-emerald-600" : t.avgEngagement >= 2 ? "text-amber-600" : "text-[#AAA]"}`}>
+                              {typeof t.avgEngagement === "number" ? `${t.avgEngagement.toFixed(1)}%` : t.avgEngagement}
+                            </span>
+                            <span className={`text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded-full ${
+                              t.verdict === "keep posting" ? "bg-emerald-50 text-emerald-600" :
+                              t.verdict === "reduce" ? "bg-red-50 text-red-500" :
+                              "bg-amber-50 text-amber-600"
+                            }`}>{t.verdict}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Hook Patterns */}
+                {analysis.hookPatterns?.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Hook Patterns That Work</p>
+                    <div className="space-y-2">
+                      {analysis.hookPatterns.map((h: any, i: number) => (
+                        <div key={i} className="bg-[#FAFAFA] rounded-lg px-3 py-2.5">
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="text-xs font-semibold text-[#1A1A1A]">{h.pattern}</p>
+                            <span className="text-[10px] text-emerald-600 font-semibold">{typeof h.avgEngagement === "number" ? `${h.avgEngagement.toFixed(1)}%` : h.avgEngagement}</span>
+                          </div>
+                          <p className="text-[10px] text-[#777] italic mb-1">&ldquo;{h.example}&rdquo;</p>
+                          <p className="text-[10px] text-[#AAA]">{h.tip}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Content Gaps */}
+                  {analysis.contentGaps?.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Content Gaps</p>
+                      <div className="space-y-1.5">
+                        {analysis.contentGaps.map((g: string, i: number) => (
+                          <div key={i} className="flex items-start gap-2">
+                            <span className="text-amber-500 text-xs mt-0.5">○</span>
+                            <p className="text-xs text-[#555]">{g}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Next Posts */}
+                  {analysis.nextPosts?.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Post Ideas</p>
+                      <div className="space-y-1.5">
+                        {analysis.nextPosts.map((p: string, i: number) => (
+                          <div key={i} className="flex items-start gap-2">
+                            <span className="text-emerald-500 text-xs mt-0.5">→</span>
+                            <p className="text-xs text-[#555]">{p}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {!analysis && !analysing && (
+              <div className="px-4 py-6 text-center">
+                <p className="text-xs text-[#CCC]">Hit &ldquo;Analyse Content&rdquo; to get AI-powered content strategy insights</p>
+              </div>
+            )}
+          </div>
 
           {/* Tweet Table */}
           <div>
