@@ -473,6 +473,13 @@ export default function PortalDetailPage() {
                 <ArrowTopRightOnSquareIcon className="size-3.5" />
                 Preview
               </a>
+              <button
+                onClick={() => { load(); }}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#1B1B1B] text-white text-[11px] font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
+              >
+                <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H4.28a.75.75 0 00-.75.75v3.955a.75.75 0 001.5 0v-2.134l.312.312a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm-10.624-2.85a5.5 5.5 0 019.201-2.465l.312.31H11.77a.75.75 0 000 1.5h3.955a.75.75 0 00.75-.75V3.214a.75.75 0 00-1.5 0v2.134l-.312-.312A7 7 0 003.95 8.174a.75.75 0 001.449.39z" clipRule="evenodd" /></svg>
+                Save
+              </button>
             </div>
           </div>
         </div>
