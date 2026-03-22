@@ -26,6 +26,14 @@ export interface AuditReport {
   screenshot_url: string;
   whatsapp_link: string;
   booking_link: string;
+  speed_data: {
+    score: number;
+    fcp: string;
+    lcp: string;
+    tbt: string;
+    cls: string;
+    si: string;
+  } | null;
   opened_at: string | null;
   view_count: number;
   created_at: string;

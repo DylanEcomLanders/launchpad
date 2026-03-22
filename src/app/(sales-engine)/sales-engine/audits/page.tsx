@@ -63,6 +63,7 @@ export default function AuditsPage() {
         issues: audit.issues || [],
         priority_order: audit.priority_order || [],
         screenshot_url: audit.screenshot_url || "",
+        speed_data: audit.speed_data || null,
         whatsapp_link: "",
         booking_link: "",
         opened_at: null,

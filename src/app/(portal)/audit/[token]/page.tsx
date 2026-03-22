@@ -50,6 +50,43 @@ export default async function PublicAuditPage({ params }: { params: Promise<{ to
           </p>
         </div>
 
+        {/* Page Speed */}
+        {audit.speed_data && (
+          <section className="mb-12">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-[#1A1A1A] mb-4 pb-2 border-b border-[#E8E8E8]">
+              Page Speed (Mobile)
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="border border-[#E8E8E8] rounded-xl px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Performance</p>
+                <p className={`text-2xl font-bold tabular-nums ${audit.speed_data.score >= 90 ? "text-emerald-600" : audit.speed_data.score >= 50 ? "text-amber-600" : "text-red-500"}`}>
+                  {audit.speed_data.score}<span className="text-sm text-[#AAA]">/100</span>
+                </p>
+              </div>
+              <div className="border border-[#E8E8E8] rounded-xl px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">First Paint</p>
+                <p className="text-lg font-bold tabular-nums text-[#1A1A1A]">{audit.speed_data.fcp}</p>
+              </div>
+              <div className="border border-[#E8E8E8] rounded-xl px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Largest Paint</p>
+                <p className="text-lg font-bold tabular-nums text-[#1A1A1A]">{audit.speed_data.lcp}</p>
+              </div>
+              <div className="border border-[#E8E8E8] rounded-xl px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Blocking Time</p>
+                <p className="text-lg font-bold tabular-nums text-[#1A1A1A]">{audit.speed_data.tbt}</p>
+              </div>
+              <div className="border border-[#E8E8E8] rounded-xl px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Layout Shift</p>
+                <p className="text-lg font-bold tabular-nums text-[#1A1A1A]">{audit.speed_data.cls}</p>
+              </div>
+              <div className="border border-[#E8E8E8] rounded-xl px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Speed Index</p>
+                <p className="text-lg font-bold tabular-nums text-[#1A1A1A]">{audit.speed_data.si}</p>
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Executive Summary */}
         <section className="mb-12">
           <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-[#1A1A1A] mb-4 pb-2 border-b border-[#E8E8E8]">

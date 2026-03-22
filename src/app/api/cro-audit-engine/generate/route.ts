@@ -100,6 +100,28 @@ export async function POST(req: NextRequest) {
     const { url } = await req.json();
     if (!url) return NextResponse.json({ error: "No URL provided" }, { status: 400 });
 
+    // Step 0: PageSpeed Insights (mobile)
+    let speedData: { score: number; fcp: string; lcp: string; tbt: string; cls: string; si: string } | null = null;
+    try {
+      const psRes = await fetch(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&strategy=mobile&category=performance`);
+      if (psRes.ok) {
+        const ps = await psRes.json();
+        const lh = ps.lighthouseResult || {};
+        const audits = lh.audits || {};
+        const perfScore = Math.round((lh.categories?.performance?.score || 0) * 100);
+        if (perfScore > 0) {
+          speedData = {
+            score: perfScore,
+            fcp: audits["first-contentful-paint"]?.displayValue || "—",
+            lcp: audits["largest-contentful-paint"]?.displayValue || "—",
+            tbt: audits["total-blocking-time"]?.displayValue || "—",
+            cls: audits["cumulative-layout-shift"]?.displayValue || "—",
+            si: audits["speed-index"]?.displayValue || "—",
+          };
+        }
+      }
+    } catch { /* non-critical */ }
+
     // Step 1: Scrape with Firecrawl
     let pageMarkdown = "";
     let screenshotUrl = "";
@@ -162,10 +184,18 @@ export async function POST(req: NextRequest) {
 
 URL: ${url}
 
+${speedData ? `PAGESPEED INSIGHTS (Mobile):
+Performance Score: ${speedData.score}/100
+First Contentful Paint: ${speedData.fcp}
+Largest Contentful Paint: ${speedData.lcp}
+Total Blocking Time: ${speedData.tbt}
+Cumulative Layout Shift: ${speedData.cls}
+Speed Index: ${speedData.si}
+` : ""}
 PAGE CONTENT:
 ${pageMarkdown}
 
-Analyse the page structure, copy, CTAs, social proof, navigation, and overall conversion architecture. Be specific — reference actual elements you can see.`,
+Analyse the page structure, copy, CTAs, social proof, navigation, and overall conversion architecture. Be specific — reference actual elements you can see.${speedData ? " Include page speed findings in your audit — slow pages kill conversion." : ""}`,
     });
 
     // Step 3: Load knowledge base and run Claude analysis
@@ -194,6 +224,7 @@ Analyse the page structure, copy, CTAs, social proof, navigation, and overall co
       audit: {
         ...audit,
         screenshot_url: screenshotUrl,
+        speed_data: speedData,
       },
     });
   } catch (err: any) {
