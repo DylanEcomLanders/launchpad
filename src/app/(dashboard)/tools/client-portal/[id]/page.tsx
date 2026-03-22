@@ -3364,21 +3364,6 @@ function ClientDetailsPanel({ portal, team, onUpdateField }: { portal: PortalDat
         })()}
       </div>
 
-      {/* Client Email */}
-      <div className="flex items-center justify-between px-4 py-3">
-        <p className="text-xs font-medium text-[#777]">Email</p>
-        {editingEmail ? (
-          <div className="flex items-center gap-2">
-            <input type="email" value={emailVal} onChange={(e) => setEmailVal(e.target.value)} className="text-xs px-2 py-1 border border-[#E5E5EA] rounded w-48" placeholder="client@example.com" autoFocus />
-            <button onClick={() => { onUpdateField("client_email", emailVal); setEditingEmail(false); }} className="text-[10px] font-medium text-emerald-600">Save</button>
-            <button onClick={() => { setEmailVal(portal.client_email || ""); setEditingEmail(false); }} className="text-[10px] text-[#AAA]">Cancel</button>
-          </div>
-        ) : (
-          <button onClick={() => setEditingEmail(true)} className="text-xs text-[#1A1A1A] hover:text-blue-600 transition-colors">
-            {portal.client_email || <span className="text-[#CCC]">Click to set</span>}
-          </button>
-        )}
-      </div>
     </div>
   );
 }
