@@ -427,40 +427,6 @@ export default function ClientPortalPage() {
               )}
             </div>
 
-            {/* ── Chart ── */}
-            <div className="border border-[#E5E5EA] rounded-xl bg-white overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-3 border-b border-[#F0F0F0]">
-                <div className="flex items-center gap-3">
-                  {chartMetrics.map((m, i) => (
-                    <button
-                      key={m.key}
-                      onClick={() => setActiveChart(i)}
-                      className={`text-[11px] font-semibold transition-colors ${
-                        activeChart % chartMetrics.length === i ? "text-[#1A1A1A]" : "text-[#CCC] hover:text-[#777]"
-                      }`}
-                    >
-                      {m.label}
-                    </button>
-                  ))}
-                </div>
-                <span className="text-[10px] text-[#CCC]">Last 8 weeks</span>
-              </div>
-              <div className="px-4 py-4">
-                <ResponsiveContainer width="100%" height={180}>
-                  <LineChart data={weeklyData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
-                    <XAxis dataKey="week" tick={{ fontSize: 10, fill: "#AAA" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#AAA" }} axisLine={false} tickLine={false} width={25} allowDecimals={false} />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: "white", border: "1px solid #E5E5EA", borderRadius: "8px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", fontSize: "11px", padding: "8px 12px" }}
-                      labelStyle={{ fontWeight: 600, marginBottom: "4px", color: "#1A1A1A" }}
-                    />
-                    <Line type="monotone" dataKey={currentChartMetric.key} stroke={currentChartMetric.color} strokeWidth={2} dot={{ r: 3, fill: currentChartMetric.color, strokeWidth: 0 }} activeDot={{ r: 5, fill: currentChartMetric.color, strokeWidth: 2, stroke: "white" }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
             {/* ── Portals List (minimal) ── */}
             <div>
               <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Clients</h3>
