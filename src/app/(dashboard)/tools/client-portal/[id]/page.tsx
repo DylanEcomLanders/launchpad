@@ -493,61 +493,8 @@ export default function PortalDetailPage() {
           </div>
         </div>
 
-        {/* ── Client Details ── */}
-        <div className="border border-[#E5E5EA] rounded-xl bg-white divide-y divide-[#F0F0F0] mb-6 overflow-hidden">
-          {/* Designers */}
-          <div className="flex items-center justify-between px-4 py-3">
-            <p className="text-xs font-medium text-[#777]">Designers</p>
-            <div className="flex flex-wrap gap-1.5 justify-end">
-              {(() => {
-                const assigned = (portal.team_member_ids || []).map(id => team.find(t => t.id === id)).filter(Boolean);
-                const designers = assigned.filter(m => m && m.role.toLowerCase().includes("design"));
-                if (designers.length === 0) return <span className="text-[10px] text-[#CCC]">Not assigned</span>;
-                return designers.map(m => m && <span key={m.id} className="text-[10px] font-medium text-[#1A1A1A] bg-[#F3F3F5] px-2 py-0.5 rounded-full">{m.name}</span>);
-              })()}
-            </div>
-          </div>
-          {/* Developers */}
-          <div className="flex items-center justify-between px-4 py-3">
-            <p className="text-xs font-medium text-[#777]">Developers</p>
-            <div className="flex flex-wrap gap-1.5 justify-end">
-              {(() => {
-                const assigned = (portal.team_member_ids || []).map(id => team.find(t => t.id === id)).filter(Boolean);
-                const devs = assigned.filter(m => m && (m.role.toLowerCase().includes("develop") || m.role.toLowerCase().includes("head of dev")));
-                if (devs.length === 0) return <span className="text-[10px] text-[#CCC]">Not assigned</span>;
-                return devs.map(m => m && <span key={m.id} className="text-[10px] font-medium text-[#1A1A1A] bg-[#F3F3F5] px-2 py-0.5 rounded-full">{m.name}</span>);
-              })()}
-            </div>
-          </div>
-          {/* Slack Channel */}
-          <div className="flex items-center justify-between px-4 py-3">
-            <p className="text-xs font-medium text-[#777]">Slack Channel</p>
-            <p className="text-xs text-[#1A1A1A] font-mono">{portal.slack_channel_url || <span className="text-[#CCC]">Not set</span>}</p>
-          </div>
-          {/* Next Touchpoint */}
-          <div className="flex items-center justify-between px-4 py-3">
-            <p className="text-xs font-medium text-[#777]">Next Touchpoint</p>
-            {portal.next_touchpoint?.date ? (() => {
-              const days = Math.ceil((new Date(portal.next_touchpoint.date + "T00:00:00").getTime() - Date.now()) / 86400000);
-              return (
-                <div className="text-right">
-                  <p className={`text-xs font-medium ${days < 0 ? "text-red-500" : days <= 2 ? "text-amber-600" : "text-[#1A1A1A]"}`}>
-                    {new Date(portal.next_touchpoint.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                    <span className="ml-1.5 text-[10px] font-normal">{days < 0 ? `${Math.abs(days)}d overdue` : days === 0 ? "Today" : `in ${days}d`}</span>
-                  </p>
-                  {portal.next_touchpoint.description && <p className="text-[10px] text-[#999] mt-0.5">{portal.next_touchpoint.description}</p>}
-                </div>
-              );
-            })() : <span className="text-[10px] text-[#CCC]">Not set</span>}
-          </div>
-          {/* Client Email */}
-          {portal.client_email && (
-            <div className="flex items-center justify-between px-4 py-3">
-              <p className="text-xs font-medium text-[#777]">Email</p>
-              <p className="text-xs text-[#1A1A1A]">{portal.client_email}</p>
-            </div>
-          )}
-        </div>
+        {/* ── Client Details (editable) ── */}
+        <ClientDetailsPanel portal={portal} team={team} onUpdateField={handleUpdateField} />
 
         {/* ── Projects List ── */}
         {!selectedProject && (
@@ -3296,6 +3243,153 @@ function TeamAssignment({ portal, onUpdateField }: { portal: PortalData; onUpdat
           ))}
         </select>
       )}
+    </div>
+  );
+}
+
+/* ── Client Details Panel (inline editable) ── */
+function ClientDetailsPanel({ portal, team, onUpdateField }: { portal: PortalData; team: TeamMember[]; onUpdateField: (field: string, value: unknown) => void }) {
+  const [editingSlack, setEditingSlack] = useState(false);
+  const [slackVal, setSlackVal] = useState(portal.slack_channel_url || "");
+  const [editingTp, setEditingTp] = useState(false);
+  const [tpDate, setTpDate] = useState(portal.next_touchpoint?.date || "");
+  const [tpDesc, setTpDesc] = useState(portal.next_touchpoint?.description || "");
+  const [editingEmail, setEditingEmail] = useState(false);
+  const [emailVal, setEmailVal] = useState(portal.client_email || "");
+
+  const assigned = (portal.team_member_ids || []).map(id => team.find(t => t.id === id)).filter(Boolean) as TeamMember[];
+  const designers = assigned.filter(m => m.role.toLowerCase().includes("design"));
+  const devs = assigned.filter(m => m.role.toLowerCase().includes("develop") || m.role.toLowerCase().includes("head of dev"));
+
+  const allDesigners = team.filter(m => m.role.toLowerCase().includes("design"));
+  const allDevs = team.filter(m => m.role.toLowerCase().includes("develop") || m.role.toLowerCase().includes("head of dev"));
+
+  const addMember = (id: string) => {
+    const current = portal.team_member_ids || [];
+    if (current.includes(id)) return;
+    onUpdateField("team_member_ids", [...current, id]);
+  };
+  const removeMember = (id: string) => {
+    onUpdateField("team_member_ids", (portal.team_member_ids || []).filter(m => m !== id));
+  };
+
+  return (
+    <div className="border border-[#E5E5EA] rounded-xl bg-white divide-y divide-[#F0F0F0] mb-6 overflow-hidden">
+      {/* Designers */}
+      <div className="px-4 py-3">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-medium text-[#777]">Designers</p>
+          <div className="flex flex-wrap gap-1.5 items-center justify-end">
+            {designers.map(m => (
+              <span key={m.id} className="inline-flex items-center gap-1 text-[10px] font-medium text-[#1A1A1A] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">
+                {m.name}
+                <button onClick={() => removeMember(m.id)} className="text-emerald-300 hover:text-red-400"><svg className="size-2.5" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg></button>
+              </span>
+            ))}
+            {allDesigners.filter(m => !designers.some(d => d.id === m.id)).length > 0 && (
+              <select
+                value=""
+                onChange={(e) => { if (e.target.value) addMember(e.target.value); }}
+                className="text-[10px] text-[#AAA] bg-transparent border-none cursor-pointer p-0 focus:outline-none"
+              >
+                <option value="">+ Add</option>
+                {allDesigners.filter(m => !designers.some(d => d.id === m.id)).map(m => (
+                  <option key={m.id} value={m.id}>{m.name}</option>
+                ))}
+              </select>
+            )}
+            {designers.length === 0 && allDesigners.length === 0 && <span className="text-[10px] text-[#CCC]">No designers in directory</span>}
+          </div>
+        </div>
+      </div>
+
+      {/* Developers */}
+      <div className="px-4 py-3">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-medium text-[#777]">Developers</p>
+          <div className="flex flex-wrap gap-1.5 items-center justify-end">
+            {devs.map(m => (
+              <span key={m.id} className="inline-flex items-center gap-1 text-[10px] font-medium bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
+                {m.name}
+                <button onClick={() => removeMember(m.id)} className="text-blue-300 hover:text-red-400"><svg className="size-2.5" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg></button>
+              </span>
+            ))}
+            {allDevs.filter(m => !devs.some(d => d.id === m.id)).length > 0 && (
+              <select
+                value=""
+                onChange={(e) => { if (e.target.value) addMember(e.target.value); }}
+                className="text-[10px] text-[#AAA] bg-transparent border-none cursor-pointer p-0 focus:outline-none"
+              >
+                <option value="">+ Add</option>
+                {allDevs.filter(m => !devs.some(d => d.id === m.id)).map(m => (
+                  <option key={m.id} value={m.id}>{m.name}</option>
+                ))}
+              </select>
+            )}
+            {devs.length === 0 && allDevs.length === 0 && <span className="text-[10px] text-[#CCC]">No developers in directory</span>}
+          </div>
+        </div>
+      </div>
+
+      {/* Slack Channel */}
+      <div className="flex items-center justify-between px-4 py-3">
+        <p className="text-xs font-medium text-[#777]">Slack Channel</p>
+        {editingSlack ? (
+          <div className="flex items-center gap-2">
+            <input type="text" value={slackVal} onChange={(e) => setSlackVal(e.target.value)} className="text-xs font-mono px-2 py-1 border border-[#E5E5EA] rounded w-40" placeholder="C0XXXXXXX" autoFocus />
+            <button onClick={() => { onUpdateField("slack_channel_url", slackVal); setEditingSlack(false); }} className="text-[10px] font-medium text-emerald-600">Save</button>
+            <button onClick={() => { setSlackVal(portal.slack_channel_url || ""); setEditingSlack(false); }} className="text-[10px] text-[#AAA]">Cancel</button>
+          </div>
+        ) : (
+          <button onClick={() => setEditingSlack(true)} className="text-xs text-[#1A1A1A] font-mono hover:text-blue-600 transition-colors">
+            {portal.slack_channel_url || <span className="text-[#CCC]">Click to set</span>}
+          </button>
+        )}
+      </div>
+
+      {/* Next Touchpoint */}
+      <div className="flex items-center justify-between px-4 py-3">
+        <p className="text-xs font-medium text-[#777]">Next Touchpoint</p>
+        {editingTp ? (
+          <div className="flex items-center gap-2">
+            <input type="date" value={tpDate} onChange={(e) => setTpDate(e.target.value)} className="text-xs px-2 py-1 border border-[#E5E5EA] rounded" />
+            <input type="text" value={tpDesc} onChange={(e) => setTpDesc(e.target.value)} className="text-xs px-2 py-1 border border-[#E5E5EA] rounded w-36" placeholder="Description" />
+            <button onClick={() => { onUpdateField("next_touchpoint", { date: tpDate, description: tpDesc }); setEditingTp(false); }} className="text-[10px] font-medium text-emerald-600">Save</button>
+            <button onClick={() => setEditingTp(false)} className="text-[10px] text-[#AAA]">Cancel</button>
+          </div>
+        ) : (
+          <button onClick={() => setEditingTp(true)} className="text-right hover:text-blue-600 transition-colors">
+            {portal.next_touchpoint?.date ? (() => {
+              const days = Math.ceil((new Date(portal.next_touchpoint.date + "T00:00:00").getTime() - Date.now()) / 86400000);
+              return (
+                <div>
+                  <p className={`text-xs font-medium ${days < 0 ? "text-red-500" : days <= 2 ? "text-amber-600" : "text-[#1A1A1A]"}`}>
+                    {new Date(portal.next_touchpoint.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                    <span className="ml-1.5 text-[10px] font-normal">{days < 0 ? `${Math.abs(days)}d overdue` : days === 0 ? "Today" : `in ${days}d`}</span>
+                  </p>
+                  {portal.next_touchpoint.description && <p className="text-[10px] text-[#999] mt-0.5">{portal.next_touchpoint.description}</p>}
+                </div>
+              );
+            })() : <span className="text-[10px] text-[#CCC]">Click to set</span>}
+          </button>
+        )}
+      </div>
+
+      {/* Client Email */}
+      <div className="flex items-center justify-between px-4 py-3">
+        <p className="text-xs font-medium text-[#777]">Email</p>
+        {editingEmail ? (
+          <div className="flex items-center gap-2">
+            <input type="email" value={emailVal} onChange={(e) => setEmailVal(e.target.value)} className="text-xs px-2 py-1 border border-[#E5E5EA] rounded w-48" placeholder="client@example.com" autoFocus />
+            <button onClick={() => { onUpdateField("client_email", emailVal); setEditingEmail(false); }} className="text-[10px] font-medium text-emerald-600">Save</button>
+            <button onClick={() => { setEmailVal(portal.client_email || ""); setEditingEmail(false); }} className="text-[10px] text-[#AAA]">Cancel</button>
+          </div>
+        ) : (
+          <button onClick={() => setEditingEmail(true)} className="text-xs text-[#1A1A1A] hover:text-blue-600 transition-colors">
+            {portal.client_email || <span className="text-[#CCC]">Click to set</span>}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
