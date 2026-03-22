@@ -352,7 +352,7 @@ export default function ClientPortalPage() {
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">{currentMetric.label}</p>
                   <p className="text-4xl font-bold tabular-nums" style={{ color: currentMetric.color }}>
                     {(currentMetric as { isCurrency?: boolean }).isCurrency
-                      ? `$${currentMetric.value >= 1000 ? `${(currentMetric.value / 1000).toFixed(1)}K` : currentMetric.value.toFixed(0)}`
+                      ? `$${Number(currentMetric.value) >= 1000 ? `${(Number(currentMetric.value) / 1000).toFixed(1)}K` : Number(currentMetric.value).toFixed(0)}`
                       : currentMetric.value}
                     {currentMetric.suffix && <span className="text-lg text-[#AAA] ml-1">{currentMetric.suffix}</span>}
                   </p>
