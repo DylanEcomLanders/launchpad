@@ -692,7 +692,8 @@ function ClientHub({
                   <div>
                     <p className="text-sm font-medium text-[#1A1A1A] group-hover:text-[#000]">{proj.name}</p>
                     <p className="text-xs text-[#AAA] mt-0.5">
-                      {tier && <span className="mr-3">{tier} · {tier === "T1" ? "1" : tier === "T2" ? "2" : "4"} tests/week</span>}
+                      {proj.created_at && <span className="mr-3">Started {new Date(proj.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>}
+                      {tier && <span className="mr-3">· {tier} · {tier === "T1" ? "1" : tier === "T2" ? "2" : "4"} tests/week</span>}
                       {liveTests > 0 && <span className="text-emerald-600">{liveTests} live</span>}
                       {completedTests > 0 && <span className="ml-3">{completedTests} completed</span>}
                     </p>
@@ -741,6 +742,7 @@ function ClientHub({
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-[#1A1A1A] group-hover:text-[#000]">{proj.name}</p>
                     <p className="text-xs text-[#AAA] mt-0.5">
+                      {proj.created_at && <span className="mr-2">Started {new Date(proj.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} ·</span>}
                       {phase ? phase.name : proj.current_phase || portal.current_phase || "In progress"}
                       {progress > 0 && <span className="ml-3">{progress}%</span>}
                     </p>
