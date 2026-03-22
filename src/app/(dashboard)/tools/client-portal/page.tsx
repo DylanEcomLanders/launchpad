@@ -452,9 +452,12 @@ export default function ClientPortalPage() {
 
             {/* ── Clients List (no border, scrollable) ── */}
             <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Clients</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Clients</h3>
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Total Clients: {portals.length}</span>
+              </div>
               {portals.length > 0 ? (
-                <div className="space-y-1">
+                <div className="divide-y divide-[#F0F0F0]">
                   {portals.map((p) => {
                     const isBlocked = !!p.blocker;
                     const isRetainer = p.client_type === "retainer" || p.project_type?.toLowerCase().includes("retainer");
