@@ -46,8 +46,8 @@ const navSections: NavSection[] = [
     icon: <FunnelIcon className="size-4" />,
     defaultOpen: true,
     items: [
-      { label: "Leads", href: "/sales-engine/leads" },
-      { label: "Deals", href: "/sales-engine/deals" },
+      { label: "Pipeline", href: "/sales-engine/pipeline" },
+      { label: "Audits", href: "/sales-engine/audits" },
     ],
   },
   {
