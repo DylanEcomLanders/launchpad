@@ -109,6 +109,20 @@ export function SalesEngineSidebar() {
           <FunnelIcon className="size-4" />
           {!collapsed && <span className="text-[12.5px] font-semibold">Leads</span>}
         </Link>
+        <Link
+          href="/sales-engine/audits"
+          onClick={() => setMobileOpen(false)}
+          className={`
+            flex items-center gap-2 px-2.5 py-2 rounded-lg transition-all duration-150 mt-1
+            ${pathname?.startsWith("/sales-engine/audits")
+              ? "bg-white shadow-[var(--shadow-soft)] text-[#1B1B1B]"
+              : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
+            }
+          `}
+        >
+          <svg className="size-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 003 3.5v13A1.5 1.5 0 004.5 18h11a1.5 1.5 0 001.5-1.5V7.621a1.5 1.5 0 00-.44-1.06l-4.12-4.122A1.5 1.5 0 0011.378 2H4.5zm2.25 8.5a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5zm0 3a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z" clipRule="evenodd" /></svg>
+          {!collapsed && <span className="text-[12.5px] font-semibold">Audits</span>}
+        </Link>
       </div>
 
       {/* Nav Sections */}
