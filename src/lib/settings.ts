@@ -56,6 +56,9 @@ export interface BusinessSettings {
     sat: boolean;
     sun: boolean;
   };
+
+  /* CRO Audit knowledge base — editable framework fed into every audit */
+  audit_knowledge_base?: string;
 }
 
 export const DEFAULT_SETTINGS: BusinessSettings = {

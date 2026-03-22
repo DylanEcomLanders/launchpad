@@ -360,6 +360,27 @@ export default function SettingsPage() {
           </button>
         )}
       </section>
+
+      {/* Audit Knowledge Base */}
+      <section className="mb-10">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
+          Audit Knowledge Base
+        </h2>
+        <p className="text-xs text-[#A0A0A0] mb-4">
+          CRO audit framework fed into every audit generation. Update this to make the audit engine smarter over time. Supports markdown.
+        </p>
+        <textarea
+          value={settings.audit_knowledge_base || ""}
+          onChange={(e) => setSettings({ ...settings, audit_knowledge_base: e.target.value })}
+          className="w-full min-h-[300px] text-xs font-mono px-3 py-2.5 border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#999] placeholder:text-[#CCC] leading-relaxed"
+          placeholder="Enter your CRO audit framework, scoring criteria, severity guides, and writing style rules..."
+        />
+        <p className="text-[10px] text-[#CCC] mt-2">
+          {(settings.audit_knowledge_base || "").length > 0
+            ? `${(settings.audit_knowledge_base || "").length.toLocaleString()} characters`
+            : "Empty — default framework will be used"}
+        </p>
+      </section>
     </div>
   );
 }
