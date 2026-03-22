@@ -57,14 +57,32 @@ export async function getTicketsByClient(clientName: string): Promise<Ticket[]> 
 }
 
 export async function saveTicket(ticket: Ticket): Promise<void> {
-  const all = await ticketStore.getAll();
-  const idx = all.findIndex((t) => t.id === ticket.id);
-  if (idx >= 0) {
-    all[idx] = { ...ticket, updated_at: new Date().toISOString() };
-  } else {
-    all.push(ticket);
+  const updated = { ...ticket, updated_at: new Date().toISOString() };
+
+  // Direct Supabase upsert for reliability (bypass store's bulk saveAll)
+  try {
+    const { isSupabaseConfigured, supabase } = await import("@/lib/supabase");
+    if (isSupabaseConfigured()) {
+      const { id, ...rest } = updated;
+      const { error } = await supabase.from("tickets").upsert({
+        id,
+        data: rest,
+        created_at: ticket.created_at || new Date().toISOString(),
+      });
+      if (error) console.error("Ticket save error:", error.message);
+    }
+  } catch (err) {
+    console.error("Ticket save exception:", err);
   }
-  await ticketStore.saveAll(all);
+
+  // Also update localStorage cache
+  const all = await ticketStore.getAll();
+  const idx = all.findIndex((t) => t.id === updated.id);
+  if (idx >= 0) all[idx] = updated;
+  else all.push(updated);
+  if (typeof window !== "undefined") {
+    localStorage.setItem("launchpad-tickets", JSON.stringify(all));
+  }
 }
 
 export async function updateTicketStatus(id: string, status: TicketStatus): Promise<void> {
