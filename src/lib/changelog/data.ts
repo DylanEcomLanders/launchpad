@@ -37,6 +37,30 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-17",
+    date: "22 Mar 2026",
+    version: "0.16.0",
+    title: "Social Analytics, Pipeline Kanban & Sales Engine Restructure",
+    changes: [
+      { type: "added", text: "Social Analytics dashboard — 90-day tweet data with weekly performance charts (views/engagement/likes/posts)" },
+      { type: "added", text: "AI Content Intelligence — analyses tweets to identify top themes, hook patterns, content gaps, and post ideas" },
+      { type: "added", text: "X/Twitter direct API integration — profile stats, tweet metrics, Supabase caching (6hr TTL)" },
+      { type: "added", text: "Top Hooks ranking — best performing opening lines by engagement rate" },
+      { type: "added", text: "Best posting days + hours analysis with visual bar chart" },
+      { type: "added", text: "Kanban Pipeline — drag leads across stages (New → Audit Sent → Engaged → Call Booked → Proposal → Won/Lost)" },
+      { type: "added", text: "Audit-to-pipeline connection — Run Audit button on leads, auto-link audit to lead" },
+      { type: "added", text: "CRO audit speed benchmarks — each metric shows goal with pass/warn/fail color coding" },
+      { type: "added", text: "Editable audit detail page — inline editing for all fields (summary, scorecard, issues, priorities)" },
+      { type: "improved", text: "Sales Engine restructured: Social Analytics hero nav, Content/Pipeline/Revenue sections" },
+      { type: "improved", text: "Pipeline stages updated: New Lead → Audit Sent → Engaged → Call Booked → Proposal Sent → Won/Lost" },
+      { type: "improved", text: "Launchpad sidebar: Project Kickoff hero CTA, Portals + Tickets as main nav links" },
+      { type: "improved", text: "Mobile layout fixes across both dashboards — responsive headers, scrollable tables" },
+      { type: "improved", text: "Speed data separated from CRO issues in audits — own dedicated section" },
+      { type: "fixed", text: "Audit page type detection — no more 'this is a PDP not a homepage' false flags" },
+      { type: "fixed", text: "Sales Engine 404s — all tools properly mapped to /sales-engine/ routes" },
+    ],
+  },
+  {
     id: "cl-16",
     date: "22 Mar 2026",
     version: "0.15.0",
