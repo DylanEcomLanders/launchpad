@@ -154,8 +154,8 @@ export default function SocialAnalyticsPage() {
                   <YAxis tickFormatter={fmt} tick={{ fontSize: 10, fill: "#AAA" }} axisLine={false} tickLine={false} width={45} />
                   <Tooltip
                     contentStyle={{ fontSize: 11, border: "1px solid #E8E8E8", borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
-                    labelFormatter={fmtWeek}
-                    formatter={(v: number) => [fmt(v), chartMetricLabels[chartMetric]]}
+                    labelFormatter={(label: any) => fmtWeek(String(label))}
+                    formatter={(v: any) => [fmt(Number(v)), chartMetricLabels[chartMetric]]}
                   />
                   <Line type="monotone" dataKey={chartMetric} stroke="#1A1A1A" strokeWidth={2} dot={{ r: 3, fill: "#1A1A1A" }} activeDot={{ r: 5 }} />
                 </LineChart>
