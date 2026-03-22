@@ -14,7 +14,7 @@ import {
 } from "@heroicons/react/24/solid";
 import {
   FunnelIcon,
-  MagnifyingGlassIcon,
+  BanknotesIcon,
 } from "@heroicons/react/24/outline";
 import { Logo, LogoMark } from "@/components/logo";
 import { AppSwitcher } from "@/components/app-switcher";
@@ -33,33 +33,30 @@ interface NavSection {
 
 const navSections: NavSection[] = [
   {
-    title: "Pipeline",
-    icon: <FunnelIcon className="size-4" />,
-    defaultOpen: true,
-    items: [
-      { label: "Deals", href: "/sales-engine/deals" },
-      { label: "Revenue", href: "/sales-engine/revenue" },
-      { label: "Portfolio", href: "/sales-engine/portfolio" },
-      { label: "Price Lists", href: "/sales-engine/price-lists" },
-    ],
-  },
-  {
     title: "Content",
     icon: <svg className="size-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h9.621a1.5 1.5 0 011.06.44l2.379 2.379A1.5 1.5 0 0117 5.879V16.5a1.5 1.5 0 01-1.5 1.5h-12A1.5 1.5 0 012 16.5v-13zm4.75 7a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5zm0-3a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z" clipRule="evenodd" /></svg>,
     defaultOpen: true,
     items: [
-      { label: "Content Engine", href: "/sales-engine/content-engine" },
       { label: "Calendar", href: "/sales-engine/calendar" },
+      { label: "Portfolio", href: "/sales-engine/portfolio" },
     ],
   },
   {
-    title: "Research",
-    icon: <MagnifyingGlassIcon className="size-4" />,
+    title: "Pipeline",
+    icon: <FunnelIcon className="size-4" />,
     defaultOpen: true,
     items: [
-      { label: "Store Audit", href: "/sales-engine/store-intel" },
-      { label: "Ecom Prospecting", href: "/sales-engine/prospect-scraper" },
-      { label: "Social Intel", href: "/sales-engine/social" },
+      { label: "Leads", href: "/sales-engine/leads" },
+      { label: "Deals", href: "/sales-engine/deals" },
+    ],
+  },
+  {
+    title: "Revenue",
+    icon: <BanknotesIcon className="size-4" />,
+    defaultOpen: true,
+    items: [
+      { label: "Revenue", href: "/sales-engine/revenue" },
+      { label: "Price Lists", href: "/sales-engine/price-lists" },
     ],
   },
 ];
@@ -113,35 +110,21 @@ export function SalesEngineSidebar() {
         </div>
       )}
 
-      {/* Command Centre */}
+      {/* Main Nav */}
       <div className="px-3 mb-2">
         <Link
-          href="/sales-engine"
+          href="/sales-engine/social"
           onClick={() => setMobileOpen(false)}
           className={`
             flex items-center gap-2 px-2.5 py-2 rounded-lg transition-all duration-150
-            ${pathname === "/sales-engine"
+            ${pathname?.startsWith("/sales-engine/social")
               ? "bg-white shadow-[var(--shadow-soft)] text-[#1B1B1B]"
               : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
             }
           `}
         >
-          <HomeIcon className="size-4" />
-          {!collapsed && <span className="text-[12.5px] font-semibold">Dashboard</span>}
-        </Link>
-        <Link
-          href="/sales-engine/leads"
-          onClick={() => setMobileOpen(false)}
-          className={`
-            flex items-center gap-2 px-2.5 py-2 rounded-lg transition-all duration-150 mt-1
-            ${pathname === "/sales-engine/leads"
-              ? "bg-white shadow-[var(--shadow-soft)] text-[#1B1B1B]"
-              : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
-            }
-          `}
-        >
-          <FunnelIcon className="size-4" />
-          {!collapsed && <span className="text-[12.5px] font-semibold">Leads</span>}
+          <svg className="size-4" viewBox="0 0 20 20" fill="currentColor"><path d="M6.29 18.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0020 3.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.073 4.073 0 01.8 7.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 010 16.407a11.616 11.616 0 006.29 1.84" /></svg>
+          {!collapsed && <span className="text-[12.5px] font-semibold">Social</span>}
         </Link>
         <Link
           href="/sales-engine/audits"
