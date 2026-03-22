@@ -265,9 +265,9 @@ export default function SalesEngineDashboard() {
 
           {/* ── Content Performance ── */}
           <div>
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
               <h2 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Content Performance</h2>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <div className="flex gap-1">
                   {(["all", "tiktok", "instagram"] as const).map((p) => (
                     <button
@@ -295,9 +295,9 @@ export default function SalesEngineDashboard() {
             </div>
 
             {sortedPosts.length > 0 ? (
-              <div className="border border-[#E5E5EA] rounded-xl overflow-hidden">
+              <div className="border border-[#E5E5EA] rounded-xl overflow-x-auto">
                 {/* Header */}
-                <div className="grid grid-cols-[1fr_70px_70px_70px_70px_60px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA] text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">
+                <div className="grid grid-cols-[1fr_70px_70px_70px_70px_60px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA] text-[10px] font-semibold uppercase tracking-wider text-[#AAA] min-w-[500px]">
                   <span>Post</span>
                   <span className="text-right">Likes</span>
                   <span className="text-right">Comments</span>
@@ -309,7 +309,7 @@ export default function SalesEngineDashboard() {
                 {/* Posts */}
                 <div className="max-h-[500px] overflow-y-auto">
                   {sortedPosts.slice(0, 50).map((post, i) => (
-                    <div key={post.id || i} className="grid grid-cols-[1fr_70px_70px_70px_70px_60px] gap-2 px-4 py-2.5 border-b border-[#EDEDEF] last:border-0 items-center hover:bg-[#FAFAFA]">
+                    <div key={post.id || i} className="grid grid-cols-[1fr_70px_70px_70px_70px_60px] gap-2 px-4 py-2.5 border-b border-[#EDEDEF] last:border-0 items-center hover:bg-[#FAFAFA] min-w-[500px]">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <span className={`size-1.5 rounded-full shrink-0 ${post.platform === "tiktok" ? "bg-cyan-500" : "bg-pink-500"}`} />
