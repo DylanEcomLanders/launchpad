@@ -469,7 +469,7 @@ export default function PortalDetailPage() {
             <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={copyLink}
-                className="flex items-center gap-1 text-[11px] font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium border border-[#E5E5EA] rounded-lg text-[#7A7A7A] hover:text-[#1B1B1B] hover:border-[#999] transition-colors"
               >
                 <ClipboardDocumentIcon className="size-3.5" />
                 {copied ? "Copied!" : "Copy Link"}
@@ -478,7 +478,7 @@ export default function PortalDetailPage() {
                 href={`/portal/${portal.token}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 text-[11px] font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium border border-[#E5E5EA] rounded-lg text-[#7A7A7A] hover:text-[#1B1B1B] hover:border-[#999] transition-colors"
               >
                 <ArrowTopRightOnSquareIcon className="size-3.5" />
                 Preview
@@ -493,37 +493,35 @@ export default function PortalDetailPage() {
           </div>
         </div>
 
-        {/* ── Client Details Bar ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+        {/* ── Client Details ── */}
+        <div className="border border-[#E5E5EA] rounded-xl bg-white divide-y divide-[#F0F0F0] mb-6 overflow-hidden">
           {/* Team */}
-          <div className="px-3.5 py-3 border border-[#E5E5EA] rounded-xl bg-white">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Team</p>
-            {(() => {
-              const assigned = portal.team_member_ids || [];
-              if (assigned.length === 0) return <p className="text-[10px] text-[#CCC]">No team assigned</p>;
-              return (
-                <div className="flex flex-wrap gap-1">
-                  {assigned.map((id) => {
-                    const m = team.find((t) => t.id === id);
-                    if (!m) return null;
-                    return <span key={id} className="text-[10px] font-medium text-[#1A1A1A] bg-[#F3F3F5] px-2 py-0.5 rounded-full">{m.name}</span>;
-                  })}
-                </div>
-              );
-            })()}
+          <div className="flex items-center justify-between px-4 py-3">
+            <p className="text-xs font-medium text-[#777]">Team</p>
+            <div className="flex flex-wrap gap-1.5 justify-end">
+              {(() => {
+                const assigned = portal.team_member_ids || [];
+                if (assigned.length === 0) return <span className="text-[10px] text-[#CCC]">Not assigned</span>;
+                return assigned.map((id) => {
+                  const m = team.find((t) => t.id === id);
+                  if (!m) return null;
+                  return <span key={id} className="text-[10px] font-medium text-[#1A1A1A] bg-[#F3F3F5] px-2 py-0.5 rounded-full">{m.name} <span className="text-[#AAA]">{m.role}</span></span>;
+                });
+              })()}
+            </div>
           </div>
-          {/* Slack */}
-          <div className="px-3.5 py-3 border border-[#E5E5EA] rounded-xl bg-white">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Slack Channel</p>
+          {/* Slack Channel */}
+          <div className="flex items-center justify-between px-4 py-3">
+            <p className="text-xs font-medium text-[#777]">Slack Channel</p>
             <p className="text-xs text-[#1A1A1A] font-mono">{portal.slack_channel_url || <span className="text-[#CCC]">Not set</span>}</p>
           </div>
           {/* Next Touchpoint */}
-          <div className="px-3.5 py-3 border border-[#E5E5EA] rounded-xl bg-white">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Next Touchpoint</p>
+          <div className="flex items-center justify-between px-4 py-3">
+            <p className="text-xs font-medium text-[#777]">Next Touchpoint</p>
             {portal.next_touchpoint?.date ? (() => {
               const days = Math.ceil((new Date(portal.next_touchpoint.date + "T00:00:00").getTime() - Date.now()) / 86400000);
               return (
-                <div>
+                <div className="text-right">
                   <p className={`text-xs font-medium ${days < 0 ? "text-red-500" : days <= 2 ? "text-amber-600" : "text-[#1A1A1A]"}`}>
                     {new Date(portal.next_touchpoint.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                     <span className="ml-1.5 text-[10px] font-normal">{days < 0 ? `${Math.abs(days)}d overdue` : days === 0 ? "Today" : `in ${days}d`}</span>
@@ -531,8 +529,15 @@ export default function PortalDetailPage() {
                   {portal.next_touchpoint.description && <p className="text-[10px] text-[#999] mt-0.5">{portal.next_touchpoint.description}</p>}
                 </div>
               );
-            })() : <p className="text-[10px] text-[#CCC]">Not set</p>}
+            })() : <span className="text-[10px] text-[#CCC]">Not set</span>}
           </div>
+          {/* Client Email */}
+          {portal.client_email && (
+            <div className="flex items-center justify-between px-4 py-3">
+              <p className="text-xs font-medium text-[#777]">Email</p>
+              <p className="text-xs text-[#1A1A1A]">{portal.client_email}</p>
+            </div>
+          )}
         </div>
 
         {/* ── Projects List ── */}
@@ -583,40 +588,6 @@ export default function PortalDetailPage() {
           </button>
         )}
 
-        {/* Legacy project selector pills (hidden when using new list) */}
-        {selectedProject && false && (portal.projects?.length > 0 || true) && (
-          <div className="flex items-center gap-2 flex-wrap mb-5">
-            {(portal.projects || []).map((proj, idx) => (
-              <button
-                key={proj.id}
-                onClick={() => setSelectedProjectIdx(idx)}
-                className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
-                  selectedProjectIdx === idx
-                    ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
-                    : "bg-white text-[#7A7A7A] border-[#E5E5EA] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"
-                }`}
-              >
-                {proj.name}
-                <span
-                  className={`inline-block size-1.5 rounded-full ${
-                    proj.status === "active"
-                      ? "bg-emerald-400"
-                      : proj.status === "paused"
-                      ? "bg-amber-400"
-                      : "bg-[#CCC]"
-                  }`}
-                />
-              </button>
-            ))}
-            <button
-              onClick={() => setShowAddProjectModal(true)}
-              className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#A0A0A0] border border-dashed border-[#D4D4D4] rounded-full hover:border-[#1B1B1B] hover:text-[#1B1B1B] transition-colors"
-            >
-              <PlusIcon className="size-3" />
-              Add Project
-            </button>
-          </div>
-        )}
 
         {/* Tab bar — only when drilled into a project */}
         {selectedProject && <div className="flex gap-0.5 bg-[#F3F3F5] rounded-md p-1 mb-8">
