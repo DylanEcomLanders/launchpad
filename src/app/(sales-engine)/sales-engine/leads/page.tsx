@@ -40,7 +40,7 @@ export default function LeadsPage() {
   };
 
   const cycleStatus = async (lead: Lead) => {
-    const statuses: LeadStatus[] = ["new", "contacted", "interested", "not_interested"];
+    const statuses: LeadStatus[] = ["new", "audit_sent", "engaged", "call_booked", "proposal_sent", "won", "lost"];
     const idx = statuses.indexOf(lead.status);
     const next = statuses[(idx + 1) % statuses.length];
     await updateLeadStatus(lead.id, next);
@@ -126,6 +126,27 @@ export default function LeadsPage() {
                     {new Date(lead.follow_up_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                   </span>
                 )}
+
+                {/* Audit link */}
+                {lead.audit_token ? (
+                  <a
+                    href={`/audit/${lead.audit_token}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="shrink-0 text-[10px] font-medium text-blue-500 hover:text-blue-700 opacity-0 group-hover:opacity-100"
+                  >
+                    View Audit
+                  </a>
+                ) : lead.store_url ? (
+                  <a
+                    href={`/sales-engine/audits?url=${encodeURIComponent(lead.store_url)}&brand=${encodeURIComponent(lead.brand_name)}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="shrink-0 text-[10px] font-medium text-[#AAA] hover:text-[#1A1A1A] opacity-0 group-hover:opacity-100"
+                  >
+                    Run Audit
+                  </a>
+                ) : null}
 
                 {/* Delete */}
                 <button

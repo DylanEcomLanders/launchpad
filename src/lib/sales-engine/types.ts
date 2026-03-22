@@ -52,7 +52,7 @@ export interface SocialPost {
 }
 
 /* ── Leads ── */
-export type LeadStatus = "new" | "contacted" | "interested" | "not_interested";
+export type LeadStatus = "new" | "audit_sent" | "engaged" | "call_booked" | "proposal_sent" | "won" | "lost";
 
 export interface Lead {
   id: string;
@@ -64,13 +64,18 @@ export interface Lead {
   notes: string;
   follow_up_date?: string;
   store_url?: string;
+  audit_id?: string; // linked CRO audit
+  audit_token?: string; // for quick link to audit
   created_at: string;
   updated_at: string;
 }
 
 export const LEAD_STATUSES: { key: LeadStatus; label: string; color: string }[] = [
-  { key: "new", label: "New", color: "#3B82F6" },
-  { key: "contacted", label: "Contacted", color: "#F59E0B" },
-  { key: "interested", label: "Interested", color: "#10B981" },
-  { key: "not_interested", label: "Not Interested", color: "#AAA" },
+  { key: "new", label: "New Lead", color: "#94A3B8" },
+  { key: "audit_sent", label: "Audit Sent", color: "#3B82F6" },
+  { key: "engaged", label: "Engaged", color: "#8B5CF6" },
+  { key: "call_booked", label: "Call Booked", color: "#F59E0B" },
+  { key: "proposal_sent", label: "Proposal Sent", color: "#F97316" },
+  { key: "won", label: "Won", color: "#10B981" },
+  { key: "lost", label: "Lost", color: "#EF4444" },
 ];
