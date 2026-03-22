@@ -188,7 +188,7 @@ export default function SalesEngineDashboard() {
   return (
     <div className="max-w-5xl mx-auto py-10 px-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-sm text-[#7A7A7A] mt-0.5">
@@ -213,9 +213,9 @@ export default function SalesEngineDashboard() {
           <button
             onClick={scrapeAll}
             disabled={scraping}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-[#777] border border-[#E5E5EA] rounded-lg hover:bg-[#F5F5F5] disabled:opacity-30"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-[#777] border border-[#E5E5EA] rounded-lg hover:bg-[#F5F5F5] disabled:opacity-30 whitespace-nowrap"
           >
-            <ArrowPathIcon className={`size-3.5 ${scraping ? "animate-spin" : ""}`} />
+            <ArrowPathIcon className={`size-3.5 shrink-0 ${scraping ? "animate-spin" : ""}`} />
             {scraping ? "Scraping..." : "Refresh"}
           </button>
         </div>
