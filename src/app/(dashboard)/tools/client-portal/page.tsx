@@ -323,16 +323,51 @@ export default function ClientPortalPage() {
         const winners = completedTests.filter((t) => { const l = getRpvLift(t); return l !== null && l > 5; });
         const totalRevenue = igTests.reduce((sum, t) => sum + t.variations.reduce((vs, v) => vs + (v.revenue || 0), 0), 0);
 
-        // Chart data
-        const chartData = [
-          { label: "Active Portals", value: portals.length, suffix: "", color: "#1A1A1A" },
-          { label: "Live Tests", value: liveTests.length, suffix: "", color: "#10B981" },
-          { label: "Test Winners", value: winners.length, suffix: `/ ${completedTests.length}`, color: "#10B981" },
-          { label: "Open Tickets", value: openTickets.length, suffix: "", color: openTickets.length > 0 ? "#F59E0B" : "#1A1A1A" },
-          { label: "Blocked", value: blockedCount, suffix: "", color: blockedCount > 0 ? "#EF4444" : "#1A1A1A" },
-          { label: "Test Revenue", value: totalRevenue, suffix: "", color: "#1A1A1A", isCurrency: true },
+        // Build chart data from tickets (by week)
+        const chartMetrics = [
+          { key: "tickets", label: "Tickets", color: "#1A1A1A" },
+          { key: "resolved", label: "Resolved", color: "#10B981" },
+          { key: "tests", label: "Tests Run", color: "#6366F1" },
         ];
-        const currentMetric = chartData[activeChart % chartData.length];
+        const currentChartMetric = chartMetrics[activeChart % chartMetrics.length];
+
+        // Generate last 8 weeks of data
+        const weeklyData: { week: string; tickets: number; resolved: number; tests: number }[] = [];
+        for (let i = 7; i >= 0; i--) {
+          const weekStart = new Date();
+          weekStart.setDate(weekStart.getDate() - (i * 7));
+          weekStart.setHours(0, 0, 0, 0);
+          const weekEnd = new Date(weekStart);
+          weekEnd.setDate(weekEnd.getDate() + 7);
+          const label = weekStart.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+
+          const ticketsThisWeek = tickets.filter(t => {
+            const d = new Date(t.created_at);
+            return d >= weekStart && d < weekEnd;
+          }).length;
+
+          const resolvedThisWeek = tickets.filter(t => {
+            if (!t.resolved_at) return false;
+            const d = new Date(t.resolved_at);
+            return d >= weekStart && d < weekEnd;
+          }).length;
+
+          const testsThisWeek = igTests.filter(t => {
+            if (!t.startedAt) return false;
+            const d = new Date(t.startedAt);
+            return d >= weekStart && d < weekEnd;
+          }).length;
+
+          weeklyData.push({ week: label, tickets: ticketsThisWeek, resolved: resolvedThisWeek, tests: testsThisWeek });
+        }
+
+        // Summary numbers
+        const summaryData = [
+          { label: "Active Clients", value: portals.length, color: "#1A1A1A" },
+          { label: "Live Tests", value: liveTests.length, color: "#10B981" },
+          { label: "Open Tickets", value: openTickets.length, color: openTickets.length > 0 ? "#F59E0B" : "#1A1A1A" },
+          { label: "Test Winners", value: winners.length, suffix: `/ ${completedTests.length}`, color: "#10B981" },
+        ];
 
         // Touchpoints
         const touchpoints = portals
@@ -342,30 +377,63 @@ export default function ClientPortalPage() {
 
         return (
           <div className="space-y-6">
-            {/* ── Rotating Metric ── */}
-            <div className="border border-[#E5E5EA] rounded-xl bg-white p-6 overflow-hidden">
-              <div className="flex items-center justify-between mb-4">
-                <button onClick={() => setActiveChart((activeChart - 1 + chartData.length) % chartData.length)} className="p-1 text-[#CCC] hover:text-[#1A1A1A] transition-colors">
-                  <ChevronLeftIcon className="size-4" />
-                </button>
-                <div className="text-center">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">{currentMetric.label}</p>
-                  <p className="text-4xl font-bold tabular-nums" style={{ color: currentMetric.color }}>
-                    {(currentMetric as { isCurrency?: boolean }).isCurrency
-                      ? `$${Number(currentMetric.value) >= 1000 ? `${(Number(currentMetric.value) / 1000).toFixed(1)}K` : Number(currentMetric.value).toFixed(0)}`
-                      : currentMetric.value}
-                    {currentMetric.suffix && <span className="text-lg text-[#AAA] ml-1">{currentMetric.suffix}</span>}
-                  </p>
+            {/* ── Summary Numbers ── */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {summaryData.map((s) => (
+                <div key={s.label} className="border border-[#E5E5EA] rounded-xl px-4 py-3 bg-white">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-0.5">{s.label}</p>
+                  <span className="text-2xl font-bold tabular-nums" style={{ color: s.color }}>
+                    {s.value}{(s as { suffix?: string }).suffix && <span className="text-sm text-[#AAA] ml-1">{(s as { suffix?: string }).suffix}</span>}
+                  </span>
                 </div>
-                <button onClick={() => setActiveChart((activeChart + 1) % chartData.length)} className="p-1 text-[#CCC] hover:text-[#1A1A1A] transition-colors">
-                  <ChevronRightIcon className="size-4" />
-                </button>
+              ))}
+            </div>
+
+            {/* ── Chart ── */}
+            <div className="border border-[#E5E5EA] rounded-xl bg-white overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-3 border-b border-[#F0F0F0]">
+                <div className="flex items-center gap-3">
+                  {chartMetrics.map((m, i) => (
+                    <button
+                      key={m.key}
+                      onClick={() => setActiveChart(i)}
+                      className={`text-[11px] font-semibold transition-colors ${
+                        activeChart % chartMetrics.length === i ? "text-[#1A1A1A]" : "text-[#CCC] hover:text-[#777]"
+                      }`}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-[10px] text-[#CCC]">Last 8 weeks</span>
               </div>
-              {/* Dots */}
-              <div className="flex items-center justify-center gap-1.5">
-                {chartData.map((_, i) => (
-                  <button key={i} onClick={() => setActiveChart(i)} className={`size-1.5 rounded-full transition-colors ${i === activeChart % chartData.length ? "bg-[#1A1A1A]" : "bg-[#E5E5EA]"}`} />
-                ))}
+              <div className="px-4 py-4">
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={weeklyData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
+                    <XAxis dataKey="week" tick={{ fontSize: 10, fill: "#AAA" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: "#AAA" }} axisLine={false} tickLine={false} width={30} allowDecimals={false} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "white",
+                        border: "1px solid #E5E5EA",
+                        borderRadius: "8px",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                        fontSize: "11px",
+                        padding: "8px 12px",
+                      }}
+                      labelStyle={{ fontWeight: 600, marginBottom: "4px", color: "#1A1A1A" }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey={currentChartMetric.key}
+                      stroke={currentChartMetric.color}
+                      strokeWidth={2}
+                      dot={{ r: 3, fill: currentChartMetric.color, strokeWidth: 0 }}
+                      activeDot={{ r: 5, fill: currentChartMetric.color, strokeWidth: 2, stroke: "white" }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
             </div>
 
