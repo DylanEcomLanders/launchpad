@@ -37,6 +37,31 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-15",
+    date: "22 Mar 2026",
+    version: "0.14.0",
+    title: "Portal Dashboard Revamp, Slack Tickets & Auto Touchpoints",
+    changes: [
+      { type: "added", text: "Admin portal dashboard: 5 tabs (Overview, Testing, Tickets, Delivery, Clients)" },
+      { type: "added", text: "Slack /ticket command: clients log issues via Slack modal with title, description, priority, attachments" },
+      { type: "added", text: "Ticket triage flow: set design/dev type → auto-creates ClickUp task with correct assignees" },
+      { type: "added", text: "Tickets tab: full table view with client, type, priority, age columns" },
+      { type: "added", text: "Delivery tab: blocked clients, phase progress bars, clients by stage" },
+      { type: "added", text: "Team directory in Settings: Slack IDs, ClickUp IDs, role-based assignment" },
+      { type: "added", text: "Auto-calculated touchpoints: configurable Mon/Wed/Fri in Settings, no manual date entry" },
+      { type: "added", text: "Copy Checker: rebuilt as flag-based system (red flags, warnings, passing) instead of subjective scoring" },
+      { type: "added", text: "Business Settings: touchpoint days toggle alongside working days" },
+      { type: "improved", text: "Admin portal detail: client details as vertical editable list (designers, developers, Slack, touchpoint)" },
+      { type: "improved", text: "Portal creation: two-step Retainer vs Project selection with tailored fields" },
+      { type: "improved", text: "Overview: minimal client list with dividers, 3-column touchpoints, ticket count panels" },
+      { type: "improved", text: "Ticket save: direct Supabase upsert for reliability" },
+      { type: "improved", text: "Copy Link and Preview as proper CTA buttons" },
+      { type: "fixed", text: "Ticket type persists to Supabase on triage" },
+      { type: "fixed", text: "Team member ID orphan auto-cleanup" },
+      { type: "fixed", text: "Settings save to Supabase (was only saving to localStorage)" },
+    ],
+  },
+  {
     id: "cl-14",
     date: "21 Mar 2026",
     version: "0.13.0",
