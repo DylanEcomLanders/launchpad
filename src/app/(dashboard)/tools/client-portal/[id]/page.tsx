@@ -25,6 +25,7 @@ import { isLoomUrl, toLoomEmbed } from "@/lib/portal/loom";
 import { IntelligemsTestCards } from "@/components/intelligems-tests";
 import { getFunnelsByClientId } from "@/lib/funnel-builder/data";
 import { loadSettings, type TeamMember } from "@/lib/settings";
+import { getTickets, type Ticket } from "@/lib/slack-tickets";
 import type { FunnelData } from "@/lib/funnel-builder/types";
 import {
   getReviews,
@@ -75,6 +76,7 @@ export default function PortalDetailPage() {
   const [pageReviewVersions, setPageReviewVersions] = useState<Record<string, DesignReviewVersion[]>>({});
   const [pageReviewFeedback, setPageReviewFeedback] = useState<Record<string, DesignReviewFeedback[]>>({});
   const [funnels, setFunnels] = useState<FunnelData[]>([]);
+  const [portalTickets, setPortalTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<DashTab>("overview");
   const [defaultTabSet, setDefaultTabSet] = useState(false);
@@ -114,6 +116,11 @@ export default function PortalDetailPage() {
         getFunnelsByClientId(portalId),
       ]);
       setPortal(p);
+      // Fetch tickets matching this portal's slack channel
+      if (p?.slack_channel_url) {
+        const allTickets = await getTickets();
+        setPortalTickets(allTickets.filter(t => t.channel_id === p.slack_channel_url && !t.deleted_at));
+      }
       // Set default tab based on client type (only on first load)
       if (!defaultTabSet && p) {
         if (p.client_type === "retainer") setActiveTab("testing");
@@ -541,6 +548,7 @@ export default function PortalDetailPage() {
           <OverviewSection
             portal={portal}
             selectedProject={selectedProject}
+            tickets={portalTickets}
             onUpdateField={selectedProject ? handleProjectUpdateField : handleUpdateField}
             onUpdatePortal={handleUpdateField}
             onSetBlocker={async (blocker) => {
@@ -765,6 +773,7 @@ export default function PortalDetailPage() {
 function OverviewSection({
   portal,
   selectedProject,
+  tickets,
   onUpdateField,
   onUpdatePortal,
   onSetBlocker,
@@ -778,6 +787,7 @@ function OverviewSection({
 }: {
   portal: PortalData;
   selectedProject: PortalProject | null;
+  tickets: Ticket[];
   onUpdateField: (field: string, value: unknown) => void;
   onUpdatePortal: (field: string, value: unknown) => void;
   onSetBlocker: (blocker: PortalBlocker | null) => void;
@@ -999,6 +1009,34 @@ function OverviewSection({
           />
           {/* Team Assignment */}
           <TeamAssignment portal={portal} onUpdateField={onUpdatePortal} />
+
+          {/* Slack Tickets */}
+          {tickets.length > 0 && (
+            <div className="py-2">
+              <p className="text-[11px] font-medium text-[#7A7A7A] mb-2">Tickets ({tickets.filter(t => t.status !== "resolved").length} open)</p>
+              <div className="space-y-1">
+                {tickets.filter(t => t.status !== "resolved").slice(0, 5).map(t => {
+                  const typeColors: Record<string, string> = { design: "#7C3AED", dev: "#2563EB", cro: "#059669", qa: "#D97706" };
+                  const statusColors: Record<string, string> = { open: "#EF4444", in_progress: "#F59E0B", quoted: "#8B5CF6", resolved: "#10B981" };
+                  return (
+                    <div key={t.id} className="flex items-center gap-2 px-2.5 py-1.5 bg-[#F5F5F5] rounded-lg">
+                      <div className="size-1.5 rounded-full" style={{ backgroundColor: statusColors[t.status] || "#CCC" }} />
+                      <span className="text-[11px] font-medium text-[#1A1A1A] flex-1 truncate">{t.title}</span>
+                      {t.ticket_type && t.ticket_type !== "unassigned" && (
+                        <span className="text-[8px] font-semibold uppercase px-1.5 py-0.5 rounded-full" style={{ backgroundColor: (typeColors[t.ticket_type] || "#999") + "15", color: typeColors[t.ticket_type] || "#999" }}>
+                          {t.ticket_type}
+                        </span>
+                      )}
+                      <span className="text-[9px] text-[#BBB]">{t.status.replace("_", " ")}</span>
+                    </div>
+                  );
+                })}
+                {tickets.filter(t => t.status !== "resolved").length > 5 && (
+                  <p className="text-[10px] text-[#AAA] pl-2">+ {tickets.filter(t => t.status !== "resolved").length - 5} more</p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
