@@ -37,6 +37,28 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-16",
+    date: "22 Mar 2026",
+    version: "0.15.0",
+    title: "CRO Audit Engine & Client Portal Polish",
+    changes: [
+      { type: "added", text: "CRO Audit Engine: enter a URL → Firecrawl scrapes → Claude generates comprehensive audit" },
+      { type: "added", text: "Interactive audit reports: public branded URLs at /audit/[token] with scorecard, issues, priority order" },
+      { type: "added", text: "WhatsApp + Book a Call CTAs on public audit pages" },
+      { type: "added", text: "Audit knowledge base: editable CRO framework in Settings, fed into every audit" },
+      { type: "added", text: "Audit dashboard in Sales Engine: generate, review, publish, track views" },
+      { type: "added", text: "Full-page screenshots via Firecrawl for audit analysis" },
+      { type: "improved", text: "Client portal: bordered project cards with View CTA button" },
+      { type: "improved", text: "Client portal: tabs replace sidebar when drilled into a project" },
+      { type: "improved", text: "Admin portal: inline editable client details (designers, developers, Slack, touchpoint)" },
+      { type: "improved", text: "Auto-calculated touchpoints from configurable days (Mon/Wed/Fri default)" },
+      { type: "improved", text: "Admin portal overview: ticket panels, minimal client list, touchpoints grid" },
+      { type: "improved", text: "Ticket save reliability: direct Supabase upsert" },
+      { type: "fixed", text: "Ticket type persisting to Supabase on triage" },
+      { type: "fixed", text: "Team member ID orphan cleanup" },
+    ],
+  },
+  {
     id: "cl-15",
     date: "22 Mar 2026",
     version: "0.14.0",
