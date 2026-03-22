@@ -375,18 +375,56 @@ export default function ClientPortalPage() {
           .map((p) => ({ client: p.client_name, portalId: p.id, date: p.next_touchpoint!.date, description: p.next_touchpoint!.description || "", daysAway: Math.ceil((new Date(p.next_touchpoint!.date + "T00:00:00").getTime() - Date.now()) / 86400000) }))
           .sort((a, b) => a.daysAway - b.daysAway);
 
+        const designTickets = openTickets.filter(t => t.ticket_type === "design");
+        const devTickets = openTickets.filter(t => t.ticket_type === "dev");
+
         return (
           <div className="space-y-6">
-            {/* ── Summary Numbers ── */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {summaryData.map((s) => (
-                <div key={s.label} className="border border-[#E5E5EA] rounded-xl px-4 py-3 bg-white">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-0.5">{s.label}</p>
-                  <span className="text-2xl font-bold tabular-nums" style={{ color: s.color }}>
-                    {s.value}{(s as { suffix?: string }).suffix && <span className="text-sm text-[#AAA] ml-1">{(s as { suffix?: string }).suffix}</span>}
-                  </span>
+            {/* ── Ticket Type Panels ── */}
+            <div className="grid grid-cols-2 gap-3">
+              <button onClick={() => setActiveTab("tickets")} className="flex items-center justify-between px-4 py-3 border border-[#E5E5EA] rounded-xl bg-white hover:border-[#C5C5C5] transition-colors">
+                <div className="flex items-center gap-2.5">
+                  <div className="size-2 rounded-full bg-purple-500" />
+                  <span className="text-xs font-medium text-[#1A1A1A]">Design Tickets</span>
                 </div>
-              ))}
+                <span className="text-lg font-bold tabular-nums text-[#1A1A1A]">{designTickets.length}</span>
+              </button>
+              <button onClick={() => setActiveTab("tickets")} className="flex items-center justify-between px-4 py-3 border border-[#E5E5EA] rounded-xl bg-white hover:border-[#C5C5C5] transition-colors">
+                <div className="flex items-center gap-2.5">
+                  <div className="size-2 rounded-full bg-blue-500" />
+                  <span className="text-xs font-medium text-[#1A1A1A]">Dev Tickets</span>
+                </div>
+                <span className="text-lg font-bold tabular-nums text-[#1A1A1A]">{devTickets.length}</span>
+              </button>
+            </div>
+
+            {/* ── Blocked Clients ── */}
+            <div>
+              {blockedPortals.length > 0 ? (
+                <>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-3">Blocked ({blockedPortals.length})</h3>
+                  <div className="border border-red-100 rounded-xl bg-red-50/30 divide-y divide-red-100 overflow-hidden">
+                    {blockedPortals.map((p) => {
+                      const daysBlocked = p.blocker?.since ? Math.max(0, Math.floor((Date.now() - new Date(p.blocker.since).getTime()) / 86400000)) : 0;
+                      return (
+                        <Link key={p.id} href={`/tools/client-portal/${p.id}`} className="flex items-center justify-between px-4 py-2.5 hover:bg-red-50 transition-colors">
+                          <div className="flex items-center gap-2">
+                            <span className="size-1.5 rounded-full bg-red-500 animate-pulse" />
+                            <span className="text-xs font-medium text-[#1A1A1A]">{p.client_name}</span>
+                            <span className="text-[10px] text-red-500">{p.blocker?.reason}</span>
+                          </div>
+                          <span className="text-[10px] text-red-400">{daysBlocked}d</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center gap-2 px-4 py-3 border border-emerald-100 rounded-xl bg-emerald-50/30">
+                  <span className="size-1.5 rounded-full bg-emerald-500" />
+                  <span className="text-xs text-emerald-700">No blocked clients</span>
+                </div>
+              )}
             </div>
 
             {/* ── Chart ── */}
@@ -408,89 +446,64 @@ export default function ClientPortalPage() {
                 <span className="text-[10px] text-[#CCC]">Last 8 weeks</span>
               </div>
               <div className="px-4 py-4">
-                <ResponsiveContainer width="100%" height={200}>
+                <ResponsiveContainer width="100%" height={180}>
                   <LineChart data={weeklyData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
                     <XAxis dataKey="week" tick={{ fontSize: 10, fill: "#AAA" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "#AAA" }} axisLine={false} tickLine={false} width={30} allowDecimals={false} />
+                    <YAxis tick={{ fontSize: 10, fill: "#AAA" }} axisLine={false} tickLine={false} width={25} allowDecimals={false} />
                     <Tooltip
-                      contentStyle={{
-                        backgroundColor: "white",
-                        border: "1px solid #E5E5EA",
-                        borderRadius: "8px",
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                        fontSize: "11px",
-                        padding: "8px 12px",
-                      }}
+                      contentStyle={{ backgroundColor: "white", border: "1px solid #E5E5EA", borderRadius: "8px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", fontSize: "11px", padding: "8px 12px" }}
                       labelStyle={{ fontWeight: 600, marginBottom: "4px", color: "#1A1A1A" }}
                     />
-                    <Line
-                      type="monotone"
-                      dataKey={currentChartMetric.key}
-                      stroke={currentChartMetric.color}
-                      strokeWidth={2}
-                      dot={{ r: 3, fill: currentChartMetric.color, strokeWidth: 0 }}
-                      activeDot={{ r: 5, fill: currentChartMetric.color, strokeWidth: 2, stroke: "white" }}
-                    />
+                    <Line type="monotone" dataKey={currentChartMetric.key} stroke={currentChartMetric.color} strokeWidth={2} dot={{ r: 3, fill: currentChartMetric.color, strokeWidth: 0 }} activeDot={{ r: 5, fill: currentChartMetric.color, strokeWidth: 2, stroke: "white" }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
-            {/* ── Tickets Snapshot ── */}
+            {/* ── Portals List (minimal) ── */}
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Open Tickets ({openTickets.length})</h3>
-                <button onClick={() => setActiveTab("tickets")} className="text-[10px] text-[#AAA] hover:text-[#1A1A1A] transition-colors">View all →</button>
-              </div>
-              {openTickets.length > 0 ? (
-                <div className="border border-[#E5E5EA] rounded-xl bg-white divide-y divide-[#F0F0F0] overflow-hidden">
-                  {openTickets.slice(0, 4).map((t) => {
-                    const age = Math.max(0, Math.floor((Date.now() - new Date(t.created_at).getTime()) / 3600000));
-                    const ageStr = age >= 24 ? `${Math.floor(age / 24)}d` : `${age}h`;
-                    return (
-                      <div key={t.id} className="flex items-center justify-between px-4 py-2.5">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <span className={`size-1.5 rounded-full shrink-0 ${t.priority === "urgent" ? "bg-red-500" : t.priority === "high" ? "bg-amber-500" : "bg-[#CCC]"}`} />
-                          <span className="text-xs font-medium text-[#1A1A1A] truncate">{t.title}</span>
-                          <span className="text-[10px] text-[#AAA] shrink-0">{t.client_name}</span>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          {t.ticket_type && t.ticket_type !== "unassigned" && (
-                            <span className={`text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded ${t.ticket_type === "design" ? "bg-purple-50 text-purple-600" : "bg-blue-50 text-blue-600"}`}>{t.ticket_type}</span>
-                          )}
-                          <span className="text-[10px] text-[#CCC]">{ageStr}</span>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Clients</h3>
+              <div className="border border-[#E5E5EA] rounded-xl bg-white divide-y divide-[#F0F0F0] overflow-hidden">
+                {portals.length > 0 ? portals.map((p) => {
+                  const isBlocked = !!p.blocker;
+                  const isRetainer = p.client_type === "retainer" || p.project_type?.toLowerCase().includes("retainer");
+                  const tp = p.next_touchpoint;
+                  const tpDays = tp?.date ? Math.ceil((new Date(tp.date + "T00:00:00").getTime() - Date.now()) / 86400000) : null;
+                  return (
+                    <Link
+                      key={p.id}
+                      href={`/tools/client-portal/${p.id}`}
+                      className={`flex items-center justify-between px-4 py-3.5 hover:bg-[#FAFAFA] transition-colors ${isBlocked ? "bg-red-50/40" : ""}`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        {isBlocked && <span className="size-1.5 rounded-full bg-red-500 animate-pulse shrink-0" />}
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-[#1A1A1A] truncate">{p.client_name}</p>
+                          <p className="text-[10px] text-[#AAA]">
+                            {isRetainer ? "Retainer" : p.project_type || "Project"}
+                            {p.current_phase ? ` · ${p.current_phase}` : ""}
+                            {isBlocked ? ` · Blocked: ${p.blocker?.reason}` : ""}
+                          </p>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="text-xs text-[#CCC]">No open tickets</p>
-              )}
-            </div>
-
-            {/* ── Blocked Clients ── */}
-            {blockedPortals.length > 0 && (
-              <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-3">Blocked ({blockedPortals.length})</h3>
-                <div className="border border-red-100 rounded-xl bg-red-50/30 divide-y divide-red-100 overflow-hidden">
-                  {blockedPortals.map((p) => {
-                    const daysBlocked = p.blocker?.since ? Math.max(0, Math.floor((Date.now() - new Date(p.blocker.since).getTime()) / 86400000)) : 0;
-                    return (
-                      <Link key={p.id} href={`/tools/client-portal/${p.id}`} className="flex items-center justify-between px-4 py-2.5 hover:bg-red-50 transition-colors">
-                        <div className="flex items-center gap-2">
-                          <span className="size-1.5 rounded-full bg-red-500 animate-pulse" />
-                          <span className="text-xs font-medium text-[#1A1A1A]">{p.client_name}</span>
-                          <span className="text-[10px] text-red-500">{p.blocker?.reason}</span>
-                        </div>
-                        <span className="text-[10px] text-red-400">{daysBlocked}d</span>
-                      </Link>
-                    );
-                  })}
-                </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        {tpDays !== null && (
+                          <span className={`text-[10px] ${tpDays < 0 ? "text-red-500" : tpDays <= 2 ? "text-amber-500" : "text-[#CCC]"}`}>
+                            {tpDays < 0 ? `${Math.abs(tpDays)}d overdue` : tpDays === 0 ? "Today" : `${tpDays}d`}
+                          </span>
+                        )}
+                        <svg className="size-4 text-[#DDD]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+                      </div>
+                    </Link>
+                  );
+                }) : (
+                  <div className="px-4 py-6 text-center">
+                    <p className="text-xs text-[#CCC]">No clients yet</p>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
 
             {/* ── Upcoming Touchpoints ── */}
             {touchpoints.length > 0 && (
