@@ -291,7 +291,20 @@ export function Sidebar() {
 
           {/* Standalone links */}
           {!collapsed && (
-            <div className="px-5 mt-2">
+            <div className="px-5 mt-2 space-y-1">
+              <Link
+                href="/tools/issues"
+                onClick={() => setMobileOpen(false)}
+                className={`
+                  flex items-center gap-2 px-2.5 py-1.5 text-[12px] font-semibold uppercase tracking-wider rounded-md transition-all duration-150
+                  ${pathname === "/tools/issues"
+                    ? "text-[#1B1B1B] bg-white shadow-[var(--shadow-soft)]"
+                    : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
+                  }
+                `}
+              >
+                Issues
+              </Link>
               <Link
                 href="/settings"
                 onClick={() => setMobileOpen(false)}
