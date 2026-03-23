@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Submit a Ticket</title>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --card: #1a1a2e;
+    --accent: #6c63ff;
+    --green: #10b981;
+    --text: #e4e4e7;
+    --muted: #71717a;
+    --slack-purple: #4A154B;
+    --slack-green: #2EB67D;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── Scene system ── */
+  .scene {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 32px;
+    opacity: 0;
+    transform: scale(0.97);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+    pointer-events: none;
+    padding: 40px;
+  }
+  .scene.active {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+  .scene.exit {
+    opacity: 0;
+    transform: scale(1.03);
+  }
+
+  /* ── Step badge ── */
+  .step-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(108, 99, 255, 0.12);
+    border: 1px solid rgba(108, 99, 255, 0.3);
+    border-radius: 100px;
+    padding: 6px 20px 6px 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  .active .step-badge { animation: fadeUp 0.5s ease forwards 0.1s; }
+  .step-badge .num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+  }
+
+  /* ── Scene title ── */
+  .scene-title {
+    font-size: 36px;
+    font-weight: 700;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(16px);
+    max-width: 600px;
+  }
+  .active .scene-title { animation: fadeUp 0.6s ease forwards 0.2s; }
+  .scene-subtitle {
+    font-size: 17px;
+    color: var(--muted);
+    text-align: center;
+    max-width: 480px;
+    line-height: 1.6;
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  .active .scene-subtitle { animation: fadeUp 0.5s ease forwards 0.35s; }
+
+  /* ── Slack mockup ── */
+  .slack-mock {
+    background: #1a1d21;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+    width: 460px;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  .active .slack-mock { animation: fadeUp 0.6s ease forwards 0.3s; }
+  .slack-topbar {
+    background: var(--slack-purple);
+    padding: 12px 18px;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 600;
+  }
+  .slack-topbar .hash { color: rgba(255,255,255,0.5); }
+  .slack-body { padding: 18px; }
+
+  .slack-msg {
+    display: flex; gap: 12px; margin-bottom: 12px;
+    opacity: 0; transform: translateY(10px);
+  }
+  .active .msg-1 { animation: fadeUp 0.4s ease forwards 0.7s; }
+  .active .msg-2 { animation: fadeUp 0.4s ease forwards 1.6s; }
+
+  .slack-avatar {
+    width: 40px; height: 40px; border-radius: 8px;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 17px; font-weight: 700;
+  }
+  .slack-avatar.user { background: #3b82f6; }
+  .slack-avatar.bot { background: var(--slack-green); }
+  .slack-msg-content { flex: 1; }
+  .slack-msg-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+  .slack-msg-text { font-size: 14px; color: #d1d5db; line-height: 1.5; }
+  .slack-cmd {
+    background: #2d2f33; color: #e8912d;
+    padding: 2px 6px; border-radius: 4px;
+    font-family: monospace; font-size: 13px;
+  }
+
+  /* ── Typing indicator ── */
+  .typing-row {
+    display: flex; align-items: center; gap: 12px;
+    opacity: 0; padding: 4px 0;
+  }
+  .active .typing-row { animation: fadeUp 0.3s ease forwards 1.1s; }
+  .typing-dots { display: flex; gap: 4px; }
+  .typing-dots span {
+    width: 7px; height: 7px; border-radius: 50%; background: #5a5d63;
+    animation: typingDot 1.2s infinite;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+  .typing-label { font-size: 12px; color: #5a5d63; }
+
+  /* ── Cursor blink on /ticket ── */
+  .cmd-cursor {
+    display: inline-block;
+    width: 2px; height: 16px;
+    background: #e8912d;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: blink 0.8s step-end infinite;
+  }
+
+  /* ── Modal mockup ── */
+  .modal-mock {
+    background: #1a1d21;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+    width: 420px;
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  .active .modal-mock { animation: modalIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards 0.3s; }
+  .modal-header {
+    background: #2d2f33;
+    padding: 16px 18px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-weight: 700; font-size: 17px;
+  }
+  .modal-close { color: var(--muted); font-size: 20px; }
+  .modal-body { padding: 18px; }
+  .modal-field { margin-bottom: 16px; opacity: 0; transform: translateY(8px); }
+  .active .modal-field:nth-child(1) { animation: fadeUp 0.3s ease forwards 0.6s; }
+  .active .modal-field:nth-child(2) { animation: fadeUp 0.3s ease forwards 0.8s; }
+  .active .modal-field:nth-child(3) { animation: fadeUp 0.3s ease forwards 1.0s; }
+  .active .modal-field:nth-child(4) { animation: fadeUp 0.3s ease forwards 1.2s; }
+  .modal-label { font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #d1d5db; }
+  .modal-input {
+    background: #2d2f33; border: 1px solid #3f4248; border-radius: 8px;
+    padding: 10px 12px; font-size: 14px; color: #a1a1aa; width: 100%;
+  }
+  .modal-input.filled { color: var(--text); }
+  .modal-select {
+    background: #2d2f33; border: 1px solid #3f4248; border-radius: 8px;
+    padding: 10px 12px; font-size: 14px; color: #f59e0b;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .modal-footer {
+    padding: 14px 18px; display: flex; justify-content: flex-end; gap: 10px;
+    border-top: 1px solid #2a2c30;
+  }
+  .btn-cancel {
+    padding: 8px 18px; border-radius: 8px; font-size: 14px;
+    background: transparent; border: 1px solid #3f4248; color: var(--muted);
+  }
+  .btn-submit {
+    padding: 8px 18px; border-radius: 8px; font-size: 14px;
+    background: var(--slack-green); border: none; color: white; font-weight: 600;
+    opacity: 0;
+  }
+  .active .btn-submit { animation: fadeUp 0.3s ease forwards 1.4s; }
+
+  /* highlight pulse on submit */
+  .active .btn-submit-glow {
+    animation: fadeUp 0.3s ease forwards 1.4s, submitPulse 1s ease 1.8s;
+  }
+
+  /* ── Confirmation scene ── */
+  .confirm-card {
+    background: #1a1d21;
+    border-radius: 16px;
+    padding: 28px 32px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+    border-left: 5px solid var(--green);
+    width: 460px;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  .active .confirm-card { animation: fadeUp 0.6s ease forwards 0.3s; }
+  .confirm-check {
+    font-size: 40px;
+    opacity: 0; transform: scale(0.3);
+  }
+  .active .confirm-check {
+    animation: popIn 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards 0.6s;
+  }
+  .confirm-card h3 { font-size: 16px; margin: 12px 0 4px; }
+  .confirm-card p { font-size: 14px; color: var(--muted); line-height: 1.5; }
+  .confirm-meta { font-size: 13px; color: var(--muted); margin-top: 10px; font-style: italic; }
+
+  /* ── Dashboard scene ── */
+  .dash-mock {
+    background: var(--card);
+    border: 1px solid #2a2a4a;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+    width: 520px;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  .active .dash-mock { animation: fadeUp 0.6s ease forwards 0.3s; }
+  .dash-topbar {
+    background: rgba(108,99,255,0.1);
+    padding: 12px 18px;
+    font-size: 14px; font-weight: 600; color: var(--accent);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .dash-body { padding: 14px; }
+  .dash-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: 10px; margin-bottom: 6px;
+    font-size: 14px; opacity: 0; transform: translateX(-12px);
+  }
+  .active .dash-row:nth-child(1) { animation: slideIn 0.4s ease forwards 0.6s; }
+  .active .dash-row:nth-child(2) { animation: slideIn 0.4s ease forwards 0.8s; }
+  .active .dash-row:nth-child(3) { animation: slideIn 0.4s ease forwards 1.0s; }
+  .dash-row.highlight { background: rgba(108,99,255,0.08); }
+  .dash-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .dash-ticket-title { flex: 1; }
+  .dash-badge {
+    padding: 3px 10px; border-radius: 12px;
+    font-size: 12px; font-weight: 600;
+  }
+  .new-glow { animation: pulse 1.5s ease infinite 1.2s; }
+
+  /* ── End scene ── */
+  .end-title {
+    font-size: 42px; font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    opacity: 0; transform: translateY(16px);
+  }
+  .active .end-title { animation: fadeUp 0.6s ease forwards 0.1s; }
+  .end-sub {
+    font-size: 18px; color: var(--muted);
+    opacity: 0; transform: translateY(12px);
+  }
+  .active .end-sub { animation: fadeUp 0.5s ease forwards 0.3s; }
+  .end-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--accent); color: white;
+    padding: 12px 28px; border-radius: 12px;
+    font-size: 16px; font-weight: 600;
+    opacity: 0; transform: translateY(12px);
+  }
+  .active .end-cta { animation: fadeUp 0.5s ease forwards 0.5s; }
+
+  /* ── Progress bar ── */
+  .progress-bar {
+    position: fixed; bottom: 0; left: 0;
+    height: 4px; background: var(--accent);
+    transition: width 0.7s ease;
+    z-index: 100;
+  }
+
+  /* ── Scene indicator dots ── */
+  .scene-dots {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 8px; z-index: 100;
+  }
+  .scene-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    transition: background 0.4s, transform 0.4s;
+  }
+  .scene-dot.active {
+    background: var(--accent);
+    transform: scale(1.3);
+  }
+
+  /* ── Animations ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.3); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-12px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(108,99,255,0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(108,99,255,0); }
+  }
+  @keyframes submitPulse {
+    0% { box-shadow: 0 0 0 0 rgba(46,182,125,0.5); }
+    100% { box-shadow: 0 0 0 12px rgba(46,182,125,0); }
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  @keyframes typingDot {
+    0%, 100% { opacity: 0.3; transform: translateY(0); }
+    50% { opacity: 1; transform: translateY(-2px); }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Scene 0: Title -->
+  <div class="scene active" id="s0">
+    <div class="scene-title" style="font-size:48px;background:linear-gradient(135deg,var(--accent),#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">How to Submit a Ticket</div>
+    <div class="scene-subtitle">A 30-second guide to logging requests through Slack</div>
+  </div>
+
+  <!-- Scene 1: /ticket command -->
+  <div class="scene" id="s1">
+    <div class="step-badge"><span class="num">1</span> Open Slack</div>
+    <div class="scene-title">Type <code style="background:rgba(232,145,45,0.15);color:#e8912d;padding:2px 10px;border-radius:6px;font-family:monospace;">/ticket</code></div>
+    <div class="slack-mock">
+      <div class="slack-topbar"><span class="hash">#</span> your-project</div>
+      <div class="slack-body">
+        <div class="slack-msg msg-1">
+          <div class="slack-avatar user">Y</div>
+          <div class="slack-msg-content">
+            <div class="slack-msg-name">You</div>
+            <div class="slack-msg-text"><span class="slack-cmd">/ticket</span><span class="cmd-cursor"></span></div>
+          </div>
+        </div>
+        <div class="typing-row">
+          <div class="slack-avatar bot" style="width:24px;height:24px;font-size:11px;border-radius:6px;">&#x2713;</div>
+          <div class="typing-dots"><span></span><span></span><span></span></div>
+          <div class="typing-label">Ticket Bot is responding...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scene 2: Modal -->
+  <div class="scene" id="s2">
+    <div class="step-badge"><span class="num">2</span> Fill it out</div>
+    <div class="scene-title">Describe what you need</div>
+    <div class="modal-mock">
+      <div class="modal-header">Log a Ticket <span class="modal-close">&times;</span></div>
+      <div class="modal-body">
+        <div class="modal-field">
+          <div class="modal-label">Issue Title</div>
+          <div class="modal-input filled">Homepage hero image is cropped on mobile</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-label">Description</div>
+          <div class="modal-input filled" style="min-height:44px;">The hero banner gets cut off on iPhone. The CTA button is not visible...</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-label">Priority</div>
+          <div class="modal-select"><span>&#x1F7E1;</span> Medium</div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-label">Screenshot / Loom <span style="color:var(--muted);font-weight:400">(optional)</span></div>
+          <div class="modal-input filled" style="color:var(--accent);">https://loom.com/share/abc123</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="btn-cancel">Cancel</div>
+        <div class="btn-submit btn-submit-glow">Submit</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scene 3: Confirmation -->
+  <div class="scene" id="s3">
+    <div class="step-badge"><span class="num">3</span> Confirmation</div>
+    <div class="scene-title">You're all set</div>
+    <div class="confirm-card">
+      <div class="confirm-check">&#x2705;</div>
+      <h3>Ticket logged &mdash; Homepage hero image is cropped on mobile</h3>
+      <p>The hero banner gets cut off on iPhone. The CTA button is not visible...</p>
+      <div class="confirm-meta">Priority: Medium &middot; Submitted by @you</div>
+    </div>
+    <div class="scene-subtitle">A confirmation is posted in your Slack channel automatically.</div>
+  </div>
+
+  <!-- Scene 4: Dashboard -->
+  <div class="scene" id="s4">
+    <div class="step-badge"><span class="num">4</span> Tracked</div>
+    <div class="scene-title">We take it from here</div>
+    <div class="dash-mock">
+      <div class="dash-topbar">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Ticket Dashboard
+      </div>
+      <div class="dash-body">
+        <div class="dash-row">
+          <div class="dash-dot" style="background:#10b981;"></div>
+          <div class="dash-ticket-title" style="color:var(--muted);">Update footer links</div>
+          <div class="dash-badge" style="background:rgba(16,185,129,0.15);color:#10b981;">Resolved</div>
+        </div>
+        <div class="dash-row">
+          <div class="dash-dot" style="background:#3b82f6;"></div>
+          <div class="dash-ticket-title" style="color:var(--muted);">Fix checkout discount code</div>
+          <div class="dash-badge" style="background:rgba(59,130,246,0.15);color:#3b82f6;">In Progress</div>
+        </div>
+        <div class="dash-row highlight">
+          <div class="dash-dot new-glow" style="background:var(--accent);"></div>
+          <div class="dash-ticket-title">Homepage hero is cropped on mobile</div>
+          <div class="dash-badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;">Open</div>
+        </div>
+      </div>
+    </div>
+    <div class="scene-subtitle">Your ticket is triaged, assigned, and tracked to resolution.</div>
+  </div>
+
+  <!-- Scene 5: End -->
+  <div class="scene" id="s5">
+    <div class="end-title">That's it.</div>
+    <div class="end-sub">One command. Four fields. Done.</div>
+    <div class="end-cta">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      Questions? Just ask in Slack
+    </div>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="progress-bar" id="progress"></div>
+
+  <!-- Scene dots -->
+  <div class="scene-dots" id="dots">
+    <div class="scene-dot active"></div>
+    <div class="scene-dot"></div>
+    <div class="scene-dot"></div>
+    <div class="scene-dot"></div>
+    <div class="scene-dot"></div>
+    <div class="scene-dot"></div>
+  </div>
+
+  <script>
+    const scenes = document.querySelectorAll('.scene');
+    const dots = document.querySelectorAll('.scene-dot');
+    const progress = document.getElementById('progress');
+    const TOTAL = scenes.length;
+    // Timing per scene in ms
+    const TIMINGS = [2500, 3500, 3500, 3000, 3500, 3000];
+    let current = 0;
+
+    function goTo(idx) {
+      scenes.forEach((s, i) => {
+        s.classList.remove('active', 'exit');
+        if (i === current) s.classList.add('exit');
+      });
+      dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+
+      requestAnimationFrame(() => {
+        scenes[idx].classList.add('active');
+        progress.style.width = ((idx + 1) / TOTAL * 100) + '%';
+        current = idx;
+      });
+    }
+
+    function autoPlay() {
+      let i = 0;
+      function next() {
+        if (i >= TOTAL) return;
+        goTo(i);
+        const delay = TIMINGS[i] || 3000;
+        i++;
+        setTimeout(next, delay);
+      }
+      next();
+    }
+
+    // Start after a brief pause
+    setTimeout(autoPlay, 400);
+  </script>
+
+</body>
+</html>

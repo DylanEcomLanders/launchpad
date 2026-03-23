@@ -58,6 +58,7 @@ const navSections: NavSection[] = [
     icon: <UserGroupIcon className="size-4" />,
     defaultOpen: true,
     items: [
+      { label: "Design System", href: "/tools/design-system" },
       { label: "Playbooks", href: "/tools/playbooks" },
       { label: "QA Checklist", href: "/tools/qa-checklist" },
       { label: "Dev Self-Check", href: "/tools/dev-selfcheck" },
