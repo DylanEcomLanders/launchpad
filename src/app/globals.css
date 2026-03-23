@@ -115,6 +115,148 @@ h1, h2, h3, h4, h5, h6 {
   background: #A0A0A0;
 }
 
+/* Funnel Knowledge Base prose styles */
+.funnel-prose h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+  margin-top: 2rem;
+  line-height: 1.2;
+  color: #1B1B1B;
+  letter-spacing: -0.5px;
+}
+.funnel-prose h1:first-child {
+  margin-top: 0;
+}
+.funnel-prose h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 0.625rem;
+  margin-top: 1.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #E5E5EA;
+  color: #1B1B1B;
+}
+.funnel-prose h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  margin-top: 1.25rem;
+  color: #1B1B1B;
+}
+.funnel-prose h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.375rem;
+  margin-top: 1rem;
+  color: #2D2D2D;
+}
+.funnel-prose p {
+  margin-bottom: 0.875rem;
+  line-height: 1.7;
+  color: #2D2D2D;
+  font-size: 0.9375rem;
+}
+.funnel-prose ul, .funnel-prose ol {
+  margin-bottom: 0.875rem;
+  padding-left: 1.5rem;
+}
+.funnel-prose ul { list-style-type: disc; }
+.funnel-prose ol { list-style-type: decimal; }
+.funnel-prose li {
+  margin-bottom: 0.3rem;
+  line-height: 1.6;
+  color: #2D2D2D;
+  font-size: 0.9375rem;
+}
+.funnel-prose li ul, .funnel-prose li ol {
+  margin-top: 0.3rem;
+  margin-bottom: 0.3rem;
+}
+.funnel-prose strong {
+  font-weight: 700;
+  color: #1B1B1B;
+}
+.funnel-prose blockquote {
+  border-left: 3px solid #1B1B1B;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  background: #F7F8FA;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+.funnel-prose blockquote p {
+  margin-bottom: 0;
+  color: #2D2D2D;
+}
+.funnel-prose code {
+  background: #F3F3F5;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.8125em;
+  color: #1B1B1B;
+}
+.funnel-prose pre {
+  background: #1B1B1B;
+  color: #E5E5EA;
+  padding: 1rem 1.25rem;
+  border-radius: 0.625rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+.funnel-prose pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+}
+.funnel-prose hr {
+  border: none;
+  border-top: 1px solid #E5E5EA;
+  margin: 1.75rem 0;
+}
+.funnel-prose a {
+  color: #1B1B1B;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: #C5C5C5;
+}
+.funnel-prose a:hover {
+  text-decoration-color: #1B1B1B;
+}
+.funnel-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.8125rem;
+  display: block;
+  overflow-x: auto;
+}
+.funnel-prose thead {
+  background: #F7F8FA;
+}
+.funnel-prose th {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #E5E5EA;
+  color: #1B1B1B;
+  white-space: nowrap;
+}
+.funnel-prose td {
+  padding: 0.4375rem 0.75rem;
+  border-bottom: 1px solid #F3F3F5;
+  color: #2D2D2D;
+}
+.funnel-prose tbody tr:hover {
+  background: #FAFAFA;
+}
+.funnel-prose input[type="checkbox"] {
+  margin-right: 0.5rem;
+  accent-color: #1B1B1B;
+}
+
 /* Ensure light theme only */
 @media (prefers-color-scheme: dark) {
   :root {

@@ -72,6 +72,7 @@ const navSections: NavSection[] = [
       { label: "Funnel Builder", href: "/tools/funnel-builder" },
       { label: "CRO Monitor", href: "/tools/cro-monitor" },
       { label: "CRO Audit", href: "/tools/cro-audit" },
+      { label: "Funnel Playbook", href: "/tools/funnel-knowledge" },
     ],
   },
 ];

@@ -37,6 +37,20 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-18",
+    date: "23 Mar 2026",
+    version: "0.16.1",
+    title: "Funnel Playbook — CRO Knowledge Base",
+    changes: [
+      { type: "added", text: "Funnel Playbook — complete 10-layer DTC sales funnel knowledge base under CRO Lab" },
+      { type: "added", text: "14 deep-dive modules covering traffic, ad creative, landing pages, PDP, cart, checkout, post-purchase, retention, offers, and analytics" },
+      { type: "added", text: "Audit Mode — filters any module to show only audit questions for rapid client store reviews" },
+      { type: "added", text: "Test Ideas Mode — filters to show ICE-scored A/B test hypotheses per funnel layer" },
+      { type: "added", text: "In-module search with real-time results" },
+      { type: "added", text: "Master Audit Checklist (130+ scored questions), Test Hypothesis Bank (90+ ideas), and CRO Glossary as reference docs" },
+    ],
+  },
+  {
     id: "cl-17",
     date: "22 Mar 2026",
     version: "0.16.0",
