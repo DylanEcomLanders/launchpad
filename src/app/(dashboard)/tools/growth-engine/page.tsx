@@ -6,7 +6,7 @@ import { getGrowthEngine, saveGrowthEngine, addItem, updateItem, removeItem } fr
 import type { GrowthEngineData, GrowthItem, GrowthChannel, GrowthStage, GrowthItemStatus, GrowthItemType, TrafficWarmth } from "@/lib/growth-engine/types";
 import { inputClass, labelClass } from "@/lib/form-styles";
 
-const ChannelFunnelView = lazy(() => import("@/components/growth-engine/ChannelFunnelView"));
+const ChannelFlowView = lazy(() => import("@/components/growth-engine/ChannelFlowView"));
 
 export default function GrowthEnginePage() {
   const [engine, setEngine] = useState<GrowthEngineData | null>(null);
@@ -90,30 +90,34 @@ export default function GrowthEnginePage() {
     setShowAddForm(false);
   };
 
-  // Save channel flow data
-  const handleSaveChannelFlow = useCallback(async (nodes: unknown[], edges: unknown[]) => {
-    if (!engine || !activeChannel) return;
-    const updated = {
-      ...engine,
-      channelFlows: {
-        ...engine.channelFlows,
-        [activeChannel]: { nodes, edges },
-      },
-    };
+  // Channel detail handlers
+  const handleChannelAddItem = useCallback(async (item: Omit<GrowthItem, "id">) => {
+    const full: GrowthItem = { ...item, id: crypto.randomUUID() };
+    const updated = await addItem(full);
     setEngine(updated);
-    await saveGrowthEngine(updated);
-  }, [engine, activeChannel]);
+  }, []);
 
-  // Channel detail view
+  const handleChannelUpdateItem = useCallback(async (id: string, patch: Partial<GrowthItem>) => {
+    const updated = await updateItem(id, patch);
+    setEngine(updated);
+  }, []);
+
+  const handleChannelRemoveItem = useCallback(async (id: string) => {
+    const updated = await removeItem(id);
+    setEngine(updated);
+  }, []);
+
+  // Channel detail view — vertical flow
   if (activeChannel && engine) {
-    const flow = engine.channelFlows?.[activeChannel] || { nodes: [], edges: [] };
+    const channelItems = engine.items.filter((i) => i.channel === activeChannel);
     return (
       <Suspense fallback={<div className="flex items-center justify-center h-screen"><div className="animate-spin size-6 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full" /></div>}>
-        <ChannelFunnelView
+        <ChannelFlowView
           channel={activeChannel}
-          initialNodes={flow.nodes as any[]}
-          initialEdges={flow.edges as any[]}
-          onSave={(n, e) => handleSaveChannelFlow(n, e)}
+          items={channelItems}
+          onAddItem={handleChannelAddItem}
+          onUpdateItem={handleChannelUpdateItem}
+          onRemoveItem={handleChannelRemoveItem}
           onBack={() => setActiveChannel(null)}
         />
       </Suspense>
