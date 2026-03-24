@@ -314,8 +314,8 @@ export default function GrowthEnginePage() {
           <FunnelCanvas
             key={flowKey}
             ref={canvasRef}
-            initialNodes={currentFlow.nodes as Node[]}
-            initialEdges={currentFlow.edges as Edge[]}
+            initialNodes={currentFlow.nodes as any}
+            initialEdges={currentFlow.edges as any}
             onNodesChange={handleNodesChange}
             onEdgesChange={handleEdgesChange}
             onSelectionChange={(sel) => setSelectedNode(sel.nodes.length === 1 ? sel.nodes[0] : null)}
