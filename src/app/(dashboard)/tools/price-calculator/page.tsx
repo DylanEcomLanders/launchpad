@@ -144,7 +144,7 @@ export default function PriceCalculatorPage() {
   });
 
   const feeRates: Record<string, { label: string; rate: number; fixed: number; description: string }> = {
-    whop: { label: "Whop", rate: 0.03, fixed: 0, description: "3% per transaction" },
+    whop: { label: "Whop", rate: 0.045, fixed: 0.27, description: "~4.5% + 27p (processing + currency + orchestration)" },
     shopify: { label: "Shopify Payments", rate: 0.019, fixed: 0.20, description: "1.9% + 20p" },
     wise: { label: "Wise", rate: 0.0035, fixed: 0.30, description: "0.35% + 30p" },
   };
