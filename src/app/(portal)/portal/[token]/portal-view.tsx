@@ -252,14 +252,14 @@ export function PortalView({
     : drillView === "retainer"
     ? [
         { key: "testing" as Tab, label: "Testing" },
-        { key: "scope", label: "Scope" },
+        { key: "scope", label: "Deliverables" },
       ]
     : [
         { key: "overview" as Tab, label: "Overview" },
         { key: "timeline" as Tab, label: "Timeline" },
         { key: "designs" as Tab, label: "Designs" },
         { key: "development", label: "Development" },
-        { key: "scope", label: "Scope & Docs" },
+        { key: "scope", label: "Deliverables" },
         ...(funnels.length > 0 ? [{ key: "funnels" as Tab, label: "Funnels" }] : []),
       ];
 
@@ -400,8 +400,8 @@ export function PortalView({
             )}
             {activeTab === "scope" && (
               <>
-                <PageHeader title="Scope & Deliverables" subtitle="Everything included in your project" />
-                <ScopeTab scope={activeScope} deliverables={activeDeliverables} documents={activeDocuments} />
+                <PageHeader title="Deliverables & Documents" subtitle="Everything included in your project" />
+                <ScopeTab scope={[]} deliverables={activeDeliverables} documents={activeDocuments} />
               </>
             )}
             {activeTab === "designs" && (
