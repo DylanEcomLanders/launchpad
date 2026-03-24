@@ -36,6 +36,7 @@ export const deliverableTypes = [
   "Homepage",
   "Advertorial",
   "About / Header / Blog",
+  "Other",
 ] as const;
 
 export type DeliverableType = (typeof deliverableTypes)[number];
@@ -50,6 +51,7 @@ export const deliverableTimeEstimates: Record<
   Homepage: { designDays: 4, devDays: 4 },
   Advertorial: { designDays: 2, devDays: 2 },
   "About / Header / Blog": { designDays: 1, devDays: 1 },
+  Other: { designDays: 2, devDays: 2 },
 };
 
 export interface Deliverable {
