@@ -77,8 +77,8 @@ export async function POST(request: Request) {
       const amount = p.total ?? p.subtotal ?? 0;
       const currency = (p.currency || "gbp").toUpperCase();
 
-      // Normalise to GBP pennies → pounds
-      const amountGBP = currency === "GBP" ? amount / 100 : (p.usd_total ?? amount) / 100;
+      // Whop returns amounts in major units (pounds/dollars), not pennies
+      const amountGBP = currency === "GBP" ? amount : (p.usd_total ?? amount);
 
       monthlyMap.set(monthKey, (monthlyMap.get(monthKey) || 0) + amountGBP);
 
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
     // ── Recent payments (last 20) ─────────────────────────────
     const recent = allPayments.slice(0, 20).map((p: any) => ({
       id: p.id,
-      amount: Math.round((p.total ?? p.subtotal ?? 0) / 100 * 100) / 100,
+      amount: p.total ?? p.subtotal ?? 0,
       currency: (p.currency || "gbp").toUpperCase(),
       date: p.paid_at || p.created_at,
       client:
