@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { CHANNELS, STAGES, ITEM_TYPES, STATUS_COLORS } from "@/lib/growth-engine/constants";
 import { getGrowthEngine, saveGrowthEngine, addItem, updateItem, removeItem } from "@/lib/growth-engine/data";
 import type { GrowthEngineData, GrowthItem, GrowthChannel, GrowthStage, GrowthItemStatus, GrowthItemType, TrafficWarmth } from "@/lib/growth-engine/types";
 import { inputClass, labelClass } from "@/lib/form-styles";
+
+const ChannelFunnelView = lazy(() => import("@/components/growth-engine/ChannelFunnelView"));
 
 export default function GrowthEnginePage() {
   const [engine, setEngine] = useState<GrowthEngineData | null>(null);
@@ -12,6 +14,7 @@ export default function GrowthEnginePage() {
   const [cellPanel, setCellPanel] = useState<{ channel: GrowthChannel; stage: GrowthStage } | null>(null);
   const [editItem, setEditItem] = useState<GrowthItem | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [activeChannel, setActiveChannel] = useState<GrowthChannel | null>(null);
 
   // New item form
   const [newLabel, setNewLabel] = useState("");
@@ -87,6 +90,36 @@ export default function GrowthEnginePage() {
     setShowAddForm(false);
   };
 
+  // Save channel flow data
+  const handleSaveChannelFlow = useCallback(async (nodes: unknown[], edges: unknown[]) => {
+    if (!engine || !activeChannel) return;
+    const updated = {
+      ...engine,
+      channelFlows: {
+        ...engine.channelFlows,
+        [activeChannel]: { nodes, edges },
+      },
+    };
+    setEngine(updated);
+    await saveGrowthEngine(updated);
+  }, [engine, activeChannel]);
+
+  // Channel detail view
+  if (activeChannel && engine) {
+    const flow = engine.channelFlows?.[activeChannel] || { nodes: [], edges: [] };
+    return (
+      <Suspense fallback={<div className="flex items-center justify-center h-screen"><div className="animate-spin size-6 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full" /></div>}>
+        <ChannelFunnelView
+          channel={activeChannel}
+          initialNodes={flow.nodes as any[]}
+          initialEdges={flow.edges as any[]}
+          onSave={(n, e) => handleSaveChannelFlow(n, e)}
+          onBack={() => setActiveChannel(null)}
+        />
+      </Suspense>
+    );
+  }
+
   if (loading || !engine) {
     return (
       <div className="max-w-5xl mx-auto py-10 px-4">
@@ -128,11 +161,14 @@ export default function GrowthEnginePage() {
         {/* Channel rows */}
         {CHANNELS.map((channel) => (
           <div key={channel.key} className="grid grid-cols-[140px_1fr_1fr_1fr_1fr] border-b border-[#F0F0F0] last:border-0">
-            {/* Channel label */}
-            <div className="px-4 py-3.5 flex items-center gap-2">
+            {/* Channel label — clickable to open detail */}
+            <button
+              onClick={() => setActiveChannel(channel.key)}
+              className="px-4 py-3.5 flex items-center gap-2 hover:bg-[#F7F8FA] transition-colors text-left w-full"
+            >
               <span className="text-sm" style={{ color: channel.color }}>{channel.icon}</span>
-              <span className="text-xs font-medium text-[#1A1A1A]">{channel.label}</span>
-            </div>
+              <span className="text-xs font-medium text-[#1A1A1A] hover:underline">{channel.label}</span>
+            </button>
 
             {/* Stage cells */}
             {STAGES.map((stage) => {
