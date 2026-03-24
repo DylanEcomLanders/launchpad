@@ -1,28 +1,47 @@
 "use client";
 
-import { useState, useEffect, useCallback, lazy, Suspense } from "react";
-import { CHANNELS, STAGES, ITEM_TYPES, STATUS_COLORS } from "@/lib/growth-engine/constants";
-import { getGrowthEngine, saveGrowthEngine, addItem, updateItem, removeItem } from "@/lib/growth-engine/data";
-import type { GrowthEngineData, GrowthItem, GrowthChannel, GrowthStage, GrowthItemStatus, GrowthItemType, TrafficWarmth } from "@/lib/growth-engine/types";
+import { useState, useEffect, useCallback, useRef } from "react";
+import FunnelCanvas, { type FunnelCanvasHandle } from "@/components/funnel-builder/FunnelCanvas";
 import { inputClass, labelClass } from "@/lib/form-styles";
+import { getGrowthEngine, saveGrowthEngine } from "@/lib/growth-engine/data";
+import type { GrowthEngineData, GrowthChannel } from "@/lib/growth-engine/types";
+import { CHANNELS, STAGES, STATUS_COLORS } from "@/lib/growth-engine/constants";
+import type { SerializedNode, SerializedEdge, FunnelNodeData, TrafficSource, PageNodeType } from "@/lib/funnel-builder/types";
+import { trafficSources, pageNodeTypes, trafficSourceConfigs, pageNodeConfigs, statusColors } from "@/lib/funnel-builder/constants";
+import type { Node, Edge } from "@xyflow/react";
 
-const ChannelFlowView = lazy(() => import("@/components/growth-engine/ChannelFlowView"));
+type Profile = "dylan" | "ajay";
+
+const PROFILES = [
+  { key: "dylan" as Profile, label: "Dylan", initials: "DE" },
+  { key: "ajay" as Profile, label: "Ajay", initials: "AJ" },
+];
+
+const PLATFORMS: { key: GrowthChannel; label: string; icon: string; color: string }[] = [
+  { key: "twitter", label: "Twitter / X", icon: "𝕏", color: "#1A1A1A" },
+  { key: "linkedin", label: "LinkedIn", icon: "in", color: "#0A66C2" },
+  { key: "tiktok", label: "TikTok", icon: "♪", color: "#7C3AED" },
+  { key: "instagram", label: "Instagram", icon: "◎", color: "#E1306C" },
+  { key: "email", label: "Email", icon: "✉", color: "#059669" },
+  { key: "paid-media", label: "Paid", icon: "$", color: "#E37400" },
+  { key: "outbound", label: "Outbound", icon: "→", color: "#6366F1" },
+];
+
+function genId() {
+  return `gn_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+}
 
 export default function GrowthEnginePage() {
   const [engine, setEngine] = useState<GrowthEngineData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [cellPanel, setCellPanel] = useState<{ channel: GrowthChannel; stage: GrowthStage } | null>(null);
-  const [editItem, setEditItem] = useState<GrowthItem | null>(null);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [activeChannel, setActiveChannel] = useState<GrowthChannel | null>(null);
+  const [profile, setProfile] = useState<Profile>("dylan");
+  const [platform, setPlatform] = useState<GrowthChannel>("twitter");
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const canvasRef = useRef<FunnelCanvasHandle>(null);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // New item form
-  const [newLabel, setNewLabel] = useState("");
-  const [newDesc, setNewDesc] = useState("");
-  const [newType, setNewType] = useState<GrowthItemType>("content-piece");
-  const [newStatus, setNewStatus] = useState<GrowthItemStatus>("planned");
-  const [newWarmth, setNewWarmth] = useState<TrafficWarmth>("cold");
-  const [newUrl, setNewUrl] = useState("");
+  // Flow key = profile + platform
+  const flowKey = `${profile}:${platform}`;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -33,328 +52,272 @@ export default function GrowthEnginePage() {
 
   useEffect(() => { load(); }, [load]);
 
-  const getItemsForCell = (channel: GrowthChannel, stage: GrowthStage) =>
-    (engine?.items || []).filter((i) => i.channel === channel && i.stage === stage);
+  // Get current flow
+  const currentFlow = engine?.channelFlows?.[flowKey] || { nodes: [], edges: [] };
 
-  const getCellStatus = (channel: GrowthChannel, stage: GrowthStage): GrowthItemStatus => {
-    const items = getItemsForCell(channel, stage);
-    if (items.length === 0) return "gap";
-    if (items.some((i) => i.status === "live")) return "live";
-    if (items.some((i) => i.status === "in-progress")) return "in-progress";
-    return "planned";
-  };
+  // Debounced save
+  const debouncedSave = useCallback(async (nodes: SerializedNode[], edges: SerializedEdge[]) => {
+    if (!engine) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(async () => {
+      const updated = {
+        ...engine,
+        channelFlows: {
+          ...engine.channelFlows,
+          [flowKey]: { nodes, edges },
+        },
+      };
+      setEngine(updated);
+      await saveGrowthEngine(updated);
+    }, 800);
+  }, [engine, flowKey]);
 
-  // Stats
-  const totalItems = engine?.items.length || 0;
-  const liveItems = (engine?.items || []).filter((i) => i.status === "live").length;
-  const gapCount = CHANNELS.reduce((acc, ch) =>
-    acc + STAGES.reduce((a, st) => a + (getItemsForCell(ch.key, st.key).length === 0 ? 1 : 0), 0), 0);
-  const activeChannels = CHANNELS.filter((ch) =>
-    STAGES.some((st) => getItemsForCell(ch.key, st.key).length > 0)).length;
+  // Canvas change handlers
+  const nodesRef = useRef<Node[]>([]);
+  const edgesRef = useRef<Edge[]>([]);
 
-  const handleAddItem = async () => {
-    if (!cellPanel || !newLabel.trim()) return;
-    const item: GrowthItem = {
-      id: crypto.randomUUID(),
-      channel: cellPanel.channel,
-      stage: cellPanel.stage,
-      label: newLabel.trim(),
-      description: newDesc.trim(),
-      itemType: newType,
-      status: newStatus,
-      warmth: newWarmth,
-      url: newUrl.trim() || undefined,
-    };
-    const updated = await addItem(item);
-    setEngine(updated);
-    resetForm();
-  };
+  const handleNodesChange = useCallback((nodes: Node[]) => {
+    nodesRef.current = nodes;
+    const serialized = nodes.map((n) => ({
+      id: n.id,
+      type: n.type || "pageNode",
+      position: n.position,
+      data: n.data as FunnelNodeData,
+    }));
+    debouncedSave(serialized, edgesRef.current.map((e) => ({
+      id: e.id, source: e.source, target: e.target, type: e.type, data: e.data as { label?: string },
+    })));
+  }, [debouncedSave]);
 
-  const handleUpdateItem = async (id: string, patch: Partial<GrowthItem>) => {
-    const updated = await updateItem(id, patch);
-    setEngine(updated);
-  };
+  const handleEdgesChange = useCallback((edges: Edge[]) => {
+    edgesRef.current = edges;
+    const serialized = edges.map((e) => ({
+      id: e.id, source: e.source, target: e.target, type: e.type, data: e.data as { label?: string },
+    }));
+    debouncedSave(nodesRef.current.map((n) => ({
+      id: n.id, type: n.type || "pageNode", position: n.position, data: n.data as FunnelNodeData,
+    })), serialized);
+  }, [debouncedSave]);
 
-  const handleRemoveItem = async (id: string) => {
-    const updated = await removeItem(id);
-    setEngine(updated);
-  };
-
-  const resetForm = () => {
-    setNewLabel("");
-    setNewDesc("");
-    setNewType("content-piece");
-    setNewStatus("planned");
-    setNewWarmth("cold");
-    setNewUrl("");
-    setShowAddForm(false);
-  };
-
-  // Channel detail handlers
-  const handleChannelAddItem = useCallback(async (item: Omit<GrowthItem, "id">) => {
-    const full: GrowthItem = { ...item, id: crypto.randomUUID() };
-    const updated = await addItem(full);
-    setEngine(updated);
-  }, []);
-
-  const handleChannelUpdateItem = useCallback(async (id: string, patch: Partial<GrowthItem>) => {
-    const updated = await updateItem(id, patch);
-    setEngine(updated);
-  }, []);
-
-  const handleChannelRemoveItem = useCallback(async (id: string) => {
-    const updated = await removeItem(id);
-    setEngine(updated);
-  }, []);
-
-  // Channel detail view — vertical flow
-  if (activeChannel && engine) {
-    const channelItems = engine.items.filter((i) => i.channel === activeChannel);
-    return (
-      <Suspense fallback={<div className="flex items-center justify-center h-screen"><div className="animate-spin size-6 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full" /></div>}>
-        <ChannelFlowView
-          channel={activeChannel}
-          items={channelItems}
-          onAddItem={handleChannelAddItem}
-          onUpdateItem={handleChannelUpdateItem}
-          onRemoveItem={handleChannelRemoveItem}
-          onBack={() => setActiveChannel(null)}
-        />
-      </Suspense>
+  // Update node data from editor
+  const updateNodeData = useCallback((field: string, value: unknown) => {
+    if (!selectedNode || !canvasRef.current) return;
+    const updated = nodesRef.current.map((n) =>
+      n.id === selectedNode.id ? { ...n, data: { ...n.data, [field]: value } } : n
     );
-  }
+    canvasRef.current.setNodes(updated);
+  }, [selectedNode]);
+
+  // Overview stats
+  const totalFlows = Object.keys(engine?.channelFlows || {}).length;
+  const totalNodes = Object.values(engine?.channelFlows || {}).reduce(
+    (acc, f) => acc + ((f as { nodes: unknown[] })?.nodes?.length || 0), 0
+  );
 
   if (loading || !engine) {
     return (
-      <div className="max-w-5xl mx-auto py-10 px-4">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-48 bg-[#F0F0F0] rounded" />
-          <div className="h-64 bg-[#F0F0F0] rounded-xl" />
-        </div>
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin size-6 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full" />
       </div>
     );
   }
 
-  const cellItems = cellPanel ? getItemsForCell(cellPanel.channel, cellPanel.stage) : [];
-  const cellChannel = cellPanel ? CHANNELS.find((c) => c.key === cellPanel.channel) : null;
-  const cellStage = cellPanel ? STAGES.find((s) => s.key === cellPanel.stage) : null;
+  const platformConfig = PLATFORMS.find((p) => p.key === platform)!;
 
   return (
-    <div className="max-w-5xl mx-auto py-10 px-4">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">Growth Engine</h1>
-        <p className="text-sm text-[#7A7A7A] mt-1">
-          {activeChannels}/{CHANNELS.length} channels active · {gapCount} gaps · {totalItems} items ({liveItems} live)
-        </p>
-      </div>
-
-      {/* Overview Grid */}
-      <div className="border border-[#E5E5EA] rounded-xl bg-white overflow-hidden mb-6">
-        {/* Header row */}
-        <div className="grid grid-cols-[140px_1fr_1fr_1fr_1fr] border-b border-[#E5E5EA]">
-          <div className="px-4 py-3 bg-[#FAFAFA]" />
-          {STAGES.map((stage) => (
-            <div key={stage.key} className="px-4 py-3 bg-[#FAFAFA] border-l border-[#E5E5EA]">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">{stage.label}</p>
-              <p className="text-[9px] text-[#CCC]">{stage.warmth}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Channel rows */}
-        {CHANNELS.map((channel) => (
-          <div key={channel.key} className="grid grid-cols-[140px_1fr_1fr_1fr_1fr] border-b border-[#F0F0F0] last:border-0">
-            {/* Channel label — clickable to open detail */}
-            <button
-              onClick={() => setActiveChannel(channel.key)}
-              className="px-4 py-3.5 flex items-center gap-2 hover:bg-[#F7F8FA] transition-colors text-left w-full"
-            >
-              <span className="text-sm" style={{ color: channel.color }}>{channel.icon}</span>
-              <span className="text-xs font-medium text-[#1A1A1A] hover:underline">{channel.label}</span>
-            </button>
-
-            {/* Stage cells */}
-            {STAGES.map((stage) => {
-              const items = getItemsForCell(channel.key, stage.key);
-              const status = getCellStatus(channel.key, stage.key);
-              const colors = STATUS_COLORS[status];
-              const isActive = cellPanel?.channel === channel.key && cellPanel?.stage === stage.key;
-
-              return (
+    <div className="flex flex-col h-screen">
+      {/* Top bar — profile + platform tabs */}
+      <div className="border-b border-[#E5E5EA] bg-white px-6 py-0 shrink-0">
+        <div className="flex items-center justify-between">
+          {/* Left: Profile switcher + title */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1 py-3">
+              {PROFILES.map((p) => (
                 <button
-                  key={stage.key}
-                  onClick={() => setCellPanel({ channel: channel.key, stage: stage.key })}
-                  className={`px-3 py-3.5 border-l border-[#F0F0F0] text-left transition-colors hover:bg-[#F7F8FA] ${
-                    isActive ? "bg-[#F0F4FF] ring-1 ring-inset ring-blue-200" : ""
+                  key={p.key}
+                  onClick={() => { setProfile(p.key); setSelectedNode(null); }}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-full transition-colors ${
+                    profile === p.key
+                      ? "bg-[#1A1A1A] text-white"
+                      : "text-[#999] hover:text-[#1A1A1A] hover:bg-[#F5F5F5]"
                   }`}
                 >
-                  {items.length === 0 ? (
-                    <div className="flex items-center gap-1.5">
-                      <span className="size-1.5 rounded-full bg-red-300" />
-                      <span className="text-[10px] text-red-400">Gap</span>
-                    </div>
-                  ) : (
-                    <div>
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <span className={`size-1.5 rounded-full ${colors.dot}`} />
-                        <span className={`text-[10px] font-medium ${colors.text}`}>
-                          {items.length} {items.length === 1 ? "item" : "items"}
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-[#999] truncate">
-                        {items[0]?.label}{items.length > 1 ? ` +${items.length - 1}` : ""}
-                      </p>
-                    </div>
-                  )}
+                  {p.label}
                 </button>
-              );
-            })}
+              ))}
+            </div>
+            <div className="h-5 w-px bg-[#E5E5EA]" />
+            <h1 className="text-sm font-semibold text-[#1A1A1A]">Growth Engine</h1>
           </div>
-        ))}
+
+          {/* Right: Stats */}
+          <div className="flex items-center gap-4">
+            <span className="text-[10px] text-[#AAA]">{totalFlows} funnels · {totalNodes} nodes</span>
+          </div>
+        </div>
+
+        {/* Platform tabs */}
+        <div className="flex items-center gap-0 -mb-px">
+          {PLATFORMS.map((p) => {
+            const isActive = platform === p.key;
+            const flowData = engine.channelFlows?.[`${profile}:${p.key}`];
+            const nodeCount = (flowData as { nodes: unknown[] })?.nodes?.length || 0;
+            return (
+              <button
+                key={p.key}
+                onClick={() => { setPlatform(p.key); setSelectedNode(null); }}
+                className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors ${
+                  isActive
+                    ? "border-[#1A1A1A] text-[#1A1A1A]"
+                    : "border-transparent text-[#999] hover:text-[#555]"
+                }`}
+              >
+                <span style={{ color: isActive ? p.color : undefined }}>{p.icon}</span>
+                {p.label}
+                {nodeCount > 0 && (
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${isActive ? "bg-[#1A1A1A] text-white" : "bg-[#F0F0F0] text-[#999]"}`}>
+                    {nodeCount}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Gap summary */}
-      {gapCount > 0 && (
-        <div className="mb-6">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">
-            Gaps ({gapCount})
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {CHANNELS.flatMap((ch) =>
-              STAGES.filter((st) => getItemsForCell(ch.key, st.key).length === 0).map((st) => (
-                <button
-                  key={`${ch.key}-${st.key}`}
-                  onClick={() => setCellPanel({ channel: ch.key, stage: st.key })}
-                  className="px-2 py-1 text-[10px] bg-red-50 text-red-500 border border-red-200 rounded-full hover:bg-red-100 transition-colors"
-                >
-                  {ch.label} × {st.label}
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Cell Panel (slide-over) */}
-      {cellPanel && (
-        <div className="fixed inset-0 z-50 flex justify-end">
-          <div className="absolute inset-0 bg-black/20" onClick={() => { setCellPanel(null); resetForm(); }} />
-          <div className="relative w-full max-w-md bg-white shadow-xl overflow-y-auto">
-            {/* Panel header */}
-            <div className="sticky top-0 bg-white border-b border-[#E5E5EA] px-5 py-4 z-10">
+      {/* Main area — sidebar + canvas */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left sidebar — palette or node editor */}
+        <div className="w-64 border-r border-[#E5E5EA] bg-white overflow-y-auto shrink-0">
+          {selectedNode ? (
+            /* Node editor */
+            <div className="p-4 space-y-3">
               <div className="flex items-center justify-between">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Edit Node</p>
+                <button onClick={() => setSelectedNode(null)} className="text-[10px] text-[#CCC] hover:text-[#1A1A1A]">Done</button>
+              </div>
+              <div>
+                <label className="text-[10px] text-[#777] block mb-1">Label</label>
+                <input
+                  type="text"
+                  value={String((selectedNode.data as Record<string, unknown>)?.label || "")}
+                  onChange={(e) => updateNodeData("label", e.target.value)}
+                  className="w-full text-sm px-2 py-1.5 border border-[#E5E5EA] rounded"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] text-[#777] block mb-1">Status</label>
+                <select
+                  value={String((selectedNode.data as Record<string, unknown>)?.status || "planned")}
+                  onChange={(e) => updateNodeData("status", e.target.value)}
+                  className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded"
+                >
+                  <option value="planned">Planned</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="live">Live</option>
+                </select>
+              </div>
+              {selectedNode.type === "trafficNode" && (
                 <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm" style={{ color: cellChannel?.color }}>{cellChannel?.icon}</span>
-                    <p className="text-sm font-semibold">{cellChannel?.label}</p>
-                    <span className="text-[10px] text-[#AAA]">·</span>
-                    <p className="text-sm text-[#777]">{cellStage?.label}</p>
-                  </div>
-                  <p className="text-[10px] text-[#AAA]">{cellItems.length} items</p>
+                  <label className="text-[10px] text-[#777] block mb-1">Warmth</label>
+                  <select
+                    value={String((selectedNode.data as Record<string, unknown>)?.warmth || "cold")}
+                    onChange={(e) => updateNodeData("warmth", e.target.value)}
+                    className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded"
+                  >
+                    <option value="cold">Cold</option>
+                    <option value="warm">Warm</option>
+                    <option value="hot">Hot</option>
+                  </select>
                 </div>
-                <button onClick={() => { setCellPanel(null); resetForm(); }} className="p-1 text-[#AAA] hover:text-[#1A1A1A]">
-                  <svg className="size-5" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
-                </button>
+              )}
+              <div>
+                <label className="text-[10px] text-[#777] block mb-1">Preview URL</label>
+                <input
+                  type="url"
+                  value={String((selectedNode.data as Record<string, unknown>)?.previewUrl || "")}
+                  onChange={(e) => updateNodeData("previewUrl", e.target.value)}
+                  className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded"
+                  placeholder="https://..."
+                />
+              </div>
+              <div>
+                <label className="text-[10px] text-[#777] block mb-1">Notes</label>
+                <textarea
+                  value={String((selectedNode.data as Record<string, unknown>)?.notes || "")}
+                  onChange={(e) => updateNodeData("notes", e.target.value)}
+                  className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded min-h-[80px]"
+                  placeholder="Strategy notes, ideas..."
+                />
               </div>
             </div>
-
-            <div className="px-5 py-4 space-y-4">
-              {/* Existing items */}
-              {cellItems.map((item) => (
-                <div key={item.id} className={`border rounded-lg p-3.5 ${STATUS_COLORS[item.status].border} ${STATUS_COLORS[item.status].bg}`}>
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <p className="text-sm font-medium text-[#1A1A1A]">{item.label}</p>
-                      {item.description && <p className="text-xs text-[#777] mt-0.5">{item.description}</p>}
-                    </div>
-                    <button onClick={() => handleRemoveItem(item.id)} className="text-[10px] text-[#CCC] hover:text-red-500">×</button>
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <select
-                      value={item.status}
-                      onChange={(e) => handleUpdateItem(item.id, { status: e.target.value as GrowthItemStatus })}
-                      className="text-[10px] px-1.5 py-0.5 border border-[#E5E5EA] rounded bg-white"
+          ) : (
+            /* Palette */
+            <div className="p-4">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-3">
+                Traffic Sources
+              </p>
+              <div className="space-y-1.5 mb-5">
+                {trafficSources.map((src) => {
+                  const config = trafficSourceConfigs[src];
+                  return (
+                    <div
+                      key={src}
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData("application/reactflow", "trafficNode");
+                        e.dataTransfer.setData("subType", src);
+                        e.dataTransfer.effectAllowed = "move";
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 border border-[#E5E5EA] rounded-lg cursor-grab hover:border-[#999] hover:shadow-sm transition-all"
                     >
-                      <option value="planned">Planned</option>
-                      <option value="in-progress">In Progress</option>
-                      <option value="live">Live</option>
-                    </select>
-                    <select
-                      value={item.warmth}
-                      onChange={(e) => handleUpdateItem(item.id, { warmth: e.target.value as TrafficWarmth })}
-                      className="text-[10px] px-1.5 py-0.5 border border-[#E5E5EA] rounded bg-white"
-                    >
-                      <option value="cold">Cold</option>
-                      <option value="warm">Warm</option>
-                      <option value="hot">Hot</option>
-                    </select>
-                    <span className="text-[10px] text-[#CCC]">{ITEM_TYPES.find((t) => t.key === item.itemType)?.label}</span>
-                  </div>
-                  {item.url && (
-                    <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-500 mt-1.5 block truncate">{item.url}</a>
-                  )}
-                </div>
-              ))}
+                      <span className="size-2 rounded-full" style={{ backgroundColor: config.color }} />
+                      <span className="text-xs font-medium text-[#1A1A1A]">{config.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
 
-              {/* Add form */}
-              {showAddForm ? (
-                <div className="border border-[#E5E5EA] rounded-lg p-4 bg-[#FAFAFA] space-y-3">
-                  <div>
-                    <label className={labelClass}>Label *</label>
-                    <input type="text" value={newLabel} onChange={(e) => setNewLabel(e.target.value)} className={inputClass} placeholder="e.g. Twitter thread funnel" autoFocus />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Description</label>
-                    <input type="text" value={newDesc} onChange={(e) => setNewDesc(e.target.value)} className={inputClass} placeholder="What this does..." />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={labelClass}>Type</label>
-                      <select value={newType} onChange={(e) => setNewType(e.target.value as GrowthItemType)} className={inputClass}>
-                        {ITEM_TYPES.filter((t) => t.stages.includes(cellPanel.stage)).map((t) => (
-                          <option key={t.key} value={t.key}>{t.label}</option>
-                        ))}
-                      </select>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-3">
+                Pages & Actions
+              </p>
+              <div className="space-y-1.5">
+                {pageNodeTypes.map((pType) => {
+                  const config = pageNodeConfigs[pType];
+                  return (
+                    <div
+                      key={pType}
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData("application/reactflow", "pageNode");
+                        e.dataTransfer.setData("subType", pType);
+                        e.dataTransfer.effectAllowed = "move";
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 border border-[#E5E5EA] rounded-lg cursor-grab hover:border-[#999] hover:shadow-sm transition-all"
+                    >
+                      <span className="size-2 rounded-full" style={{ backgroundColor: config.color }} />
+                      <span className="text-xs font-medium text-[#1A1A1A]">{config.label}</span>
                     </div>
-                    <div>
-                      <label className={labelClass}>Status</label>
-                      <select value={newStatus} onChange={(e) => setNewStatus(e.target.value as GrowthItemStatus)} className={inputClass}>
-                        <option value="planned">Planned</option>
-                        <option value="in-progress">In Progress</option>
-                        <option value="live">Live</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <label className={labelClass}>URL (optional)</label>
-                    <input type="url" value={newUrl} onChange={(e) => setNewUrl(e.target.value)} className={inputClass} placeholder="https://..." />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button onClick={handleAddItem} disabled={!newLabel.trim()} className="px-3 py-1.5 text-xs font-medium bg-[#1B1B1B] text-white rounded-lg disabled:opacity-30">Add</button>
-                    <button onClick={resetForm} className="px-3 py-1.5 text-xs text-[#7A7A7A]">Cancel</button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={() => {
-                    setShowAddForm(true);
-                    // Default type based on stage
-                    const stageTypes = ITEM_TYPES.filter((t) => t.stages.includes(cellPanel.stage));
-                    if (stageTypes.length > 0) setNewType(stageTypes[0].key);
-                    // Default warmth based on stage
-                    const warmthMap: Record<GrowthStage, TrafficWarmth> = { content: "cold", capture: "warm", nurture: "warm", convert: "hot" };
-                    setNewWarmth(warmthMap[cellPanel.stage]);
-                  }}
-                  className="w-full border-2 border-dashed border-[#E5E5EA] rounded-lg py-3 text-xs text-[#AAA] hover:border-[#999] hover:text-[#777] transition-colors"
-                >
-                  + Add Item
-                </button>
-              )}
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
         </div>
-      )}
+
+        {/* Canvas */}
+        <div className="flex-1">
+          <FunnelCanvas
+            key={flowKey}
+            ref={canvasRef}
+            initialNodes={currentFlow.nodes as Node[]}
+            initialEdges={currentFlow.edges as Edge[]}
+            onNodesChange={handleNodesChange}
+            onEdgesChange={handleEdgesChange}
+            onSelectionChange={(sel) => setSelectedNode(sel.nodes.length === 1 ? sel.nodes[0] : null)}
+          />
+        </div>
+      </div>
     </div>
   );
 }
