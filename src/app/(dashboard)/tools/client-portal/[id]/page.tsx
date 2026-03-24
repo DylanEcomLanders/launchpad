@@ -539,6 +539,12 @@ export default function PortalDetailPage() {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Projects</h3>
+              <button
+                onClick={() => setShowAddProjectModal(true)}
+                className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] whitespace-nowrap"
+              >
+                + Add Project
+              </button>
             </div>
             <div className="divide-y divide-[#F0F0F0]">
               {(portal.projects || []).map((proj, idx) => {
