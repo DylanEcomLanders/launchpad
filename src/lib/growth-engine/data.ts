@@ -26,12 +26,18 @@ export async function getGrowthEngine(): Promise<GrowthEngineData> {
   if (existing) return { ...defaultEngine(), ...existing };
   // Create default
   const engine = defaultEngine();
-  await store.save(engine);
+  await store.create(engine);
   return engine;
 }
 
 export async function saveGrowthEngine(engine: GrowthEngineData): Promise<void> {
-  await store.save({ ...engine, updated_at: new Date().toISOString() });
+  const all = await store.getAll();
+  const exists = all.some((e) => e.id === engine.id);
+  if (exists) {
+    await store.update(engine.id, { ...engine, updated_at: new Date().toISOString() });
+  } else {
+    await store.create({ ...engine, updated_at: new Date().toISOString() });
+  }
 }
 
 export async function addItem(item: GrowthItem): Promise<GrowthEngineData> {
