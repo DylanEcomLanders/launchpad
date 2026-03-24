@@ -136,6 +136,19 @@ export default function PriceCalculatorPage() {
     new Set(["dev", "designer", "juniorDesigner"])
   );
 
+  // Payment processing fees
+  const [fees, setFees] = useState<Record<string, boolean>>({
+    whop: false,
+    shopify: false,
+    wise: false,
+  });
+
+  const feeRates: Record<string, { label: string; rate: number; fixed: number; description: string }> = {
+    whop: { label: "Whop", rate: 0.03, fixed: 0, description: "3% per transaction" },
+    shopify: { label: "Shopify Payments", rate: 0.019, fixed: 0.20, description: "1.9% + 20p" },
+    wise: { label: "Wise", rate: 0.0035, fixed: 0.30, description: "0.35% + 30p" },
+  };
+
   /* ── Helpers ── */
   const getQty = (name: string) => quantities[name] || 0;
 
@@ -834,6 +847,71 @@ export default function PriceCalculatorPage() {
                     )}
                   </div>
                 )}
+
+                {/* Payment Processing Fees */}
+                <div className="mt-4 pt-4 border-t border-[#E5E5EA]">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-3">
+                    Payment Processing Fees
+                  </p>
+                  <div className="space-y-2">
+                    {Object.entries(feeRates).map(([key, fee]) => {
+                      const isOn = fees[key];
+                      const feeAmount = isOn ? totalPrice * fee.rate + fee.fixed : 0;
+                      return (
+                        <div key={key} className="flex items-center justify-between">
+                          <button
+                            onClick={() => setFees((f) => ({ ...f, [key]: !f[key] }))}
+                            className="flex items-center gap-2"
+                          >
+                            <div className={`size-4 rounded border transition-colors flex items-center justify-center ${
+                              isOn ? "bg-[#1B1B1B] border-[#1B1B1B]" : "border-[#CCC] bg-white"
+                            }`}>
+                              {isOn && <svg className="size-2.5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg>}
+                            </div>
+                            <span className="text-xs text-[#555]">{fee.label}</span>
+                            <span className="text-[10px] text-[#AAA]">{fee.description}</span>
+                          </button>
+                          {isOn && (
+                            <span className="text-xs font-semibold tabular-nums text-red-500">
+                              -{fmtDetailed.format(feeAmount)}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Net amount after fees */}
+                  {Object.values(fees).some(Boolean) && (() => {
+                    const totalFees = Object.entries(feeRates).reduce((sum, [key, fee]) => {
+                      if (!fees[key]) return sum;
+                      return sum + totalPrice * fee.rate + fee.fixed;
+                    }, 0);
+                    const netRevenue = totalPrice - totalFees;
+                    const netMargin = netRevenue - totalCost;
+                    const netMarginPct = netRevenue > 0 ? (netMargin / netRevenue) * 100 : 0;
+                    return (
+                      <div className="mt-3 pt-3 border-t border-[#E5E5EA]">
+                        <div className="grid grid-cols-3 gap-4">
+                          <div>
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-0.5">Total Fees</p>
+                            <p className="text-sm font-semibold tabular-nums text-red-500">-{fmtDetailed.format(totalFees)}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-0.5">Net Revenue</p>
+                            <p className="text-sm font-semibold tabular-nums text-[#1B1B1B]">{fmtDetailed.format(netRevenue)}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-0.5">Net Margin</p>
+                            <p className={`text-sm font-semibold tabular-nums ${netMargin < 0 ? "text-red-600" : "text-[#1B1B1B]"}`}>
+                              {fmtDetailed.format(netMargin)} <span className="text-[10px] text-[#AAA]">{netMarginPct.toFixed(1)}%</span>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
             </div>
           )}
