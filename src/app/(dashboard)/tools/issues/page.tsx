@@ -28,6 +28,7 @@ export default function IssuesPage() {
   const [issues, setIssues] = useState<LaunchpadIssue[]>([]);
   const [filterType, setFilterType] = useState<IssueType | "all">("all");
   const [filterStatus, setFilterStatus] = useState<IssueStatus | "all">("all");
+  const [activeTab, setActiveTab] = useState<"active" | "completed">("active");
 
   const refresh = useCallback(async () => {
     setIssues(await getIssues());
@@ -46,9 +47,12 @@ export default function IssuesPage() {
     };
   }, [refresh]);
 
-  const filtered = issues.filter((i) => {
+  const activeIssues = issues.filter((i) => i.status !== "done");
+  const completedIssues = issues.filter((i) => i.status === "done");
+  const baseList = activeTab === "completed" ? completedIssues : activeIssues;
+  const filtered = baseList.filter((i) => {
     if (filterType !== "all" && i.type !== filterType) return false;
-    if (filterStatus !== "all" && i.status !== filterStatus) return false;
+    if (activeTab === "active" && filterStatus !== "all" && i.status !== filterStatus) return false;
     return true;
   });
 
@@ -80,6 +84,23 @@ export default function IssuesPage() {
         <p className="text-xs text-[#A0A0A0] mt-0.5">
           Bugs, change requests &amp; ideas logged by the team
         </p>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex items-center gap-4 mb-4 border-b border-[#E5E5EA]">
+        {(["active", "completed"] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`pb-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
+              activeTab === tab
+                ? "text-[#1A1A1A] border-[#1A1A1A]"
+                : "text-[#AAA] border-transparent hover:text-[#777]"
+            }`}
+          >
+            {tab === "active" ? `Active (${activeIssues.length})` : `Completed (${completedIssues.length})`}
+          </button>
+        ))}
       </div>
 
       {/* Filters */}
