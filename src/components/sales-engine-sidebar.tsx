@@ -101,7 +101,7 @@ export function SalesEngineSidebar() {
       {!collapsed && (
         <div className="px-3 mb-2">
           <Link
-            href="/tools/proposals"
+            href="/sales-engine/proposals"
             onClick={() => setMobileOpen(false)}
             className="flex items-center justify-center gap-2 px-3 py-2.5 bg-[#1B1B1B] text-white text-[12px] font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors"
           >
