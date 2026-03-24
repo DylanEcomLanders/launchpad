@@ -108,6 +108,17 @@ export default function ProjectKickoffPage() {
   const [copiedSlack, setCopiedSlack] = useState(false);
   const [creatingPortal, setCreatingPortal] = useState(false);
   const [portalCreated, setPortalCreated] = useState(false);
+  const [existingPortals, setExistingPortals] = useState<{ id: string; client_name: string }[]>([]);
+  const [selectedPortalId, setSelectedPortalId] = useState<string>("new"); // "new" or portal ID
+
+  /* ── Fetch existing portals for "assign to" ── */
+  useEffect(() => {
+    import("@/lib/portal/data").then(({ getPortals }) => {
+      getPortals().then((portals) => {
+        setExistingPortals(portals.map((p) => ({ id: p.id, client_name: p.client_name })));
+      });
+    });
+  }, []);
 
   /* ── Close modal on Escape ── */
   const closeModal = useCallback(() => setActiveModal(null), []);
@@ -347,28 +358,57 @@ export default function ProjectKickoffPage() {
       }
 
       const isRetainerType = projectType.toLowerCase().includes("retainer");
-      const input: PortalInsert = {
-        client_name: clientName,
-        client_email: agreement.clientContactEmail || "",
-        client_type: isRetainerType ? "retainer" : "regular",
-        project_type: projectType,
+
+      // Build project object for both new and existing portal paths
+      const newProject: import("@/lib/portal/types").PortalProject = {
+        id: crypto.randomUUID(),
+        name: projectType || "Page Build",
+        type: isRetainerType ? "retainer" : "page-build",
+        status: "active",
+        created_at: new Date().toISOString(),
+        phases: portalPhases,
+        deliverables: portalDeliverables,
         current_phase: portalPhases[0]?.name || "Kickoff",
         progress: 0,
-        next_touchpoint: { date: kickoffDate, description: "Project kickoff call" },
-        phases: portalPhases,
         scope: validDeliverables.map((d) => ({ description: d.description, type: d.type || "" })),
-        deliverables: portalDeliverables,
         documents: portalDocs,
-        results: [],
-        wins: [],
-        show_results: false,
-        slack_channel_url: "",
-        ad_hoc_requests: [],
       };
 
-      const portal = await createPortal(input);
-      setPortalCreated(true);
-      setTimeout(() => router.push(`/tools/client-portal/${portal.id}`), 500);
+      if (selectedPortalId !== "new") {
+        // Add as project to existing portal
+        const { getPortalById, updatePortal } = await import("@/lib/portal/data");
+        const existing = await getPortalById(selectedPortalId);
+        if (!existing) throw new Error("Portal not found");
+        const updatedProjects = [...(existing.projects || []), newProject];
+        await updatePortal(selectedPortalId, { projects: updatedProjects });
+        setPortalCreated(true);
+        setTimeout(() => router.push(`/tools/client-portal/${selectedPortalId}`), 500);
+      } else {
+        // Create new portal
+        const input: PortalInsert = {
+          client_name: clientName,
+          client_email: agreement.clientContactEmail || "",
+          client_type: isRetainerType ? "retainer" : "regular",
+          project_type: projectType,
+          current_phase: portalPhases[0]?.name || "Kickoff",
+          progress: 0,
+          next_touchpoint: { date: kickoffDate, description: "Project kickoff call" },
+          phases: portalPhases,
+          scope: validDeliverables.map((d) => ({ description: d.description, type: d.type || "" })),
+          deliverables: portalDeliverables,
+          documents: portalDocs,
+          results: [],
+          wins: [],
+          show_results: false,
+          slack_channel_url: "",
+          ad_hoc_requests: [],
+          projects: [newProject],
+        };
+
+        const portal = await createPortal(input);
+        setPortalCreated(true);
+        setTimeout(() => router.push(`/tools/client-portal/${portal.id}`), 500);
+      }
     } catch (err) {
       console.error("Portal creation failed:", err);
       alert("Failed to create portal. Check the console for details.");
@@ -881,6 +921,18 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold">Kickoff Pack</h2>
               <div className="flex items-center gap-2">
+                {existingPortals.length > 0 && !portalCreated && (
+                  <select
+                    value={selectedPortalId}
+                    onChange={(e) => setSelectedPortalId(e.target.value)}
+                    className="text-xs px-2 py-2 border border-[#E5E5EA] rounded-lg bg-white"
+                  >
+                    <option value="new">New Portal</option>
+                    {existingPortals.map((p) => (
+                      <option key={p.id} value={p.id}>{p.client_name}</option>
+                    ))}
+                  </select>
+                )}
                 <button
                   onClick={handleCreatePortal}
                   disabled={creatingPortal || portalCreated}
@@ -889,17 +941,17 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
                   {portalCreated ? (
                     <>
                       <CheckIcon className="size-3.5 text-green-600" />
-                      Portal Created
+                      {selectedPortalId !== "new" ? "Project Added" : "Portal Created"}
                     </>
                   ) : creatingPortal ? (
                     <>
                       <ArrowPathIcon className="size-3.5 animate-spin" />
-                      Creating...
+                      {selectedPortalId !== "new" ? "Adding..." : "Creating..."}
                     </>
                   ) : (
                     <>
                       <PlusIcon className="size-3.5" />
-                      Create Client Portal
+                      {selectedPortalId !== "new" ? "Add to Portal" : "Create Portal"}
                     </>
                   )}
                 </button>
