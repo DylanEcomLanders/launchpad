@@ -534,6 +534,55 @@ export default function PortalDetailPage() {
           );
         })()}
 
+        {/* ── Retainer Health Summary ── */}
+        {!selectedProject && isRetainerPortal && (() => {
+          const tests = (portal.results || []).filter(t => !(t as any).deleted_at);
+          const tierMonthlyMap: Record<string, number> = { T1: 4, T2: 8, T3: 16 };
+          const capacity = tierMonthlyMap[portal.testing_tier || ""] || 0;
+          const n = new Date();
+          const mStart = new Date(n.getFullYear(), n.getMonth(), 1);
+          const mEnd = new Date(n.getFullYear(), n.getMonth() + 1, 0);
+          const monthTests = tests.filter(t => {
+            if (t.startDate) { const d = new Date(t.startDate); return d >= mStart && d <= mEnd; }
+            return true;
+          });
+          const delivered = monthTests.filter(t => t.status === "live" || t.status === "complete").length;
+          const scheduled = monthTests.filter(t => t.status === "scheduled").length;
+          const empty = Math.max(0, capacity - monthTests.length);
+          const attention = monthTests.filter(t => t.status === "scheduled");
+          const monthName = n.toLocaleString("en-GB", { month: "long", year: "numeric" });
+
+          if (capacity === 0) return null;
+
+          return (
+            <div className="mb-6">
+              <div className="border border-[#E5E5EA] rounded-lg p-4 bg-white">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-semibold text-[#1A1A1A]">Retainer — {monthName}</p>
+                  <span className="text-[10px] text-[#AAA]">{portal.testing_tier} · {delivered}/{capacity} delivered</span>
+                </div>
+                <div className="h-2 bg-[#F0F0F0] rounded-full overflow-hidden flex mb-2">
+                  {delivered > 0 && <div className="h-full bg-emerald-500" style={{ width: `${(delivered / capacity) * 100}%` }} />}
+                  {scheduled > 0 && <div className="h-full bg-amber-400" style={{ width: `${(scheduled / capacity) * 100}%` }} />}
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-emerald-500" /> {delivered} delivered</span>
+                  <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-amber-400" /> {scheduled} scheduled</span>
+                  <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-[#F0F0F0]" /> {empty} empty</span>
+                </div>
+                {attention.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-[#F0F0F0]">
+                    <p className="text-[10px] font-semibold text-amber-600 mb-1">⚠ {attention.length} test{attention.length !== 1 ? "s" : ""} need attention</p>
+                    {attention.map(t => (
+                      <p key={t.id} className="text-[10px] text-[#777]">• {t.name} — scheduled, not live</p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* ── Projects List ── */}
         {!selectedProject && (
           <div className="mb-6">
