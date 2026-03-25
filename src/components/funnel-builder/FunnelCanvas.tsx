@@ -9,6 +9,8 @@ import {
   addEdge,
   useNodesState,
   useEdgesState,
+  useReactFlow,
+  ReactFlowProvider,
   type Connection,
   type Node,
   type Edge,
@@ -62,6 +64,7 @@ const FunnelCanvasInner = forwardRef<FunnelCanvasHandle, FunnelCanvasProps>(func
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes as unknown as Node[]);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges as unknown as Edge[]);
   const reactFlowRef = useRef<HTMLDivElement>(null);
+  const { screenToFlowPosition } = useReactFlow();
 
   // Expose setNodes/setEdges to parent
   useImperativeHandle(ref, () => ({
@@ -200,15 +203,15 @@ const FunnelCanvasInner = forwardRef<FunnelCanvasHandle, FunnelCanvasProps>(func
       if (!raw) return;
 
       const data: FunnelNodeData = JSON.parse(raw);
-      const bounds = reactFlowRef.current?.getBoundingClientRect();
-      if (!bounds) return;
 
       pushSnapshot();
+
+      const position = screenToFlowPosition({ x: event.clientX, y: event.clientY });
 
       const newNode: Node = {
         id: `node_${Date.now().toString(36)}`,
         type: data.nodeType === "traffic" ? "trafficNode" : "pageNode",
-        position: { x: event.clientX - bounds.left - 80, y: event.clientY - bounds.top - 30 },
+        position,
         data: data as unknown as Record<string, unknown>,
       };
 
@@ -263,4 +266,12 @@ const FunnelCanvasInner = forwardRef<FunnelCanvasHandle, FunnelCanvasProps>(func
   );
 });
 
-export default FunnelCanvasInner;
+const FunnelCanvas = forwardRef<FunnelCanvasHandle, FunnelCanvasProps>(function FunnelCanvas(props, ref) {
+  return (
+    <ReactFlowProvider>
+      <FunnelCanvasInner {...props} ref={ref} />
+    </ReactFlowProvider>
+  );
+});
+
+export default FunnelCanvas;
