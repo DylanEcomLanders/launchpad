@@ -49,6 +49,7 @@ import type {
   PortalTestResult,
   MetricSnapshot,
   TestingTier,
+  TestStatus,
   AdHocRequest,
   ScopeItem,
   PortalProject,
