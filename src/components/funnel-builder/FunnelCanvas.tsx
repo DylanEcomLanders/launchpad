@@ -238,6 +238,8 @@ const FunnelCanvasInner = forwardRef<FunnelCanvasHandle, FunnelCanvasProps>(func
         onEdgesChange={handleEdgesChange}
         onConnect={readOnly ? undefined : onConnect}
         onSelectionChange={onSelectionChange}
+        onNodeClick={(_event, node) => onNodeSelect?.(node)}
+        onPaneClick={() => onNodeSelect?.(null)}
         onDrop={readOnly ? undefined : onDrop}
         onDragOver={readOnly ? undefined : onDragOver}
         nodeTypes={nodeTypes}
