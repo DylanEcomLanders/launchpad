@@ -666,7 +666,7 @@ export default function PortalDetailPage() {
           />
         )}
 
-        {activeTab === "testing" && portal && (
+        {selectedProject && activeTab === "testing" && portal && (
           <TestingSection
             portal={portal}
             onUpdateResults={async (results) => {
