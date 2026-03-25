@@ -427,9 +427,6 @@ export default function PortalDetailPage() {
         { key: "overview", label: "Overview" },
         { key: "testing", label: "Testing" },
         { key: "updates", label: "Updates" },
-        { key: "designs", label: "Designs" },
-        { key: "development", label: "Development" },
-        { key: "funnels", label: "Funnels" },
       ]
     : [
         { key: "overview", label: "Overview" },
@@ -584,6 +581,36 @@ export default function PortalDetailPage() {
             </div>
           );
         })()}
+
+        {/* ── Funnels (client level) ── */}
+        {!selectedProject && funnels.length > 0 && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Funnels</h3>
+              <Link
+                href={`/tools/funnel-builder?clientId=${portal.id}&clientName=${encodeURIComponent(portal.client_name)}`}
+                className="text-[11px] font-medium text-[#999] hover:text-[#1A1A1A]"
+              >
+                + New Funnel
+              </Link>
+            </div>
+            <div className="divide-y divide-[#F0F0F0]">
+              {funnels.map((funnel) => (
+                <Link
+                  key={funnel.id}
+                  href={`/tools/funnel-builder?id=${funnel.id}`}
+                  className="flex items-center justify-between py-3 hover:bg-[#F7F8FA] transition-colors rounded-lg px-2"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-[#1A1A1A]">{funnel.name || "Untitled Funnel"}</p>
+                    <p className="text-[10px] text-[#AAA]">{funnel.nodes.length} nodes</p>
+                  </div>
+                  <svg className="size-4 text-[#DDD]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── Projects List ── */}
         {!selectedProject && (
