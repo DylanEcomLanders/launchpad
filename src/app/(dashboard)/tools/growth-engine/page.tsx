@@ -269,8 +269,8 @@ export default function GrowthEnginePage() {
                       key={src}
                       draggable
                       onDragStart={(e) => {
-                        e.dataTransfer.setData("application/reactflow", "trafficNode");
-                        e.dataTransfer.setData("subType", src);
+                        const data = { nodeType: "traffic", subType: src, label: config.label, status: "planned" };
+                        e.dataTransfer.setData("application/reactflow", JSON.stringify(data));
                         e.dataTransfer.effectAllowed = "move";
                       }}
                       className="flex items-center gap-2 px-3 py-2 border border-[#E5E5EA] rounded-lg cursor-grab hover:border-[#999] hover:shadow-sm transition-all"
@@ -293,8 +293,8 @@ export default function GrowthEnginePage() {
                       key={pType}
                       draggable
                       onDragStart={(e) => {
-                        e.dataTransfer.setData("application/reactflow", "pageNode");
-                        e.dataTransfer.setData("subType", pType);
+                        const data = { nodeType: "page", subType: pType, label: config.label, status: "planned" };
+                        e.dataTransfer.setData("application/reactflow", JSON.stringify(data));
                         e.dataTransfer.effectAllowed = "move";
                       }}
                       className="flex items-center gap-2 px-3 py-2 border border-[#E5E5EA] rounded-lg cursor-grab hover:border-[#999] hover:shadow-sm transition-all"
