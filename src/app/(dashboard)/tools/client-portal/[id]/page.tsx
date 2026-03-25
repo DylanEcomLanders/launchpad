@@ -2468,23 +2468,20 @@ function TestingSection({
   const activeTests = tests.filter(t => !(t as any).deleted_at);
   const trashedTests = tests.filter(t => !!(t as any).deleted_at);
 
-  // Generate all weeks of the current month
+  // Generate exactly 4 weeks for the current month (always 4 weeks regardless of calendar)
   const generateMonthWeeks = () => {
     const weeks: { label: string; startDate: Date }[] = [];
     const d = new Date(now.getFullYear(), now.getMonth(), 1);
-    // Find first Monday of the month (or use 1st if it's Mon)
-    while (d.getMonth() === now.getMonth()) {
-      if (d.getDay() === 1 || d.getDate() === 1) {
-        const weekNum = Math.ceil((Math.floor((d.getTime() - new Date(d.getFullYear(), 0, 1).getTime()) / 86400000) + new Date(d.getFullYear(), 0, 1).getDay() + 1) / 7);
-        weeks.push({
-          label: `W${weekNum} — ${d.getDate()} ${d.toLocaleString("en-GB", { month: "short" })}`,
-          startDate: new Date(d),
-        });
-      }
-      d.setDate(d.getDate() + 1);
-      // Only add Mondays after the first entry
-      if (weeks.length > 0 && d.getDay() !== 1) continue;
-      if (weeks.length > 0 && d.getMonth() !== now.getMonth()) break;
+    // Find first Monday on or after the 1st
+    while (d.getDay() !== 1) d.setDate(d.getDate() + 1);
+    // Generate exactly 4 weeks
+    for (let i = 0; i < 4; i++) {
+      const weekNum = Math.ceil((Math.floor((d.getTime() - new Date(d.getFullYear(), 0, 1).getTime()) / 86400000) + new Date(d.getFullYear(), 0, 1).getDay() + 1) / 7);
+      weeks.push({
+        label: `W${weekNum} — ${d.getDate()} ${d.toLocaleString("en-GB", { month: "short" })}`,
+        startDate: new Date(d),
+      });
+      d.setDate(d.getDate() + 7);
     }
     return weeks;
   };
