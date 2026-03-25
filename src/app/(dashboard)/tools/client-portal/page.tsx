@@ -834,7 +834,7 @@ export default function ClientPortalPage() {
                   const healthLabels = { "on-track": "On Track", "warning": "Slightly Behind", "behind": "Behind" };
 
                   // Open tickets
-                  const clientTickets = tickets.filter(t => t.channel_id === p.slack_channel_url && t.status !== "done" && !t.deleted_at);
+                  const clientTickets = tickets.filter(t => t.channel_id === p.slack_channel_url && t.status !== "resolved" && !t.deleted_at);
 
                   // Last touchpoint
                   const lastUpdate = p.updated_at ? new Date(p.updated_at) : null;
