@@ -79,7 +79,7 @@ export default function ClientPortalPage() {
   const [igTests, setIgTests] = useState<IntelligemsTest[]>([]);
   const [igLoading, setIgLoading] = useState(false);
   const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [activeTab, setActiveTab] = useState<"overview" | "testing" | "tickets" | "delivery" | "clients">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "testing" | "tickets" | "delivery" | "clients" | "retainers">("overview");
   const [activeChart, setActiveChart] = useState(0);
 
   const loadPortals = useCallback(async () => {
@@ -294,6 +294,7 @@ export default function ClientPortalPage() {
         <div className="flex items-center gap-1 mb-6 border-b border-[#E8E8E8]">
           {([
             { key: "overview" as const, label: "Overview" },
+            { key: "retainers" as const, label: "Retainers" },
             { key: "testing" as const, label: "Testing" },
             { key: "tickets" as const, label: `Tickets${openTickets.length > 0 ? ` (${openTickets.length})` : ""}` },
             { key: "delivery" as const, label: "Delivery" },
@@ -787,6 +788,131 @@ export default function ClientPortalPage() {
           )}
         </div>
       )}
+
+      {/* ═══════ RETAINERS TAB ═══════ */}
+      {!showTrash && activeTab === "retainers" && (() => {
+        const retainerPortals = portals.filter(p => p.client_type === "retainer" || p.project_type?.toLowerCase().includes("retainer"));
+        const now = new Date();
+        const currentMonth = now.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        const dayOfMonth = now.getDate();
+        const monthProgress = Math.round((dayOfMonth / daysInMonth) * 100);
+
+        return (
+          <div className="space-y-6">
+            {/* Month Progress Bar */}
+            <div className="border border-[#E5E5EA] rounded-xl bg-white p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-[#1A1A1A]">{currentMonth}</h3>
+                  <p className="text-xs text-[#AAA] mt-0.5">Day {dayOfMonth} of {daysInMonth} · {monthProgress}% through the month</p>
+                </div>
+                <span className="text-xs font-semibold text-[#1A1A1A]">{retainerPortals.length} retainer{retainerPortals.length !== 1 ? "s" : ""}</span>
+              </div>
+              <div className="h-2 bg-[#F0F0F0] rounded-full overflow-hidden">
+                <div className="h-full bg-[#1A1A1A] rounded-full transition-all" style={{ width: `${monthProgress}%` }} />
+              </div>
+            </div>
+
+            {/* Retainer Cards */}
+            {retainerPortals.length > 0 ? (
+              <div className="space-y-3">
+                {retainerPortals.map((p) => {
+                  const tier = p.testing_tier || "T1";
+                  const testsPerWeek = tier === "T1" ? 1 : tier === "T2" ? 2 : 4;
+                  const testsPerMonth = testsPerWeek * 4;
+
+                  // Count tests this month from results
+                  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+                  const testsThisMonth = (p.results || []).filter(r => r.startDate >= monthStart.split("T")[0]).length;
+                  const testProgress = Math.min(100, Math.round((testsThisMonth / testsPerMonth) * 100));
+
+                  // Health: are we on track?
+                  const expectedByNow = Math.floor(testsPerMonth * (dayOfMonth / daysInMonth));
+                  const health = testsThisMonth >= expectedByNow ? "on-track" : testsThisMonth >= expectedByNow - 1 ? "warning" : "behind";
+                  const healthColors = { "on-track": "text-emerald-600 bg-emerald-50", "warning": "text-amber-600 bg-amber-50", "behind": "text-red-600 bg-red-50" };
+                  const healthLabels = { "on-track": "On Track", "warning": "Slightly Behind", "behind": "Behind" };
+
+                  // Open tickets
+                  const clientTickets = tickets.filter(t => t.channel_id === p.slack_channel_url && t.status !== "done" && !t.deleted_at);
+
+                  // Last touchpoint
+                  const lastUpdate = p.updated_at ? new Date(p.updated_at) : null;
+                  const daysSinceUpdate = lastUpdate ? Math.floor((Date.now() - lastUpdate.getTime()) / 86400000) : null;
+
+                  return (
+                    <Link
+                      key={p.id}
+                      href={`/tools/client-portal/${p.id}`}
+                      className={`block border rounded-xl bg-white p-5 hover:shadow-sm transition-all ${
+                        health === "behind" ? "border-red-200" : health === "warning" ? "border-amber-200" : "border-[#E5E5EA]"
+                      }`}
+                    >
+                      {/* Header */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <h4 className="text-sm font-semibold text-[#1A1A1A]">{p.client_name}</h4>
+                          <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600">{tier}</span>
+                          <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${healthColors[health]}`}>
+                            {healthLabels[health]}
+                          </span>
+                        </div>
+                        <span className="text-xs text-[#999]">{testsPerWeek}/week · {testsPerMonth}/month</span>
+                      </div>
+
+                      {/* Test Delivery Progress */}
+                      <div className="mb-4">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Tests Delivered</span>
+                          <span className="text-xs font-semibold text-[#1A1A1A]">{testsThisMonth} / {testsPerMonth}</span>
+                        </div>
+                        <div className="h-2 bg-[#F0F0F0] rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${health === "behind" ? "bg-red-500" : health === "warning" ? "bg-amber-500" : "bg-emerald-500"}`}
+                            style={{ width: `${testProgress}%` }}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="text-[9px] text-[#CCC]">Expected by now: {expectedByNow}</span>
+                          <span className="text-[9px] text-[#CCC]">{testsPerMonth - testsThisMonth} remaining</span>
+                        </div>
+                      </div>
+
+                      {/* Quick Stats Row */}
+                      <div className="flex items-center gap-6 text-xs text-[#777]">
+                        {(p.results || []).filter(r => r.status === "live").length > 0 && (
+                          <span className="flex items-center gap-1.5">
+                            <span className="size-1.5 rounded-full bg-emerald-500" />
+                            {(p.results || []).filter(r => r.status === "live").length} live
+                          </span>
+                        )}
+                        {clientTickets.length > 0 && (
+                          <span className="flex items-center gap-1.5 text-amber-600">
+                            {clientTickets.length} open ticket{clientTickets.length !== 1 ? "s" : ""}
+                          </span>
+                        )}
+                        {daysSinceUpdate !== null && (
+                          <span className={daysSinceUpdate > 3 ? "text-red-500" : ""}>
+                            Last updated {daysSinceUpdate === 0 ? "today" : daysSinceUpdate === 1 ? "yesterday" : `${daysSinceUpdate}d ago`}
+                          </span>
+                        )}
+                        {p.blocker && (
+                          <span className="text-red-500 font-medium">Blocked: {p.blocker.reason}</span>
+                        )}
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="border-2 border-dashed border-[#E5E5EA] rounded-xl p-8 text-center">
+                <p className="text-sm text-[#AAA]">No retainer clients</p>
+                <p className="text-xs text-[#CCC] mt-1">Create a retainer portal to track monthly test delivery</p>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* ═══════ CLIENTS TAB ═══════ */}
       {!showTrash && activeTab === "clients" && (
