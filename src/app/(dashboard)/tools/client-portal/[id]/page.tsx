@@ -624,7 +624,7 @@ export default function PortalDetailPage() {
         })()}
 
         {/* ── Funnels (client level) ── */}
-        {!selectedProject && funnels.length > 0 && (
+        {!selectedProject && (
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Funnels</h3>
@@ -635,21 +635,25 @@ export default function PortalDetailPage() {
                 + New Funnel
               </Link>
             </div>
-            <div className="divide-y divide-[#F0F0F0]">
-              {funnels.map((funnel) => (
-                <Link
-                  key={funnel.id}
-                  href={`/tools/funnel-builder?id=${funnel.id}`}
-                  className="flex items-center justify-between py-3 hover:bg-[#F7F8FA] transition-colors rounded-lg px-2"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-[#1A1A1A]">{funnel.name || "Untitled Funnel"}</p>
-                    <p className="text-[10px] text-[#AAA]">{funnel.nodes.length} nodes</p>
-                  </div>
-                  <svg className="size-4 text-[#DDD]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
-                </Link>
-              ))}
-            </div>
+            {funnels.length > 0 ? (
+              <div className="divide-y divide-[#F0F0F0]">
+                {funnels.map((funnel) => (
+                  <Link
+                    key={funnel.id}
+                    href={`/tools/funnel-builder?id=${funnel.id}`}
+                    className="flex items-center justify-between py-3 hover:bg-[#F7F8FA] transition-colors rounded-lg px-2"
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-[#1A1A1A]">{funnel.name || "Untitled Funnel"}</p>
+                      <p className="text-[10px] text-[#AAA]">{funnel.nodes.length} nodes</p>
+                    </div>
+                    <svg className="size-4 text-[#DDD]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-[#CCC] py-2">No funnels linked yet</p>
+            )}
           </div>
         )}
 
