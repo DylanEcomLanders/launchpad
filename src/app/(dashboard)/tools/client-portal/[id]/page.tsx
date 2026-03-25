@@ -2464,31 +2464,55 @@ function TestingSection({
   const tests = portal.results || [];
   const tierCount: Record<string, number> = { T1: 1, T2: 2, T3: 4 };
   const slotsPerWeek = tierCount[portal.testing_tier || ""] || 0;
+  const now = new Date();
+  const activeTests = tests.filter(t => !(t as any).deleted_at);
+  const trashedTests = tests.filter(t => !!(t as any).deleted_at);
 
-  // Group tests by week, most recent first
-  const weekGroups = tests.reduce<Record<string, PortalTestResult[]>>((acc, test) => {
+  // Generate all weeks of the current month
+  const generateMonthWeeks = () => {
+    const weeks: { label: string; startDate: Date }[] = [];
+    const d = new Date(now.getFullYear(), now.getMonth(), 1);
+    // Find first Monday of the month (or use 1st if it's Mon)
+    while (d.getMonth() === now.getMonth()) {
+      if (d.getDay() === 1 || d.getDate() === 1) {
+        const weekNum = Math.ceil((Math.floor((d.getTime() - new Date(d.getFullYear(), 0, 1).getTime()) / 86400000) + new Date(d.getFullYear(), 0, 1).getDay() + 1) / 7);
+        weeks.push({
+          label: `W${weekNum} — ${d.getDate()} ${d.toLocaleString("en-GB", { month: "short" })}`,
+          startDate: new Date(d),
+        });
+      }
+      d.setDate(d.getDate() + 1);
+      // Only add Mondays after the first entry
+      if (weeks.length > 0 && d.getDay() !== 1) continue;
+      if (weeks.length > 0 && d.getMonth() !== now.getMonth()) break;
+    }
+    return weeks;
+  };
+
+  const monthWeeks = slotsPerWeek > 0 ? generateMonthWeeks() : [];
+
+  // Group tests by week
+  const weekGroups = activeTests.reduce<Record<string, PortalTestResult[]>>((acc, test) => {
     const w = test.week || "Unassigned";
     if (!acc[w]) acc[w] = [];
     acc[w].push(test);
     return acc;
   }, {});
 
-  // Add current week if tier is set and it doesn't exist yet
-  if (slotsPerWeek > 0) {
-    const now = new Date();
-    const weekNum = Math.ceil((Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / 86400000) + new Date(now.getFullYear(), 0, 1).getDay() + 1) / 7);
-    const mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-    const currentWeekLabel = `W${weekNum} — ${mon.getDate()} ${mon.toLocaleString("en-GB", { month: "short" })}`;
-    if (!weekGroups[currentWeekLabel]) weekGroups[currentWeekLabel] = [];
-  }
-
-  const sortedWeeks = Object.keys(weekGroups).sort((a, b) => {
-    if (a === "Unassigned") return 1;
-    if (b === "Unassigned") return -1;
-    const numA = parseInt(a.replace(/\D/g, "")) || 0;
-    const numB = parseInt(b.replace(/\D/g, "")) || 0;
-    return numB - numA; // W12 before W11 etc
+  // Ensure all month weeks exist in groups
+  monthWeeks.forEach(w => {
+    if (!weekGroups[w.label]) weekGroups[w.label] = [];
   });
+
+  const sortedWeeks = monthWeeks.length > 0
+    ? monthWeeks.map(w => w.label)
+    : Object.keys(weekGroups).sort((a, b) => {
+        if (a === "Unassigned") return 1;
+        if (b === "Unassigned") return -1;
+        const numA = parseInt(a.replace(/\D/g, "")) || 0;
+        const numB = parseInt(b.replace(/\D/g, "")) || 0;
+        return numB - numA;
+      });
 
   const resetForm = () => {
     setName(""); setMetric(""); setStatus("scheduled"); setResult("winner");
@@ -2579,14 +2603,9 @@ function TestingSection({
   const [showTrash, setShowTrash] = useState(false);
 
   // Get current month's tests
-  const now = new Date();
   const currentMonth = now.toLocaleString("en-GB", { month: "long", year: "numeric" });
   const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-
-  // Split tests into active and trashed
-  const activeTests = tests.filter(t => !(t as any).deleted_at);
-  const trashedTests = tests.filter(t => !!(t as any).deleted_at);
 
   // Month's tests (by week label or startDate within current month)
   const monthTests = activeTests.filter(t => {
@@ -2657,37 +2676,11 @@ function TestingSection({
         </div>
       </div>
 
-      {/* Intelligems Integration */}
-      <IntelligemsKeyInput
-        currentKey={portal.intelligems_key || ""}
-        onSave={(key) => onUpdateField("intelligems_key", key)}
-      />
-
-      {/* Intelligems Test Cards with assignments */}
-      {portal.intelligems_key && (
-        <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
-            Intelligems Tests — Assign Our Tests
-          </h3>
-          <IntelligemsTestCards
-            apiKey={portal.intelligems_key}
-            assignments={portal.intelligems_assignments || []}
-            onAssignmentsChange={(assignments) => onUpdateField("intelligems_assignments", assignments)}
-          />
-        </div>
-      )}
-
-      {/* Add Manual Test */}
+      {/* Tests Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
-          Manual Tests ({tests.length})
+          Tests ({activeTests.length})
         </h3>
-        <button
-          onClick={() => { resetForm(); setShowForm(true); }}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
-        >
-          <PlusIcon className="size-3.5" /> Add Test
-        </button>
       </div>
 
       {/* Test Form */}
