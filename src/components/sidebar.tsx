@@ -70,7 +70,6 @@ const navSections: NavSection[] = [
     icon: <BeakerIcon className="size-4" />,
     defaultOpen: false,
     items: [
-      { label: "Growth Engine", href: "/tools/growth-engine" },
       { label: "Funnel Builder", href: "/tools/funnel-builder" },
       { label: "CRO Monitor", href: "/tools/cro-monitor" },
       { label: "CRO Audit", href: "/tools/cro-audit" },
