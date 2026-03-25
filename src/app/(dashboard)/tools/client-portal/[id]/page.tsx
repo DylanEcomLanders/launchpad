@@ -572,6 +572,51 @@ export default function PortalDetailPage() {
           );
         })()}
 
+        {/* ── Blocker (client level) ── */}
+        {!selectedProject && (() => {
+          const blocker = portal.blocker;
+          const daysBlocked = blocker?.since ? Math.max(0, Math.floor((Date.now() - new Date(blocker.since).getTime()) / 86400000)) : 0;
+          return (
+            <div className="mb-6">
+              {blocker ? (
+                <div className="border border-red-200 bg-red-50/50 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="size-2 rounded-full bg-red-500 animate-pulse" />
+                      <p className="text-xs font-semibold text-red-600">Blocked {daysBlocked > 0 ? `${daysBlocked}d` : ""}</p>
+                      <span className="text-[10px] px-2 py-0.5 bg-red-100 text-red-600 rounded-full font-medium">{blocker.type}</span>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        await updatePortal(portal.id, { blocker: null } as Partial<PortalData>);
+                        setPortal({ ...portal, blocker: null } as PortalData);
+                      }}
+                      className="text-[10px] text-red-400 hover:text-red-600"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  <p className="text-xs text-red-700">{blocker.reason}</p>
+                </div>
+              ) : (
+                <button
+                  onClick={async () => {
+                    const reason = prompt("Reason for blocking:");
+                    if (!reason) return;
+                    const type = prompt("Type (client / internal / external):", "client") as "client" | "internal" | "external" || "client";
+                    const newBlocker = { type, reason, since: new Date().toISOString() };
+                    await updatePortal(portal.id, { blocker: newBlocker } as Partial<PortalData>);
+                    setPortal({ ...portal, blocker: newBlocker } as PortalData);
+                  }}
+                  className="flex items-center gap-1.5 text-[11px] text-[#CCC] hover:text-red-500 transition-colors"
+                >
+                  🚩 Flag as blocked
+                </button>
+              )}
+            </div>
+          );
+        })()}
+
         {/* ── Funnels (client level) ── */}
         {!selectedProject && (
           <div className="mb-6">
