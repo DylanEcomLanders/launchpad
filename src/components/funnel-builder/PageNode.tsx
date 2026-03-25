@@ -6,7 +6,8 @@ import type { FunnelNodeData } from "@/lib/funnel-builder/types";
 import { pageNodeConfigs, statusColors, type NodeTypeConfig } from "@/lib/funnel-builder/constants";
 import type { PageNodeType } from "@/lib/funnel-builder/types";
 
-function PageNodeComponent({ data, selected }: NodeProps & { data: FunnelNodeData }) {
+function PageNodeComponent({ data: rawData, selected }: NodeProps) {
+  const data = rawData as unknown as FunnelNodeData;
   const config: NodeTypeConfig =
     pageNodeConfigs[data.subType as PageNodeType] || { label: data.subType, short: "?", color: "#F0F0F0", textColor: "#555" };
   const status = statusColors[data.status] || statusColors.planned;

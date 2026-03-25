@@ -6,7 +6,8 @@ import type { FunnelNodeData } from "@/lib/funnel-builder/types";
 import { trafficSourceConfigs, warmthColors, type NodeTypeConfig } from "@/lib/funnel-builder/constants";
 import type { TrafficSource } from "@/lib/funnel-builder/types";
 
-function TrafficNodeComponent({ data, selected }: NodeProps & { data: FunnelNodeData }) {
+function TrafficNodeComponent({ data: rawData, selected }: NodeProps) {
+  const data = rawData as unknown as FunnelNodeData;
   const config: NodeTypeConfig =
     trafficSourceConfigs[data.subType as TrafficSource] || { label: data.subType, short: "?", color: "#F5F5F5", textColor: "#777" };
   const warmth = data.warmth ? warmthColors[data.warmth] : null;
