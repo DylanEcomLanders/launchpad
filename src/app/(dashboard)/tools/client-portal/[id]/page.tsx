@@ -3061,7 +3061,7 @@ function TestingSection({
       })}
 
       {/* Trash bin */}
-      {showTrash && trashedTests.length > 0 && (
+      {trashedTests.length > 0 && (
         <div className="border border-[#E5E5EA] rounded-lg p-4 bg-[#FAFAFA]">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-3">Trash</p>
           <div className="space-y-2">
