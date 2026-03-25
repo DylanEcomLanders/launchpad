@@ -424,8 +424,8 @@ export default function PortalDetailPage() {
 
   const dashTabs: { key: DashTab; label: string }[] = isRetainerPortal
     ? [
-        { key: "testing", label: "Testing" },
         { key: "overview", label: "Overview" },
+        { key: "testing", label: "Testing" },
         { key: "updates", label: "Updates" },
         { key: "designs", label: "Designs" },
         { key: "development", label: "Development" },
@@ -1120,40 +1120,7 @@ function OverviewSection({
         </div>
       </div>
 
-      {/* Retainer view */}
-      {isRetainer && selectedProject && (
-        <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
-            Weekly Test Cadence
-          </h3>
-          <div className="bg-white border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-[11px] font-medium text-[#7A7A7A]">Testing Tier</p>
-              <div className="flex items-center gap-1.5">
-                {(["T1", "T2", "T3"] as const).map((tier) => (
-                  <button
-                    key={tier}
-                    onClick={() => onUpdateSelectedProject?.({ testing_tier: tier })}
-                    className={`px-3 py-1 text-[11px] font-semibold rounded-full transition-colors ${
-                      selectedProject.testing_tier === tier
-                        ? "bg-[#1B1B1B] text-white"
-                        : "bg-[#F0F0F0] text-[#777] hover:bg-[#E8E8E8]"
-                    }`}
-                  >
-                    {tier}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="text-[10px] text-[#AAA]">
-              {selectedProject.testing_tier === "T1" && "1 test per week"}
-              {selectedProject.testing_tier === "T2" && "2 tests per week"}
-              {selectedProject.testing_tier === "T3" && "4 tests per week"}
-              {!selectedProject.testing_tier && "Select a tier to set the weekly cadence"}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Retainer view — tier is managed in Testing tab */}
 
       {/* Phases (non-retainer) */}
       {!isRetainer && (
