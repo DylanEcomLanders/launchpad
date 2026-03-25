@@ -1126,24 +1126,26 @@ function OverviewSection({
             onSave={(v) => onUpdateTouchpoint("date", v)}
             type="date"
           />
-          <div className="flex items-center justify-between py-1">
-            <div>
-              <p className="text-[11px] font-medium text-[#7A7A7A]">Show Results Tab</p>
-              <p className="text-[10px] text-[#A0A0A0]">Enable for retainer clients with active testing</p>
-            </div>
-            <button
-              onClick={() => onUpdateField("show_results", !portal.show_results)}
-              className={`relative w-9 h-5 rounded-full transition-colors duration-200 ${
-                portal.show_results ? "bg-emerald-400" : "bg-[#D4D4D4]"
-              }`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 size-4 bg-white rounded-full shadow transition-transform duration-200 ${
-                  portal.show_results ? "translate-x-4" : ""
+          {portal.client_type !== "retainer" && (
+            <div className="flex items-center justify-between py-1">
+              <div>
+                <p className="text-[11px] font-medium text-[#7A7A7A]">Show Results Tab</p>
+                <p className="text-[10px] text-[#A0A0A0]">Enable for clients with active testing</p>
+              </div>
+              <button
+                onClick={() => onUpdateField("show_results", !portal.show_results)}
+                className={`relative w-9 h-5 rounded-full transition-colors duration-200 ${
+                  portal.show_results ? "bg-emerald-400" : "bg-[#D4D4D4]"
                 }`}
-              />
-            </button>
-          </div>
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 size-4 bg-white rounded-full shadow transition-transform duration-200 ${
+                    portal.show_results ? "translate-x-4" : ""
+                  }`}
+                />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
