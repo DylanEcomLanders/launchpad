@@ -417,6 +417,7 @@ export default function GrowthEnginePage() {
             initialEdges={currentFlow.edges as any}
             onNodesChange={handleNodesChange}
             onEdgesChange={handleEdgesChange}
+            onNodeSelect={setSelectedNode}
           />
         </div>
       </div>}
