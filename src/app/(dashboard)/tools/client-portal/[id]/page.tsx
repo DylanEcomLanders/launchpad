@@ -309,6 +309,7 @@ export default function PortalDetailPage() {
 
   // Delete project (soft delete)
   const handleDeleteProject = async (projectId: string) => {
+    if (!portal) return;
     if (confirmDeleteProjectId !== projectId) {
       setConfirmDeleteProjectId(projectId);
       return;
@@ -316,29 +317,31 @@ export default function PortalDetailPage() {
     const updatedProjects = portal.projects.map(p =>
       p.id === projectId ? { ...p, deleted_at: new Date().toISOString() } : p
     );
-    setPortal({ ...portal, projects: updatedProjects });
-    await updatePortal(portal.id, { projects: updatedProjects });
+    setPortal({ ...portal, projects: updatedProjects } as PortalData);
+    await updatePortal(portal.id, { projects: updatedProjects } as Partial<PortalData>);
     setConfirmDeleteProjectId(null);
   };
 
   // Restore project
   const handleRestoreProject = async (projectId: string) => {
+    if (!portal) return;
     const updatedProjects = portal.projects.map(p =>
       p.id === projectId ? { ...p, deleted_at: undefined } : p
     );
-    setPortal({ ...portal, projects: updatedProjects });
-    await updatePortal(portal.id, { projects: updatedProjects });
+    setPortal({ ...portal, projects: updatedProjects } as PortalData);
+    await updatePortal(portal.id, { projects: updatedProjects } as Partial<PortalData>);
   };
 
   // Permanent delete project
   const handlePermanentDeleteProject = async (projectId: string) => {
+    if (!portal) return;
     const updatedProjects = portal.projects.filter(p => p.id !== projectId);
-    setPortal({ ...portal, projects: updatedProjects });
-    await updatePortal(portal.id, { projects: updatedProjects });
+    setPortal({ ...portal, projects: updatedProjects } as PortalData);
+    await updatePortal(portal.id, { projects: updatedProjects } as Partial<PortalData>);
   };
 
-  const activeProjects = (portal.projects || []).filter(p => !(p as any).deleted_at);
-  const trashedProjects = (portal.projects || []).filter(p => !!(p as any).deleted_at);
+  const activeProjects = (portal?.projects || []).filter(p => !(p as any).deleted_at);
+  const trashedProjects = (portal?.projects || []).filter(p => !!(p as any).deleted_at);
 
   const updateSelectedProject = async (patch: Partial<PortalProject>) => {
     if (!portal || !selectedProject) return;
