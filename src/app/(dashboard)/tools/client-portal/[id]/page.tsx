@@ -2455,6 +2455,8 @@ function TestingSection({
   const [rpvA, setRpvA] = useState("");
   const [rpvB, setRpvB] = useState("");
   const [figmaUrl, setFigmaUrl] = useState("");
+  const [igTestId, setIgTestId] = useState("");
+  const [igFetching, setIgFetching] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
@@ -2492,8 +2494,32 @@ function TestingSection({
     setName(""); setMetric(""); setStatus("scheduled"); setResult("winner");
     setCvrA(""); setCvrB(""); setAovA(""); setAovB("");
     setRpvA(""); setRpvB(""); setWeek("");
-    setFigmaUrl(""); setStartDate(""); setEndDate("");
+    setFigmaUrl(""); setIgTestId(""); setStartDate(""); setEndDate("");
     setEditId(null); setShowForm(false);
+  };
+
+  // Fetch metrics from Intelligems by test ID
+  const fetchIgMetrics = async () => {
+    if (!igTestId.trim() || !portal.intelligems_key) return;
+    setIgFetching(true);
+    try {
+      const res = await fetch("/api/intelligems/test-metrics", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ apiKey: portal.intelligems_key, testId: igTestId.trim() }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      const data = await res.json();
+      if (data.metrics) {
+        if (data.metrics.cvr) { setCvrA(data.metrics.cvr.a || ""); setCvrB(data.metrics.cvr.b || ""); }
+        if (data.metrics.aov) { setAovA(data.metrics.aov.a || ""); setAovB(data.metrics.aov.b || ""); }
+        if (data.metrics.rpv) { setRpvA(data.metrics.rpv.a || ""); setRpvB(data.metrics.rpv.b || ""); }
+      }
+      if (data.test?.name && !name.trim()) setName(data.test.name);
+      if (data.test?.status === "started") setStatus("live");
+      else if (data.test?.status === "ended") setStatus("complete");
+    } catch { /* silent */ }
+    setIgFetching(false);
   };
 
   const handleEdit = (test: PortalTestResult) => {
@@ -2507,6 +2533,7 @@ function TestingSection({
     setRpvA(test.rpv?.a || ""); setRpvB(test.rpv?.b || "");
     setWeek(test.week || "");
     setFigmaUrl(test.figma_url || "");
+    setIgTestId(test.intelligems_test_id || "");
     setStartDate(test.startDate);
     setEndDate(test.endDate || "");
     setShowForm(true);
@@ -2529,6 +2556,7 @@ function TestingSection({
       aov: buildSnapshot(aovA, aovB),
       rpv: buildSnapshot(rpvA, rpvB),
       figma_url: figmaUrl.trim() || undefined,
+      intelligems_test_id: igTestId.trim() || undefined,
       week: week.trim(),
       startDate: startDate.trim(),
       endDate: endDate.trim() || undefined,
@@ -2737,6 +2765,23 @@ function TestingSection({
                   <input type="text" value={rpvB} onChange={(e) => setRpvB(e.target.value)} placeholder="Var B" className={inputClass} />
                 </div>
               </div>
+            </div>
+          )}
+          {/* Intelligems Link */}
+          {portal.intelligems_key && (
+            <div>
+              <label className={labelClass}>Intelligems Test ID</label>
+              <div className="flex items-center gap-2">
+                <input type="text" value={igTestId} onChange={(e) => setIgTestId(e.target.value)} placeholder="Paste test ID from Intelligems" className={inputClass + " flex-1"} />
+                <button
+                  onClick={fetchIgMetrics}
+                  disabled={!igTestId.trim() || igFetching}
+                  className="px-3 py-2 text-[11px] font-medium bg-[#F3F3F5] text-[#555] rounded-lg hover:bg-[#E5E5EA] disabled:opacity-30 whitespace-nowrap"
+                >
+                  {igFetching ? "Pulling..." : "Pull Metrics"}
+                </button>
+              </div>
+              <p className="text-[9px] text-[#CCC] mt-1">Paste the test ID to auto-pull CVR, AOV, RPV from Intelligems</p>
             </div>
           )}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
