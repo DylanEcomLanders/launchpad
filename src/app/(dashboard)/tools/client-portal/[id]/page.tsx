@@ -542,15 +542,14 @@ export default function PortalDetailPage() {
           const n = new Date();
           const mStart = new Date(n.getFullYear(), n.getMonth(), 1);
           const mEnd = new Date(n.getFullYear(), n.getMonth() + 1, 0);
-          const monthTests = tests.filter(t => {
-            if (t.startDate) { const d = new Date(t.startDate); return d >= mStart && d <= mEnd; }
-            return true;
-          });
-          const delivered = monthTests.filter(t => t.status === "live" || t.status === "complete").length;
-          const scheduled = monthTests.filter(t => t.status === "scheduled").length;
-          const ideation = monthTests.filter(t => t.status === "ideation").length;
-          const empty = Math.max(0, capacity - monthTests.length);
-          const attention = monthTests.filter(t => t.status === "ideation" || t.status === "scheduled");
+          // Use all active non-deleted tests for this month's count
+          const allActive = tests.filter(t => !(t as any).deleted_at);
+          const delivered = allActive.filter(t => t.status === "live" || t.status === "complete").length;
+          const scheduled = allActive.filter(t => t.status === "scheduled").length;
+          const ideation = allActive.filter(t => t.status === "ideation").length;
+          const totalFilled = delivered + scheduled + ideation;
+          const empty = Math.max(0, capacity - totalFilled);
+          const attention = allActive.filter(t => t.status === "ideation" || t.status === "scheduled");
           const monthName = n.toLocaleString("en-GB", { month: "long", year: "numeric" });
 
           if (capacity === 0) return null;
@@ -562,10 +561,10 @@ export default function PortalDetailPage() {
                   <p className="text-xs font-semibold text-[#1A1A1A]">Retainer — {monthName}</p>
                   <span className="text-[10px] text-[#AAA]">{portal.testing_tier} · {delivered}/{capacity} delivered</span>
                 </div>
-                <div className="h-2 bg-[#F0F0F0] rounded-full overflow-hidden flex mb-2">
-                  {delivered > 0 && <div className="h-full bg-emerald-500" style={{ width: `${(delivered / capacity) * 100}%` }} />}
-                  {scheduled > 0 && <div className="h-full bg-blue-400" style={{ width: `${(scheduled / capacity) * 100}%` }} />}
-                  {ideation > 0 && <div className="h-full bg-purple-300" style={{ width: `${(ideation / capacity) * 100}%` }} />}
+                <div className="relative h-2 bg-[#F0F0F0] rounded-full overflow-hidden mb-2">
+                  {totalFilled > 0 && <div className="absolute left-0 top-0 h-full bg-purple-300 rounded-full" style={{ width: `${(totalFilled / capacity) * 100}%` }} />}
+                  {(delivered + scheduled) > 0 && <div className="absolute left-0 top-0 h-full bg-blue-400 rounded-full" style={{ width: `${((delivered + scheduled) / capacity) * 100}%` }} />}
+                  {delivered > 0 && <div className="absolute left-0 top-0 h-full bg-emerald-500 rounded-full" style={{ width: `${(delivered / capacity) * 100}%` }} />}
                 </div>
                 <div className="flex items-center gap-4">
                   <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-emerald-500" /> {delivered} delivered</span>
@@ -2922,10 +2921,10 @@ function TestingSection({
               )}
             </div>
           </div>
-          <div className="h-2 bg-[#F0F0F0] rounded-full overflow-hidden flex">
-            {deliveredCount > 0 && <div className="h-full bg-emerald-500 rounded-l-full" style={{ width: `${(deliveredCount / monthlyCapacity) * 100}%` }} />}
-            {scheduledCount > 0 && <div className="h-full bg-blue-400" style={{ width: `${(scheduledCount / monthlyCapacity) * 100}%` }} />}
-            {ideationCount > 0 && <div className="h-full bg-purple-300" style={{ width: `${(ideationCount / monthlyCapacity) * 100}%` }} />}
+          <div className="relative h-2 bg-[#F0F0F0] rounded-full overflow-hidden">
+            {(deliveredCount + scheduledCount + ideationCount) > 0 && <div className="absolute left-0 top-0 h-full bg-purple-300 rounded-full" style={{ width: `${((deliveredCount + scheduledCount + ideationCount) / monthlyCapacity) * 100}%` }} />}
+            {(deliveredCount + scheduledCount) > 0 && <div className="absolute left-0 top-0 h-full bg-blue-400 rounded-full" style={{ width: `${((deliveredCount + scheduledCount) / monthlyCapacity) * 100}%` }} />}
+            {deliveredCount > 0 && <div className="absolute left-0 top-0 h-full bg-emerald-500 rounded-full" style={{ width: `${(deliveredCount / monthlyCapacity) * 100}%` }} />}
           </div>
           <div className="flex items-center gap-4 mt-2">
             <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-emerald-500" /> Delivered</span>
