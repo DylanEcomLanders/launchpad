@@ -749,6 +749,7 @@ export default function PortalDetailPage() {
         {selectedProject && activeTab === "testing" && portal && (
           <TestingSection
             portal={portal}
+            projectType={selectedProject?.type || "page-build"}
             onUpdateResults={async (results) => {
               await updatePortal(portal.id, { results } as Partial<PortalData>);
               setPortal({ ...portal, results } as PortalData);
@@ -2484,10 +2485,12 @@ function IntelligemsKeyInput({ currentKey, onSave }: { currentKey: string; onSav
 
 function TestingSection({
   portal,
+  projectType,
   onUpdateResults,
   onUpdateField,
 }: {
   portal: PortalData;
+  projectType: string;
   onUpdateResults: (results: PortalTestResult[]) => Promise<void>;
   onUpdateField: (field: string, value: unknown) => void;
 }) {
@@ -2751,6 +2754,214 @@ function TestingSection({
     return { value: `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`, positive: pct >= 0 };
   };
 
+  const isRetainerProject = projectType === "retainer";
+
+  // ── Project Testing View (simple numbered list) ──
+  if (!isRetainerProject) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
+            Tests ({activeTests.length})
+          </h3>
+          <button
+            onClick={() => { resetForm(); setShowForm(true); }}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D]"
+          >
+            <PlusIcon className="size-3.5" /> Add Test
+          </button>
+        </div>
+
+        {showForm && (
+          <div className="bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold">{editId ? "Edit Test" : `Test ${activeTests.length + 1}`}</h3>
+              <button onClick={resetForm} className="text-[#A0A0A0] hover:text-[#1B1B1B]"><XMarkIcon className="size-4" /></button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className={labelClass}>Test Name *</label>
+                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Hero headline test" className={inputClass} autoFocus />
+              </div>
+              <div>
+                <label className={labelClass}>Metric *</label>
+                <input type="text" value={metric} onChange={(e) => setMetric(e.target.value)} placeholder="e.g., Conversion rate" className={inputClass} />
+              </div>
+            </div>
+            <div>
+              <label className={labelClass}>Status</label>
+              <div className="flex items-center gap-1.5 mt-1">
+                {(["ideation", "scheduled", "live", "complete"] as const).map((s) => (
+                  <button key={s} onClick={() => setStatus(s)} className={`px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors ${status === s ? "bg-[#1B1B1B] text-white" : "bg-white text-[#7A7A7A] border border-[#E5E5EA]"}`}>
+                    {s.charAt(0).toUpperCase() + s.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {status === "complete" && (
+              <div>
+                <label className={labelClass}>Result</label>
+                <div className="flex items-center gap-1.5 mt-1">
+                  {(["winner", "loser", "inconclusive"] as const).map((r) => (
+                    <button key={r} onClick={() => setResult(r)} className={`px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors ${result === r ? r === "winner" ? "bg-emerald-500 text-white" : r === "loser" ? "bg-red-500 text-white" : "bg-amber-500 text-white" : "bg-white text-[#7A7A7A] border border-[#E5E5EA]"}`}>
+                      {r.charAt(0).toUpperCase() + r.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {status !== "ideation" && (
+              <div>
+                <label className={labelClass}>Metrics Snapshot</label>
+                <div className="grid grid-cols-3 gap-3 mt-1">
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] font-semibold text-[#999] uppercase">CVR</p>
+                    <input type="text" value={cvrA} onChange={(e) => setCvrA(e.target.value)} placeholder="Var A" className={inputClass} />
+                    <input type="text" value={cvrB} onChange={(e) => setCvrB(e.target.value)} placeholder="Var B" className={inputClass} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] font-semibold text-[#999] uppercase">AOV</p>
+                    <input type="text" value={aovA} onChange={(e) => setAovA(e.target.value)} placeholder="Var A" className={inputClass} />
+                    <input type="text" value={aovB} onChange={(e) => setAovB(e.target.value)} placeholder="Var B" className={inputClass} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] font-semibold text-[#999] uppercase">RPV</p>
+                    <input type="text" value={rpvA} onChange={(e) => setRpvA(e.target.value)} placeholder="Var A" className={inputClass} />
+                    <input type="text" value={rpvB} onChange={(e) => setRpvB(e.target.value)} placeholder="Var B" className={inputClass} />
+                  </div>
+                </div>
+              </div>
+            )}
+            {portal.intelligems_key && (
+              <div>
+                <label className={labelClass}>Intelligems Test ID</label>
+                <div className="flex items-center gap-2">
+                  <input type="text" value={igTestId} onChange={(e) => setIgTestId(e.target.value)} placeholder="Paste test ID" className={inputClass + " flex-1"} />
+                  <button onClick={fetchIgMetrics} disabled={!igTestId.trim() || igFetching} className="px-3 py-2 text-[11px] font-medium bg-[#F3F3F5] text-[#555] rounded-lg hover:bg-[#E5E5EA] disabled:opacity-30 whitespace-nowrap">
+                    {igFetching ? "Pulling..." : "Pull Metrics"}
+                  </button>
+                </div>
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className={labelClass}>Figma URL</label>
+                <input type="text" value={figmaUrl} onChange={(e) => setFigmaUrl(e.target.value)} placeholder="https://figma.com/..." className={inputClass} />
+              </div>
+              <div>
+                <label className={labelClass}>Start Date</label>
+                <input type="text" value={startDate} onChange={(e) => setStartDate(e.target.value)} placeholder="e.g., 5 Mar" className={inputClass} />
+              </div>
+            </div>
+            <button onClick={() => { if (!name.trim() || !metric.trim()) return; handleSave(); }} disabled={!name.trim() || !metric.trim()} className="flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg disabled:opacity-40">
+              <CheckIcon className="size-3.5" /> {editId ? "Update" : "Add Test"}
+            </button>
+          </div>
+        )}
+
+        {/* Test list — numbered */}
+        <div className="space-y-2">
+          {activeTests.map((test, idx) => {
+            const statusStyles: Record<string, string> = {
+              ideation: "bg-purple-50 text-purple-600 border-purple-200",
+              scheduled: "bg-blue-50 text-blue-600 border-blue-200",
+              live: "bg-emerald-50 text-emerald-600 border-emerald-200",
+              complete: "bg-[#F3F3F5] text-[#1B1B1B] border-[#E5E5EA]",
+            };
+            const nextStatus: Record<string, TestStatus> = { ideation: "scheduled", scheduled: "live", live: "complete", complete: "ideation" };
+            const handleStatusCycle = async () => {
+              const newStatus = nextStatus[test.status];
+              const updated = tests.map(t => t.id === test.id ? { ...t, status: newStatus, ...(newStatus !== "complete" ? { result: undefined } : {}) } : t);
+              await onUpdateResults(updated);
+            };
+            const hasMetrics = test.cvr || test.aov || test.rpv;
+            return (
+              <div key={test.id} className="bg-white border border-[#E5E5EA] rounded-lg group/card overflow-hidden">
+                <div className="flex items-center justify-between gap-3 px-4 pt-3.5 pb-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-[10px] font-bold text-[#CCC]">#{idx + 1}</span>
+                    <p className="text-[13px] font-semibold text-[#1B1B1B] truncate">{test.name}</p>
+                    {test.status === "complete" && test.result && (
+                      <span className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full shrink-0 ${
+                        test.result === "winner" ? "bg-emerald-50 text-emerald-600" : test.result === "loser" ? "bg-red-50 text-red-500" : "bg-amber-50 text-amber-600"
+                      }`}>{test.result}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button onClick={handleStatusCycle} className={`px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full border transition-colors ${statusStyles[test.status] || ""}`}>
+                      {test.status === "live" && <span className="inline-block size-1.5 rounded-full bg-emerald-500 mr-1 align-middle" />}
+                      {test.status}
+                    </button>
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover/card:opacity-100 transition-opacity">
+                      <button onClick={() => handleEdit(test)} className="p-1 text-[#B0B0B0] hover:text-[#1B1B1B]"><svg className="size-3.5" viewBox="0 0 20 20" fill="currentColor"><path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" /></svg></button>
+                      <button onClick={() => handleDeleteTest(test.id)} className={`p-1 transition-colors ${confirmDeleteId === test.id ? "text-red-500" : "text-[#B0B0B0] hover:text-red-400"}`}><TrashIcon className="size-3.5" /></button>
+                    </div>
+                  </div>
+                </div>
+                <div className="px-4 pb-3">
+                  <p className="text-[11px] text-[#999]">{test.metric}{test.startDate ? ` · ${test.startDate}` : ""}</p>
+                </div>
+                {hasMetrics && (
+                  <div className="border-t border-[#F0F0F0] px-4 py-3 grid grid-cols-3 gap-4">
+                    {[{ label: "CVR", data: test.cvr }, { label: "AOV", data: test.aov }, { label: "RPV", data: test.rpv }].map(({ label: ml, data }) => {
+                      const lift = data ? calcLift(data.a, data.b) : null;
+                      return (
+                        <div key={ml}>
+                          <p className="text-[9px] font-semibold uppercase tracking-wider text-[#BBB] mb-1.5">{ml}</p>
+                          {data ? (
+                            <div className="flex items-baseline gap-1.5 flex-wrap">
+                              <span className="text-[11px] text-[#999]">{data.a}</span>
+                              <span className="text-[10px] text-[#CCC]">→</span>
+                              <span className="text-[12px] font-semibold text-[#1B1B1B]">{data.b}</span>
+                              {lift && <span className={`text-[10px] font-semibold ${lift.positive ? "text-emerald-500" : "text-red-400"}`}>{lift.value}</span>}
+                            </div>
+                          ) : <span className="text-[11px] text-[#DDD]">—</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                {test.figma_url && (
+                  <div className="border-t border-[#F0F0F0] px-4 py-2.5">
+                    <a href={test.figma_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#999] hover:text-[#1B1B1B] transition-colors">
+                      <svg className="size-3" viewBox="0 0 24 24" fill="none"><path d="M5 5.5A3.5 3.5 0 018.5 2H12v7H8.5A3.5 3.5 0 015 5.5z" fill="#F24E1E"/><path d="M12 2h3.5a3.5 3.5 0 010 7H12V2z" fill="#FF7262"/><path d="M12 9.5h3.5a3.5 3.5 0 010 7H12V9.5z" fill="#1ABCFE"/><path d="M5 19.5A3.5 3.5 0 018.5 16H12v3.5a3.5 3.5 0 11-7 0z" fill="#0ACF83"/><path d="M5 12.5A3.5 3.5 0 018.5 9H12v7H8.5A3.5 3.5 0 015 12.5z" fill="#A259FF"/></svg>
+                      View Design
+                    </a>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {activeTests.length === 0 && !showForm && (
+          <div className="border border-dashed border-[#E5E5EA] rounded-lg p-8 text-center">
+            <p className="text-sm text-[#7A7A7A] mb-1">No tests yet</p>
+            <p className="text-xs text-[#A0A0A0]">Add your first test to start iterating</p>
+          </div>
+        )}
+
+        {trashedTests.length > 0 && (
+          <div className="border border-[#E5E5EA] rounded-lg p-4 bg-[#FAFAFA]">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-3">Trash</p>
+            <div className="space-y-2">
+              {trashedTests.map(t => (
+                <div key={t.id} className="flex items-center justify-between px-3 py-2 bg-white rounded border border-[#E5E5EA]">
+                  <p className="text-xs text-[#777]">{t.name}</p>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => handleRestore(t.id)} className="text-[10px] text-emerald-600 hover:text-emerald-700">Restore</button>
+                    <button onClick={() => handlePermanentDelete(t.id)} className="text-[10px] text-red-400 hover:text-red-600">Delete Forever</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── Retainer Testing View (monthly shell with weekly slots) ──
   return (
     <div className="space-y-6">
       {/* Testing Tier */}
