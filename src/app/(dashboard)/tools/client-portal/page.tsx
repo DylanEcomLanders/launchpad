@@ -822,14 +822,16 @@ export default function ClientPortalPage() {
                   const testsPerWeek = tier === "T1" ? 1 : tier === "T2" ? 2 : 4;
                   const testsPerMonth = testsPerWeek * 4;
 
-                  // Count tests this month from results
-                  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-                  const testsThisMonth = (p.results || []).filter(r => r.startDate >= monthStart.split("T")[0]).length;
-                  const testProgress = Math.min(100, Math.round((testsThisMonth / testsPerMonth) * 100));
+                  // Count tests by status (all active non-deleted)
+                  const allTests = (p.results || []).filter((r: any) => !r.deleted_at);
+                  const deliveredCount = allTests.filter(r => r.status === "live" || r.status === "complete").length;
+                  const scheduledCount = allTests.filter(r => r.status === "scheduled").length;
+                  const ideationCount = allTests.filter(r => r.status === "ideation").length;
+                  const totalFilled = deliveredCount + scheduledCount + ideationCount;
 
-                  // Health: are we on track?
+                  // Health: based on delivered vs expected
                   const expectedByNow = Math.floor(testsPerMonth * (dayOfMonth / daysInMonth));
-                  const health = testsThisMonth >= expectedByNow ? "on-track" : testsThisMonth >= expectedByNow - 1 ? "warning" : "behind";
+                  const health = deliveredCount >= expectedByNow ? "on-track" : deliveredCount >= expectedByNow - 1 ? "warning" : "behind";
                   const healthColors = { "on-track": "text-emerald-600 bg-emerald-50", "warning": "text-amber-600 bg-amber-50", "behind": "text-red-600 bg-red-50" };
                   const healthLabels = { "on-track": "On Track", "warning": "Slightly Behind", "behind": "Behind" };
 
@@ -863,18 +865,21 @@ export default function ClientPortalPage() {
                       {/* Test Delivery Progress */}
                       <div className="mb-4">
                         <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Tests Delivered</span>
-                          <span className="text-xs font-semibold text-[#1A1A1A]">{testsThisMonth} / {testsPerMonth}</span>
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Pipeline</span>
+                          <span className="text-xs font-semibold text-[#1A1A1A]">{deliveredCount} / {testsPerMonth} delivered</span>
                         </div>
-                        <div className="h-2 bg-[#F0F0F0] rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all ${health === "behind" ? "bg-red-500" : health === "warning" ? "bg-amber-500" : "bg-emerald-500"}`}
-                            style={{ width: `${testProgress}%` }}
-                          />
+                        <div className="relative h-2 bg-[#F0F0F0] rounded-full overflow-hidden">
+                          {totalFilled > 0 && <div className="absolute left-0 top-0 h-full bg-purple-300 rounded-full" style={{ width: `${(totalFilled / testsPerMonth) * 100}%` }} />}
+                          {(deliveredCount + scheduledCount) > 0 && <div className="absolute left-0 top-0 h-full bg-blue-400 rounded-full" style={{ width: `${((deliveredCount + scheduledCount) / testsPerMonth) * 100}%` }} />}
+                          {deliveredCount > 0 && <div className="absolute left-0 top-0 h-full bg-emerald-500 rounded-full" style={{ width: `${(deliveredCount / testsPerMonth) * 100}%` }} />}
                         </div>
-                        <div className="flex items-center justify-between mt-1">
-                          <span className="text-[9px] text-[#CCC]">Expected by now: {expectedByNow}</span>
-                          <span className="text-[9px] text-[#CCC]">{testsPerMonth - testsThisMonth} remaining</span>
+                        <div className="flex items-center justify-between mt-1.5">
+                          <div className="flex items-center gap-3">
+                            <span className="flex items-center gap-1 text-[9px] text-[#777]"><span className="size-1.5 rounded-full bg-emerald-500" /> {deliveredCount} delivered</span>
+                            <span className="flex items-center gap-1 text-[9px] text-[#777]"><span className="size-1.5 rounded-full bg-blue-400" /> {scheduledCount} scheduled</span>
+                            <span className="flex items-center gap-1 text-[9px] text-[#777]"><span className="size-1.5 rounded-full bg-purple-300" /> {ideationCount} ideation</span>
+                          </div>
+                          <span className="text-[9px] text-[#CCC]">{Math.max(0, testsPerMonth - totalFilled)} empty</span>
                         </div>
                       </div>
 
