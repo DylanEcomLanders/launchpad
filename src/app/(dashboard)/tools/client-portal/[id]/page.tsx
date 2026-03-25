@@ -2520,17 +2520,17 @@ function TestingSection({
   const activeTests = tests.filter(t => !(t as any).deleted_at);
   const trashedTests = tests.filter(t => !!(t as any).deleted_at);
 
-  // Generate exactly 4 weeks for the current month (always 4 weeks regardless of calendar)
+  // Generate 4 weeks for the current month using simple "Week 1-4" labels
+  const monthName = now.toLocaleString("en-GB", { month: "short" });
   const generateMonthWeeks = () => {
     const weeks: { label: string; startDate: Date }[] = [];
     const d = new Date(now.getFullYear(), now.getMonth(), 1);
     // Find first Monday on or after the 1st
     while (d.getDay() !== 1) d.setDate(d.getDate() + 1);
-    // Generate exactly 4 weeks
     for (let i = 0; i < 4; i++) {
-      const weekNum = Math.ceil((Math.floor((d.getTime() - new Date(d.getFullYear(), 0, 1).getTime()) / 86400000) + new Date(d.getFullYear(), 0, 1).getDay() + 1) / 7);
+      const endD = new Date(d); endD.setDate(endD.getDate() + 6);
       weeks.push({
-        label: `W${weekNum} — ${d.getDate()} ${d.toLocaleString("en-GB", { month: "short" })}`,
+        label: `Week ${i + 1} — ${d.getDate()} ${monthName}`,
         startDate: new Date(d),
       });
       d.setDate(d.getDate() + 7);
@@ -2540,28 +2540,51 @@ function TestingSection({
 
   const monthWeeks = slotsPerWeek > 0 ? generateMonthWeeks() : [];
 
-  // Group tests by week
-  const weekGroups = activeTests.reduce<Record<string, PortalTestResult[]>>((acc, test) => {
-    const w = test.week || "Unassigned";
-    if (!acc[w]) acc[w] = [];
-    acc[w].push(test);
-    return acc;
-  }, {});
+  // Assign tests to week slots by date proximity or exact label match
+  const weekGroups: Record<string, PortalTestResult[]> = {};
+  monthWeeks.forEach(w => { weekGroups[w.label] = []; });
 
-  // Ensure all month weeks exist in groups
-  monthWeeks.forEach(w => {
-    if (!weekGroups[w.label]) weekGroups[w.label] = [];
+  const unassigned: PortalTestResult[] = [];
+  activeTests.forEach(test => {
+    // Try exact label match first
+    if (weekGroups[test.week]) {
+      weekGroups[test.week].push(test);
+      return;
+    }
+    // Try date-based assignment
+    if (test.startDate && monthWeeks.length > 0) {
+      const testDate = new Date(test.startDate);
+      for (let i = 0; i < monthWeeks.length; i++) {
+        const wStart = monthWeeks[i].startDate;
+        const wEnd = new Date(wStart); wEnd.setDate(wEnd.getDate() + 6);
+        if (testDate >= wStart && testDate <= wEnd) {
+          weekGroups[monthWeeks[i].label].push(test);
+          return;
+        }
+      }
+    }
+    // Try week number match (W10 matches if it falls in our month)
+    const weekNumMatch = test.week?.match(/W(\d+)/);
+    if (weekNumMatch) {
+      const testWeekNum = parseInt(weekNumMatch[1]);
+      for (let i = 0; i < monthWeeks.length; i++) {
+        const wStart = monthWeeks[i].startDate;
+        const genWeekNum = Math.ceil((Math.floor((wStart.getTime() - new Date(wStart.getFullYear(), 0, 1).getTime()) / 86400000) + new Date(wStart.getFullYear(), 0, 1).getDay() + 1) / 7);
+        if (testWeekNum === genWeekNum) {
+          weekGroups[monthWeeks[i].label].push(test);
+          return;
+        }
+      }
+    }
+    unassigned.push(test);
   });
 
-  const sortedWeeks = monthWeeks.length > 0
-    ? monthWeeks.map(w => w.label)
-    : Object.keys(weekGroups).sort((a, b) => {
-        if (a === "Unassigned") return 1;
-        if (b === "Unassigned") return -1;
-        const numA = parseInt(a.replace(/\D/g, "")) || 0;
-        const numB = parseInt(b.replace(/\D/g, "")) || 0;
-        return numB - numA;
-      });
+  if (unassigned.length > 0) weekGroups["Other"] = unassigned;
+
+  const sortedWeeks = [
+    ...monthWeeks.map(w => w.label),
+    ...(unassigned.length > 0 ? ["Other"] : []),
+  ];
 
   const resetForm = () => {
     setName(""); setMetric(""); setStatus("scheduled"); setResult("winner");
