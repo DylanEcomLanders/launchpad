@@ -2544,7 +2544,58 @@ function TestingSection({
     await onUpdateResults(tests.filter((t) => t.id !== id));
   };
 
-  const tierLabels: Record<string, string> = { T1: "1 test/week", T2: "2 tests/week", T3: "4 tests/week" };
+  const tierLabels: Record<string, string> = { T1: "1 test/week (4/mo)", T2: "2 tests/week (8/mo)", T3: "4 tests/week (16/mo)" };
+  const tierMonthly: Record<string, number> = { T1: 4, T2: 8, T3: 16 };
+  const monthlyCapacity = tierMonthly[portal.testing_tier || ""] || 0;
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [showTrash, setShowTrash] = useState(false);
+
+  // Get current month's tests
+  const now = new Date();
+  const currentMonth = now.toLocaleString("en-GB", { month: "long", year: "numeric" });
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+  // Split tests into active and trashed
+  const activeTests = tests.filter(t => !(t as any).deleted_at);
+  const trashedTests = tests.filter(t => !!(t as any).deleted_at);
+
+  // Month's tests (by week label or startDate within current month)
+  const monthTests = activeTests.filter(t => {
+    if (t.startDate) {
+      const d = new Date(t.startDate);
+      return d >= currentMonthStart && d <= currentMonthEnd;
+    }
+    return true; // Include tests without dates
+  });
+
+  // Delivery tracking: only live + complete count as delivered
+  const deliveredCount = monthTests.filter(t => t.status === "live" || t.status === "complete").length;
+  const scheduledCount = monthTests.filter(t => t.status === "scheduled").length;
+  const needsAttention = monthTests.filter(t => t.status === "scheduled"); // Tests not yet live
+
+  // Delete with trash
+  const handleDeleteTest = async (id: string) => {
+    if (confirmDeleteId !== id) {
+      setConfirmDeleteId(id);
+      return;
+    }
+    // Soft delete — mark with deleted_at
+    const updated = tests.map(t => t.id === id ? { ...t, deleted_at: new Date().toISOString() } as any : t);
+    await onUpdateResults(updated);
+    setConfirmDeleteId(null);
+  };
+
+  // Restore from trash
+  const handleRestore = async (id: string) => {
+    const updated = tests.map(t => t.id === id ? { ...t, deleted_at: undefined } as any : t);
+    await onUpdateResults(updated);
+  };
+
+  // Permanent delete
+  const handlePermanentDelete = async (id: string) => {
+    await onUpdateResults(tests.filter(t => t.id !== id));
+  };
 
   // Calculate % change between two metric strings (e.g. "2.1%" and "2.8%", or "$84" and "$86")
   const calcLift = (a?: string, b?: string): { value: string; positive: boolean } | null => {
@@ -2717,125 +2768,177 @@ function TestingSection({
         </div>
       )}
 
-      {/* Tests grouped by week */}
-      {sortedWeeks.map((weekLabel) => (
-        <div key={weekLabel}>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">{weekLabel}</p>
-          <div className="space-y-2">
-            {weekGroups[weekLabel].map((test) => {
-              const statusStyles = {
-                live: "bg-emerald-50 text-emerald-600 border-emerald-200",
-                scheduled: "bg-[#F3F3F5] text-[#7A7A7A] border-[#E5E5EA]",
-                complete: "bg-[#F3F3F5] text-[#1B1B1B] border-[#E5E5EA]",
-              };
-              const nextStatus = { scheduled: "live" as const, live: "complete" as const, complete: "scheduled" as const };
-              const handleStatusCycle = async () => {
-                const newStatus = nextStatus[test.status];
-                const updated = tests.map((t) => t.id === test.id ? { ...t, status: newStatus, ...(newStatus !== "complete" ? { result: undefined } : {}) } : t);
-                await onUpdateResults(updated);
-              };
-              const hasMetrics = test.cvr || test.aov || test.rpv;
-              return (
-                <div key={test.id} className="bg-white border border-[#E5E5EA] rounded-lg group/card overflow-hidden">
-                  {/* Header row */}
-                  <div className="flex items-center justify-between gap-3 px-4 pt-3.5 pb-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <p className="text-[13px] font-semibold text-[#1B1B1B] truncate">{test.name}</p>
-                      {test.status === "complete" && test.result && (
-                        <span className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full shrink-0 ${
-                          test.result === "winner" ? "bg-emerald-50 text-emerald-600" :
-                          test.result === "loser" ? "bg-red-50 text-red-500" :
-                          "bg-amber-50 text-amber-600"
-                        }`}>
-                          {test.result}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        onClick={handleStatusCycle}
-                        className={`px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full border transition-colors ${statusStyles[test.status]}`}
-                        title="Click to cycle status"
-                      >
-                        {test.status === "live" && <span className="inline-block size-1.5 rounded-full bg-emerald-500 mr-1 align-middle" />}
-                        {test.status}
-                      </button>
-                      <div className="flex items-center gap-0.5 opacity-0 group-hover/card:opacity-100 transition-opacity">
-                        <button onClick={() => handleEdit(test)} className="p-1 text-[#B0B0B0] hover:text-[#1B1B1B]" title="Edit">
-                          <svg className="size-3.5" viewBox="0 0 20 20" fill="currentColor"><path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" /></svg>
-                        </button>
-                        <button onClick={() => handleDelete(test.id)} className="p-1 text-[#B0B0B0] hover:text-red-400" title="Delete">
-                          <TrashIcon className="size-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  {/* Meta line */}
-                  <div className="px-4 pb-3">
-                    <p className="text-[11px] text-[#999]">
-                      {test.metric}
-                      <span className="text-[#D0D0D0] mx-1.5">·</span>
-                      {test.startDate}{test.endDate ? ` – ${test.endDate}` : ""}
-                    </p>
-                  </div>
-                  {/* Metrics row — inline A vs B */}
-                  {hasMetrics && (
-                    <div className="border-t border-[#F0F0F0] px-4 py-3 grid grid-cols-3 gap-4">
-                      {[
-                        { label: "CVR", data: test.cvr },
-                        { label: "AOV", data: test.aov },
-                        { label: "RPV", data: test.rpv },
-                      ].map(({ label: metricLabel, data }) => {
-                        const lift = data ? calcLift(data.a, data.b) : null;
-                        return (
-                          <div key={metricLabel}>
-                            <p className="text-[9px] font-semibold uppercase tracking-wider text-[#BBB] mb-1.5">{metricLabel}</p>
-                            {data ? (
-                              <div className="flex items-baseline gap-1.5 flex-wrap">
-                                <span className="text-[11px] text-[#999]">{data.a}</span>
-                                <svg className="size-2.5 text-[#CCC] shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" /></svg>
-                                <span className="text-[12px] font-semibold text-[#1B1B1B]">{data.b}</span>
-                                {lift && (
-                                  <span className={`text-[10px] font-semibold ${lift.positive ? "text-emerald-500" : "text-red-400"}`}>
-                                    {lift.value}
-                                  </span>
-                                )}
-                              </div>
-                            ) : (
-                              <span className="text-[11px] text-[#DDD]">—</span>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                  {/* Figma link */}
-                  {test.figma_url && (
-                    <div className="border-t border-[#F0F0F0] px-4 py-2.5">
-                      <a href={test.figma_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#999] hover:text-[#1B1B1B] transition-colors">
-                        <svg className="size-3" viewBox="0 0 24 24" fill="none"><path d="M5 5.5A3.5 3.5 0 018.5 2H12v7H8.5A3.5 3.5 0 015 5.5z" fill="#F24E1E"/><path d="M12 2h3.5a3.5 3.5 0 010 7H12V2z" fill="#FF7262"/><path d="M12 9.5h3.5a3.5 3.5 0 010 7H12V9.5z" fill="#1ABCFE"/><path d="M5 19.5A3.5 3.5 0 018.5 16H12v3.5a3.5 3.5 0 11-7 0z" fill="#0ACF83"/><path d="M5 12.5A3.5 3.5 0 018.5 9H12v7H8.5A3.5 3.5 0 015 12.5z" fill="#A259FF"/></svg>
-                        View Design
-                      </a>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-            {/* Empty slots for unfilled tier capacity */}
-            {slotsPerWeek > 0 && Array.from({ length: Math.max(0, slotsPerWeek - weekGroups[weekLabel].length) }).map((_, i) => (
-              <button
-                key={`empty-${i}`}
-                onClick={() => { resetForm(); setWeek(weekLabel); setShowForm(true); }}
-                className="w-full border-2 border-dashed border-[#E0E0E0] rounded-lg p-4 text-center hover:border-[#999] hover:bg-[#FAFAFA] transition-colors cursor-pointer"
-              >
-                <p className="text-xs text-[#BBB]">+ Add test</p>
-              </button>
+      {/* Monthly Progress */}
+      {monthlyCapacity > 0 && (
+        <div className="bg-white border border-[#E5E5EA] rounded-lg p-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-semibold text-[#1A1A1A]">{currentMonth}</p>
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] text-[#AAA]">
+                {deliveredCount} delivered · {scheduledCount} scheduled · {Math.max(0, monthlyCapacity - monthTests.length)} empty
+              </span>
+              {trashedTests.length > 0 && (
+                <button onClick={() => setShowTrash(!showTrash)} className="text-[10px] text-[#CCC] hover:text-[#777]">
+                  Trash ({trashedTests.length})
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="h-2 bg-[#F0F0F0] rounded-full overflow-hidden flex">
+            {deliveredCount > 0 && <div className="h-full bg-emerald-500 rounded-l-full" style={{ width: `${(deliveredCount / monthlyCapacity) * 100}%` }} />}
+            {scheduledCount > 0 && <div className="h-full bg-amber-400" style={{ width: `${(scheduledCount / monthlyCapacity) * 100}%` }} />}
+          </div>
+          <div className="flex items-center gap-4 mt-2">
+            <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-emerald-500" /> Delivered</span>
+            <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-amber-400" /> Scheduled</span>
+            <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-[#F0F0F0]" /> Empty</span>
+          </div>
+        </div>
+      )}
+
+      {/* Needs Attention */}
+      {needsAttention.length > 0 && (
+        <div className="bg-amber-50/50 border border-amber-200 rounded-lg px-4 py-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-600 mb-1.5">
+            {needsAttention.length} test{needsAttention.length !== 1 ? "s" : ""} need attention
+          </p>
+          <div className="space-y-1">
+            {needsAttention.map(t => (
+              <p key={t.id} className="text-xs text-amber-700">• {t.name} — scheduled but not live</p>
             ))}
           </div>
         </div>
-      ))}
+      )}
 
-      {tests.length === 0 && !showForm && slotsPerWeek === 0 && (
+      {/* Tests grouped by week */}
+      {sortedWeeks.map((weekLabel) => {
+        const weekTests = weekGroups[weekLabel].filter(t => !(t as any).deleted_at);
+        if (weekTests.length === 0 && slotsPerWeek === 0) return null;
+        return (
+          <div key={weekLabel}>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">{weekLabel}</p>
+            <div className="space-y-2">
+              {weekTests.map((test) => {
+                const statusStyles = {
+                  live: "bg-emerald-50 text-emerald-600 border-emerald-200",
+                  scheduled: "bg-[#F3F3F5] text-[#7A7A7A] border-[#E5E5EA]",
+                  complete: "bg-[#F3F3F5] text-[#1B1B1B] border-[#E5E5EA]",
+                };
+                const nextStatus = { scheduled: "live" as const, live: "complete" as const, complete: "scheduled" as const };
+                const handleStatusCycle = async () => {
+                  const newStatus = nextStatus[test.status];
+                  const updated = tests.map((t) => t.id === test.id ? { ...t, status: newStatus, ...(newStatus !== "complete" ? { result: undefined } : {}) } : t);
+                  await onUpdateResults(updated);
+                };
+                const hasMetrics = test.cvr || test.aov || test.rpv;
+                return (
+                  <div key={test.id} className="bg-white border border-[#E5E5EA] rounded-lg group/card overflow-hidden">
+                    <div className="flex items-center justify-between gap-3 px-4 pt-3.5 pb-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <p className="text-[13px] font-semibold text-[#1B1B1B] truncate">{test.name}</p>
+                        {test.status === "complete" && test.result && (
+                          <span className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full shrink-0 ${
+                            test.result === "winner" ? "bg-emerald-50 text-emerald-600" :
+                            test.result === "loser" ? "bg-red-50 text-red-500" :
+                            "bg-amber-50 text-amber-600"
+                          }`}>{test.result}</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button onClick={handleStatusCycle} className={`px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full border transition-colors ${statusStyles[test.status]}`}>
+                          {test.status === "live" && <span className="inline-block size-1.5 rounded-full bg-emerald-500 mr-1 align-middle" />}
+                          {test.status}
+                        </button>
+                        <div className="flex items-center gap-0.5 opacity-0 group-hover/card:opacity-100 transition-opacity">
+                          <button onClick={() => handleEdit(test)} className="p-1 text-[#B0B0B0] hover:text-[#1B1B1B]" title="Edit">
+                            <svg className="size-3.5" viewBox="0 0 20 20" fill="currentColor"><path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" /></svg>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteTest(test.id)}
+                            className={`p-1 transition-colors ${confirmDeleteId === test.id ? "text-red-500" : "text-[#B0B0B0] hover:text-red-400"}`}
+                            title={confirmDeleteId === test.id ? "Click again to confirm" : "Delete"}
+                          >
+                            <TrashIcon className="size-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="px-4 pb-3">
+                      <p className="text-[11px] text-[#999]">
+                        {test.metric}
+                        <span className="text-[#D0D0D0] mx-1.5">·</span>
+                        {test.startDate}{test.endDate ? ` – ${test.endDate}` : ""}
+                      </p>
+                    </div>
+                    {hasMetrics && (
+                      <div className="border-t border-[#F0F0F0] px-4 py-3 grid grid-cols-3 gap-4">
+                        {[
+                          { label: "CVR", data: test.cvr },
+                          { label: "AOV", data: test.aov },
+                          { label: "RPV", data: test.rpv },
+                        ].map(({ label: metricLabel, data }) => {
+                          const lift = data ? calcLift(data.a, data.b) : null;
+                          return (
+                            <div key={metricLabel}>
+                              <p className="text-[9px] font-semibold uppercase tracking-wider text-[#BBB] mb-1.5">{metricLabel}</p>
+                              {data ? (
+                                <div className="flex items-baseline gap-1.5 flex-wrap">
+                                  <span className="text-[11px] text-[#999]">{data.a}</span>
+                                  <svg className="size-2.5 text-[#CCC] shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" /></svg>
+                                  <span className="text-[12px] font-semibold text-[#1B1B1B]">{data.b}</span>
+                                  {lift && <span className={`text-[10px] font-semibold ${lift.positive ? "text-emerald-500" : "text-red-400"}`}>{lift.value}</span>}
+                                </div>
+                              ) : <span className="text-[11px] text-[#DDD]">—</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {test.figma_url && (
+                      <div className="border-t border-[#F0F0F0] px-4 py-2.5">
+                        <a href={test.figma_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#999] hover:text-[#1B1B1B] transition-colors">
+                          <svg className="size-3" viewBox="0 0 24 24" fill="none"><path d="M5 5.5A3.5 3.5 0 018.5 2H12v7H8.5A3.5 3.5 0 015 5.5z" fill="#F24E1E"/><path d="M12 2h3.5a3.5 3.5 0 010 7H12V2z" fill="#FF7262"/><path d="M12 9.5h3.5a3.5 3.5 0 010 7H12V9.5z" fill="#1ABCFE"/><path d="M5 19.5A3.5 3.5 0 018.5 16H12v3.5a3.5 3.5 0 11-7 0z" fill="#0ACF83"/><path d="M5 12.5A3.5 3.5 0 018.5 9H12v7H8.5A3.5 3.5 0 015 12.5z" fill="#A259FF"/></svg>
+                          View Design
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              {/* Empty slots */}
+              {slotsPerWeek > 0 && Array.from({ length: Math.max(0, slotsPerWeek - weekTests.length) }).map((_, i) => (
+                <button
+                  key={`empty-${i}`}
+                  onClick={() => { resetForm(); setWeek(weekLabel); setShowForm(true); }}
+                  className="w-full border-2 border-dashed border-[#E0E0E0] rounded-lg p-4 text-center hover:border-[#999] hover:bg-[#FAFAFA] transition-colors cursor-pointer"
+                >
+                  <p className="text-xs text-[#BBB]">+ Add test</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+
+      {/* Trash bin */}
+      {showTrash && trashedTests.length > 0 && (
+        <div className="border border-[#E5E5EA] rounded-lg p-4 bg-[#FAFAFA]">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-3">Trash</p>
+          <div className="space-y-2">
+            {trashedTests.map(t => (
+              <div key={t.id} className="flex items-center justify-between px-3 py-2 bg-white rounded border border-[#E5E5EA]">
+                <p className="text-xs text-[#777]">{t.name}</p>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => handleRestore(t.id)} className="text-[10px] text-emerald-600 hover:text-emerald-700">Restore</button>
+                  <button onClick={() => handlePermanentDelete(t.id)} className="text-[10px] text-red-400 hover:text-red-600">Delete Forever</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeTests.length === 0 && !showForm && slotsPerWeek === 0 && (
         <div className="border border-dashed border-[#E5E5EA] rounded-lg p-8 text-center">
           <p className="text-sm text-[#7A7A7A] mb-1">No tests yet</p>
           <p className="text-xs text-[#A0A0A0]">Select a testing tier and add your first test</p>
