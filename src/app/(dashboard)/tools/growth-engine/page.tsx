@@ -6,8 +6,9 @@ import { inputClass, labelClass } from "@/lib/form-styles";
 import { getGrowthEngine, saveGrowthEngine } from "@/lib/growth-engine/data";
 import type { GrowthEngineData, GrowthChannel } from "@/lib/growth-engine/types";
 import { CHANNELS, STAGES, STATUS_COLORS } from "@/lib/growth-engine/constants";
-import type { SerializedNode, SerializedEdge, FunnelNodeData, TrafficSource, PageNodeType } from "@/lib/funnel-builder/types";
-import { trafficSources, pageNodeTypes, trafficSourceConfigs, pageNodeConfigs, statusColors } from "@/lib/funnel-builder/constants";
+import type { SerializedNode, SerializedEdge, FunnelNodeData, TrafficSource } from "@/lib/funnel-builder/types";
+import { trafficSources, trafficSourceConfigs, statusColors } from "@/lib/funnel-builder/constants";
+import { agencyNodeTypes, agencyNodeConfigs, type AgencyNodeType } from "@/lib/growth-engine/agency-nodes";
 import type { Node, Edge } from "@xyflow/react";
 
 type Profile = "dylan" | "ajay";
@@ -36,6 +37,7 @@ export default function GrowthEnginePage() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile>("dylan");
   const [platform, setPlatform] = useState<GrowthChannel>("twitter");
+  const [view, setView] = useState<"funnel" | "gaps">("funnel");
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const canvasRef = useRef<FunnelCanvasHandle>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -154,8 +156,12 @@ export default function GrowthEnginePage() {
             <h1 className="text-sm font-semibold text-[#1A1A1A]">Growth Engine</h1>
           </div>
 
-          {/* Right: Stats */}
+          {/* Right: View switcher + stats */}
           <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1 bg-[#F3F3F5] rounded-lg p-0.5">
+              <button onClick={() => setView("funnel")} className={`px-3 py-1 text-[11px] font-medium rounded-md transition-colors ${view === "funnel" ? "bg-white text-[#1A1A1A] shadow-sm" : "text-[#999]"}`}>Funnel</button>
+              <button onClick={() => setView("gaps")} className={`px-3 py-1 text-[11px] font-medium rounded-md transition-colors ${view === "gaps" ? "bg-white text-[#1A1A1A] shadow-sm" : "text-[#999]"}`}>Gap Grid</button>
+            </div>
             <span className="text-[10px] text-[#AAA]">{totalFlows} funnels · {totalNodes} nodes</span>
           </div>
         </div>
@@ -189,8 +195,101 @@ export default function GrowthEnginePage() {
         </div>
       </div>
 
+      {/* Gap Grid View */}
+      {view === "gaps" && (
+        <div className="flex-1 overflow-auto p-6">
+          <div className="max-w-5xl mx-auto">
+            <div className="mb-6">
+              <h2 className="text-lg font-bold text-[#1A1A1A]">Gap Analysis — {PROFILES.find(p => p.key === profile)?.label}</h2>
+              <p className="text-xs text-[#AAA] mt-1">Red = missing, Amber = planned, Green = live</p>
+            </div>
+            <div className="border border-[#E5E5EA] rounded-xl overflow-hidden bg-white">
+              {/* Header row */}
+              <div className="grid grid-cols-[140px_1fr_1fr_1fr_1fr] border-b border-[#E5E5EA]">
+                <div className="px-4 py-3 bg-[#FAFAFA]" />
+                {STAGES.map(s => (
+                  <div key={s.key} className="px-4 py-3 bg-[#FAFAFA] border-l border-[#E5E5EA]">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">{s.label}</p>
+                    <p className="text-[9px] text-[#CCC]">{s.warmth}</p>
+                  </div>
+                ))}
+              </div>
+              {/* Channel rows */}
+              {PLATFORMS.map(ch => {
+                return (
+                  <div key={ch.key} className="grid grid-cols-[140px_1fr_1fr_1fr_1fr] border-b border-[#F0F0F0] last:border-0">
+                    <div className="px-4 py-4 flex items-center gap-2">
+                      <span className="text-sm">{ch.icon}</span>
+                      <span className="text-xs font-medium text-[#1A1A1A]">{ch.label}</span>
+                    </div>
+                    {STAGES.map(stage => {
+                      // Check if this profile+channel has nodes in this stage
+                      const fKey = `${profile}:${ch.key}`;
+                      const flow = engine?.channelFlows?.[fKey];
+                      const nodes = (flow as { nodes: SerializedNode[] })?.nodes || [];
+                      // Simple heuristic: check node labels/subtypes for stage relevance
+                      const stageNodes = nodes.filter(n => {
+                        const d = n.data as any;
+                        const sub = (d?.subType || "").toLowerCase();
+                        const label = (d?.label || "").toLowerCase();
+                        if (stage.key === "content") return ["organic", "meta-ads", "google-ads", "tiktok", "referral", "direct", "blog-post", "advertorial"].some(t => sub.includes(t) || label.includes(t));
+                        if (stage.key === "capture") return ["lead-magnet", "landing-page", "application-form", "email"].some(t => sub.includes(t));
+                        if (stage.key === "nurture") return ["email-sequence", "dm-sequence", "webinar", "case-study"].some(t => sub.includes(t));
+                        if (stage.key === "convert") return ["booking-page", "whatsapp", "pricing-page", "portfolio", "vsl"].some(t => sub.includes(t));
+                        return false;
+                      });
+                      const hasLive = stageNodes.some(n => (n.data as any)?.status === "live");
+                      const hasPlanned = stageNodes.some(n => (n.data as any)?.status === "planned" || (n.data as any)?.status === "in-progress");
+                      const isEmpty = stageNodes.length === 0;
+
+                      return (
+                        <div
+                          key={stage.key}
+                          className={`px-4 py-4 border-l border-[#F0F0F0] cursor-pointer hover:bg-[#FAFAFA] transition-colors ${
+                            isEmpty ? "bg-red-50/30" : hasLive ? "bg-emerald-50/30" : "bg-amber-50/30"
+                          }`}
+                          onClick={() => { setPlatform(ch.key); setView("funnel"); }}
+                        >
+                          {isEmpty ? (
+                            <span className="text-[10px] font-medium text-red-400">Gap</span>
+                          ) : (
+                            <div>
+                              <span className={`text-[10px] font-semibold ${hasLive ? "text-emerald-600" : "text-amber-600"}`}>
+                                {stageNodes.length} item{stageNodes.length !== 1 ? "s" : ""}
+                              </span>
+                              <p className="text-[9px] text-[#AAA] mt-0.5 truncate">
+                                {stageNodes.map(n => (n.data as any)?.label).join(", ")}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+            {/* Gap count */}
+            {(() => {
+              let gaps = 0;
+              PLATFORMS.forEach(ch => {
+                STAGES.forEach(stage => {
+                  const fKey = `${profile}:${ch.key}`;
+                  const flow = engine?.channelFlows?.[fKey];
+                  const nodes = (flow as { nodes: SerializedNode[] })?.nodes || [];
+                  if (nodes.length === 0) gaps++;
+                });
+              });
+              return (
+                <p className="text-xs text-[#AAA] mt-4">{gaps} gap{gaps !== 1 ? "s" : ""} identified across {PLATFORMS.length} channels</p>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
       {/* Main area — sidebar + canvas */}
-      <div className="flex flex-1 overflow-hidden">
+      {view === "funnel" && <div className="flex flex-1 overflow-hidden">
         {/* Left sidebar — palette or node editor */}
         <div className="w-64 border-r border-[#E5E5EA] bg-white overflow-y-auto shrink-0">
           {selectedNode ? (
@@ -283,17 +382,17 @@ export default function GrowthEnginePage() {
               </div>
 
               <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-3">
-                Pages & Actions
+                Agency Funnel Steps
               </p>
               <div className="space-y-1.5">
-                {pageNodeTypes.map((pType) => {
-                  const config = pageNodeConfigs[pType];
+                {agencyNodeTypes.map((aType) => {
+                  const config = agencyNodeConfigs[aType];
                   return (
                     <div
-                      key={pType}
+                      key={aType}
                       draggable
                       onDragStart={(e) => {
-                        const data = { nodeType: "page", subType: pType, label: config.label, status: "planned" };
+                        const data = { nodeType: "page", subType: aType, label: config.label, status: "planned" };
                         e.dataTransfer.setData("application/reactflow", JSON.stringify(data));
                         e.dataTransfer.effectAllowed = "move";
                       }}
@@ -320,7 +419,7 @@ export default function GrowthEnginePage() {
             onEdgesChange={handleEdgesChange}
           />
         </div>
-      </div>
+      </div>}
     </div>
   );
 }
