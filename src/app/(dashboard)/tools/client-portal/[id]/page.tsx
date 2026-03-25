@@ -548,8 +548,9 @@ export default function PortalDetailPage() {
           });
           const delivered = monthTests.filter(t => t.status === "live" || t.status === "complete").length;
           const scheduled = monthTests.filter(t => t.status === "scheduled").length;
+          const ideation = monthTests.filter(t => t.status === "ideation").length;
           const empty = Math.max(0, capacity - monthTests.length);
-          const attention = monthTests.filter(t => t.status === "scheduled");
+          const attention = monthTests.filter(t => t.status === "ideation" || t.status === "scheduled");
           const monthName = n.toLocaleString("en-GB", { month: "long", year: "numeric" });
 
           if (capacity === 0) return null;
@@ -563,11 +564,13 @@ export default function PortalDetailPage() {
                 </div>
                 <div className="h-2 bg-[#F0F0F0] rounded-full overflow-hidden flex mb-2">
                   {delivered > 0 && <div className="h-full bg-emerald-500" style={{ width: `${(delivered / capacity) * 100}%` }} />}
-                  {scheduled > 0 && <div className="h-full bg-amber-400" style={{ width: `${(scheduled / capacity) * 100}%` }} />}
+                  {scheduled > 0 && <div className="h-full bg-blue-400" style={{ width: `${(scheduled / capacity) * 100}%` }} />}
+                  {ideation > 0 && <div className="h-full bg-purple-300" style={{ width: `${(ideation / capacity) * 100}%` }} />}
                 </div>
                 <div className="flex items-center gap-4">
                   <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-emerald-500" /> {delivered} delivered</span>
-                  <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-amber-400" /> {scheduled} scheduled</span>
+                  <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-blue-400" /> {scheduled} scheduled</span>
+                  <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-purple-300" /> {ideation} ideation</span>
                   <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-[#F0F0F0]" /> {empty} empty</span>
                 </div>
                 {attention.length > 0 && (
@@ -2495,7 +2498,7 @@ function TestingSection({
   const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [metric, setMetric] = useState("");
-  const [status, setStatus] = useState<"scheduled" | "live" | "complete">("scheduled");
+  const [status, setStatus] = useState<"ideation" | "scheduled" | "live" | "complete">("ideation");
   const [result, setResult] = useState<"winner" | "loser" | "inconclusive">("winner");
   const [cvrA, setCvrA] = useState("");
   const [cvrB, setCvrB] = useState("");
@@ -2665,7 +2668,35 @@ function TestingSection({
   // Delivery tracking: only live + complete count as delivered
   const deliveredCount = monthTests.filter(t => t.status === "live" || t.status === "complete").length;
   const scheduledCount = monthTests.filter(t => t.status === "scheduled").length;
-  const needsAttention = monthTests.filter(t => t.status === "scheduled"); // Tests not yet live
+  const ideationCount = monthTests.filter(t => t.status === "ideation").length;
+
+  // Smart attention logic: check if we're behind schedule
+  // Current week index (0-3) in the month
+  const currentWeekIdx = monthWeeks.findIndex(w => {
+    const wStart = w.startDate;
+    const wEnd = new Date(wStart); wEnd.setDate(wEnd.getDate() + 6);
+    return now >= wStart && now <= wEnd;
+  });
+  const needsAttention: { test?: PortalTestResult; message: string }[] = [];
+  // Check: tests in current week still in ideation = behind
+  monthWeeks.forEach((w, idx) => {
+    const weekTests = (weekGroups[w.label] || []);
+    if (idx <= currentWeekIdx) {
+      weekTests.filter(t => t.status === "ideation").forEach(t => {
+        needsAttention.push({ test: t, message: `"${t.name}" is still in ideation — should be live by now` });
+      });
+    }
+    // Next week's tests should be at least scheduled
+    if (idx === currentWeekIdx + 1) {
+      weekTests.filter(t => t.status === "ideation").forEach(t => {
+        needsAttention.push({ test: t, message: `"${t.name}" (next week) still in ideation — should be scheduled` });
+      });
+      const emptySlots = Math.max(0, slotsPerWeek - weekTests.length);
+      if (emptySlots > 0) {
+        needsAttention.push({ message: `Next week has ${emptySlots} empty slot${emptySlots > 1 ? "s" : ""} — needs ideation` });
+      }
+    }
+  });
 
   // Delete with trash
   const handleDeleteTest = async (id: string) => {
@@ -2751,7 +2782,7 @@ function TestingSection({
           <div>
             <label className={labelClass}>Status</label>
             <div className="flex items-center gap-1.5 mt-1">
-              {(["scheduled", "live", "complete"] as const).map((s) => (
+              {(["ideation", "scheduled", "live", "complete"] as const).map((s) => (
                 <button
                   key={s}
                   onClick={() => setStatus(s)}
@@ -2759,7 +2790,7 @@ function TestingSection({
                     status === s ? "bg-[#1B1B1B] text-white" : "bg-white text-[#7A7A7A] border border-[#E5E5EA] hover:bg-[#F3F3F5]"
                   }`}
                 >
-                  {s === "scheduled" ? "Scheduled" : s === "live" ? "Live" : "Complete"}
+                  {s === "ideation" ? "Ideation" : s === "scheduled" ? "Scheduled" : s === "live" ? "Live" : "Complete"}
                 </button>
               ))}
             </div>
@@ -2859,7 +2890,7 @@ function TestingSection({
             <p className="text-xs font-semibold text-[#1A1A1A]">{currentMonth}</p>
             <div className="flex items-center gap-3">
               <span className="text-[10px] text-[#AAA]">
-                {deliveredCount} delivered · {scheduledCount} scheduled · {Math.max(0, monthlyCapacity - monthTests.length)} empty
+                {deliveredCount} delivered · {scheduledCount} scheduled · {ideationCount} ideation · {Math.max(0, monthlyCapacity - monthTests.length)} empty
               </span>
               {trashedTests.length > 0 && (
                 <button onClick={() => setShowTrash(!showTrash)} className="text-[10px] text-[#CCC] hover:text-[#777]">
@@ -2870,11 +2901,13 @@ function TestingSection({
           </div>
           <div className="h-2 bg-[#F0F0F0] rounded-full overflow-hidden flex">
             {deliveredCount > 0 && <div className="h-full bg-emerald-500 rounded-l-full" style={{ width: `${(deliveredCount / monthlyCapacity) * 100}%` }} />}
-            {scheduledCount > 0 && <div className="h-full bg-amber-400" style={{ width: `${(scheduledCount / monthlyCapacity) * 100}%` }} />}
+            {scheduledCount > 0 && <div className="h-full bg-blue-400" style={{ width: `${(scheduledCount / monthlyCapacity) * 100}%` }} />}
+            {ideationCount > 0 && <div className="h-full bg-purple-300" style={{ width: `${(ideationCount / monthlyCapacity) * 100}%` }} />}
           </div>
           <div className="flex items-center gap-4 mt-2">
             <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-emerald-500" /> Delivered</span>
-            <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-amber-400" /> Scheduled</span>
+            <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-blue-400" /> Scheduled</span>
+            <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-purple-300" /> Ideation</span>
             <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-[#F0F0F0]" /> Empty</span>
           </div>
         </div>
@@ -2884,11 +2917,11 @@ function TestingSection({
       {needsAttention.length > 0 && (
         <div className="bg-amber-50/50 border border-amber-200 rounded-lg px-4 py-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-600 mb-1.5">
-            {needsAttention.length} test{needsAttention.length !== 1 ? "s" : ""} need attention
+            {needsAttention.length} item{needsAttention.length !== 1 ? "s" : ""} need attention
           </p>
           <div className="space-y-1">
-            {needsAttention.map(t => (
-              <p key={t.id} className="text-xs text-amber-700">• {t.name} — scheduled but not live</p>
+            {needsAttention.map((item, i) => (
+              <p key={i} className="text-xs text-amber-700">• {item.message}</p>
             ))}
           </div>
         </div>
@@ -2903,12 +2936,13 @@ function TestingSection({
             <p className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">{weekLabel}</p>
             <div className="space-y-2">
               {weekTests.map((test) => {
-                const statusStyles = {
+                const statusStyles: Record<string, string> = {
+                  ideation: "bg-purple-50 text-purple-600 border-purple-200",
+                  scheduled: "bg-blue-50 text-blue-600 border-blue-200",
                   live: "bg-emerald-50 text-emerald-600 border-emerald-200",
-                  scheduled: "bg-[#F3F3F5] text-[#7A7A7A] border-[#E5E5EA]",
                   complete: "bg-[#F3F3F5] text-[#1B1B1B] border-[#E5E5EA]",
                 };
-                const nextStatus = { scheduled: "live" as const, live: "complete" as const, complete: "scheduled" as const };
+                const nextStatus: Record<string, TestStatus> = { ideation: "scheduled", scheduled: "live", live: "complete", complete: "ideation" };
                 const handleStatusCycle = async () => {
                   const newStatus = nextStatus[test.status];
                   const updated = tests.map((t) => t.id === test.id ? { ...t, status: newStatus, ...(newStatus !== "complete" ? { result: undefined } : {}) } : t);

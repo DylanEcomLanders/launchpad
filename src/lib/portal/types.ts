@@ -40,7 +40,7 @@ export interface PortalDocument {
 
 export type ScopeItem = string | { description: string; type: string };
 
-export type TestStatus = "scheduled" | "live" | "complete";
+export type TestStatus = "ideation" | "scheduled" | "live" | "complete";
 export type TestResult = "winner" | "loser" | "inconclusive";
 export type TestingTier = "T1" | "T2" | "T3"; // 1/week, 2/week, 4/week
 
