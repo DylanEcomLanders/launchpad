@@ -422,7 +422,9 @@ export default function PortalDetailPage() {
 
   const isRetainerPortal = portal.client_type === "retainer";
 
-  const dashTabs: { key: DashTab; label: string }[] = isRetainerPortal
+  // Tabs driven by selected project type, not client type
+  const isSelectedRetainer = selectedProject?.type === "retainer";
+  const dashTabs: { key: DashTab; label: string }[] = isSelectedRetainer
     ? [
         { key: "overview", label: "Overview" },
         { key: "testing", label: "Testing" },
