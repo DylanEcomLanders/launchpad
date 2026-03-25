@@ -101,6 +101,8 @@ export default function PortalDetailPage() {
 
   // Multi-project state
   const [selectedProjectIdx, setSelectedProjectIdx] = useState(-1); // -1 = show projects list
+  const [confirmDeleteProjectId, setConfirmDeleteProjectId] = useState<string | null>(null);
+  const [showProjectTrash, setShowProjectTrash] = useState(false);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const [newProjectName, setNewProjectName] = useState("");
   const [newProjectType, setNewProjectType] = useState<ProjectType>("page-build");
@@ -304,6 +306,39 @@ export default function PortalDetailPage() {
     setNewProjectScope("");
     setShowAddProjectModal(false);
   };
+
+  // Delete project (soft delete)
+  const handleDeleteProject = async (projectId: string) => {
+    if (confirmDeleteProjectId !== projectId) {
+      setConfirmDeleteProjectId(projectId);
+      return;
+    }
+    const updatedProjects = portal.projects.map(p =>
+      p.id === projectId ? { ...p, deleted_at: new Date().toISOString() } : p
+    );
+    setPortal({ ...portal, projects: updatedProjects });
+    await updatePortal(portal.id, { projects: updatedProjects });
+    setConfirmDeleteProjectId(null);
+  };
+
+  // Restore project
+  const handleRestoreProject = async (projectId: string) => {
+    const updatedProjects = portal.projects.map(p =>
+      p.id === projectId ? { ...p, deleted_at: undefined } : p
+    );
+    setPortal({ ...portal, projects: updatedProjects });
+    await updatePortal(portal.id, { projects: updatedProjects });
+  };
+
+  // Permanent delete project
+  const handlePermanentDeleteProject = async (projectId: string) => {
+    const updatedProjects = portal.projects.filter(p => p.id !== projectId);
+    setPortal({ ...portal, projects: updatedProjects });
+    await updatePortal(portal.id, { projects: updatedProjects });
+  };
+
+  const activeProjects = (portal.projects || []).filter(p => !(p as any).deleted_at);
+  const trashedProjects = (portal.projects || []).filter(p => !!(p as any).deleted_at);
 
   const updateSelectedProject = async (patch: Partial<PortalProject>) => {
     if (!portal || !selectedProject) return;
@@ -628,33 +663,54 @@ export default function PortalDetailPage() {
               </button>
             </div>
             <div className="divide-y divide-[#F0F0F0]">
-              {(portal.projects || []).map((proj, idx) => {
+              {activeProjects.map((proj) => {
+                const idx = (portal.projects || []).findIndex(p => p.id === proj.id);
                 const startDate = proj.created_at ? new Date(proj.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
                 return (
-                  <button
-                    key={proj.id}
-                    onClick={() => setSelectedProjectIdx(idx)}
-                    className="flex items-center justify-between w-full px-3.5 py-3.5 hover:bg-[#F7F8FA] transition-colors text-left rounded-lg"
-                  >
-                    <div className="min-w-0">
+                  <div key={proj.id} className="flex items-center justify-between px-3.5 py-3.5 hover:bg-[#F7F8FA] transition-colors rounded-lg group/proj">
+                    <button onClick={() => setSelectedProjectIdx(idx)} className="flex-1 text-left min-w-0">
                       <p className="text-sm font-semibold text-[#1A1A1A]">{proj.name}</p>
                       <p className="text-[10px] text-[#AAA]">
                         {proj.type === "retainer" ? "Retainer" : "Page Build"}
                         {startDate ? ` · Started ${startDate}` : ""}
                         {proj.current_phase ? ` · ${proj.current_phase}` : ""}
                       </p>
-                    </div>
+                    </button>
                     <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDeleteProject(proj.id); }}
+                        className={`p-1 transition-colors opacity-0 group-hover/proj:opacity-100 ${confirmDeleteProjectId === proj.id ? "text-red-500" : "text-[#CCC] hover:text-red-400"}`}
+                        title={confirmDeleteProjectId === proj.id ? "Click again to confirm" : "Delete project"}
+                      >
+                        <TrashIcon className="size-3.5" />
+                      </button>
                       <span className={`size-1.5 rounded-full ${proj.status === "active" ? "bg-emerald-500" : proj.status === "paused" ? "bg-amber-500" : "bg-[#CCC]"}`} />
                       <svg className="size-4 text-[#DDD]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
-              {(portal.projects || []).length === 0 && (
-                <p className="text-xs text-[#CCC] py-4">No projects yet — add one below</p>
+              {activeProjects.length === 0 && (
+                <p className="text-xs text-[#CCC] py-4">No projects yet — add one above</p>
               )}
             </div>
+            {/* Project Trash */}
+            {trashedProjects.length > 0 && (
+              <div className="mt-3 border border-[#E5E5EA] rounded-lg p-3 bg-[#FAFAFA]">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Trash ({trashedProjects.length})</p>
+                <div className="space-y-1.5">
+                  {trashedProjects.map(proj => (
+                    <div key={proj.id} className="flex items-center justify-between px-3 py-2 bg-white rounded border border-[#E5E5EA]">
+                      <p className="text-xs text-[#777]">{proj.name}</p>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => handleRestoreProject(proj.id)} className="text-[10px] text-emerald-600 hover:text-emerald-700">Restore</button>
+                        <button onClick={() => handlePermanentDeleteProject(proj.id)} className="text-[10px] text-red-400 hover:text-red-600">Delete Forever</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
