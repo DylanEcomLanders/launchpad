@@ -4,12 +4,16 @@ import { memo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import type { FunnelNodeData } from "@/lib/funnel-builder/types";
 import { pageNodeConfigs, statusColors, type NodeTypeConfig } from "@/lib/funnel-builder/constants";
+import { agencyNodeConfigs } from "@/lib/growth-engine/agency-nodes";
 import type { PageNodeType } from "@/lib/funnel-builder/types";
+
+// Merge ecom + agency configs so both render correctly
+const allPageConfigs: Record<string, NodeTypeConfig> = { ...pageNodeConfigs, ...agencyNodeConfigs };
 
 function PageNodeComponent({ data: rawData, selected }: NodeProps) {
   const data = rawData as unknown as FunnelNodeData;
   const config: NodeTypeConfig =
-    pageNodeConfigs[data.subType as PageNodeType] || { label: data.subType, short: "?", color: "#F0F0F0", textColor: "#555" };
+    allPageConfigs[data.subType as string] || { label: data.subType || data.label, short: (data.subType || "?").slice(0, 3).toUpperCase(), color: "#F0F0F0", textColor: "#555" };
   const status = statusColors[data.status] || statusColors.planned;
   const m = data.metrics;
   const hasMetrics = m && (m.traffic != null || m.cvr != null || m.aov != null);
