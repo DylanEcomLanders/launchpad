@@ -16,6 +16,9 @@ export interface TeamMember {
   slack_id: string; // Slack user ID (U0XXXXXXX)
   clickup_id: string; // ClickUp user ID
   avatar_url?: string;
+  nda_signed?: boolean;
+  nda_signed_date?: string; // ISO date
+  nda_document_url?: string; // URL to signed PDF
 }
 
 export interface DeliverableEstimate {

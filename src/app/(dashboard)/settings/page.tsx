@@ -361,6 +361,74 @@ export default function SettingsPage() {
         )}
       </section>
 
+      {/* Team NDAs */}
+      {(settings.team || []).length > 0 && (
+        <section className="mb-10">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
+            Team NDAs
+          </h2>
+          <p className="text-xs text-[#A0A0A0] mb-4">
+            Track NDA status for each team member. Upload signed documents or mark as signed.
+          </p>
+
+          <div className="border border-[#E5E5EA] rounded-lg overflow-hidden">
+            <div className="grid grid-cols-[1fr_100px_120px_120px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA]">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Team Member</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Status</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Date</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Link</span>
+            </div>
+            {(settings.team || []).map((member, i) => {
+              const updateNda = (field: string, value: unknown) => {
+                const updated = (settings.team || []).map((m, idx) => idx === i ? { ...m, [field]: value } : m);
+                setSettings({ ...settings, team: updated });
+              };
+              return (
+                <div key={member.id} className="grid grid-cols-[1fr_100px_120px_120px] gap-2 px-4 py-3 border-b border-[#EDEDEF] last:border-0 items-center">
+                  <div>
+                    <p className="text-sm font-medium text-[#1A1A1A]">{member.name}</p>
+                    <p className="text-[10px] text-[#AAA]">{member.role}</p>
+                  </div>
+                  <span className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-semibold w-fit ${
+                    member.nda_signed
+                      ? "bg-emerald-50 text-emerald-600"
+                      : "bg-red-50 text-red-500"
+                  }`}>
+                    <span className={`size-1.5 rounded-full ${member.nda_signed ? "bg-emerald-500" : "bg-red-400"}`} />
+                    {member.nda_signed ? "Signed" : "Pending"}
+                  </span>
+                  <div>
+                    {member.nda_signed && member.nda_signed_date ? (
+                      <span className="text-xs text-[#777]">{member.nda_signed_date}</span>
+                    ) : (
+                      <span className="text-[10px] text-[#CCC]">—</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/nda/${member.id}`);
+                      }}
+                      className="text-[10px] font-medium text-[#777] hover:text-[#1A1A1A] transition-colors"
+                    >
+                      Copy Link
+                    </button>
+                    <a
+                      href={`/nda/${member.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] font-medium text-[#AAA] hover:text-[#1A1A1A] transition-colors"
+                    >
+                      View
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {/* Audit Knowledge Base */}
       <section className="mb-10">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
