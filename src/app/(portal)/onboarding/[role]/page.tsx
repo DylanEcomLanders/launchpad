@@ -44,8 +44,8 @@ export default function OnboardingPage() {
             <li><strong>Ajay</strong> — Founder. Leads sales, partnerships, and growth.</li>
             <li><strong>Alister</strong> — Senior PM. Manages project timelines, client touchpoints, and delivery coordination.</li>
             <li><strong>Archie</strong> — Head of Development. Leads the dev team and QA.</li>
-            <li><strong>Design Team</strong> — Barnaby (Senior Designer), Brandon, Viktoriia, Jack</li>
-            <li><strong>Dev Team</strong> — Hitesh, Ashish, Ian, Angel, Rafael, Marko, and others</li>
+            <li><strong>Design Team</strong> — Barnaby (Senior Designer), Viktoria, Jack, Brandon, Anastasia</li>
+            <li><strong>Dev Team</strong> — Angel, Ian, Clien, Hitesh, Ashish, Aleksandar, Kaye, Rafael</li>
           </ul>
         </Section>
 
