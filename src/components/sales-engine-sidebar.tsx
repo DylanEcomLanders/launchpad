@@ -37,6 +37,7 @@ const navSections: NavSection[] = [
     icon: <svg className="size-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h9.621a1.5 1.5 0 011.06.44l2.379 2.379A1.5 1.5 0 0117 5.879V16.5a1.5 1.5 0 01-1.5 1.5h-12A1.5 1.5 0 012 16.5v-13zm4.75 7a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5zm0-3a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z" clipRule="evenodd" /></svg>,
     defaultOpen: true,
     items: [
+      { label: "Articles", href: "/sales-engine/articles" },
       { label: "Calendar", href: "/sales-engine/calendar" },
       { label: "Portfolio", href: "/sales-engine/portfolio" },
     ],
