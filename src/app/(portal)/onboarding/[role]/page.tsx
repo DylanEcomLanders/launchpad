@@ -57,8 +57,7 @@ export default function OnboardingPage() {
             <ToolRow name="Figma" desc="All design work. Page designs, test variants, design systems." />
             <ToolRow name="Shopify" desc="All client stores are on Shopify. We build custom Liquid sections." />
             <ToolRow name="Intelligems" desc="A/B testing platform for Shopify. We set up, run, and analyse split tests here." />
-            <ToolRow name="Launchpad" desc="Our internal tool (ecomlanders.app). Client portals, project management, CRO dashboards, ticket system." />
-            <ToolRow name="Whop" desc="Payment processing for client invoices." />
+            <ToolRow name="Launchpad" desc="Our internal tool built with Claude Code (ecomlanders.app). Infinitely adaptable to fit our processes — client portals, project management, CRO dashboards, ticket system, and more. We continuously evolve it to improve client experience and team efficiency." />
           </div>
         </Section>
 
