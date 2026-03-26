@@ -429,6 +429,104 @@ export default function SettingsPage() {
         </section>
       )}
 
+      {/* Compensation & Margins */}
+      <section className="mb-10">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
+          Compensation & Margins
+        </h2>
+        <p className="text-xs text-[#A0A0A0] mb-4">
+          Rate card for retainers and page builds. Reference for the team.
+        </p>
+
+        {/* Retainer Rates */}
+        <div className="border border-[#E5E5EA] rounded-lg overflow-hidden mb-4">
+          <div className="px-4 py-2.5 bg-[#FAFAFA] border-b border-[#E5E5EA]">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">CRO Retainer Rates</p>
+          </div>
+          <div className="divide-y divide-[#F0F0F0]">
+            <div className="grid grid-cols-4 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">
+              <span>Role</span><span>Foundation (T1)</span><span>Growth (T2)</span><span>Scale (T3)</span>
+            </div>
+            <div className="grid grid-cols-4 px-4 py-3 items-center">
+              <span className="text-xs font-medium text-[#1A1A1A]">CRO Strategist</span>
+              <span className="text-xs text-[#555]">20% of fee</span>
+              <span className="text-xs text-[#555]">20% of fee</span>
+              <span className="text-xs text-[#555]">20% of fee</span>
+            </div>
+            <div className="grid grid-cols-4 px-4 py-3 items-center">
+              <span className="text-xs font-medium text-[#1A1A1A]">Designer</span>
+              <span className="text-xs text-[#555]">£200/mo</span>
+              <span className="text-xs text-[#555]">£300/mo</span>
+              <span className="text-xs text-[#555]">£400/mo</span>
+            </div>
+            <div className="grid grid-cols-4 px-4 py-3 items-center">
+              <span className="text-xs font-medium text-[#1A1A1A]">Developer</span>
+              <span className="text-xs text-[#555]">£14/hr</span>
+              <span className="text-xs text-[#555]">£14/hr</span>
+              <span className="text-xs text-[#555]">£14/hr</span>
+            </div>
+            <div className="grid grid-cols-4 px-4 py-3 items-center text-[10px] text-[#AAA]">
+              <span>Est. dev hrs/test</span>
+              <span>~2hrs</span>
+              <span>~2hrs</span>
+              <span>~2hrs</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Page Build Rates */}
+        <div className="border border-[#E5E5EA] rounded-lg overflow-hidden mb-4">
+          <div className="px-4 py-2.5 bg-[#FAFAFA] border-b border-[#E5E5EA]">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Page Build Rates</p>
+          </div>
+          <div className="divide-y divide-[#F0F0F0]">
+            <div className="grid grid-cols-3 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">
+              <span>Role</span><span>Per Page</span><span>Notes</span>
+            </div>
+            <div className="grid grid-cols-3 px-4 py-3 items-center">
+              <span className="text-xs font-medium text-[#1A1A1A]">CRO / Copy</span>
+              <span className="text-xs text-[#555]">£150</span>
+              <span className="text-[10px] text-[#AAA]">→ £200 after 60 days</span>
+            </div>
+            <div className="grid grid-cols-3 px-4 py-3 items-center">
+              <span className="text-xs font-medium text-[#1A1A1A]">Designer</span>
+              <span className="text-xs text-[#555]">£250</span>
+              <span className="text-[10px] text-[#AAA]">Per page</span>
+            </div>
+            <div className="grid grid-cols-3 px-4 py-3 items-center">
+              <span className="text-xs font-medium text-[#1A1A1A]">Developer</span>
+              <span className="text-xs text-[#555]">£300</span>
+              <span className="text-[10px] text-[#AAA]">Per page</span>
+            </div>
+          </div>
+        </div>
+
+        {/* CRO Deliverables */}
+        <div className="border border-[#E5E5EA] rounded-lg overflow-hidden">
+          <div className="px-4 py-2.5 bg-[#FAFAFA] border-b border-[#E5E5EA]">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">CRO Deliverables — Page Builds</p>
+          </div>
+          <div className="divide-y divide-[#F0F0F0]">
+            <div className="px-4 py-3">
+              <p className="text-xs font-medium text-[#1A1A1A]">1. Pre-Design</p>
+              <p className="text-[10px] text-[#777] mt-0.5">Initial audit notes, highest leverage plays, angle identification, funnel positioning</p>
+            </div>
+            <div className="px-4 py-3">
+              <p className="text-xs font-medium text-[#1A1A1A]">2. Design Review</p>
+              <p className="text-[10px] text-[#777] mt-0.5">Collaborate with designer on copy, angle, structure. Ensure the page converts.</p>
+            </div>
+            <div className="px-4 py-3">
+              <p className="text-xs font-medium text-[#1A1A1A]">3. Funnel Strategy</p>
+              <p className="text-[10px] text-[#777] mt-0.5">Where does this page sit? Next highest leverage page? Traffic warmth recommendations.</p>
+            </div>
+            <div className="px-4 py-3">
+              <p className="text-xs font-medium text-[#1A1A1A]">4. Post-Launch</p>
+              <p className="text-[10px] text-[#777] mt-0.5">Performance breakdown, what&apos;s working, what to iterate on.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Audit Knowledge Base */}
       <section className="mb-10">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
