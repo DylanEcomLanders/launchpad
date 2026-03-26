@@ -154,7 +154,7 @@ export default function NdaPage() {
 
                 <h3 className="text-sm font-bold text-[#1A1A1A] mt-6">2. Obligations</h3>
                 <p>
-                  The Recipient agrees to: (a) keep all Confidential Information strictly confidential; (b) not disclose any Confidential Information to any third party without prior written consent from the Company; (c) use the Confidential Information solely for the purpose of performing their duties for the Company; (d) take all reasonable measures to protect the confidentiality of the information.
+                  The Recipient agrees to: (a) keep all Confidential Information strictly confidential; (b) not disclose any Confidential Information to any third party without prior written consent from the Company; (c) use the Confidential Information solely for the purpose of providing their services to the Company; (d) take all reasonable measures to protect the confidentiality of the information.
                 </p>
 
                 <h3 className="text-sm font-bold text-[#1A1A1A] mt-6">3. Client Information</h3>
