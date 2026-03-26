@@ -138,7 +138,7 @@ export default function NdaPage() {
                 <p>
                   This Non-Disclosure Agreement (&quot;Agreement&quot;) is entered into as of <strong>{nda.signedDate}</strong> between:
                 </p>
-                <p><strong>Ecomlanders Ltd</strong> (&quot;the Company&quot;), and</p>
+                <p><strong>Ecom Landers Ltd.</strong> (&quot;the Company&quot;), and</p>
                 <p><strong>{nda.memberName}</strong>, {nda.memberRole} (&quot;the Recipient&quot;).</p>
 
                 <h3 className="text-sm font-bold text-[#1A1A1A] mt-6">1. Confidential Information</h3>
@@ -168,7 +168,7 @@ export default function NdaPage() {
                 <div className="grid grid-cols-2 gap-8">
                   <div>
                     <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-3">Company</p>
-                    <p className="text-sm font-semibold text-[#1A1A1A]">Ecomlanders Ltd</p>
+                    <p className="text-sm font-semibold text-[#1A1A1A]">Ecom Landers Ltd.</p>
                     <p className="text-xs text-[#777] mt-1">Authorised Representative</p>
                   </div>
                   <div>
@@ -192,7 +192,7 @@ export default function NdaPage() {
                 </p>
 
                 <p>
-                  <strong>Ecomlanders Ltd</strong> (&quot;the Company&quot;), and
+                  <strong>Ecom Landers Ltd.</strong> (&quot;the Company&quot;), and
                 </p>
 
                 <p>
@@ -300,7 +300,7 @@ export default function NdaPage() {
         </div>
 
         {/* Footer */}
-        <p className="text-[10px] text-[#CCC] text-center mt-8">© 2026 Ecomlanders Ltd. All rights reserved.</p>
+        <p className="text-[10px] text-[#CCC] text-center mt-8">© 2026 Ecom Landers Ltd.. All rights reserved.</p>
       </div>
     </div>
   );
