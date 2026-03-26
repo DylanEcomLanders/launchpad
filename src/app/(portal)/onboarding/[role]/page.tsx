@@ -95,6 +95,19 @@ export default function OnboardingPage() {
               <p className="text-[#777] text-sm italic">Key rule: you should always be one week ahead. While this week's test is live, next week's test should already be in "Scheduled" (designed and ready to go).</p>
             </Section>
 
+            <Section title="The Bigger Picture — Testing as a Growth Engine">
+              <p>Testing isn&apos;t just about improving a single page. It&apos;s our foot in the door to managing the client&apos;s entire funnel.</p>
+              <p>Every test we run generates data. That data tells us what&apos;s working, what&apos;s not, and — most importantly — <strong>what to build next</strong>. When a hero test wins, we know the angle resonates. That informs the next PDP, the next advertorial, the next landing page.</p>
+              <p>Your job isn&apos;t just to run tests. It&apos;s to use the results to guide the client&apos;s funnel expansion. You should always be thinking:</p>
+              <ul>
+                <li>What&apos;s the highest-leverage page to build next based on what we&apos;ve learned?</li>
+                <li>Where is the funnel leaking and how do we plug it?</li>
+                <li>What angles are winning in tests that we can extend to other pages?</li>
+                <li>How do we turn a retainer client into a full funnel partner?</li>
+              </ul>
+              <p>We want to be the team that doesn&apos;t just optimise pages — we architect the entire conversion journey. Testing is how we earn that trust.</p>
+            </Section>
+
             <Section title="Your Responsibilities — Retainers">
               <ul>
                 <li><strong>Test strategy</strong> — Decide what to test each week based on data, not guesswork</li>
