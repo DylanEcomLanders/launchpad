@@ -46,6 +46,7 @@ export async function GET(req: NextRequest) {
       signed: !!member.nda_signed,
       signedDate: member.nda_signed_date || null,
       signedName: member.nda_signed_name || null,
+      signatureImage: member.nda_signature_image || null,
     },
   });
 }
