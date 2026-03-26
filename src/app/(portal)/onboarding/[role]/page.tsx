@@ -167,18 +167,147 @@ export default function OnboardingPage() {
           </ul>
         </Section>
 
+        {/* Intelligems Deep Dive */}
+        {(role === "cro" || !role) && (
+          <Section title="Intelligems — How We Use It">
+            <p>Intelligems is our A/B testing platform. Every test runs through it. Here&apos;s what you need to know:</p>
+            <h3 className="text-sm font-bold text-[#1A1A1A] mt-4 mb-2">Setting Up a Test</h3>
+            <ol>
+              <li>Create the experiment in Intelligems — name it clearly (e.g. &quot;Test 4.1 — Hero CTA Copy&quot;)</li>
+              <li>Set traffic split (usually 50/50 for two variants)</li>
+              <li>Define the goal metric — CVR is primary, but always track AOV and RPV too</li>
+              <li>Set the page targeting — which URLs the test runs on</li>
+              <li>QA both variants before going live</li>
+            </ol>
+            <h3 className="text-sm font-bold text-[#1A1A1A] mt-4 mb-2">Reading Results</h3>
+            <p>The three metrics that matter most:</p>
+            <ul>
+              <li><strong>CVR (Conversion Rate)</strong> — % of visitors who purchase. The primary metric.</li>
+              <li><strong>AOV (Average Order Value)</strong> — how much each buyer spends. Important for price tests.</li>
+              <li><strong>RPV (Revenue Per Visitor)</strong> — CVR × AOV. The ultimate metric. A test can lose on CVR but win on RPV if AOV increases enough.</li>
+            </ul>
+            <p className="text-[#777] italic mt-2">Never call a test based on CVR alone. RPV tells the full story. A variant that converts 5% less but has 15% higher AOV is often the winner.</p>
+            <h3 className="text-sm font-bold text-[#1A1A1A] mt-4 mb-2">Statistical Significance</h3>
+            <p>Don&apos;t call a test until you have enough data. Rules of thumb:</p>
+            <ul>
+              <li>Minimum 1,000 visitors per variant (ideally 2,000+)</li>
+              <li>Run for at least 7 days to account for day-of-week variation</li>
+              <li>Look for 95%+ confidence before declaring a winner</li>
+              <li>If results are flat after 2 weeks with enough traffic, call it inconclusive and move on</li>
+            </ul>
+            <h3 className="text-sm font-bold text-[#1A1A1A] mt-4 mb-2">Test ID Integration</h3>
+            <p>Each test in Intelligems has a unique ID. When you set up a test in our Launchpad portal, paste the Intelligems test ID into the test card. This connects the live metrics directly — CVR, AOV, RPV auto-populate from Intelligems data.</p>
+          </Section>
+        )}
+
+        {/* Common Test Types */}
+        {(role === "cro" || !role) && (
+          <Section title="Common Test Types">
+            <p>These are the tests we run most frequently. Each has different implications:</p>
+            <div className="space-y-4 my-4">
+              <Step num="H" title="Hero / Above the Fold" desc="Headline copy, hero image, CTA text, value proposition placement. Highest impact area — small changes here move the needle significantly." />
+              <Step num="S" title="Social Proof Placement" desc="Where reviews, star ratings, trust badges, and testimonials appear. Moving social proof above the fold almost always wins." />
+              <Step num="C" title="CTA Copy & Design" desc="Button text, colour, size, placement. 'Add to Cart' vs 'Get Yours' vs 'Try Risk Free'. The words on the button matter more than the colour." />
+              <Step num="P" title="Price Presentation" desc="How price is displayed — strikethrough, per-day breakdown, subscription framing, bundle pricing. Sensitive tests that need careful monitoring." />
+              <Step num="L" title="Layout & Structure" desc="Page section order, content hierarchy, information architecture. Bigger structural changes that test fundamental page flow." />
+              <Step num="I" title="Image & Media" desc="Product photography, lifestyle vs studio, video vs static, image carousel vs single hero. Visual tests that impact emotional response." />
+            </div>
+          </Section>
+        )}
+
+        {/* Niche Considerations */}
+        {(role === "cro" || !role) && (
+          <Section title="Niche-Specific Approaches">
+            <p>Different niches have different conversion psychology. Adapt your approach:</p>
+            <ul>
+              <li><strong>Supplements / Health</strong> — trust is everything. Clinical language vs customer language. Ingredient transparency. Subscription positioning is key for LTV. Guarantee prominence matters hugely.</li>
+              <li><strong>Skincare / Beauty</strong> — emotional, aspirational. Before/after results. Routine-based selling. Ingredient education. UGC performs extremely well.</li>
+              <li><strong>Pet</strong> — emotional connection to the animal drives purchase. Real photography outperforms illustration. Community angle is powerful. Training/education content adds value beyond the product.</li>
+              <li><strong>Food & Beverage</strong> — sensory language. Subscription is the business model. Flavour variety reduces decision paralysis. Social proof from recognisable names converts.</li>
+              <li><strong>Fitness / Sports</strong> — outcome-focused. Before/after transformations. Performance data and specifics. Athlete endorsements carry weight.</li>
+            </ul>
+            <p className="text-[#777] italic mt-2">The best tests come from understanding the customer&apos;s psychology in that specific niche, not from generic CRO playbooks.</p>
+          </Section>
+        )}
+
+        {/* ClickUp Workflow */}
+        <Section title="ClickUp Workflow">
+          <p>All tasks are managed in ClickUp. Here&apos;s how it flows:</p>
+          <ul>
+            <li><strong>Project Delivery</strong> space — where all client work lives</li>
+            <li><strong>Tickets list</strong> — client-reported issues from Slack (<code>/ticket</code> command)</li>
+            <li>When a ticket is triaged in Launchpad as &quot;Design&quot; or &quot;Dev&quot;, it auto-creates a ClickUp task assigned to the right person</li>
+            <li>Design tickets go to designers, Dev tickets go to developers based on who&apos;s assigned to that client&apos;s portal</li>
+          </ul>
+          <p>As a CRO strategist, you won&apos;t be managing ClickUp tasks directly — but you should be aware of what&apos;s in the pipeline so you can coordinate with design and dev on test variant timelines.</p>
+        </Section>
+
+        {/* Slack Channels */}
+        <Section title="Slack Channel Structure">
+          <p>Our Slack workspace is organised around clients and functions:</p>
+          <ul>
+            <li><strong>Client channels</strong> — <code>internal-[clientname]</code> for internal discussion, shared channels with client for direct comms</li>
+            <li><strong>ecomlanders-operations</strong> — company-wide ops updates</li>
+            <li><strong>ecomlanders-design</strong> — design team coordination</li>
+            <li><strong>ecomlanders-dev</strong> — development team</li>
+            <li><strong>ecomlanders-qa</strong> — QA and testing</li>
+            <li><strong>ideas</strong> — internal ideas and brainstorming</li>
+          </ul>
+          <p>When you start, you&apos;ll be added to the relevant client channels. Keep client-specific discussions in client channels, not DMs.</p>
+        </Section>
+
+        {/* Handling Blockers */}
+        <Section title="Handling Blockers">
+          <p>Sometimes work gets blocked — client hasn&apos;t responded, waiting on assets, technical issue. Here&apos;s how we handle it:</p>
+          <ul>
+            <li><strong>Flag it immediately</strong> — don&apos;t sit on a blocker. Use the blocker flag in the client portal.</li>
+            <li><strong>Three types</strong>: Client blocker (waiting on them), Internal blocker (our side), External blocker (third party)</li>
+            <li><strong>Escalate after 48 hours</strong> — if a client blocker isn&apos;t resolved in 2 days, escalate to Alister or Dylan</li>
+            <li><strong>Never let a blocker kill the cadence</strong> — if one test is blocked, have a backup test ready to go</li>
+          </ul>
+        </Section>
+
+        {/* Client Retention */}
+        {(role === "cro" || !role) && (
+          <Section title="Client Retention — Your Role">
+            <p>Retainer retention is directly tied to the quality and consistency of your work. The biggest reasons clients churn:</p>
+            <ul>
+              <li><strong>Gaps in testing</strong> — weeks with no live test = client questions the value</li>
+              <li><strong>No clear wins</strong> — if you&apos;re not finding winners, the client questions the investment</li>
+              <li><strong>Poor communication</strong> — client doesn&apos;t know what&apos;s happening = they assume nothing is</li>
+              <li><strong>Reactive not proactive</strong> — waiting for the client to ask for updates vs sharing them first</li>
+            </ul>
+            <p>The antidote is simple: <strong>consistent testing cadence + proactive communication + strategic thinking about their funnel</strong>. If you&apos;re doing all three, clients stay.</p>
+          </Section>
+        )}
+
         {/* Getting Started */}
         <Section title="Getting Started">
-          <p>Here's what to do in your first week:</p>
+          <p>Here&apos;s what to do in your first week:</p>
           <ol>
             <li>Sign your NDA (link will be sent separately)</li>
-            <li>Get added to Slack — you'll be invited to relevant client channels</li>
+            <li>Get added to Slack — you&apos;ll be invited to relevant client channels</li>
             <li>Get ClickUp access — Alister will set you up</li>
-            <li>Get Intelligems access for each client you'll manage</li>
-            <li>Review each client's portal to understand where they are</li>
-            <li>Familiarise yourself with each client's store, funnel, and current test history</li>
+            <li>Get Intelligems access for each client you&apos;ll manage</li>
+            <li>Review each client&apos;s portal to understand where they are in their testing cycle</li>
+            <li>Audit each client&apos;s current store — note quick wins and high-leverage opportunities</li>
+            <li>Review the test history for each client — understand what&apos;s been tested and what&apos;s worked</li>
+            <li>Familiarise yourself with each client&apos;s niche, competitors, and customer profile</li>
             <li>Schedule an intro call with Dylan to align on strategy for each client</li>
+            <li>Prepare your first week&apos;s test hypotheses for review</li>
           </ol>
+        </Section>
+
+        {/* What Success Looks Like */}
+        <Section title="What Success Looks Like">
+          <ul>
+            <li>Every client has a test live every week without gaps</li>
+            <li>Next week&apos;s test is always ideated and scheduled before this week&apos;s test ends</li>
+            <li>Win rate of 30%+ across all tests (not every test needs to win — learning is valuable)</li>
+            <li>Clients proactively want to expand their funnel based on your recommendations</li>
+            <li>Zero missed touchpoints — Mon/Wed/Fri check-ins happen consistently</li>
+            <li>Test documentation is thorough enough that anyone could pick up where you left off</li>
+          </ul>
         </Section>
 
         {/* Footer */}
