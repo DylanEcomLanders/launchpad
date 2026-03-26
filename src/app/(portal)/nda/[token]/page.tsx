@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { Logo } from "@/components/logo";
 
@@ -19,6 +19,52 @@ export default function NdaPage() {
   const [signName, setSignName] = useState("");
   const [signing, setSigning] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [signatureData, setSignatureData] = useState("");
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isDrawing = useRef(false);
+
+  const startDraw = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    isDrawing.current = true;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = ("touches" in e ? e.touches[0].clientX : e.clientX) - rect.left;
+    const y = ("touches" in e ? e.touches[0].clientY : e.clientY) - rect.top;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+  }, []);
+
+  const draw = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDrawing.current) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = ("touches" in e ? e.touches[0].clientX : e.clientX) - rect.left;
+    const y = ("touches" in e ? e.touches[0].clientY : e.clientY) - rect.top;
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#1A1A1A";
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  }, []);
+
+  const endDraw = useCallback(() => {
+    isDrawing.current = false;
+    const canvas = canvasRef.current;
+    if (canvas) setSignatureData(canvas.toDataURL());
+  }, []);
+
+  const clearSignature = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setSignatureData("");
+  }, []);
 
   useEffect(() => {
     fetch(`/api/nda?token=${token}`)
@@ -34,7 +80,7 @@ export default function NdaPage() {
       const res = await fetch("/api/nda", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, signedName: signName.trim() }),
+        body: JSON.stringify({ token, signedName: signName.trim(), signatureImage: signatureData }),
       });
       if (res.ok) {
         setNda((prev) => prev ? { ...prev, signed: true, signedDate: new Date().toISOString().split("T")[0], signedName: signName.trim() } : null);
@@ -143,13 +189,36 @@ export default function NdaPage() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="text-xs font-medium text-[#555] block mb-1.5">Type your full name as your signature</label>
+                    <label className="text-xs font-medium text-[#555] block mb-1.5">Your full name</label>
                     <input
                       type="text"
                       value={signName}
                       onChange={(e) => setSignName(e.target.value)}
-                      className="w-full px-4 py-3 text-lg font-serif italic border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#999] text-center"
+                      className="w-full px-4 py-2.5 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#999]"
                       placeholder={nda.memberName}
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-medium text-[#555]">Draw your signature</label>
+                      {signatureData && (
+                        <button onClick={clearSignature} className="text-[10px] text-[#AAA] hover:text-[#1A1A1A]">Clear</button>
+                      )}
+                    </div>
+                    <canvas
+                      ref={canvasRef}
+                      width={500}
+                      height={150}
+                      onMouseDown={startDraw}
+                      onMouseMove={draw}
+                      onMouseUp={endDraw}
+                      onMouseLeave={endDraw}
+                      onTouchStart={startDraw}
+                      onTouchMove={draw}
+                      onTouchEnd={endDraw}
+                      className="w-full border border-[#E5E5EA] rounded-lg cursor-crosshair bg-white touch-none"
+                      style={{ height: 150 }}
                     />
                   </div>
 
@@ -167,7 +236,7 @@ export default function NdaPage() {
 
                   <button
                     onClick={handleSign}
-                    disabled={!signName.trim() || !agreed || signing}
+                    disabled={!signName.trim() || !agreed || !signatureData || signing}
                     className="w-full py-3 bg-[#1A1A1A] text-white text-sm font-semibold rounded-xl hover:bg-[#2D2D2D] transition-colors disabled:opacity-30"
                   >
                     {signing ? "Signing..." : "Sign Agreement"}

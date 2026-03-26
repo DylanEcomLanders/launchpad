@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
 
 // POST — sign the NDA
 export async function POST(req: NextRequest) {
-  const { token, signedName } = await req.json();
+  const { token, signedName, signatureImage } = await req.json();
   if (!token || !signedName) return NextResponse.json({ error: "Missing data" }, { status: 400 });
 
   const team = await getTeam();
@@ -64,6 +64,7 @@ export async function POST(req: NextRequest) {
     nda_signed: true,
     nda_signed_date: new Date().toISOString().split("T")[0],
     nda_signed_name: signedName,
+    nda_signature_image: signatureImage || "",
   };
 
   await saveTeam(team);
