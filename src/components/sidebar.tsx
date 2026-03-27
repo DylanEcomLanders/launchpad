@@ -19,6 +19,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { Logo, LogoMark } from "@/components/logo";
 import { AppSwitcher } from "@/components/app-switcher";
+import { useRole } from "@/components/auth-gate";
 
 interface NavItem {
   label: string;
@@ -30,6 +31,7 @@ interface NavSection {
   icon: React.ReactNode;
   items: NavItem[];
   defaultOpen?: boolean;
+  roles?: ("admin" | "cro")[]; // If set, only these roles see this section
 }
 
 const teamZones = [
@@ -45,6 +47,7 @@ const navSections: NavSection[] = [
     title: "Finance",
     icon: <BanknotesIcon className="size-4" />,
     defaultOpen: true,
+    roles: ["admin"],
     items: [
       { label: "Price Calculator", href: "/tools/price-calculator" },
       { label: "Invoice Generator", href: "/tools/invoice-generator" },
@@ -80,11 +83,15 @@ const navSections: NavSection[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const role = useRole();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(
     () => Object.fromEntries(navSections.map((s) => [s.title, s.defaultOpen !== false]))
   );
+
+  // Filter sections by role
+  const visibleSections = navSections.filter((s) => !s.roles || s.roles.includes(role));
   const [now, setNow] = useState(() => new Date());
 
   function toggleSection(title: string) {
@@ -164,7 +171,7 @@ export function Sidebar() {
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto scrollbar-thin py-2">
           {/* Hero CTAs */}
-          {!collapsed && (
+          {!collapsed && role === "admin" && (
             <div className="px-3 mb-2">
               <Link
                 href="/tools/project-kickoff"
@@ -238,7 +245,7 @@ export function Sidebar() {
           </div>
 
           {/* Sections */}
-          {navSections.map((section) => (
+          {visibleSections.map((section) => (
             <div key={section.title} className="mb-1">
               {!collapsed ? (
                 <button
@@ -305,19 +312,21 @@ export function Sidebar() {
               >
                 Issues
               </Link>
-              <Link
-                href="/settings"
-                onClick={() => setMobileOpen(false)}
-                className={`
-                  flex items-center gap-2 px-2.5 py-1.5 text-[12px] font-semibold uppercase tracking-wider rounded-md transition-all duration-150
-                  ${pathname === "/settings"
-                    ? "text-[#1B1B1B] bg-white shadow-[var(--shadow-soft)]"
-                    : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
-                  }
-                `}
-              >
-                Settings
-              </Link>
+              {role === "admin" && (
+                <Link
+                  href="/settings"
+                  onClick={() => setMobileOpen(false)}
+                  className={`
+                    flex items-center gap-2 px-2.5 py-1.5 text-[12px] font-semibold uppercase tracking-wider rounded-md transition-all duration-150
+                    ${pathname === "/settings"
+                      ? "text-[#1B1B1B] bg-white shadow-[var(--shadow-soft)]"
+                      : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
+                    }
+                  `}
+                >
+                  Settings
+                </Link>
+              )}
             </div>
           )}
         </nav>

@@ -1,21 +1,34 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 import { LockClosedIcon } from "@heroicons/react/24/solid";
 
 const STORAGE_KEY = "launchpad-auth";
+const ROLE_KEY = "launchpad-role";
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "ecomlanders2025";
+const CRO_PASSWORD = process.env.NEXT_PUBLIC_CRO_PASSWORD || "cro2025";
+
+export type UserRole = "admin" | "cro";
+
+const RoleContext = createContext<UserRole>("admin");
+
+export function useRole() {
+  return useContext(RoleContext);
+}
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const [authed, setAuthed] = useState(false);
+  const [role, setRole] = useState<UserRole>("admin");
   const [input, setInput] = useState("");
   const [error, setError] = useState(false);
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     const stored = sessionStorage.getItem(STORAGE_KEY);
-    if (stored === "true") {
+    const storedRole = sessionStorage.getItem(ROLE_KEY) as UserRole | null;
+    if (stored === "true" && storedRole) {
       setAuthed(true);
+      setRole(storedRole);
     }
     setChecking(false);
   }, []);
@@ -24,7 +37,15 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     e.preventDefault();
     if (input === ADMIN_PASSWORD) {
       sessionStorage.setItem(STORAGE_KEY, "true");
+      sessionStorage.setItem(ROLE_KEY, "admin");
       setAuthed(true);
+      setRole("admin");
+      setError(false);
+    } else if (input === CRO_PASSWORD) {
+      sessionStorage.setItem(STORAGE_KEY, "true");
+      sessionStorage.setItem(ROLE_KEY, "cro");
+      setAuthed(true);
+      setRole("cro");
       setError(false);
     } else {
       setError(true);
@@ -78,5 +99,5 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return <>{children}</>;
+  return <RoleContext.Provider value={role}>{children}</RoleContext.Provider>;
 }
