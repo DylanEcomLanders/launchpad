@@ -60,6 +60,7 @@ const navSections: NavSection[] = [
     title: "Training",
     icon: <UserGroupIcon className="size-4" />,
     defaultOpen: true,
+    roles: ["admin"],
     items: [
       { label: "Design System", href: "/tools/design-system" },
       { label: "Playbooks", href: "/tools/playbooks" },
@@ -69,7 +70,7 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: "CRO Lab",
+    title: "CRO Lab (WIP)",
     icon: <BeakerIcon className="size-4" />,
     defaultOpen: false,
     items: [
