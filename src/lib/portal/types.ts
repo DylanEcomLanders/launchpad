@@ -86,6 +86,15 @@ export interface AdHocRequest {
   created_by: string;
 }
 
+export interface PortalReport {
+  id: string;
+  title: string;
+  date: string;           // ISO date e.g. "2026-03-30"
+  content: string;         // HTML from mammoth extraction
+  published: boolean;
+  created_at: string;
+}
+
 export type BlockerType = "client" | "internal" | "external";
 
 export interface PortalBlocker {
@@ -145,6 +154,7 @@ export interface PortalData {
   show_results: boolean;
   slack_channel_url: string;
   ad_hoc_requests: AdHocRequest[];
+  reports?: PortalReport[];
   blocker?: PortalBlocker | null;
   created_at: string;
   updated_at: string;

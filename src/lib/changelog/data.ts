@@ -37,6 +37,19 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-19",
+    date: "30 Mar 2026",
+    version: "0.17.0",
+    title: "Weekly Report Upload & Branded Client Display",
+    changes: [
+      { type: "added", text: "Report upload tool — upload .docx files, auto-extract content, preview with EcomLanders branding before publishing" },
+      { type: "added", text: "Reports tab in admin portal — manage, preview, publish/unpublish, and delete reports per client" },
+      { type: "added", text: "Reports tab in client portal — timeline of published reports with branded read view" },
+      { type: "added", text: "Branded report renderer — shared component with EcomLanders header, typography, and footer" },
+      { type: "added", text: "Client-side .docx extraction via mammoth.js (dynamic import, no client bundle impact)" },
+    ],
+  },
+  {
     id: "cl-18",
     date: "23 Mar 2026",
     version: "0.16.1",

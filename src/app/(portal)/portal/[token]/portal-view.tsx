@@ -14,15 +14,17 @@ import type {
   AdHocRequest,
   PhaseStatus,
   PortalProject,
+  PortalReport,
 } from "@/lib/portal/types";
 import type { DesignReview, DesignReviewVersion, DesignReviewFeedback } from "@/lib/portal/review-types";
 import type { FunnelData } from "@/lib/funnel-builder/types";
 
 import { toLoomEmbed } from "@/lib/portal/loom";
 import { toFigmaEmbed } from "@/lib/portal/review-types";
+import { BrandedReport } from "@/components/branded-report";
 
 /* ── Tab type ── */
-type Tab = "overview" | "timeline" | "testing" | "updates" | "scope" | "designs" | "development" | "results" | "requests" | "funnels";
+type Tab = "overview" | "timeline" | "testing" | "updates" | "scope" | "designs" | "development" | "results" | "requests" | "funnels" | "reports";
 
 /* ── SVG Progress Ring ── */
 function ProgressRing({
@@ -167,6 +169,7 @@ function NavIcon({ type }: { type: Tab }) {
     case "testing": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" /></svg>;
     case "requests": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" /></svg>;
     case "funnels": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd" /></svg>;
+    case "reports": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" /></svg>;
     default: return null;
   }
 }
@@ -243,16 +246,20 @@ export function PortalView({
   const openRequestCount = (portal.ad_hoc_requests || []).filter(r => r.status !== "done").length;
 
   // Nav items depend on drill view
+  const publishedReports = (portal.reports || []).filter((r) => r.published);
+
   const navItems: { key: Tab; label: string }[] = drillView === "home"
     ? [
         { key: "overview", label: "Home" },
         ...(updates.length > 0 ? [{ key: "updates" as Tab, label: "Updates" }] : []),
+        ...(publishedReports.length > 0 ? [{ key: "reports" as Tab, label: "Reports" }] : []),
         { key: "requests", label: "Requests" },
       ]
     : drillView === "retainer"
     ? [
         { key: "testing" as Tab, label: "Testing" },
         { key: "scope", label: "Deliverables" },
+        ...(publishedReports.length > 0 ? [{ key: "reports" as Tab, label: "Reports" }] : []),
       ]
     : [
         { key: "overview" as Tab, label: "Overview" },
@@ -261,6 +268,7 @@ export function PortalView({
         { key: "development", label: "Development" },
         { key: "scope", label: "Deliverables" },
         ...(funnels.length > 0 ? [{ key: "funnels" as Tab, label: "Funnels" }] : []),
+        ...(publishedReports.length > 0 ? [{ key: "reports" as Tab, label: "Reports" }] : []),
       ];
 
   const firstName = portal.client_name.split(" ")[0].split("[")[0].trim();
@@ -599,6 +607,12 @@ export function PortalView({
                     </div>
                   ))}
                 </div>
+              </>
+            )}
+            {activeTab === "reports" && (
+              <>
+                <PageHeader title="Reports" subtitle="Weekly reports from the team" />
+                <ReportsTab reports={publishedReports} />
               </>
             )}
             {activeTab === "requests" && (
@@ -2417,6 +2431,74 @@ function RequestPopup({
           </div>
         </form>
       </div>
+    </div>
+  );
+}
+
+/* ─── Reports Tab (Client) ─── */
+function ReportsTab({ reports }: { reports: PortalReport[] }) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selected = selectedId ? reports.find((r) => r.id === selectedId) : null;
+
+  if (selected) {
+    return (
+      <div className="space-y-4">
+        <button
+          onClick={() => setSelectedId(null)}
+          className="flex items-center gap-1.5 text-xs font-medium text-[#999] hover:text-[#1A1A1A] transition-colors"
+        >
+          <svg className="size-3.5" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 011.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
+          </svg>
+          All Reports
+        </button>
+        <BrandedReport
+          title={selected.title}
+          date={selected.date}
+          content={selected.content}
+        />
+      </div>
+    );
+  }
+
+  if (reports.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <svg className="size-8 text-[#D4D4D4] mx-auto mb-3" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+        </svg>
+        <p className="text-sm text-[#999]">No reports yet</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {reports.map((report) => (
+        <button
+          key={report.id}
+          onClick={() => setSelectedId(report.id)}
+          className="w-full text-left p-5 border border-[#E8E8E8] rounded-xl hover:border-[#1A1A1A] transition-colors group bg-white"
+        >
+          <div className="flex items-center justify-between">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-[#1A1A1A] group-hover:underline truncate">
+                {report.title}
+              </p>
+              <p className="text-[11px] text-[#AAA] mt-1">
+                {new Date(report.date + "T00:00:00").toLocaleDateString("en-GB", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </p>
+            </div>
+            <svg className="size-4 text-[#D4D4D4] group-hover:text-[#1A1A1A] transition-colors shrink-0" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+            </svg>
+          </div>
+        </button>
+      ))}
     </div>
   );
 }

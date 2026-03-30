@@ -54,15 +54,17 @@ import type {
   ScopeItem,
   PortalProject,
   ProjectType,
+  PortalReport,
 } from "@/lib/portal/types";
 import { deliverableTypes } from "@/lib/config";
+import { BrandedReport } from "@/components/branded-report";
 import type {
   DesignReview,
   DesignReviewVersion,
   DesignReviewFeedback,
 } from "@/lib/portal/review-types";
 
-type DashTab = "overview" | "updates" | "designs" | "development" | "testing" | "funnels";
+type DashTab = "overview" | "updates" | "designs" | "development" | "testing" | "funnels" | "reports";
 
 export default function PortalDetailPage() {
   const params = useParams();
@@ -468,6 +470,7 @@ export default function PortalDetailPage() {
         { key: "overview", label: "Overview" },
         { key: "testing", label: "Testing" },
         { key: "updates", label: "Updates" },
+        { key: "reports", label: "Reports" },
       ]
     : [
         { key: "overview", label: "Overview" },
@@ -476,6 +479,7 @@ export default function PortalDetailPage() {
         { key: "development", label: "Development" },
         { key: "testing", label: "Testing" },
         { key: "funnels", label: "Funnels" },
+        { key: "reports", label: "Reports" },
       ];
 
   return (
@@ -920,6 +924,16 @@ export default function PortalDetailPage() {
               </div>
             )}
           </div>
+        )}
+
+        {activeTab === "reports" && portal && (
+          <ReportsSection
+            reports={portal.reports || []}
+            onUpdate={async (reports) => {
+              await updatePortal(portal.id, { reports } as any);
+              setPortal({ ...portal, reports });
+            }}
+          />
         )}
 
         {/* Phase form modal */}
@@ -3935,6 +3949,265 @@ function ClientDetailsPanel({ portal, team, onUpdateField }: { portal: PortalDat
         })()}
       </div>
 
+    </div>
+  );
+}
+
+/* ─── Reports Section ─── */
+function ReportsSection({
+  reports,
+  onUpdate,
+}: {
+  reports: PortalReport[];
+  onUpdate: (reports: PortalReport[]) => Promise<void>;
+}) {
+  const [showUpload, setShowUpload] = useState(false);
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [extractedHtml, setExtractedHtml] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [previewId, setPreviewId] = useState<string | null>(null);
+  const [fileName, setFileName] = useState("");
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File too large. Max 5MB.");
+      return;
+    }
+    setUploading(true);
+    setFileName(file.name);
+    try {
+      const mammoth = await import("mammoth");
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.convertToHtml(
+        { arrayBuffer },
+        {
+          convertImage: mammoth.images.imgElement(function (image: any) {
+            return image.read("base64").then(function (imageBuffer: string) {
+              return { src: `data:${image.contentType};base64,${imageBuffer}` };
+            });
+          }),
+        }
+      );
+      setExtractedHtml(result.value);
+      if (!title) {
+        const nameWithoutExt = file.name.replace(/\.docx?$/i, "").replace(/[-_]/g, " ");
+        setTitle(nameWithoutExt);
+      }
+    } catch (err) {
+      console.error("Failed to extract .docx:", err);
+      alert("Failed to read .docx file. Please try again.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleSave(published: boolean) {
+    if (!extractedHtml || !title) return;
+    setSaving(true);
+    const report: PortalReport = {
+      id: crypto.randomUUID(),
+      title,
+      date,
+      content: extractedHtml,
+      published,
+      created_at: new Date().toISOString(),
+    };
+    await onUpdate([report, ...reports]);
+    setShowUpload(false);
+    setTitle("");
+    setDate(new Date().toISOString().slice(0, 10));
+    setExtractedHtml("");
+    setFileName("");
+    setSaving(false);
+  }
+
+  async function togglePublish(id: string) {
+    const updated = reports.map((r) =>
+      r.id === id ? { ...r, published: !r.published } : r
+    );
+    await onUpdate(updated);
+  }
+
+  async function deleteReport(id: string) {
+    if (!confirm("Delete this report?")) return;
+    await onUpdate(reports.filter((r) => r.id !== id));
+    if (previewId === id) setPreviewId(null);
+  }
+
+  const previewReport = previewId ? reports.find((r) => r.id === previewId) : null;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-lg font-semibold tracking-tight">Reports</h2>
+        <button
+          onClick={() => setShowUpload(!showUpload)}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
+        >
+          <PlusIcon className="size-3.5" />
+          Upload Report
+        </button>
+      </div>
+
+      {showUpload && (
+        <div className="border border-[#E5E5EA] rounded-xl p-5 space-y-4 bg-white">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass}>Report Title</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Week 13 CRO Report"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Date</label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className={labelClass}>Upload .docx</label>
+            <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-[#E5E5EA] rounded-lg cursor-pointer hover:border-[#1B1B1B] transition-colors">
+              <input
+                type="file"
+                accept=".docx"
+                onChange={handleFile}
+                className="hidden"
+              />
+              {uploading ? (
+                <span className="text-xs text-[#7A7A7A]">Extracting content...</span>
+              ) : fileName ? (
+                <span className="text-xs text-[#1B1B1B] font-medium">{fileName}</span>
+              ) : (
+                <span className="text-xs text-[#7A7A7A]">Click to select .docx file (max 5MB)</span>
+              )}
+            </label>
+          </div>
+
+          {extractedHtml && (
+            <>
+              <div>
+                <label className={labelClass}>Preview</label>
+                <BrandedReport title={title || "Untitled"} date={date} content={extractedHtml} />
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleSave(true)}
+                  disabled={saving || !title}
+                  className="px-4 py-2 text-xs font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors disabled:opacity-50"
+                >
+                  {saving ? "Saving..." : "Publish"}
+                </button>
+                <button
+                  onClick={() => handleSave(false)}
+                  disabled={saving || !title}
+                  className="px-4 py-2 text-xs font-medium bg-white border border-[#E5E5EA] text-[#1B1B1B] rounded-lg hover:bg-[#F7F8FA] transition-colors disabled:opacity-50"
+                >
+                  Save Draft
+                </button>
+                <button
+                  onClick={() => {
+                    setShowUpload(false);
+                    setExtractedHtml("");
+                    setFileName("");
+                    setTitle("");
+                  }}
+                  className="px-4 py-2 text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {previewReport && (
+        <div className="space-y-3">
+          <button
+            onClick={() => setPreviewId(null)}
+            className="flex items-center gap-1 text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+          >
+            <ArrowLeftIcon className="size-3" /> Back to list
+          </button>
+          <BrandedReport
+            title={previewReport.title}
+            date={previewReport.date}
+            content={previewReport.content}
+          />
+        </div>
+      )}
+
+      {!previewReport && reports.length === 0 && !showUpload && (
+        <div className="text-center py-16 border border-dashed border-[#E5E5EA] rounded-xl">
+          <p className="text-sm text-[#7A7A7A] mb-1">No reports yet</p>
+          <p className="text-xs text-[#A0A0A0]">Upload a .docx to create a branded weekly report</p>
+        </div>
+      )}
+
+      {!previewReport && reports.length > 0 && (
+        <div className="space-y-2">
+          {reports.map((report) => (
+            <div
+              key={report.id}
+              className="flex items-center justify-between p-4 border border-[#E5E5EA] rounded-xl bg-white"
+            >
+              <div
+                className="min-w-0 flex-1 cursor-pointer"
+                onClick={() => setPreviewId(report.id)}
+              >
+                <p className="text-sm font-medium text-[#1B1B1B] truncate hover:underline">
+                  {report.title}
+                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[11px] text-[#A0A0A0]">
+                    {new Date(report.date + "T00:00:00").toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                      report.published
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "bg-amber-50 text-amber-700"
+                    }`}
+                  >
+                    {report.published ? "Published" : "Draft"}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 shrink-0 ml-3">
+                <button
+                  onClick={() => togglePublish(report.id)}
+                  className="px-2 py-1 text-[11px] font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+                >
+                  {report.published ? "Unpublish" : "Publish"}
+                </button>
+                <button
+                  onClick={() => deleteReport(report.id)}
+                  className="p-1 text-[#CCC] hover:text-red-500 transition-colors"
+                >
+                  <TrashIcon className="size-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
