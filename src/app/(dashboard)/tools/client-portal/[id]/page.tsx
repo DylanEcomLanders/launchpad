@@ -3993,9 +3993,17 @@ function ReportsSection({
         }
       );
       // Auto-replace author names with agency name
-      const cleaned = result.value.replace(
-        /(?:prepared|written|authored|compiled|created)\s+by\s+[^<]+/gi,
-        (match: string) => match.replace(/by\s+.+/i, "by Ecomlanders")
+      // Handles both plain text and HTML-spanning cases
+      let cleaned = result.value;
+      // Plain text within a single element
+      cleaned = cleaned.replace(
+        /((?:prepared|written|authored|compiled|created)\s+by)\s+[^<\n]+/gi,
+        "$1 Ecomlanders"
+      );
+      // Also handle cases where name might be in nested tags (e.g. <strong>)
+      cleaned = cleaned.replace(
+        /((?:Prepared|Written|Authored|Compiled|Created)\s+by)\s*(<[^>]+>)*\s*Dan\s+Redgewell[^<]*/gi,
+        "$1 Ecomlanders"
       );
       setExtractedHtml(cleaned);
       if (!title) {
