@@ -1268,13 +1268,13 @@ function PortalCard({
           <div className="flex items-center gap-1 shrink-0 ml-auto">
             <button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCopyLink(portal.token); }}
-              className="p-1.5 text-[#CCC] hover:text-[#1A1A1A] transition-colors opacity-0 group-hover:opacity-100"
+              className="p-1.5 text-[#CCC] hover:text-[#1A1A1A] transition-colors"
             >
               {copiedToken === portal.token ? <CheckIcon className="size-3.5 text-emerald-500" /> : <ClipboardDocumentIcon className="size-3.5" />}
             </button>
             <button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.open(`/portal/${portal.token}`, '_blank'); }}
-              className="p-1.5 text-[#CCC] hover:text-[#1A1A1A] transition-colors opacity-0 group-hover:opacity-100"
+              className="p-1.5 text-[#CCC] hover:text-[#1A1A1A] transition-colors"
             >
               <ArrowTopRightOnSquareIcon className="size-3.5" />
             </button>
@@ -1289,7 +1289,7 @@ function PortalCard({
             ) : (
               <button
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(portal.id); }}
-                className="p-1.5 text-[#CCC] hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                className="p-1.5 text-[#CCC] hover:text-red-400 transition-colors"
               >
                 <TrashIcon className="size-3.5" />
               </button>
