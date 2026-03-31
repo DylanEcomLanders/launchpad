@@ -153,7 +153,7 @@ export default function GrowthEnginePage() {
               ))}
             </div>
             <div className="h-5 w-px bg-[#E5E5EA]" />
-            <h1 className="text-sm font-semibold text-[#1A1A1A]">Growth Engine</h1>
+            <h1 className="text-sm font-semibold text-[#1A1A1A]">Agency Funnels</h1>
           </div>
 
           {/* Right: View switcher + stats */}
@@ -320,6 +320,19 @@ export default function GrowthEnginePage() {
                   <option value="live">Live</option>
                 </select>
               </div>
+              <div>
+                <label className="text-[10px] text-[#777] block mb-1">Funnel Stage</label>
+                <select
+                  value={String((selectedNode.data as Record<string, unknown>)?.stage || "")}
+                  onChange={(e) => updateNodeData("stage", e.target.value)}
+                  className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded"
+                >
+                  <option value="">No stage</option>
+                  <option value="tofu">TOFU (Top)</option>
+                  <option value="mofu">MOFU (Middle)</option>
+                  <option value="bofu">BOFU (Bottom)</option>
+                </select>
+              </div>
               {selectedNode.type === "trafficNode" && (
                 <div>
                   <label className="text-[10px] text-[#777] block mb-1">Warmth</label>
@@ -332,6 +345,72 @@ export default function GrowthEnginePage() {
                     <option value="warm">Warm</option>
                     <option value="hot">Hot</option>
                   </select>
+                </div>
+              )}
+              {selectedNode.type === "leadMagnetNode" && (
+                <div>
+                  <label className="text-[10px] text-[#777] block mb-1">Format</label>
+                  <select
+                    value={String((selectedNode.data as Record<string, unknown>)?.leadMagnetFormat || "pdf")}
+                    onChange={(e) => updateNodeData("leadMagnetFormat", e.target.value)}
+                    className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded"
+                  >
+                    <option value="pdf">PDF Guide</option>
+                    <option value="video">Video</option>
+                    <option value="tool">Tool / Calculator</option>
+                    <option value="quiz">Quiz</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              )}
+              {selectedNode.type === "emailSequenceNode" && (
+                <div className="space-y-2">
+                  <div>
+                    <label className="text-[10px] text-[#777] block mb-1">Email Count</label>
+                    <input type="number" min={1} value={String((selectedNode.data as any)?.emailSequenceMetrics?.emailCount || "")}
+                      onChange={(e) => {
+                        const esm = (selectedNode.data as any)?.emailSequenceMetrics || {};
+                        updateNodeData("emailSequenceMetrics", { ...esm, emailCount: e.target.value ? Number(e.target.value) : undefined });
+                      }}
+                      className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-[#777] block mb-1">Open Rate %</label>
+                    <input type="number" step="0.1" value={String((selectedNode.data as any)?.emailSequenceMetrics?.openRate ?? "")}
+                      onChange={(e) => {
+                        const esm = (selectedNode.data as any)?.emailSequenceMetrics || {};
+                        updateNodeData("emailSequenceMetrics", { ...esm, openRate: e.target.value ? Number(e.target.value) : undefined });
+                      }}
+                      className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-[#777] block mb-1">Click Rate %</label>
+                    <input type="number" step="0.1" value={String((selectedNode.data as any)?.emailSequenceMetrics?.clickRate ?? "")}
+                      onChange={(e) => {
+                        const esm = (selectedNode.data as any)?.emailSequenceMetrics || {};
+                        updateNodeData("emailSequenceMetrics", { ...esm, clickRate: e.target.value ? Number(e.target.value) : undefined });
+                      }}
+                      className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded" />
+                  </div>
+                </div>
+              )}
+              {/* Content Slots */}
+              {(selectedNode.type === "pageNode" || selectedNode.type === "leadMagnetNode") && (
+                <div className="pt-3 border-t border-[#E5E5EA]">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Content Checklist</p>
+                  {(["headline", "hook", "offer", "cta", "socialProof"] as const).map((slot) => {
+                    const slots = (selectedNode.data as any)?.contentSlots || {};
+                    const checked = slots[slot] || false;
+                    const labels: Record<string, string> = { headline: "Headline written", hook: "Hook written", offer: "Offer defined", cta: "CTA written", socialProof: "Social proof added" };
+                    return (
+                      <label key={slot} className="flex items-center gap-2 py-1 cursor-pointer">
+                        <input type="checkbox" checked={checked}
+                          onChange={(e) => updateNodeData("contentSlots", { ...slots, [slot]: e.target.checked })}
+                          className="size-3.5 rounded border-[#CCC] text-[#1B1B1B] focus:ring-0" />
+                        <span className={`text-xs ${checked ? "text-[#1B1B1B]" : "text-[#999]"}`}>{labels[slot]}</span>
+                      </label>
+                    );
+                  })}
                 </div>
               )}
               <div>
@@ -384,7 +463,7 @@ export default function GrowthEnginePage() {
               <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-3">
                 Agency Funnel Steps
               </p>
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 mb-5">
                 {agencyNodeTypes.map((aType) => {
                   const config = agencyNodeConfigs[aType];
                   return (
@@ -392,7 +471,7 @@ export default function GrowthEnginePage() {
                       key={aType}
                       draggable
                       onDragStart={(e) => {
-                        const data = { nodeType: "page", subType: aType, label: config.label, status: "planned" };
+                        const data = { nodeType: "page", subType: aType, label: config.label, status: "planned", contentSlots: { headline: false, hook: false, offer: false, cta: false, socialProof: false } };
                         e.dataTransfer.setData("application/reactflow", JSON.stringify(data));
                         e.dataTransfer.effectAllowed = "move";
                       }}
@@ -403,6 +482,36 @@ export default function GrowthEnginePage() {
                     </div>
                   );
                 })}
+              </div>
+
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-3">
+                Lead Gen
+              </p>
+              <div className="space-y-1.5">
+                <div
+                  draggable
+                  onDragStart={(e) => {
+                    const data = { nodeType: "lead-magnet", subType: "Lead Magnet", label: "Lead Magnet", status: "planned", leadMagnetFormat: "pdf", contentSlots: { headline: false, hook: false, offer: false, cta: false, socialProof: false } };
+                    e.dataTransfer.setData("application/reactflow", JSON.stringify(data));
+                    e.dataTransfer.effectAllowed = "move";
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 border border-[#BBF7D0] rounded-lg cursor-grab hover:border-[#15803D] hover:shadow-sm transition-all bg-[#F0FDF4]"
+                >
+                  <span className="size-2 rounded-full bg-[#15803D]" />
+                  <span className="text-xs font-medium text-[#1A1A1A]">Lead Magnet</span>
+                </div>
+                <div
+                  draggable
+                  onDragStart={(e) => {
+                    const data = { nodeType: "email-sequence", subType: "Email Sequence", label: "Email Sequence", status: "planned", emailSequenceMetrics: { emailCount: 5 } };
+                    e.dataTransfer.setData("application/reactflow", JSON.stringify(data));
+                    e.dataTransfer.effectAllowed = "move";
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 border border-[#FED7AA] rounded-lg cursor-grab hover:border-[#C2410C] hover:shadow-sm transition-all bg-[#FFF7ED]"
+                >
+                  <span className="size-2 rounded-full bg-[#C2410C]" />
+                  <span className="text-xs font-medium text-[#1A1A1A]">Email Sequence</span>
+                </div>
               </div>
             </div>
           )}
