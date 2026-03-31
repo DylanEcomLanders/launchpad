@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, memo } from "react";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { inputClass, labelClass } from "@/lib/form-styles";
 import { loadSettings, type TeamMember } from "@/lib/settings";
 
 interface Task {
@@ -21,6 +20,75 @@ interface BoardData {
 
 const ADMIN_KEY = typeof window !== "undefined" ? "ecomlanders2025" : "";
 
+/* ── Stable row component (won't re-mount on parent state change) ── */
+const TaskEditorRow = memo(function TaskEditorRow({
+  task,
+  assignees,
+  onUpdate,
+  onRemove,
+}: {
+  task: Task;
+  assignees: TeamMember[];
+  onUpdate: (field: string, value: string) => void;
+  onRemove: () => void;
+}) {
+  const [title, setTitle] = useState(task.title);
+  const [client, setClient] = useState(task.client || "");
+
+  // Sync from parent if task changes externally
+  useEffect(() => { setTitle(task.title); }, [task.title]);
+  useEffect(() => { setClient(task.client || ""); }, [task.client]);
+
+  return (
+    <div className="grid grid-cols-[1fr_120px_120px_100px_100px_32px] gap-2 px-4 py-2.5 border-b border-[#EDEDEF] last:border-0 items-center">
+      <input
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        onBlur={() => onUpdate("title", title)}
+        placeholder="Task description..."
+        className="text-sm px-2 py-1 border border-transparent hover:border-[#E5E5EA] focus:border-[#999] rounded focus:outline-none"
+      />
+      <input
+        type="text"
+        value={client}
+        onChange={(e) => setClient(e.target.value)}
+        onBlur={() => onUpdate("client", client)}
+        placeholder="Client"
+        className="text-xs px-2 py-1 border border-transparent hover:border-[#E5E5EA] focus:border-[#999] rounded focus:outline-none"
+      />
+      <select
+        value={task.assignee}
+        onChange={(e) => onUpdate("assignee", e.target.value)}
+        className="text-xs px-1 py-1 border border-transparent hover:border-[#E5E5EA] focus:border-[#999] rounded focus:outline-none"
+      >
+        <option value="">Unassigned</option>
+        {assignees.map((m) => (
+          <option key={m.id} value={m.name}>{m.name}</option>
+        ))}
+      </select>
+      <input
+        type="date"
+        value={task.dueDate}
+        onChange={(e) => onUpdate("dueDate", e.target.value)}
+        className="text-xs px-1 py-1 border border-transparent hover:border-[#E5E5EA] focus:border-[#999] rounded focus:outline-none"
+      />
+      <select
+        value={task.status}
+        onChange={(e) => onUpdate("status", e.target.value)}
+        className="text-xs px-1 py-1 border border-transparent hover:border-[#E5E5EA] focus:border-[#999] rounded focus:outline-none"
+      >
+        <option value="todo">To Do</option>
+        <option value="in-progress">In Progress</option>
+        <option value="done">Done</option>
+      </select>
+      <button onClick={onRemove} className="p-1 text-[#CCC] hover:text-red-400">
+        <TrashIcon className="size-3.5" />
+      </button>
+    </div>
+  );
+});
+
 export default function TaskBoardAdminPage() {
   const [board, setBoard] = useState<BoardData>({ designTasks: [], devTasks: [] });
   const [loading, setLoading] = useState(true);
@@ -28,6 +96,8 @@ export default function TaskBoardAdminPage() {
   const [saved, setSaved] = useState(false);
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [previewUrl, setPreviewUrl] = useState("");
+  const boardRef = useRef(board);
+  boardRef.current = board;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -48,7 +118,7 @@ export default function TaskBoardAdminPage() {
     await fetch("/api/task-board", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
-      body: JSON.stringify(board),
+      body: JSON.stringify(boardRef.current),
     });
     setSaving(false);
     setSaved(true);
@@ -56,85 +126,29 @@ export default function TaskBoardAdminPage() {
   };
 
   const addTask = (type: "design" | "dev") => {
-    const task: Task = {
-      id: crypto.randomUUID(),
-      title: "",
-      assignee: "",
-      dueDate: "",
-      status: "todo",
-      client: "",
-    };
-    if (type === "design") {
-      setBoard({ ...board, designTasks: [...board.designTasks, task] });
-    } else {
-      setBoard({ ...board, devTasks: [...board.devTasks, task] });
-    }
-  };
-
-  const updateTask = (type: "design" | "dev", id: string, field: string, value: string) => {
-    const key = type === "design" ? "designTasks" : "devTasks";
-    setBoard({
-      ...board,
-      [key]: board[key].map((t) => (t.id === id ? { ...t, [field]: value } : t)),
+    const task: Task = { id: crypto.randomUUID(), title: "", assignee: "", dueDate: "", status: "todo", client: "" };
+    setBoard((prev) => {
+      const key = type === "design" ? "designTasks" : "devTasks";
+      return { ...prev, [key]: [...prev[key], task] };
     });
   };
 
-  const removeTask = (type: "design" | "dev", id: string) => {
-    const key = type === "design" ? "designTasks" : "devTasks";
-    setBoard({ ...board, [key]: board[key].filter((t) => t.id !== id) });
-  };
+  const updateTask = useCallback((type: "design" | "dev", id: string, field: string, value: string) => {
+    setBoard((prev) => {
+      const key = type === "design" ? "designTasks" : "devTasks";
+      return { ...prev, [key]: prev[key].map((t) => (t.id === id ? { ...t, [field]: value } : t)) };
+    });
+  }, []);
+
+  const removeTask = useCallback((type: "design" | "dev", id: string) => {
+    setBoard((prev) => {
+      const key = type === "design" ? "designTasks" : "devTasks";
+      return { ...prev, [key]: prev[key].filter((t) => t.id !== id) };
+    });
+  }, []);
 
   const designers = team.filter((m) => m.role.toLowerCase().includes("design"));
   const developers = team.filter((m) => m.role.toLowerCase().includes("develop") || m.role.toLowerCase().includes("head of dev"));
-
-  function TaskEditor({ task, type, assignees }: { task: Task; type: "design" | "dev"; assignees: TeamMember[] }) {
-    return (
-      <div className="grid grid-cols-[1fr_120px_120px_100px_100px_32px] gap-2 px-4 py-2.5 border-b border-[#EDEDEF] last:border-0 items-center">
-        <input
-          type="text"
-          value={task.title}
-          onChange={(e) => updateTask(type, task.id, "title", e.target.value)}
-          placeholder="Task description..."
-          className="text-sm px-2 py-1 border border-transparent hover:border-[#E5E5EA] focus:border-[#999] rounded focus:outline-none"
-        />
-        <input
-          type="text"
-          value={task.client || ""}
-          onChange={(e) => updateTask(type, task.id, "client", e.target.value)}
-          placeholder="Client"
-          className="text-xs px-2 py-1 border border-transparent hover:border-[#E5E5EA] focus:border-[#999] rounded focus:outline-none"
-        />
-        <select
-          value={task.assignee}
-          onChange={(e) => updateTask(type, task.id, "assignee", e.target.value)}
-          className="text-xs px-1 py-1 border border-transparent hover:border-[#E5E5EA] focus:border-[#999] rounded focus:outline-none"
-        >
-          <option value="">Unassigned</option>
-          {assignees.map((m) => (
-            <option key={m.id} value={m.name}>{m.name}</option>
-          ))}
-        </select>
-        <input
-          type="date"
-          value={task.dueDate}
-          onChange={(e) => updateTask(type, task.id, "dueDate", e.target.value)}
-          className="text-xs px-1 py-1 border border-transparent hover:border-[#E5E5EA] focus:border-[#999] rounded focus:outline-none"
-        />
-        <select
-          value={task.status}
-          onChange={(e) => updateTask(type, task.id, "status", e.target.value)}
-          className="text-xs px-1 py-1 border border-transparent hover:border-[#E5E5EA] focus:border-[#999] rounded focus:outline-none"
-        >
-          <option value="todo">To Do</option>
-          <option value="in-progress">In Progress</option>
-          <option value="done">Done</option>
-        </select>
-        <button onClick={() => removeTask(type, task.id)} className="p-1 text-[#CCC] hover:text-red-400">
-          <TrashIcon className="size-3.5" />
-        </button>
-      </div>
-    );
-  }
 
   if (loading) {
     return (
@@ -151,16 +165,10 @@ export default function TaskBoardAdminPage() {
           <h1 className="text-2xl font-bold tracking-tight">Task Board</h1>
           <p className="text-xs text-[#7A7A7A] mt-1">
             Manage design and dev tasks. Team views at{" "}
-            <a href={previewUrl} target="_blank" rel="noopener noreferrer" className="text-[#2563EB] underline">
-              /tasks
-            </a>
+            <a href={previewUrl} target="_blank" rel="noopener noreferrer" className="text-[#2563EB] underline">/tasks</a>
           </p>
         </div>
-        <button
-          onClick={save}
-          disabled={saving}
-          className="px-5 py-2.5 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] disabled:opacity-50"
-        >
+        <button onClick={save} disabled={saving} className="px-5 py-2.5 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] disabled:opacity-50">
           {saved ? "Saved" : saving ? "Saving..." : "Save & Publish"}
         </button>
       </div>
@@ -188,7 +196,15 @@ export default function TaskBoardAdminPage() {
           {board.designTasks.length === 0 ? (
             <p className="text-xs text-[#CCC] text-center py-6">No design tasks</p>
           ) : (
-            board.designTasks.map((t) => <TaskEditor key={t.id} task={t} type="design" assignees={designers} />)
+            board.designTasks.map((t) => (
+              <TaskEditorRow
+                key={t.id}
+                task={t}
+                assignees={designers}
+                onUpdate={(field, value) => updateTask("design", t.id, field, value)}
+                onRemove={() => removeTask("design", t.id)}
+              />
+            ))
           )}
         </div>
       </div>
@@ -216,7 +232,15 @@ export default function TaskBoardAdminPage() {
           {board.devTasks.length === 0 ? (
             <p className="text-xs text-[#CCC] text-center py-6">No dev tasks</p>
           ) : (
-            board.devTasks.map((t) => <TaskEditor key={t.id} task={t} type="dev" assignees={developers} />)
+            board.devTasks.map((t) => (
+              <TaskEditorRow
+                key={t.id}
+                task={t}
+                assignees={developers}
+                onUpdate={(field, value) => updateTask("dev", t.id, field, value)}
+                onRemove={() => removeTask("dev", t.id)}
+              />
+            ))
           )}
         </div>
       </div>
