@@ -237,6 +237,7 @@ export async function getPortalById(id: string): Promise<PortalData | null> {
             if (lsPortal?.results) portal.results = migrateTestResults(lsPortal.results);
             if (lsPortal?.testing_tier) portal.testing_tier = lsPortal.testing_tier;
             if (lsPortal?.intelligems_key) portal.intelligems_key = lsPortal.intelligems_key;
+            if (lsPortal?.reports?.length) portal.reports = lsPortal.reports;
           }
         }
         return portal;
@@ -274,6 +275,7 @@ export async function getPortalByToken(token: string): Promise<PortalData | null
             if (lsPortal?.results) portal.results = migrateTestResults(lsPortal.results);
             if (lsPortal?.testing_tier) portal.testing_tier = lsPortal.testing_tier;
             if (lsPortal?.intelligems_key) portal.intelligems_key = lsPortal.intelligems_key;
+            if (lsPortal?.reports?.length) portal.reports = lsPortal.reports;
           }
         }
         return portal;
