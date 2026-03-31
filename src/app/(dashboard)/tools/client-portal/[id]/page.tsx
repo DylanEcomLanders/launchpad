@@ -3992,7 +3992,12 @@ function ReportsSection({
           }),
         }
       );
-      setExtractedHtml(result.value);
+      // Auto-replace author names with agency name
+      const cleaned = result.value.replace(
+        /(?:prepared|written|authored|compiled|created)\s+by\s+[^<]+/gi,
+        (match: string) => match.replace(/by\s+.+/i, "by Ecomlanders")
+      );
+      setExtractedHtml(cleaned);
       if (!title) {
         const nameWithoutExt = file.name.replace(/\.docx?$/i, "").replace(/[-_]/g, " ");
         setTitle(nameWithoutExt);
