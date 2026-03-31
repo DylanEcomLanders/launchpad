@@ -20,6 +20,8 @@ import {
 import "@xyflow/react/dist/style.css";
 import TrafficNode from "./TrafficNode";
 import PageNode from "./PageNode";
+import LeadMagnetNode from "./LeadMagnetNode";
+import EmailSequenceNode from "./EmailSequenceNode";
 import FunnelEdge from "./FunnelEdge";
 import type { FunnelNodeData, SerializedNode, SerializedEdge } from "@/lib/funnel-builder/types";
 
@@ -32,7 +34,7 @@ interface FunnelCanvasProps {
   readOnly?: boolean;
 }
 
-const nodeTypes = { trafficNode: TrafficNode, pageNode: PageNode };
+const nodeTypes = { trafficNode: TrafficNode, pageNode: PageNode, leadMagnetNode: LeadMagnetNode, emailSequenceNode: EmailSequenceNode };
 const edgeTypes = { funnelEdge: FunnelEdge };
 
 const defaultEdgeOptions = {
@@ -208,9 +210,16 @@ const FunnelCanvasInner = forwardRef<FunnelCanvasHandle, FunnelCanvasProps>(func
 
       const position = screenToFlowPosition({ x: event.clientX, y: event.clientY });
 
+      const typeMap: Record<string, string> = {
+        traffic: "trafficNode",
+        page: "pageNode",
+        "lead-magnet": "leadMagnetNode",
+        "email-sequence": "emailSequenceNode",
+      };
+
       const newNode: Node = {
         id: `node_${Date.now().toString(36)}`,
-        type: data.nodeType === "traffic" ? "trafficNode" : "pageNode",
+        type: typeMap[data.nodeType] || "pageNode",
         position,
         data: data as unknown as Record<string, unknown>,
       };

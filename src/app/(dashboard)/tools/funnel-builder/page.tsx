@@ -36,12 +36,60 @@ import type {
   PageNodeType,
   SerializedNode,
   SerializedEdge,
+  ContentSlot,
 } from "@/lib/funnel-builder/types";
+import { leadMagnetConfig, emailSequenceConfig, cvrBenchmarks } from "@/lib/funnel-builder/constants";
 import type { Node, Edge } from "@xyflow/react";
 
 /* ── Helper ── */
 function genId() {
   return `node_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+}
+
+/** Calculate funnel health score (0-100) */
+function calcHealthScore(nodes: SerializedNode[]): number {
+  if (nodes.length === 0) return 0;
+
+  // 1. Live status (40%)
+  const liveCount = nodes.filter((n) => n.data.status === "live").length;
+  const liveScore = (liveCount / nodes.length) * 100;
+
+  // 2. CVR vs benchmarks (40%) — only for nodes with CVR data
+  const nodesWithCvr = nodes.filter((n) => n.data.metrics?.cvr != null);
+  let cvrScore = 50; // default if no CVR data
+  if (nodesWithCvr.length > 0) {
+    const scores = nodesWithCvr.map((n) => {
+      const benchmark = cvrBenchmarks[n.data.subType as string] || 3;
+      const actual = n.data.metrics!.cvr!;
+      return Math.min(100, (actual / benchmark) * 100);
+    });
+    cvrScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+  }
+
+  // 3. Content completion (20%)
+  const nodesWithSlots = nodes.filter((n) => n.data.contentSlots);
+  let contentScore = 50; // default if no content slots
+  if (nodesWithSlots.length > 0) {
+    const completions = nodesWithSlots.map((n) => {
+      const slots = Object.values(n.data.contentSlots!);
+      return (slots.filter(Boolean).length / slots.length) * 100;
+    });
+    contentScore = completions.reduce((a, b) => a + b, 0) / completions.length;
+  }
+
+  return Math.round(liveScore * 0.4 + cvrScore * 0.4 + contentScore * 0.2);
+}
+
+function healthColor(score: number): string {
+  if (score >= 70) return "text-emerald-600";
+  if (score >= 40) return "text-amber-600";
+  return "text-red-500";
+}
+
+function healthBg(score: number): string {
+  if (score >= 70) return "bg-emerald-500";
+  if (score >= 40) return "bg-amber-500";
+  return "bg-red-500";
 }
 
 function templateToNodes(
@@ -255,7 +303,7 @@ export default function FunnelBuilderPage() {
   /* ── Drag start from palette ── */
   const onDragStart = (
     event: React.DragEvent,
-    nodeType: "traffic" | "page",
+    nodeType: "traffic" | "page" | "lead-magnet" | "email-sequence",
     subType: string
   ) => {
     const data: FunnelNodeData = {
@@ -264,8 +312,11 @@ export default function FunnelBuilderPage() {
       label:
         trafficSourceConfigs[subType as TrafficSource]?.label ||
         pageNodeConfigs[subType as PageNodeType]?.label ||
-        subType,
+        (nodeType === "lead-magnet" ? "Lead Magnet" : nodeType === "email-sequence" ? "Email Sequence" : subType),
       status: "planned",
+      ...(nodeType === "lead-magnet" ? { leadMagnetFormat: "pdf" as const, contentSlots: { headline: false, hook: false, offer: false, cta: false, socialProof: false } } : {}),
+      ...(nodeType === "email-sequence" ? { emailSequenceMetrics: { emailCount: 5, openRate: undefined, clickRate: undefined } } : {}),
+      ...((nodeType === "page") ? { contentSlots: { headline: false, hook: false, offer: false, cta: false, socialProof: false } } : {}),
     };
     event.dataTransfer.setData("application/reactflow", JSON.stringify(data));
     event.dataTransfer.effectAllowed = "move";
@@ -328,10 +379,17 @@ export default function FunnelBuilderPage() {
                       <p className="text-sm font-semibold text-[#1B1B1B]">
                         {f.name || "Untitled Funnel"}
                       </p>
-                      <p className="text-xs text-[#7A7A7A]">
-                        {f.nodes.length} nodes · {f.clientName || "No client"} ·{" "}
-                        {f.mode === "performance" ? "Performance" : "Strategy"}
-                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <p className="text-xs text-[#7A7A7A]">
+                          {f.nodes.length} nodes · {f.clientName || "No client"} · {f.mode === "performance" ? "Performance" : "Strategy"}
+                        </p>
+                        {f.nodes.length > 0 && (() => {
+                          const score = calcHealthScore(f.nodes);
+                          return (
+                            <span className={`text-[10px] font-bold ${healthColor(score)}`}>{score}/100</span>
+                          );
+                        })()}
+                      </div>
                     </button>
                     <button
                       onClick={(e) => {
@@ -387,6 +445,22 @@ export default function FunnelBuilderPage() {
             placeholder="Client name..."
           />
         </div>
+
+        {/* Health Score */}
+        {activeFunnel.nodes.length > 0 && (() => {
+          const score = calcHealthScore(activeFunnel.nodes);
+          return (
+            <div className="p-4 border-b border-[#E5E5EA]">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Health</span>
+                <span className={`text-sm font-bold ${healthColor(score)}`}>{score}</span>
+              </div>
+              <div className="h-1.5 bg-[#F0F0F0] rounded-full overflow-hidden">
+                <div className={`h-full ${healthBg(score)} rounded-full transition-all`} style={{ width: `${score}%` }} />
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Mode + Export */}
         <div className="p-4 border-b border-[#E5E5EA] space-y-2">
@@ -445,7 +519,7 @@ export default function FunnelBuilderPage() {
             <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">
               Pages
             </p>
-            <div className="space-y-1">
+            <div className="space-y-1 mb-4">
               {pageNodeTypes.map((p) => (
                 <div
                   key={p}
@@ -465,6 +539,28 @@ export default function FunnelBuilderPage() {
                   <span className="text-[#555]">{pageNodeConfigs[p].label}</span>
                 </div>
               ))}
+            </div>
+
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">
+              Lead Gen
+            </p>
+            <div className="space-y-1">
+              <div
+                draggable
+                onDragStart={(e) => onDragStart(e, "lead-magnet", "Lead Magnet")}
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-[#F0FDF4] border border-[#BBF7D0] cursor-grab hover:border-[#15803D] transition-colors text-xs"
+              >
+                <span className="text-[8px] font-bold uppercase px-1 py-0.5 rounded bg-[#E6F9ED] text-[#15803D]">LM</span>
+                <span className="text-[#555]">Lead Magnet</span>
+              </div>
+              <div
+                draggable
+                onDragStart={(e) => onDragStart(e, "email-sequence", "Email Sequence")}
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-[#FFF7ED] border border-[#FED7AA] cursor-grab hover:border-[#C2410C] transition-colors text-xs"
+              >
+                <span className="text-[8px] font-bold uppercase px-1 py-0.5 rounded bg-[#FDF2E9] text-[#C2410C]">SEQ</span>
+                <span className="text-[#555]">Email Sequence</span>
+              </div>
             </div>
           </div>
         )}
@@ -548,10 +644,140 @@ export default function FunnelBuilderPage() {
                 </div>
               )}
 
+              {/* Funnel Stage */}
+              <div>
+                <label className={labelClass}>Funnel Stage</label>
+                <select
+                  value={nodeData.stage || ""}
+                  onChange={(e) => updateNodeData("stage", e.target.value)}
+                  className={selectClass}
+                >
+                  <option value="">No stage set</option>
+                  <option value="tofu">TOFU (Top of Funnel)</option>
+                  <option value="mofu">MOFU (Middle of Funnel)</option>
+                  <option value="bofu">BOFU (Bottom of Funnel)</option>
+                </select>
+              </div>
+
+              {/* Lead Magnet format */}
+              {nodeData.nodeType === "lead-magnet" && (
+                <div>
+                  <label className={labelClass}>Format</label>
+                  <select
+                    value={nodeData.leadMagnetFormat || "pdf"}
+                    onChange={(e) => updateNodeData("leadMagnetFormat", e.target.value)}
+                    className={selectClass}
+                  >
+                    <option value="pdf">PDF Guide</option>
+                    <option value="video">Video</option>
+                    <option value="tool">Tool / Calculator</option>
+                    <option value="quiz">Quiz</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              )}
+
+              {/* Email Sequence fields */}
+              {nodeData.nodeType === "email-sequence" && (
+                <div className="space-y-2">
+                  <div>
+                    <label className={labelClass}>Email Count</label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={nodeData.emailSequenceMetrics?.emailCount || ""}
+                      onChange={(e) => {
+                        const val = e.target.value === "" ? undefined : Number(e.target.value);
+                        const updatedNodes = nodesRef.current.map((n) =>
+                          n.id === selectedNode.id ? { ...n, data: { ...(n.data as unknown as FunnelNodeData), emailSequenceMetrics: { ...((n.data as unknown as FunnelNodeData).emailSequenceMetrics || {}), emailCount: val } } } : n
+                        );
+                        nodesRef.current = updatedNodes;
+                        canvasHandle.current?.setNodes(updatedNodes);
+                        const u = updatedNodes.find((n) => n.id === selectedNode.id);
+                        if (u) setSelectedNode(u);
+                        debouncedSave();
+                      }}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Open Rate %</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={nodeData.emailSequenceMetrics?.openRate ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value === "" ? undefined : Number(e.target.value);
+                        const updatedNodes = nodesRef.current.map((n) =>
+                          n.id === selectedNode.id ? { ...n, data: { ...(n.data as unknown as FunnelNodeData), emailSequenceMetrics: { ...((n.data as unknown as FunnelNodeData).emailSequenceMetrics || {}), openRate: val } } } : n
+                        );
+                        nodesRef.current = updatedNodes;
+                        canvasHandle.current?.setNodes(updatedNodes);
+                        const u = updatedNodes.find((n) => n.id === selectedNode.id);
+                        if (u) setSelectedNode(u);
+                        debouncedSave();
+                      }}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Click Rate %</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={nodeData.emailSequenceMetrics?.clickRate ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value === "" ? undefined : Number(e.target.value);
+                        const updatedNodes = nodesRef.current.map((n) =>
+                          n.id === selectedNode.id ? { ...n, data: { ...(n.data as unknown as FunnelNodeData), emailSequenceMetrics: { ...((n.data as unknown as FunnelNodeData).emailSequenceMetrics || {}), clickRate: val } } } : n
+                        );
+                        nodesRef.current = updatedNodes;
+                        canvasHandle.current?.setNodes(updatedNodes);
+                        const u = updatedNodes.find((n) => n.id === selectedNode.id);
+                        if (u) setSelectedNode(u);
+                        debouncedSave();
+                      }}
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Content Slots (page + lead magnet nodes) */}
+              {(nodeData.nodeType === "page" || nodeData.nodeType === "lead-magnet") && (
+                <div className="pt-3 border-t border-[#E5E5EA]">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Content Checklist</p>
+                  {(["headline", "hook", "offer", "cta", "socialProof"] as const).map((slot) => {
+                    const checked = nodeData.contentSlots?.[slot] || false;
+                    const labels: Record<string, string> = { headline: "Headline written", hook: "Hook written", offer: "Offer defined", cta: "CTA written", socialProof: "Social proof added" };
+                    return (
+                      <label key={slot} className="flex items-center gap-2 py-1 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={(e) => {
+                            const updatedNodes = nodesRef.current.map((n) =>
+                              n.id === selectedNode.id ? { ...n, data: { ...(n.data as unknown as FunnelNodeData), contentSlots: { ...((n.data as unknown as FunnelNodeData).contentSlots || { headline: false, hook: false, offer: false, cta: false, socialProof: false }), [slot]: e.target.checked } } } : n
+                            );
+                            nodesRef.current = updatedNodes;
+                            canvasHandle.current?.setNodes(updatedNodes);
+                            const u = updatedNodes.find((n) => n.id === selectedNode.id);
+                            if (u) setSelectedNode(u);
+                            debouncedSave();
+                          }}
+                          className="size-3.5 rounded border-[#CCC] text-[#1B1B1B] focus:ring-0"
+                        />
+                        <span className={`text-xs ${checked ? "text-[#1B1B1B]" : "text-[#999]"}`}>{labels[slot]}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+
               {/* Preview URL */}
               <div>
                 <label className={labelClass}>
-                  {nodeData.nodeType === "traffic" ? "Ad Preview URL" : "Page URL"}
+                  {nodeData.nodeType === "traffic" ? "Ad Preview URL" : nodeData.nodeType === "lead-magnet" ? "Lead Magnet URL" : "Page URL"}
                 </label>
                 <input
                   type="url"

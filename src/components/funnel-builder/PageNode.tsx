@@ -2,21 +2,31 @@
 
 import { memo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import type { FunnelNodeData } from "@/lib/funnel-builder/types";
-import { pageNodeConfigs, statusColors, type NodeTypeConfig } from "@/lib/funnel-builder/constants";
+import type { FunnelNodeData, ContentSlot } from "@/lib/funnel-builder/types";
+import { pageNodeConfigs, statusColors, stageColors, type NodeTypeConfig } from "@/lib/funnel-builder/constants";
 import { agencyNodeConfigs } from "@/lib/growth-engine/agency-nodes";
 import type { PageNodeType } from "@/lib/funnel-builder/types";
 
 // Merge ecom + agency configs so both render correctly
 const allPageConfigs: Record<string, NodeTypeConfig> = { ...pageNodeConfigs, ...agencyNodeConfigs };
 
+function contentCompletion(slots?: ContentSlot): { done: number; total: number } | null {
+  if (!slots) return null;
+  const values = Object.values(slots);
+  const done = values.filter(Boolean).length;
+  if (done === 0) return null;
+  return { done, total: values.length };
+}
+
 function PageNodeComponent({ data: rawData, selected }: NodeProps) {
   const data = rawData as unknown as FunnelNodeData;
   const config: NodeTypeConfig =
     allPageConfigs[data.subType as string] || { label: data.subType || data.label, short: (data.subType || "?").slice(0, 3).toUpperCase(), color: "#F0F0F0", textColor: "#555" };
   const status = statusColors[data.status] || statusColors.planned;
+  const stage = data.stage ? stageColors[data.stage] : null;
   const m = data.metrics;
   const hasMetrics = m && (m.traffic != null || m.cvr != null || m.aov != null);
+  const cc = contentCompletion(data.contentSlots);
 
   return (
     <div
@@ -29,12 +39,22 @@ function PageNodeComponent({ data: rawData, selected }: NodeProps) {
 
       {/* Header bar */}
       <div className="flex items-center justify-between px-3.5 py-2 border-b border-[#F0F0F0]">
-        <span
-          className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
-          style={{ background: config.color, color: config.textColor }}
-        >
-          {config.short}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span
+            className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
+            style={{ background: config.color, color: config.textColor }}
+          >
+            {config.short}
+          </span>
+          {stage && (
+            <span
+              className="text-[7px] font-bold uppercase tracking-wider px-1 py-0.5 rounded"
+              style={{ background: stage.bg, color: stage.text }}
+            >
+              {stage.label}
+            </span>
+          )}
+        </div>
         <span
           className="flex items-center gap-1 text-[8px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded"
           style={{ background: status.bg, color: status.text }}
@@ -47,6 +67,16 @@ function PageNodeComponent({ data: rawData, selected }: NodeProps) {
       {/* Body */}
       <div className="px-3.5 py-3">
         <p className="text-[13px] font-semibold text-[#1B1B1B] leading-tight">{data.label}</p>
+
+        {/* Content completion badge */}
+        {cc && (
+          <div className="mt-2 flex items-center gap-1.5">
+            <div className="flex-1 h-1 bg-[#F0F0F0] rounded-full overflow-hidden">
+              <div className="h-full bg-[#1B1B1B] rounded-full" style={{ width: `${(cc.done / cc.total) * 100}%` }} />
+            </div>
+            <span className="text-[9px] text-[#777]">{cc.done}/{cc.total}</span>
+          </div>
+        )}
 
         {/* Metrics */}
         {hasMetrics && (

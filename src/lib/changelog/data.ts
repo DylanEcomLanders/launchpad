@@ -37,6 +37,24 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-20",
+    date: "31 Mar 2026",
+    version: "0.18.0",
+    title: "Funnel Builder — Execution System Upgrade",
+    changes: [
+      { type: "added", text: "Lead Magnet node type — format (PDF/video/tool/quiz), opt-in CVR, content slots" },
+      { type: "added", text: "Email Sequence node type — email count, open rate, click rate metrics" },
+      { type: "added", text: "Funnel stage tagging (TOFU/MOFU/BOFU) on every node type with visual badges" },
+      { type: "added", text: "Content slots per page/lead magnet node — 5-item checklist (headline, hook, offer, CTA, social proof) with completion badge" },
+      { type: "added", text: "Funnel health score (0-100) — weighted from live status (40%), CVR vs benchmarks (40%), content completion (20%)" },
+      { type: "added", text: "Cold Traffic Lead Gen template — paid ad → VSL → lead magnet → email sequence → discovery call" },
+      { type: "added", text: "Warm Retargeting template — retargeting ad → case study → offer → application" },
+      { type: "added", text: "Content Engine template — organic → blog → lead magnet → email sequence → offer" },
+      { type: "improved", text: "Node palette now has Lead Gen section with Lead Magnet and Email Sequence drag items" },
+      { type: "improved", text: "Node editor includes stage selector, content checklist, and lead magnet/email sequence specific fields" },
+    ],
+  },
+  {
     id: "cl-19",
     date: "30 Mar 2026",
     version: "0.17.0",

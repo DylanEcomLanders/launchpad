@@ -21,8 +21,11 @@ export type PageNodeType =
   | "Upsell"
   | "Thank You";
 
+export type LeadMagnetFormat = "pdf" | "video" | "tool" | "quiz" | "other";
+
 export type FunnelNodeStatus = "planned" | "in-progress" | "live";
 export type TrafficWarmth = "cold" | "warm" | "hot";
+export type FunnelStage = "tofu" | "mofu" | "bofu";
 
 export interface FunnelNodeMetrics {
   traffic?: number;
@@ -31,14 +34,48 @@ export interface FunnelNodeMetrics {
   aov?: number;
 }
 
+export interface LeadMagnetMetrics {
+  optInCvr?: number; // %
+}
+
+export interface EmailSequenceMetrics {
+  emailCount?: number;
+  openRate?: number; // %
+  clickRate?: number; // %
+}
+
+export interface ContentSlot {
+  headline: boolean;
+  hook: boolean;
+  offer: boolean;
+  cta: boolean;
+  socialProof: boolean;
+}
+
+export const DEFAULT_CONTENT_SLOTS: ContentSlot = {
+  headline: false,
+  hook: false,
+  offer: false,
+  cta: false,
+  socialProof: false,
+};
+
 export interface FunnelNodeData {
-  nodeType: "traffic" | "page";
-  subType: TrafficSource | PageNodeType;
+  nodeType: "traffic" | "page" | "lead-magnet" | "email-sequence";
+  subType: TrafficSource | PageNodeType | string;
   label: string;
   status: FunnelNodeStatus;
   warmth?: TrafficWarmth;
-  previewUrl?: string; // Ad creative link (traffic) or page URL (page)
+  stage?: FunnelStage;
+  previewUrl?: string;
   metrics?: FunnelNodeMetrics;
+  // Lead Magnet specific
+  leadMagnetFormat?: LeadMagnetFormat;
+  leadMagnetMetrics?: LeadMagnetMetrics;
+  // Email Sequence specific
+  emailSequenceMetrics?: EmailSequenceMetrics;
+  // Content slots (page + lead magnet nodes)
+  contentSlots?: ContentSlot;
 }
 
 export interface FunnelEdgeData {

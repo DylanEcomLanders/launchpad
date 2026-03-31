@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import type { FunnelNodeData } from "@/lib/funnel-builder/types";
-import { trafficSourceConfigs, warmthColors, type NodeTypeConfig } from "@/lib/funnel-builder/constants";
+import { trafficSourceConfigs, warmthColors, stageColors, type NodeTypeConfig } from "@/lib/funnel-builder/constants";
 import type { TrafficSource } from "@/lib/funnel-builder/types";
 
 function TrafficNodeComponent({ data: rawData, selected }: NodeProps) {
@@ -11,6 +11,7 @@ function TrafficNodeComponent({ data: rawData, selected }: NodeProps) {
   const config: NodeTypeConfig =
     trafficSourceConfigs[data.subType as TrafficSource] || { label: data.subType, short: "?", color: "#F5F5F5", textColor: "#777" };
   const warmth = data.warmth ? warmthColors[data.warmth] : null;
+  const stage = data.stage ? stageColors[data.stage] : null;
 
   return (
     <div
@@ -33,6 +34,14 @@ function TrafficNodeComponent({ data: rawData, selected }: NodeProps) {
             style={{ background: warmth.bg, color: warmth.text }}
           >
             {warmth.label}
+          </span>
+        )}
+        {stage && (
+          <span
+            className="text-[7px] font-bold uppercase tracking-wider px-1 py-0.5 rounded"
+            style={{ background: stage.bg, color: stage.text }}
+          >
+            {stage.label}
           </span>
         )}
         <span className="ml-auto text-[9px] font-medium text-[#CCC] uppercase tracking-wider">Traffic</span>

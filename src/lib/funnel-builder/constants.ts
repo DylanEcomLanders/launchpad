@@ -1,6 +1,6 @@
 /* ── Funnel Builder Constants ── */
 
-import type { TrafficSource, PageNodeType } from "./types";
+import type { TrafficSource, PageNodeType, FunnelStage } from "./types";
 
 export interface NodeTypeConfig {
   label: string;
@@ -32,6 +32,14 @@ export const pageNodeConfigs: Record<PageNodeType, NodeTypeConfig> = {
   "Thank You": { label: "Thank You", short: "TY", color: "#E8FEF0", textColor: "#059669" },
 };
 
+export const leadMagnetConfig: NodeTypeConfig = {
+  label: "Lead Magnet", short: "LM", color: "#E6F9ED", textColor: "#15803D",
+};
+
+export const emailSequenceConfig: NodeTypeConfig = {
+  label: "Email Sequence", short: "SEQ", color: "#FDF2E9", textColor: "#C2410C",
+};
+
 export const trafficSources: TrafficSource[] = [
   "meta-ads", "google-ads", "tiktok", "email", "organic", "referral", "direct",
 ];
@@ -51,4 +59,20 @@ export const statusColors: Record<string, { bg: string; text: string; dot: strin
   planned: { bg: "#F5F5F5", text: "#777", dot: "#CCC" },
   "in-progress": { bg: "#EFF6FF", text: "#2563EB", dot: "#3B82F6" },
   live: { bg: "#ECFDF5", text: "#059669", dot: "#10B981" },
+};
+
+export const stageColors: Record<FunnelStage, { bg: string; text: string; label: string }> = {
+  tofu: { bg: "#EFF6FF", text: "#2563EB", label: "TOFU" },
+  mofu: { bg: "#FFF7ED", text: "#EA580C", label: "MOFU" },
+  bofu: { bg: "#ECFDF5", text: "#059669", label: "BOFU" },
+};
+
+/** CVR benchmarks for health score calculation */
+export const cvrBenchmarks: Record<string, number> = {
+  "Landing Page": 3,
+  "PDP (Product Page)": 2.5,
+  Cart: 60,
+  Checkout: 75,
+  "Lead Magnet": 25,
+  "Email Sequence": 3,
 };
