@@ -487,6 +487,22 @@ export default function ClientPortalPage() {
                               {tpDays < 0 ? `${Math.abs(tpDays)}d overdue` : tpDays === 0 ? "Today" : `${tpDays}d`}
                             </span>
                           )}
+                          {confirmDeleteId === p.id ? (
+                            <button
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(p.id); }}
+                              onBlur={() => setConfirmDeleteId(null)}
+                              className="px-2 py-1 text-[10px] font-medium text-white bg-red-500 rounded hover:bg-red-600"
+                            >
+                              Confirm
+                            </button>
+                          ) : (
+                            <button
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(p.id); }}
+                              className="p-1 text-[#DDD] hover:text-red-400 transition-colors"
+                            >
+                              <TrashIcon className="size-3.5" />
+                            </button>
+                          )}
                           <svg className="size-4 text-[#DDD]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
                         </div>
                       </Link>
