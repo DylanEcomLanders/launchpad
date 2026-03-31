@@ -60,7 +60,13 @@ export default function TaskBoardPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const activeTasks = (tasks: Task[]) => tasks.filter((t) => t.status !== "done");
+  const sortByDate = (tasks: Task[]) => [...tasks].sort((a, b) => {
+    if (!a.dueDate && !b.dueDate) return 0;
+    if (!a.dueDate) return 1;
+    if (!b.dueDate) return -1;
+    return a.dueDate.localeCompare(b.dueDate);
+  });
+  const activeTasks = (tasks: Task[]) => sortByDate(tasks.filter((t) => t.status !== "done"));
   const doneTasks = (tasks: Task[]) => tasks.filter((t) => t.status === "done");
 
   function TaskRow({ task }: { task: Task }) {
