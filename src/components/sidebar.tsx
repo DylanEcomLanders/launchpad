@@ -243,6 +243,20 @@ export function Sidebar() {
               <UserGroupIcon className="size-4" />
               {!collapsed && <span>Team Hub</span>}
             </Link>
+            <Link
+              href="/tools/task-board"
+              onClick={() => setMobileOpen(false)}
+              className={`
+                flex items-center gap-2 px-2.5 py-1.5 text-[12px] font-semibold rounded-md transition-all duration-150
+                ${pathname === "/tools/task-board"
+                  ? "text-[#1B1B1B] bg-white shadow-[var(--shadow-soft)]"
+                  : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
+                }
+              `}
+            >
+              <ClockIcon className="size-4" />
+              {!collapsed && <span>Task Board</span>}
+            </Link>
           </div>
 
           {/* Sections */}
