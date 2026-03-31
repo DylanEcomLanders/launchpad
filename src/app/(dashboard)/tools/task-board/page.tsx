@@ -96,6 +96,8 @@ export default function TaskBoardAdminPage() {
   const [saved, setSaved] = useState(false);
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [previewUrl, setPreviewUrl] = useState("");
+  const [filterAssignee, setFilterAssignee] = useState("");
+  const [filterDate, setFilterDate] = useState<"all" | "overdue" | "today" | "this-week">("all");
   const boardRef = useRef(board);
   boardRef.current = board;
 
@@ -150,6 +152,33 @@ export default function TaskBoardAdminPage() {
   const designers = team.filter((m) => m.role.toLowerCase().includes("design"));
   const developers = team.filter((m) => m.role.toLowerCase().includes("develop") || m.role.toLowerCase().includes("head of dev"));
 
+  // Filter tasks
+  const filterTasks = useCallback((tasks: Task[]) => {
+    let filtered = tasks;
+    if (filterAssignee) {
+      filtered = filtered.filter((t) => t.assignee === filterAssignee);
+    }
+    if (filterDate !== "all") {
+      const today = new Date().toISOString().split("T")[0];
+      const weekEnd = new Date();
+      weekEnd.setDate(weekEnd.getDate() + (7 - weekEnd.getDay()));
+      const weekEndStr = weekEnd.toISOString().split("T")[0];
+
+      filtered = filtered.filter((t) => {
+        if (!t.dueDate) return false;
+        if (filterDate === "overdue") return t.dueDate < today && t.status !== "done";
+        if (filterDate === "today") return t.dueDate === today;
+        if (filterDate === "this-week") return t.dueDate >= today && t.dueDate <= weekEndStr;
+        return true;
+      });
+    }
+    return filtered;
+  }, [filterAssignee, filterDate]);
+
+  const filteredDesign = filterTasks(board.designTasks);
+  const filteredDev = filterTasks(board.devTasks);
+  const allAssignees = [...new Set([...board.designTasks, ...board.devTasks].map((t) => t.assignee).filter(Boolean))].sort();
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -173,6 +202,34 @@ export default function TaskBoardAdminPage() {
         </button>
       </div>
 
+      {/* Filters */}
+      <div className="flex items-center gap-3 mb-6 flex-wrap">
+        <select
+          value={filterAssignee}
+          onChange={(e) => setFilterAssignee(e.target.value)}
+          className="text-xs px-3 py-1.5 border border-[#E5E5EA] rounded-lg bg-white focus:outline-none"
+        >
+          <option value="">All Assignees</option>
+          {allAssignees.map((a) => <option key={a} value={a}>{a}</option>)}
+        </select>
+        <div className="flex items-center gap-1">
+          {(["all", "overdue", "today", "this-week"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilterDate(f)}
+              className={`px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors ${
+                filterDate === f ? "bg-[#1A1A1A] text-white" : "bg-[#F3F3F5] text-[#777] hover:bg-[#E5E5EA]"
+              }`}
+            >
+              {f === "all" ? "All Dates" : f === "overdue" ? "Overdue" : f === "today" ? "Today" : "This Week"}
+            </button>
+          ))}
+        </div>
+        {(filterAssignee || filterDate !== "all") && (
+          <button onClick={() => { setFilterAssignee(""); setFilterDate("all"); }} className="text-[11px] text-[#AAA] hover:text-[#1A1A1A]">Clear</button>
+        )}
+      </div>
+
       {/* Design Tasks */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3">
@@ -193,10 +250,10 @@ export default function TaskBoardAdminPage() {
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Status</span>
             <span />
           </div>
-          {board.designTasks.length === 0 ? (
+          {filteredDesign.length === 0 ? (
             <p className="text-xs text-[#CCC] text-center py-6">No design tasks</p>
           ) : (
-            board.designTasks.map((t) => (
+            filteredDesign.map((t) => (
               <TaskEditorRow
                 key={t.id}
                 task={t}
@@ -229,10 +286,10 @@ export default function TaskBoardAdminPage() {
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Status</span>
             <span />
           </div>
-          {board.devTasks.length === 0 ? (
+          {filteredDev.length === 0 ? (
             <p className="text-xs text-[#CCC] text-center py-6">No dev tasks</p>
           ) : (
-            board.devTasks.map((t) => (
+            filteredDev.map((t) => (
               <TaskEditorRow
                 key={t.id}
                 task={t}
