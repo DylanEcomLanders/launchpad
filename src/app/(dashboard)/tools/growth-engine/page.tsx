@@ -105,14 +105,23 @@ export default function GrowthEnginePage() {
     })), serialized);
   }, [debouncedSave]);
 
-  // Update node data from editor
+  // Update node data from editor — syncs canvas, refs, selected node, and triggers save
   const updateNodeData = useCallback((field: string, value: unknown) => {
     if (!selectedNode || !canvasRef.current) return;
     const updated = nodesRef.current.map((n) =>
       n.id === selectedNode.id ? { ...n, data: { ...n.data, [field]: value } } : n
     );
+    nodesRef.current = updated;
     canvasRef.current.setNodes(updated);
-  }, [selectedNode]);
+    // Update selectedNode so editor stays in sync
+    const updatedSelected = updated.find((n) => n.id === selectedNode.id);
+    if (updatedSelected) setSelectedNode(updatedSelected);
+    // Trigger save
+    debouncedSave(
+      updated.map((n) => ({ id: n.id, type: n.type || "pageNode", position: n.position, data: n.data as any })),
+      edgesRef.current.map((e) => ({ id: e.id, source: e.source, target: e.target, type: e.type, data: e.data as any }))
+    );
+  }, [selectedNode, debouncedSave]);
 
   // Overview stats
   const totalFlows = Object.keys(engine?.channelFlows || {}).length;
