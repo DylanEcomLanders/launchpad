@@ -300,11 +300,12 @@ export default function GrowthEnginePage() {
                 <button onClick={() => setSelectedNode(null)} className="text-[10px] text-[#CCC] hover:text-[#1A1A1A]">Done</button>
               </div>
               <div>
-                <label className="text-[10px] text-[#777] block mb-1">Label</label>
+                <label className="text-[10px] text-[#777] block mb-1">Title</label>
                 <input
                   type="text"
                   value={String((selectedNode.data as Record<string, unknown>)?.label || "")}
                   onChange={(e) => updateNodeData("label", e.target.value)}
+                  placeholder="Give this node a name..."
                   className="w-full text-sm px-2 py-1.5 border border-[#E5E5EA] rounded"
                 />
               </div>
@@ -471,7 +472,7 @@ export default function GrowthEnginePage() {
                       key={aType}
                       draggable
                       onDragStart={(e) => {
-                        const data = { nodeType: "page", subType: aType, label: config.label, status: "planned", contentSlots: { headline: false, hook: false, offer: false, cta: false, socialProof: false } };
+                        const data = { nodeType: "page", subType: aType, label: "", status: "planned", contentSlots: { headline: false, hook: false, offer: false, cta: false, socialProof: false } };
                         e.dataTransfer.setData("application/reactflow", JSON.stringify(data));
                         e.dataTransfer.effectAllowed = "move";
                       }}
@@ -491,7 +492,7 @@ export default function GrowthEnginePage() {
                 <div
                   draggable
                   onDragStart={(e) => {
-                    const data = { nodeType: "lead-magnet", subType: "Lead Magnet", label: "Lead Magnet", status: "planned", leadMagnetFormat: "pdf", contentSlots: { headline: false, hook: false, offer: false, cta: false, socialProof: false } };
+                    const data = { nodeType: "lead-magnet", subType: "Lead Magnet", label: "", status: "planned", leadMagnetFormat: "pdf", contentSlots: { headline: false, hook: false, offer: false, cta: false, socialProof: false } };
                     e.dataTransfer.setData("application/reactflow", JSON.stringify(data));
                     e.dataTransfer.effectAllowed = "move";
                   }}
@@ -503,7 +504,7 @@ export default function GrowthEnginePage() {
                 <div
                   draggable
                   onDragStart={(e) => {
-                    const data = { nodeType: "email-sequence", subType: "Email Sequence", label: "Email Sequence", status: "planned", emailSequenceMetrics: { emailCount: 5 } };
+                    const data = { nodeType: "email-sequence", subType: "Email Sequence", label: "", status: "planned", emailSequenceMetrics: { emailCount: 5 } };
                     e.dataTransfer.setData("application/reactflow", JSON.stringify(data));
                     e.dataTransfer.effectAllowed = "move";
                   }}
