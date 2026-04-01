@@ -319,6 +319,15 @@ export default function GrowthEnginePage() {
                 />
               </div>
               <div>
+                <label className="text-[10px] text-[#777] block mb-1">Description</label>
+                <textarea
+                  value={String((selectedNode.data as Record<string, unknown>)?.description || "")}
+                  onChange={(e) => updateNodeData("description", e.target.value)}
+                  placeholder="Add details, notes..."
+                  className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded min-h-[60px] resize-y"
+                />
+              </div>
+              <div>
                 <label className="text-[10px] text-[#777] block mb-1">Status</label>
                 <select
                   value={String((selectedNode.data as Record<string, unknown>)?.status || "planned")}

@@ -58,7 +58,10 @@ function LeadMagnetNodeComponent({ data: rawData, selected }: NodeProps) {
       {/* Body */}
       <div className="px-3.5 py-3">
         <p className="text-[13px] font-semibold text-[#1B1B1B] leading-tight">{data.label || "Lead Magnet"}</p>
-        <p className="text-[10px] text-[#777] mt-1 capitalize">{format}</p>
+        <p className="text-[10px] text-[#777] mt-0.5 capitalize">{format}</p>
+        {(data as any).description && (
+          <p className="text-[11px] text-[#777] mt-1 leading-relaxed whitespace-pre-wrap">{(data as any).description}</p>
+        )}
 
         {/* Metrics */}
         {optInCvr != null && (
