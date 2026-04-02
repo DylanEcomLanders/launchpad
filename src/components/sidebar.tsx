@@ -60,8 +60,8 @@ const navSections: NavSection[] = [
     title: "Training",
     icon: <UserGroupIcon className="size-4" />,
     defaultOpen: true,
-    roles: ["admin"],
     items: [
+      { label: "SOP Library", href: "/tools/sop-library" },
       { label: "Design System", href: "/tools/design-system" },
       { label: "Playbooks", href: "/tools/playbooks" },
       { label: "QA Checklist", href: "/tools/qa-checklist" },
