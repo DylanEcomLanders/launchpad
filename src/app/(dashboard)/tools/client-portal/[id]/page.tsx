@@ -487,7 +487,7 @@ export default function PortalDetailPage() {
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-3xl mx-auto px-6 md:px-12 py-16 md:py-24">
+      <div className={`mx-auto py-16 md:py-24 ${selectedProject ? "max-w-6xl px-6 md:px-10" : "max-w-3xl px-6 md:px-12"}`}>
         {/* Back + Header */}
         <div className="mb-8">
           <Link
@@ -538,8 +538,8 @@ export default function PortalDetailPage() {
           </div>
         </div>
 
-        {/* ── Client Details (editable) ── */}
-        <ClientDetailsPanel portal={portal} team={team} onUpdateField={handleUpdateField} />
+        {/* ── Client Details — only when NOT drilled into a project ── */}
+        {!selectedProject && <ClientDetailsPanel portal={portal} team={team} onUpdateField={handleUpdateField} />}
 
         {/* ── Tickets Snapshot (client level) ── */}
         {portalTickets.length > 0 && !selectedProject && (() => {
@@ -776,40 +776,50 @@ export default function PortalDetailPage() {
           </div>
         )}
 
-        {/* Back to projects when drilled in */}
+        {/* ── Project drilled-in: Sidebar + Content layout ── */}
         {selectedProject && (
-          <button
-            onClick={() => setSelectedProjectIdx(-1)}
-            className="inline-flex items-center gap-1 text-xs font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors mb-4"
-          >
-            <ArrowLeftIcon className="size-3" />
-            Back to projects
-          </button>
-        )}
-
-
-        {/* Tab bar — only when drilled into a project */}
-        {selectedProject && (
-          <div className="flex items-center gap-1 mb-6 border-b border-[#E8E8E8]">
-            {dashTabs.map((tab) => (
+          <div className="flex gap-8">
+            {/* Left sidebar */}
+            <div className="w-48 shrink-0 sticky top-24 self-start">
               <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`px-4 py-2.5 text-xs font-semibold transition-colors relative ${
-                  activeTab === tab.key
-                    ? "text-[#1A1A1A]"
-                    : "text-[#AAA] hover:text-[#777]"
-                }`}
+                onClick={() => setSelectedProjectIdx(-1)}
+                className="inline-flex items-center gap-1 text-xs font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors mb-5"
               >
-                {tab.label}
-                {activeTab === tab.key && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1A1A1A] rounded-full" />}
+                <ArrowLeftIcon className="size-3" />
+                Back
               </button>
-            ))}
-          </div>
-        )}
 
-        {/* Tab content — only when drilled into a project */}
-        {selectedProject && activeTab === "overview" && (
+              <p className="text-sm font-bold text-[#1A1A1A] mb-1 truncate">{selectedProject.name}</p>
+              <p className="text-[10px] text-[#AAA] mb-5">
+                {selectedProject.type === "retainer" ? "Retainer" : "Page Build"}
+              </p>
+
+              {/* Nav links */}
+              <nav className="space-y-0.5 mb-6">
+                {dashTabs.map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`w-full text-left px-3 py-2 text-xs font-medium rounded-lg transition-colors ${
+                      activeTab === tab.key
+                        ? "bg-[#1A1A1A] text-white"
+                        : "text-[#777] hover:bg-[#F3F3F5] hover:text-[#1A1A1A]"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </nav>
+
+              {/* Compact client details in sidebar */}
+              <div className="border-t border-[#EDEDEF] pt-4 space-y-3">
+                <SidebarClientDetails portal={portal} team={team} onUpdateField={handleUpdateField} />
+              </div>
+            </div>
+
+            {/* Right content */}
+            <div className="flex-1 min-w-0">
+        {activeTab === "overview" && (
           <OverviewSection
             portal={portal}
             selectedProject={selectedProject}
@@ -865,7 +875,7 @@ export default function PortalDetailPage() {
           />
         )}
 
-        {selectedProject && activeTab === "testing" && portal && (
+        {activeTab === "testing" && portal && (
           <TestingSection
             portal={portal}
             projectType={selectedProject?.type || "page-build"}
@@ -942,7 +952,7 @@ export default function PortalDetailPage() {
           />
         )}
 
-        {activeTab === "internal" && portal && selectedProject && (
+        {activeTab === "internal" && portal && (
           <InternalSection
             project={selectedProject}
             onUpdateProject={async (patch) => {
@@ -956,6 +966,10 @@ export default function PortalDetailPage() {
             slackInternalChannelId={portal.slack_internal_channel_id}
             clientName={portal.client_name}
           />
+        )}
+
+            </div>
+          </div>
         )}
 
         {/* Phase form modal */}
@@ -3990,6 +4004,97 @@ function ClientDetailsPanel({ portal, team, onUpdateField }: { portal: PortalDat
       </div>
 
     </div>
+  );
+}
+
+/* ─── Sidebar Client Details (compact) ─── */
+function SidebarClientDetails({ portal, team, onUpdateField }: { portal: PortalData; team: TeamMember[]; onUpdateField: (field: string, value: unknown) => void }) {
+  const assigned = (portal.team_member_ids || []).map(id => team.find(t => t.id === id)).filter(Boolean) as TeamMember[];
+  const designers = assigned.filter(m => m.role.toLowerCase().includes("design"));
+  const devs = assigned.filter(m => m.role.toLowerCase().includes("develop") || m.role.toLowerCase().includes("head of dev"));
+  const allDesigners = team.filter(m => m.role.toLowerCase().includes("design"));
+  const allDevs = team.filter(m => m.role.toLowerCase().includes("develop") || m.role.toLowerCase().includes("head of dev"));
+
+  const addMember = (id: string) => {
+    const current = portal.team_member_ids || [];
+    if (current.includes(id)) return;
+    onUpdateField("team_member_ids", [...current, id]);
+  };
+  const removeMember = (id: string) => {
+    onUpdateField("team_member_ids", (portal.team_member_ids || []).filter(m => m !== id));
+  };
+
+  return (
+    <>
+      {/* Team */}
+      <div>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#BBB] mb-1.5">Team</p>
+        <div className="space-y-1">
+          {designers.map(m => (
+            <div key={m.id} className="flex items-center justify-between">
+              <span className="text-[10px] text-[#555]">{m.name}</span>
+              <button onClick={() => removeMember(m.id)} className="text-[#DDD] hover:text-red-400">
+                <svg className="size-2.5" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
+              </button>
+            </div>
+          ))}
+          {devs.map(m => (
+            <div key={m.id} className="flex items-center justify-between">
+              <span className="text-[10px] text-[#555]">{m.name}</span>
+              <button onClick={() => removeMember(m.id)} className="text-[#DDD] hover:text-red-400">
+                <svg className="size-2.5" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
+              </button>
+            </div>
+          ))}
+          {[...allDesigners, ...allDevs].filter(m => !assigned.some(a => a.id === m.id)).length > 0 && (
+            <select
+              value=""
+              onChange={(e) => { if (e.target.value) addMember(e.target.value); }}
+              className="text-[10px] text-[#AAA] bg-transparent border-none cursor-pointer p-0 focus:outline-none w-full"
+            >
+              <option value="">+ Add member</option>
+              {[...allDesigners, ...allDevs].filter(m => !assigned.some(a => a.id === m.id)).map(m => (
+                <option key={m.id} value={m.id}>{m.name} ({m.role})</option>
+              ))}
+            </select>
+          )}
+          {assigned.length === 0 && [...allDesigners, ...allDevs].length === 0 && (
+            <p className="text-[9px] text-[#CCC]">No team in directory</p>
+          )}
+        </div>
+      </div>
+
+      {/* Slack */}
+      <div>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#BBB] mb-1.5">Slack</p>
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] text-[#AAA]">Client</span>
+            <span className="text-[10px] font-mono text-[#555] truncate ml-2">{portal.slack_channel_url || "—"}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] text-[#AAA]">Internal</span>
+            <span className="text-[10px] font-mono text-[#555] truncate ml-2">{portal.slack_internal_channel_id || "—"}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Next Touchpoint */}
+      <div>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#BBB] mb-1.5">Touchpoint</p>
+        {(() => {
+          const nextDate = getNextTouchpointDate();
+          if (!nextDate) return <p className="text-[9px] text-[#CCC]">Not set</p>;
+          const days = Math.ceil((new Date(nextDate + "T00:00:00").getTime() - Date.now()) / 86400000);
+          const dayName = new Date(nextDate + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+          return (
+            <p className={`text-[10px] font-medium ${days === 0 ? "text-emerald-600" : days === 1 ? "text-amber-600" : "text-[#555]"}`}>
+              {dayName} {days === 0 ? "(today)" : days === 1 ? "(tmrw)" : `(${days}d)`}
+            </p>
+          );
+        })()}
+      </div>
+    </>
   );
 }
 
