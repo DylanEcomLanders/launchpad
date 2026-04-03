@@ -780,17 +780,17 @@ export default function PortalDetailPage() {
         {selectedProject && (
           <div className="flex gap-8">
             {/* Left sidebar */}
-            <div className="w-48 shrink-0 sticky top-24 self-start">
+            <div className="w-52 shrink-0 sticky top-24 self-start">
               <button
                 onClick={() => setSelectedProjectIdx(-1)}
-                className="inline-flex items-center gap-1 text-xs font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors mb-5"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors mb-5"
               >
                 <ArrowLeftIcon className="size-3" />
                 Back
               </button>
 
-              <p className="text-sm font-bold text-[#1A1A1A] mb-1 truncate">{selectedProject.name}</p>
-              <p className="text-[10px] text-[#AAA] mb-5">
+              <p className="text-sm font-bold text-[#1A1A1A] mb-0.5 truncate">{selectedProject.name}</p>
+              <p className="text-[11px] text-[#AAA] mb-5">
                 {selectedProject.type === "retainer" ? "Retainer" : "Page Build"}
               </p>
 
@@ -800,7 +800,7 @@ export default function PortalDetailPage() {
                   <button
                     key={tab.key}
                     onClick={() => setActiveTab(tab.key)}
-                    className={`w-full text-left px-3 py-2 text-xs font-medium rounded-lg transition-colors ${
+                    className={`w-full text-left px-3 py-2 text-[13px] font-medium rounded-lg transition-colors ${
                       activeTab === tab.key
                         ? "bg-[#1A1A1A] text-white"
                         : "text-[#777] hover:bg-[#F3F3F5] hover:text-[#1A1A1A]"
@@ -812,7 +812,7 @@ export default function PortalDetailPage() {
               </nav>
 
               {/* Compact client details in sidebar */}
-              <div className="border-t border-[#EDEDEF] pt-4 space-y-3">
+              <div className="border-t border-[#EDEDEF] pt-5 space-y-5">
                 <SidebarClientDetails portal={portal} team={team} onUpdateField={handleUpdateField} />
               </div>
             </div>
@@ -4028,21 +4028,21 @@ function SidebarClientDetails({ portal, team, onUpdateField }: { portal: PortalD
     <>
       {/* Team */}
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#BBB] mb-1.5">Team</p>
-        <div className="space-y-1">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Team</p>
+        <div className="space-y-1.5">
           {designers.map(m => (
-            <div key={m.id} className="flex items-center justify-between">
-              <span className="text-[10px] text-[#555]">{m.name}</span>
-              <button onClick={() => removeMember(m.id)} className="text-[#DDD] hover:text-red-400">
-                <svg className="size-2.5" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
+            <div key={m.id} className="flex items-center justify-between py-0.5">
+              <span className="text-xs text-[#1A1A1A]">{m.name}</span>
+              <button onClick={() => removeMember(m.id)} className="text-[#DDD] hover:text-red-400 p-1">
+                <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
               </button>
             </div>
           ))}
           {devs.map(m => (
-            <div key={m.id} className="flex items-center justify-between">
-              <span className="text-[10px] text-[#555]">{m.name}</span>
-              <button onClick={() => removeMember(m.id)} className="text-[#DDD] hover:text-red-400">
-                <svg className="size-2.5" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
+            <div key={m.id} className="flex items-center justify-between py-0.5">
+              <span className="text-xs text-[#1A1A1A]">{m.name}</span>
+              <button onClick={() => removeMember(m.id)} className="text-[#DDD] hover:text-red-400 p-1">
+                <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
               </button>
             </div>
           ))}
@@ -4050,46 +4050,47 @@ function SidebarClientDetails({ portal, team, onUpdateField }: { portal: PortalD
             <select
               value=""
               onChange={(e) => { if (e.target.value) addMember(e.target.value); }}
-              className="text-[10px] text-[#AAA] bg-transparent border-none cursor-pointer p-0 focus:outline-none w-full"
+              className="text-xs text-[#AAA] bg-transparent border-none cursor-pointer p-0 focus:outline-none w-full py-1"
             >
               <option value="">+ Add member</option>
               {[...allDesigners, ...allDevs].filter(m => !assigned.some(a => a.id === m.id)).map(m => (
-                <option key={m.id} value={m.id}>{m.name} ({m.role})</option>
+                <option key={m.id} value={m.id}>{m.name}</option>
               ))}
             </select>
           )}
           {assigned.length === 0 && [...allDesigners, ...allDevs].length === 0 && (
-            <p className="text-[9px] text-[#CCC]">No team in directory</p>
+            <p className="text-xs text-[#CCC]">No team in directory</p>
           )}
         </div>
       </div>
 
       {/* Slack */}
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#BBB] mb-1.5">Slack</p>
-        <div className="space-y-1">
-          <div className="flex items-center justify-between">
-            <span className="text-[9px] text-[#AAA]">Client</span>
-            <span className="text-[10px] font-mono text-[#555] truncate ml-2">{portal.slack_channel_url || "—"}</span>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Slack</p>
+        <div className="space-y-2">
+          <div>
+            <p className="text-[11px] text-[#999] mb-0.5">Client</p>
+            <p className="text-xs font-mono text-[#1A1A1A] truncate">{portal.slack_channel_url || <span className="text-[#CCC]">Not set</span>}</p>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-[9px] text-[#AAA]">Internal</span>
-            <span className="text-[10px] font-mono text-[#555] truncate ml-2">{portal.slack_internal_channel_id || "—"}</span>
+          <div>
+            <p className="text-[11px] text-[#999] mb-0.5">Internal</p>
+            <p className="text-xs font-mono text-[#1A1A1A] truncate">{portal.slack_internal_channel_id || <span className="text-[#CCC]">Not set</span>}</p>
           </div>
         </div>
       </div>
 
       {/* Next Touchpoint */}
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#BBB] mb-1.5">Touchpoint</p>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Touchpoint</p>
         {(() => {
           const nextDate = getNextTouchpointDate();
-          if (!nextDate) return <p className="text-[9px] text-[#CCC]">Not set</p>;
+          if (!nextDate) return <p className="text-xs text-[#CCC]">Not set</p>;
           const days = Math.ceil((new Date(nextDate + "T00:00:00").getTime() - Date.now()) / 86400000);
           const dayName = new Date(nextDate + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
           return (
-            <p className={`text-[10px] font-medium ${days === 0 ? "text-emerald-600" : days === 1 ? "text-amber-600" : "text-[#555]"}`}>
-              {dayName} {days === 0 ? "(today)" : days === 1 ? "(tmrw)" : `(${days}d)`}
+            <p className={`text-xs font-medium ${days === 0 ? "text-emerald-600" : days === 1 ? "text-amber-600" : "text-[#1A1A1A]"}`}>
+              {dayName}
+              <span className="ml-1 text-[11px] font-normal text-[#AAA]">{days === 0 ? "Today" : days === 1 ? "Tomorrow" : `${days}d`}</span>
             </p>
           );
         })()}
