@@ -257,6 +257,20 @@ export function Sidebar() {
               <ClockIcon className="size-4" />
               {!collapsed && <span>Task Board</span>}
             </Link>
+            <Link
+              href="/tools/notes"
+              onClick={() => setMobileOpen(false)}
+              className={`
+                flex items-center gap-2 px-2.5 py-1.5 text-[12px] font-semibold rounded-md transition-all duration-150
+                ${pathname === "/tools/notes"
+                  ? "text-[#1B1B1B] bg-white shadow-[var(--shadow-soft)]"
+                  : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
+                }
+              `}
+            >
+              <svg className="size-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5zm12 2a1 1 0 01.894.553l3 6A1 1 0 0117 15h-6a1 1 0 01-.894-1.447l3-6A1 1 0 0114 7z" clipRule="evenodd" /></svg>
+              {!collapsed && <span>Notes</span>}
+            </Link>
           </div>
 
           {/* Sections */}
