@@ -50,6 +50,7 @@ export default function SOPLibraryPage() {
   const [formTags, setFormTags] = useState("");
   const [formLoom, setFormLoom] = useState("");
   const [formContent, setFormContent] = useState("");
+  const [formDraft, setFormDraft] = useState(true);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -60,9 +61,12 @@ export default function SOPLibraryPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  // Filtered SOPs
+  // Filtered SOPs — hide drafts for non-admins
   const filtered = useMemo(() => {
     let result = sops;
+    if (!isAdmin) {
+      result = result.filter((s) => !s.draft);
+    }
     if (categoryFilter !== "all") {
       result = result.filter((s) => s.category === categoryFilter);
     }
@@ -76,7 +80,7 @@ export default function SOPLibraryPage() {
       );
     }
     return result;
-  }, [sops, categoryFilter, search]);
+  }, [sops, categoryFilter, search, isAdmin]);
 
   const selected = selectedId ? sops.find((s) => s.id === selectedId) : null;
 
@@ -88,6 +92,7 @@ export default function SOPLibraryPage() {
     setFormTags("");
     setFormLoom("");
     setFormContent("");
+    setFormDraft(true);
     setEditingId(null);
   };
 
@@ -106,6 +111,7 @@ export default function SOPLibraryPage() {
     setFormTags(sop.tags.join(", "));
     setFormLoom(sop.loomUrl || "");
     setFormContent(sop.content);
+    setFormDraft(sop.draft ?? false);
     setEditingId(sop.id);
     setShowForm(true);
     setSelectedId(null);
@@ -125,6 +131,7 @@ export default function SOPLibraryPage() {
         tags,
         loomUrl: formLoom.trim() || undefined,
         content: formContent,
+        draft: formDraft,
         updated_at: now,
       });
     } else {
@@ -136,6 +143,7 @@ export default function SOPLibraryPage() {
         tags,
         loomUrl: formLoom.trim() || undefined,
         content: formContent,
+        draft: formDraft,
         createdBy: role,
         created_at: now,
         updated_at: now,
@@ -217,6 +225,17 @@ export default function SOPLibraryPage() {
         {/* Admin actions */}
         {isAdmin && (
           <div className="flex items-center gap-2 mt-4">
+            <button
+              onClick={async () => {
+                await updateSOP(selected.id, { draft: !selected.draft, updated_at: new Date().toISOString() });
+                load();
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-lg ${
+                selected.draft ? "bg-emerald-500 text-white hover:bg-emerald-600" : "text-amber-600 border border-amber-200 hover:bg-amber-50"
+              }`}
+            >
+              {selected.draft ? "Publish" : "Unpublish"}
+            </button>
             <button onClick={() => openEdit(selected)} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-[#777] border border-[#E5E5EA] rounded-lg hover:bg-[#F5F5F5]">
               <PencilIcon className="size-3" /> Edit
             </button>
@@ -285,13 +304,24 @@ export default function SOPLibraryPage() {
               placeholder={"## Steps\n\n1. First step\n2. Second step\n3. Third step\n\n**Important:** Don't forget to...\n\n- Tip: You can use markdown\n- Tip: Use headers to organise sections"}
             />
           </div>
-          <button
-            onClick={handleSave}
-            disabled={!formTitle.trim()}
-            className="px-5 py-2.5 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] disabled:opacity-30"
-          >
-            {editingId ? "Save Changes" : "Create SOP"}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleSave}
+              disabled={!formTitle.trim()}
+              className="px-5 py-2.5 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] disabled:opacity-30"
+            >
+              {formDraft ? (editingId ? "Save Draft" : "Create as Draft") : (editingId ? "Save & Publish" : "Create & Publish")}
+            </button>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={!formDraft}
+                onChange={(e) => setFormDraft(!e.target.checked)}
+                className="size-3.5 rounded border-[#CCC] text-[#1B1B1B] focus:ring-0"
+              />
+              <span className="text-xs text-[#777]">Publish immediately</span>
+            </label>
+          </div>
         </div>
       </div>
     );
@@ -383,6 +413,7 @@ export default function SOPLibraryPage() {
                       </span>
                       <span className="text-[10px] text-[#AAA]">{readTime(sop.content)} min read</span>
                       {sop.loomUrl && <span className="text-[10px] text-[#AAA]">Loom</span>}
+                      {sop.draft && <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600">Draft</span>}
                     </div>
                     {sop.description && <p className="text-xs text-[#777] mt-1.5 line-clamp-1">{sop.description}</p>}
                   </div>

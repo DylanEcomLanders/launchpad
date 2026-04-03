@@ -19,6 +19,7 @@ export interface SOP {
   tags: string[];
   loomUrl?: string;
   content: string; // Markdown
+  draft?: boolean; // true = only visible to admin, not published yet
   createdBy: string;
   created_at: string;
   updated_at: string;
