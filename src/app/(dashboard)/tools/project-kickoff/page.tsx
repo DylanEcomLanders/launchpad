@@ -382,7 +382,7 @@ export default function ProjectKickoffPage() {
         const updatedProjects = [...(existing.projects || []), newProject];
         await updatePortal(selectedPortalId, { projects: updatedProjects });
         setPortalCreated(true);
-        setTimeout(() => router.push(`/tools/client-portal/${selectedPortalId}`), 500);
+        router.push(`/tools/client-portal/${selectedPortalId}`);
       } else {
         // Create new portal
         const input: PortalInsert = {
@@ -407,7 +407,7 @@ export default function ProjectKickoffPage() {
 
         const portal = await createPortal(input);
         setPortalCreated(true);
-        setTimeout(() => router.push(`/tools/client-portal/${portal.id}`), 500);
+        router.push(`/tools/client-portal/${portal.id}`);
       }
     } catch (err) {
       console.error("Portal creation failed:", err);
@@ -936,42 +936,44 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
                 <button
                   onClick={handleCreatePortal}
                   disabled={creatingPortal || portalCreated}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-[#E5E5EA] text-[#1B1B1B] text-xs font-medium rounded-lg hover:bg-[#F5F5F5] transition-colors disabled:opacity-40"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40"
                 >
                   {portalCreated ? (
                     <>
-                      <CheckIcon className="size-3.5 text-green-600" />
-                      {selectedPortalId !== "new" ? "Project Added" : "Portal Created"}
+                      <CheckIcon className="size-3.5 text-emerald-400" />
+                      Redirecting to portal...
                     </>
                   ) : creatingPortal ? (
                     <>
                       <ArrowPathIcon className="size-3.5 animate-spin" />
-                      {selectedPortalId !== "new" ? "Adding..." : "Creating..."}
-                    </>
-                  ) : (
-                    <>
-                      <PlusIcon className="size-3.5" />
-                      {selectedPortalId !== "new" ? "Add to Portal" : "Create Portal"}
-                    </>
-                  )}
-                </button>
-                <button
-                  onClick={handleDownloadAll}
-                  disabled={downloadingAll}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-accent-hover transition-colors disabled:opacity-40"
-                >
-                  {downloadingAll ? (
-                    <>
-                      <ArrowPathIcon className="size-3.5 animate-spin" />
-                      Downloading...
+                      {selectedPortalId !== "new" ? "Adding..." : "Creating Portal..."}
                     </>
                   ) : (
                     <>
                       <RocketLaunchIcon className="size-3.5" />
-                      Download All PDFs
+                      {selectedPortalId !== "new" ? "Add to Portal" : "Create Client Portal"}
                     </>
                   )}
                 </button>
+                {!portalCreated && (
+                  <button
+                    onClick={handleDownloadAll}
+                    disabled={downloadingAll}
+                    className="flex items-center gap-2 px-4 py-2 text-[#777] border border-[#E5E5EA] text-xs font-medium rounded-lg hover:bg-[#F5F5F5] transition-colors disabled:opacity-40"
+                  >
+                    {downloadingAll ? (
+                      <>
+                        <ArrowPathIcon className="size-3.5 animate-spin" />
+                        Downloading...
+                      </>
+                    ) : (
+                      <>
+                        <PlusIcon className="size-3.5" />
+                        Download PDFs
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
 
