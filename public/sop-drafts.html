@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SOP Drafts — Ecomlanders</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F7F8FA; color: #1A1A1A; }
+  .header { background: #1A1A1A; color: white; padding: 40px; }
+  .header h1 { font-size: 24px; font-weight: 700; }
+  .header p { font-size: 12px; color: #999; margin-top: 6px; }
+  .header .badge { display: inline-block; margin-top: 12px; padding: 3px 10px; background: rgba(255,255,255,0.1); border-radius: 16px; font-size: 10px; font-weight: 600; color: #CCC; letter-spacing: 0.5px; }
+  .content { max-width: 700px; margin: 0 auto; padding: 32px 20px 80px; }
+  .sop { background: white; border: 1px solid #E5E5EA; border-radius: 12px; margin-bottom: 24px; overflow: hidden; }
+  .sop-header { padding: 20px 24px; border-bottom: 1px solid #F0F0F0; }
+  .sop-header h2 { font-size: 16px; font-weight: 700; }
+  .sop-header .meta { display: flex; gap: 12px; margin-top: 6px; align-items: center; }
+  .sop-header .tag { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 8px; border-radius: 4px; }
+  .tag-ops { background: #EFF6FF; color: #2563EB; }
+  .tag-client { background: #FFF7ED; color: #EA580C; }
+  .tag-cro { background: #FEF2F2; color: #DC2626; }
+  .tag-design { background: #F3E8FF; color: #7C3AED; }
+  .tag-dev { background: #ECFDF5; color: #059669; }
+  .sop-header .time { font-size: 10px; color: #AAA; }
+  .sop-body { padding: 24px; }
+  .sop-body p { font-size: 13px; color: #555; line-height: 1.7; margin-bottom: 12px; }
+  .sop-body h3 { font-size: 13px; font-weight: 700; color: #1A1A1A; margin: 20px 0 8px; }
+  .step { display: flex; gap: 12px; margin-bottom: 14px; }
+  .step-num { width: 24px; height: 24px; background: #1A1A1A; color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  .step-content { flex: 1; }
+  .step-content .title { font-size: 13px; font-weight: 600; color: #1A1A1A; }
+  .step-content .desc { font-size: 12px; color: #777; margin-top: 2px; line-height: 1.5; }
+  .step-content .action { display: inline-block; margin-top: 4px; font-size: 10px; font-weight: 600; color: #2563EB; background: #EFF6FF; padding: 2px 8px; border-radius: 4px; }
+  .note { background: #FAFAFA; border: 1px solid #E5E5EA; border-radius: 8px; padding: 12px 16px; margin-top: 16px; }
+  .note strong { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #1A1A1A; }
+  .note p { font-size: 12px; color: #555; margin-top: 4px; }
+  .divider { height: 1px; background: #E5E5EA; margin: 24px 0; }
+  .footer { text-align: center; padding: 32px; font-size: 10px; color: #CCC; }
+  .draft-badge { display: inline-block; padding: 3px 10px; background: #FEF3E8; color: #E37400; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; border-radius: 4px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Standard Operating Procedures</h1>
+  <p>Internal process documentation — Ecomlanders</p>
+  <span class="badge">DRAFT — FOR REVIEW</span>
+</div>
+<div class="content">
+
+<span class="draft-badge">Draft v1 — Pending Approval</span>
+
+<!-- SOP 1: Client Onboarding -->
+<div class="sop">
+  <div class="sop-header">
+    <h2>SOP 001 — Client Onboarding: Portal Setup</h2>
+    <div class="meta">
+      <span class="tag tag-ops">Operations</span>
+      <span class="tag tag-client">Client-Facing</span>
+      <span class="time">Owner: PM · Est. time: 15 mins per client</span>
+    </div>
+  </div>
+  <div class="sop-body">
+    <p><strong>Purpose:</strong> Every new client gets a branded portal from day one. No PDFs floating in email. No Slack threads with scattered documents. One link, everything in one place.</p>
+
+    <p><strong>When to run:</strong> Immediately after a sale closes, before the kickoff call. The client should receive their portal link within 24 hours of signing.</p>
+
+    <h3>Process</h3>
+
+    <div class="step">
+      <span class="step-num">1</span>
+      <div class="step-content">
+        <p class="title">Open Project Kickoff in Launchpad</p>
+        <p class="desc">Navigate to Project Kickoff (hero button in the sidebar). This is the single entry point for all new projects.</p>
+        <span class="action">Launchpad → Project Kickoff</span>
+      </div>
+    </div>
+
+    <div class="step">
+      <span class="step-num">2</span>
+      <div class="step-content">
+        <p class="title">Fill in client & project details</p>
+        <p class="desc">Client name, project type (Full Page Build, Landing Page, Retainer, etc.), project overview (2-3 sentences), and kickoff date.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <span class="step-num">3</span>
+      <div class="step-content">
+        <p class="title">Add deliverables</p>
+        <p class="desc">Add each deliverable with its type (PDP, Collection Page, Homepage, Advertorial, etc.). The system auto-calculates design and dev timelines from the business settings.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <span class="step-num">4</span>
+      <div class="step-content">
+        <p class="title">Choose: Create New Portal or Add to Existing</p>
+        <p class="desc">If this is a new client, select "Create New Portal". If the client already has a portal (returning client), select "Add to Existing Portal" and choose their portal from the dropdown.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <span class="step-num">5</span>
+      <div class="step-content">
+        <p class="title">Generate</p>
+        <p class="desc">Hit "Generate All". The system creates: Project Roadmap PDF, Scope of Work PDF, Service Agreement PDF (if agreement details filled). These are auto-embedded in the client portal — not separate files.</p>
+        <span class="action">Launchpad auto-generates docs + portal</span>
+      </div>
+    </div>
+
+    <div class="step">
+      <span class="step-num">6</span>
+      <div class="step-content">
+        <p class="title">Review the portal</p>
+        <p class="desc">Click "Preview" to open the client portal. Check: phases are correct, scope matches what was agreed, documents are attached, team is assigned. Fix anything before sharing.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <span class="step-num">7</span>
+      <div class="step-content">
+        <p class="title">Assign the team</p>
+        <p class="desc">In the portal admin, assign designers and developers from the team directory. Set the Slack channel ID if the client has a shared channel.</p>
+        <span class="action">Portal Admin → Designers / Developers dropdowns</span>
+      </div>
+    </div>
+
+    <div class="step">
+      <span class="step-num">8</span>
+      <div class="step-content">
+        <p class="title">Share the portal link with the client</p>
+        <p class="desc">Copy the portal link and send it to the client via email or Slack. This is their single source of truth. All future updates, designs, staging links, and documents live here.</p>
+        <span class="action">Portal Admin → Copy Link</span>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Critical Rule</strong>
+      <p>Every single project gets a portal. No exceptions. If a client is paying us, they get a portal. PDFs are never sent standalone — they live inside the portal alongside everything else.</p>
+    </div>
+
+    <div class="note">
+      <strong>For Retainer Clients</strong>
+      <p>When creating the portal, select "Retainer Client" in the creation flow. Set the testing tier (T1/T2/T3). The portal automatically adapts to show weekly testing cadence instead of a linear timeline. Add the Intelligems API key if available.</p>
+    </div>
+
+    <div class="note">
+      <strong>For Returning Clients</strong>
+      <p>Don't create a second portal. Use "Add to Existing Portal" so all their work lives in one place. The client sees their project history alongside the new project.</p>
+    </div>
+
+    <h3>Checklist Before Sharing</h3>
+    <p>☐ Client name correct<br>
+    ☐ Project type correct<br>
+    ☐ All deliverables listed<br>
+    ☐ Dates make sense (kickoff, design, dev, launch)<br>
+    ☐ Scope document generated and accurate<br>
+    ☐ Roadmap document generated<br>
+    ☐ Team assigned (designers + developers)<br>
+    ☐ Slack channel ID set (if applicable)<br>
+    ☐ Portal preview checked — looks professional</p>
+  </div>
+</div>
+
+<!-- Placeholder for next SOPs -->
+<div class="sop" style="border-style: dashed; background: transparent;">
+  <div class="sop-body" style="text-align: center; padding: 40px;">
+    <p style="color: #CCC; font-size: 14px;">More SOPs to follow</p>
+    <p style="color: #DDD; font-size: 12px; margin-top: 4px;">Client touchpoint process, design handoff, dev handoff, weekly reporting, retainer management...</p>
+  </div>
+</div>
+
+<div class="footer">Ecomlanders — Internal SOPs — Draft for Review</div>
+</div>
+</body>
+</html>
