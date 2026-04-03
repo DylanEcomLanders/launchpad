@@ -1,0 +1,43 @@
+import { NextRequest, NextResponse } from "next/server";
+import Anthropic from "@anthropic-ai/sdk";
+
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || "" });
+
+/**
+ * Clean a raw voice note transcript into structured project context.
+ * POST { rawTranscript: string }
+ */
+export async function POST(req: NextRequest) {
+  try {
+    const { rawTranscript } = await req.json();
+
+    if (!rawTranscript?.trim()) {
+      return NextResponse.json({ error: "No transcript provided" }, { status: 400 });
+    }
+
+    const response = await client.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1500,
+      system: `You restructure raw voice note transcripts into clean, actionable project context for a design/development agency.
+
+Rules:
+- Remove filler words, repetition, and verbal tics
+- Organise by topic with clear headers
+- Use bullet points for action items and requirements
+- Keep ALL specific details (names, dates, numbers, brand names, URLs)
+- Be concise but don't lose nuance
+- If the speaker mentions preferences or opinions, keep them — they're context
+- Format as markdown with ## headers and bullet points
+- Never add information that wasn't in the original transcript`,
+      messages: [{ role: "user", content: `Restructure this voice note transcript into clean project context:\n\n${rawTranscript}` }],
+    });
+
+    const textBlock = response.content.find((b) => b.type === "text");
+    const cleanVersion = textBlock?.type === "text" ? textBlock.text : rawTranscript;
+
+    return NextResponse.json({ cleanVersion });
+  } catch (err: any) {
+    console.error("Context clean error:", err);
+    return NextResponse.json({ error: err?.message || "Failed to clean transcript" }, { status: 500 });
+  }
+}

@@ -58,13 +58,14 @@ import type {
 } from "@/lib/portal/types";
 import { deliverableTypes } from "@/lib/config";
 import { BrandedReport } from "@/components/branded-report";
+import { InternalSection } from "@/components/internal-section";
 import type {
   DesignReview,
   DesignReviewVersion,
   DesignReviewFeedback,
 } from "@/lib/portal/review-types";
 
-type DashTab = "overview" | "updates" | "designs" | "development" | "testing" | "funnels" | "reports";
+type DashTab = "overview" | "updates" | "designs" | "development" | "testing" | "funnels" | "reports" | "internal";
 
 export default function PortalDetailPage() {
   const params = useParams();
@@ -471,6 +472,7 @@ export default function PortalDetailPage() {
         { key: "testing", label: "Testing" },
         { key: "updates", label: "Updates" },
         { key: "reports", label: "Reports" },
+        { key: "internal", label: "Internal" },
       ]
     : [
         { key: "overview", label: "Overview" },
@@ -480,6 +482,7 @@ export default function PortalDetailPage() {
         { key: "testing", label: "Testing" },
         { key: "funnels", label: "Funnels" },
         { key: "reports", label: "Reports" },
+        { key: "internal", label: "Internal" },
       ];
 
   return (
@@ -932,6 +935,20 @@ export default function PortalDetailPage() {
             onUpdate={async (reports) => {
               await updatePortal(portal.id, { reports } as any);
               setPortal({ ...portal, reports });
+            }}
+          />
+        )}
+
+        {activeTab === "internal" && portal && selectedProject && (
+          <InternalSection
+            project={selectedProject}
+            onUpdateProject={async (patch) => {
+              if (!portal) return;
+              const updatedProjects = portal.projects.map((p) =>
+                p.id === selectedProject.id ? { ...p, ...patch } : p
+              );
+              await updatePortal(portal.id, { projects: updatedProjects } as any);
+              setPortal({ ...portal, projects: updatedProjects });
             }}
           />
         )}

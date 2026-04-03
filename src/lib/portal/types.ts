@@ -103,6 +103,49 @@ export interface PortalBlocker {
   since: string; // ISO date
 }
 
+/* ── Internal QA Gates ── */
+
+export interface QAGateItem {
+  label: string;
+  checked: boolean;
+}
+
+export interface QAGate {
+  items: QAGateItem[];
+  notes: string;
+  submitted_by: string;
+  submitted_at?: string;
+  status: "pending" | "submitted";
+}
+
+export interface QAGates {
+  cro_brief?: QAGate;
+  design_handoff?: QAGate;
+  dev_handoff?: QAGate;
+  cro_brief_enabled?: boolean;
+}
+
+/* ── Project Context ── */
+
+export interface ContextEntry {
+  id: string;
+  date: string;
+  source: string; // "AJ voice note", "Client call", etc.
+  rawTranscript: string;
+  cleanVersion: string;
+  created_at: string;
+}
+
+/* ── Retainer Weekly Deliverables ── */
+
+export interface WeeklyDeliverable {
+  weekStart: string; // YYYY-MM-DD (Monday)
+  missionStatement?: string;
+  missionStatementDate?: string;
+  weeklyReport?: { title: string; content: string };
+  weeklyReportDate?: string;
+}
+
 /* ── Projects (multi-project per client) ── */
 
 export type ProjectType = "page-build" | "retainer" | "landing-page" | "cro-audit" | "other";
@@ -110,7 +153,7 @@ export type ProjectStatus = "active" | "complete" | "paused";
 
 export interface PortalProject {
   id: string;
-  name: string; // "PDP Build — March 2026" or "CRO Retainer"
+  name: string;
   type: ProjectType;
   status: ProjectStatus;
   created_at: string;
@@ -127,6 +170,11 @@ export interface PortalProject {
   // Shared
   scope?: ScopeItem[];
   documents?: PortalDocument[];
+
+  // Internal (not client-facing)
+  qa_gates?: QAGates;
+  context_entries?: ContextEntry[];
+  weekly_deliverables?: WeeklyDeliverable[];
 }
 
 export type ClientType = "retainer" | "regular";
