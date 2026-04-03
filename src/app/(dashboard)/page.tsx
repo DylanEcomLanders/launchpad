@@ -194,6 +194,9 @@ export default function MissionControl() {
         <StatCard label="Ad Hoc Requests" value={stats.adHoc} warn={stats.adHoc > 0} href="/tools/client-portal" />
       </div>
 
+      {/* ── Weekly Rhythm ── */}
+      <WeeklyRhythm />
+
       {/* ── This Week — Design & Dev split ── */}
       {weekData && (
         <div className="mb-4">
@@ -424,4 +427,113 @@ function relativeTime(iso: string): string {
   if (hrs < 24) return `${hrs}h ago`;
   const days = Math.floor(hrs / 24);
   return `${days}d ago`;
+}
+
+// ── Weekly Rhythm ──────────────────────────────────────────────
+
+interface RhythmItem {
+  label: string;
+  time?: string;
+  owner?: string;
+  type: "call" | "delivery" | "touchpoint" | "internal" | "report";
+}
+
+const RHYTHM: Record<string, RhythmItem[]> = {
+  Mon: [
+    { label: "Ops Call (Leadership)", time: "10:00", type: "call" },
+    { label: "Send retainer briefs & mission statements", type: "delivery" },
+    { label: "Client touchpoints", type: "touchpoint" },
+    { label: "Plan week deliverables", type: "internal" },
+  ],
+  Tue: [
+    { label: "Design Call (All Designers)", time: "TBC", type: "call" },
+    { label: "3pm Design Review", time: "15:00", owner: "Dylan + Design Lead", type: "call" },
+    { label: "Internal execution day — no client chasing", type: "internal" },
+    { label: "PM: ensure team on track", owner: "PM", type: "internal" },
+    { label: "Prep Wednesday client touchpoints", type: "internal" },
+  ],
+  Wed: [
+    { label: "Client touchpoints", type: "touchpoint" },
+    { label: "3pm Design Review", time: "15:00", type: "call" },
+    { label: "Mid-week progress check", type: "internal" },
+  ],
+  Thu: [
+    { label: "Dev Call (All Developers)", time: "TBC", type: "call" },
+    { label: "3pm Design Review", time: "15:00", type: "call" },
+    { label: "Prep Friday client reports", type: "report" },
+    { label: "Internal execution day", type: "internal" },
+  ],
+  Fri: [
+    { label: "Client touchpoints", type: "touchpoint" },
+    { label: "Send retainer weekly reports", type: "report" },
+    { label: "Send project client weekly updates", type: "report" },
+    { label: "3pm Design Review", time: "15:00", type: "call" },
+    { label: "Week wrap — what shipped, what rolls over", type: "internal" },
+    { label: "Bi-weekly full team call (every other Fri)", time: "TBC", type: "call" },
+  ],
+};
+
+const rhythmTypeStyles: Record<string, { dot: string; text: string }> = {
+  call: { dot: "bg-blue-500", text: "text-blue-600" },
+  delivery: { dot: "bg-emerald-500", text: "text-emerald-600" },
+  touchpoint: { dot: "bg-amber-500", text: "text-amber-600" },
+  internal: { dot: "bg-[#999]", text: "text-[#777]" },
+  report: { dot: "bg-violet-500", text: "text-violet-600" },
+};
+
+function WeeklyRhythm() {
+  const todayIdx = new Date().getDay(); // 0=Sun, 1=Mon...
+  const dayKeys = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+
+  return (
+    <div className="mb-4">
+      <SectionHeader title="Weekly Rhythm" />
+      <div className="grid grid-cols-5 gap-0 border border-[#E5E5EA] rounded-lg overflow-hidden">
+        {dayKeys.map((day, i) => {
+          const items = RHYTHM[day] || [];
+          const isToday = todayIdx === i + 1; // Mon=1, Tue=2, etc
+          const isPast = todayIdx > i + 1;
+
+          return (
+            <div
+              key={day}
+              className={`${i > 0 ? "border-l border-[#E5E5EA]" : ""} ${isToday ? "bg-[#FAFAFA]" : ""} ${isPast ? "opacity-50" : ""}`}
+            >
+              {/* Day header */}
+              <div className={`px-3 py-2 text-center border-b border-[#EDEDEF] ${isToday ? "bg-[#1B1B1B]" : "bg-[#F7F8FA]"}`}>
+                <span className={`text-[11px] font-bold uppercase tracking-wider ${isToday ? "text-white" : "text-[#777]"}`}>
+                  {day}
+                </span>
+                {isToday && <span className="ml-1.5 text-[9px] text-white/50">Today</span>}
+              </div>
+
+              {/* Items */}
+              <div className="p-2 space-y-1.5 min-h-[120px]">
+                {items.map((item, j) => {
+                  const style = rhythmTypeStyles[item.type] || rhythmTypeStyles.internal;
+                  return (
+                    <div key={j} className="flex items-start gap-1.5">
+                      <span className={`size-1.5 rounded-full ${style.dot} mt-1.5 shrink-0`} />
+                      <div className="min-w-0">
+                        <p className={`text-[10px] leading-tight ${style.text}`}>{item.label}</p>
+                        {item.time && <p className="text-[9px] text-[#CCC]">{item.time}</p>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex items-center gap-4 mt-2">
+        {Object.entries(rhythmTypeStyles).map(([type, style]) => (
+          <div key={type} className="flex items-center gap-1">
+            <span className={`size-1.5 rounded-full ${style.dot}`} />
+            <span className="text-[9px] text-[#AAA] capitalize">{type}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
