@@ -56,7 +56,7 @@ export default function MissionControl() {
   const [feedHours, setFeedHours] = useState(48);
   const [hasMore, setHasMore] = useState(false);
   const [feedTotal, setFeedTotal] = useState(0);
-  const [feedTypeFilter, setFeedTypeFilter] = useState<FeedItemType | "all">("all");
+  const [feedTypeFilter, setFeedTypeFilter] = useState<FeedItemType | "all">("blocker");
 
   // Stats state
   const [stats, setStats] = useState({ portals: 0, overdue: 0, issues: 0, adHoc: 0 });
@@ -186,107 +186,10 @@ export default function MissionControl() {
         </div>
       </div>
 
-      {/* ── Stats Strip ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-        <StatCard label="Active Projects" value={stats.portals} href="/tools/client-portal" />
-        <StatCard label="Overdue Tasks" value={stats.overdue} warn={stats.overdue > 0} href="/tools/ops-radar" />
-        <StatCard label="Open Issues" value={stats.issues} href="/tools/issues" />
-        <StatCard label="Ad Hoc Requests" value={stats.adHoc} warn={stats.adHoc > 0} href="/tools/client-portal" />
-      </div>
-
       {/* ── Weekly Rhythm ── */}
       <WeeklyRhythm />
 
-      {/* ── This Week — Design & Dev split ── */}
-      {weekData && (
-        <div className="mb-4">
-          <SectionHeader title="This Week" />
-          <div className="border border-[#E5E5EA] rounded-lg overflow-hidden">
-            {/* Day headers */}
-            <div className="grid grid-cols-7 border-b border-[#EDEDEF]">
-              {weekData.days.map(({ date }, i) => {
-                const isToday = sameDay(date, weekData.today);
-                const isPast = date < weekData.today && !isToday;
-                return (
-                  <div
-                    key={i}
-                    className={`text-center py-2 ${isToday ? "bg-[#1B1B1B] text-white" : isPast ? "opacity-40" : ""} ${i > 0 ? "border-l border-[#EDEDEF]" : ""}`}
-                  >
-                    <div className={`text-[10px] uppercase tracking-wider font-medium ${isToday ? "text-white/70" : "text-[#A0A0A0]"}`}>
-                      {DAY_NAMES[i]}
-                    </div>
-                    <div className={`text-[10px] tabular-nums ${isToday ? "text-white/50" : "text-[#C5C5C5]"}`}>
-                      {date.getDate()}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Design row */}
-            <div className="grid grid-cols-7 border-b border-[#EDEDEF]">
-              <div className="col-span-7 px-3 py-1 bg-[#F7F8FA] border-b border-[#EDEDEF]">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">Design</span>
-              </div>
-              {weekData.days.map(({ date, designTasks }, i) => {
-                const isToday = sameDay(date, weekData.today);
-                const isPast = date < weekData.today && !isToday;
-                return (
-                  <div
-                    key={i}
-                    className={`min-h-[36px] p-1 ${i > 0 ? "border-l border-[#EDEDEF]" : ""} ${isPast ? "opacity-40" : ""}`}
-                  >
-                    {designTasks.length === 0 ? (
-                      <span className="text-[9px] text-[#D4D4D4]">—</span>
-                    ) : (
-                      <div className="space-y-1">
-                        {designTasks.map((t, j) => (
-                          <div key={j} className="text-[9px] leading-tight">
-                            <p className="font-medium text-[#1B1B1B] truncate">{t.client}</p>
-                            <p className="text-[#A0A0A0] truncate">{t.name}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Dev row */}
-            <div className="grid grid-cols-7">
-              <div className="col-span-7 px-3 py-1 bg-[#F7F8FA] border-b border-[#EDEDEF]">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">Dev</span>
-              </div>
-              {weekData.days.map(({ date, devTasks }, i) => {
-                const isToday = sameDay(date, weekData.today);
-                const isPast = date < weekData.today && !isToday;
-                return (
-                  <div
-                    key={i}
-                    className={`min-h-[36px] p-1 ${i > 0 ? "border-l border-[#EDEDEF]" : ""} ${isPast ? "opacity-40" : ""}`}
-                  >
-                    {devTasks.length === 0 ? (
-                      <span className="text-[9px] text-[#D4D4D4]">—</span>
-                    ) : (
-                      <div className="space-y-1">
-                        {devTasks.map((t, j) => (
-                          <div key={j} className="text-[9px] leading-tight">
-                            <p className="font-medium text-[#1B1B1B] truncate">{t.client}</p>
-                            <p className="text-[#A0A0A0] truncate">{t.name}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Feed (full width) ── */}
+      {/* ── Blocker Feed ── */}
       <div className="border border-[#E5E5EA] rounded-lg overflow-hidden flex flex-col lg:max-h-[280px]">
         {/* Feed toolbar — inside container */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-[#EDEDEF] shrink-0">
