@@ -65,7 +65,7 @@ import type {
   DesignReviewFeedback,
 } from "@/lib/portal/review-types";
 
-type DashTab = "overview" | "updates" | "designs" | "development" | "testing" | "funnels" | "reports" | "internal";
+type DashTab = "overview" | "build" | "results";
 
 export default function PortalDetailPage() {
   const params = useParams();
@@ -130,7 +130,7 @@ export default function PortalDetailPage() {
       }
       // Set default tab based on client type (only on first load)
       if (!defaultTabSet && p) {
-        if (p.client_type === "retainer") setActiveTab("testing");
+        if (p.client_type === "retainer") setActiveTab("results");
         setDefaultTabSet(true);
       }
       setUpdates(u);
@@ -464,26 +464,12 @@ export default function PortalDetailPage() {
 
   const isRetainerPortal = portal.client_type === "retainer";
 
-  // Tabs driven by selected project type, not client type
-  const isSelectedRetainer = selectedProject?.type === "retainer";
-  const dashTabs: { key: DashTab; label: string }[] = isSelectedRetainer
-    ? [
-        { key: "overview", label: "Overview" },
-        { key: "testing", label: "Testing" },
-        { key: "updates", label: "Updates" },
-        { key: "reports", label: "Reports" },
-        { key: "internal", label: "Internal" },
-      ]
-    : [
-        { key: "overview", label: "Overview" },
-        { key: "updates", label: "Updates" },
-        { key: "designs", label: "Designs" },
-        { key: "development", label: "Development" },
-        { key: "testing", label: "Testing" },
-        { key: "funnels", label: "Funnels" },
-        { key: "reports", label: "Reports" },
-        { key: "internal", label: "Internal" },
-      ];
+  // Simplified tabs — same for retainer and project
+  const dashTabs: { key: DashTab; label: string }[] = [
+    { key: "overview", label: "Overview" },
+    { key: "build", label: "Build" },
+    { key: "results", label: "Results" },
+  ];
 
   return (
     <div className="min-h-screen">
@@ -819,153 +805,187 @@ export default function PortalDetailPage() {
 
             {/* Right content */}
             <div className="flex-1 min-w-0">
+        {/* ── OVERVIEW: QA gates + overview + context/weekly ── */}
         {activeTab === "overview" && (
-          <OverviewSection
-            portal={portal}
-            selectedProject={selectedProject}
-            tickets={portalTickets}
-            onUpdateField={selectedProject ? handleProjectUpdateField : handleUpdateField}
-            onUpdatePortal={handleUpdateField}
-            onSetBlocker={async (blocker) => {
-              await updatePortal(portal.id, { blocker } as Partial<PortalData>);
-              setPortal({ ...portal, blocker } as PortalData);
-            }}
-            onAddPhase={() => setShowPhaseForm(true)}
-            onRemovePhase={selectedProject ? handleProjectRemovePhase : handleRemovePhase}
-            onCyclePhaseStatus={selectedProject ? handleProjectCyclePhaseStatus : handleCyclePhaseStatus}
-            onUpdateTouchpoint={handleUpdateTouchpoint}
-            onAddScope={selectedProject ? handleProjectAddScope : handleAddScope}
-            onRemoveScope={selectedProject ? handleProjectRemoveScope : handleRemoveScope}
-            onUpdateSelectedProject={selectedProject ? updateSelectedProject : undefined}
-          />
-        )}
+          <div className="space-y-8">
+            {/* QA Gate cards at top of overview */}
+            {portal && (
+              <InternalSection
+                project={selectedProject}
+                gatesOnly
+                onUpdateProject={async (patch) => {
+                  if (!portal) return;
+                  const updatedProjects = portal.projects.map((p) =>
+                    p.id === selectedProject.id ? { ...p, ...patch } : p
+                  );
+                  await updatePortal(portal.id, { projects: updatedProjects } as any);
+                  setPortal({ ...portal, projects: updatedProjects });
+                }}
+                slackInternalChannelId={portal.slack_internal_channel_id}
+                clientName={portal.client_name}
+              />
+            )}
 
-        {activeTab === "updates" && (
-          <UpdatesSection
-            updates={updates}
-            showForm={showUpdateForm}
-            onShowForm={() => setShowUpdateForm(true)}
-            onHideForm={() => setShowUpdateForm(false)}
-            title={updateTitle}
-            description={updateDescription}
-            loomUrl={updateLoomUrl}
-            onTitleChange={setUpdateTitle}
-            onDescriptionChange={setUpdateDescription}
-            onLoomUrlChange={setUpdateLoomUrl}
-            onSubmit={handleAddUpdate}
-            saving={saving}
-          />
-        )}
+            <OverviewSection
+              portal={portal}
+              selectedProject={selectedProject}
+              tickets={portalTickets}
+              onUpdateField={selectedProject ? handleProjectUpdateField : handleUpdateField}
+              onUpdatePortal={handleUpdateField}
+              onSetBlocker={async (blocker) => {
+                await updatePortal(portal.id, { blocker } as Partial<PortalData>);
+                setPortal({ ...portal, blocker } as PortalData);
+              }}
+              onAddPhase={() => setShowPhaseForm(true)}
+              onRemovePhase={selectedProject ? handleProjectRemovePhase : handleRemovePhase}
+              onCyclePhaseStatus={selectedProject ? handleProjectCyclePhaseStatus : handleCyclePhaseStatus}
+              onUpdateTouchpoint={handleUpdateTouchpoint}
+              onAddScope={selectedProject ? handleProjectAddScope : handleAddScope}
+              onRemoveScope={selectedProject ? handleProjectRemoveScope : handleRemoveScope}
+              onUpdateSelectedProject={selectedProject ? updateSelectedProject : undefined}
+            />
 
-        {activeTab === "designs" && portal && (
-          <DesignsSection
-            portal={portal}
-            reviews={reviews}
-            onReviewsChange={setReviews}
-          />
-        )}
-
-        {activeTab === "development" && portal && (
-          <DevelopmentSection
-            portal={portal}
-            pageReviews={pageReviews}
-            pageReviewVersions={pageReviewVersions}
-            pageReviewFeedback={pageReviewFeedback}
-            onReload={load}
-          />
-        )}
-
-        {activeTab === "testing" && portal && (
-          <TestingSection
-            portal={portal}
-            projectType={selectedProject?.type || "page-build"}
-            onUpdateResults={async (results) => {
-              await updatePortal(portal.id, { results } as Partial<PortalData>);
-              setPortal({ ...portal, results } as PortalData);
-            }}
-            onUpdateField={handleUpdateField}
-          />
-        )}
-
-        {activeTab === "funnels" && portal && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-semibold tracking-tight">Funnels</h2>
-              <Link
-                href={`/tools/funnel-builder?clientId=${portal.id}&clientName=${encodeURIComponent(portal.client_name)}`}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
-              >
-                <PlusIcon className="size-3.5" />
-                Create Funnel
-              </Link>
-            </div>
-            {funnels.length === 0 ? (
-              <div className="text-center py-16 border border-dashed border-[#E5E5EA] rounded-xl">
-                <p className="text-sm text-[#7A7A7A] mb-1">No funnels linked to this client yet</p>
-                <p className="text-xs text-[#A0A0A0]">Create a funnel to map out the customer journey</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {funnels.map((funnel) => (
-                  <Link
-                    key={funnel.id}
-                    href={`/tools/funnel-builder?id=${funnel.id}`}
-                    className="flex items-center justify-between p-4 border border-[#E5E5EA] rounded-xl hover:border-[#1B1B1B] transition-colors group"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-[#1B1B1B] group-hover:underline truncate">
-                        {funnel.name || "Untitled Funnel"}
-                      </p>
-                      <div className="flex items-center gap-3 mt-1">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border ${
-                          funnel.mode === "performance"
-                            ? "bg-[#F0F0F0] text-[#555] border-[#E0E0E0]"
-                            : "bg-white text-[#999] border-[#E5E5EA]"
-                        }`}>
-                          {funnel.mode}
-                        </span>
-                        <span className="text-[11px] text-[#A0A0A0]">
-                          {funnel.nodes.length} node{funnel.nodes.length !== 1 ? "s" : ""}
-                        </span>
-                        {funnel.created_at && (
-                          <span className="text-[11px] text-[#A0A0A0]">
-                            {new Date(funnel.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <ArrowTopRightOnSquareIcon className="size-4 text-[#CCC] group-hover:text-[#1B1B1B] transition-colors shrink-0" />
-                  </Link>
-                ))}
-              </div>
+            {/* Project Context + Weekly Loop below overview */}
+            {portal && (
+              <InternalSection
+                project={selectedProject}
+                hideGates
+                onUpdateProject={async (patch) => {
+                  if (!portal) return;
+                  const updatedProjects = portal.projects.map((p) =>
+                    p.id === selectedProject.id ? { ...p, ...patch } : p
+                  );
+                  await updatePortal(portal.id, { projects: updatedProjects } as any);
+                  setPortal({ ...portal, projects: updatedProjects });
+                }}
+                slackInternalChannelId={portal.slack_internal_channel_id}
+                clientName={portal.client_name}
+              />
             )}
           </div>
         )}
 
-        {activeTab === "reports" && portal && (
-          <ReportsSection
-            reports={portal.reports || []}
-            onUpdate={async (reports) => {
-              await updatePortal(portal.id, { reports } as any);
-              setPortal({ ...portal, reports });
-            }}
-          />
+        {/* ── BUILD: Updates + Designs + Development ── */}
+        {activeTab === "build" && portal && (
+          <div className="space-y-10">
+            {/* Updates */}
+            <div>
+              <UpdatesSection
+                updates={updates}
+                showForm={showUpdateForm}
+                onShowForm={() => setShowUpdateForm(true)}
+                onHideForm={() => setShowUpdateForm(false)}
+                title={updateTitle}
+                description={updateDescription}
+                loomUrl={updateLoomUrl}
+                onTitleChange={setUpdateTitle}
+                onDescriptionChange={setUpdateDescription}
+                onLoomUrlChange={setUpdateLoomUrl}
+                onSubmit={handleAddUpdate}
+                saving={saving}
+              />
+            </div>
+
+            {/* Designs */}
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-4">Design Reviews</h3>
+              <DesignsSection
+                portal={portal}
+                reviews={reviews}
+                onReviewsChange={setReviews}
+              />
+            </div>
+
+            {/* Development */}
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-4">Development</h3>
+              <DevelopmentSection
+                portal={portal}
+                pageReviews={pageReviews}
+                pageReviewVersions={pageReviewVersions}
+                pageReviewFeedback={pageReviewFeedback}
+                onReload={load}
+              />
+            </div>
+          </div>
         )}
 
-        {activeTab === "internal" && portal && (
-          <InternalSection
-            project={selectedProject}
-            onUpdateProject={async (patch) => {
-              if (!portal) return;
-              const updatedProjects = portal.projects.map((p) =>
-                p.id === selectedProject.id ? { ...p, ...patch } : p
-              );
-              await updatePortal(portal.id, { projects: updatedProjects } as any);
-              setPortal({ ...portal, projects: updatedProjects });
-            }}
-            slackInternalChannelId={portal.slack_internal_channel_id}
-            clientName={portal.client_name}
-          />
+        {/* ── RESULTS: Testing + Funnels + Reports ── */}
+        {activeTab === "results" && portal && (
+          <div className="space-y-10">
+            {/* Testing */}
+            <div>
+              <TestingSection
+                portal={portal}
+                projectType={selectedProject?.type || "page-build"}
+                onUpdateResults={async (results) => {
+                  await updatePortal(portal.id, { results } as Partial<PortalData>);
+                  setPortal({ ...portal, results } as PortalData);
+                }}
+                onUpdateField={handleUpdateField}
+              />
+            </div>
+
+            {/* Funnels */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Funnels</h3>
+                <Link
+                  href={`/tools/funnel-builder?clientId=${portal.id}&clientName=${encodeURIComponent(portal.client_name)}`}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
+                >
+                  <PlusIcon className="size-3.5" />
+                  Create Funnel
+                </Link>
+              </div>
+              {funnels.length === 0 ? (
+                <div className="text-center py-10 border border-dashed border-[#E5E5EA] rounded-xl">
+                  <p className="text-sm text-[#7A7A7A] mb-1">No funnels linked yet</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {funnels.map((funnel) => (
+                    <Link
+                      key={funnel.id}
+                      href={`/tools/funnel-builder?id=${funnel.id}`}
+                      className="flex items-center justify-between p-4 border border-[#E5E5EA] rounded-xl hover:border-[#1B1B1B] transition-colors group"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-[#1B1B1B] group-hover:underline truncate">
+                          {funnel.name || "Untitled Funnel"}
+                        </p>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border ${
+                            funnel.mode === "performance"
+                              ? "bg-[#F0F0F0] text-[#555] border-[#E0E0E0]"
+                              : "bg-white text-[#999] border-[#E5E5EA]"
+                          }`}>
+                            {funnel.mode}
+                          </span>
+                          <span className="text-[11px] text-[#A0A0A0]">
+                            {funnel.nodes.length} node{funnel.nodes.length !== 1 ? "s" : ""}
+                          </span>
+                        </div>
+                      </div>
+                      <ArrowTopRightOnSquareIcon className="size-4 text-[#CCC] group-hover:text-[#1B1B1B] transition-colors shrink-0" />
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Reports */}
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-4">Reports</h3>
+              <ReportsSection
+                reports={portal.reports || []}
+                onUpdate={async (reports) => {
+                  await updatePortal(portal.id, { reports } as any);
+                  setPortal({ ...portal, reports });
+                }}
+              />
+            </div>
+          </div>
         )}
 
             </div>

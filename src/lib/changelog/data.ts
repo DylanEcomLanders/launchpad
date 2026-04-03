@@ -51,6 +51,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Context cleaning AI now strips all pricing/costs and focuses on actionable deliverables with a Key Deliverables summary section" },
       { type: "improved", text: "Design handoff is now a proper form — Figma link, Loom walkthrough (required), extra assets, font files, plus confirmation checkboxes" },
       { type: "improved", text: "Portal admin layout — sidebar nav when drilled into a project with compact team/Slack/touchpoint details, content area no longer pushed down" },
+      { type: "improved", text: "Portal tabs simplified from 8 to 3 — Overview (QA gates + phases + context), Build (Updates + Designs + Dev), Results (Testing + Funnels + Reports)" },
     ],
   },
   {

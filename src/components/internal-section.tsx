@@ -14,6 +14,10 @@ interface Props {
   onUpdateProject: (patch: Partial<PortalProject>) => Promise<void>;
   readOnly?: boolean;
   teamRole?: string;
+  /** When true, only render the QA gate cards (no context / weekly loop) */
+  gatesOnly?: boolean;
+  /** When true, hide the QA gate cards (show context / weekly loop only) */
+  hideGates?: boolean;
   // For Slack notifications
   slackInternalChannelId?: string;
   clientName?: string;
@@ -414,7 +418,7 @@ function GateOverviewCard({
 }
 
 /* ── Main Component ── */
-export function InternalSection({ project, onUpdateProject, readOnly = false, teamRole, slackInternalChannelId, clientName }: Props) {
+export function InternalSection({ project, onUpdateProject, readOnly = false, teamRole, gatesOnly = false, hideGates = false, slackInternalChannelId, clientName }: Props) {
   const [showContextForm, setShowContextForm] = useState(false);
   const [contextSource, setContextSource] = useState("");
   const [contextDate, setContextDate] = useState(new Date().toISOString().split("T")[0]);
@@ -544,7 +548,7 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
   return (
     <div className="space-y-8">
       {/* ── QA Gates ── */}
-      <div>
+      {!hideGates && <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">QA Gates</h3>
         </div>
@@ -583,38 +587,37 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
             />
           ))}
         </div>
-      </div>
 
-      {/* ── Gate Form Modal ── */}
-      {openGateModal && (() => {
-        const entry = gateEntries.find((e) => e.key === openGateModal);
-        if (!entry) return null;
+        {/* ── Gate Form Modal ── */}
+        {openGateModal && (() => {
+          const entry = gateEntries.find((e) => e.key === openGateModal);
+          if (!entry) return null;
 
-        // Design handoff gets its own form-based modal
-        if (entry.key === "design_handoff") {
+          if (entry.key === "design_handoff") {
+            return (
+              <DesignHandoffFormModal
+                gate={entry.gate}
+                onClose={() => setOpenGateModal(null)}
+                onUpdate={(g) => updateGateInPlace(entry.key, g)}
+                onSubmit={(g) => submitGate(entry.key, g)}
+              />
+            );
+          }
+
           return (
-            <DesignHandoffFormModal
+            <ChecklistGateModal
+              gateKey={entry.key}
               gate={entry.gate}
               onClose={() => setOpenGateModal(null)}
               onUpdate={(g) => updateGateInPlace(entry.key, g)}
               onSubmit={(g) => submitGate(entry.key, g)}
             />
           );
-        }
-
-        return (
-          <ChecklistGateModal
-            gateKey={entry.key}
-            gate={entry.gate}
-            onClose={() => setOpenGateModal(null)}
-            onUpdate={(g) => updateGateInPlace(entry.key, g)}
-            onSubmit={(g) => submitGate(entry.key, g)}
-          />
-        );
-      })()}
+        })()}
+      </div>}
 
       {/* ── Project Context ── */}
-      <div>
+      {!gatesOnly && <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Project Context</h3>
           {!readOnly && (
@@ -683,10 +686,10 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
             </details>
           </div>
         ))}
-      </div>
+      </div>}
 
       {/* ── Weekly Loop (retainer only) ── */}
-      {isRetainer && (
+      {!gatesOnly && isRetainer && (
         <div>
           <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-4">Weekly Deliverables</h3>
 
