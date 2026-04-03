@@ -247,10 +247,10 @@ export function Sidebar() {
               href="/tools/task-board"
               onClick={() => setMobileOpen(false)}
               className={`
-                flex items-center gap-2 px-2.5 py-1.5 text-[12px] font-semibold rounded-md transition-all duration-150
+                flex items-center gap-2.5 px-2.5 py-2 mt-1 rounded-lg text-sm transition-all duration-200
                 ${pathname === "/tools/task-board"
-                  ? "text-[#1B1B1B] bg-white shadow-[var(--shadow-soft)]"
-                  : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
+                  ? "bg-white text-[#1B1B1B] font-medium shadow-[var(--shadow-nav-active)]"
+                  : "text-[#7A7A7A] hover:bg-white/60 hover:text-[#1B1B1B]"
                 }
               `}
             >
@@ -261,10 +261,10 @@ export function Sidebar() {
               href="/tools/notes"
               onClick={() => setMobileOpen(false)}
               className={`
-                flex items-center gap-2 px-2.5 py-1.5 text-[12px] font-semibold rounded-md transition-all duration-150
+                flex items-center gap-2.5 px-2.5 py-2 mt-1 rounded-lg text-sm transition-all duration-200
                 ${pathname === "/tools/notes"
-                  ? "text-[#1B1B1B] bg-white shadow-[var(--shadow-soft)]"
-                  : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
+                  ? "bg-white text-[#1B1B1B] font-medium shadow-[var(--shadow-nav-active)]"
+                  : "text-[#7A7A7A] hover:bg-white/60 hover:text-[#1B1B1B]"
                 }
               `}
             >
