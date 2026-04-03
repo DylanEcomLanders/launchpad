@@ -670,6 +670,9 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
                       })}
                     </div>
                   )}
+                  <p className="mt-2 text-[10px] text-emerald-600 font-medium">
+                    Deadline buffer applied — dates include extra buffer days from Settings
+                  </p>
                 </div>
               )}
             </div>

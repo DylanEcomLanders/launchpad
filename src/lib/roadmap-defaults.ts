@@ -138,13 +138,16 @@ export function computeAllPhases(
   const wd = getWorkingDayNumbers(settings);
   const revisionBizDays = settings.revisionDays;
   const supportCalDays = settings.supportDays;
+  const bufferDays = settings.deadlineBufferDays || 0;
 
   const designEnd = addBusinessDays(kickoffDate, designDays - 1, wd);
   const revisionStart = addBusinessDays(designEnd, 1, wd);
   const revisionEnd = addBusinessDays(revisionStart, revisionBizDays - 1, wd);
   const devStart = addBusinessDays(revisionEnd, 1, wd);
   const devEnd = addBusinessDays(devStart, devDays - 1, wd);
-  const launchDate = addBusinessDays(devEnd, 1, wd);
+  // Buffer: add extra business days before the client-facing launch date
+  // This ensures we always under-promise and over-deliver
+  const launchDate = addBusinessDays(devEnd, 1 + bufferDays, wd);
   const supportEnd = addDays(launchDate, supportCalDays - 1);
 
   const dateMap: Record<RoadmapPhaseName, { start: string; end: string }> = {

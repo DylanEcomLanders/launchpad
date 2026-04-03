@@ -209,6 +209,22 @@ export default function SettingsPage() {
               <span className="text-xs text-[#AAA]">days</span>
             </div>
           </div>
+          <div className="flex items-center justify-between px-4 py-3">
+            <div>
+              <p className="text-sm font-medium">Deadline Buffer</p>
+              <p className="text-xs text-[#A0A0A0]">Extra business days added to client-facing deadlines — under-promise, over-deliver</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={0}
+                value={settings.deadlineBufferDays ?? 3}
+                onChange={(e) => setSettings({ ...settings, deadlineBufferDays: Math.max(0, Number(e.target.value)) })}
+                className="w-16 text-sm px-2 py-1 border border-[#E5E5EA] rounded text-center"
+              />
+              <span className="text-xs text-[#AAA]">days</span>
+            </div>
+          </div>
         </div>
       </section>
 

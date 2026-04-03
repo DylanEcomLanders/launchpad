@@ -38,6 +38,9 @@ export interface BusinessSettings {
   revisionDays: number; // business days for revision phase
   supportDays: number; // calendar days for post-launch support
 
+  /* Deadline buffer — extra business days added to ALL client-facing deadlines */
+  deadlineBufferDays: number;
+
   /* Working days (true = working day) */
   workingDays: {
     mon: boolean;
@@ -76,6 +79,7 @@ export const DEFAULT_SETTINGS: BusinessSettings = {
   ],
   revisionDays: 4,
   supportDays: 30,
+  deadlineBufferDays: 3,
   workingDays: {
     mon: true,
     tue: true,

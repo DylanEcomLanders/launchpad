@@ -40,13 +40,15 @@ const seedChangelog: ChangelogEntry[] = [
     id: "cl-21",
     date: "3 Apr 2026",
     version: "0.19.0",
-    title: "QA Gates — Form-Based Handoffs with Slack Notifications",
+    title: "QA Gates, Deadline Buffer & Sales Context Cleaning",
     changes: [
       { type: "improved", text: "QA gates now open as full popup forms instead of inline checklists — cleaner submit flow for designers and devs" },
       { type: "added", text: "Three-column gate status overview — CRO Brief, Design Handoff, Dev QA shown at a glance on each project card (green = submitted)" },
       { type: "added", text: "Slack notification on gate submit — posts to internal Slack channel notifying the next person to pick up work" },
       { type: "added", text: "Dual Slack channels per portal — separate Internal (team) and External (client) channel IDs in client details panel" },
       { type: "added", text: "Gate status pills on project list cards — quick visual indicator of handoff progress without opening a project" },
+      { type: "added", text: "Deadline Buffer setting — adds configurable extra business days to all client-facing deadlines (default 3 days, under-promise/over-deliver)" },
+      { type: "improved", text: "Context cleaning AI now strips all pricing/costs and focuses on actionable deliverables with a Key Deliverables summary section" },
     ],
   },
   {
