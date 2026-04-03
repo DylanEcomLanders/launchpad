@@ -52,6 +52,9 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Design handoff is now a proper form — Figma link, Loom walkthrough (required), extra assets, font files, plus confirmation checkboxes" },
       { type: "improved", text: "Portal admin layout — sidebar nav when drilled into a project with compact team/Slack/touchpoint details, content area no longer pushed down" },
       { type: "improved", text: "Portal tabs simplified from 8 to 3 — Overview (QA gates + phases + context), Build (Updates + Designs + Dev), Results (Testing + Funnels + Reports)" },
+      { type: "improved", text: "Header action bar — Save (green), Client link, Team link, Preview, Flag Blocked all as consistent black/green buttons at top" },
+      { type: "improved", text: "Overview redesign — touchpoint card (dark, editable), status card side-by-side, timeline-style phases with dot indicators, cleaner scope list" },
+      { type: "improved", text: "Sidebar renamed from 'Team' to 'Client Settings' — team, Slack channels, touchpoint info grouped as client config" },
     ],
   },
   {

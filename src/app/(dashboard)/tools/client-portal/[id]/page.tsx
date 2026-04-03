@@ -86,6 +86,7 @@ export default function PortalDetailPage() {
   const [activeTab, setActiveTab] = useState<DashTab>("overview");
   const [defaultTabSet, setDefaultTabSet] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedTeam, setCopiedTeam] = useState(false);
 
   // Update form
   const [showUpdateForm, setShowUpdateForm] = useState(false);
@@ -498,26 +499,78 @@ export default function PortalDetailPage() {
               {portal.client_email && <p className="text-xs text-[#AAA] mt-1">{portal.client_email}</p>}
             </div>
             <div className="flex items-center gap-2 shrink-0">
+              {/* Blocker flag */}
+              {portal.blocker ? (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold bg-red-500 text-white rounded-lg">
+                  <span className="size-1.5 rounded-full bg-white animate-pulse" />
+                  Blocked
+                  <button
+                    onClick={async () => {
+                      await updatePortal(portal.id, { blocker: null } as Partial<PortalData>);
+                      setPortal({ ...portal, blocker: null } as PortalData);
+                    }}
+                    className="ml-1 text-white/60 hover:text-white"
+                  >
+                    <XMarkIcon className="size-3" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={async () => {
+                    const reason = prompt("Reason for blocking:");
+                    if (!reason) return;
+                    const type = (prompt("Type (client / internal / external):", "client") as "client" | "internal" | "external") || "client";
+                    const newBlocker = { type, reason, since: new Date().toISOString() };
+                    await updatePortal(portal.id, { blocker: newBlocker } as Partial<PortalData>);
+                    setPortal({ ...portal, blocker: newBlocker } as PortalData);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
+                  title="Flag as blocked"
+                >
+                  <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path d="M3.5 2.75a.75.75 0 00-1.5 0v14.5a.75.75 0 001.5 0v-4.392l1.657-.348a6.449 6.449 0 014.271.572 7.948 7.948 0 005.965.524l2.078-.64A.75.75 0 0018 11.75V3.885a.75.75 0 00-.962-.72l-2.367.728a6.449 6.449 0 01-4.846-.425 7.948 7.948 0 00-5.262-.703L3.5 2.98V2.75z" /></svg>
+                  Flag
+                </button>
+              )}
               <button
-                onClick={copyLink}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium border border-[#E5E5EA] rounded-lg text-[#7A7A7A] hover:text-[#1B1B1B] hover:border-[#999] transition-colors"
+                onClick={() => {
+                  const url = `${window.location.origin}/portal/${portal.token}`;
+                  navigator.clipboard.writeText(url);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
+                title="Copy client portal link"
               >
                 <ClipboardDocumentIcon className="size-3.5" />
-                {copied ? "Copied!" : "Copy Link"}
+                {copied ? "Copied!" : "Client"}
+              </button>
+              <button
+                onClick={() => {
+                  const url = `${window.location.origin}/portal/${portal.token}/team`;
+                  navigator.clipboard.writeText(url);
+                  setCopiedTeam(true);
+                  setTimeout(() => setCopiedTeam(false), 2000);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
+                title="Copy team portal link"
+              >
+                <ClipboardDocumentIcon className="size-3.5" />
+                {copiedTeam ? "Copied!" : "Team"}
               </button>
               <a
                 href={`/portal/${portal.token}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium border border-[#E5E5EA] rounded-lg text-[#7A7A7A] hover:text-[#1B1B1B] hover:border-[#999] transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
               >
                 <ArrowTopRightOnSquareIcon className="size-3.5" />
                 Preview
               </a>
               <button
                 onClick={() => { load(); }}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#1B1B1B] text-white text-[11px] font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-500 text-white text-[11px] font-semibold rounded-lg hover:bg-emerald-600 transition-colors"
               >
+                <CheckIcon className="size-3.5" />
                 Save
               </button>
             </div>
@@ -561,51 +614,6 @@ export default function PortalDetailPage() {
                   </div>
                 )}
               </div>
-            </div>
-          );
-        })()}
-
-        {/* ── Blocker (client level) ── */}
-        {!selectedProject && (() => {
-          const blocker = portal.blocker;
-          const daysBlocked = blocker?.since ? Math.max(0, Math.floor((Date.now() - new Date(blocker.since).getTime()) / 86400000)) : 0;
-          return (
-            <div className="mb-6">
-              {blocker ? (
-                <div className="border border-red-200 bg-red-50/50 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="size-2 rounded-full bg-red-500 animate-pulse" />
-                      <p className="text-xs font-semibold text-red-600">Blocked {daysBlocked > 0 ? `${daysBlocked}d` : ""}</p>
-                      <span className="text-[10px] px-2 py-0.5 bg-red-100 text-red-600 rounded-full font-medium">{blocker.type}</span>
-                    </div>
-                    <button
-                      onClick={async () => {
-                        await updatePortal(portal.id, { blocker: null } as Partial<PortalData>);
-                        setPortal({ ...portal, blocker: null } as PortalData);
-                      }}
-                      className="text-[10px] text-red-400 hover:text-red-600"
-                    >
-                      Clear
-                    </button>
-                  </div>
-                  <p className="text-xs text-red-700">{blocker.reason}</p>
-                </div>
-              ) : (
-                <button
-                  onClick={async () => {
-                    const reason = prompt("Reason for blocking:");
-                    if (!reason) return;
-                    const type = prompt("Type (client / internal / external):", "client") as "client" | "internal" | "external" || "client";
-                    const newBlocker = { type, reason, since: new Date().toISOString() };
-                    await updatePortal(portal.id, { blocker: newBlocker } as Partial<PortalData>);
-                    setPortal({ ...portal, blocker: newBlocker } as PortalData);
-                  }}
-                  className="flex items-center gap-1.5 text-[11px] text-[#CCC] hover:text-red-500 transition-colors"
-                >
-                  🚩 Flag as blocked
-                </button>
-              )}
             </div>
           );
         })()}
@@ -1144,151 +1152,56 @@ function OverviewSection({
   const isRetainer = selectedProject?.type === "retainer";
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Blocker banner */}
       {blocker && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="size-2 rounded-full bg-red-500 animate-pulse shrink-0" />
-              <span className="text-xs font-semibold text-red-600 uppercase tracking-wider">
-                Blocked — {blocker.type === "client" ? "Client" : blocker.type === "internal" ? "Internal" : "External"}
+              <span className="text-xs font-semibold text-red-600">
+                Blocked — {blocker.type}
               </span>
-              <span className="text-[10px] font-medium text-red-500 bg-red-100 px-2 py-0.5 rounded-full">
-                Since {new Date(blocker.since).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                {daysBlocked > 0 && ` (${daysBlocked}d)`}
-              </span>
+              {daysBlocked > 0 && <span className="text-[10px] font-medium text-red-500 bg-red-100 px-2 py-0.5 rounded-full">{daysBlocked}d</span>}
             </div>
-            <button
-              onClick={() => onSetBlocker(null)}
-              className="text-[11px] font-medium text-red-400 hover:text-red-600 transition-colors"
-            >
-              Clear
-            </button>
+            <button onClick={() => onSetBlocker(null)} className="text-[11px] font-medium text-red-400 hover:text-red-600 transition-colors">Clear</button>
           </div>
           <p className="text-sm text-red-600 mt-1.5">{blocker.reason}</p>
         </div>
       )}
 
-      {/* Flag blocker button */}
-      {!blocker && !showBlockerForm && (
-        <button
-          onClick={() => setShowBlockerForm(true)}
-          className="flex items-center gap-1.5 text-[11px] font-medium text-[#A0A0A0] hover:text-red-500 transition-colors"
-        >
-          <svg className="size-3.5" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M3.5 2.75a.75.75 0 00-1.5 0v14.5a.75.75 0 001.5 0v-4.392l1.657-.348a6.449 6.449 0 014.271.572 7.948 7.948 0 005.965.524l2.078-.64A.75.75 0 0018 11.75V3.885a.75.75 0 00-.962-.72l-2.367.728a6.449 6.449 0 01-4.846-.425 7.948 7.948 0 00-5.262-.703L3.5 2.98V2.75z" />
-          </svg>
-          Flag as blocked
-        </button>
-      )}
-
-      {/* Blocker form */}
-      {!blocker && showBlockerForm && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-red-600">Flag Blocker</p>
-            <button onClick={() => setShowBlockerForm(false)} className="text-red-300 hover:text-red-500">
-              <XMarkIcon className="size-4" />
-            </button>
-          </div>
-          <div className="flex items-center gap-1.5">
-            {(["client", "internal", "external"] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => setBlockerType(t)}
-                className={`px-3 py-1 text-[11px] font-medium rounded-full transition-colors ${
-                  blockerType === t
-                    ? "bg-red-500 text-white"
-                    : "bg-white text-red-400 border border-red-200 hover:bg-red-100"
-                }`}
-              >
-                {t === "client" ? "Client" : t === "internal" ? "Internal" : "External"}
-              </button>
-            ))}
-          </div>
-          <input
-            type="text"
-            value={blockerReason}
-            onChange={(e) => setBlockerReason(e.target.value)}
-            placeholder="e.g., Waiting on brand assets from client"
-            className="w-full px-3 py-2 text-sm border border-red-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-red-300"
-            autoFocus
+      {/* Touchpoint + Status row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {/* Next Touchpoint — editable */}
+        <div className="bg-[#1B1B1B] text-white rounded-xl p-4">
+          <p className="text-[10px] uppercase tracking-wider text-white/40 mb-2">Next Touchpoint</p>
+          <EditableField
+            label=""
+            value={portal.next_touchpoint?.description || ""}
+            onSave={(v) => onUpdateTouchpoint("description", v)}
+            placeholder="e.g., Design review call"
+            dark
           />
-          <button
-            onClick={() => {
-              if (!blockerReason.trim()) return;
-              onSetBlocker({ type: blockerType, reason: blockerReason.trim(), since: new Date().toISOString() });
-              setShowBlockerForm(false);
-              setBlockerReason("");
-            }}
-            disabled={!blockerReason.trim()}
-            className="px-4 py-2 text-xs font-semibold bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-40"
-          >
-            Flag Blocker
-          </button>
-        </div>
-      )}
-
-      {/* Next Touchpoint */}
-      {(() => {
-        const tp = portal.next_touchpoint;
-        const inProgress = phases.find((p) => p.status === "in-progress");
-        const description = tp?.description || inProgress?.name;
-        const date = tp?.date || inProgress?.dates;
-        if (!description) return null;
-        return (
-          <div className="bg-[#1B1B1B] text-white rounded-lg p-4 flex items-center gap-3">
-            <div className="size-8 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-              <ClockIcon className="size-4 text-white/70" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] uppercase tracking-wider text-white/50 mb-0.5">Next Touchpoint</p>
-              <p className="text-sm font-medium truncate">{description}</p>
-              {date && <p className="text-[11px] text-white/50 mt-0.5">{date}</p>}
-            </div>
+          <div className="mt-2">
+            <EditableField
+              label=""
+              value={portal.next_touchpoint?.date || ""}
+              onSave={(v) => onUpdateTouchpoint("date", v)}
+              type="date"
+              dark
+            />
           </div>
-        );
-      })()}
+        </div>
 
-      {/* Project info */}
-      <div>
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
-          Project Info
-        </h3>
-        <div className="bg-white border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-4 space-y-3">
-          {!isRetainer && (
-            <div className="flex items-center justify-between py-1">
-              <p className="text-[11px] font-medium text-[#7A7A7A]">Current Phase</p>
-              <select
-                value={currentPhase}
-                onChange={(e) => onUpdateField("current_phase", e.target.value)}
-                className="text-sm text-right bg-transparent border border-[#E5E5EA] rounded px-2 py-1 text-[#1B1B1B] focus:outline-none focus:ring-1 focus:ring-[#1B1B1B]"
-              >
-                {phases.length === 0 && (
-                  <option value={currentPhase}>{currentPhase}</option>
-                )}
-                {phases.map((p) => (
-                  <option key={p.id} value={p.name}>{p.name}</option>
-                ))}
-              </select>
-            </div>
-          )}
+        {/* Project status card */}
+        <div className="bg-[#FAFAFA] border border-[#E5E5EA] rounded-xl p-4 space-y-3">
           {selectedProject && (
-            <div className="flex items-center justify-between py-1">
-              <p className="text-[11px] font-medium text-[#7A7A7A]">Project Type</p>
-              <span className="px-2 py-0.5 text-[10px] font-medium text-[#777] bg-[#F0F0F0] rounded-full capitalize">
-                {selectedProject.type.replace("-", " ")}
-              </span>
-            </div>
-          )}
-          {selectedProject && (
-            <div className="flex items-center justify-between py-1">
-              <p className="text-[11px] font-medium text-[#7A7A7A]">Status</p>
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] text-[#777]">Status</p>
               <select
                 value={selectedProject.status}
                 onChange={(e) => onUpdateSelectedProject?.({ status: e.target.value as PortalProject["status"] })}
-                className="text-sm text-right bg-transparent border border-[#E5E5EA] rounded px-2 py-1 text-[#1B1B1B] focus:outline-none focus:ring-1 focus:ring-[#1B1B1B]"
+                className="text-xs font-medium text-right bg-transparent border-none text-[#1B1B1B] focus:outline-none cursor-pointer"
               >
                 <option value="active">Active</option>
                 <option value="paused">Paused</option>
@@ -1296,228 +1209,206 @@ function OverviewSection({
               </select>
             </div>
           )}
-          <EditableField
-            label="Next Touchpoint"
-            value={portal.next_touchpoint?.description || ""}
-            onSave={(v) => onUpdateTouchpoint("description", v)}
-            placeholder="e.g., Design review call"
-          />
-          <EditableField
-            label="Touchpoint Date"
-            value={portal.next_touchpoint?.date || ""}
-            onSave={(v) => onUpdateTouchpoint("date", v)}
-            type="date"
-          />
+          {!isRetainer && (
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] text-[#777]">Current Phase</p>
+              <select
+                value={currentPhase}
+                onChange={(e) => onUpdateField("current_phase", e.target.value)}
+                className="text-xs font-medium text-right bg-transparent border-none text-[#1B1B1B] focus:outline-none cursor-pointer"
+              >
+                {phases.length === 0 && <option value={currentPhase}>{currentPhase}</option>}
+                {phases.map((p) => <option key={p.id} value={p.name}>{p.name}</option>)}
+              </select>
+            </div>
+          )}
           {portal.client_type !== "retainer" && (
-            <div className="flex items-center justify-between py-1">
-              <div>
-                <p className="text-[11px] font-medium text-[#7A7A7A]">Show Results Tab</p>
-                <p className="text-[10px] text-[#A0A0A0]">Enable for clients with active testing</p>
-              </div>
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] text-[#777]">Show Results</p>
               <button
                 onClick={() => onUpdateField("show_results", !portal.show_results)}
-                className={`relative w-9 h-5 rounded-full transition-colors duration-200 ${
-                  portal.show_results ? "bg-emerald-400" : "bg-[#D4D4D4]"
-                }`}
+                className={`relative w-8 h-[18px] rounded-full transition-colors duration-200 ${portal.show_results ? "bg-emerald-400" : "bg-[#D4D4D4]"}`}
               >
-                <span
-                  className={`absolute top-0.5 left-0.5 size-4 bg-white rounded-full shadow transition-transform duration-200 ${
-                    portal.show_results ? "translate-x-4" : ""
-                  }`}
-                />
+                <span className={`absolute top-[2px] left-[2px] size-[14px] bg-white rounded-full shadow transition-transform duration-200 ${portal.show_results ? "translate-x-[14px]" : ""}`} />
               </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* Retainer view — tier is managed in Testing tab */}
-
-      {/* Phases (non-retainer) */}
+      {/* Phases timeline (non-retainer) */}
       {!isRetainer && (
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
-            Phases ({phases.length})
-          </h3>
-          <button
-            onClick={onAddPhase}
-            className="flex items-center gap-1 text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
-          >
-            <PlusIcon className="size-3" />
-            Add
-          </button>
-        </div>
-        {phases.length === 0 ? (
-          <p className="text-xs text-[#A0A0A0] bg-[#F7F8FA] border border-dashed border-[#E5E5EA] rounded-lg p-4 text-center">
-            No phases yet — add your first phase
-          </p>
-        ) : (
-          <div className="border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg divide-y divide-[#EDEDEF]">
-            {phases.map((phase) => (
-              <div key={phase.id} className="p-3">
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`size-2 rounded-full shrink-0 ${
-                      phase.status === "complete"
-                        ? "bg-emerald-400"
-                        : phase.status === "in-progress"
-                        ? "bg-[#1B1B1B]"
-                        : "bg-[#D4D4D4]"
-                    }`}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{phase.name}</p>
-                  </div>
-                  <button
-                    onClick={() => onCyclePhaseStatus(phase.id)}
-                    className="text-[10px] font-medium uppercase tracking-wider text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors cursor-pointer"
-                    title="Click to cycle status"
-                  >
-                    {phase.status}
-                  </button>
-                  <button
-                    onClick={() => onRemovePhase(phase.id)}
-                    className="p-1 text-[#A0A0A0] hover:text-red-400 transition-colors"
-                  >
-                    <TrashIcon className="size-3" />
-                  </button>
-                </div>
-                {/* Editable dates */}
-                <div className="flex items-center gap-2 mt-1.5 ml-5">
-                  <input
-                    type="date"
-                    value={phase.startDate || ""}
-                    onChange={(e) => {
-                      const updated = phases.map((p) =>
-                        p.id === phase.id
-                          ? {
-                              ...p,
-                              startDate: e.target.value,
-                              dates: `${e.target.value ? new Date(e.target.value + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "?"} — ${p.endDate ? new Date(p.endDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "?"}`,
-                            }
-                          : p
-                      );
-                      onUpdateField("phases", updated);
-                    }}
-                    className="text-[11px] text-[#777] bg-transparent border border-[#E5E5EA] rounded px-1.5 py-0.5 w-[120px]"
-                  />
-                  <span className="text-[10px] text-[#CCC]">—</span>
-                  <input
-                    type="date"
-                    value={phase.endDate || ""}
-                    onChange={(e) => {
-                      const updated = phases.map((p) =>
-                        p.id === phase.id
-                          ? {
-                              ...p,
-                              endDate: e.target.value,
-                              deadline: e.target.value,
-                              dates: `${p.startDate ? new Date(p.startDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "?"} — ${e.target.value ? new Date(e.target.value + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "?"}`,
-                            }
-                          : p
-                      );
-                      onUpdateField("phases", updated);
-                    }}
-                    className="text-[11px] text-[#777] bg-transparent border border-[#E5E5EA] rounded px-1.5 py-0.5 w-[120px]"
-                  />
-                  {phase.status === "complete" && phase.completedDate && phase.deadline && new Date(phase.completedDate) < new Date(phase.deadline) && (
-                    <span className="text-[10px] text-green-600 font-medium">
-                      Completed early ({new Date(phase.completedDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })})
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Timeline</h3>
+            <button onClick={onAddPhase} className="text-[11px] font-medium text-[#999] hover:text-[#1B1B1B] transition-colors">+ Add Phase</button>
           </div>
-        )}
-      </div>
+          {phases.length === 0 ? (
+            <p className="text-xs text-[#CCC] bg-[#FAFAFA] border border-dashed border-[#E5E5EA] rounded-xl p-6 text-center">
+              No phases yet — add your first phase
+            </p>
+          ) : (
+            <div className="relative">
+              {/* Vertical line */}
+              <div className="absolute left-[7px] top-3 bottom-3 w-px bg-[#E5E5EA]" />
+              <div className="space-y-0">
+                {phases.map((phase, idx) => (
+                  <div key={phase.id} className="relative flex gap-4 py-3 group">
+                    {/* Status dot */}
+                    <div className="relative z-10 mt-0.5">
+                      <button
+                        onClick={() => onCyclePhaseStatus(phase.id)}
+                        className={`size-[15px] rounded-full border-2 transition-colors ${
+                          phase.status === "complete"
+                            ? "bg-emerald-400 border-emerald-400"
+                            : phase.status === "in-progress"
+                            ? "bg-[#1B1B1B] border-[#1B1B1B]"
+                            : "bg-white border-[#D4D4D4] hover:border-[#999]"
+                        }`}
+                        title={`${phase.status} — click to cycle`}
+                      >
+                        {phase.status === "complete" && (
+                          <CheckIcon className="size-2.5 text-white mx-auto" />
+                        )}
+                      </button>
+                    </div>
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className={`text-sm font-semibold ${phase.status === "complete" ? "text-[#AAA] line-through" : "text-[#1A1A1A]"}`}>{phase.name}</p>
+                        {phase.status === "in-progress" && <span className="text-[9px] font-bold uppercase tracking-wider text-[#1B1B1B] bg-[#F0F0F0] px-1.5 py-0.5 rounded">Current</span>}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <input
+                          type="date"
+                          value={phase.startDate || ""}
+                          onChange={(e) => {
+                            const updated = phases.map((p) =>
+                              p.id === phase.id
+                                ? { ...p, startDate: e.target.value, dates: `${e.target.value ? new Date(e.target.value + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "?"} — ${p.endDate ? new Date(p.endDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "?"}` }
+                                : p
+                            );
+                            onUpdateField("phases", updated);
+                          }}
+                          className="text-[11px] text-[#777] bg-transparent border border-[#E5E5EA] rounded px-1.5 py-0.5 w-[110px] hover:border-[#CCC] focus:border-[#999]"
+                        />
+                        <span className="text-[10px] text-[#DDD]">→</span>
+                        <input
+                          type="date"
+                          value={phase.endDate || ""}
+                          onChange={(e) => {
+                            const updated = phases.map((p) =>
+                              p.id === phase.id
+                                ? { ...p, endDate: e.target.value, deadline: e.target.value, dates: `${p.startDate ? new Date(p.startDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "?"} — ${e.target.value ? new Date(e.target.value + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "?"}` }
+                                : p
+                            );
+                            onUpdateField("phases", updated);
+                          }}
+                          className="text-[11px] text-[#777] bg-transparent border border-[#E5E5EA] rounded px-1.5 py-0.5 w-[110px] hover:border-[#CCC] focus:border-[#999]"
+                        />
+                        {phase.status === "complete" && phase.completedDate && phase.deadline && new Date(phase.completedDate) < new Date(phase.deadline) && (
+                          <span className="text-[10px] text-green-600 font-medium">Early</span>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => onRemovePhase(phase.id)}
+                      className="p-1 text-[#DDD] hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                    >
+                      <TrashIcon className="size-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Scope / Deliverables */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
-            Scope / Deliverables ({scope?.length || 0})
-          </h3>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Scope ({scope?.length || 0})</h3>
         </div>
-        <div className="border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg divide-y divide-[#EDEDEF]">
-          {(scope || []).map((item, i) => {
-            const desc = typeof item === "string" ? item : item.description;
-            const typ = typeof item === "string" ? "" : item.type;
-            return (
-              <div key={i} className="flex items-center gap-3 p-3">
-                <p className="text-sm font-medium flex-1 min-w-0 truncate">{desc}</p>
-                {typ && (
-                  <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-[#777] bg-[#F0F0F0] rounded-full">{typ}</span>
-                )}
-                <button
-                  onClick={() => onRemoveScope(i)}
-                  className="p-1 text-[#A0A0A0] hover:text-red-400 transition-colors"
-                >
-                  <TrashIcon className="size-3" />
-                </button>
-              </div>
-            );
-          })}
-          <div className="flex items-center gap-2 p-3">
-            <input
-              type="text"
-              value={scopeInput}
-              onChange={(e) => setScopeInput(e.target.value)}
-              placeholder="Add scope item..."
-              className="flex-1 px-2 py-1 text-sm border border-[#E5E5EA] rounded"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && scopeInput.trim()) {
-                  onAddScope(scopeInput, scopeType || undefined);
-                  setScopeInput("");
-                  setScopeType("");
-                }
-              }}
-            />
-            <select
-              value={scopeType}
-              onChange={(e) => setScopeType(e.target.value)}
-              className="px-2 py-1 text-sm border border-[#E5E5EA] rounded text-[#777]"
-            >
-              <option value="">Type</option>
-              {deliverableTypes.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-            <button
-              onClick={() => {
-                if (scopeInput.trim()) {
-                  onAddScope(scopeInput, scopeType || undefined);
-                  setScopeInput("");
-                  setScopeType("");
-                }
-              }}
-              disabled={!scopeInput.trim()}
-              className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-[#1B1B1B] text-white rounded hover:bg-[#2D2D2D] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <PlusIcon className="size-3" />
-              Add
-            </button>
+        {(scope || []).length === 0 ? (
+          <div className="border border-dashed border-[#E5E5EA] rounded-xl p-4">
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={scopeInput}
+                onChange={(e) => setScopeInput(e.target.value)}
+                placeholder="Add first scope item..."
+                className="flex-1 px-3 py-2 text-sm border border-[#E5E5EA] rounded-lg"
+                onKeyDown={(e) => { if (e.key === "Enter" && scopeInput.trim()) { onAddScope(scopeInput, scopeType || undefined); setScopeInput(""); setScopeType(""); } }}
+              />
+              <button
+                onClick={() => { if (scopeInput.trim()) { onAddScope(scopeInput, scopeType || undefined); setScopeInput(""); setScopeType(""); } }}
+                disabled={!scopeInput.trim()}
+                className="px-3 py-2 text-xs font-medium bg-[#1B1B1B] text-white rounded-lg disabled:opacity-30"
+              >
+                Add
+              </button>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="space-y-1.5">
+            {(scope || []).map((item, i) => {
+              const desc = typeof item === "string" ? item : item.description;
+              const typ = typeof item === "string" ? "" : item.type;
+              return (
+                <div key={i} className="flex items-center gap-3 px-3 py-2.5 bg-[#FAFAFA] border border-[#EDEDEF] rounded-lg group hover:border-[#DDD] transition-colors">
+                  <div className="size-1.5 rounded-full bg-[#CCC] shrink-0" />
+                  <p className="text-sm font-medium flex-1 min-w-0 truncate text-[#1A1A1A]">{desc}</p>
+                  {typ && <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-[#777] bg-white border border-[#E5E5EA] rounded-full">{typ}</span>}
+                  <button onClick={() => onRemoveScope(i)} className="p-0.5 text-[#DDD] hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100">
+                    <TrashIcon className="size-3" />
+                  </button>
+                </div>
+              );
+            })}
+            {/* Inline add */}
+            <div className="flex items-center gap-2 pt-1">
+              <input
+                type="text"
+                value={scopeInput}
+                onChange={(e) => setScopeInput(e.target.value)}
+                placeholder="Add scope item..."
+                className="flex-1 px-3 py-1.5 text-sm border border-[#E5E5EA] rounded-lg bg-white"
+                onKeyDown={(e) => { if (e.key === "Enter" && scopeInput.trim()) { onAddScope(scopeInput, scopeType || undefined); setScopeInput(""); setScopeType(""); } }}
+              />
+              <select
+                value={scopeType}
+                onChange={(e) => setScopeType(e.target.value)}
+                className="px-2 py-1.5 text-xs border border-[#E5E5EA] rounded-lg text-[#777] bg-white"
+              >
+                <option value="">Type</option>
+                {deliverableTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+              <button
+                onClick={() => { if (scopeInput.trim()) { onAddScope(scopeInput, scopeType || undefined); setScopeInput(""); setScopeType(""); } }}
+                disabled={!scopeInput.trim()}
+                className="px-3 py-1.5 text-xs font-medium bg-[#1B1B1B] text-white rounded-lg disabled:opacity-30"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Documents */}
       {(documents || []).length > 0 && (
         <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
-            Documents ({documents.length})
-          </h3>
-          <div className="border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg divide-y divide-[#EDEDEF]">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Documents ({documents.length})</h3>
+          <div className="space-y-1.5">
             {documents.map((doc, i) => (
-              <div key={i} className="flex items-center gap-2 p-3">
+              <div key={i} className="flex items-center gap-3 px-3 py-2.5 bg-[#FAFAFA] border border-[#EDEDEF] rounded-lg">
                 <p className="text-sm font-medium flex-1 min-w-0 truncate">{doc.name}</p>
-                <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-[#777] bg-[#F0F0F0] rounded-full">{doc.type}</span>
+                <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-[#777] bg-white border border-[#E5E5EA] rounded-full">{doc.type}</span>
                 {doc.url ? (
-                  <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-green-600 bg-green-50 rounded-full">Linked</span>
+                  <a href={doc.url} target="_blank" rel="noopener noreferrer" className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-emerald-600 bg-emerald-50 rounded-full hover:bg-emerald-100">View</a>
                 ) : (
-                  <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-[#AAA] bg-[#F8F8F8] rounded-full">Pending</span>
+                  <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-[#AAA] bg-[#F0F0F0] rounded-full">Pending</span>
                 )}
               </div>
             ))}
@@ -2517,55 +2408,45 @@ function EditableField({
   onSave,
   type = "text",
   placeholder,
+  dark = false,
 }: {
   label: string;
   value: string;
   onSave: (v: string) => void;
   type?: string;
   placeholder?: string;
+  dark?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
 
   return (
-    <div className="flex items-center justify-between gap-4">
-      <span className="text-xs font-medium text-[#7A7A7A]">{label}</span>
+    <div className={`flex items-center justify-between gap-4 ${label ? "" : ""}`}>
+      {label && <span className={`text-xs font-medium ${dark ? "text-white/50" : "text-[#7A7A7A]"}`}>{label}</span>}
       {editing ? (
-        <div className="flex items-center gap-1.5">
+        <div className={`flex items-center gap-1.5 ${label ? "" : "w-full"}`}>
           <input
             type={type}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             placeholder={placeholder}
-            className="px-2 py-1 text-sm border border-[#E5E5EA] rounded w-40"
+            className={`px-2 py-1 text-sm rounded ${label ? "w-40" : "w-full"} ${dark ? "bg-white/10 border border-white/20 text-white placeholder-white/30" : "border border-[#E5E5EA]"}`}
             autoFocus
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                onSave(draft);
-                setEditing(false);
-              }
+              if (e.key === "Enter") { onSave(draft); setEditing(false); }
               if (e.key === "Escape") setEditing(false);
             }}
           />
-          <button
-            onClick={() => {
-              onSave(draft);
-              setEditing(false);
-            }}
-            className="p-1 text-emerald-500 hover:text-emerald-600"
-          >
+          <button onClick={() => { onSave(draft); setEditing(false); }} className={`p-1 ${dark ? "text-emerald-300 hover:text-emerald-200" : "text-emerald-500 hover:text-emerald-600"}`}>
             <CheckIcon className="size-3.5" />
           </button>
         </div>
       ) : (
         <button
-          onClick={() => {
-            setDraft(value);
-            setEditing(true);
-          }}
-          className="text-sm text-[#1B1B1B] hover:underline"
+          onClick={() => { setDraft(value); setEditing(true); }}
+          className={`text-sm hover:underline ${label ? "" : "w-full text-left"} ${dark ? "text-white" : "text-[#1B1B1B]"}`}
         >
-          {value || "—"}
+          {value || (dark ? <span className="text-white/30">{placeholder || "Click to set"}</span> : "—")}
         </button>
       )}
     </div>
@@ -4061,9 +3942,9 @@ function SidebarClientDetails({ portal, team, onUpdateField }: { portal: PortalD
 
   return (
     <>
-      {/* Team */}
+      {/* Client Settings */}
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Team</p>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Client Settings</p>
         <div className="space-y-1">
           {designers.map(m => (
             <div key={m.id} className="flex items-center justify-between px-2 py-1.5 rounded-md bg-emerald-50 group">
