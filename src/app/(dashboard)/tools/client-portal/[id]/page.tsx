@@ -4009,11 +4009,15 @@ function ClientDetailsPanel({ portal, team, onUpdateField }: { portal: PortalDat
 
 /* ─── Sidebar Client Details (compact) ─── */
 function SidebarClientDetails({ portal, team, onUpdateField }: { portal: PortalData; team: TeamMember[]; onUpdateField: (field: string, value: unknown) => void }) {
+  const [editingSlack, setEditingSlack] = useState<"client" | "internal" | null>(null);
+  const [slackVal, setSlackVal] = useState("");
+
   const assigned = (portal.team_member_ids || []).map(id => team.find(t => t.id === id)).filter(Boolean) as TeamMember[];
   const designers = assigned.filter(m => m.role.toLowerCase().includes("design"));
   const devs = assigned.filter(m => m.role.toLowerCase().includes("develop") || m.role.toLowerCase().includes("head of dev"));
   const allDesigners = team.filter(m => m.role.toLowerCase().includes("design"));
   const allDevs = team.filter(m => m.role.toLowerCase().includes("develop") || m.role.toLowerCase().includes("head of dev"));
+  const unassigned = [...allDesigners, ...allDevs].filter(m => !assigned.some(a => a.id === m.id));
 
   const addMember = (id: string) => {
     const current = portal.team_member_ids || [];
@@ -4024,41 +4028,58 @@ function SidebarClientDetails({ portal, team, onUpdateField }: { portal: PortalD
     onUpdateField("team_member_ids", (portal.team_member_ids || []).filter(m => m !== id));
   };
 
+  const startEditSlack = (which: "client" | "internal") => {
+    setEditingSlack(which);
+    setSlackVal(which === "client" ? (portal.slack_channel_url || "") : (portal.slack_internal_channel_id || ""));
+  };
+
+  const saveSlack = () => {
+    if (editingSlack === "client") onUpdateField("slack_channel_url", slackVal);
+    else if (editingSlack === "internal") onUpdateField("slack_internal_channel_id", slackVal);
+    setEditingSlack(null);
+  };
+
   return (
     <>
       {/* Team */}
       <div>
         <p className="text-[11px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Team</p>
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           {designers.map(m => (
-            <div key={m.id} className="flex items-center justify-between py-0.5">
-              <span className="text-xs text-[#1A1A1A]">{m.name}</span>
-              <button onClick={() => removeMember(m.id)} className="text-[#DDD] hover:text-red-400 p-1">
+            <div key={m.id} className="flex items-center justify-between px-2 py-1.5 rounded-md bg-emerald-50 group">
+              <div className="min-w-0">
+                <span className="text-xs font-medium text-emerald-700 truncate block">{m.name}</span>
+                <span className="text-[10px] text-emerald-500">Designer</span>
+              </div>
+              <button onClick={() => removeMember(m.id)} className="text-emerald-300 hover:text-red-400 p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                 <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
               </button>
             </div>
           ))}
           {devs.map(m => (
-            <div key={m.id} className="flex items-center justify-between py-0.5">
-              <span className="text-xs text-[#1A1A1A]">{m.name}</span>
-              <button onClick={() => removeMember(m.id)} className="text-[#DDD] hover:text-red-400 p-1">
+            <div key={m.id} className="flex items-center justify-between px-2 py-1.5 rounded-md bg-blue-50 group">
+              <div className="min-w-0">
+                <span className="text-xs font-medium text-blue-700 truncate block">{m.name}</span>
+                <span className="text-[10px] text-blue-500">Developer</span>
+              </div>
+              <button onClick={() => removeMember(m.id)} className="text-blue-300 hover:text-red-400 p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                 <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
               </button>
             </div>
           ))}
-          {[...allDesigners, ...allDevs].filter(m => !assigned.some(a => a.id === m.id)).length > 0 && (
+          {unassigned.length > 0 && (
             <select
               value=""
               onChange={(e) => { if (e.target.value) addMember(e.target.value); }}
-              className="text-xs text-[#AAA] bg-transparent border-none cursor-pointer p-0 focus:outline-none w-full py-1"
+              className="w-full text-xs text-[#999] px-2 py-1.5 border border-dashed border-[#E5E5EA] rounded-md bg-transparent cursor-pointer focus:outline-none hover:border-[#CCC]"
             >
               <option value="">+ Add member</option>
-              {[...allDesigners, ...allDevs].filter(m => !assigned.some(a => a.id === m.id)).map(m => (
+              {unassigned.map(m => (
                 <option key={m.id} value={m.id}>{m.name}</option>
               ))}
             </select>
           )}
-          {assigned.length === 0 && [...allDesigners, ...allDevs].length === 0 && (
+          {assigned.length === 0 && unassigned.length === 0 && (
             <p className="text-xs text-[#CCC]">No team in directory</p>
           )}
         </div>
@@ -4067,14 +4088,50 @@ function SidebarClientDetails({ portal, team, onUpdateField }: { portal: PortalD
       {/* Slack */}
       <div>
         <p className="text-[11px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Slack</p>
-        <div className="space-y-2">
+        <div className="space-y-1.5">
+          {/* Client channel */}
           <div>
-            <p className="text-[11px] text-[#999] mb-0.5">Client</p>
-            <p className="text-xs font-mono text-[#1A1A1A] truncate">{portal.slack_channel_url || <span className="text-[#CCC]">Not set</span>}</p>
+            <p className="text-[10px] text-[#999] mb-0.5">Client</p>
+            {editingSlack === "client" ? (
+              <div className="flex items-center gap-1">
+                <input
+                  type="text"
+                  value={slackVal}
+                  onChange={(e) => setSlackVal(e.target.value)}
+                  className="flex-1 text-xs font-mono px-2 py-1 border border-[#E5E5EA] rounded w-full"
+                  placeholder="C0XXXXXXX"
+                  autoFocus
+                  onKeyDown={(e) => { if (e.key === "Enter") saveSlack(); if (e.key === "Escape") setEditingSlack(null); }}
+                />
+                <button onClick={saveSlack} className="text-[10px] font-medium text-emerald-600 shrink-0">Save</button>
+              </div>
+            ) : (
+              <button onClick={() => startEditSlack("client")} className="text-xs font-mono text-[#1A1A1A] hover:text-blue-600 transition-colors truncate block w-full text-left">
+                {portal.slack_channel_url || <span className="text-[#CCC]">Click to set</span>}
+              </button>
+            )}
           </div>
+          {/* Internal channel */}
           <div>
-            <p className="text-[11px] text-[#999] mb-0.5">Internal</p>
-            <p className="text-xs font-mono text-[#1A1A1A] truncate">{portal.slack_internal_channel_id || <span className="text-[#CCC]">Not set</span>}</p>
+            <p className="text-[10px] text-[#999] mb-0.5">Internal</p>
+            {editingSlack === "internal" ? (
+              <div className="flex items-center gap-1">
+                <input
+                  type="text"
+                  value={slackVal}
+                  onChange={(e) => setSlackVal(e.target.value)}
+                  className="flex-1 text-xs font-mono px-2 py-1 border border-[#E5E5EA] rounded w-full"
+                  placeholder="C0XXXXXXX"
+                  autoFocus
+                  onKeyDown={(e) => { if (e.key === "Enter") saveSlack(); if (e.key === "Escape") setEditingSlack(null); }}
+                />
+                <button onClick={saveSlack} className="text-[10px] font-medium text-emerald-600 shrink-0">Save</button>
+              </div>
+            ) : (
+              <button onClick={() => startEditSlack("internal")} className="text-xs font-mono text-[#1A1A1A] hover:text-blue-600 transition-colors truncate block w-full text-left">
+                {portal.slack_internal_channel_id || <span className="text-[#CCC]">Click to set</span>}
+              </button>
+            )}
           </div>
         </div>
       </div>
