@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { PlusIcon, TrashIcon, MicrophoneIcon, StopIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
-import { createStore } from "@/lib/supabase-store";
-
 interface ActionItem {
   id: string;
   text: string;
@@ -20,7 +18,29 @@ interface DailyNote {
   updated_at: string;
 }
 
-const store = createStore<DailyNote>({ table: "daily_notes", lsKey: "launchpad-daily-notes" });
+const LS_KEY = "launchpad-private-notes";
+
+// localStorage-only store — private to this browser
+const store = {
+  getAll: async (): Promise<DailyNote[]> => {
+    if (typeof window === "undefined") return [];
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch { return []; }
+  },
+  create: async (note: DailyNote) => {
+    const all = await store.getAll();
+    all.push(note);
+    localStorage.setItem(LS_KEY, JSON.stringify(all));
+  },
+  update: async (id: string, updates: Partial<DailyNote>) => {
+    const all = await store.getAll();
+    const idx = all.findIndex((n) => n.id === id);
+    if (idx >= 0) { all[idx] = { ...all[idx], ...updates }; localStorage.setItem(LS_KEY, JSON.stringify(all)); }
+  },
+  getById: async (id: string): Promise<DailyNote | null> => {
+    const all = await store.getAll();
+    return all.find((n) => n.id === id) || null;
+  },
+};
 
 function todayKey() {
   return new Date().toISOString().split("T")[0];
