@@ -631,6 +631,8 @@ export function PortalView({
                 <TeamInternalView
                   project={selectedProject}
                   onUpdateProject={onUpdateProject ? (patch) => onUpdateProject(selectedProject.id, patch) : undefined}
+                  slackInternalChannelId={portal.slack_internal_channel_id}
+                  clientName={portal.client_name}
                 />
               </>
             )}
@@ -2526,9 +2528,13 @@ function ReportsTab({ reports }: { reports: PortalReport[] }) {
 function TeamInternalView({
   project,
   onUpdateProject,
+  slackInternalChannelId,
+  clientName,
 }: {
   project: PortalProject;
   onUpdateProject?: (patch: Partial<PortalProject>) => Promise<void>;
+  slackInternalChannelId?: string;
+  clientName?: string;
 }) {
   const [teamRole, setTeamRole] = useState("Designer");
 
@@ -2553,6 +2559,8 @@ function TeamInternalView({
         onUpdateProject={onUpdateProject || (async () => {})}
         readOnly={true}
         teamRole={teamRole}
+        slackInternalChannelId={slackInternalChannelId}
+        clientName={clientName}
       />
     </div>
   );

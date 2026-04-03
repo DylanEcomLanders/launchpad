@@ -58,7 +58,7 @@ import type {
 } from "@/lib/portal/types";
 import { deliverableTypes } from "@/lib/config";
 import { BrandedReport } from "@/components/branded-report";
-import { InternalSection } from "@/components/internal-section";
+import { InternalSection, GateStatusPills } from "@/components/internal-section";
 import type {
   DesignReview,
   DesignReviewVersion,
@@ -729,11 +729,14 @@ export default function PortalDetailPage() {
                   <div key={proj.id} className="flex items-center justify-between px-3.5 py-3.5 hover:bg-[#F7F8FA] transition-colors rounded-lg group/proj">
                     <button onClick={() => setSelectedProjectIdx(idx)} className="flex-1 text-left min-w-0">
                       <p className="text-sm font-semibold text-[#1A1A1A]">{proj.name}</p>
-                      <p className="text-[10px] text-[#AAA]">
-                        {proj.type === "retainer" ? "Retainer" : "Page Build"}
-                        {startDate ? ` · Started ${startDate}` : ""}
-                        {proj.current_phase ? ` · ${proj.current_phase}` : ""}
-                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <p className="text-[10px] text-[#AAA]">
+                          {proj.type === "retainer" ? "Retainer" : "Page Build"}
+                          {startDate ? ` · Started ${startDate}` : ""}
+                          {proj.current_phase ? ` · ${proj.current_phase}` : ""}
+                        </p>
+                        <GateStatusPills project={proj} />
+                      </div>
                     </button>
                     <div className="flex items-center gap-2 shrink-0">
                       <button
@@ -950,6 +953,8 @@ export default function PortalDetailPage() {
               await updatePortal(portal.id, { projects: updatedProjects } as any);
               setPortal({ ...portal, projects: updatedProjects });
             }}
+            slackInternalChannelId={portal.slack_internal_channel_id}
+            clientName={portal.client_name}
           />
         )}
 
@@ -3853,6 +3858,8 @@ function TeamAssignment({ portal, onUpdateField }: { portal: PortalData; onUpdat
 function ClientDetailsPanel({ portal, team, onUpdateField }: { portal: PortalData; team: TeamMember[]; onUpdateField: (field: string, value: unknown) => void }) {
   const [editingSlack, setEditingSlack] = useState(false);
   const [slackVal, setSlackVal] = useState(portal.slack_channel_url || "");
+  const [editingInternalSlack, setEditingInternalSlack] = useState(false);
+  const [internalSlackVal, setInternalSlackVal] = useState(portal.slack_internal_channel_id || "");
   const [editingTp, setEditingTp] = useState(false);
   const [tpDate, setTpDate] = useState(portal.next_touchpoint?.date || "");
   const [tpDesc, setTpDesc] = useState(portal.next_touchpoint?.description || "");
@@ -3933,9 +3940,9 @@ function ClientDetailsPanel({ portal, team, onUpdateField }: { portal: PortalDat
         </div>
       </div>
 
-      {/* Slack Channel */}
+      {/* Slack Channel (External / Client) */}
       <div className="flex items-center justify-between px-4 py-3">
-        <p className="text-xs font-medium text-[#777]">Slack Channel</p>
+        <p className="text-xs font-medium text-[#777]">Slack (Client)</p>
         {editingSlack ? (
           <div className="flex items-center gap-2">
             <input type="text" value={slackVal} onChange={(e) => setSlackVal(e.target.value)} className="text-xs font-mono px-2 py-1 border border-[#E5E5EA] rounded w-40" placeholder="C0XXXXXXX" autoFocus />
@@ -3945,6 +3952,22 @@ function ClientDetailsPanel({ portal, team, onUpdateField }: { portal: PortalDat
         ) : (
           <button onClick={() => setEditingSlack(true)} className="text-xs text-[#1A1A1A] font-mono hover:text-blue-600 transition-colors">
             {portal.slack_channel_url || <span className="text-[#CCC]">Click to set</span>}
+          </button>
+        )}
+      </div>
+
+      {/* Slack Channel (Internal / Team) */}
+      <div className="flex items-center justify-between px-4 py-3">
+        <p className="text-xs font-medium text-[#777]">Slack (Internal)</p>
+        {editingInternalSlack ? (
+          <div className="flex items-center gap-2">
+            <input type="text" value={internalSlackVal} onChange={(e) => setInternalSlackVal(e.target.value)} className="text-xs font-mono px-2 py-1 border border-[#E5E5EA] rounded w-40" placeholder="C0XXXXXXX" autoFocus />
+            <button onClick={() => { onUpdateField("slack_internal_channel_id", internalSlackVal); setEditingInternalSlack(false); }} className="text-[10px] font-medium text-emerald-600">Save</button>
+            <button onClick={() => { setInternalSlackVal(portal.slack_internal_channel_id || ""); setEditingInternalSlack(false); }} className="text-[10px] text-[#AAA]">Cancel</button>
+          </div>
+        ) : (
+          <button onClick={() => setEditingInternalSlack(true)} className="text-xs text-[#1A1A1A] font-mono hover:text-blue-600 transition-colors">
+            {portal.slack_internal_channel_id || <span className="text-[#CCC]">Click to set</span>}
           </button>
         )}
       </div>

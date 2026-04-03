@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckIcon, PlusIcon, TrashIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
+import { CheckIcon, PlusIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import type { PortalProject, QAGate, QAGates, ContextEntry, WeeklyDeliverable } from "@/lib/portal/types";
 import {
   CRO_BRIEF_ITEMS, DESIGN_HANDOFF_ITEMS, DEV_HANDOFF_ITEMS,
@@ -12,140 +12,287 @@ import { getCurrentWeekStart, getWeekLabel, ensureCurrentWeek, isMissionStatemen
 interface Props {
   project: PortalProject;
   onUpdateProject: (patch: Partial<PortalProject>) => Promise<void>;
-  readOnly?: boolean; // team view = mostly read-only
-  teamRole?: string; // "Designer" | "Developer" | "CRO Strategist" — enables their gate
+  readOnly?: boolean;
+  teamRole?: string;
+  // For Slack notifications
+  slackInternalChannelId?: string;
+  clientName?: string;
 }
 
-/* ── QA Gate Card ── */
-function GateCard({
+/* ── Gate Status Pill (for overview) ── */
+export function GateStatusPills({ project }: { project: PortalProject }) {
+  const gates = project.qa_gates || {};
+  const gateKeys: Array<{ key: string; label: string; items: string[] }> = [];
+
+  if (gates.cro_brief_enabled) {
+    gateKeys.push({ key: "cro_brief", label: "CRO", items: CRO_BRIEF_ITEMS });
+  }
+  gateKeys.push({ key: "design_handoff", label: "Design", items: DESIGN_HANDOFF_ITEMS });
+  gateKeys.push({ key: "dev_handoff", label: "Dev QA", items: DEV_HANDOFF_ITEMS });
+
+  return (
+    <div className="flex items-center gap-1.5">
+      {gateKeys.map(({ key, label }) => {
+        const gate = gates[key as keyof QAGates] as QAGate | undefined;
+        const isSubmitted = gate?.status === "submitted";
+        return (
+          <span
+            key={key}
+            className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${
+              isSubmitted
+                ? "bg-emerald-50 text-emerald-600"
+                : "bg-[#F3F3F5] text-[#AAA]"
+            }`}
+          >
+            {label} {isSubmitted ? "✓" : "—"}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ── Gate Form Modal ── */
+function GateFormModal({
   gateKey,
   gate,
+  onSubmit,
+  onClose,
   onUpdate,
-  locked,
-  lockReason,
-  canSubmit,
-  readOnly,
 }: {
   gateKey: string;
   gate: QAGate;
-  onUpdate: (updated: QAGate) => void;
-  locked: boolean;
-  lockReason?: string;
-  canSubmit: boolean;
-  readOnly?: boolean;
+  onSubmit: (gate: QAGate) => void;
+  onClose: () => void;
+  onUpdate: (gate: QAGate) => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
   const config = GATE_CONFIG[gateKey];
   const progress = getGateProgress(gate);
   const complete = isGateComplete(gate);
   const isSubmitted = gate.status === "submitted";
 
   return (
-    <div className={`border rounded-xl overflow-hidden ${locked ? "opacity-50" : ""} ${isSubmitted ? "border-emerald-200 bg-emerald-50/20" : "border-[#E5E5EA]"}`}>
-      <button
-        onClick={() => !locked && setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-4 py-3 text-left"
-        disabled={locked}
-      >
-        <div className="flex items-center gap-3">
-          <span className="size-2.5 rounded-full" style={{ backgroundColor: config.color }} />
-          <div>
-            <p className="text-sm font-semibold text-[#1A1A1A]">{config.title}</p>
-            <p className="text-[10px] text-[#AAA]">{config.role}</p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="sticky top-0 bg-white rounded-t-2xl border-b border-[#F0F0F0] px-6 py-4 flex items-center justify-between z-10">
+          <div className="flex items-center gap-3">
+            <span className="size-3 rounded-full" style={{ backgroundColor: config.color }} />
+            <div>
+              <h2 className="text-sm font-bold text-[#1A1A1A]">{config.title}</h2>
+              <p className="text-[10px] text-[#AAA]">{config.role}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-[#CCC] hover:text-[#777]">
+            <XMarkIcon className="size-5" />
+          </button>
+        </div>
+
+        {/* Progress bar */}
+        <div className="px-6 pt-4">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[10px] text-[#AAA]">Progress</span>
+            <span className="text-[10px] font-medium text-[#777]">{progress.checked}/{progress.total}</span>
+          </div>
+          <div className="h-1.5 bg-[#F0F0F0] rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-300"
+              style={{ width: `${(progress.checked / progress.total) * 100}%`, backgroundColor: config.color }}
+            />
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          {isSubmitted ? (
-            <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Submitted</span>
-          ) : (
-            <span className="text-[10px] text-[#AAA]">{progress.checked}/{progress.total}</span>
-          )}
-          <ChevronDownIcon className={`size-4 text-[#CCC] transition-transform ${expanded ? "rotate-180" : ""}`} />
+
+        {/* Checklist */}
+        <div className="px-6 py-4 space-y-2">
+          {gate.items.map((item, i) => (
+            <label
+              key={i}
+              className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
+                item.checked
+                  ? "border-emerald-200 bg-emerald-50/30"
+                  : "border-[#E5E5EA] hover:border-[#CCC]"
+              } ${isSubmitted ? "pointer-events-none opacity-60" : ""}`}
+            >
+              <input
+                type="checkbox"
+                checked={item.checked}
+                disabled={isSubmitted}
+                onChange={() => {
+                  if (isSubmitted) return;
+                  const updated = {
+                    ...gate,
+                    items: gate.items.map((it, idx) => idx === i ? { ...it, checked: !it.checked } : it),
+                  };
+                  onUpdate(updated);
+                }}
+                className="size-4 mt-0.5 rounded border-[#CCC] text-emerald-600 focus:ring-0 focus:ring-offset-0"
+              />
+              <span className={`text-sm ${item.checked ? "text-[#1A1A1A]" : "text-[#777]"}`}>{item.label}</span>
+            </label>
+          ))}
         </div>
-      </button>
 
-      {locked && lockReason && (
-        <p className="px-4 pb-2 text-[10px] text-amber-600">{lockReason}</p>
-      )}
-
-      {expanded && !locked && (
-        <div className="px-4 pb-4 border-t border-[#F0F0F0]">
-          {/* Progress bar */}
-          <div className="h-1 bg-[#F0F0F0] rounded-full overflow-hidden my-3">
-            <div className="h-full rounded-full transition-all" style={{ width: `${(progress.checked / progress.total) * 100}%`, backgroundColor: config.color }} />
-          </div>
-
-          {/* Checklist */}
-          <div className="space-y-1.5 mb-3">
-            {gate.items.map((item, i) => (
-              <label key={i} className="flex items-center gap-2.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={item.checked}
-                  disabled={isSubmitted || (readOnly && !canSubmit)}
-                  onChange={() => {
-                    if (isSubmitted || (readOnly && !canSubmit)) return;
-                    const updated = { ...gate, items: gate.items.map((it, idx) => idx === i ? { ...it, checked: !it.checked } : it) };
-                    onUpdate(updated);
-                  }}
-                  className="size-3.5 rounded border-[#CCC] text-[#1B1B1B] focus:ring-0"
-                />
-                <span className={`text-xs ${item.checked ? "text-[#1A1A1A]" : "text-[#999]"}`}>{item.label}</span>
-              </label>
-            ))}
-          </div>
-
-          {/* Notes */}
+        {/* Notes */}
+        <div className="px-6 pb-4">
+          <label className="text-[10px] text-[#777] block mb-1.5">Notes / Additional Context</label>
           <textarea
             value={gate.notes}
-            onChange={(e) => { if (!isSubmitted && (!readOnly || canSubmit)) onUpdate({ ...gate, notes: e.target.value }); }}
-            disabled={isSubmitted || (readOnly && !canSubmit)}
-            placeholder="Notes or additional context..."
-            className="w-full text-xs px-3 py-2 border border-[#E5E5EA] rounded-lg min-h-[60px] resize-y focus:outline-none focus:border-[#999] placeholder:text-[#CCC] disabled:opacity-50"
+            onChange={(e) => {
+              if (!isSubmitted) onUpdate({ ...gate, notes: e.target.value });
+            }}
+            disabled={isSubmitted}
+            placeholder="Add links, context, or notes for the next person..."
+            className="w-full text-sm px-3 py-2.5 border border-[#E5E5EA] rounded-lg min-h-[80px] resize-y focus:outline-none focus:border-[#999] placeholder:text-[#CCC] disabled:opacity-50"
           />
+        </div>
 
-          {/* Submit */}
-          {!isSubmitted && canSubmit && (
-            <button
-              onClick={() => {
-                if (!complete) return;
-                onUpdate({ ...gate, status: "submitted", submitted_at: new Date().toISOString(), submitted_by: "team" });
-              }}
-              disabled={!complete}
-              className="mt-3 px-4 py-2 text-xs font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] disabled:opacity-30"
-            >
-              Submit Gate
-            </button>
-          )}
-
-          {isSubmitted && gate.submitted_at && (
-            <p className="mt-2 text-[10px] text-emerald-600">
-              Submitted {new Date(gate.submitted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-            </p>
+        {/* Footer */}
+        <div className="sticky bottom-0 bg-white rounded-b-2xl border-t border-[#F0F0F0] px-6 py-4">
+          {isSubmitted ? (
+            <div className="flex items-center gap-2 text-emerald-600">
+              <CheckIcon className="size-4" />
+              <span className="text-sm font-medium">
+                Submitted {gate.submitted_at ? new Date(gate.submitted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : ""}
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] text-[#AAA]">
+                {complete ? "All items checked — ready to submit" : `${progress.total - progress.checked} items remaining`}
+              </p>
+              <button
+                onClick={() => {
+                  if (!complete) return;
+                  onSubmit({
+                    ...gate,
+                    status: "submitted",
+                    submitted_at: new Date().toISOString(),
+                    submitted_by: "team",
+                  });
+                }}
+                disabled={!complete}
+                className="px-5 py-2.5 text-sm font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+              >
+                Submit Handoff
+              </button>
+            </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
 
+/* ── Gate Overview Card (three-column display) ── */
+function GateOverviewCard({
+  gateKey,
+  gate,
+  locked,
+  lockReason,
+  canOpen,
+  onOpen,
+}: {
+  gateKey: string;
+  gate: QAGate;
+  locked: boolean;
+  lockReason?: string;
+  canOpen: boolean;
+  onOpen: () => void;
+}) {
+  const config = GATE_CONFIG[gateKey];
+  const progress = getGateProgress(gate);
+  const isSubmitted = gate.status === "submitted";
+
+  return (
+    <button
+      onClick={() => { if (!locked && canOpen) onOpen(); }}
+      disabled={locked}
+      className={`flex-1 min-w-0 border rounded-xl p-4 text-left transition-all ${
+        locked
+          ? "opacity-40 cursor-not-allowed border-[#E5E5EA]"
+          : isSubmitted
+            ? "border-emerald-200 bg-emerald-50/30 hover:border-emerald-300"
+            : "border-[#E5E5EA] hover:border-[#CCC] hover:shadow-sm cursor-pointer"
+      }`}
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <span className="size-2.5 rounded-full" style={{ backgroundColor: isSubmitted ? "#059669" : config.color }} />
+        <span className="text-[10px] font-semibold text-[#1A1A1A] truncate">{config.title}</span>
+      </div>
+
+      {isSubmitted ? (
+        <>
+          <div className="flex items-center gap-1.5 mb-1">
+            <CheckIcon className="size-3.5 text-emerald-600" />
+            <span className="text-xs font-semibold text-emerald-600">Submitted</span>
+          </div>
+          <p className="text-[9px] text-[#AAA]">
+            {gate.submitted_at && new Date(gate.submitted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+          </p>
+        </>
+      ) : (
+        <>
+          <div className="h-1 bg-[#F0F0F0] rounded-full overflow-hidden mb-1.5">
+            <div className="h-full rounded-full transition-all" style={{ width: `${(progress.checked / progress.total) * 100}%`, backgroundColor: config.color }} />
+          </div>
+          <p className="text-[10px] text-[#AAA]">{progress.checked}/{progress.total} items</p>
+        </>
+      )}
+
+      {locked && lockReason && (
+        <p className="text-[9px] text-amber-500 mt-1.5">🔒 {lockReason}</p>
+      )}
+    </button>
+  );
+}
+
 /* ── Main Component ── */
-export function InternalSection({ project, onUpdateProject, readOnly = false, teamRole }: Props) {
+export function InternalSection({ project, onUpdateProject, readOnly = false, teamRole, slackInternalChannelId, clientName }: Props) {
   const [showContextForm, setShowContextForm] = useState(false);
   const [contextSource, setContextSource] = useState("");
   const [contextDate, setContextDate] = useState(new Date().toISOString().split("T")[0]);
   const [rawTranscript, setRawTranscript] = useState("");
   const [cleanVersion, setCleanVersion] = useState("");
   const [cleaning, setCleaning] = useState(false);
+  const [openGateModal, setOpenGateModal] = useState<string | null>(null);
 
   const gates = project.qa_gates || {};
   const isRetainer = project.type === "retainer";
 
   /* ── Gate updates ── */
-  const updateGate = async (gateKey: string, updated: QAGate) => {
+  const updateGateInPlace = async (gateKey: string, updated: QAGate) => {
     await onUpdateProject({
       qa_gates: { ...gates, [gateKey]: updated },
     });
+  };
+
+  const submitGate = async (gateKey: string, submittedGate: QAGate) => {
+    await onUpdateProject({
+      qa_gates: { ...gates, [gateKey]: submittedGate },
+    });
+    setOpenGateModal(null);
+
+    // Send Slack notification (fire-and-forget)
+    if (slackInternalChannelId) {
+      const config = GATE_CONFIG[gateKey];
+      const nextRole =
+        gateKey === "cro_brief" ? "Designer"
+        : gateKey === "design_handoff" ? "Developer"
+        : "Senior Developer";
+
+      fetch("/api/slack/gate-notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channelId: slackInternalChannelId,
+          gateTitle: config.title,
+          clientName: clientName || "Client",
+          projectName: project.name,
+          submittedBy: submittedGate.submitted_by || teamRole || "Team member",
+          nextRole,
+        }),
+      }).catch(() => {});
+    }
   };
 
   const toggleCroBrief = async () => {
@@ -211,6 +358,22 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
     await onUpdateProject({ weekly_deliverables: updated });
   };
 
+  /* ── Determine which gates to show ── */
+  const gateEntries: Array<{ key: string; gate: QAGate; items: string[] }> = [];
+  if (gates.cro_brief_enabled) {
+    gateEntries.push({ key: "cro_brief", gate: gates.cro_brief || createDefaultGate(CRO_BRIEF_ITEMS), items: CRO_BRIEF_ITEMS });
+  }
+  gateEntries.push({ key: "design_handoff", gate: gates.design_handoff || createDefaultGate(DESIGN_HANDOFF_ITEMS), items: DESIGN_HANDOFF_ITEMS });
+  gateEntries.push({ key: "dev_handoff", gate: gates.dev_handoff || createDefaultGate(DEV_HANDOFF_ITEMS), items: DEV_HANDOFF_ITEMS });
+
+  /* ── Can the current user open this gate? ── */
+  const canOpenGate = (gateKey: string) => {
+    if (!readOnly) return true; // Admin can always open
+    // Team members can only open their role's gate
+    const config = GATE_CONFIG[gateKey];
+    return teamRole === config.role;
+  };
+
   return (
     <div className="space-y-8">
       {/* ── QA Gates ── */}
@@ -235,42 +398,40 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
           </div>
         )}
 
-        <div className="space-y-2">
-          {/* CRO Brief Gate */}
-          {gates.cro_brief_enabled && gates.cro_brief && (
-            <GateCard
-              gateKey="cro_brief"
-              gate={gates.cro_brief}
-              onUpdate={(g) => updateGate("cro_brief", g)}
-              locked={false}
-              canSubmit={!readOnly || teamRole === "CRO Strategist"}
-              readOnly={readOnly}
+        {/* Three-column gate overview cards */}
+        <div className="flex gap-2">
+          {gateEntries.map(({ key, gate }) => (
+            <GateOverviewCard
+              key={key}
+              gateKey={key}
+              gate={gate}
+              locked={!arePrerequisitesMet(project, key as any)}
+              lockReason={
+                key === "design_handoff" ? "Complete CRO Brief first"
+                : key === "dev_handoff" ? "Complete Design Handoff first"
+                : undefined
+              }
+              canOpen={canOpenGate(key)}
+              onOpen={() => setOpenGateModal(key)}
             />
-          )}
-
-          {/* Design Handoff Gate */}
-          <GateCard
-            gateKey="design_handoff"
-            gate={gates.design_handoff || createDefaultGate(DESIGN_HANDOFF_ITEMS)}
-            onUpdate={(g) => updateGate("design_handoff", g)}
-            locked={!arePrerequisitesMet(project, "design_handoff")}
-            lockReason="Complete CRO Pre-Design Brief first"
-            canSubmit={!readOnly || teamRole === "Designer"}
-            readOnly={readOnly}
-          />
-
-          {/* Dev Handoff Gate */}
-          <GateCard
-            gateKey="dev_handoff"
-            gate={gates.dev_handoff || createDefaultGate(DEV_HANDOFF_ITEMS)}
-            onUpdate={(g) => updateGate("dev_handoff", g)}
-            locked={!arePrerequisitesMet(project, "dev_handoff")}
-            lockReason="Complete Design → Dev Handoff first"
-            canSubmit={!readOnly || teamRole === "Developer"}
-            readOnly={readOnly}
-          />
+          ))}
         </div>
       </div>
+
+      {/* ── Gate Form Modal ── */}
+      {openGateModal && (() => {
+        const entry = gateEntries.find((e) => e.key === openGateModal);
+        if (!entry) return null;
+        return (
+          <GateFormModal
+            gateKey={entry.key}
+            gate={entry.gate}
+            onClose={() => setOpenGateModal(null)}
+            onUpdate={(g) => updateGateInPlace(entry.key, g)}
+            onSubmit={(g) => submitGate(entry.key, g)}
+          />
+        );
+      })()}
 
       {/* ── Project Context ── */}
       <div>

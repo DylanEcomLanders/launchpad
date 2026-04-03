@@ -200,7 +200,8 @@ export interface PortalData {
   intelligems_assignments?: IntelligemsAssignment[]; // Assigned tests with week + figma
   wins: PortalWin[];
   show_results: boolean;
-  slack_channel_url: string;
+  slack_channel_url: string; // External (client-facing) Slack channel ID
+  slack_internal_channel_id?: string; // Internal team Slack channel ID
   ad_hoc_requests: AdHocRequest[];
   reports?: PortalReport[];
   blocker?: PortalBlocker | null;
