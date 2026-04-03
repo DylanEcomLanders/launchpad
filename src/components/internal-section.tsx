@@ -5,7 +5,7 @@ import { CheckIcon, PlusIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/o
 import type { PortalProject, QAGate, QAGates, ContextEntry, WeeklyDeliverable } from "@/lib/portal/types";
 import {
   CRO_BRIEF_ITEMS, DESIGN_HANDOFF_ITEMS, DEV_HANDOFF_ITEMS,
-  createDefaultGate, getGateProgress, isGateComplete, arePrerequisitesMet, GATE_CONFIG,
+  createDefaultGate, getGateProgress, isGateComplete, isDesignHandoffComplete, arePrerequisitesMet, GATE_CONFIG,
 } from "@/lib/portal/qa-gates";
 import { getCurrentWeekStart, getWeekLabel, ensureCurrentWeek, isMissionStatementDue, isWeeklyReportDue } from "@/lib/portal/weekly-loop";
 
@@ -52,8 +52,48 @@ export function GateStatusPills({ project }: { project: PortalProject }) {
   );
 }
 
-/* ── Gate Form Modal ── */
-function GateFormModal({
+/* ── Shared Modal Shell ── */
+function ModalShell({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function ModalHeader({ gateKey, onClose }: { gateKey: string; onClose: () => void }) {
+  const config = GATE_CONFIG[gateKey];
+  return (
+    <div className="sticky top-0 bg-white rounded-t-2xl border-b border-[#F0F0F0] px-6 py-4 flex items-center justify-between z-10">
+      <div className="flex items-center gap-3">
+        <span className="size-3 rounded-full" style={{ backgroundColor: config.color }} />
+        <div>
+          <h2 className="text-sm font-bold text-[#1A1A1A]">{config.title}</h2>
+          <p className="text-[10px] text-[#AAA]">{config.role}</p>
+        </div>
+      </div>
+      <button onClick={onClose} className="text-[#CCC] hover:text-[#777]">
+        <XMarkIcon className="size-5" />
+      </button>
+    </div>
+  );
+}
+
+function SubmittedBanner({ gate }: { gate: QAGate }) {
+  return (
+    <div className="flex items-center gap-2 text-emerald-600">
+      <CheckIcon className="size-4" />
+      <span className="text-sm font-medium">
+        Submitted {gate.submitted_at ? new Date(gate.submitted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : ""}
+      </span>
+    </div>
+  );
+}
+
+/* ── Checklist Gate Modal (CRO Brief, Dev QA) ── */
+function ChecklistGateModal({
   gateKey,
   gate,
   onSubmit,
@@ -72,114 +112,241 @@ function GateFormModal({
   const isSubmitted = gate.status === "submitted";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className="sticky top-0 bg-white rounded-t-2xl border-b border-[#F0F0F0] px-6 py-4 flex items-center justify-between z-10">
-          <div className="flex items-center gap-3">
-            <span className="size-3 rounded-full" style={{ backgroundColor: config.color }} />
-            <div>
-              <h2 className="text-sm font-bold text-[#1A1A1A]">{config.title}</h2>
-              <p className="text-[10px] text-[#AAA]">{config.role}</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="text-[#CCC] hover:text-[#777]">
-            <XMarkIcon className="size-5" />
-          </button>
-        </div>
+    <ModalShell onClose={onClose}>
+      <ModalHeader gateKey={gateKey} onClose={onClose} />
 
-        {/* Progress bar */}
-        <div className="px-6 pt-4">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] text-[#AAA]">Progress</span>
-            <span className="text-[10px] font-medium text-[#777]">{progress.checked}/{progress.total}</span>
-          </div>
-          <div className="h-1.5 bg-[#F0F0F0] rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-300"
-              style={{ width: `${(progress.checked / progress.total) * 100}%`, backgroundColor: config.color }}
+      {/* Progress bar */}
+      <div className="px-6 pt-4">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-[10px] text-[#AAA]">Progress</span>
+          <span className="text-[10px] font-medium text-[#777]">{progress.checked}/{progress.total}</span>
+        </div>
+        <div className="h-1.5 bg-[#F0F0F0] rounded-full overflow-hidden">
+          <div className="h-full rounded-full transition-all duration-300" style={{ width: `${(progress.checked / progress.total) * 100}%`, backgroundColor: config.color }} />
+        </div>
+      </div>
+
+      {/* Checklist */}
+      <div className="px-6 py-4 space-y-2">
+        {gate.items.map((item, i) => (
+          <label
+            key={i}
+            className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
+              item.checked ? "border-emerald-200 bg-emerald-50/30" : "border-[#E5E5EA] hover:border-[#CCC]"
+            } ${isSubmitted ? "pointer-events-none opacity-60" : ""}`}
+          >
+            <input
+              type="checkbox"
+              checked={item.checked}
+              disabled={isSubmitted}
+              onChange={() => {
+                if (isSubmitted) return;
+                onUpdate({ ...gate, items: gate.items.map((it, idx) => idx === i ? { ...it, checked: !it.checked } : it) });
+              }}
+              className="size-4 mt-0.5 rounded border-[#CCC] text-emerald-600 focus:ring-0 focus:ring-offset-0"
             />
-          </div>
-        </div>
+            <span className={`text-sm ${item.checked ? "text-[#1A1A1A]" : "text-[#777]"}`}>{item.label}</span>
+          </label>
+        ))}
+      </div>
 
-        {/* Checklist */}
-        <div className="px-6 py-4 space-y-2">
-          {gate.items.map((item, i) => (
-            <label
-              key={i}
-              className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-                item.checked
-                  ? "border-emerald-200 bg-emerald-50/30"
-                  : "border-[#E5E5EA] hover:border-[#CCC]"
-              } ${isSubmitted ? "pointer-events-none opacity-60" : ""}`}
+      {/* Notes */}
+      <div className="px-6 pb-4">
+        <label className="text-[10px] text-[#777] block mb-1.5">Notes / Additional Context</label>
+        <textarea
+          value={gate.notes}
+          onChange={(e) => { if (!isSubmitted) onUpdate({ ...gate, notes: e.target.value }); }}
+          disabled={isSubmitted}
+          placeholder="Add links, context, or notes for the next person..."
+          className="w-full text-sm px-3 py-2.5 border border-[#E5E5EA] rounded-lg min-h-[80px] resize-y focus:outline-none focus:border-[#999] placeholder:text-[#CCC] disabled:opacity-50"
+        />
+      </div>
+
+      {/* Footer */}
+      <div className="sticky bottom-0 bg-white rounded-b-2xl border-t border-[#F0F0F0] px-6 py-4">
+        {isSubmitted ? (
+          <SubmittedBanner gate={gate} />
+        ) : (
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] text-[#AAA]">
+              {complete ? "All items checked — ready to submit" : `${progress.total - progress.checked} items remaining`}
+            </p>
+            <button
+              onClick={() => {
+                if (!complete) return;
+                onSubmit({ ...gate, status: "submitted", submitted_at: new Date().toISOString(), submitted_by: "team" });
+              }}
+              disabled={!complete}
+              className="px-5 py-2.5 text-sm font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
             >
-              <input
-                type="checkbox"
-                checked={item.checked}
-                disabled={isSubmitted}
-                onChange={() => {
-                  if (isSubmitted) return;
-                  const updated = {
-                    ...gate,
-                    items: gate.items.map((it, idx) => idx === i ? { ...it, checked: !it.checked } : it),
-                  };
-                  onUpdate(updated);
-                }}
-                className="size-4 mt-0.5 rounded border-[#CCC] text-emerald-600 focus:ring-0 focus:ring-offset-0"
-              />
-              <span className={`text-sm ${item.checked ? "text-[#1A1A1A]" : "text-[#777]"}`}>{item.label}</span>
-            </label>
-          ))}
+              Submit Handoff
+            </button>
+          </div>
+        )}
+      </div>
+    </ModalShell>
+  );
+}
+
+/* ── Design Handoff Form Modal ── */
+function DesignHandoffFormModal({
+  gate,
+  onSubmit,
+  onClose,
+  onUpdate,
+}: {
+  gate: QAGate;
+  onSubmit: (gate: QAGate) => void;
+  onClose: () => void;
+  onUpdate: (gate: QAGate) => void;
+}) {
+  const isSubmitted = gate.status === "submitted";
+  const ready = isDesignHandoffComplete(gate);
+
+  const fieldClass = "w-full text-sm px-3 py-2.5 border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#999] placeholder:text-[#CCC] disabled:opacity-50 disabled:bg-[#FAFAFA]";
+  const labelClass = "text-[11px] font-medium text-[#555] block mb-1.5";
+  const requiredDot = <span className="text-red-400 ml-0.5">*</span>;
+
+  // Count how many fields are filled for progress
+  const totalFields = 3 + gate.items.length; // figma + loom + checklist items (extras/fonts optional)
+  const filledFields =
+    (gate.figma_url?.trim() ? 1 : 0) +
+    (gate.loom_url?.trim() ? 1 : 0) +
+    gate.items.filter((i) => i.checked).length +
+    (gate.extra_assets?.trim() ? 1 : 0);
+  const progressPct = Math.round((Math.min(filledFields, totalFields) / totalFields) * 100);
+
+  return (
+    <ModalShell onClose={onClose}>
+      <ModalHeader gateKey="design_handoff" onClose={onClose} />
+
+      {/* Progress */}
+      <div className="px-6 pt-4">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-[10px] text-[#AAA]">Completion</span>
+          <span className="text-[10px] font-medium text-[#777]">{progressPct}%</span>
+        </div>
+        <div className="h-1.5 bg-[#F0F0F0] rounded-full overflow-hidden">
+          <div className="h-full rounded-full transition-all duration-300 bg-[#7C3AED]" style={{ width: `${progressPct}%` }} />
+        </div>
+      </div>
+
+      <div className="px-6 py-4 space-y-5">
+        {/* Figma Link */}
+        <div>
+          <label className={labelClass}>Figma Link {requiredDot}</label>
+          <input
+            type="url"
+            value={gate.figma_url || ""}
+            onChange={(e) => { if (!isSubmitted) onUpdate({ ...gate, figma_url: e.target.value }); }}
+            disabled={isSubmitted}
+            placeholder="https://www.figma.com/file/..."
+            className={fieldClass}
+          />
+          <p className="text-[10px] text-[#BBB] mt-1">Link to the final design file</p>
         </div>
 
-        {/* Notes */}
-        <div className="px-6 pb-4">
-          <label className="text-[10px] text-[#777] block mb-1.5">Notes / Additional Context</label>
-          <textarea
-            value={gate.notes}
-            onChange={(e) => {
-              if (!isSubmitted) onUpdate({ ...gate, notes: e.target.value });
-            }}
+        {/* Loom Video */}
+        <div>
+          <label className={labelClass}>Loom Walkthrough {requiredDot}</label>
+          <input
+            type="url"
+            value={gate.loom_url || ""}
+            onChange={(e) => { if (!isSubmitted) onUpdate({ ...gate, loom_url: e.target.value }); }}
             disabled={isSubmitted}
-            placeholder="Add links, context, or notes for the next person..."
-            className="w-full text-sm px-3 py-2.5 border border-[#E5E5EA] rounded-lg min-h-[80px] resize-y focus:outline-none focus:border-[#999] placeholder:text-[#CCC] disabled:opacity-50"
+            placeholder="https://www.loom.com/share/..."
+            className={fieldClass}
+          />
+          <p className="text-[10px] text-[#BBB] mt-1">Walk the developer through the design</p>
+        </div>
+
+        {/* Extra Assets */}
+        <div>
+          <label className={labelClass}>Extra Assets</label>
+          <textarea
+            value={gate.extra_assets || ""}
+            onChange={(e) => { if (!isSubmitted) onUpdate({ ...gate, extra_assets: e.target.value }); }}
+            disabled={isSubmitted}
+            placeholder="Drop links to any assets that can't be pulled from Figma (videos, images, icons, etc.)"
+            className={`${fieldClass} min-h-[70px] resize-y`}
           />
         </div>
 
-        {/* Footer */}
-        <div className="sticky bottom-0 bg-white rounded-b-2xl border-t border-[#F0F0F0] px-6 py-4">
-          {isSubmitted ? (
-            <div className="flex items-center gap-2 text-emerald-600">
-              <CheckIcon className="size-4" />
-              <span className="text-sm font-medium">
-                Submitted {gate.submitted_at ? new Date(gate.submitted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : ""}
-              </span>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] text-[#AAA]">
-                {complete ? "All items checked — ready to submit" : `${progress.total - progress.checked} items remaining`}
-              </p>
-              <button
-                onClick={() => {
-                  if (!complete) return;
-                  onSubmit({
-                    ...gate,
-                    status: "submitted",
-                    submitted_at: new Date().toISOString(),
-                    submitted_by: "team",
-                  });
-                }}
-                disabled={!complete}
-                className="px-5 py-2.5 text-sm font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+        {/* Font Files */}
+        <div>
+          <label className={labelClass}>Font Files</label>
+          <textarea
+            value={gate.font_files || ""}
+            onChange={(e) => { if (!isSubmitted) onUpdate({ ...gate, font_files: e.target.value }); }}
+            disabled={isSubmitted}
+            placeholder="Links to font files or Google Fonts URLs"
+            className={`${fieldClass} min-h-[50px] resize-y`}
+          />
+        </div>
+
+        {/* Checklist items */}
+        <div>
+          <label className={`${labelClass} mb-2`}>Confirm before submitting</label>
+          <div className="space-y-2">
+            {gate.items.map((item, i) => (
+              <label
+                key={i}
+                className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
+                  item.checked ? "border-emerald-200 bg-emerald-50/30" : "border-[#E5E5EA] hover:border-[#CCC]"
+                } ${isSubmitted ? "pointer-events-none opacity-60" : ""}`}
               >
-                Submit Handoff
-              </button>
-            </div>
-          )}
+                <input
+                  type="checkbox"
+                  checked={item.checked}
+                  disabled={isSubmitted}
+                  onChange={() => {
+                    if (isSubmitted) return;
+                    onUpdate({ ...gate, items: gate.items.map((it, idx) => idx === i ? { ...it, checked: !it.checked } : it) });
+                  }}
+                  className="size-4 mt-0.5 rounded border-[#CCC] text-emerald-600 focus:ring-0 focus:ring-offset-0"
+                />
+                <span className={`text-sm ${item.checked ? "text-[#1A1A1A]" : "text-[#777]"}`}>{item.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Notes */}
+        <div>
+          <label className={labelClass}>Notes for the developer</label>
+          <textarea
+            value={gate.notes}
+            onChange={(e) => { if (!isSubmitted) onUpdate({ ...gate, notes: e.target.value }); }}
+            disabled={isSubmitted}
+            placeholder="Anything else the dev should know..."
+            className={`${fieldClass} min-h-[70px] resize-y`}
+          />
         </div>
       </div>
-    </div>
+
+      {/* Footer */}
+      <div className="sticky bottom-0 bg-white rounded-b-2xl border-t border-[#F0F0F0] px-6 py-4">
+        {isSubmitted ? (
+          <SubmittedBanner gate={gate} />
+        ) : (
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] text-[#AAA]">
+              {ready ? "Ready to submit" : !gate.figma_url?.trim() ? "Figma link required" : !gate.loom_url?.trim() ? "Loom video required" : "Complete all checkboxes"}
+            </p>
+            <button
+              onClick={() => {
+                if (!ready) return;
+                onSubmit({ ...gate, status: "submitted", submitted_at: new Date().toISOString(), submitted_by: "team" });
+              }}
+              disabled={!ready}
+              className="px-5 py-2.5 text-sm font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+            >
+              Submit Handoff
+            </button>
+          </div>
+        )}
+      </div>
+    </ModalShell>
   );
 }
 
@@ -422,8 +589,21 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
       {openGateModal && (() => {
         const entry = gateEntries.find((e) => e.key === openGateModal);
         if (!entry) return null;
+
+        // Design handoff gets its own form-based modal
+        if (entry.key === "design_handoff") {
+          return (
+            <DesignHandoffFormModal
+              gate={entry.gate}
+              onClose={() => setOpenGateModal(null)}
+              onUpdate={(g) => updateGateInPlace(entry.key, g)}
+              onSubmit={(g) => submitGate(entry.key, g)}
+            />
+          );
+        }
+
         return (
-          <GateFormModal
+          <ChecklistGateModal
             gateKey={entry.key}
             gate={entry.gate}
             onClose={() => setOpenGateModal(null)}

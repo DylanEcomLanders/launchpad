@@ -12,12 +12,9 @@ export const CRO_BRIEF_ITEMS = [
 ];
 
 export const DESIGN_HANDOFF_ITEMS = [
-  "Figma link added and up to date",
-  "All responsive breakpoints designed (mobile + desktop)",
-  "All states designed (hover, active, error)",
-  "Copy finalised in design",
-  "Assets exported",
-  "Design notes/annotations added",
+  "Annotations added to Figma for developers",
+  "All extra content designed (hover, active, error states, popups, etc.)",
+  "No placeholder copy — all copy is final",
 ];
 
 export const DEV_HANDOFF_ITEMS = [
@@ -51,6 +48,15 @@ export function getGateProgress(gate: QAGate): { checked: number; total: number 
 /** All items checked */
 export function isGateComplete(gate: QAGate): boolean {
   return gate.items.every((i) => i.checked);
+}
+
+/** Design handoff requires form fields + checklist */
+export function isDesignHandoffComplete(gate: QAGate): boolean {
+  return (
+    isGateComplete(gate) &&
+    !!gate.figma_url?.trim() &&
+    !!gate.loom_url?.trim()
+  );
 }
 
 /** Check if prerequisites are met for a gate */

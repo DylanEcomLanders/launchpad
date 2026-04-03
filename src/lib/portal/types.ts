@@ -116,6 +116,12 @@ export interface QAGate {
   submitted_by: string;
   submitted_at?: string;
   status: "pending" | "submitted";
+
+  // Design handoff form fields
+  figma_url?: string;
+  loom_url?: string;
+  extra_assets?: string; // links or descriptions of assets not in Figma
+  font_files?: string; // font file links or descriptions
 }
 
 export interface QAGates {

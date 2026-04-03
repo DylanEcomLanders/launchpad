@@ -49,6 +49,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Gate status pills on project list cards — quick visual indicator of handoff progress without opening a project" },
       { type: "added", text: "Deadline Buffer setting — adds configurable extra business days to all client-facing deadlines (default 3 days, under-promise/over-deliver)" },
       { type: "improved", text: "Context cleaning AI now strips all pricing/costs and focuses on actionable deliverables with a Key Deliverables summary section" },
+      { type: "improved", text: "Design handoff is now a proper form — Figma link, Loom walkthrough (required), extra assets, font files, plus confirmation checkboxes" },
     ],
   },
   {
