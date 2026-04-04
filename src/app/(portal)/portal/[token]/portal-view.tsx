@@ -299,76 +299,59 @@ export function PortalView({
         <div className="md:hidden fixed inset-0 z-40 bg-black/50" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* ── Sidebar (home view only) ── */}
-      {drillView === "home" && (
-        <aside className={`fixed md:sticky top-0 left-0 h-screen z-50 md:z-auto w-[220px] bg-white border-r border-[#E8E8E8] flex flex-col transition-transform duration-200 md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-          <div className="px-5 py-6 border-b border-[#E8E8E8]">
-            <Logo height={14} />
+      {/* ── Sidebar (always visible) ── */}
+      <aside className={`fixed md:sticky top-0 left-0 h-screen z-50 md:z-auto w-[220px] bg-white border-r border-[#E8E8E8] flex flex-col transition-transform duration-200 md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        <div className="px-5 py-6 border-b border-[#E8E8E8]">
+          <Logo height={14} />
+        </div>
+
+        {/* Back button when drilled in */}
+        {drillView !== "home" && (
+          <div className="px-3 pt-4 pb-2">
+            <button
+              onClick={() => { goHome(); setSidebarOpen(false); }}
+              className="flex items-center gap-1.5 text-xs font-medium text-[#AAA] hover:text-[#1A1A1A] transition-colors"
+            >
+              <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" /></svg>
+              Home
+            </button>
+            <p className="text-sm font-bold text-[#1A1A1A] mt-3 truncate">{selectedProject?.name}</p>
+            <p className="text-[11px] text-[#AAA] mt-0.5">
+              {selectedProject?.type === "retainer" ? "Retainer" : "Project"}
+            </p>
           </div>
-          <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-            {navItems.map((item) => (
-              <button
-                key={item.key}
-                onClick={() => { setActiveTab(item.key); setSidebarOpen(false); }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium rounded-lg transition-all duration-150 ${
-                  activeTab === item.key
-                    ? "bg-[#1A1A1A] text-white"
-                    : "text-[#999] hover:bg-[#F5F5F5] hover:text-[#1A1A1A]"
-                }`}
-              >
-                <NavIcon type={item.key} />
-                {item.label}
-              </button>
-            ))}
-          </nav>
-          <div className="px-5 py-4 border-t border-[#E8E8E8] space-y-2">
-            <UKTimeBanner />
-            <p className="text-[10px] text-[#CCC]">Powered by Ecomlanders</p>
-          </div>
-        </aside>
-      )}
+        )}
+
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+          {navItems.map((item) => (
+            <button
+              key={item.key}
+              onClick={() => { setActiveTab(item.key); setSidebarOpen(false); }}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium rounded-lg transition-all duration-150 ${
+                activeTab === item.key
+                  ? "bg-[#1A1A1A] text-white"
+                  : "text-[#999] hover:bg-[#F5F5F5] hover:text-[#1A1A1A]"
+              }`}
+            >
+              <NavIcon type={item.key} />
+              {item.label}
+            </button>
+          ))}
+        </nav>
+        <div className="px-5 py-4 border-t border-[#E8E8E8] space-y-2">
+          <UKTimeBanner />
+          <p className="text-[10px] text-[#CCC]">Powered by Ecomlanders</p>
+        </div>
+      </aside>
 
       {/* ── Main content ── */}
       <main className="flex-1 min-w-0 pt-14 md:pt-0">
         <div className="max-w-5xl mx-auto px-6 md:px-10 py-8 md:py-10">
 
-        {/* Project tabs (when drilled in) */}
+        {/* Project header (when drilled in) */}
         {drillView !== "home" && (
           <div className="mb-6">
-            {/* Back + project name */}
-            <div className="flex items-center gap-3 mb-4">
-              <button
-                onClick={goHome}
-                className="flex items-center gap-1 text-xs font-medium text-[#AAA] hover:text-[#1A1A1A] transition-colors"
-              >
-                <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" /></svg>
-                Home
-              </button>
-              <span className="text-[#E5E5EA]">·</span>
-              <span className="text-xs font-semibold text-[#1A1A1A]">{selectedProject?.name}</span>
-              <span className={`text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${
-                selectedProject?.type === "retainer" ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
-              }`}>
-                {selectedProject?.type === "retainer" ? "Retainer" : "Project"}
-              </span>
-            </div>
-            {/* Tab bar */}
-            <div className="flex items-center gap-1 border-b border-[#E8E8E8]">
-              {navItems.map((item) => (
-                <button
-                  key={item.key}
-                  onClick={() => setActiveTab(item.key)}
-                  className={`px-4 py-2.5 text-xs font-semibold transition-colors relative ${
-                    activeTab === item.key
-                      ? "text-[#1A1A1A]"
-                      : "text-[#AAA] hover:text-[#777]"
-                  }`}
-                >
-                  {item.label}
-                  {activeTab === item.key && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1A1A1A] rounded-full" />}
-                </button>
-              ))}
-            </div>
+            <h1 className="text-lg font-bold text-[#1A1A1A]">{selectedProject?.name}</h1>
           </div>
         )}
           {/* Tab content */}
