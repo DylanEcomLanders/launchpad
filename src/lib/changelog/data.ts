@@ -55,6 +55,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Content analytics layer — optimal slot indicators (green dots), gap detection (3+ day warnings), platform neglect alerts, content mix bar with promotional threshold warning" },
       { type: "added", text: "Pipeline sidebar — toggle to view all posts grouped by status (Idea → Scripted → Media Ready → Approved → Exported)" },
       { type: "added", text: "Insights bar — 4 metric cards: Posts this week, Best performing day, Top content type, Gap alert" },
+      { type: "improved", text: "Content Calendar redesigned — clean Untitled UI-inspired month view as default with event cards inside day cells, header bar with date badge, Today button, Month/Week toggle, and Add post button" },
     ],
   },
   {

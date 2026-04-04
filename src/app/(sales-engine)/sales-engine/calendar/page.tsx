@@ -366,9 +366,24 @@ export default function CalendarPage() {
     );
   }
 
+  // Format time for display (e.g. "9:00 AM")
+  function fmtTime(time: string): string {
+    const [h, m] = time.split(":").map(Number);
+    const ampm = h >= 12 ? "PM" : "AM";
+    const h12 = h % 12 || 12;
+    return `${h12}:${m.toString().padStart(2, "0")} ${ampm}`;
+  }
+
+  // Current month info for header
+  const displayDate = view === "month" ? monthDate : weekDates[3]; // mid-week for week view
+  const monthLabel = displayDate.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  const dateRangeLabel = view === "week"
+    ? `${weekDates[0].toLocaleDateString("en-GB", { month: "short", day: "numeric" })} - ${weekDates[6].toLocaleDateString("en-GB", { month: "short", day: "numeric", year: "numeric" })}`
+    : `${monthDate.toLocaleDateString("en-GB", { month: "short", day: "numeric" })}, ${monthDate.getFullYear()} - ${new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).toLocaleDateString("en-GB", { month: "short", day: "numeric", year: "numeric" })}`;
+
   return (
-    <div className="max-w-7xl mx-auto py-10 px-6 overflow-x-hidden">
-      {/* ── Header ── */}
+    <div className="py-8 px-6 md:px-8 overflow-x-hidden">
+      {/* ── Page header ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Content Calendar</h1>
@@ -391,270 +406,219 @@ export default function CalendarPage() {
             <LightBulbIcon className="size-3.5" />
             Idea Engine
           </button>
+        </div>
+      </div>
+
+      {/* ── Calendar header bar (like Untitled UI) ── */}
+      <div className="border border-[#E5E5EA] rounded-t-xl bg-white px-5 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        {/* Left: Month + date range */}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <div className="text-center bg-[#F7F8FA] rounded-lg px-2.5 py-1.5 border border-[#E5E5EA]">
+              <p className="text-[9px] font-semibold uppercase text-[#7A7A7A] leading-tight">{displayDate.toLocaleDateString("en-GB", { month: "short" })}</p>
+              <p className="text-lg font-bold text-[#1B1B1B] leading-tight">{displayDate.getDate()}</p>
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-[#1B1B1B]">{monthLabel}</h2>
+              <p className="text-xs text-[#7A7A7A]">{dateRangeLabel}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Controls */}
+        <div className="flex items-center gap-2">
+          {/* Nav arrows */}
+          <div className="flex items-center border border-[#E5E5EA] rounded-lg overflow-hidden">
+            <button
+              onClick={() => view === "month"
+                ? setMonthDate(d => { const n = new Date(d); n.setMonth(n.getMonth() - 1); return n; })
+                : setWeekOffset(o => o - 1)
+              }
+              className="p-2 hover:bg-[#F5F5F5] transition-colors border-r border-[#E5E5EA]"
+            >
+              <ChevronLeftIcon className="size-4 text-[#7A7A7A]" />
+            </button>
+            <button
+              onClick={() => view === "month"
+                ? setMonthDate(d => { const n = new Date(d); n.setMonth(n.getMonth() + 1); return n; })
+                : setWeekOffset(o => o + 1)
+              }
+              className="p-2 hover:bg-[#F5F5F5] transition-colors"
+            >
+              <ChevronRightIcon className="size-4 text-[#7A7A7A]" />
+            </button>
+          </div>
+
+          {/* Today button */}
+          <button
+            onClick={() => { setWeekOffset(0); setMonthDate(new Date()); }}
+            className="px-3 py-2 text-xs font-medium border border-[#E5E5EA] rounded-lg text-[#1B1B1B] hover:bg-[#F5F5F5] transition-colors"
+          >
+            Today
+          </button>
+
+          {/* View toggle */}
+          <div className="flex items-center border border-[#E5E5EA] rounded-lg overflow-hidden">
+            <button
+              onClick={() => setView("month")}
+              className={`px-3 py-2 text-xs font-medium transition-colors ${
+                view === "month" ? "bg-[#F7F8FA] text-[#1B1B1B]" : "text-[#7A7A7A] hover:bg-[#F5F5F5]"
+              }`}
+            >
+              Month view
+            </button>
+            <button
+              onClick={() => setView("week")}
+              className={`px-3 py-2 text-xs font-medium transition-colors border-l border-[#E5E5EA] ${
+                view === "week" ? "bg-[#F7F8FA] text-[#1B1B1B]" : "text-[#7A7A7A] hover:bg-[#F5F5F5]"
+              }`}
+            >
+              Week view
+            </button>
+          </div>
+
+          {/* Add post */}
           <button
             onClick={() => openStudio()}
             className="flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
           >
             <PlusIcon className="size-3.5" />
-            New Post
+            Add post
           </button>
         </div>
       </div>
 
-      {/* ── Insights bar ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <div className="border border-[#E5E5EA] rounded-xl p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">Posts this week</p>
-          <p className="text-2xl font-bold mt-1">{totalPosts}</p>
-        </div>
-        <div className="border border-[#E5E5EA] rounded-xl p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">Best day</p>
-          <p className="text-2xl font-bold mt-1">{bestDay}</p>
-        </div>
-        <div className="border border-[#E5E5EA] rounded-xl p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">Top content type</p>
-          <p className="text-2xl font-bold mt-1">{topType}</p>
-        </div>
-        <div className={`border rounded-xl p-4 ${gapDays >= 3 ? "border-amber-300 bg-amber-50/50" : "border-[#E5E5EA]"}`}>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">Gap alert</p>
-          <p className="text-2xl font-bold mt-1">
-            {gapDays >= 3 ? (
-              <span className="text-amber-600">{gapDays}d gap</span>
-            ) : (
-              <span className="text-emerald-600">None</span>
-            )}
-          </p>
-        </div>
-      </div>
+      <div className="flex">
+        {/* ── Main calendar grid ── */}
+        <div className="flex-1 min-w-0">
 
-      {/* ── Content mix bar ── */}
-      {totalPosts > 0 && (
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-semibold text-[#1B1B1B]">Content Mix</p>
-            {promoWarning && (
-              <span className="flex items-center gap-1 text-[10px] font-semibold text-amber-600">
-                <ExclamationTriangleIcon className="size-3" />
-                Promotional exceeds 30%
-              </span>
-            )}
-          </div>
-          <div className="flex h-3 rounded-full overflow-hidden bg-[#F0F0F0]">
-            {(["educational", "social_proof", "personal", "promotional"] as ContentType[]).map(type => (
-              mixPct[type] > 0 ? (
-                <div
-                  key={type}
-                  className="h-full transition-all duration-300"
-                  style={{ width: `${mixPct[type]}%`, backgroundColor: contentTypeColors[type] }}
-                  title={`${contentTypeLabels[type]}: ${mixPct[type]}%`}
-                />
-              ) : null
-            ))}
-          </div>
-          <div className="flex items-center gap-4 mt-2">
-            {(["educational", "social_proof", "personal", "promotional"] as ContentType[]).map(type => (
-              <span key={type} className="flex items-center gap-1.5 text-[10px] text-[#7A7A7A]">
-                <span className="size-2 rounded-full" style={{ backgroundColor: contentTypeColors[type] }} />
-                {contentTypeLabels[type]} {mixPct[type]}%
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
+          {/* ═══ MONTH VIEW (default, like Untitled UI) ═══ */}
+          {view === "month" && (
+            <div className="border-x border-b border-[#E5E5EA] rounded-b-xl overflow-hidden">
+              {/* Day-of-week header row */}
+              <div className="grid grid-cols-7 border-b border-[#E5E5EA]">
+                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => (
+                  <div key={d} className={`px-3 py-2.5 text-xs font-semibold text-[#7A7A7A] ${d !== "Mon" ? "border-l border-[#E5E5EA]" : ""}`}>
+                    {d}
+                  </div>
+                ))}
+              </div>
+              {/* Calendar grid — 6 rows of 7 */}
+              {Array.from({ length: 6 }).map((_, row) => (
+                <div key={row} className={`grid grid-cols-7 ${row < 5 ? "border-b border-[#E5E5EA]" : ""}`}>
+                  {monthDates.slice(row * 7, row * 7 + 7).map((d, col) => {
+                    const isCurrentMonth = d.getMonth() === monthDate.getMonth();
+                    const isToday = toDateStr(d) === toDateStr(new Date());
+                    const dayPosts = postsForDate(toDateStr(d));
 
-      {/* ── Platform neglect alerts ── */}
-      {neglectedPlatforms.length > 0 && (
-        <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200">
-          <ExclamationTriangleIcon className="size-4 text-amber-500 shrink-0" />
-          <p className="text-[11px] text-amber-700">
-            Platform neglect: {neglectedPlatforms.map(p => platformLabels[p]).join(", ")} — no posts in 5+ days
-          </p>
-        </div>
-      )}
+                    return (
+                      <div
+                        key={col}
+                        className={`min-h-[120px] px-3 py-2 ${col > 0 ? "border-l border-[#E5E5EA]" : ""} ${
+                          !isCurrentMonth ? "bg-[#FAFAFA]" : "bg-white"
+                        } hover:bg-[#F5F8FF] cursor-pointer transition-colors group`}
+                        onClick={() => openStudioForSlot(toDateStr(d), "09:00")}
+                      >
+                        {/* Date number */}
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className={`text-sm font-semibold ${
+                            isToday
+                              ? "text-white bg-[#1B1B1B] size-7 flex items-center justify-center rounded-full"
+                              : isCurrentMonth ? "text-[#1B1B1B]" : "text-[#CCC]"
+                          }`}>
+                            {d.getDate()}
+                          </span>
+                        </div>
 
-      {/* ── View toggle + Week nav ── */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-1 bg-[#F3F3F5] p-0.5 rounded-lg">
-          <button
-            onClick={() => setView("week")}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-              view === "week" ? "bg-white text-[#1B1B1B] shadow-[var(--shadow-soft)]" : "text-[#7A7A7A] hover:text-[#1B1B1B]"
-            }`}
-          >
-            <CalendarDaysIcon className="size-3.5 inline mr-1" />
-            Week
-          </button>
-          <button
-            onClick={() => setView("month")}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-              view === "month" ? "bg-white text-[#1B1B1B] shadow-[var(--shadow-soft)]" : "text-[#7A7A7A] hover:text-[#1B1B1B]"
-            }`}
-          >
-            <Squares2X2Icon className="size-3.5 inline mr-1" />
-            Month
-          </button>
-        </div>
-
-        {view === "week" ? (
-          <div className="flex items-center gap-2">
-            <button onClick={() => setWeekOffset(o => o - 1)} className="p-1.5 rounded-lg hover:bg-[#F3F3F5] text-[#7A7A7A]">
-              <ChevronLeftIcon className="size-4" />
-            </button>
-            <span className="text-xs font-semibold text-[#1B1B1B] min-w-[140px] text-center">
-              {weekDates[0].toLocaleDateString("en-GB", { day: "numeric", month: "short" })} – {weekDates[6].toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-            </span>
-            <button onClick={() => setWeekOffset(o => o + 1)} className="p-1.5 rounded-lg hover:bg-[#F3F3F5] text-[#7A7A7A]">
-              <ChevronRightIcon className="size-4" />
-            </button>
-            {weekOffset !== 0 && (
-              <button onClick={() => setWeekOffset(0)} className="text-[10px] text-[#7A7A7A] hover:text-[#1B1B1B] ml-1">
-                Today
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <button onClick={() => setMonthDate(d => { const n = new Date(d); n.setMonth(n.getMonth() - 1); return n; })} className="p-1.5 rounded-lg hover:bg-[#F3F3F5] text-[#7A7A7A]">
-              <ChevronLeftIcon className="size-4" />
-            </button>
-            <span className="text-xs font-semibold text-[#1B1B1B] min-w-[120px] text-center">
-              {monthDate.toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
-            </span>
-            <button onClick={() => setMonthDate(d => { const n = new Date(d); n.setMonth(n.getMonth() + 1); return n; })} className="p-1.5 rounded-lg hover:bg-[#F3F3F5] text-[#7A7A7A]">
-              <ChevronRightIcon className="size-4" />
-            </button>
-          </div>
-        )}
-      </div>
-
-      <div className="flex gap-4">
-        {/* ── Main calendar area ── */}
-        <div className={`flex-1 min-w-0 ${showPipeline ? "" : ""}`}>
+                        {/* Event cards */}
+                        <div className="space-y-1">
+                          {dayPosts.slice(0, 3).map(p => (
+                            <button
+                              key={p.id}
+                              onClick={(e) => { e.stopPropagation(); openStudio(p); }}
+                              className={`w-full text-left flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] transition-all hover:shadow-sm ${
+                                p.status === "idea" ? "opacity-60" : ""
+                              }`}
+                              style={{
+                                backgroundColor: platformColors[p.platform] + "12",
+                                color: platformColors[p.platform],
+                              }}
+                            >
+                              <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: platformColors[p.platform] }} />
+                              <span className="font-medium truncate">{p.caption.slice(0, 24)}{p.caption.length > 24 ? "..." : ""}</span>
+                              <span className="text-[10px] ml-auto shrink-0 opacity-70">{fmtTime(p.scheduled_time)}</span>
+                            </button>
+                          ))}
+                          {dayPosts.length > 3 && (
+                            <p className="text-[10px] text-[#AAA] pl-2">{dayPosts.length - 3} more...</p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* ═══ WEEK VIEW ═══ */}
           {view === "week" && (
-            <div className="border border-[#E5E5EA] rounded-xl overflow-hidden">
+            <div className="border-x border-b border-[#E5E5EA] rounded-b-xl overflow-hidden">
               {/* Day headers */}
-              <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-[#E5E5EA] bg-[#FAFAFA]">
-                <div className="p-2" />
+              <div className="grid grid-cols-7 border-b border-[#E5E5EA]">
                 {weekDates.map((d, i) => {
                   const isToday = toDateStr(d) === toDateStr(new Date());
-                  const dayPosts = postsForDate(toDateStr(d));
                   return (
-                    <div key={i} className={`p-2 text-center border-l border-[#E5E5EA] ${isToday ? "bg-[#1B1B1B] text-white" : ""}`}>
-                      <p className={`text-[10px] font-semibold uppercase ${isToday ? "text-white/70" : "text-[#AAA]"}`}>
+                    <div key={i} className={`px-3 py-3 ${i > 0 ? "border-l border-[#E5E5EA]" : ""} ${isToday ? "bg-[#F5F8FF]" : ""}`}>
+                      <p className="text-xs font-semibold text-[#7A7A7A]">
                         {d.toLocaleDateString("en-GB", { weekday: "short" })}
                       </p>
-                      <p className={`text-sm font-bold ${isToday ? "" : "text-[#1B1B1B]"}`}>{d.getDate()}</p>
-                      {dayPosts.length > 0 && (
-                        <div className="flex items-center justify-center gap-0.5 mt-1">
-                          {dayPosts.slice(0, 3).map(p => (
-                            <span key={p.id} className="size-1.5 rounded-full" style={{ backgroundColor: platformColors[p.platform] }} />
-                          ))}
-                        </div>
-                      )}
+                      <p className={`text-lg font-bold ${isToday ? "text-[#1B1B1B]" : "text-[#1B1B1B]"}`}>
+                        {isToday ? (
+                          <span className="text-white bg-[#1B1B1B] size-8 flex items-center justify-center rounded-full text-sm">{d.getDate()}</span>
+                        ) : (
+                          d.getDate()
+                        )}
+                      </p>
                     </div>
                   );
                 })}
               </div>
+              {/* Day columns with posts */}
+              <div className="grid grid-cols-7 min-h-[480px]">
+                {weekDates.map((d, i) => {
+                  const dateStr = toDateStr(d);
+                  const dayPosts = postsForDate(dateStr).sort((a, b) => a.scheduled_time.localeCompare(b.scheduled_time));
+                  const isToday = dateStr === toDateStr(new Date());
 
-              {/* Time slots */}
-              <div className="max-h-[500px] overflow-y-auto">
-                {HOURS.map(hour => (
-                  <div key={hour} className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-[#F0F0F0] last:border-0 min-h-[56px]">
-                    <div className="p-2 flex items-start justify-end">
-                      <span className="text-[10px] text-[#AAA] tabular-nums">{hour.toString().padStart(2, "0")}:00</span>
-                    </div>
-                    {weekDates.map((d, i) => {
-                      const dateStr = toDateStr(d);
-                      const slotPosts = postsForSlot(dateStr, hour);
-                      const optimal = isOptimalSlot(d.getDay(), hour);
-                      const isGap = !postsForDate(dateStr).length && d.getDay() >= 1 && d.getDay() <= 5;
-
-                      return (
-                        <div
-                          key={i}
-                          onClick={() => { if (!slotPosts.length) openStudioForSlot(dateStr, `${hour.toString().padStart(2, "0")}:00`); }}
-                          className={`border-l border-[#F0F0F0] p-1 cursor-pointer transition-colors group relative ${
-                            isGap ? "border-l border-dashed border-amber-200" : ""
-                          } hover:bg-[#FAFAFA]`}
-                        >
-                          {optimal && (
-                            <span className="absolute top-1 right-1 size-1.5 rounded-full bg-emerald-400" title="Optimal slot" />
-                          )}
-                          {slotPosts.map(post => (
-                            <button
-                              key={post.id}
-                              onClick={(e) => { e.stopPropagation(); openStudio(post); }}
-                              className={`w-full text-left px-1.5 py-1 rounded mb-0.5 transition-opacity ${
-                                post.status === "idea" ? "opacity-50" : ""
-                              }`}
-                              style={{ backgroundColor: platformColors[post.platform] + "15", borderLeft: `2px solid ${platformColors[post.platform]}` }}
-                            >
-                              <p className="text-[9px] font-semibold truncate" style={{ color: platformColors[post.platform] }}>
-                                {platformLabels[post.platform]}
-                              </p>
-                              <p className="text-[9px] text-[#555] truncate">{post.caption.slice(0, 40)}{post.caption.length > 40 ? "..." : ""}</p>
-                            </button>
-                          ))}
-                          {!slotPosts.length && (
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                              <PlusIcon className="size-3 text-[#CCC]" />
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ═══ MONTH VIEW ═══ */}
-          {view === "month" && (
-            <div className="border border-[#E5E5EA] rounded-xl overflow-hidden">
-              {/* Day labels */}
-              <div className="grid grid-cols-7 bg-[#FAFAFA] border-b border-[#E5E5EA]">
-                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => (
-                  <div key={d} className="p-2 text-center text-[10px] font-semibold uppercase text-[#AAA]">{d}</div>
-                ))}
-              </div>
-              {/* Date cells */}
-              <div className="grid grid-cols-7">
-                {monthDates.map((d, i) => {
-                  const isCurrentMonth = d.getMonth() === monthDate.getMonth();
-                  const isToday = toDateStr(d) === toDateStr(new Date());
-                  const dayPosts = postsForDate(toDateStr(d));
                   return (
                     <div
                       key={i}
-                      className={`min-h-[80px] p-2 border-b border-r border-[#F0F0F0] ${
-                        !isCurrentMonth ? "bg-[#FAFAFA]" : ""
-                      } hover:bg-[#F5F5F5] cursor-pointer transition-colors`}
-                      onClick={() => {
-                        setView("week");
-                        const diff = Math.floor((d.getTime() - getWeekDates(0)[0].getTime()) / (7 * 86400000));
-                        setWeekOffset(diff);
-                      }}
+                      className={`${i > 0 ? "border-l border-[#E5E5EA]" : ""} ${isToday ? "bg-[#F5F8FF]/50" : ""} px-2 py-2 hover:bg-[#F5F8FF]/30 cursor-pointer transition-colors group`}
+                      onClick={() => openStudioForSlot(dateStr, "09:00")}
                     >
-                      <p className={`text-xs font-semibold mb-1 ${
-                        isToday ? "text-white bg-[#1B1B1B] size-5 flex items-center justify-center rounded-full" :
-                        isCurrentMonth ? "text-[#1B1B1B]" : "text-[#CCC]"
-                      }`}>
-                        {d.getDate()}
-                      </p>
-                      {dayPosts.length > 0 && (
-                        <div className="space-y-0.5">
-                          {dayPosts.slice(0, 3).map(p => (
-                            <div key={p.id} className="flex items-center gap-1">
-                              <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: platformColors[p.platform] }} />
-                              <span className="text-[8px] text-[#777] truncate">{p.caption.slice(0, 20)}</span>
-                            </div>
-                          ))}
-                          {dayPosts.length > 3 && (
-                            <p className="text-[8px] text-[#AAA]">+{dayPosts.length - 3} more</p>
-                          )}
+                      {dayPosts.map(p => (
+                        <button
+                          key={p.id}
+                          onClick={(e) => { e.stopPropagation(); openStudio(p); }}
+                          className={`w-full text-left px-2.5 py-1.5 rounded-md mb-1.5 transition-all hover:shadow-sm ${
+                            p.status === "idea" ? "opacity-60" : ""
+                          }`}
+                          style={{
+                            backgroundColor: platformColors[p.platform] + "12",
+                            color: platformColors[p.platform],
+                          }}
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: platformColors[p.platform] }} />
+                            <span className="text-[11px] font-medium truncate">{p.caption.slice(0, 28)}{p.caption.length > 28 ? "..." : ""}</span>
+                          </div>
+                          <span className="text-[10px] opacity-70 ml-3.5">{fmtTime(p.scheduled_time)}</span>
+                        </button>
+                      ))}
+                      {dayPosts.length === 0 && (
+                        <div className="flex items-center justify-center h-12 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <PlusIcon className="size-4 text-[#CCC]" />
                         </div>
                       )}
                     </div>
@@ -667,7 +631,7 @@ export default function CalendarPage() {
 
         {/* ── Pipeline sidebar ── */}
         {showPipeline && (
-          <div className="w-56 shrink-0 border border-[#E5E5EA] rounded-xl p-4 self-start sticky top-4">
+          <div className="w-56 shrink-0 ml-4 border border-[#E5E5EA] rounded-xl p-4 self-start sticky top-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xs font-semibold text-[#1B1B1B]">Pipeline</h3>
               <button onClick={() => setShowPipeline(false)} className="p-0.5 hover:bg-[#F3F3F5] rounded">
