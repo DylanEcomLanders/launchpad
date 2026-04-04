@@ -13,6 +13,8 @@ import {
   CalendarDaysIcon,
   Squares2X2Icon,
   LightBulbIcon,
+  BoltIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 import {
   PhotoIcon,
@@ -37,6 +39,7 @@ import {
   postFormatLabels,
   statusColors,
   statusLabels,
+  optimalSlots,
   isOptimalSlot,
   getSlotScore,
   getBestDay,
@@ -121,6 +124,23 @@ export default function CalendarPage() {
   const [ideas, setIdeas] = useState<ContentIdea[]>([]);
   const [ideasLoading, setIdeasLoading] = useState(false);
   const [ideasError, setIdeasError] = useState("");
+
+  // Weekly draft state
+  interface DraftPost {
+    platform: Platform;
+    content_type: ContentType;
+    post_format: PostFormat;
+    scheduled_date: string;
+    scheduled_time: string;
+    brief: string;
+    caption_draft: string;
+    selected: boolean;
+  }
+  const [showWeeklyDraft, setShowWeeklyDraft] = useState(false);
+  const [draftPosts, setDraftPosts] = useState<DraftPost[]>([]);
+  const [draftLoading, setDraftLoading] = useState(false);
+  const [draftError, setDraftError] = useState("");
+  const [draftSaving, setDraftSaving] = useState(false);
 
   const weekDates = useMemo(() => getWeekDates(weekOffset), [weekOffset]);
   const monthDates = useMemo(
@@ -371,6 +391,107 @@ export default function CalendarPage() {
     }));
   }
 
+  // ── Weekly draft ──
+
+  async function generateWeeklyDraft() {
+    setDraftLoading(true);
+    setDraftError("");
+    setDraftPosts([]);
+    setShowWeeklyDraft(true);
+
+    // Build performance insights from existing posts
+    const typeCounts: Record<string, number> = {};
+    const platCounts: Record<string, number> = {};
+    const dayCounts: Record<string, number> = {};
+    let totalScore = 0;
+    const recentGood: string[] = [];
+
+    posts.forEach(p => {
+      typeCounts[p.content_type] = (typeCounts[p.content_type] || 0) + 1;
+      platCounts[p.platform] = (platCounts[p.platform] || 0) + 1;
+      const dayName = new Date(p.scheduled_date + "T00:00:00").toLocaleDateString("en-GB", { weekday: "long" });
+      dayCounts[dayName] = (dayCounts[dayName] || 0) + p.analytics_score;
+      totalScore += p.analytics_score;
+      if (p.analytics_score >= 85 && p.caption) {
+        recentGood.push(p.caption.slice(0, 80));
+      }
+    });
+
+    const topTypes = Object.entries(typeCounts).sort(([, a], [, b]) => b - a).slice(0, 2).map(([k]) => contentTypeLabels[k as ContentType]).join(", ");
+    const topPlats = Object.entries(platCounts).sort(([, a], [, b]) => b - a).slice(0, 2).map(([k]) => platformLabels[k as Platform]).join(", ");
+    const topDays = Object.entries(dayCounts).sort(([, a], [, b]) => b - a).slice(0, 3).map(([k]) => k).join(", ");
+
+    try {
+      const res = await fetch("/api/calendar/weekly-draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          weekDates: weekDates.map(d => toDateStr(d)),
+          existingPosts: weekPosts.map(p => ({
+            platform: p.platform,
+            scheduled_date: p.scheduled_date,
+            scheduled_time: p.scheduled_time,
+            caption: p.caption,
+          })),
+          pastPerformance: posts.length > 0 ? {
+            topContentTypes: topTypes || "N/A",
+            topPlatforms: topPlats || "N/A",
+            topDays: topDays || "N/A",
+            avgScore: posts.length > 0 ? Math.round(totalScore / posts.length) : "N/A",
+            recentCaptions: recentGood.slice(0, 3).join(" | ") || "N/A",
+          } : null,
+          optimalSlots: optimalSlots.filter(s => s.score >= 70),
+          platforms: ["linkedin", "instagram", "x"],
+        }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setDraftPosts((data.drafts || []).map((d: any) => ({ ...d, selected: true })));
+    } catch (e: any) {
+      setDraftError(e.message || "Failed to generate weekly draft");
+    } finally {
+      setDraftLoading(false);
+    }
+  }
+
+  async function applyDrafts() {
+    const selected = draftPosts.filter(d => d.selected);
+    if (selected.length === 0) return;
+    setDraftSaving(true);
+    const now = new Date().toISOString();
+    const newPosts: ContentPost[] = selected.map(d => ({
+      id: uuid(),
+      platform: d.platform,
+      content_type: d.content_type,
+      post_format: d.post_format || "text",
+      caption: d.caption_draft,
+      status: "idea" as PostStatus,
+      scheduled_date: d.scheduled_date,
+      scheduled_time: d.scheduled_time,
+      analytics_score: getSlotScore(
+        d.platform,
+        new Date(d.scheduled_date + "T00:00:00").getDay(),
+        parseInt(d.scheduled_time)
+      ),
+      created_at: now,
+      updated_at: now,
+    }));
+    const updated = [...posts, ...newPosts];
+    setPosts(updated);
+    await savePosts(updated);
+    setDraftSaving(false);
+    setShowWeeklyDraft(false);
+    setDraftPosts([]);
+  }
+
+  function toggleDraft(index: number) {
+    setDraftPosts(prev => prev.map((d, i) => i === index ? { ...d, selected: !d.selected } : d));
+  }
+
+  function removeDraft(index: number) {
+    setDraftPosts(prev => prev.filter((_, i) => i !== index));
+  }
+
   // ── Render helpers ──
 
   function postsForSlot(date: string, hour: number): ContentPost[] {
@@ -433,6 +554,14 @@ export default function CalendarPage() {
           >
             <LightBulbIcon className="size-3.5" />
             Idea Engine
+          </button>
+          <button
+            onClick={generateWeeklyDraft}
+            disabled={draftLoading}
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg bg-[#1B1B1B] text-white hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
+          >
+            <BoltIcon className="size-3.5" />
+            {draftLoading ? "Generating..." : "Weekly Draft"}
           </button>
         </div>
       </div>
@@ -1069,6 +1198,184 @@ export default function CalendarPage() {
                 </div>
               )}
             </div>
+          </div>
+        </>
+      )}
+
+      {/* ═══ WEEKLY DRAFT (slide-in drawer) ═══ */}
+      {showWeeklyDraft && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/20" onClick={() => { if (!draftLoading) setShowWeeklyDraft(false); }} />
+          <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-lg bg-white shadow-[var(--shadow-elevated)] flex flex-col animate-slideIn">
+            {/* Header */}
+            <div className="shrink-0 bg-white border-b border-[#E5E5EA] px-5 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BoltIcon className="size-4 text-amber-500" />
+                <div>
+                  <h2 className="text-sm font-bold text-[#1B1B1B]">Weekly Draft</h2>
+                  <p className="text-[10px] text-[#7A7A7A]">
+                    {weekDates[0].toLocaleDateString("en-GB", { month: "short", day: "numeric" })} – {weekDates[6].toLocaleDateString("en-GB", { month: "short", day: "numeric" })}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {draftPosts.length > 0 && !draftLoading && (
+                  <button
+                    onClick={generateWeeklyDraft}
+                    className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold border border-[#E5E5EA] text-[#7A7A7A] rounded-lg hover:bg-[#F5F5F5] transition-colors"
+                  >
+                    <SparklesIcon className="size-3" />
+                    Regenerate
+                  </button>
+                )}
+                <button onClick={() => setShowWeeklyDraft(false)} className="p-1 rounded-lg hover:bg-[#F3F3F5]">
+                  <XMarkIcon className="size-5 text-[#7A7A7A]" />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-5">
+              {draftError && (
+                <p className="text-[11px] text-red-500 mb-3">{draftError}</p>
+              )}
+
+              {draftLoading && (
+                <div className="space-y-4">
+                  <div className="text-center py-6">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#F7F8FA] rounded-full">
+                      <SparklesIcon className="size-4 text-amber-500 animate-pulse" />
+                      <span className="text-xs font-medium text-[#7A7A7A]">Analysing performance & generating drafts...</span>
+                    </div>
+                  </div>
+                  {[1, 2, 3, 4, 5, 6, 7].map(i => (
+                    <div key={i} className="animate-pulse border border-[#E5E5EA] rounded-xl p-4">
+                      <div className="flex gap-2 mb-3">
+                        <div className="h-3 w-16 bg-[#F0F0F0] rounded-full" />
+                        <div className="h-3 w-14 bg-[#F0F0F0] rounded-full" />
+                        <div className="h-3 w-12 bg-[#F0F0F0] rounded-full" />
+                      </div>
+                      <div className="h-3 w-3/4 bg-[#F0F0F0] rounded mb-2" />
+                      <div className="h-10 w-full bg-[#F0F0F0] rounded" />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!draftLoading && draftPosts.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+                      {draftPosts.filter(d => d.selected).length} of {draftPosts.length} selected
+                    </p>
+                    <button
+                      onClick={() => setDraftPosts(prev => prev.map(d => ({ ...d, selected: !prev.every(p => p.selected) })))}
+                      className="text-[10px] font-semibold text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+                    >
+                      {draftPosts.every(d => d.selected) ? "Deselect all" : "Select all"}
+                    </button>
+                  </div>
+
+                  {draftPosts.map((draft, i) => {
+                    const Icon = formatIcons[draft.post_format] || DocumentTextIcon;
+                    const dayLabel = new Date(draft.scheduled_date + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+
+                    return (
+                      <div
+                        key={i}
+                        className={`border rounded-xl p-4 transition-all ${
+                          draft.selected
+                            ? "border-[#1B1B1B] bg-white shadow-sm"
+                            : "border-[#E5E5EA] bg-[#FAFAFA] opacity-50"
+                        }`}
+                      >
+                        {/* Top row: badges + actions */}
+                        <div className="flex items-center justify-between mb-2.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span
+                              className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
+                              style={{ backgroundColor: platformColors[draft.platform] + "15", color: platformColors[draft.platform] }}
+                            >
+                              {platformLabels[draft.platform]}
+                            </span>
+                            <span
+                              className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
+                              style={{ backgroundColor: contentTypeColors[draft.content_type] + "15", color: contentTypeColors[draft.content_type] }}
+                            >
+                              {contentTypeLabels[draft.content_type]}
+                            </span>
+                            <span className="flex items-center gap-0.5 text-[9px] font-semibold text-[#7A7A7A] bg-[#F3F3F5] px-1.5 py-0.5 rounded-full">
+                              <Icon className="size-2.5" />
+                              {postFormatLabels[draft.post_format]}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => toggleDraft(i)}
+                              className={`size-5 rounded-md border flex items-center justify-center transition-colors ${
+                                draft.selected
+                                  ? "bg-[#1B1B1B] border-[#1B1B1B]"
+                                  : "border-[#D4D4D4] hover:border-[#AAA]"
+                              }`}
+                            >
+                              {draft.selected && <CheckIcon className="size-3 text-white" />}
+                            </button>
+                            <button
+                              onClick={() => removeDraft(i)}
+                              className="p-0.5 rounded hover:bg-red-50 transition-colors"
+                            >
+                              <TrashIcon className="size-3.5 text-[#CCC] hover:text-red-400" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Schedule */}
+                        <div className="flex items-center gap-2 mb-2">
+                          <ClockIcon className="size-3 text-[#AAA]" />
+                          <span className="text-[10px] font-semibold text-[#555]">{dayLabel}</span>
+                          <span className="text-[10px] text-[#AAA]">{(() => { const [h,m] = draft.scheduled_time.split(":").map(Number); return `${h % 12 || 12}:${m.toString().padStart(2,"0")} ${h >= 12 ? "PM" : "AM"}`; })()}</span>
+                          {getSlotScore(draft.platform, new Date(draft.scheduled_date + "T00:00:00").getDay(), parseInt(draft.scheduled_time)) >= 80 && (
+                            <span className="text-[8px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Optimal</span>
+                          )}
+                        </div>
+
+                        {/* Brief */}
+                        <p className="text-[10px] text-[#7A7A7A] italic mb-2">{draft.brief}</p>
+
+                        {/* Caption draft */}
+                        <div className="bg-[#F7F8FA] rounded-lg p-3">
+                          <p className="text-xs text-[#1B1B1B] leading-relaxed">{draft.caption_draft}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {!draftLoading && draftPosts.length === 0 && !draftError && (
+                <div className="text-center py-10">
+                  <BoltIcon className="size-8 text-[#DDD] mx-auto mb-2" />
+                  <p className="text-xs text-[#AAA]">Generating your weekly content plan...</p>
+                </div>
+              )}
+            </div>
+
+            {/* Footer — Apply */}
+            {!draftLoading && draftPosts.length > 0 && (
+              <div className="shrink-0 border-t border-[#E5E5EA] px-5 py-4 bg-white">
+                <button
+                  onClick={applyDrafts}
+                  disabled={draftSaving || draftPosts.filter(d => d.selected).length === 0}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
+                >
+                  <CheckIcon className="size-3.5" />
+                  {draftSaving ? "Adding to calendar..." : `Add ${draftPosts.filter(d => d.selected).length} drafts to calendar`}
+                </button>
+                <p className="text-[10px] text-[#AAA] text-center mt-2">
+                  Posts will be added as "Idea" status — edit and promote them through your workflow
+                </p>
+              </div>
+            )}
           </div>
         </>
       )}

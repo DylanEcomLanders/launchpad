@@ -58,6 +58,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Content Calendar redesigned — clean Untitled UI-inspired month view as default with event cards inside day cells, header bar with date badge, Today button, Month/Week toggle, and Add post button" },
       { type: "added", text: "Post format selector — Text, Image, Article, Video post types with format icons on calendar event cards" },
       { type: "added", text: "Image upload in Caption Studio — drag-and-drop or click to upload, image preview with replace/remove, AI captions generated based on the uploaded image via Claude vision" },
+      { type: "added", text: "Weekly Draft generator — AI analyses past performance (top content types, platforms, days, engagement scores) and generates 7-10 optimised draft posts for the current week, placed at optimal time slots with full captions ready to edit" },
     ],
   },
   {
