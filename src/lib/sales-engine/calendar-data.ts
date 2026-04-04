@@ -7,16 +7,19 @@ import { createStore } from "@/lib/supabase-store";
 export type Platform = "linkedin" | "instagram" | "x";
 export type ContentType = "educational" | "social_proof" | "personal" | "promotional";
 export type PostStatus = "idea" | "scripted" | "media_ready" | "approved" | "exported";
+export type PostFormat = "text" | "image" | "article" | "video";
 
 export interface ContentPost {
   id: string;
   platform: Platform;
   content_type: ContentType;
+  post_format: PostFormat;
   caption: string;
   status: PostStatus;
   scheduled_date: string; // ISO date
   scheduled_time: string; // HH:mm
   media_url?: string;
+  media_data?: string; // base64 image data for preview
   analytics_score: number; // 0-100
   created_at: string;
   updated_at: string;
@@ -56,6 +59,15 @@ export const contentTypeLabels: Record<ContentType, string> = {
   social_proof: "Social Proof",
   personal: "Personal",
   promotional: "Promotional",
+};
+
+// ── Post format labels ──
+
+export const postFormatLabels: Record<PostFormat, string> = {
+  text: "Text",
+  image: "Image",
+  article: "Article",
+  video: "Video",
 };
 
 // ── Status colours & labels ──
@@ -173,6 +185,7 @@ export function seedPosts(): ContentPost[] {
       id: "seed-1",
       platform: "linkedin",
       content_type: "educational",
+      post_format: "text",
       caption: "Most brands test button colours. The ones scaling past 8 figures test their entire purchase flow. Here's the framework we use to prioritise what actually moves revenue.",
       status: "approved",
       scheduled_date: dateStr(mon, 1), // Tuesday
@@ -185,6 +198,7 @@ export function seedPosts(): ContentPost[] {
       id: "seed-2",
       platform: "instagram",
       content_type: "social_proof",
+      post_format: "image",
       caption: "Before and after. Same product. Same traffic. Different landing page. 34% conversion lift in 21 days. The gallery did most of the heavy lifting.",
       status: "scripted",
       scheduled_date: dateStr(mon, 0), // Monday
@@ -197,6 +211,7 @@ export function seedPosts(): ContentPost[] {
       id: "seed-3",
       platform: "x",
       content_type: "personal",
+      post_format: "text",
       caption: "Turned down a 6-figure retainer last week. Wrong fit. Best decision we made this quarter.",
       status: "idea",
       scheduled_date: dateStr(mon, 2), // Wednesday
@@ -209,6 +224,7 @@ export function seedPosts(): ContentPost[] {
       id: "seed-4",
       platform: "linkedin",
       content_type: "promotional",
+      post_format: "article",
       caption: "We just opened 2 spots for Q2 landing page builds. DTC brands doing £500k+/mo only. If your PDP converts under 4%, we should talk.",
       status: "media_ready",
       scheduled_date: dateStr(mon, 3), // Thursday
@@ -221,6 +237,7 @@ export function seedPosts(): ContentPost[] {
       id: "seed-5",
       platform: "instagram",
       content_type: "educational",
+      post_format: "image",
       caption: "Your hero image is not a billboard. It is the first frame of a sales conversation. Treat it like one.",
       status: "approved",
       scheduled_date: dateStr(mon, 2), // Wednesday

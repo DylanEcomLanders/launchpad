@@ -15,6 +15,12 @@ import {
   LightBulbIcon,
 } from "@heroicons/react/24/outline";
 import {
+  PhotoIcon,
+  DocumentTextIcon,
+  VideoCameraIcon,
+  NewspaperIcon,
+} from "@heroicons/react/24/solid";
+import {
   getPosts,
   savePosts,
   seedPosts,
@@ -22,11 +28,13 @@ import {
   type Platform,
   type ContentType,
   type PostStatus,
+  type PostFormat,
   type ContentIdea,
   platformColors,
   platformLabels,
   contentTypeColors,
   contentTypeLabels,
+  postFormatLabels,
   statusColors,
   statusLabels,
   isOptimalSlot,
@@ -74,6 +82,19 @@ function uuid(): string {
 }
 
 const HOURS = Array.from({ length: 15 }, (_, i) => i + 6); // 6am–8pm
+
+const formatIcons: Record<PostFormat, typeof DocumentTextIcon> = {
+  text: DocumentTextIcon,
+  image: PhotoIcon,
+  article: NewspaperIcon,
+  video: VideoCameraIcon,
+};
+
+function FormatBadge({ format, size = "sm" }: { format: PostFormat; size?: "sm" | "xs" }) {
+  const Icon = formatIcons[format];
+  if (size === "xs") return <Icon className="size-2.5 shrink-0 opacity-60" />;
+  return <Icon className="size-3 shrink-0 opacity-50" />;
+}
 
 // ── Main Component ──
 
@@ -208,6 +229,7 @@ export default function CalendarPage() {
         id: "",
         platform: "linkedin",
         content_type: "educational",
+        post_format: "text",
         caption: "",
         status: "idea",
         scheduled_date: toDateStr(new Date()),
@@ -226,6 +248,7 @@ export default function CalendarPage() {
       id: "",
       platform: "linkedin",
       content_type: "educational",
+      post_format: "text",
       caption: "",
       status: "idea",
       scheduled_date: date,
@@ -246,11 +269,13 @@ export default function CalendarPage() {
       id: studioPost.id || uuid(),
       platform: studioPost.platform!,
       content_type: studioPost.content_type || "educational",
+      post_format: studioPost.post_format || "text",
       caption: studioPost.caption || "",
       status: studioPost.status || "idea",
       scheduled_date: studioPost.scheduled_date!,
       scheduled_time: studioPost.scheduled_time || "09:00",
       media_url: studioPost.media_url,
+      media_data: studioPost.media_data,
       analytics_score: studioPost.analytics_score || getSlotScore(
         studioPost.platform!,
         new Date(studioPost.scheduled_date! + "T00:00:00").getDay(),
@@ -291,7 +316,9 @@ export default function CalendarPage() {
         body: JSON.stringify({
           platform: studioPost.platform,
           contentType: contentTypeLabels[studioPost.content_type],
+          postFormat: studioPost.post_format || "text",
           brief: studioPost.caption || `${contentTypeLabels[studioPost.content_type]} post about CRO and landing pages`,
+          imageData: studioPost.media_data || undefined,
         }),
       });
       const data = await res.json();
@@ -338,6 +365,7 @@ export default function CalendarPage() {
       ...prev,
       platform: idea.platform,
       content_type: idea.type,
+      post_format: "text",
       caption: idea.brief,
       status: "idea",
     }));
@@ -545,7 +573,8 @@ export default function CalendarPage() {
                               }}
                             >
                               <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: platformColors[p.platform] }} />
-                              <span className="font-medium truncate">{p.caption.slice(0, 24)}{p.caption.length > 24 ? "..." : ""}</span>
+                              <FormatBadge format={p.post_format || "text"} size="xs" />
+                              <span className="font-medium truncate">{p.caption.slice(0, 20)}{p.caption.length > 20 ? "..." : ""}</span>
                               <span className="text-[10px] ml-auto shrink-0 opacity-70">{fmtTime(p.scheduled_time)}</span>
                             </button>
                           ))}
@@ -611,7 +640,8 @@ export default function CalendarPage() {
                         >
                           <div className="flex items-center gap-1.5">
                             <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: platformColors[p.platform] }} />
-                            <span className="text-[11px] font-medium truncate">{p.caption.slice(0, 28)}{p.caption.length > 28 ? "..." : ""}</span>
+                            <FormatBadge format={p.post_format || "text"} size="xs" />
+                            <span className="text-[11px] font-medium truncate">{p.caption.slice(0, 24)}{p.caption.length > 24 ? "..." : ""}</span>
                           </div>
                           <span className="text-[10px] opacity-70 ml-3.5">{fmtTime(p.scheduled_time)}</span>
                         </button>
@@ -721,6 +751,102 @@ export default function CalendarPage() {
                   ))}
                 </div>
               </div>
+
+              {/* Post format */}
+              <div>
+                <label className={labelClass}>Post Format</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {(["text", "image", "article", "video"] as PostFormat[]).map(f => {
+                    const Icon = formatIcons[f];
+                    return (
+                      <button
+                        key={f}
+                        onClick={() => setStudioPost(prev => ({ ...prev, post_format: f }))}
+                        className={`flex flex-col items-center gap-1 px-2 py-2.5 text-[10px] font-medium rounded-lg border transition-colors ${
+                          studioPost.post_format === f
+                            ? "border-[#1B1B1B] bg-[#F5F5F5] text-[#1B1B1B]"
+                            : "border-[#E5E5EA] text-[#7A7A7A] hover:bg-[#F5F5F5]"
+                        }`}
+                      >
+                        <Icon className="size-4" />
+                        {postFormatLabels[f]}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Image upload (shown for image/video formats) */}
+              {(studioPost.post_format === "image" || studioPost.post_format === "video") && (
+                <div>
+                  <label className={labelClass}>
+                    {studioPost.post_format === "video" ? "Thumbnail" : "Image"}
+                  </label>
+                  {studioPost.media_data ? (
+                    <div className="relative rounded-xl overflow-hidden border border-[#E5E5EA] bg-[#FAFAFA]">
+                      <img
+                        src={studioPost.media_data}
+                        alt="Post media"
+                        className="w-full h-48 object-cover"
+                      />
+                      <div className="absolute top-2 right-2 flex gap-1.5">
+                        <label className="cursor-pointer px-2 py-1 bg-white/90 backdrop-blur-sm text-[10px] font-semibold rounded-lg shadow-sm hover:bg-white transition-colors">
+                          Replace
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={e => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setStudioPost(prev => ({ ...prev, media_data: reader.result as string }));
+                              };
+                              reader.readAsDataURL(file);
+                            }}
+                          />
+                        </label>
+                        <button
+                          onClick={() => setStudioPost(prev => ({ ...prev, media_data: undefined }))}
+                          className="px-2 py-1 bg-white/90 backdrop-blur-sm text-[10px] font-semibold text-red-500 rounded-lg shadow-sm hover:bg-white transition-colors"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      {studioPost.post_format === "image" && (
+                        <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 text-white text-[9px] font-semibold rounded-lg backdrop-blur-sm">
+                          AI captions will be based on this image
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-[#E5E5EA] rounded-xl cursor-pointer hover:border-[#C5C5C5] hover:bg-[#FAFAFA] transition-colors">
+                      <PhotoIcon className="size-8 text-[#CCC]" />
+                      <span className="text-xs text-[#7A7A7A]">Click to upload {studioPost.post_format === "video" ? "thumbnail" : "image"}</span>
+                      <span className="text-[10px] text-[#AAA]">PNG, JPG, WebP up to 5MB</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          if (file.size > 5 * 1024 * 1024) {
+                            alert("Image must be under 5MB");
+                            return;
+                          }
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setStudioPost(prev => ({ ...prev, media_data: reader.result as string }));
+                          };
+                          reader.readAsDataURL(file);
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
+              )}
 
               {/* Date & Time */}
               <div className="grid grid-cols-2 gap-3">
