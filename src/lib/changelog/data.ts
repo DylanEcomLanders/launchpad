@@ -47,6 +47,8 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Client portal — sidebar nav now persists when drilled into a project (Back + project name + nav links) instead of horizontal top tabs" },
       { type: "improved", text: "Consistent left sidebar navigation pattern across all portal views — portal list, client detail, drilled-in project, and client-facing portal" },
       { type: "improved", text: "Portal list sidebar cleaned up — tabs now: Overview, Client Portals, Retainer Portals, Testing Lab, Tickets. Removed Delivery tab. New Portal button moved to top of sidebar" },
+      { type: "improved", text: "Action buttons (Flag, Client, Team, Preview, Save) moved to top header bar with divider — Flag red, Client/Team/Preview black, Save green" },
+      { type: "improved", text: "Client Settings (team, Slack, designers, devs) removed from project drilled-in sidebar — lives only at client level under Settings tab" },
     ],
   },
   {

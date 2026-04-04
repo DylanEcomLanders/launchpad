@@ -519,12 +519,16 @@ export default function PortalDetailPage() {
                   </button>
                 ))}
               </nav>
-              {/* Action buttons */}
-              <div className="px-3 py-4 border-t border-[#E8E8E8] space-y-1.5">
+            </div>
+
+            {/* Right content */}
+            <div className="flex-1 min-w-0">
+              {/* Action bar */}
+              <div className="flex items-center justify-end gap-2 px-6 md:px-12 py-4 border-b border-[#E8E8E8]">
                 {portal.blocker ? (
                   <button
                     onClick={() => setShowResolveBlocker(true)}
-                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-[11px] font-semibold bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                   >
                     <span className="size-1.5 rounded-full bg-white animate-pulse" />
                     Blocked{(() => {
@@ -535,61 +539,57 @@ export default function PortalDetailPage() {
                 ) : (
                   <button
                     onClick={() => setShowBlockerModal(true)}
-                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
                   >
                     <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path d="M3.5 2.75a.75.75 0 00-1.5 0v14.5a.75.75 0 001.5 0v-4.392l1.657-.348a6.449 6.449 0 014.271.572 7.948 7.948 0 005.965.524l2.078-.64A.75.75 0 0018 11.75V3.885a.75.75 0 00-.962-.72l-2.367.728a6.449 6.449 0 01-4.846-.425 7.948 7.948 0 00-5.262-.703L3.5 2.98V2.75z" /></svg>
                     Flag
                   </button>
                 )}
-                <div className="flex gap-1.5">
-                  <button
-                    onClick={() => {
-                      const url = `${window.location.origin}/portal/${portal.token}`;
-                      navigator.clipboard.writeText(url);
-                      setCopied(true);
-                      setTimeout(() => setCopied(false), 2000);
-                    }}
-                    className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[10px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
-                  >
-                    <ClipboardDocumentIcon className="size-3" />
-                    {copied ? "Copied!" : "Client"}
-                  </button>
-                  <button
-                    onClick={() => {
-                      const url = `${window.location.origin}/portal/${portal.token}/team`;
-                      navigator.clipboard.writeText(url);
-                      setCopiedTeam(true);
-                      setTimeout(() => setCopiedTeam(false), 2000);
-                    }}
-                    className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[10px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
-                  >
-                    <ClipboardDocumentIcon className="size-3" />
-                    {copiedTeam ? "Copied!" : "Team"}
-                  </button>
-                </div>
-                <div className="flex gap-1.5">
-                  <a
-                    href={`/portal/${portal.token}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[10px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
-                  >
-                    <ArrowTopRightOnSquareIcon className="size-3" />
-                    Preview
-                  </a>
-                  <button
-                    onClick={() => { load(); }}
-                    className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-emerald-500 text-white text-[10px] font-semibold rounded-lg hover:bg-emerald-600 transition-colors"
-                  >
-                    <CheckIcon className="size-3" />
-                    Save
-                  </button>
-                </div>
+                <div className="w-px h-5 bg-[#E8E8E8]" />
+                <button
+                  onClick={() => {
+                    const url = `${window.location.origin}/portal/${portal.token}`;
+                    navigator.clipboard.writeText(url);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
+                >
+                  <ClipboardDocumentIcon className="size-3.5" />
+                  {copied ? "Copied!" : "Client"}
+                </button>
+                <button
+                  onClick={() => {
+                    const url = `${window.location.origin}/portal/${portal.token}/team`;
+                    navigator.clipboard.writeText(url);
+                    setCopiedTeam(true);
+                    setTimeout(() => setCopiedTeam(false), 2000);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
+                >
+                  <ClipboardDocumentIcon className="size-3.5" />
+                  {copiedTeam ? "Copied!" : "Team"}
+                </button>
+                <a
+                  href={`/portal/${portal.token}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
+                >
+                  <ArrowTopRightOnSquareIcon className="size-3.5" />
+                  Preview
+                </a>
+                <button
+                  onClick={() => { load(); }}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-500 text-white text-[11px] font-semibold rounded-lg hover:bg-emerald-600 transition-colors"
+                >
+                  <CheckIcon className="size-3.5" />
+                  Save
+                </button>
               </div>
-            </div>
 
-            {/* Right content */}
-            <div className="flex-1 min-w-0 max-w-3xl mx-auto px-6 md:px-12 py-16 md:py-24">
+              {/* Tab content */}
+              <div className="max-w-3xl mx-auto px-6 md:px-12 py-10">
 
         {/* ── Projects tab ── */}
         {clientTab === "projects" && (<>
@@ -785,6 +785,7 @@ export default function PortalDetailPage() {
           <ClientDetailsPanel portal={portal} team={team} onUpdateField={handleUpdateField} />
         )}
 
+              </div>
             </div>
           </div>
         )}
@@ -823,11 +824,6 @@ export default function PortalDetailPage() {
                   </button>
                 ))}
               </nav>
-
-              {/* Compact client details in sidebar */}
-              <div className="border-t border-[#E8E8E8] pt-5 space-y-5">
-                <SidebarClientDetails portal={portal} team={team} onUpdateField={handleUpdateField} />
-              </div>
             </div>
 
             {/* Right content */}
