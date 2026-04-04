@@ -49,6 +49,12 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Portal list sidebar cleaned up — tabs now: Overview, Client Portals, Retainer Portals, Testing Lab, Tickets. Removed Delivery tab. New Portal button moved to top of sidebar" },
       { type: "improved", text: "Action buttons (Flag, Client, Team, Preview, Save) moved to top header bar with divider — Flag red, Client/Team/Preview black, Save green" },
       { type: "improved", text: "Client Settings (team, Slack, designers, devs) removed from project drilled-in sidebar — lives only at client level under Settings tab" },
+      { type: "added", text: "Content Calendar — weekly grid (6am-8pm time slots x 7 days) and month overview for planning social content across LinkedIn, Instagram, and X" },
+      { type: "added", text: "Caption Studio — slide-in panel with platform/type selectors, date/time picker, AI caption generation (3 variants via Claude), slot scoring, and status workflow" },
+      { type: "added", text: "Idea Engine — AI-powered content idea generator that considers current content mix, posting gaps, and platform neglect to suggest 5 actionable ideas" },
+      { type: "added", text: "Content analytics layer — optimal slot indicators (green dots), gap detection (3+ day warnings), platform neglect alerts, content mix bar with promotional threshold warning" },
+      { type: "added", text: "Pipeline sidebar — toggle to view all posts grouped by status (Idea → Scripted → Media Ready → Approved → Exported)" },
+      { type: "added", text: "Insights bar — 4 metric cards: Posts this week, Best performing day, Top content type, Gap alert" },
     ],
   },
   {
