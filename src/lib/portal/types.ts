@@ -101,6 +101,18 @@ export interface PortalBlocker {
   type: BlockerType;
   reason: string;
   since: string; // ISO date
+  resolved_at?: string; // ISO date — when blocker was cleared
+  days_lost?: number; // business days the project was blocked
+  /** Snapshot of phase dates before blocker was applied */
+  original_phases?: { id: string; startDate?: string; endDate?: string }[];
+  /** Client-friendly reason shown in portal (auto-generated if blank) */
+  client_reason?: string;
+}
+
+/** History of resolved blockers — kept on the portal for timeline context */
+export interface BlockerHistory {
+  blocker: PortalBlocker;
+  shifted_days: number;
 }
 
 /* ── Internal QA Gates ── */
@@ -211,6 +223,7 @@ export interface PortalData {
   ad_hoc_requests: AdHocRequest[];
   reports?: PortalReport[];
   blocker?: PortalBlocker | null;
+  blocker_history?: BlockerHistory[];
   created_at: string;
   updated_at: string;
   view_count: number;

@@ -55,6 +55,7 @@ import type {
   PortalProject,
   ProjectType,
   PortalReport,
+  BlockerHistory,
 } from "@/lib/portal/types";
 import { deliverableTypes } from "@/lib/config";
 import { BrandedReport } from "@/components/branded-report";
@@ -87,6 +88,8 @@ export default function PortalDetailPage() {
   const [defaultTabSet, setDefaultTabSet] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copiedTeam, setCopiedTeam] = useState(false);
+  const [showBlockerModal, setShowBlockerModal] = useState(false);
+  const [showResolveBlocker, setShowResolveBlocker] = useState(false);
 
   // Update form
   const [showUpdateForm, setShowUpdateForm] = useState(false);
@@ -501,29 +504,19 @@ export default function PortalDetailPage() {
             <div className="flex items-center gap-2 shrink-0">
               {/* Blocker flag */}
               {portal.blocker ? (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold bg-red-500 text-white rounded-lg">
+                <button
+                  onClick={() => setShowResolveBlocker(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                >
                   <span className="size-1.5 rounded-full bg-white animate-pulse" />
-                  Blocked
-                  <button
-                    onClick={async () => {
-                      await updatePortal(portal.id, { blocker: null } as Partial<PortalData>);
-                      setPortal({ ...portal, blocker: null } as PortalData);
-                    }}
-                    className="ml-1 text-white/60 hover:text-white"
-                  >
-                    <XMarkIcon className="size-3" />
-                  </button>
-                </div>
+                  Blocked{(() => {
+                    const d = Math.max(0, Math.floor((Date.now() - new Date(portal.blocker.since).getTime()) / 86400000));
+                    return d > 0 ? ` · ${d}d` : "";
+                  })()}
+                </button>
               ) : (
                 <button
-                  onClick={async () => {
-                    const reason = prompt("Reason for blocking:");
-                    if (!reason) return;
-                    const type = (prompt("Type (client / internal / external):", "client") as "client" | "internal" | "external") || "client";
-                    const newBlocker = { type, reason, since: new Date().toISOString() };
-                    await updatePortal(portal.id, { blocker: newBlocker } as Partial<PortalData>);
-                    setPortal({ ...portal, blocker: newBlocker } as PortalData);
-                  }}
+                  onClick={() => setShowBlockerModal(true)}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
                   title="Flag as blocked"
                 >
@@ -1000,6 +993,100 @@ export default function PortalDetailPage() {
           </div>
         )}
 
+        {/* Blocker flag modal */}
+        {showBlockerModal && (
+          <BlockerFlagModal
+            portal={portal}
+            onClose={() => setShowBlockerModal(false)}
+            onFlag={async (blocker) => {
+              // Snapshot current phase dates before applying blocker
+              const currentPhases = portal.phases || [];
+              const snapshot = currentPhases.map(p => ({
+                id: p.id,
+                startDate: p.startDate,
+                endDate: p.endDate,
+              }));
+              const newBlocker: PortalBlocker = {
+                ...blocker,
+                original_phases: snapshot,
+              };
+              await updatePortal(portal.id, { blocker: newBlocker } as Partial<PortalData>);
+              setPortal({ ...portal, blocker: newBlocker } as PortalData);
+              setShowBlockerModal(false);
+            }}
+          />
+        )}
+
+        {/* Resolve blocker modal */}
+        {showResolveBlocker && portal.blocker && (
+          <ResolveBlockerModal
+            portal={portal}
+            onClose={() => setShowResolveBlocker(false)}
+            onResolve={async (shiftDays: number) => {
+              const blocker = portal.blocker!;
+              const resolvedBlocker: PortalBlocker = {
+                ...blocker,
+                resolved_at: new Date().toISOString(),
+                days_lost: shiftDays,
+              };
+              const history: BlockerHistory[] = [
+                ...(portal.blocker_history || []),
+                { blocker: resolvedBlocker, shifted_days: shiftDays },
+              ];
+
+              // Shift all future phase dates
+              let updatedPhases = [...(portal.phases || [])];
+              if (shiftDays > 0) {
+                updatedPhases = updatedPhases.map(phase => {
+                  const start = phase.startDate ? new Date(phase.startDate + "T00:00:00") : null;
+                  const end = phase.endDate ? new Date(phase.endDate + "T00:00:00") : null;
+                  const now = new Date();
+                  now.setHours(0, 0, 0, 0);
+
+                  // Only shift phases that haven't completed and are current or future
+                  if (phase.status === "complete") return phase;
+
+                  const shiftDate = (d: Date) => {
+                    let remaining = shiftDays;
+                    const result = new Date(d);
+                    while (remaining > 0) {
+                      result.setDate(result.getDate() + 1);
+                      const dow = result.getDay();
+                      if (dow !== 0 && dow !== 6) remaining--;
+                    }
+                    return result.toISOString().split("T")[0];
+                  };
+
+                  const newStart = start ? shiftDate(start) : undefined;
+                  const newEnd = end ? shiftDate(end) : undefined;
+                  const fmtDate = (iso: string) => new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+
+                  return {
+                    ...phase,
+                    startDate: newStart,
+                    endDate: newEnd,
+                    deadline: newEnd,
+                    dates: `${newStart ? fmtDate(newStart) : "?"} — ${newEnd ? fmtDate(newEnd) : "?"}`,
+                  };
+                });
+              }
+
+              await updatePortal(portal.id, {
+                blocker: null,
+                blocker_history: history,
+                phases: updatedPhases,
+              } as Partial<PortalData>);
+              setPortal({
+                ...portal,
+                blocker: null,
+                blocker_history: history,
+                phases: updatedPhases,
+              } as PortalData);
+              setShowResolveBlocker(false);
+            }}
+          />
+        )}
+
         {/* Phase form modal */}
         {showPhaseForm && (
           <FormModal
@@ -1135,9 +1222,6 @@ function OverviewSection({
 }) {
   const [scopeInput, setScopeInput] = useState("");
   const [scopeType, setScopeType] = useState("");
-  const [showBlockerForm, setShowBlockerForm] = useState(false);
-  const [blockerType, setBlockerType] = useState<"client" | "internal" | "external">("client");
-  const [blockerReason, setBlockerReason] = useState("");
 
   const blocker = portal.blocker;
   const daysBlocked = blocker?.since
@@ -1150,6 +1234,21 @@ function OverviewSection({
   const documents = (selectedProject?.documents?.length ? selectedProject.documents : null) ?? portal.documents;
   const currentPhase = selectedProject?.current_phase || portal.current_phase;
   const isRetainer = selectedProject?.type === "retainer";
+
+  // Build original dates map from first blocker history snapshot
+  const totalShiftedDays = (portal.blocker_history || []).reduce((sum, h) => sum + h.shifted_days, 0);
+  const firstHistory = (portal.blocker_history || [])[0];
+  const originalDatesMap = new Map<string, { startDate?: string; endDate?: string }>();
+  if (firstHistory?.blocker?.original_phases) {
+    for (const op of firstHistory.blocker.original_phases) {
+      originalDatesMap.set(op.id, { startDate: op.startDate, endDate: op.endDate });
+    }
+  }
+
+  const fmtShort = (iso?: string) => {
+    if (!iso) return "?";
+    return new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  };
 
   return (
     <div className="space-y-6">
@@ -1240,7 +1339,14 @@ function OverviewSection({
       {!isRetainer && (
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Timeline</h3>
+            <div className="flex items-center gap-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Timeline</h3>
+              {totalShiftedDays > 0 && (
+                <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                  +{totalShiftedDays}d adjusted
+                </span>
+              )}
+            </div>
             <button onClick={onAddPhase} className="text-[11px] font-medium text-[#999] hover:text-[#1B1B1B] transition-colors">+ Add Phase</button>
           </div>
           {phases.length === 0 ? (
@@ -1310,6 +1416,19 @@ function OverviewSection({
                           <span className="text-[10px] text-green-600 font-medium">Early</span>
                         )}
                       </div>
+                      {/* Show original dates if shifted */}
+                      {(() => {
+                        const orig = originalDatesMap.get(phase.id);
+                        if (!orig || phase.status === "complete") return null;
+                        const shifted = (orig.startDate && phase.startDate && orig.startDate !== phase.startDate) ||
+                                        (orig.endDate && phase.endDate && orig.endDate !== phase.endDate);
+                        if (!shifted) return null;
+                        return (
+                          <p className="text-[10px] text-[#CCC] mt-0.5">
+                            Originally {fmtShort(orig.startDate)} → {fmtShort(orig.endDate)}
+                          </p>
+                        );
+                      })()}
                     </div>
                     <button
                       onClick={() => onRemovePhase(phase.id)}
@@ -4325,6 +4444,233 @@ function ReportsSection({
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+/* ─── Blocker Flag Modal ─── */
+function BlockerFlagModal({
+  portal,
+  onClose,
+  onFlag,
+}: {
+  portal: PortalData;
+  onClose: () => void;
+  onFlag: (blocker: PortalBlocker) => void;
+}) {
+  const [reason, setReason] = useState("");
+  const [blockerType, setBlockerType] = useState<"client" | "internal" | "external">("client");
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold text-[#1A1A1A]">Flag Blocker</h3>
+          <button onClick={onClose} className="text-[#CCC] hover:text-[#999]"><XMarkIcon className="size-5" /></button>
+        </div>
+
+        <div>
+          <p className="text-[11px] font-medium text-[#777] mb-2">Type</p>
+          <div className="flex items-center gap-1.5">
+            {(["client", "internal", "external"] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setBlockerType(t)}
+                className={`px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors ${
+                  blockerType === t
+                    ? "bg-red-500 text-white"
+                    : "bg-[#F5F5F5] text-[#777] hover:bg-[#EDEDEF]"
+                }`}
+              >
+                {t === "client" ? "Client" : t === "internal" ? "Internal" : "External"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-[11px] font-medium text-[#777] mb-2">Internal reason (team only)</p>
+          <input
+            type="text"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="e.g., Client hasn't replied to design review request"
+            className="w-full px-3 py-2 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#1B1B1B]"
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && reason.trim()) {
+                onFlag({ type: blockerType, reason: reason.trim(), since: new Date().toISOString() });
+              }
+            }}
+          />
+        </div>
+
+        <p className="text-[10px] text-[#AAA]">
+          Timeline dates will be snapshotted. When resolved, you can shift all future phases by the days lost.
+        </p>
+
+        <button
+          onClick={() => {
+            if (!reason.trim()) return;
+            onFlag({ type: blockerType, reason: reason.trim(), since: new Date().toISOString() });
+          }}
+          disabled={!reason.trim()}
+          className="w-full py-2.5 text-sm font-semibold bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-40"
+        >
+          Flag Blocker
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Resolve Blocker Modal ─── */
+function ResolveBlockerModal({
+  portal,
+  onClose,
+  onResolve,
+}: {
+  portal: PortalData;
+  onClose: () => void;
+  onResolve: (shiftDays: number) => void;
+}) {
+  const blocker = portal.blocker!;
+  const daysSince = Math.max(0, Math.floor((Date.now() - new Date(blocker.since).getTime()) / 86400000));
+
+  // Calculate business days
+  const countBusinessDays = (start: Date, end: Date) => {
+    let count = 0;
+    const d = new Date(start);
+    while (d < end) {
+      d.setDate(d.getDate() + 1);
+      const dow = d.getDay();
+      if (dow !== 0 && dow !== 6) count++;
+    }
+    return count;
+  };
+  const businessDays = countBusinessDays(new Date(blocker.since), new Date());
+
+  const [shiftDays, setShiftDays] = useState(businessDays);
+
+  // Preview shifted dates
+  const previewPhases = (portal.phases || []).map(phase => {
+    if (phase.status === "complete" || shiftDays === 0) return { ...phase, newStart: phase.startDate, newEnd: phase.endDate };
+    const shiftDate = (iso: string) => {
+      let remaining = shiftDays;
+      const d = new Date(iso + "T00:00:00");
+      while (remaining > 0) {
+        d.setDate(d.getDate() + 1);
+        const dow = d.getDay();
+        if (dow !== 0 && dow !== 6) remaining--;
+      }
+      return d.toISOString().split("T")[0];
+    };
+    return {
+      ...phase,
+      newStart: phase.startDate ? shiftDate(phase.startDate) : undefined,
+      newEnd: phase.endDate ? shiftDate(phase.endDate) : undefined,
+    };
+  });
+
+  const fmtShort = (iso?: string) => {
+    if (!iso) return "?";
+    return new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 space-y-5" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold text-[#1A1A1A]">Resolve Blocker</h3>
+          <button onClick={onClose} className="text-[#CCC] hover:text-[#999]"><XMarkIcon className="size-5" /></button>
+        </div>
+
+        {/* Blocker summary */}
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="size-1.5 rounded-full bg-red-500" />
+            <span className="text-xs font-semibold text-red-600 capitalize">{blocker.type}</span>
+            <span className="text-[10px] text-red-500 bg-red-100 px-2 py-0.5 rounded-full">{daysSince}d ({businessDays} business days)</span>
+          </div>
+          <p className="text-xs text-red-700">{blocker.reason}</p>
+        </div>
+
+        {/* Shift controls */}
+        <div>
+          <p className="text-[11px] font-medium text-[#777] mb-2">Shift timeline forward by</p>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => setShiftDays(Math.max(0, shiftDays - 1))}
+                className="size-7 flex items-center justify-center border border-[#E5E5EA] rounded-lg text-[#777] hover:bg-[#F5F5F5] text-sm"
+              >
+                −
+              </button>
+              <input
+                type="number"
+                value={shiftDays}
+                onChange={(e) => setShiftDays(Math.max(0, parseInt(e.target.value) || 0))}
+                className="w-16 text-center text-sm font-semibold border border-[#E5E5EA] rounded-lg py-1.5"
+              />
+              <button
+                onClick={() => setShiftDays(shiftDays + 1)}
+                className="size-7 flex items-center justify-center border border-[#E5E5EA] rounded-lg text-[#777] hover:bg-[#F5F5F5] text-sm"
+              >
+                +
+              </button>
+            </div>
+            <span className="text-xs text-[#999]">business days</span>
+            {shiftDays !== businessDays && (
+              <button onClick={() => setShiftDays(businessDays)} className="text-[10px] text-blue-600 hover:underline">
+                Reset to {businessDays}d
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Timeline preview */}
+        {shiftDays > 0 && previewPhases.filter(p => p.status !== "complete").length > 0 && (
+          <div>
+            <p className="text-[11px] font-medium text-[#777] mb-2">Timeline preview</p>
+            <div className="border border-[#E5E5EA] rounded-lg divide-y divide-[#F0F0F0] overflow-hidden">
+              {previewPhases.map(phase => (
+                <div key={phase.id} className="flex items-center justify-between px-3 py-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className={`size-1.5 rounded-full shrink-0 ${phase.status === "complete" ? "bg-emerald-400" : "bg-[#D4D4D4]"}`} />
+                    <span className={`text-xs font-medium truncate ${phase.status === "complete" ? "text-[#AAA]" : "text-[#1A1A1A]"}`}>{phase.name}</span>
+                  </div>
+                  {phase.status === "complete" ? (
+                    <span className="text-[10px] text-[#CCC]">Complete</span>
+                  ) : (
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[10px] text-[#CCC] line-through">{fmtShort(phase.startDate)} — {fmtShort(phase.endDate)}</span>
+                      <span className="text-[10px] text-[#1A1A1A] font-medium">{fmtShort(phase.newStart)} — {fmtShort(phase.newEnd)}</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {shiftDays === 0 && (
+          <p className="text-xs text-[#AAA] bg-[#FAFAFA] p-3 rounded-lg">
+            No timeline shift — dates stay as they are. The blocker will still be logged in history.
+          </p>
+        )}
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => onResolve(shiftDays)}
+            className="flex-1 py-2.5 text-sm font-semibold bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
+          >
+            {shiftDays > 0 ? `Resolve & Shift +${shiftDays}d` : "Resolve (No Shift)"}
+          </button>
+          <button onClick={onClose} className="px-4 py-2.5 text-sm font-medium text-[#777] hover:text-[#1A1A1A] transition-colors">
+            Cancel
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

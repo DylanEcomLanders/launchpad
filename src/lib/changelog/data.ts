@@ -55,6 +55,9 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Header action bar — Save (green), Client link, Team link, Preview, Flag Blocked all as consistent black/green buttons at top" },
       { type: "improved", text: "Overview redesign — touchpoint card (dark, editable), status card side-by-side, timeline-style phases with dot indicators, cleaner scope list" },
       { type: "improved", text: "Sidebar renamed from 'Team' to 'Client Settings' — team, Slack channels, touchpoint info grouped as client config" },
+      { type: "added", text: "Blocker system with timeline shift — flag blocker (modal with type/reason), auto-snapshot phase dates, resolve with adjustable business-day shift, full timeline preview before confirming" },
+      { type: "added", text: "Blocker history — resolved blockers logged with days lost, original vs adjusted dates shown on timeline, '+Xd adjusted' badge on timeline header" },
+      { type: "improved", text: "Client portal shows diplomatic 'Timeline adjusted' notice when dates shift — no blame language, just 'dates updated to reflect latest schedule'" },
     ],
   },
   {

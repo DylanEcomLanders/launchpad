@@ -398,7 +398,7 @@ export function PortalView({
             {activeTab === "timeline" && !isRetainer && (
               <>
                 <PageHeader title="Timeline" subtitle="Your project phases and milestones" />
-                <TimelineTab phases={activePhases} />
+                <TimelineTab phases={activePhases} blockerHistory={portal.blocker_history} />
               </>
             )}
             {activeTab === "testing" && isRetainer && (
@@ -1143,11 +1143,30 @@ function DashboardView({
 
 function TimelineTab({
   phases,
+  blockerHistory,
 }: {
   phases: PortalPhase[];
+  blockerHistory?: { blocker: { original_phases?: { id: string; startDate?: string; endDate?: string }[]; client_reason?: string }; shifted_days: number }[];
 }) {
+  const totalShifted = (blockerHistory || []).reduce((sum, h) => sum + h.shifted_days, 0);
+
   return (
     <div className="relative">
+      {/* Timeline adjusted notice */}
+      {totalShifted > 0 && (
+        <div className="mb-6 bg-[#FAFAFA] border border-[#E5E5EA] rounded-lg p-4 flex items-start gap-3">
+          <div className="size-8 rounded-full bg-[#F0F0F0] flex items-center justify-center shrink-0 mt-0.5">
+            <svg className="size-4 text-[#999]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clipRule="evenodd" /></svg>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-[#1A1A1A]">Timeline adjusted</p>
+            <p className="text-xs text-[#777] mt-0.5">
+              Dates have been updated to reflect the latest project schedule. All deadlines below are current.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Vertical line */}
       <div className="absolute left-[11px] top-4 bottom-4 w-px bg-[#F0F0F0]" />
 
