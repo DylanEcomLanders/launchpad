@@ -4,13 +4,14 @@ import { createStore } from "@/lib/supabase-store";
 
 // ── Types ──
 
-export type Platform = "linkedin" | "instagram" | "x";
+export type Platform = "linkedin" | "instagram" | "x" | "tiktok";
 export type ContentType = "educational" | "social_proof" | "personal" | "promotional";
 export type PostStatus = "idea" | "scripted" | "media_ready" | "approved" | "exported";
 export type PostFormat = "text" | "image" | "article" | "video";
 
 export interface ContentPost {
   id: string;
+  group_id?: string; // links repurposed variants together
   platform: Platform;
   content_type: ContentType;
   post_format: PostFormat;
@@ -37,12 +38,14 @@ export const platformColors: Record<Platform, string> = {
   linkedin: "#0A66C2",
   instagram: "#E1306C",
   x: "#777",
+  tiktok: "#000000",
 };
 
 export const platformLabels: Record<Platform, string> = {
   linkedin: "LinkedIn",
   instagram: "Instagram",
   x: "X",
+  tiktok: "TikTok",
 };
 
 // ── Content type colours ──

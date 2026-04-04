@@ -59,6 +59,10 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Post format selector — Text, Image, Article, Video post types with format icons on calendar event cards" },
       { type: "added", text: "Image upload in Caption Studio — drag-and-drop or click to upload, image preview with replace/remove, AI captions generated based on the uploaded image via Claude vision" },
       { type: "added", text: "Weekly Draft generator — AI analyses past performance (top content types, platforms, days, engagement scores) and generates 7-10 optimised draft posts for the current week, placed at optimal time slots with full captions ready to edit" },
+      { type: "added", text: "Content repurposing — write once on X, hit Repurpose to auto-generate LinkedIn (longer, professional), Instagram (image caption), and TikTok (video hook/script) variants linked together as a content group" },
+      { type: "added", text: "Platform tabs in Caption Studio — linked posts show tabs to switch between platform variants, each with independent status tracking" },
+      { type: "added", text: "TikTok added as a platform — video-first format with hook-style caption generation" },
+      { type: "improved", text: "Calendar event cards show link icon for repurposed content groups" },
     ],
   },
   {

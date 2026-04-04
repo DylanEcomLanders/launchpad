@@ -15,6 +15,8 @@ import {
   LightBulbIcon,
   BoltIcon,
   TrashIcon,
+  ArrowPathIcon,
+  LinkIcon,
 } from "@heroicons/react/24/outline";
 import {
   PhotoIcon,
@@ -142,6 +144,10 @@ export default function CalendarPage() {
   const [draftError, setDraftError] = useState("");
   const [draftSaving, setDraftSaving] = useState(false);
 
+  // Repurpose state
+  const [repurposeLoading, setRepurposeLoading] = useState(false);
+  const [repurposeError, setRepurposeError] = useState("");
+
   const weekDates = useMemo(() => getWeekDates(weekOffset), [weekOffset]);
   const monthDates = useMemo(
     () => getMonthDates(monthDate.getFullYear(), monthDate.getMonth()),
@@ -206,7 +212,7 @@ export default function CalendarPage() {
   // Platform neglect: 5+ days without posts (check across all posts)
   const neglectedPlatforms = useMemo(() => {
     const neglected: Platform[] = [];
-    const platforms: Platform[] = ["linkedin", "instagram", "x"];
+    const platforms: Platform[] = ["linkedin", "instagram", "x", "tiktok"];
     const today = new Date();
     platforms.forEach(p => {
       const platPosts = posts.filter(pp => pp.platform === p);
@@ -287,6 +293,7 @@ export default function CalendarPage() {
     const now = new Date().toISOString();
     const post: ContentPost = {
       id: studioPost.id || uuid(),
+      group_id: studioPost.group_id,
       platform: studioPost.platform!,
       content_type: studioPost.content_type || "educational",
       post_format: studioPost.post_format || "text",
@@ -366,7 +373,7 @@ export default function CalendarPage() {
         body: JSON.stringify({
           contentMix,
           gaps,
-          platforms: ["linkedin", "instagram", "x"],
+          platforms: ["linkedin", "instagram", "x", "tiktok"],
         }),
       });
       const data = await res.json();
@@ -389,6 +396,134 @@ export default function CalendarPage() {
       caption: idea.brief,
       status: "idea",
     }));
+  }
+
+  // ── Repurpose ──
+
+  function getGroupSiblings(groupId?: string): ContentPost[] {
+    if (!groupId) return [];
+    return posts.filter(p => p.group_id === groupId);
+  }
+
+  async function repurposePost() {
+    if (!studioPost.caption?.trim() || !studioPost.platform) return;
+    setRepurposeLoading(true);
+    setRepurposeError("");
+
+    // Figure out which platforms we need variants for
+    const allPlatforms: Platform[] = ["x", "linkedin", "instagram", "tiktok"];
+    const currentGroupId = studioPost.group_id || studioPost.id || uuid();
+    const existingSiblings = getGroupSiblings(currentGroupId);
+    const existingPlatforms = new Set(existingSiblings.map(p => p.platform));
+    existingPlatforms.add(studioPost.platform);
+    const targetPlatforms = allPlatforms.filter(p => !existingPlatforms.has(p));
+
+    if (targetPlatforms.length === 0) {
+      setRepurposeError("Already repurposed to all platforms");
+      setRepurposeLoading(false);
+      return;
+    }
+
+    try {
+      // First, ensure current post has a group_id and is saved
+      if (!studioPost.group_id) {
+        setStudioPost(prev => ({ ...prev, group_id: currentGroupId }));
+        // Update the current post in the posts array
+        const now = new Date().toISOString();
+        const currentPost: ContentPost = {
+          id: studioPost.id || uuid(),
+          group_id: currentGroupId,
+          platform: studioPost.platform!,
+          content_type: studioPost.content_type || "educational",
+          post_format: studioPost.post_format || "text",
+          caption: studioPost.caption || "",
+          status: studioPost.status || "idea",
+          scheduled_date: studioPost.scheduled_date || toDateStr(new Date()),
+          scheduled_time: studioPost.scheduled_time || "09:00",
+          media_url: studioPost.media_url,
+          media_data: studioPost.media_data,
+          analytics_score: studioPost.analytics_score || 0,
+          created_at: studioPost.created_at || now,
+          updated_at: now,
+        };
+        const existingIdx = posts.findIndex(p => p.id === currentPost.id);
+        if (existingIdx >= 0) {
+          const updated = posts.map(p => p.id === currentPost.id ? currentPost : p);
+          setPosts(updated);
+          await savePosts(updated);
+        } else {
+          const updated = [...posts, currentPost];
+          setPosts(updated);
+          await savePosts(updated);
+        }
+      }
+
+      const res = await fetch("/api/calendar/repurpose", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sourcePlatform: platformLabels[studioPost.platform],
+          sourceCaption: studioPost.caption,
+          sourceFormat: studioPost.post_format || "text",
+          contentType: contentTypeLabels[studioPost.content_type || "educational"],
+          targetPlatforms: targetPlatforms.map(p => platformLabels[p]),
+        }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      // Create new posts for each variant
+      const now = new Date().toISOString();
+      const newPosts: ContentPost[] = (data.variants || []).map((v: any) => {
+        const platform = (Object.entries(platformLabels).find(([, label]) => label.toLowerCase() === v.platform.toLowerCase())?.[0] || v.platform.toLowerCase()) as Platform;
+        return {
+          id: uuid(),
+          group_id: currentGroupId,
+          platform,
+          content_type: studioPost.content_type || "educational",
+          post_format: (v.post_format || "text") as PostFormat,
+          caption: v.caption,
+          status: "idea" as PostStatus,
+          scheduled_date: studioPost.scheduled_date || toDateStr(new Date()),
+          scheduled_time: studioPost.scheduled_time || "09:00",
+          analytics_score: getSlotScore(
+            platform,
+            new Date((studioPost.scheduled_date || toDateStr(new Date())) + "T00:00:00").getDay(),
+            parseInt(studioPost.scheduled_time || "9")
+          ),
+          created_at: now,
+          updated_at: now,
+        };
+      });
+
+      const updatedPosts = [...posts, ...newPosts];
+      // Make sure the source post has the group_id too
+      const final = updatedPosts.map(p =>
+        p.id === studioPost.id ? { ...p, group_id: currentGroupId } : p
+      );
+      setPosts(final);
+      await savePosts(final);
+
+      // Update studio post to reflect group_id
+      setStudioPost(prev => ({ ...prev, group_id: currentGroupId }));
+
+    } catch (e: any) {
+      setRepurposeError(e.message || "Failed to repurpose");
+    } finally {
+      setRepurposeLoading(false);
+    }
+  }
+
+  function switchToSibling(platform: Platform) {
+    const groupId = studioPost.group_id;
+    if (!groupId) return;
+    const sibling = posts.find(p => p.group_id === groupId && p.platform === platform);
+    if (sibling) {
+      setStudioPost({ ...sibling });
+      setCaptions([]);
+      setCaptionError("");
+      setSelectedCaption(-1);
+    }
   }
 
   // ── Weekly draft ──
@@ -441,7 +576,7 @@ export default function CalendarPage() {
             recentCaptions: recentGood.slice(0, 3).join(" | ") || "N/A",
           } : null,
           optimalSlots: optimalSlots.filter(s => s.score >= 70),
-          platforms: ["linkedin", "instagram", "x"],
+          platforms: ["linkedin", "instagram", "x", "tiktok"],
         }),
       });
       const data = await res.json();
@@ -703,7 +838,8 @@ export default function CalendarPage() {
                             >
                               <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: platformColors[p.platform] }} />
                               <FormatBadge format={p.post_format || "text"} size="xs" />
-                              <span className="font-medium truncate">{p.caption.slice(0, 20)}{p.caption.length > 20 ? "..." : ""}</span>
+                              {p.group_id && <LinkIcon className="size-2 shrink-0 opacity-40" />}
+                              <span className="font-medium truncate">{p.caption.slice(0, 18)}{p.caption.length > 18 ? "..." : ""}</span>
                               <span className="text-[10px] ml-auto shrink-0 opacity-70">{fmtTime(p.scheduled_time)}</span>
                             </button>
                           ))}
@@ -770,7 +906,8 @@ export default function CalendarPage() {
                           <div className="flex items-center gap-1.5">
                             <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: platformColors[p.platform] }} />
                             <FormatBadge format={p.post_format || "text"} size="xs" />
-                            <span className="text-[11px] font-medium truncate">{p.caption.slice(0, 24)}{p.caption.length > 24 ? "..." : ""}</span>
+                            {p.group_id && <LinkIcon className="size-2 shrink-0 opacity-40" />}
+                            <span className="text-[11px] font-medium truncate">{p.caption.slice(0, 22)}{p.caption.length > 22 ? "..." : ""}</span>
                           </div>
                           <span className="text-[10px] opacity-70 ml-3.5">{fmtTime(p.scheduled_time)}</span>
                         </button>
@@ -829,21 +966,92 @@ export default function CalendarPage() {
       {showStudio && (
         <>
           <div className="fixed inset-0 z-40 bg-black/20" onClick={() => setShowStudio(false)} />
-          <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-md bg-white shadow-[var(--shadow-elevated)] overflow-y-auto animate-slideIn">
+          <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-md bg-white shadow-[var(--shadow-elevated)] flex flex-col animate-slideIn">
             {/* Header */}
-            <div className="sticky top-0 bg-white border-b border-[#E5E5EA] px-5 py-4 flex items-center justify-between z-10">
-              <h2 className="text-sm font-bold text-[#1B1B1B]">{studioPost.id ? "Edit Post" : "New Post"}</h2>
-              <button onClick={() => setShowStudio(false)} className="p-1 rounded-lg hover:bg-[#F3F3F5]">
-                <XMarkIcon className="size-5 text-[#7A7A7A]" />
-              </button>
+            <div className="shrink-0 bg-white border-b border-[#E5E5EA] px-5 py-4 flex items-center justify-between z-10">
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-bold text-[#1B1B1B]">{studioPost.id ? "Edit Post" : "New Post"}</h2>
+                {studioPost.group_id && (
+                  <span className="flex items-center gap-0.5 text-[9px] font-semibold text-[#7A7A7A] bg-[#F3F3F5] px-1.5 py-0.5 rounded-full">
+                    <LinkIcon className="size-2.5" />
+                    Linked
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={repurposePost}
+                  disabled={repurposeLoading || !studioPost.caption?.trim()}
+                  className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
+                  title="Repurpose to other platforms"
+                >
+                  <ArrowPathIcon className={`size-3 ${repurposeLoading ? "animate-spin" : ""}`} />
+                  {repurposeLoading ? "Repurposing..." : "Repurpose"}
+                </button>
+                <button onClick={() => setShowStudio(false)} className="p-1 rounded-lg hover:bg-[#F3F3F5]">
+                  <XMarkIcon className="size-5 text-[#7A7A7A]" />
+                </button>
+              </div>
             </div>
 
-            <div className="p-5 space-y-5">
-              {/* Platform */}
+            {/* Platform tabs (when post has siblings) */}
+            {(() => {
+              const siblings = studioPost.group_id ? getGroupSiblings(studioPost.group_id) : [];
+              const hasSiblings = siblings.length > 1 || (siblings.length === 1 && siblings[0].id !== studioPost.id);
+              if (!hasSiblings && !studioPost.group_id) return null;
+              const allGroupPlatforms = siblings.length > 0
+                ? [...new Set(siblings.map(s => s.platform))]
+                : [studioPost.platform!];
+              // Sort in standard order
+              const platformOrder: Platform[] = ["x", "linkedin", "instagram", "tiktok"];
+              const sorted = platformOrder.filter(p => allGroupPlatforms.includes(p));
+
+              return (
+                <div className="shrink-0 border-b border-[#E5E5EA] bg-[#FAFAFA]">
+                  <div className="flex">
+                    {sorted.map(p => {
+                      const isActive = studioPost.platform === p;
+                      const sibling = siblings.find(s => s.platform === p);
+                      return (
+                        <button
+                          key={p}
+                          onClick={() => sibling && switchToSibling(p)}
+                          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-[11px] font-semibold transition-colors border-b-2 ${
+                            isActive
+                              ? "border-[#1B1B1B] text-[#1B1B1B] bg-white"
+                              : "border-transparent text-[#7A7A7A] hover:text-[#555] hover:bg-[#F3F3F5]"
+                          }`}
+                        >
+                          <span className="size-2 rounded-full" style={{ backgroundColor: platformColors[p] }} />
+                          {platformLabels[p]}
+                          {sibling && (
+                            <span className={`text-[8px] px-1 py-0.5 rounded-full ${
+                              isActive ? "bg-[#F3F3F5]" : "bg-[#EDEDEF]"
+                            }`}>
+                              {statusLabels[sibling.status]}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {repurposeError && (
+              <div className="shrink-0 px-5 py-2 bg-red-50 border-b border-red-100">
+                <p className="text-[11px] text-red-500">{repurposeError}</p>
+              </div>
+            )}
+
+            <div className="flex-1 overflow-y-auto p-5 space-y-5">
+              {/* Platform (only when NOT in a group — single post mode) */}
+              {!studioPost.group_id && (
               <div>
                 <label className={labelClass}>Platform</label>
                 <div className="flex gap-2">
-                  {(["linkedin", "instagram", "x"] as Platform[]).map(p => (
+                  {(["x", "linkedin", "instagram", "tiktok"] as Platform[]).map(p => (
                     <button
                       key={p}
                       onClick={() => setStudioPost(prev => ({ ...prev, platform: p }))}
@@ -859,6 +1067,7 @@ export default function CalendarPage() {
                   ))}
                 </div>
               </div>
+              )}
 
               {/* Content type */}
               <div>
