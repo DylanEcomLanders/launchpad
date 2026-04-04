@@ -58,6 +58,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Blocker system with timeline shift — flag blocker (modal with type/reason), auto-snapshot phase dates, resolve with adjustable business-day shift, full timeline preview before confirming" },
       { type: "added", text: "Blocker history — resolved blockers logged with days lost, original vs adjusted dates shown on timeline, '+Xd adjusted' badge on timeline header" },
       { type: "improved", text: "Client portal shows diplomatic 'Timeline adjusted' notice when dates shift — no blame language, just 'dates updated to reflect latest schedule'" },
+      { type: "improved", text: "Admin portal restyled to match client portal — unified border colours (#E8E8E8), removed shadows, section headers no longer uppercase, consistent card rounding and hover states" },
     ],
   },
   {

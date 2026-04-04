@@ -136,7 +136,7 @@ function ChecklistGateModal({
           <label
             key={i}
             className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-              item.checked ? "border-emerald-200 bg-emerald-50/30" : "border-[#E5E5EA] hover:border-[#CCC]"
+              item.checked ? "border-emerald-200 bg-emerald-50/30" : "border-[#E8E8E8] hover:border-[#CCC]"
             } ${isSubmitted ? "pointer-events-none opacity-60" : ""}`}
           >
             <input
@@ -162,7 +162,7 @@ function ChecklistGateModal({
           onChange={(e) => { if (!isSubmitted) onUpdate({ ...gate, notes: e.target.value }); }}
           disabled={isSubmitted}
           placeholder="Add links, context, or notes for the next person..."
-          className="w-full text-sm px-3 py-2.5 border border-[#E5E5EA] rounded-lg min-h-[80px] resize-y focus:outline-none focus:border-[#999] placeholder:text-[#CCC] disabled:opacity-50"
+          className="w-full text-sm px-3 py-2.5 border border-[#E8E8E8] rounded-lg min-h-[80px] resize-y focus:outline-none focus:border-[#999] placeholder:text-[#CCC] disabled:opacity-50"
         />
       </div>
 
@@ -207,7 +207,7 @@ function DesignHandoffFormModal({
   const isSubmitted = gate.status === "submitted";
   const ready = isDesignHandoffComplete(gate);
 
-  const fieldClass = "w-full text-sm px-3 py-2.5 border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#999] placeholder:text-[#CCC] disabled:opacity-50 disabled:bg-[#FAFAFA]";
+  const fieldClass = "w-full text-sm px-3 py-2.5 border border-[#E8E8E8] rounded-lg focus:outline-none focus:border-[#999] placeholder:text-[#CCC] disabled:opacity-50 disabled:bg-[#FAFAFA]";
   const labelClass = "text-[11px] font-medium text-[#555] block mb-1.5";
   const requiredDot = <span className="text-red-400 ml-0.5">*</span>;
 
@@ -296,7 +296,7 @@ function DesignHandoffFormModal({
               <label
                 key={i}
                 className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-                  item.checked ? "border-emerald-200 bg-emerald-50/30" : "border-[#E5E5EA] hover:border-[#CCC]"
+                  item.checked ? "border-emerald-200 bg-emerald-50/30" : "border-[#E8E8E8] hover:border-[#CCC]"
                 } ${isSubmitted ? "pointer-events-none opacity-60" : ""}`}
               >
                 <input
@@ -380,10 +380,10 @@ function GateOverviewCard({
       disabled={locked}
       className={`flex-1 min-w-0 border rounded-xl p-4 text-left transition-all ${
         locked
-          ? "opacity-40 cursor-not-allowed border-[#E5E5EA]"
+          ? "opacity-40 cursor-not-allowed border-[#E8E8E8]"
           : isSubmitted
             ? "border-emerald-200 bg-emerald-50/30 hover:border-emerald-300"
-            : "border-[#E5E5EA] hover:border-[#CCC] hover:shadow-sm cursor-pointer"
+            : "border-[#E8E8E8] hover:border-[#CCC] cursor-pointer"
       }`}
     >
       <div className="flex items-center gap-2 mb-2">
@@ -550,12 +550,12 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
       {/* ── QA Gates ── */}
       {!hideGates && <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">QA Gates</h3>
+          <h3 className="text-xs font-semibold text-[#1A1A1A]">QA Gates</h3>
         </div>
 
         {/* CRO Brief Toggle */}
         {!readOnly && (
-          <div className="flex items-center justify-between mb-3 px-4 py-2.5 bg-[#FAFAFA] border border-[#E5E5EA] rounded-lg">
+          <div className="flex items-center justify-between mb-3 px-4 py-2.5 bg-[#FAFAFA] border border-[#E8E8E8] rounded-lg">
             <div>
               <p className="text-xs font-medium text-[#1A1A1A]">CRO Pre-Design Brief</p>
               <p className="text-[10px] text-[#AAA]">Toggle on when Dan is involved in the project</p>
@@ -619,7 +619,7 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
       {/* ── Project Context ── */}
       {!gatesOnly && <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Project Context</h3>
+          <h3 className="text-xs font-semibold text-[#1A1A1A]">Project Context</h3>
           {!readOnly && (
             <button onClick={() => setShowContextForm(!showContextForm)} className="text-[11px] text-[#777] hover:text-[#1A1A1A]">
               {showContextForm ? "Cancel" : "+ Add Context"}
@@ -628,32 +628,32 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
         </div>
 
         {showContextForm && (
-          <div className="border border-[#E5E5EA] rounded-xl p-4 mb-4 space-y-3">
+          <div className="border border-[#E8E8E8] rounded-xl p-4 mb-4 space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-[10px] text-[#777] block mb-1">Source</label>
-                <input type="text" value={contextSource} onChange={(e) => setContextSource(e.target.value)} placeholder="e.g. AJ voice note" className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded" />
+                <input type="text" value={contextSource} onChange={(e) => setContextSource(e.target.value)} placeholder="e.g. AJ voice note" className="w-full text-xs px-2 py-1.5 border border-[#E8E8E8] rounded" />
               </div>
               <div>
                 <label className="text-[10px] text-[#777] block mb-1">Date</label>
-                <input type="date" value={contextDate} onChange={(e) => setContextDate(e.target.value)} className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded" />
+                <input type="date" value={contextDate} onChange={(e) => setContextDate(e.target.value)} className="w-full text-xs px-2 py-1.5 border border-[#E8E8E8] rounded" />
               </div>
             </div>
             <div>
               <label className="text-[10px] text-[#777] block mb-1">Raw Transcript</label>
-              <textarea value={rawTranscript} onChange={(e) => setRawTranscript(e.target.value)} placeholder="Paste the voice note transcript here..." className="w-full text-xs px-3 py-2 border border-[#E5E5EA] rounded-lg min-h-[120px] resize-y" />
+              <textarea value={rawTranscript} onChange={(e) => setRawTranscript(e.target.value)} placeholder="Paste the voice note transcript here..." className="w-full text-xs px-3 py-2 border border-[#E8E8E8] rounded-lg min-h-[120px] resize-y" />
             </div>
             <button
               onClick={handleCleanTranscript}
               disabled={!rawTranscript.trim() || cleaning}
-              className="px-3 py-1.5 text-[11px] font-medium text-[#777] border border-[#E5E5EA] rounded-lg hover:bg-[#F5F5F5] disabled:opacity-30"
+              className="px-3 py-1.5 text-[11px] font-medium text-[#777] border border-[#E8E8E8] rounded-lg hover:bg-[#F5F5F5] disabled:opacity-30"
             >
               {cleaning ? "Cleaning..." : "Clean with AI"}
             </button>
             {cleanVersion && (
               <div>
                 <label className="text-[10px] text-[#777] block mb-1">Clean Version (editable)</label>
-                <textarea value={cleanVersion} onChange={(e) => setCleanVersion(e.target.value)} className="w-full text-xs px-3 py-2 border border-[#E5E5EA] rounded-lg min-h-[120px] resize-y" />
+                <textarea value={cleanVersion} onChange={(e) => setCleanVersion(e.target.value)} className="w-full text-xs px-3 py-2 border border-[#E8E8E8] rounded-lg min-h-[120px] resize-y" />
                 <button onClick={saveContext} className="mt-2 px-4 py-2 text-xs font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D]">
                   Save Context
                 </button>
@@ -667,7 +667,7 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
         )}
 
         {(project.context_entries || []).map((entry) => (
-          <div key={entry.id} className="border border-[#E5E5EA] rounded-lg p-4 mb-2">
+          <div key={entry.id} className="border border-[#E8E8E8] rounded-lg p-4 mb-2">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-medium text-[#1A1A1A]">{entry.source}</span>
@@ -691,11 +691,11 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
       {/* ── Weekly Loop (retainer only) ── */}
       {!gatesOnly && isRetainer && (
         <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-4">Weekly Deliverables</h3>
+          <h3 className="text-xs font-semibold text-[#1A1A1A] mb-4">Weekly Deliverables</h3>
 
           {/* Current week */}
           {currentWeek && (
-            <div className="border border-[#E5E5EA] rounded-xl p-4 mb-4">
+            <div className="border border-[#E8E8E8] rounded-xl p-4 mb-4">
               <p className="text-sm font-semibold text-[#1A1A1A] mb-3">{getWeekLabel(currentWeek.weekStart)}</p>
 
               {/* Mission Statement */}
@@ -714,7 +714,7 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
                   <div>
                     <textarea
                       placeholder="Paste or type mission statement..."
-                      className="w-full text-xs px-3 py-2 border border-[#E5E5EA] rounded-lg min-h-[80px] resize-y"
+                      className="w-full text-xs px-3 py-2 border border-[#E8E8E8] rounded-lg min-h-[80px] resize-y"
                       onBlur={(e) => {
                         if (e.target.value.trim()) {
                           updateWeekly(currentWeek.weekStart, {
@@ -757,7 +757,7 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
               </summary>
               <div className="space-y-2">
                 {weeklyDeliverables.slice(1).map((w) => (
-                  <div key={w.weekStart} className="flex items-center justify-between px-3 py-2 border border-[#EDEDEF] rounded-lg">
+                  <div key={w.weekStart} className="flex items-center justify-between px-3 py-2 border border-[#E8E8E8] rounded-lg">
                     <span className="text-xs text-[#777]">{getWeekLabel(w.weekStart)}</span>
                     <div className="flex items-center gap-3">
                       <span className={`size-1.5 rounded-full ${w.missionStatement ? "bg-emerald-500" : "bg-[#DDD]"}`} title="Mission statement" />

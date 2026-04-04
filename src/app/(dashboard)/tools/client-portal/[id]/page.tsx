@@ -582,9 +582,9 @@ export default function PortalDetailPage() {
           return (
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Open Tickets ({openTickets.length})</h3>
+                <h3 className="text-xs font-semibold text-[#1A1A1A]">Open Tickets ({openTickets.length})</h3>
               </div>
-              <div className="border border-[#E5E5EA] rounded-xl bg-white divide-y divide-[#F0F0F0] overflow-hidden">
+              <div className="border border-[#E8E8E8] rounded-xl bg-white divide-y divide-[#E8E8E8] overflow-hidden">
                 {openTickets.slice(0, 5).map(t => (
                   <div key={t.id} className="flex items-center justify-between px-4 py-2.5">
                     <div className="flex items-center gap-2.5 min-w-0">
@@ -615,7 +615,7 @@ export default function PortalDetailPage() {
         {!selectedProject && (
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Funnels</h3>
+              <h3 className="text-xs font-semibold text-[#1A1A1A]">Funnels</h3>
               <Link
                 href={`/tools/funnel-builder?clientId=${portal.id}&clientName=${encodeURIComponent(portal.client_name)}`}
                 className="text-[11px] font-medium text-[#999] hover:text-[#1A1A1A]"
@@ -624,12 +624,12 @@ export default function PortalDetailPage() {
               </Link>
             </div>
             {funnels.length > 0 ? (
-              <div className="divide-y divide-[#F0F0F0]">
+              <div className="divide-y divide-[#E8E8E8]">
                 {funnels.map((funnel) => (
                   <Link
                     key={funnel.id}
                     href={`/tools/funnel-builder?id=${funnel.id}`}
-                    className="flex items-center justify-between py-3 hover:bg-[#F7F8FA] transition-colors rounded-lg px-2"
+                    className="flex items-center justify-between py-3 hover:bg-[#FAFAFA] transition-colors rounded-lg px-2"
                   >
                     <div>
                       <p className="text-sm font-medium text-[#1A1A1A]">{funnel.name || "Untitled Funnel"}</p>
@@ -667,7 +667,7 @@ export default function PortalDetailPage() {
 
           return (
             <div className="mb-6">
-              <div className="border border-[#E5E5EA] rounded-lg p-4 bg-white">
+              <div className="border border-[#E8E8E8] rounded-lg p-4 bg-white">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs font-semibold text-[#1A1A1A]">Retainer — {monthName}</p>
                   <span className="text-[10px] text-[#AAA]">{portal.testing_tier} · {delivered}/{capacity} delivered</span>
@@ -700,7 +700,7 @@ export default function PortalDetailPage() {
         {!selectedProject && (
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Projects</h3>
+              <h3 className="text-xs font-semibold text-[#1A1A1A]">Projects</h3>
               <button
                 onClick={() => setShowAddProjectModal(true)}
                 className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] whitespace-nowrap"
@@ -708,12 +708,12 @@ export default function PortalDetailPage() {
                 + Add Project
               </button>
             </div>
-            <div className="divide-y divide-[#F0F0F0]">
+            <div className="divide-y divide-[#E8E8E8]">
               {activeProjects.map((proj) => {
                 const idx = (portal.projects || []).findIndex(p => p.id === proj.id);
                 const startDate = proj.created_at ? new Date(proj.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
                 return (
-                  <div key={proj.id} className="flex items-center justify-between px-3.5 py-3.5 hover:bg-[#F7F8FA] transition-colors rounded-lg group/proj">
+                  <div key={proj.id} className="flex items-center justify-between px-3.5 py-3.5 hover:bg-[#FAFAFA] transition-colors rounded-lg group/proj">
                     <button onClick={() => setSelectedProjectIdx(idx)} className="flex-1 text-left min-w-0">
                       <p className="text-sm font-semibold text-[#1A1A1A]">{proj.name}</p>
                       <div className="flex items-center gap-2 mt-0.5">
@@ -745,11 +745,11 @@ export default function PortalDetailPage() {
             </div>
             {/* Project Trash */}
             {trashedProjects.length > 0 && (
-              <div className="mt-3 border border-[#E5E5EA] rounded-lg p-3 bg-[#FAFAFA]">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Trash ({trashedProjects.length})</p>
+              <div className="mt-3 border border-[#E8E8E8] rounded-lg p-3 bg-[#FAFAFA]">
+                <p className="text-[10px] font-semibold text-[#1A1A1A] mb-2">Trash ({trashedProjects.length})</p>
                 <div className="space-y-1.5">
                   {trashedProjects.map(proj => (
-                    <div key={proj.id} className="flex items-center justify-between px-3 py-2 bg-white rounded border border-[#E5E5EA]">
+                    <div key={proj.id} className="flex items-center justify-between px-3 py-2 bg-white rounded border border-[#E8E8E8]">
                       <p className="text-xs text-[#777]">{proj.name}</p>
                       <div className="flex items-center gap-2">
                         <button onClick={() => handleRestoreProject(proj.id)} className="text-[10px] text-emerald-600 hover:text-emerald-700">Restore</button>
@@ -790,7 +790,7 @@ export default function PortalDetailPage() {
                     className={`w-full text-left px-3 py-2 text-[13px] font-medium rounded-lg transition-colors ${
                       activeTab === tab.key
                         ? "bg-[#1A1A1A] text-white"
-                        : "text-[#777] hover:bg-[#F3F3F5] hover:text-[#1A1A1A]"
+                        : "text-[#777] hover:bg-[#FAFAFA] hover:text-[#1A1A1A]"
                     }`}
                   >
                     {tab.label}
@@ -799,7 +799,7 @@ export default function PortalDetailPage() {
               </nav>
 
               {/* Compact client details in sidebar */}
-              <div className="border-t border-[#EDEDEF] pt-5 space-y-5">
+              <div className="border-t border-[#E8E8E8] pt-5 space-y-5">
                 <SidebarClientDetails portal={portal} team={team} onUpdateField={handleUpdateField} />
               </div>
             </div>
@@ -889,7 +889,7 @@ export default function PortalDetailPage() {
 
             {/* Designs */}
             <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-4">Design Reviews</h3>
+              <h3 className="text-xs font-semibold text-[#1A1A1A] mb-4">Design Reviews</h3>
               <DesignsSection
                 portal={portal}
                 reviews={reviews}
@@ -899,7 +899,7 @@ export default function PortalDetailPage() {
 
             {/* Development */}
             <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-4">Development</h3>
+              <h3 className="text-xs font-semibold text-[#1A1A1A] mb-4">Development</h3>
               <DevelopmentSection
                 portal={portal}
                 pageReviews={pageReviews}
@@ -930,7 +930,7 @@ export default function PortalDetailPage() {
             {/* Funnels */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Funnels</h3>
+                <h3 className="text-xs font-semibold text-[#1A1A1A]">Funnels</h3>
                 <Link
                   href={`/tools/funnel-builder?clientId=${portal.id}&clientName=${encodeURIComponent(portal.client_name)}`}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
@@ -940,7 +940,7 @@ export default function PortalDetailPage() {
                 </Link>
               </div>
               {funnels.length === 0 ? (
-                <div className="text-center py-10 border border-dashed border-[#E5E5EA] rounded-xl">
+                <div className="text-center py-10 border border-dashed border-[#E8E8E8] rounded-xl">
                   <p className="text-sm text-[#7A7A7A] mb-1">No funnels linked yet</p>
                 </div>
               ) : (
@@ -949,7 +949,7 @@ export default function PortalDetailPage() {
                     <Link
                       key={funnel.id}
                       href={`/tools/funnel-builder?id=${funnel.id}`}
-                      className="flex items-center justify-between p-4 border border-[#E5E5EA] rounded-xl hover:border-[#1B1B1B] transition-colors group"
+                      className="flex items-center justify-between p-4 border border-[#E8E8E8] rounded-xl hover:border-[#1B1B1B] transition-colors group"
                     >
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-[#1B1B1B] group-hover:underline truncate">
@@ -959,7 +959,7 @@ export default function PortalDetailPage() {
                           <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border ${
                             funnel.mode === "performance"
                               ? "bg-[#F0F0F0] text-[#555] border-[#E0E0E0]"
-                              : "bg-white text-[#999] border-[#E5E5EA]"
+                              : "bg-white text-[#999] border-[#E8E8E8]"
                           }`}>
                             {funnel.mode}
                           </span>
@@ -977,7 +977,7 @@ export default function PortalDetailPage() {
 
             {/* Reports */}
             <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-4">Reports</h3>
+              <h3 className="text-xs font-semibold text-[#1A1A1A] mb-4">Reports</h3>
               <ReportsSection
                 reports={portal.reports || []}
                 onUpdate={async (reports) => {
@@ -1273,7 +1273,7 @@ function OverviewSection({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {/* Next Touchpoint — editable */}
         <div className="bg-[#1B1B1B] text-white rounded-xl p-4">
-          <p className="text-[10px] uppercase tracking-wider text-white/40 mb-2">Next Touchpoint</p>
+          <p className="text-xs font-semibold text-white/50 mb-2">Next Touchpoint</p>
           <EditableField
             label=""
             value={portal.next_touchpoint?.description || ""}
@@ -1293,7 +1293,7 @@ function OverviewSection({
         </div>
 
         {/* Project status card */}
-        <div className="bg-[#FAFAFA] border border-[#E5E5EA] rounded-xl p-4 space-y-3">
+        <div className="bg-[#FAFAFA] border border-[#E8E8E8] rounded-xl p-4 space-y-3">
           {selectedProject && (
             <div className="flex items-center justify-between">
               <p className="text-[11px] text-[#777]">Status</p>
@@ -1340,7 +1340,7 @@ function OverviewSection({
         <div>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Timeline</h3>
+              <h3 className="text-xs font-semibold text-[#1A1A1A]">Timeline</h3>
               {totalShiftedDays > 0 && (
                 <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
                   +{totalShiftedDays}d adjusted
@@ -1350,7 +1350,7 @@ function OverviewSection({
             <button onClick={onAddPhase} className="text-[11px] font-medium text-[#999] hover:text-[#1B1B1B] transition-colors">+ Add Phase</button>
           </div>
           {phases.length === 0 ? (
-            <p className="text-xs text-[#CCC] bg-[#FAFAFA] border border-dashed border-[#E5E5EA] rounded-xl p-6 text-center">
+            <p className="text-xs text-[#CCC] bg-[#FAFAFA] border border-dashed border-[#E8E8E8] rounded-xl p-6 text-center">
               No phases yet — add your first phase
             </p>
           ) : (
@@ -1396,7 +1396,7 @@ function OverviewSection({
                             );
                             onUpdateField("phases", updated);
                           }}
-                          className="text-[11px] text-[#777] bg-transparent border border-[#E5E5EA] rounded px-1.5 py-0.5 w-[110px] hover:border-[#CCC] focus:border-[#999]"
+                          className="text-[11px] text-[#777] bg-transparent border border-[#E8E8E8] rounded px-1.5 py-0.5 w-[110px] hover:border-[#CCC] focus:border-[#999]"
                         />
                         <span className="text-[10px] text-[#DDD]">→</span>
                         <input
@@ -1410,7 +1410,7 @@ function OverviewSection({
                             );
                             onUpdateField("phases", updated);
                           }}
-                          className="text-[11px] text-[#777] bg-transparent border border-[#E5E5EA] rounded px-1.5 py-0.5 w-[110px] hover:border-[#CCC] focus:border-[#999]"
+                          className="text-[11px] text-[#777] bg-transparent border border-[#E8E8E8] rounded px-1.5 py-0.5 w-[110px] hover:border-[#CCC] focus:border-[#999]"
                         />
                         {phase.status === "complete" && phase.completedDate && phase.deadline && new Date(phase.completedDate) < new Date(phase.deadline) && (
                           <span className="text-[10px] text-green-600 font-medium">Early</span>
@@ -1447,17 +1447,17 @@ function OverviewSection({
       {/* Scope / Deliverables */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Scope ({scope?.length || 0})</h3>
+          <h3 className="text-xs font-semibold text-[#1A1A1A]">Scope ({scope?.length || 0})</h3>
         </div>
         {(scope || []).length === 0 ? (
-          <div className="border border-dashed border-[#E5E5EA] rounded-xl p-4">
+          <div className="border border-dashed border-[#E8E8E8] rounded-xl p-4">
             <div className="flex items-center gap-2">
               <input
                 type="text"
                 value={scopeInput}
                 onChange={(e) => setScopeInput(e.target.value)}
                 placeholder="Add first scope item..."
-                className="flex-1 px-3 py-2 text-sm border border-[#E5E5EA] rounded-lg"
+                className="flex-1 px-3 py-2 text-sm border border-[#E8E8E8] rounded-lg"
                 onKeyDown={(e) => { if (e.key === "Enter" && scopeInput.trim()) { onAddScope(scopeInput, scopeType || undefined); setScopeInput(""); setScopeType(""); } }}
               />
               <button
@@ -1475,10 +1475,10 @@ function OverviewSection({
               const desc = typeof item === "string" ? item : item.description;
               const typ = typeof item === "string" ? "" : item.type;
               return (
-                <div key={i} className="flex items-center gap-3 px-3 py-2.5 bg-[#FAFAFA] border border-[#EDEDEF] rounded-lg group hover:border-[#DDD] transition-colors">
+                <div key={i} className="flex items-center gap-3 px-3 py-2.5 bg-[#FAFAFA] border border-[#E8E8E8] rounded-lg group hover:border-[#DDD] transition-colors">
                   <div className="size-1.5 rounded-full bg-[#CCC] shrink-0" />
                   <p className="text-sm font-medium flex-1 min-w-0 truncate text-[#1A1A1A]">{desc}</p>
-                  {typ && <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-[#777] bg-white border border-[#E5E5EA] rounded-full">{typ}</span>}
+                  {typ && <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-[#777] bg-white border border-[#E8E8E8] rounded-full">{typ}</span>}
                   <button onClick={() => onRemoveScope(i)} className="p-0.5 text-[#DDD] hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100">
                     <TrashIcon className="size-3" />
                   </button>
@@ -1492,13 +1492,13 @@ function OverviewSection({
                 value={scopeInput}
                 onChange={(e) => setScopeInput(e.target.value)}
                 placeholder="Add scope item..."
-                className="flex-1 px-3 py-1.5 text-sm border border-[#E5E5EA] rounded-lg bg-white"
+                className="flex-1 px-3 py-1.5 text-sm border border-[#E8E8E8] rounded-lg bg-white"
                 onKeyDown={(e) => { if (e.key === "Enter" && scopeInput.trim()) { onAddScope(scopeInput, scopeType || undefined); setScopeInput(""); setScopeType(""); } }}
               />
               <select
                 value={scopeType}
                 onChange={(e) => setScopeType(e.target.value)}
-                className="px-2 py-1.5 text-xs border border-[#E5E5EA] rounded-lg text-[#777] bg-white"
+                className="px-2 py-1.5 text-xs border border-[#E8E8E8] rounded-lg text-[#777] bg-white"
               >
                 <option value="">Type</option>
                 {deliverableTypes.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -1518,12 +1518,12 @@ function OverviewSection({
       {/* Documents */}
       {(documents || []).length > 0 && (
         <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Documents ({documents.length})</h3>
+          <h3 className="text-xs font-semibold text-[#1A1A1A] mb-3">Documents ({documents.length})</h3>
           <div className="space-y-1.5">
             {documents.map((doc, i) => (
-              <div key={i} className="flex items-center gap-3 px-3 py-2.5 bg-[#FAFAFA] border border-[#EDEDEF] rounded-lg">
+              <div key={i} className="flex items-center gap-3 px-3 py-2.5 bg-[#FAFAFA] border border-[#E8E8E8] rounded-lg">
                 <p className="text-sm font-medium flex-1 min-w-0 truncate">{doc.name}</p>
-                <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-[#777] bg-white border border-[#E5E5EA] rounded-full">{doc.type}</span>
+                <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-[#777] bg-white border border-[#E8E8E8] rounded-full">{doc.type}</span>
                 {doc.url ? (
                   <a href={doc.url} target="_blank" rel="noopener noreferrer" className="shrink-0 px-2 py-0.5 text-[10px] font-medium text-emerald-600 bg-emerald-50 rounded-full hover:bg-emerald-100">View</a>
                 ) : (
@@ -1570,7 +1570,7 @@ function UpdatesSection({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
+        <h3 className="text-xs font-semibold text-[#1A1A1A]">
           Video Updates
         </h3>
         <button
@@ -1584,7 +1584,7 @@ function UpdatesSection({
 
       {/* Add update form */}
       {showForm && (
-        <div className="bg-[#F7F8FA] border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-5">
+        <div className="bg-[#F7F8FA] border border-[#E8E8E8] rounded-lg p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold">Post Video Update</h3>
             <button
@@ -1620,7 +1620,7 @@ function UpdatesSection({
                 </p>
               )}
               {loomUrl && isLoomUrl(loomUrl) && (
-                <div className="mt-3 rounded-lg overflow-hidden border border-[#E5E5EA]">
+                <div className="mt-3 rounded-lg overflow-hidden border border-[#E8E8E8]">
                   <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
                     <iframe
                       src={toLoomEmbed(loomUrl) || ""}
@@ -1655,7 +1655,7 @@ function UpdatesSection({
 
       {/* Updates list */}
       {updates.length === 0 && !showForm ? (
-        <div className="bg-white border border-dashed border-[#E5E5EA] rounded-lg p-8 text-center">
+        <div className="bg-white border border-dashed border-[#E8E8E8] rounded-lg p-8 text-center">
           <p className="text-xs text-[#A0A0A0] mb-2">No updates posted yet</p>
           <button
             onClick={onShowForm}
@@ -1669,7 +1669,7 @@ function UpdatesSection({
           {updates.map((update) => (
             <div
               key={update.id}
-              className="bg-white border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-4"
+              className="bg-white border border-[#E8E8E8] rounded-lg p-4"
             >
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div>
@@ -1688,7 +1688,7 @@ function UpdatesSection({
                 </p>
               </div>
               {isLoomUrl(update.loom_url) && (
-                <div className="rounded-lg overflow-hidden border border-[#E5E5EA]">
+                <div className="rounded-lg overflow-hidden border border-[#E8E8E8]">
                   <div
                     className="relative w-full"
                     style={{ paddingBottom: "56.25%" }}
@@ -1762,7 +1762,7 @@ function WinsSection({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
+        <h2 className="text-xs font-semibold text-[#1A1A1A]">
           Wins &amp; Results
         </h2>
         <button
@@ -1776,7 +1776,7 @@ function WinsSection({
 
       {/* Add form */}
       {showForm && (
-        <div className="bg-[#F7F8FA] border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-5 space-y-4">
+        <div className="bg-[#F7F8FA] border border-[#E8E8E8] rounded-lg p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold">Add Win</h3>
             <button onClick={resetForm} className="text-[#A0A0A0] hover:text-[#1B1B1B]">
@@ -1824,7 +1824,7 @@ function WinsSection({
 
       {/* Win list */}
       {wins.length === 0 && !showForm && (
-        <div className="text-center py-12 bg-white border border-dashed border-[#E5E5EA] rounded-lg">
+        <div className="text-center py-12 bg-white border border-dashed border-[#E8E8E8] rounded-lg">
           <p className="text-xs text-[#A0A0A0] mb-2">No wins recorded yet</p>
           <button onClick={() => setShowForm(true)} className="text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B]">
             + Record your first win
@@ -1833,7 +1833,7 @@ function WinsSection({
       )}
 
       {wins.map((win) => (
-        <div key={win.id} className="bg-white border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-5">
+        <div key={win.id} className="bg-white border border-[#E8E8E8] rounded-lg p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h3 className="text-sm font-semibold">{win.title}</h3>
@@ -1920,7 +1920,7 @@ function RequestsSection({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
+        <h3 className="text-xs font-semibold text-[#1A1A1A]">
           Ad-hoc Requests
         </h3>
         <button
@@ -1933,7 +1933,7 @@ function RequestsSection({
       </div>
 
       {showForm && (
-        <div className="bg-white border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-4 space-y-3">
+        <div className="bg-white border border-[#E8E8E8] rounded-lg p-4 space-y-3">
           <div>
             <label className={labelClass}>Title *</label>
             <input
@@ -1974,13 +1974,13 @@ function RequestsSection({
       )}
 
       {requests.length === 0 ? (
-        <div className="bg-white border border-dashed border-[#E5E5EA] rounded-lg p-8 text-center">
+        <div className="bg-white border border-dashed border-[#E8E8E8] rounded-lg p-8 text-center">
           <p className="text-xs text-[#A0A0A0]">
             No requests yet — track client ad-hoc requests here
           </p>
         </div>
       ) : (
-        <div className="border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg divide-y divide-[#EDEDEF]">
+        <div className="border border-[#E8E8E8] rounded-lg divide-y divide-[#EDEDEF]">
           {requests.map((req) => (
             <div key={req.id} className="p-4">
               <div className="flex items-start gap-3">
@@ -2033,7 +2033,7 @@ function ApprovalsSection({
 }) {
   if (approvals.length === 0) {
     return (
-      <div className="bg-white border border-dashed border-[#E5E5EA] rounded-lg p-8 text-center">
+      <div className="bg-white border border-dashed border-[#E8E8E8] rounded-lg p-8 text-center">
         <p className="text-xs text-[#A0A0A0]">
           No approvals yet — clients approve deliverables from their portal view
         </p>
@@ -2043,10 +2043,10 @@ function ApprovalsSection({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
+      <h3 className="text-xs font-semibold text-[#1A1A1A]">
         Client Approvals
       </h3>
-      <div className="border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg divide-y divide-[#EDEDEF]">
+      <div className="border border-[#E8E8E8] rounded-lg divide-y divide-[#EDEDEF]">
         {approvals.map((approval) => {
           const refName =
             approval.approval_type === "phase"
@@ -2226,7 +2226,7 @@ function DesignsSection({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
+        <h3 className="text-xs font-semibold text-[#1A1A1A]">
           Design Reviews
         </h3>
         <button
@@ -2240,7 +2240,7 @@ function DesignsSection({
 
       {/* Create form */}
       {showCreateForm && (
-        <div className="bg-[#F7F8FA] border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-5">
+        <div className="bg-[#F7F8FA] border border-[#E8E8E8] rounded-lg p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold">Create Design Review</h3>
             <button
@@ -2290,7 +2290,7 @@ function DesignsSection({
 
       {/* Reviews */}
       {reviews.length === 0 && !showCreateForm ? (
-        <div className="bg-white border border-dashed border-[#E5E5EA] rounded-lg p-8 text-center">
+        <div className="bg-white border border-dashed border-[#E8E8E8] rounded-lg p-8 text-center">
           <p className="text-xs text-[#A0A0A0] mb-2">No designs yet</p>
           <button
             onClick={() => setShowCreateForm(true)}
@@ -2311,7 +2311,7 @@ function DesignsSection({
                   className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
                     expandedReview === review.id
                       ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
-                      : "bg-white text-[#7A7A7A] border-[#E5E5EA] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"
+                      : "bg-white text-[#7A7A7A] border-[#E8E8E8] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"
                   }`}
                 >
                   {review.title}
@@ -2330,9 +2330,9 @@ function DesignsSection({
             const activeVersion = sorted.find(v => v.id === selectedVersionId) || sorted[0];
 
             return (
-              <div className="bg-white border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg overflow-hidden">
+              <div className="bg-white border border-[#E8E8E8] rounded-lg overflow-hidden">
                 {/* Review header */}
-                <div className="flex items-center gap-3 px-4 py-3 border-b border-[#EDEDEF]">
+                <div className="flex items-center gap-3 px-4 py-3 border-b border-[#E8E8E8]">
                   <h4 className="text-sm font-semibold flex-1 min-w-0 truncate">{review.title}</h4>
                   <span className={`px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded-full shrink-0 ${
                     review.status === "approved" ? "bg-emerald-50 text-emerald-600" :
@@ -2369,7 +2369,7 @@ function DesignsSection({
                 {/* Split panel: vertical version tabs + preview */}
                 <div className="flex min-h-[420px]">
                   {/* Left: vertical version tabs */}
-                  <div className="w-44 shrink-0 border-r border-[#EDEDEF] bg-[#F7F8FA] flex flex-col">
+                  <div className="w-44 shrink-0 border-r border-[#E8E8E8] bg-[#F7F8FA] flex flex-col">
                     {sorted.map((v, i) => {
                       const isCurrent = i === 0;
                       const isSelected = v.id === selectedVersionId || (!selectedVersionId && i === 0);
@@ -2380,10 +2380,10 @@ function DesignsSection({
                         <button
                           key={v.id}
                           onClick={() => setSelectedVersionId(v.id)}
-                          className={`text-left px-3 py-2.5 border-b border-[#EDEDEF] transition-colors ${
+                          className={`text-left px-3 py-2.5 border-b border-[#E8E8E8] transition-colors ${
                             isSelected
                               ? "bg-white"
-                              : "hover:bg-[#F3F3F5]"
+                              : "hover:bg-[#FAFAFA]"
                           }`}
                         >
                           <div className="flex items-center gap-1.5">
@@ -2415,8 +2415,8 @@ function DesignsSection({
                     {/* Add version button */}
                     <button
                       onClick={() => setSelectedVersionId("__new__")}
-                      className={`text-left px-3 py-2.5 transition-colors mt-auto border-t border-[#EDEDEF] ${
-                        selectedVersionId === "__new__" ? "bg-white" : "hover:bg-[#F3F3F5]"
+                      className={`text-left px-3 py-2.5 transition-colors mt-auto border-t border-[#E8E8E8] ${
+                        selectedVersionId === "__new__" ? "bg-white" : "hover:bg-[#FAFAFA]"
                       }`}
                     >
                       <div className="flex items-center gap-1.5">
@@ -2473,7 +2473,7 @@ function DesignsSection({
 
                         {/* Figma embed */}
                         {toFigmaEmbed(activeVersion.figma_url) && (
-                          <div className="relative w-full rounded-lg overflow-hidden border border-[#E5E5EA] flex-1 min-h-[340px]">
+                          <div className="relative w-full rounded-lg overflow-hidden border border-[#E8E8E8] flex-1 min-h-[340px]">
                             <iframe
                               src={toFigmaEmbed(activeVersion.figma_url) || ""}
                               className="absolute inset-0 w-full h-full"
@@ -2549,7 +2549,7 @@ function EditableField({
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             placeholder={placeholder}
-            className={`px-2 py-1 text-sm rounded ${label ? "w-40" : "w-full"} ${dark ? "bg-white/10 border border-white/20 text-white placeholder-white/30" : "border border-[#E5E5EA]"}`}
+            className={`px-2 py-1 text-sm rounded ${label ? "w-40" : "w-full"} ${dark ? "bg-white/10 border border-white/20 text-white placeholder-white/30" : "border border-[#E8E8E8]"}`}
             autoFocus
             onKeyDown={(e) => {
               if (e.key === "Enter") { onSave(draft); setEditing(false); }
@@ -2632,8 +2632,8 @@ function IntelligemsKeyInput({ currentKey, onSave }: { currentKey: string; onSav
   };
 
   return (
-    <div className="bg-white border border-[#E5E5EA] rounded-lg p-4">
-      <p className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">Intelligems API</p>
+    <div className="bg-white border border-[#E8E8E8] rounded-lg p-4">
+      <p className="text-xs font-semibold text-[#1A1A1A] mb-3">Intelligems API</p>
       <div className="flex items-center gap-2">
         <input
           type="text"
@@ -2940,7 +2940,7 @@ function TestingSection({
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
+          <h3 className="text-xs font-semibold text-[#1A1A1A]">
             Tests ({activeTests.length})
           </h3>
           <button
@@ -2952,7 +2952,7 @@ function TestingSection({
         </div>
 
         {showForm && (
-          <div className="bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg p-5 space-y-4">
+          <div className="bg-[#F7F8FA] border border-[#E8E8E8] rounded-lg p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold">{editId ? "Edit Test" : `Test ${activeTests.length + 1}`}</h3>
               <button onClick={resetForm} className="text-[#A0A0A0] hover:text-[#1B1B1B]"><XMarkIcon className="size-4" /></button>
@@ -2971,7 +2971,7 @@ function TestingSection({
               <label className={labelClass}>Status</label>
               <div className="flex items-center gap-1.5 mt-1">
                 {(["ideation", "scheduled", "live", "complete"] as const).map((s) => (
-                  <button key={s} onClick={() => setStatus(s)} className={`px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors ${status === s ? "bg-[#1B1B1B] text-white" : "bg-white text-[#7A7A7A] border border-[#E5E5EA]"}`}>
+                  <button key={s} onClick={() => setStatus(s)} className={`px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors ${status === s ? "bg-[#1B1B1B] text-white" : "bg-white text-[#7A7A7A] border border-[#E8E8E8]"}`}>
                     {s.charAt(0).toUpperCase() + s.slice(1)}
                   </button>
                 ))}
@@ -2982,7 +2982,7 @@ function TestingSection({
                 <label className={labelClass}>Result</label>
                 <div className="flex items-center gap-1.5 mt-1">
                   {(["winner", "loser", "inconclusive"] as const).map((r) => (
-                    <button key={r} onClick={() => setResult(r)} className={`px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors ${result === r ? r === "winner" ? "bg-emerald-500 text-white" : r === "loser" ? "bg-red-500 text-white" : "bg-amber-500 text-white" : "bg-white text-[#7A7A7A] border border-[#E5E5EA]"}`}>
+                    <button key={r} onClick={() => setResult(r)} className={`px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors ${result === r ? r === "winner" ? "bg-emerald-500 text-white" : r === "loser" ? "bg-red-500 text-white" : "bg-amber-500 text-white" : "bg-white text-[#7A7A7A] border border-[#E8E8E8]"}`}>
                       {r.charAt(0).toUpperCase() + r.slice(1)}
                     </button>
                   ))}
@@ -3045,7 +3045,7 @@ function TestingSection({
               ideation: "bg-purple-50 text-purple-600 border-purple-200",
               scheduled: "bg-blue-50 text-blue-600 border-blue-200",
               live: "bg-emerald-50 text-emerald-600 border-emerald-200",
-              complete: "bg-[#F3F3F5] text-[#1B1B1B] border-[#E5E5EA]",
+              complete: "bg-[#F3F3F5] text-[#1B1B1B] border-[#E8E8E8]",
             };
             const nextStatus: Record<string, TestStatus> = { ideation: "scheduled", scheduled: "live", live: "complete", complete: "ideation" };
             const handleStatusCycle = async () => {
@@ -3055,7 +3055,7 @@ function TestingSection({
             };
             const hasMetrics = test.cvr || test.aov || test.rpv;
             return (
-              <div key={test.id} className="bg-white border border-[#E5E5EA] rounded-lg group/card overflow-hidden">
+              <div key={test.id} className="bg-white border border-[#E8E8E8] rounded-lg group/card overflow-hidden">
                 <div className="flex items-center justify-between gap-3 px-4 pt-3.5 pb-2">
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="text-[10px] font-bold text-[#CCC]">#{idx + 1}</span>
@@ -3114,18 +3114,18 @@ function TestingSection({
         </div>
 
         {activeTests.length === 0 && !showForm && (
-          <div className="border border-dashed border-[#E5E5EA] rounded-lg p-8 text-center">
+          <div className="border border-dashed border-[#E8E8E8] rounded-lg p-8 text-center">
             <p className="text-sm text-[#7A7A7A] mb-1">No tests yet</p>
             <p className="text-xs text-[#A0A0A0]">Add your first test to start iterating</p>
           </div>
         )}
 
         {trashedTests.length > 0 && (
-          <div className="border border-[#E5E5EA] rounded-lg p-4 bg-[#FAFAFA]">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-3">Trash</p>
+          <div className="border border-[#E8E8E8] rounded-lg p-4 bg-[#FAFAFA]">
+            <p className="text-[10px] font-semibold text-[#1A1A1A] mb-3">Trash</p>
             <div className="space-y-2">
               {trashedTests.map(t => (
-                <div key={t.id} className="flex items-center justify-between px-3 py-2 bg-white rounded border border-[#E5E5EA]">
+                <div key={t.id} className="flex items-center justify-between px-3 py-2 bg-white rounded border border-[#E8E8E8]">
                   <p className="text-xs text-[#777]">{t.name}</p>
                   <div className="flex items-center gap-2">
                     <button onClick={() => handleRestore(t.id)} className="text-[10px] text-emerald-600 hover:text-emerald-700">Restore</button>
@@ -3144,8 +3144,8 @@ function TestingSection({
   return (
     <div className="space-y-6">
       {/* Testing Tier */}
-      <div className="bg-white border border-[#E5E5EA] rounded-lg p-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">Testing Tier</p>
+      <div className="bg-white border border-[#E8E8E8] rounded-lg p-4">
+        <p className="text-xs font-semibold text-[#1A1A1A] mb-3">Testing Tier</p>
         <div className="flex items-center gap-1.5">
           {(["T1", "T2", "T3"] as const).map((tier) => (
             <button
@@ -3165,14 +3165,14 @@ function TestingSection({
 
       {/* Tests Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
+        <h3 className="text-xs font-semibold text-[#1A1A1A]">
           Tests ({activeTests.length})
         </h3>
       </div>
 
       {/* Test Form */}
       {showForm && (
-        <div className="bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg p-5 space-y-4">
+        <div className="bg-[#F7F8FA] border border-[#E8E8E8] rounded-lg p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold">{editId ? "Edit Test" : "Add Test"}</h3>
             <button onClick={resetForm} className="text-[#A0A0A0] hover:text-[#1B1B1B]">
@@ -3197,7 +3197,7 @@ function TestingSection({
                   key={s}
                   onClick={() => setStatus(s)}
                   className={`px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors ${
-                    status === s ? "bg-[#1B1B1B] text-white" : "bg-white text-[#7A7A7A] border border-[#E5E5EA] hover:bg-[#F3F3F5]"
+                    status === s ? "bg-[#1B1B1B] text-white" : "bg-white text-[#7A7A7A] border border-[#E8E8E8] hover:bg-[#FAFAFA]"
                   }`}
                 >
                   {s === "ideation" ? "Ideation" : s === "scheduled" ? "Scheduled" : s === "live" ? "Live" : "Complete"}
@@ -3216,7 +3216,7 @@ function TestingSection({
                     className={`px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors ${
                       result === r
                         ? r === "winner" ? "bg-emerald-500 text-white" : r === "loser" ? "bg-red-500 text-white" : "bg-amber-500 text-white"
-                        : "bg-white text-[#7A7A7A] border border-[#E5E5EA] hover:bg-[#F3F3F5]"
+                        : "bg-white text-[#7A7A7A] border border-[#E8E8E8] hover:bg-[#FAFAFA]"
                     }`}
                   >
                     {r === "winner" ? "Winner" : r === "loser" ? "Loser" : "Inconclusive"}
@@ -3295,7 +3295,7 @@ function TestingSection({
 
       {/* Monthly Progress */}
       {monthlyCapacity > 0 && (
-        <div className="bg-white border border-[#E5E5EA] rounded-lg p-4">
+        <div className="bg-white border border-[#E8E8E8] rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs font-semibold text-[#1A1A1A]">{currentMonth}</p>
             <div className="flex items-center gap-3">
@@ -3343,14 +3343,14 @@ function TestingSection({
         if (weekTests.length === 0 && slotsPerWeek === 0) return null;
         return (
           <div key={weekLabel}>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">{weekLabel}</p>
+            <p className="text-[11px] font-semibold text-[#1A1A1A] mb-3">{weekLabel}</p>
             <div className="space-y-2">
               {weekTests.map((test) => {
                 const statusStyles: Record<string, string> = {
                   ideation: "bg-purple-50 text-purple-600 border-purple-200",
                   scheduled: "bg-blue-50 text-blue-600 border-blue-200",
                   live: "bg-emerald-50 text-emerald-600 border-emerald-200",
-                  complete: "bg-[#F3F3F5] text-[#1B1B1B] border-[#E5E5EA]",
+                  complete: "bg-[#F3F3F5] text-[#1B1B1B] border-[#E8E8E8]",
                 };
                 const nextStatus: Record<string, TestStatus> = { ideation: "scheduled", scheduled: "live", live: "complete", complete: "ideation" };
                 const handleStatusCycle = async () => {
@@ -3360,7 +3360,7 @@ function TestingSection({
                 };
                 const hasMetrics = test.cvr || test.aov || test.rpv;
                 return (
-                  <div key={test.id} className="bg-white border border-[#E5E5EA] rounded-lg group/card overflow-hidden">
+                  <div key={test.id} className="bg-white border border-[#E8E8E8] rounded-lg group/card overflow-hidden">
                     <div className="flex items-center justify-between gap-3 px-4 pt-3.5 pb-2">
                       <div className="flex items-center gap-2 min-w-0">
                         <p className="text-[13px] font-semibold text-[#1B1B1B] truncate">{test.name}</p>
@@ -3450,11 +3450,11 @@ function TestingSection({
 
       {/* Trash bin */}
       {trashedTests.length > 0 && (
-        <div className="border border-[#E5E5EA] rounded-lg p-4 bg-[#FAFAFA]">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-3">Trash</p>
+        <div className="border border-[#E8E8E8] rounded-lg p-4 bg-[#FAFAFA]">
+          <p className="text-[10px] font-semibold text-[#1A1A1A] mb-3">Trash</p>
           <div className="space-y-2">
             {trashedTests.map(t => (
-              <div key={t.id} className="flex items-center justify-between px-3 py-2 bg-white rounded border border-[#E5E5EA]">
+              <div key={t.id} className="flex items-center justify-between px-3 py-2 bg-white rounded border border-[#E8E8E8]">
                 <p className="text-xs text-[#777]">{t.name}</p>
                 <div className="flex items-center gap-2">
                   <button onClick={() => handleRestore(t.id)} className="text-[10px] text-emerald-600 hover:text-emerald-700">Restore</button>
@@ -3467,7 +3467,7 @@ function TestingSection({
       )}
 
       {activeTests.length === 0 && !showForm && slotsPerWeek === 0 && (
-        <div className="border border-dashed border-[#E5E5EA] rounded-lg p-8 text-center">
+        <div className="border border-dashed border-[#E8E8E8] rounded-lg p-8 text-center">
           <p className="text-sm text-[#7A7A7A] mb-1">No tests yet</p>
           <p className="text-xs text-[#A0A0A0]">Select a testing tier and add your first test</p>
         </div>
@@ -3567,7 +3567,7 @@ function DevelopmentSection({
 
       {/* Create form */}
       {showForm && (
-        <div className="border border-[#E5E5EA] rounded-lg p-4 bg-white space-y-3">
+        <div className="border border-[#E8E8E8] rounded-lg p-4 bg-white space-y-3">
           <div>
             <label className={labelClass}>Page Name</label>
             <input
@@ -3687,7 +3687,7 @@ function DevelopmentSection({
                     const isLatest = v.id === latestVersion?.id;
                     const vDate = new Date(v.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
                     return (
-                      <div key={v.id} className={`flex items-center justify-between p-3 rounded-lg ${isLatest ? "bg-[#F7F8FA] border border-[#E5E5EA]" : "bg-white"}`}>
+                      <div key={v.id} className={`flex items-center justify-between p-3 rounded-lg ${isLatest ? "bg-[#F7F8FA] border border-[#E8E8E8]" : "bg-white"}`}>
                         <div className="flex items-center gap-3">
                           <span className={`inline-flex items-center justify-center size-7 rounded-full text-[11px] font-bold ${isLatest ? "bg-[#1A1A1A] text-white" : "bg-[#F0F0F0] text-[#777]"}`}>
                             V{v.version_number}
@@ -3705,7 +3705,7 @@ function DevelopmentSection({
                             href={v.staging_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-[#777] border border-[#E5E5EA] rounded-lg hover:text-[#1A1A1A] hover:border-[#999] transition-colors"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-[#777] border border-[#E8E8E8] rounded-lg hover:text-[#1A1A1A] hover:border-[#999] transition-colors"
                           >
                             <svg className="size-3" viewBox="0 0 20 20" fill="currentColor">
                               <path fillRule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5zm7.25-.75a.75.75 0 01.75-.75h3.5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0V6.31l-5.47 5.47a.75.75 0 01-1.06-1.06l5.47-5.47H12.25a.75.75 0 01-.75-.75z" clipRule="evenodd" />
@@ -3728,7 +3728,7 @@ function DevelopmentSection({
             {/* Feedback */}
             {feedback.length > 0 && (
               <div className="px-5 py-3 border-t border-[#F0F0F0] bg-[#FAFAFA]">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Client Feedback</p>
+                <p className="text-[10px] font-semibold text-[#1A1A1A] mb-2">Client Feedback</p>
                 <div className="space-y-2">
                   {feedback.map((item) => (
                     <div key={item.id} className="flex items-start gap-2">
@@ -3761,7 +3761,7 @@ function DevelopmentSection({
 
       {/* Empty state */}
       {pageReviews.length === 0 && !showForm && (
-        <div className="border border-dashed border-[#E5E5EA] rounded-lg p-8 text-center">
+        <div className="border border-dashed border-[#E8E8E8] rounded-lg p-8 text-center">
           <p className="text-sm text-[#7A7A7A] mb-1">No page reviews yet</p>
           <p className="text-xs text-[#A0A0A0]">Add a staging URL to start collecting feedback</p>
         </div>
@@ -3792,7 +3792,7 @@ function AddVersionForm({ onAdd }: { onAdd: (url: string) => void }) {
         value={url}
         onChange={(e) => setUrl(e.target.value)}
         placeholder="New staging URL..."
-        className="flex-1 px-2 py-1.5 text-xs border border-[#E5E5EA] rounded"
+        className="flex-1 px-2 py-1.5 text-xs border border-[#E8E8E8] rounded"
       />
       <button
         onClick={() => { onAdd(url); setUrl(""); setShow(false); }}
@@ -3876,7 +3876,7 @@ function TeamAssignment({ portal, onUpdateField }: { portal: PortalData; onUpdat
         <select
           value=""
           onChange={(e) => addMember(e.target.value)}
-          className="w-full text-[11px] text-[#777] px-2.5 py-1.5 border border-[#E5E5EA] rounded-lg bg-white cursor-pointer"
+          className="w-full text-[11px] text-[#777] px-2.5 py-1.5 border border-[#E8E8E8] rounded-lg bg-white cursor-pointer"
         >
           <option value="">+ Add team member...</option>
           {unassigned.map(m => (
@@ -3917,7 +3917,7 @@ function ClientDetailsPanel({ portal, team, onUpdateField }: { portal: PortalDat
   };
 
   return (
-    <div className="border border-[#E5E5EA] rounded-xl bg-white divide-y divide-[#F0F0F0] mb-6 overflow-hidden">
+    <div className="border border-[#E8E8E8] rounded-xl bg-white divide-y divide-[#E8E8E8] mb-6 overflow-hidden">
       {/* Designers */}
       <div className="px-4 py-3">
         <div className="flex items-center justify-between">
@@ -3979,7 +3979,7 @@ function ClientDetailsPanel({ portal, team, onUpdateField }: { portal: PortalDat
         <p className="text-xs font-medium text-[#777]">Slack (Client)</p>
         {editingSlack ? (
           <div className="flex items-center gap-2">
-            <input type="text" value={slackVal} onChange={(e) => setSlackVal(e.target.value)} className="text-xs font-mono px-2 py-1 border border-[#E5E5EA] rounded w-40" placeholder="C0XXXXXXX" autoFocus />
+            <input type="text" value={slackVal} onChange={(e) => setSlackVal(e.target.value)} className="text-xs font-mono px-2 py-1 border border-[#E8E8E8] rounded w-40" placeholder="C0XXXXXXX" autoFocus />
             <button onClick={() => { onUpdateField("slack_channel_url", slackVal); setEditingSlack(false); }} className="text-[10px] font-medium text-emerald-600">Save</button>
             <button onClick={() => { setSlackVal(portal.slack_channel_url || ""); setEditingSlack(false); }} className="text-[10px] text-[#AAA]">Cancel</button>
           </div>
@@ -3995,7 +3995,7 @@ function ClientDetailsPanel({ portal, team, onUpdateField }: { portal: PortalDat
         <p className="text-xs font-medium text-[#777]">Slack (Internal)</p>
         {editingInternalSlack ? (
           <div className="flex items-center gap-2">
-            <input type="text" value={internalSlackVal} onChange={(e) => setInternalSlackVal(e.target.value)} className="text-xs font-mono px-2 py-1 border border-[#E5E5EA] rounded w-40" placeholder="C0XXXXXXX" autoFocus />
+            <input type="text" value={internalSlackVal} onChange={(e) => setInternalSlackVal(e.target.value)} className="text-xs font-mono px-2 py-1 border border-[#E8E8E8] rounded w-40" placeholder="C0XXXXXXX" autoFocus />
             <button onClick={() => { onUpdateField("slack_internal_channel_id", internalSlackVal); setEditingInternalSlack(false); }} className="text-[10px] font-medium text-emerald-600">Save</button>
             <button onClick={() => { setInternalSlackVal(portal.slack_internal_channel_id || ""); setEditingInternalSlack(false); }} className="text-[10px] text-[#AAA]">Cancel</button>
           </div>
@@ -4063,7 +4063,7 @@ function SidebarClientDetails({ portal, team, onUpdateField }: { portal: PortalD
     <>
       {/* Client Settings */}
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Client Settings</p>
+        <p className="text-[11px] font-semibold text-[#1A1A1A] mb-2">Client Settings</p>
         <div className="space-y-1">
           {designers.map(m => (
             <div key={m.id} className="flex items-center justify-between px-2 py-1.5 rounded-md bg-emerald-50 group">
@@ -4091,7 +4091,7 @@ function SidebarClientDetails({ portal, team, onUpdateField }: { portal: PortalD
             <select
               value=""
               onChange={(e) => { if (e.target.value) addMember(e.target.value); }}
-              className="w-full text-xs text-[#999] px-2 py-1.5 border border-dashed border-[#E5E5EA] rounded-md bg-transparent cursor-pointer focus:outline-none hover:border-[#CCC]"
+              className="w-full text-xs text-[#999] px-2 py-1.5 border border-dashed border-[#E8E8E8] rounded-md bg-transparent cursor-pointer focus:outline-none hover:border-[#CCC]"
             >
               <option value="">+ Add member</option>
               {unassigned.map(m => (
@@ -4107,7 +4107,7 @@ function SidebarClientDetails({ portal, team, onUpdateField }: { portal: PortalD
 
       {/* Slack */}
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Slack</p>
+        <p className="text-[11px] font-semibold text-[#1A1A1A] mb-2">Slack</p>
         <div className="space-y-1.5">
           {/* Client channel */}
           <div>
@@ -4118,7 +4118,7 @@ function SidebarClientDetails({ portal, team, onUpdateField }: { portal: PortalD
                   type="text"
                   value={slackVal}
                   onChange={(e) => setSlackVal(e.target.value)}
-                  className="flex-1 text-xs font-mono px-2 py-1 border border-[#E5E5EA] rounded w-full"
+                  className="flex-1 text-xs font-mono px-2 py-1 border border-[#E8E8E8] rounded w-full"
                   placeholder="C0XXXXXXX"
                   autoFocus
                   onKeyDown={(e) => { if (e.key === "Enter") saveSlack(); if (e.key === "Escape") setEditingSlack(null); }}
@@ -4140,7 +4140,7 @@ function SidebarClientDetails({ portal, team, onUpdateField }: { portal: PortalD
                   type="text"
                   value={slackVal}
                   onChange={(e) => setSlackVal(e.target.value)}
-                  className="flex-1 text-xs font-mono px-2 py-1 border border-[#E5E5EA] rounded w-full"
+                  className="flex-1 text-xs font-mono px-2 py-1 border border-[#E8E8E8] rounded w-full"
                   placeholder="C0XXXXXXX"
                   autoFocus
                   onKeyDown={(e) => { if (e.key === "Enter") saveSlack(); if (e.key === "Escape") setEditingSlack(null); }}
@@ -4158,7 +4158,7 @@ function SidebarClientDetails({ portal, team, onUpdateField }: { portal: PortalD
 
       {/* Next Touchpoint */}
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Touchpoint</p>
+        <p className="text-[11px] font-semibold text-[#1A1A1A] mb-2">Touchpoint</p>
         {(() => {
           const nextDate = getNextTouchpointDate();
           if (!nextDate) return <p className="text-xs text-[#CCC]">Not set</p>;
@@ -4290,7 +4290,7 @@ function ReportsSection({
       </div>
 
       {showUpload && (
-        <div className="border border-[#E5E5EA] rounded-xl p-5 space-y-4 bg-white">
+        <div className="border border-[#E8E8E8] rounded-xl p-5 space-y-4 bg-white">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className={labelClass}>Report Title</label>
@@ -4315,7 +4315,7 @@ function ReportsSection({
 
           <div>
             <label className={labelClass}>Upload .docx</label>
-            <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-[#E5E5EA] rounded-lg cursor-pointer hover:border-[#1B1B1B] transition-colors">
+            <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-[#E8E8E8] rounded-lg cursor-pointer hover:border-[#1B1B1B] transition-colors">
               <input
                 type="file"
                 accept=".docx"
@@ -4349,7 +4349,7 @@ function ReportsSection({
                 <button
                   onClick={() => handleSave(false)}
                   disabled={saving || !title}
-                  className="px-4 py-2 text-xs font-medium bg-white border border-[#E5E5EA] text-[#1B1B1B] rounded-lg hover:bg-[#F7F8FA] transition-colors disabled:opacity-50"
+                  className="px-4 py-2 text-xs font-medium bg-white border border-[#E8E8E8] text-[#1B1B1B] rounded-lg hover:bg-[#FAFAFA] transition-colors disabled:opacity-50"
                 >
                   Save Draft
                 </button>
@@ -4387,7 +4387,7 @@ function ReportsSection({
       )}
 
       {!previewReport && reports.length === 0 && !showUpload && (
-        <div className="text-center py-16 border border-dashed border-[#E5E5EA] rounded-xl">
+        <div className="text-center py-16 border border-dashed border-[#E8E8E8] rounded-xl">
           <p className="text-sm text-[#7A7A7A] mb-1">No reports yet</p>
           <p className="text-xs text-[#A0A0A0]">Upload a .docx to create a branded weekly report</p>
         </div>
@@ -4398,7 +4398,7 @@ function ReportsSection({
           {reports.map((report) => (
             <div
               key={report.id}
-              className="flex items-center justify-between p-4 border border-[#E5E5EA] rounded-xl bg-white"
+              className="flex items-center justify-between p-4 border border-[#E8E8E8] rounded-xl bg-white"
             >
               <div
                 className="min-w-0 flex-1 cursor-pointer"
@@ -4479,7 +4479,7 @@ function BlockerFlagModal({
                 className={`px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors ${
                   blockerType === t
                     ? "bg-red-500 text-white"
-                    : "bg-[#F5F5F5] text-[#777] hover:bg-[#EDEDEF]"
+                    : "bg-[#FAFAFA] text-[#777] hover:bg-[#EDEDEF]"
                 }`}
               >
                 {t === "client" ? "Client" : t === "internal" ? "Internal" : "External"}
@@ -4495,7 +4495,7 @@ function BlockerFlagModal({
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder="e.g., Client hasn't replied to design review request"
-            className="w-full px-3 py-2 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#1B1B1B]"
+            className="w-full px-3 py-2 text-sm border border-[#E8E8E8] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#1B1B1B]"
             autoFocus
             onKeyDown={(e) => {
               if (e.key === "Enter" && reason.trim()) {
@@ -4602,7 +4602,7 @@ function ResolveBlockerModal({
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setShiftDays(Math.max(0, shiftDays - 1))}
-                className="size-7 flex items-center justify-center border border-[#E5E5EA] rounded-lg text-[#777] hover:bg-[#F5F5F5] text-sm"
+                className="size-7 flex items-center justify-center border border-[#E8E8E8] rounded-lg text-[#777] hover:bg-[#FAFAFA] text-sm"
               >
                 −
               </button>
@@ -4610,11 +4610,11 @@ function ResolveBlockerModal({
                 type="number"
                 value={shiftDays}
                 onChange={(e) => setShiftDays(Math.max(0, parseInt(e.target.value) || 0))}
-                className="w-16 text-center text-sm font-semibold border border-[#E5E5EA] rounded-lg py-1.5"
+                className="w-16 text-center text-sm font-semibold border border-[#E8E8E8] rounded-lg py-1.5"
               />
               <button
                 onClick={() => setShiftDays(shiftDays + 1)}
-                className="size-7 flex items-center justify-center border border-[#E5E5EA] rounded-lg text-[#777] hover:bg-[#F5F5F5] text-sm"
+                className="size-7 flex items-center justify-center border border-[#E8E8E8] rounded-lg text-[#777] hover:bg-[#FAFAFA] text-sm"
               >
                 +
               </button>
@@ -4632,7 +4632,7 @@ function ResolveBlockerModal({
         {shiftDays > 0 && previewPhases.filter(p => p.status !== "complete").length > 0 && (
           <div>
             <p className="text-[11px] font-medium text-[#777] mb-2">Timeline preview</p>
-            <div className="border border-[#E5E5EA] rounded-lg divide-y divide-[#F0F0F0] overflow-hidden">
+            <div className="border border-[#E8E8E8] rounded-lg divide-y divide-[#E8E8E8] overflow-hidden">
               {previewPhases.map(phase => (
                 <div key={phase.id} className="flex items-center justify-between px-3 py-2">
                   <div className="flex items-center gap-2 min-w-0">
