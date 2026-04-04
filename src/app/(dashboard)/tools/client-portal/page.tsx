@@ -79,7 +79,7 @@ export default function ClientPortalPage() {
   const [igTests, setIgTests] = useState<IntelligemsTest[]>([]);
   const [igLoading, setIgLoading] = useState(false);
   const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [activeTab, setActiveTab] = useState<"overview" | "testing" | "tickets" | "delivery" | "clients" | "retainers">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "testing" | "tickets" | "clients" | "retainers">("overview");
   const [activeChart, setActiveChart] = useState(0);
 
   const loadPortals = useCallback(async () => {
@@ -249,11 +249,10 @@ export default function ClientPortalPage() {
 
   const listTabs = [
     { key: "overview" as const, label: "Overview" },
-    { key: "retainers" as const, label: "Retainers" },
-    { key: "testing" as const, label: "Testing" },
+    { key: "clients" as const, label: "Client Portals" },
+    { key: "retainers" as const, label: "Retainer Portals" },
+    { key: "testing" as const, label: "Testing Lab" },
     { key: "tickets" as const, label: `Tickets${openTickets.length > 0 ? ` (${openTickets.length})` : ""}` },
-    { key: "delivery" as const, label: "Delivery" },
-    { key: "clients" as const, label: "Clients" },
   ];
 
   return (
@@ -263,6 +262,18 @@ export default function ClientPortalPage() {
         <div className="px-5 py-6 border-b border-[#E8E8E8]">
           <h2 className="text-sm font-bold text-[#1A1A1A]">Client Portals</h2>
           <p className="text-[10px] text-[#AAA] mt-0.5">All active projects</p>
+          <button
+            onClick={() => {
+              setShowForm(true);
+              setClientName("");
+              setClientEmail("");
+              setProjectType("Full Page Build");
+            }}
+            className="w-full flex items-center justify-center gap-1.5 mt-4 px-3 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
+          >
+            <PlusIcon className="size-3.5 shrink-0" />
+            New Portal
+          </button>
         </div>
         {!showTrash && (
           <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
@@ -281,7 +292,7 @@ export default function ClientPortalPage() {
             ))}
           </nav>
         )}
-        <div className="px-3 py-4 border-t border-[#E8E8E8] space-y-2">
+        <div className="px-3 py-4 border-t border-[#E8E8E8]">
           <button
             onClick={() => {
               setShowTrash(!showTrash);
@@ -295,18 +306,6 @@ export default function ClientPortalPage() {
           >
             <TrashIcon className="size-3.5" />
             Trash
-          </button>
-          <button
-            onClick={() => {
-              setShowForm(true);
-              setClientName("");
-              setClientEmail("");
-              setProjectType("Full Page Build");
-            }}
-            className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
-          >
-            <PlusIcon className="size-3.5 shrink-0" />
-            New Portal
           </button>
         </div>
       </div>
@@ -733,76 +732,6 @@ export default function ClientPortalPage() {
       )}
 
       {/* ═══════ DELIVERY TAB ═══════ */}
-      {!showTrash && activeTab === "delivery" && (
-        <div className="space-y-6">
-          {/* Blocked */}
-          {blockedPortals.length > 0 && (
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-3">Blocked ({blockedPortals.length})</h3>
-              <div className="border border-red-100 rounded-xl bg-red-50/30 divide-y divide-red-100 overflow-hidden">
-                {blockedPortals.map((p) => {
-                  const daysBlocked = p.blocker?.since ? Math.max(0, Math.floor((Date.now() - new Date(p.blocker.since).getTime()) / 86400000)) : 0;
-                  return (
-                    <Link key={p.id} href={`/tools/client-portal/${p.id}`} className="flex items-center justify-between px-4 py-2.5 hover:bg-red-50 transition-colors">
-                      <div className="flex items-center gap-2">
-                        <span className="size-1.5 rounded-full bg-red-500 animate-pulse" />
-                        <span className="text-xs font-medium text-[#1A1A1A]">{p.client_name}</span>
-                        <span className="text-[10px] text-red-500">{p.blocker?.reason}</span>
-                      </div>
-                      <span className="text-[10px] text-red-400">{daysBlocked}d blocked</span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Phase Progress */}
-          <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Phase Progress</h3>
-            {portals.filter(p => p.current_phase).length > 0 ? (
-              <div className="border border-[#E5E5EA] rounded-xl bg-white divide-y divide-[#F0F0F0] overflow-hidden">
-                {portals.filter(p => p.current_phase).map((p) => {
-                  const totalPhases = p.phases.length;
-                  const completedPhases = p.phases.filter(ph => ph.status === "complete").length;
-                  const pct = totalPhases > 0 ? Math.round((completedPhases / totalPhases) * 100) : 0;
-                  return (
-                    <Link key={p.id} href={`/tools/client-portal/${p.id}`} className="flex items-center gap-4 px-4 py-3 hover:bg-[#FAFAFA] transition-colors">
-                      <span className="text-xs font-medium text-[#1A1A1A] w-32 shrink-0">{p.client_name}</span>
-                      <div className="flex-1 h-1.5 bg-[#F0F0F0] rounded-full overflow-hidden">
-                        <div className="h-full bg-[#1A1A1A] rounded-full transition-all" style={{ width: `${pct}%` }} />
-                      </div>
-                      <span className="text-[10px] text-[#999] w-20 text-right shrink-0">{p.current_phase}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-xs text-[#CCC]">No active projects with phases</p>
-            )}
-          </div>
-
-          {/* Clients by Stage */}
-          {portals.length > 0 && (
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Clients by Stage</h3>
-              <div className="flex flex-wrap gap-2">
-                {(() => {
-                  const stageMap: Record<string, number> = {};
-                  portals.forEach((p) => { stageMap[p.current_phase || "Not set"] = (stageMap[p.current_phase || "Not set"] || 0) + 1; });
-                  return Object.entries(stageMap).map(([stage, count]) => (
-                    <div key={stage} className="border border-[#E5E5EA] rounded-lg px-4 py-3 bg-white">
-                      <span className="text-lg font-bold tabular-nums text-[#1A1A1A]">{count}</span>
-                      <p className="text-[10px] text-[#999] mt-0.5">{stage}</p>
-                    </div>
-                  ));
-                })()}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
       {/* ═══════ RETAINERS TAB ═══════ */}
       {!showTrash && activeTab === "retainers" && (() => {
         const retainerPortals = portals.filter(p => p.client_type === "retainer" || p.project_type?.toLowerCase().includes("retainer"));

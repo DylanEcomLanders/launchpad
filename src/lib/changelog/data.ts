@@ -46,6 +46,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Admin client detail page — left sidebar with Projects, Tickets, Funnels, Settings tabs; action buttons (Flag, Client, Team, Preview, Save) moved to sidebar footer" },
       { type: "improved", text: "Client portal — sidebar nav now persists when drilled into a project (Back + project name + nav links) instead of horizontal top tabs" },
       { type: "improved", text: "Consistent left sidebar navigation pattern across all portal views — portal list, client detail, drilled-in project, and client-facing portal" },
+      { type: "improved", text: "Portal list sidebar cleaned up — tabs now: Overview, Client Portals, Retainer Portals, Testing Lab, Tickets. Removed Delivery tab. New Portal button moved to top of sidebar" },
     ],
   },
   {
