@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-22",
+    date: "4 Apr 2026",
+    version: "0.19.1",
+    title: "Unified Sidebar Navigation",
+    changes: [
+      { type: "improved", text: "Portal list page — left sidebar navigation replaces horizontal tabs (Overview, Retainers, Testing, Tickets, Delivery, Clients), with Trash + New Portal buttons in sidebar footer" },
+      { type: "improved", text: "Admin client detail page — left sidebar with Projects, Tickets, Funnels, Settings tabs; action buttons (Flag, Client, Team, Preview, Save) moved to sidebar footer" },
+      { type: "improved", text: "Client portal — sidebar nav now persists when drilled into a project (Back + project name + nav links) instead of horizontal top tabs" },
+      { type: "improved", text: "Consistent left sidebar navigation pattern across all portal views — portal list, client detail, drilled-in project, and client-facing portal" },
+    ],
+  },
+  {
     id: "cl-21",
     date: "3 Apr 2026",
     version: "0.19.0",

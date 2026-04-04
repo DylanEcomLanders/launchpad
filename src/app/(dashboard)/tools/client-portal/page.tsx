@@ -247,74 +247,72 @@ export default function ClientPortalPage() {
     });
   }, [portals, filterType, filterStage]);
 
+  const listTabs = [
+    { key: "overview" as const, label: "Overview" },
+    { key: "retainers" as const, label: "Retainers" },
+    { key: "testing" as const, label: "Testing" },
+    { key: "tickets" as const, label: `Tickets${openTickets.length > 0 ? ` (${openTickets.length})` : ""}` },
+    { key: "delivery" as const, label: "Delivery" },
+    { key: "clients" as const, label: "Clients" },
+  ];
+
   return (
-    <div className="min-h-screen p-5 md:p-6">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Client Portals</h1>
-          <p className="text-sm text-[#7A7A7A]">Overview of all active client projects</p>
+    <div className="flex min-h-screen">
+      {/* ── Left sidebar ── */}
+      <div className="w-52 shrink-0 border-r border-[#E8E8E8] sticky top-0 self-start h-screen flex flex-col">
+        <div className="px-5 py-6 border-b border-[#E8E8E8]">
+          <h2 className="text-sm font-bold text-[#1A1A1A]">Client Portals</h2>
+          <p className="text-[10px] text-[#AAA] mt-0.5">All active projects</p>
         </div>
-        <div className="flex items-center gap-2">
+        {!showTrash && (
+          <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+            {listTabs.map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setActiveTab(key)}
+                className={`w-full text-left px-3 py-2 text-[13px] font-medium rounded-lg transition-colors ${
+                  activeTab === key
+                    ? "bg-[#1A1A1A] text-white"
+                    : "text-[#777] hover:bg-[#FAFAFA] hover:text-[#1A1A1A]"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+        )}
+        <div className="px-3 py-4 border-t border-[#E8E8E8] space-y-2">
           <button
             onClick={() => {
               setShowTrash(!showTrash);
               if (!showTrash) loadTrash();
             }}
-            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border transition-colors ${
+            className={`w-full flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium rounded-lg transition-colors ${
               showTrash
-                ? "bg-red-50 text-red-600 border-red-200"
-                : "text-[#7A7A7A] border-[#E5E5EA] hover:bg-[#F5F5F5]"
+                ? "bg-red-50 text-red-600"
+                : "text-[#AAA] hover:bg-[#FAFAFA] hover:text-[#1A1A1A]"
             }`}
           >
             <TrashIcon className="size-3.5" />
             Trash
           </button>
-          {!showTrash && (
-            <button
-              onClick={() => {
-                setShowForm(true);
-                setClientName("");
-                setClientEmail("");
-                setProjectType("Full Page Build");
-              }}
-              className="flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors whitespace-nowrap"
-            >
-              <PlusIcon className="size-3.5 shrink-0" />
-              New
-            </button>
-          )}
+          <button
+            onClick={() => {
+              setShowForm(true);
+              setClientName("");
+              setClientEmail("");
+              setProjectType("Full Page Build");
+            }}
+            className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
+          >
+            <PlusIcon className="size-3.5 shrink-0" />
+            New Portal
+          </button>
         </div>
       </div>
 
-      {/* Stats removed — replaced by chart in Overview tab */}
-
-      {/* ── Tab Navigation ── */}
-      {!showTrash && (
-        <div className="flex items-center gap-1 mb-6 border-b border-[#E8E8E8]">
-          {([
-            { key: "overview" as const, label: "Overview" },
-            { key: "retainers" as const, label: "Retainers" },
-            { key: "testing" as const, label: "Testing" },
-            { key: "tickets" as const, label: `Tickets${openTickets.length > 0 ? ` (${openTickets.length})` : ""}` },
-            { key: "delivery" as const, label: "Delivery" },
-            { key: "clients" as const, label: "Clients" },
-          ]).map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setActiveTab(key)}
-              className={`px-4 py-2.5 text-xs font-semibold transition-colors relative ${
-                activeTab === key
-                  ? "text-[#1A1A1A]"
-                  : "text-[#AAA] hover:text-[#777]"
-              }`}
-            >
-              {label}
-              {activeTab === key && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1A1A1A] rounded-full" />}
-            </button>
-          ))}
-        </div>
-      )}
+      {/* ── Main content ── */}
+      <div className="flex-1 min-w-0 p-5 md:p-6">
 
       {/* ═══════ OVERVIEW TAB ═══════ */}
       {!showTrash && activeTab === "overview" && (() => {
@@ -1201,6 +1199,7 @@ export default function ClientPortalPage() {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

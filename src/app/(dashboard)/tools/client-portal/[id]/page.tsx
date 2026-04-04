@@ -67,6 +67,7 @@ import type {
 } from "@/lib/portal/review-types";
 
 type DashTab = "overview" | "build" | "results";
+type ClientTab = "projects" | "tickets" | "funnels" | "settings";
 
 export default function PortalDetailPage() {
   const params = useParams();
@@ -87,6 +88,7 @@ export default function PortalDetailPage() {
   const [activeTab, setActiveTab] = useState<DashTab>("overview");
   const [defaultTabSet, setDefaultTabSet] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [clientTab, setClientTab] = useState<ClientTab>("projects");
   const [copiedTeam, setCopiedTeam] = useState(false);
   const [showBlockerModal, setShowBlockerModal] = useState(false);
   const [showResolveBlocker, setShowResolveBlocker] = useState(false);
@@ -475,229 +477,173 @@ export default function PortalDetailPage() {
     { key: "results", label: "Results" },
   ];
 
+  const clientTabs: { key: ClientTab; label: string }[] = [
+    { key: "projects", label: "Projects" },
+    ...(portalTickets.length > 0 ? [{ key: "tickets" as ClientTab, label: `Tickets (${portalTickets.filter(t => t.status !== "resolved" && !t.deleted_at).length})` }] : []),
+    ...(funnels.length > 0 ? [{ key: "funnels" as ClientTab, label: "Funnels" }] : []),
+    { key: "settings", label: "Settings" },
+  ];
+
   return (
     <div className="min-h-screen">
-      <div className={`mx-auto py-16 md:py-24 ${selectedProject ? "max-w-6xl px-6 md:px-10" : "max-w-3xl px-6 md:px-12"}`}>
-        {/* Back + Header */}
-        <div className="mb-8">
-          <Link
-            href="/tools/client-portal"
-            className="inline-flex items-center gap-1 text-xs font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors mb-4"
-          >
-            <ArrowLeftIcon className="size-3" />
-            All Portals
-          </Link>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-                  {portal.client_name}
-                </h1>
-                <span className={`px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full ${
-                  isRetainerPortal ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
-                }`}>
-                  {isRetainerPortal ? "Retainer" : "Project"}
-                </span>
-              </div>
-              {portal.client_email && <p className="text-xs text-[#AAA] mt-1">{portal.client_email}</p>}
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              {/* Blocker flag */}
-              {portal.blocker ? (
-                <button
-                  onClick={() => setShowResolveBlocker(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                >
-                  <span className="size-1.5 rounded-full bg-white animate-pulse" />
-                  Blocked{(() => {
-                    const d = Math.max(0, Math.floor((Date.now() - new Date(portal.blocker.since).getTime()) / 86400000));
-                    return d > 0 ? ` · ${d}d` : "";
-                  })()}
-                </button>
-              ) : (
-                <button
-                  onClick={() => setShowBlockerModal(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
-                  title="Flag as blocked"
-                >
-                  <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path d="M3.5 2.75a.75.75 0 00-1.5 0v14.5a.75.75 0 001.5 0v-4.392l1.657-.348a6.449 6.449 0 014.271.572 7.948 7.948 0 005.965.524l2.078-.64A.75.75 0 0018 11.75V3.885a.75.75 0 00-.962-.72l-2.367.728a6.449 6.449 0 01-4.846-.425 7.948 7.948 0 00-5.262-.703L3.5 2.98V2.75z" /></svg>
-                  Flag
-                </button>
-              )}
-              <button
-                onClick={() => {
-                  const url = `${window.location.origin}/portal/${portal.token}`;
-                  navigator.clipboard.writeText(url);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                }}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
-                title="Copy client portal link"
-              >
-                <ClipboardDocumentIcon className="size-3.5" />
-                {copied ? "Copied!" : "Client"}
-              </button>
-              <button
-                onClick={() => {
-                  const url = `${window.location.origin}/portal/${portal.token}/team`;
-                  navigator.clipboard.writeText(url);
-                  setCopiedTeam(true);
-                  setTimeout(() => setCopiedTeam(false), 2000);
-                }}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
-                title="Copy team portal link"
-              >
-                <ClipboardDocumentIcon className="size-3.5" />
-                {copiedTeam ? "Copied!" : "Team"}
-              </button>
-              <a
-                href={`/portal/${portal.token}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
-              >
-                <ArrowTopRightOnSquareIcon className="size-3.5" />
-                Preview
-              </a>
-              <button
-                onClick={() => { load(); }}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-500 text-white text-[11px] font-semibold rounded-lg hover:bg-emerald-600 transition-colors"
-              >
-                <CheckIcon className="size-3.5" />
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
+      <div className={`mx-auto ${selectedProject ? "max-w-6xl px-6 md:px-10 py-16 md:py-24" : ""}`}>
 
-        {/* ── Client Details — only when NOT drilled into a project ── */}
-        {!selectedProject && <ClientDetailsPanel portal={portal} team={team} onUpdateField={handleUpdateField} />}
-
-        {/* ── Tickets Snapshot (client level) ── */}
-        {portalTickets.length > 0 && !selectedProject && (() => {
-          const openTickets = portalTickets.filter(t => t.status !== "resolved" && !t.deleted_at);
-          if (openTickets.length === 0) return null;
-          const typeColors: Record<string, string> = { design: "#7C3AED", dev: "#2563EB", cro: "#059669", qa: "#D97706" };
-          const statusColors: Record<string, string> = { open: "#EF4444", in_progress: "#F59E0B", quoted: "#8B5CF6", resolved: "#10B981" };
-          return (
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-semibold text-[#1A1A1A]">Open Tickets ({openTickets.length})</h3>
-              </div>
-              <div className="border border-[#E8E8E8] rounded-xl bg-white divide-y divide-[#E8E8E8] overflow-hidden">
-                {openTickets.slice(0, 5).map(t => (
-                  <div key={t.id} className="flex items-center justify-between px-4 py-2.5">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: statusColors[t.status] || "#CCC" }} />
-                      <span className="text-xs font-medium text-[#1A1A1A] truncate">{t.title}</span>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {t.ticket_type && t.ticket_type !== "unassigned" && (
-                        <span className="text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded-full" style={{ backgroundColor: (typeColors[t.ticket_type] || "#999") + "15", color: typeColors[t.ticket_type] || "#999" }}>
-                          {t.ticket_type}
-                        </span>
-                      )}
-                      <span className="text-[9px] text-[#BBB]">{t.status.replace("_", " ")}</span>
-                    </div>
-                  </div>
-                ))}
-                {openTickets.length > 5 && (
-                  <div className="px-4 py-2 text-center">
-                    <span className="text-[10px] text-[#AAA]">+ {openTickets.length - 5} more</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })()}
-
-        {/* ── Funnels (client level) ── */}
+        {/* ═══ TOP-LEVEL CLIENT VIEW (sidebar layout) ═══ */}
         {!selectedProject && (
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-semibold text-[#1A1A1A]">Funnels</h3>
-              <Link
-                href={`/tools/funnel-builder?clientId=${portal.id}&clientName=${encodeURIComponent(portal.client_name)}`}
-                className="text-[11px] font-medium text-[#999] hover:text-[#1A1A1A]"
-              >
-                + New Funnel
-              </Link>
-            </div>
-            {funnels.length > 0 ? (
-              <div className="divide-y divide-[#E8E8E8]">
-                {funnels.map((funnel) => (
-                  <Link
-                    key={funnel.id}
-                    href={`/tools/funnel-builder?id=${funnel.id}`}
-                    className="flex items-center justify-between py-3 hover:bg-[#FAFAFA] transition-colors rounded-lg px-2"
+          <div className="flex min-h-screen">
+            {/* Left sidebar */}
+            <div className="w-52 shrink-0 border-r border-[#E8E8E8] sticky top-0 self-start h-screen flex flex-col">
+              <div className="px-5 py-6 border-b border-[#E8E8E8]">
+                <Link
+                  href="/tools/client-portal"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors mb-3"
+                >
+                  <ArrowLeftIcon className="size-3" />
+                  All Portals
+                </Link>
+                <h2 className="text-sm font-bold text-[#1A1A1A] truncate">{portal.client_name}</h2>
+                <p className="text-[10px] text-[#AAA] mt-0.5">{isRetainerPortal ? "Retainer" : "Project"}</p>
+              </div>
+              <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+                {clientTabs.map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setClientTab(tab.key)}
+                    className={`w-full text-left px-3 py-2 text-[13px] font-medium rounded-lg transition-colors ${
+                      clientTab === tab.key
+                        ? "bg-[#1A1A1A] text-white"
+                        : "text-[#777] hover:bg-[#FAFAFA] hover:text-[#1A1A1A]"
+                    }`}
                   >
-                    <div>
-                      <p className="text-sm font-medium text-[#1A1A1A]">{funnel.name || "Untitled Funnel"}</p>
-                      <p className="text-[10px] text-[#AAA]">{funnel.nodes.length} nodes</p>
-                    </div>
-                    <svg className="size-4 text-[#DDD]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
-                  </Link>
+                    {tab.label}
+                  </button>
                 ))}
-              </div>
-            ) : (
-              <p className="text-xs text-[#CCC] py-2">No funnels linked yet</p>
-            )}
-          </div>
-        )}
-
-        {/* ── Retainer Health Summary ── */}
-        {!selectedProject && isRetainerPortal && (() => {
-          const tests = (portal.results || []).filter(t => !(t as any).deleted_at);
-          const tierMonthlyMap: Record<string, number> = { T1: 4, T2: 8, T3: 16 };
-          const capacity = tierMonthlyMap[portal.testing_tier || ""] || 0;
-          const n = new Date();
-          const mStart = new Date(n.getFullYear(), n.getMonth(), 1);
-          const mEnd = new Date(n.getFullYear(), n.getMonth() + 1, 0);
-          // Use all active non-deleted tests for this month's count
-          const allActive = tests.filter(t => !(t as any).deleted_at);
-          const delivered = allActive.filter(t => t.status === "live" || t.status === "complete").length;
-          const scheduled = allActive.filter(t => t.status === "scheduled").length;
-          const ideation = allActive.filter(t => t.status === "ideation").length;
-          const totalFilled = delivered + scheduled + ideation;
-          const empty = Math.max(0, capacity - totalFilled);
-          const attention = allActive.filter(t => t.status === "ideation" || t.status === "scheduled");
-          const monthName = n.toLocaleString("en-GB", { month: "long", year: "numeric" });
-
-          if (capacity === 0) return null;
-
-          return (
-            <div className="mb-6">
-              <div className="border border-[#E8E8E8] rounded-lg p-4 bg-white">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-semibold text-[#1A1A1A]">Retainer — {monthName}</p>
-                  <span className="text-[10px] text-[#AAA]">{portal.testing_tier} · {delivered}/{capacity} delivered</span>
-                </div>
-                <div className="relative h-2 bg-[#F0F0F0] rounded-full overflow-hidden mb-2">
-                  {totalFilled > 0 && <div className="absolute left-0 top-0 h-full bg-purple-300 rounded-full" style={{ width: `${(totalFilled / capacity) * 100}%` }} />}
-                  {(delivered + scheduled) > 0 && <div className="absolute left-0 top-0 h-full bg-blue-400 rounded-full" style={{ width: `${((delivered + scheduled) / capacity) * 100}%` }} />}
-                  {delivered > 0 && <div className="absolute left-0 top-0 h-full bg-emerald-500 rounded-full" style={{ width: `${(delivered / capacity) * 100}%` }} />}
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-emerald-500" /> {delivered} delivered</span>
-                  <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-blue-400" /> {scheduled} scheduled</span>
-                  <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-purple-300" /> {ideation} ideation</span>
-                  <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-[#F0F0F0]" /> {empty} empty</span>
-                </div>
-                {attention.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-[#F0F0F0]">
-                    <p className="text-[10px] font-semibold text-amber-600 mb-1">⚠ {attention.length} test{attention.length !== 1 ? "s" : ""} need attention</p>
-                    {attention.map(t => (
-                      <p key={t.id} className="text-[10px] text-[#777]">• {t.name} — scheduled, not live</p>
-                    ))}
-                  </div>
+              </nav>
+              {/* Action buttons */}
+              <div className="px-3 py-4 border-t border-[#E8E8E8] space-y-1.5">
+                {portal.blocker ? (
+                  <button
+                    onClick={() => setShowResolveBlocker(true)}
+                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-[11px] font-semibold bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                  >
+                    <span className="size-1.5 rounded-full bg-white animate-pulse" />
+                    Blocked{(() => {
+                      const d = Math.max(0, Math.floor((Date.now() - new Date(portal.blocker.since).getTime()) / 86400000));
+                      return d > 0 ? ` · ${d}d` : "";
+                    })()}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setShowBlockerModal(true)}
+                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
+                  >
+                    <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path d="M3.5 2.75a.75.75 0 00-1.5 0v14.5a.75.75 0 001.5 0v-4.392l1.657-.348a6.449 6.449 0 014.271.572 7.948 7.948 0 005.965.524l2.078-.64A.75.75 0 0018 11.75V3.885a.75.75 0 00-.962-.72l-2.367.728a6.449 6.449 0 01-4.846-.425 7.948 7.948 0 00-5.262-.703L3.5 2.98V2.75z" /></svg>
+                    Flag
+                  </button>
                 )}
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => {
+                      const url = `${window.location.origin}/portal/${portal.token}`;
+                      navigator.clipboard.writeText(url);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                    className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[10px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
+                  >
+                    <ClipboardDocumentIcon className="size-3" />
+                    {copied ? "Copied!" : "Client"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      const url = `${window.location.origin}/portal/${portal.token}/team`;
+                      navigator.clipboard.writeText(url);
+                      setCopiedTeam(true);
+                      setTimeout(() => setCopiedTeam(false), 2000);
+                    }}
+                    className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[10px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
+                  >
+                    <ClipboardDocumentIcon className="size-3" />
+                    {copiedTeam ? "Copied!" : "Team"}
+                  </button>
+                </div>
+                <div className="flex gap-1.5">
+                  <a
+                    href={`/portal/${portal.token}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[10px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
+                  >
+                    <ArrowTopRightOnSquareIcon className="size-3" />
+                    Preview
+                  </a>
+                  <button
+                    onClick={() => { load(); }}
+                    className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-emerald-500 text-white text-[10px] font-semibold rounded-lg hover:bg-emerald-600 transition-colors"
+                  >
+                    <CheckIcon className="size-3" />
+                    Save
+                  </button>
+                </div>
               </div>
             </div>
-          );
-        })()}
 
-        {/* ── Projects List ── */}
-        {!selectedProject && (
+            {/* Right content */}
+            <div className="flex-1 min-w-0 max-w-3xl mx-auto px-6 md:px-12 py-16 md:py-24">
+
+        {/* ── Projects tab ── */}
+        {clientTab === "projects" && (<>
+          {/* Retainer Health Summary */}
+          {isRetainerPortal && (() => {
+            const tests = (portal.results || []).filter(t => !(t as any).deleted_at);
+            const tierMonthlyMap: Record<string, number> = { T1: 4, T2: 8, T3: 16 };
+            const capacity = tierMonthlyMap[portal.testing_tier || ""] || 0;
+            const n = new Date();
+            const allActive = tests.filter(t => !(t as any).deleted_at);
+            const delivered = allActive.filter(t => t.status === "live" || t.status === "complete").length;
+            const scheduled = allActive.filter(t => t.status === "scheduled").length;
+            const ideation = allActive.filter(t => t.status === "ideation").length;
+            const totalFilled = delivered + scheduled + ideation;
+            const empty = Math.max(0, capacity - totalFilled);
+            const attention = allActive.filter(t => t.status === "ideation" || t.status === "scheduled");
+            const monthName = n.toLocaleString("en-GB", { month: "long", year: "numeric" });
+
+            if (capacity === 0) return null;
+
+            return (
+              <div className="mb-6">
+                <div className="border border-[#E8E8E8] rounded-lg p-4 bg-white">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-semibold text-[#1A1A1A]">Retainer — {monthName}</p>
+                    <span className="text-[10px] text-[#AAA]">{portal.testing_tier} · {delivered}/{capacity} delivered</span>
+                  </div>
+                  <div className="relative h-2 bg-[#F0F0F0] rounded-full overflow-hidden mb-2">
+                    {totalFilled > 0 && <div className="absolute left-0 top-0 h-full bg-purple-300 rounded-full" style={{ width: `${(totalFilled / capacity) * 100}%` }} />}
+                    {(delivered + scheduled) > 0 && <div className="absolute left-0 top-0 h-full bg-blue-400 rounded-full" style={{ width: `${((delivered + scheduled) / capacity) * 100}%` }} />}
+                    {delivered > 0 && <div className="absolute left-0 top-0 h-full bg-emerald-500 rounded-full" style={{ width: `${(delivered / capacity) * 100}%` }} />}
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-emerald-500" /> {delivered} delivered</span>
+                    <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-blue-400" /> {scheduled} scheduled</span>
+                    <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-purple-300" /> {ideation} ideation</span>
+                    <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-2 rounded-full bg-[#F0F0F0]" /> {empty} empty</span>
+                  </div>
+                  {attention.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-[#F0F0F0]">
+                      <p className="text-[10px] font-semibold text-amber-600 mb-1">⚠ {attention.length} test{attention.length !== 1 ? "s" : ""} need attention</p>
+                      {attention.map(t => (
+                        <p key={t.id} className="text-[10px] text-[#777]">• {t.name} — scheduled, not live</p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+        </>)}
+
+        {/* Projects list (inside projects tab) */}
+        {clientTab === "projects" && (
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-semibold text-[#1A1A1A]">Projects</h3>
@@ -743,7 +689,6 @@ export default function PortalDetailPage() {
                 <p className="text-xs text-[#CCC] py-4">No projects yet — add one above</p>
               )}
             </div>
-            {/* Project Trash */}
             {trashedProjects.length > 0 && (
               <div className="mt-3 border border-[#E8E8E8] rounded-lg p-3 bg-[#FAFAFA]">
                 <p className="text-[10px] font-semibold text-[#1A1A1A] mb-2">Trash ({trashedProjects.length})</p>
@@ -763,7 +708,88 @@ export default function PortalDetailPage() {
           </div>
         )}
 
-        {/* ── Project drilled-in: Sidebar + Content layout ── */}
+        {/* ── Tickets tab ── */}
+        {clientTab === "tickets" && portalTickets.length > 0 && (() => {
+          const openTickets = portalTickets.filter(t => t.status !== "resolved" && !t.deleted_at);
+          if (openTickets.length === 0) return null;
+          const typeColors: Record<string, string> = { design: "#7C3AED", dev: "#2563EB", cro: "#059669", qa: "#D97706" };
+          const statusColors: Record<string, string> = { open: "#EF4444", in_progress: "#F59E0B", quoted: "#8B5CF6", resolved: "#10B981" };
+          return (
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-semibold text-[#1A1A1A]">Open Tickets ({openTickets.length})</h3>
+              </div>
+              <div className="border border-[#E8E8E8] rounded-xl bg-white divide-y divide-[#E8E8E8] overflow-hidden">
+                {openTickets.slice(0, 5).map(t => (
+                  <div key={t.id} className="flex items-center justify-between px-4 py-2.5">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: statusColors[t.status] || "#CCC" }} />
+                      <span className="text-xs font-medium text-[#1A1A1A] truncate">{t.title}</span>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {t.ticket_type && t.ticket_type !== "unassigned" && (
+                        <span className="text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded-full" style={{ backgroundColor: (typeColors[t.ticket_type] || "#999") + "15", color: typeColors[t.ticket_type] || "#999" }}>
+                          {t.ticket_type}
+                        </span>
+                      )}
+                      <span className="text-[9px] text-[#BBB]">{t.status.replace("_", " ")}</span>
+                    </div>
+                  </div>
+                ))}
+                {openTickets.length > 5 && (
+                  <div className="px-4 py-2 text-center">
+                    <span className="text-[10px] text-[#AAA]">+ {openTickets.length - 5} more</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* ── Funnels tab ── */}
+        {clientTab === "funnels" && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-semibold text-[#1A1A1A]">Funnels</h3>
+              <Link
+                href={`/tools/funnel-builder?clientId=${portal.id}&clientName=${encodeURIComponent(portal.client_name)}`}
+                className="text-[11px] font-medium text-[#999] hover:text-[#1A1A1A]"
+              >
+                + New Funnel
+              </Link>
+            </div>
+            {funnels.length > 0 ? (
+              <div className="divide-y divide-[#E8E8E8]">
+                {funnels.map((funnel) => (
+                  <Link
+                    key={funnel.id}
+                    href={`/tools/funnel-builder?id=${funnel.id}`}
+                    className="flex items-center justify-between py-3 hover:bg-[#FAFAFA] transition-colors rounded-lg px-2"
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-[#1A1A1A]">{funnel.name || "Untitled Funnel"}</p>
+                      <p className="text-[10px] text-[#AAA]">{funnel.nodes.length} nodes</p>
+                    </div>
+                    <svg className="size-4 text-[#DDD]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-[#CCC] py-2">No funnels linked yet</p>
+            )}
+          </div>
+        )}
+
+        {/* ── Settings tab ── */}
+        {clientTab === "settings" && (
+          <ClientDetailsPanel portal={portal} team={team} onUpdateField={handleUpdateField} />
+        )}
+
+            </div>
+          </div>
+        )}
+
+        {/* ═══ PROJECT DRILLED-IN VIEW ═══ */}
         {selectedProject && (
           <div className="flex gap-8">
             {/* Left sidebar */}
