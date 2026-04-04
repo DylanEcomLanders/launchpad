@@ -11,7 +11,6 @@ import {
   ArrowTopRightOnSquareIcon,
   TrashIcon,
   ClockIcon,
-  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { inputClass, textareaClass, labelClass } from "@/lib/form-styles";
@@ -764,49 +763,49 @@ export default function PortalDetailPage() {
           </div>
         )}
 
-        {/* ── Project drilled-in: Top tabs + Content layout ── */}
+        {/* ── Project drilled-in: Sidebar + Content layout ── */}
         {selectedProject && (
-          <div>
-            {/* Top navigation bar */}
-            <div className="mb-6">
-              <div className="flex items-center gap-3 mb-4">
-                <button
-                  onClick={() => setSelectedProjectIdx(-1)}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
-                >
-                  <ArrowLeftIcon className="size-3" />
-                  Back
-                </button>
-                <span className="text-[#E8E8E8]">|</span>
-                <p className="text-sm font-bold text-[#1A1A1A] truncate">{selectedProject.name}</p>
-                <span className="text-[11px] text-[#AAA]">
-                  {selectedProject.type === "retainer" ? "Retainer" : "Page Build"}
-                </span>
-              </div>
+          <div className="flex gap-8">
+            {/* Left sidebar */}
+            <div className="w-52 shrink-0 sticky top-24 self-start">
+              <button
+                onClick={() => setSelectedProjectIdx(-1)}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors mb-5"
+              >
+                <ArrowLeftIcon className="size-3" />
+                Back
+              </button>
 
-              {/* Horizontal tab bar */}
-              <div className="flex items-center gap-1 border-b border-[#E8E8E8]">
+              <p className="text-sm font-bold text-[#1A1A1A] mb-0.5 truncate">{selectedProject.name}</p>
+              <p className="text-[11px] text-[#AAA] mb-5">
+                {selectedProject.type === "retainer" ? "Retainer" : "Page Build"}
+              </p>
+
+              {/* Nav links */}
+              <nav className="space-y-0.5 mb-6">
                 {dashTabs.map((tab) => (
                   <button
                     key={tab.key}
                     onClick={() => setActiveTab(tab.key)}
-                    className={`px-4 py-2.5 text-xs font-semibold transition-colors relative ${
+                    className={`w-full text-left px-3 py-2 text-[13px] font-medium rounded-lg transition-colors ${
                       activeTab === tab.key
-                        ? "text-[#1A1A1A]"
-                        : "text-[#AAA] hover:text-[#777]"
+                        ? "bg-[#1A1A1A] text-white"
+                        : "text-[#777] hover:bg-[#FAFAFA] hover:text-[#1A1A1A]"
                     }`}
                   >
                     {tab.label}
-                    {activeTab === tab.key && (
-                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1A1A1A] rounded-full" />
-                    )}
                   </button>
                 ))}
+              </nav>
+
+              {/* Compact client details in sidebar */}
+              <div className="border-t border-[#E8E8E8] pt-5 space-y-5">
+                <SidebarClientDetails portal={portal} team={team} onUpdateField={handleUpdateField} />
               </div>
             </div>
 
-            {/* Content */}
-            <div>
+            {/* Right content */}
+            <div className="flex-1 min-w-0">
         {/* ── OVERVIEW: QA gates + overview + context/weekly ── */}
         {activeTab === "overview" && (
           <div className="space-y-8">
@@ -864,17 +863,6 @@ export default function PortalDetailPage() {
                 clientName={portal.client_name}
               />
             )}
-
-            {/* Client Settings — collapsible */}
-            <details className="group border border-[#E8E8E8] rounded-xl">
-              <summary className="flex items-center justify-between px-5 py-4 cursor-pointer select-none">
-                <h3 className="text-xs font-semibold text-[#1A1A1A]">Client Settings</h3>
-                <ChevronDownIcon className="size-4 text-[#AAA] transition-transform group-open:rotate-180" />
-              </summary>
-              <div className="px-5 pb-5 space-y-5 border-t border-[#E8E8E8]">
-                <SidebarClientDetails portal={portal} team={team} onUpdateField={handleUpdateField} />
-              </div>
-            </details>
           </div>
         )}
 
