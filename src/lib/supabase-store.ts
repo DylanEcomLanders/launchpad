@@ -118,12 +118,23 @@ export function createStore<T extends { id: string }>(opts: StoreOptions) {
     lsSave(lsKey, items);
     if (isSupabaseConfigured()) {
       try {
-        // Upsert all items
+        const keepIds = new Set(items.map(i => i.id));
+        // Delete rows no longer in the set
+        const { data: existing } = await supabase.from(table).select("id");
+        if (existing) {
+          const toDelete = existing.map(r => r.id as string).filter(id => !keepIds.has(id));
+          if (toDelete.length > 0) {
+            await supabase.from(table).delete().in("id", toDelete);
+          }
+        }
+        // Upsert remaining items
         const rows = items.map((item) => {
           const { id, ...rest } = item;
           return { id, data: rest, created_at: new Date().toISOString() };
         });
-        await supabase.from(table).upsert(rows);
+        if (rows.length > 0) {
+          await supabase.from(table).upsert(rows);
+        }
       } catch {
         // localStorage is still saved
       }
