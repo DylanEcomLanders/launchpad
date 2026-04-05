@@ -6,7 +6,7 @@ import { createStore } from "@/lib/supabase-store";
 
 export type Platform = "linkedin" | "instagram" | "x" | "tiktok";
 export type ContentType = "educational" | "social_proof" | "personal" | "promotional";
-export type PostStatus = "idea" | "scripted" | "media_ready" | "approved" | "exported";
+export type PostStatus = "draft" | "created" | "scheduled";
 export type PostFormat = "text" | "image" | "article" | "video";
 
 export interface ContentPost {
@@ -77,19 +77,15 @@ export const postFormatLabels: Record<PostFormat, string> = {
 // ── Status colours & labels ──
 
 export const statusColors: Record<PostStatus, string> = {
-  idea: "#94A3B8",
-  scripted: "#3B82F6",
-  media_ready: "#8B5CF6",
-  approved: "#10B981",
-  exported: "#1B1B1B",
+  draft: "#94A3B8",
+  created: "#3B82F6",
+  scheduled: "#10B981",
 };
 
 export const statusLabels: Record<PostStatus, string> = {
-  idea: "Idea",
-  scripted: "Scripted",
-  media_ready: "Media Ready",
-  approved: "Approved",
-  exported: "Exported",
+  draft: "Draft",
+  created: "Created",
+  scheduled: "Scheduled",
 };
 
 // ── Optimal posting times (mock analytics) ──
@@ -208,7 +204,7 @@ export function seedPosts(): ContentPost[] {
       content_type: "educational",
       post_format: "text",
       caption: "Most brands test button colours. The ones scaling past 8 figures test their entire purchase flow. Here's the framework we use to prioritise what actually moves revenue.",
-      status: "approved",
+      status: "scheduled",
       scheduled_date: dateStr(mon, 1), // Tuesday
       scheduled_time: "08:00",
       analytics_score: 95,
@@ -221,7 +217,7 @@ export function seedPosts(): ContentPost[] {
       content_type: "social_proof",
       post_format: "image",
       caption: "Before and after. Same product. Same traffic. Different landing page. 34% conversion lift in 21 days. The gallery did most of the heavy lifting.",
-      status: "scripted",
+      status: "created",
       scheduled_date: dateStr(mon, 0), // Monday
       scheduled_time: "12:00",
       analytics_score: 93,
@@ -234,7 +230,7 @@ export function seedPosts(): ContentPost[] {
       content_type: "personal",
       post_format: "text",
       caption: "Turned down a 6-figure retainer last week. Wrong fit. Best decision we made this quarter.",
-      status: "idea",
+      status: "draft",
       scheduled_date: dateStr(mon, 2), // Wednesday
       scheduled_time: "09:00",
       analytics_score: 87,
@@ -247,7 +243,7 @@ export function seedPosts(): ContentPost[] {
       content_type: "promotional",
       post_format: "article",
       caption: "We just opened 2 spots for Q2 landing page builds. DTC brands doing £500k+/mo only. If your PDP converts under 4%, we should talk.",
-      status: "media_ready",
+      status: "created",
       scheduled_date: dateStr(mon, 3), // Thursday
       scheduled_time: "12:00",
       analytics_score: 85,
@@ -260,7 +256,7 @@ export function seedPosts(): ContentPost[] {
       content_type: "educational",
       post_format: "image",
       caption: "Your hero image is not a billboard. It is the first frame of a sales conversation. Treat it like one.",
-      status: "approved",
+      status: "scheduled",
       scheduled_date: dateStr(mon, 2), // Wednesday
       scheduled_time: "19:00",
       analytics_score: 91,

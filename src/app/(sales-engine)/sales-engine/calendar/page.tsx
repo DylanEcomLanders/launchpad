@@ -98,14 +98,11 @@ const formatIcons: Record<PostFormat, typeof DocumentTextIcon> = {
 
 function cardColors(status: PostStatus): { bg: string; text: string; dot: string } {
   switch (status) {
-    case "approved":
-    case "exported":
+    case "scheduled":
       return { bg: "#ECFDF5", text: "#059669", dot: "#10B981" }; // green
-    case "media_ready":
-      return { bg: "#F5F3FF", text: "#7C3AED", dot: "#8B5CF6" }; // purple
-    case "scripted":
+    case "created":
       return { bg: "#EFF6FF", text: "#2563EB", dot: "#3B82F6" }; // blue
-    default: // idea
+    default: // draft
       return { bg: "#F3F3F5", text: "#7A7A7A", dot: "#94A3B8" }; // grey
   }
 }
@@ -276,7 +273,7 @@ export default function CalendarPage() {
         post_format: "text",
         angle: "",
         caption: "",
-        status: "idea",
+        status: "draft",
         scheduled_date: toDateStr(new Date()),
         scheduled_time: "09:00",
         analytics_score: 0,
@@ -297,7 +294,7 @@ export default function CalendarPage() {
       post_format: "text",
       angle: "",
       caption: "",
-      status: "idea",
+      status: "draft",
       scheduled_date: date,
       scheduled_time: time,
       analytics_score: 0,
@@ -321,7 +318,7 @@ export default function CalendarPage() {
       post_format: studioPost.post_format || "text",
       angle: studioPost.angle || "",
       caption: studioPost.caption || "",
-      status: studioPost.status || "idea",
+      status: studioPost.status || "draft",
       scheduled_date: studioPost.scheduled_date!,
       scheduled_time: studioPost.scheduled_time || "09:00",
       media_url: studioPost.media_url,
@@ -479,7 +476,7 @@ export default function CalendarPage() {
       content_type: idea.type,
       post_format: "text",
       caption: idea.brief,
-      status: "idea",
+      status: "draft",
     }));
   }
 
@@ -522,7 +519,7 @@ export default function CalendarPage() {
           content_type: studioPost.content_type || "educational",
           post_format: studioPost.post_format || "text",
           caption: studioPost.caption || "",
-          status: studioPost.status || "idea",
+          status: studioPost.status || "draft",
           scheduled_date: studioPost.scheduled_date || toDateStr(new Date()),
           scheduled_time: studioPost.scheduled_time || "09:00",
           media_url: studioPost.media_url,
@@ -568,7 +565,7 @@ export default function CalendarPage() {
           content_type: studioPost.content_type || "educational",
           post_format: (v.post_format || "text") as PostFormat,
           caption: v.caption,
-          status: "idea" as PostStatus,
+          status: "draft" as PostStatus,
           scheduled_date: studioPost.scheduled_date || toDateStr(new Date()),
           scheduled_time: studioPost.scheduled_time || "09:00",
           analytics_score: getSlotScore(
@@ -687,7 +684,7 @@ export default function CalendarPage() {
       post_format: d.post_format || "text",
       angle: d.angle,
       caption: "",
-      status: "idea" as PostStatus,
+      status: "draft" as PostStatus,
       scheduled_date: d.scheduled_date,
       scheduled_time: d.scheduled_time,
       analytics_score: getSlotScore(
@@ -1073,7 +1070,7 @@ export default function CalendarPage() {
                 <XMarkIcon className="size-3.5 text-[#AAA]" />
               </button>
             </div>
-            {(["idea", "scripted", "media_ready", "approved", "exported"] as PostStatus[]).map(status => {
+            {(["draft", "created", "scheduled"] as PostStatus[]).map(status => {
               const statusPosts = posts.filter(p => p.status === status);
               return (
                 <div key={status} className="mb-3">
@@ -1432,7 +1429,7 @@ export default function CalendarPage() {
                     <div className="flex items-center justify-between">
                       <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider shrink-0">Status</p>
                       <div className="flex gap-1">
-                        {(["idea", "scripted", "media_ready", "approved", "exported"] as PostStatus[]).map(s => {
+                        {(["draft", "created", "scheduled"] as PostStatus[]).map(s => {
                           const active = studioPost.status === s;
                           return (
                             <button
@@ -1732,7 +1729,7 @@ export default function CalendarPage() {
 
                       <label className={labelClass}>Status</label>
                       <div className="flex flex-wrap gap-1.5 mb-5">
-                        {(["idea", "scripted", "media_ready", "approved", "exported"] as PostStatus[]).map(s => (
+                        {(["draft", "created", "scheduled"] as PostStatus[]).map(s => (
                           <button
                             key={s}
                             onClick={() => setStudioPost(prev => ({ ...prev, status: s }))}
