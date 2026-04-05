@@ -59,6 +59,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "fixed", text: "saveAll store layer now deletes removed rows from Supabase — previously only upserted, causing deleted posts to reappear on reload" },
       { type: "fixed", text: "Load-time cleanup caps drafts to 3 per day per creator and permanently removes excess from Supabase" },
       { type: "fixed", text: "Changelog now always reflects latest code entries — seed data in code overrides stale Supabase entries so version stays current" },
+      { type: "improved", text: "Premium page transitions — staggered fade-in-up animations on page load across dashboard, calendar, and sales engine with backdrop fades on slide-in panels" },
     ],
   },
   {

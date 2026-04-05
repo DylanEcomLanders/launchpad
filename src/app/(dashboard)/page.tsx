@@ -179,7 +179,7 @@ export default function MissionControl() {
   return (
     <div className="min-h-screen p-5 md:p-6">
       {/* Header */}
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex items-start justify-between mb-4 animate-fadeInUp">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Mission Control</h1>
           <p className="text-sm text-[#7A7A7A]">{dateStr}</p>
@@ -187,10 +187,10 @@ export default function MissionControl() {
       </div>
 
       {/* ── Weekly Rhythm ── */}
-      <WeeklyRhythm />
+      <div className="animate-fadeInUp-d1"><WeeklyRhythm /></div>
 
       {/* ── Blocker Feed ── */}
-      <div className="border border-[#E5E5EA] rounded-lg overflow-hidden flex flex-col lg:max-h-[280px]">
+      <div className="border border-[#E5E5EA] rounded-lg overflow-hidden flex flex-col lg:max-h-[280px] animate-fadeInUp-d2">
         {/* Feed toolbar — inside container */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-[#EDEDEF] shrink-0">
           <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">

@@ -188,7 +188,7 @@ export default function SalesEngineDashboard() {
   return (
     <div className="max-w-5xl mx-auto py-10 px-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 animate-fadeInUp">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-sm text-[#7A7A7A] mt-0.5">
@@ -228,7 +228,7 @@ export default function SalesEngineDashboard() {
       ) : (
         <div className="space-y-8">
           {/* ── Profile Overview ── */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-fadeInUp-d1">
             {Object.entries(latestByPlatform).map(([key, snap]) => {
               const prev = previousByPlatform[key];
               const followerDelta = prev ? snap.followers - prev.followers : 0;

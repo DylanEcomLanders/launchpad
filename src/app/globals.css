@@ -98,7 +98,69 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.25s ease-out;
+  animation: fadeIn 0.25s ease-out both;
+}
+
+/* Staggered fade-in for page sections */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fadeInUp-d1 {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
+}
+
+.animate-fadeInUp-d2 {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+.animate-fadeInUp-d3 {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+}
+
+.animate-fadeInUp-d4 {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+
+.animate-fadeInUp-d5 {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+}
+
+/* Scale fade for cards / modals */
+@keyframes scaleFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scaleFadeIn {
+  animation: scaleFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Backdrop fade */
+@keyframes backdropFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-backdropFade {
+  animation: backdropFade 0.2s ease-out both;
 }
 
 /* Hide scrollbar but keep scrolling */

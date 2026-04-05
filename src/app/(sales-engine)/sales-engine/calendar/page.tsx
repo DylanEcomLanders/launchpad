@@ -800,7 +800,7 @@ export default function CalendarPage() {
   return (
     <div className="py-8 px-6 md:px-8 overflow-x-hidden">
       {/* ── Page header ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 animate-fadeInUp">
         <div className="flex items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Content Calendar</h1>
@@ -866,7 +866,7 @@ export default function CalendarPage() {
       </div>
 
       {/* ── Calendar header bar (like Untitled UI) ── */}
-      <div className="border border-[#E5E5EA] rounded-t-xl bg-white px-5 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="border border-[#E5E5EA] rounded-t-xl bg-white px-5 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3 animate-fadeInUp-d1">
         {/* Left: Month + date range */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
@@ -944,7 +944,7 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      <div className="flex">
+      <div className="flex animate-fadeInUp-d2">
         {/* ── Main calendar grid ── */}
         <div className="flex-1 min-w-0">
 
@@ -1172,7 +1172,7 @@ export default function CalendarPage() {
       {/* ═══ CAPTION STUDIO (slide-in panel) ═══ */}
       {showStudio && (
         <>
-          <div className="fixed inset-0 z-40 bg-black/20" onClick={() => setShowStudio(false)} />
+          <div className="fixed inset-0 z-40 bg-black/20 animate-backdropFade" onClick={() => setShowStudio(false)} />
           <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-md bg-white shadow-[var(--shadow-elevated)] flex flex-col animate-slideIn">
             {/* Header */}
             <div className="shrink-0 bg-white border-b border-[#E5E5EA] px-5 py-3 flex items-center justify-between z-10">
@@ -1874,7 +1874,7 @@ export default function CalendarPage() {
       {/* ═══ IDEA ENGINE (slide-in drawer) ═══ */}
       {showIdeas && (
         <>
-          <div className="fixed inset-0 z-40 bg-black/20" onClick={() => setShowIdeas(false)} />
+          <div className="fixed inset-0 z-40 bg-black/20 animate-backdropFade" onClick={() => setShowIdeas(false)} />
           <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-sm bg-white shadow-[var(--shadow-elevated)] overflow-y-auto animate-slideIn">
             <div className="sticky top-0 bg-white border-b border-[#E5E5EA] px-5 py-4 flex items-center justify-between z-10">
               <div className="flex items-center gap-2">
@@ -1954,7 +1954,7 @@ export default function CalendarPage() {
       {/* ═══ WEEKLY DRAFT (slide-in drawer) ═══ */}
       {showWeeklyDraft && (
         <>
-          <div className="fixed inset-0 z-40 bg-black/20" onClick={() => { if (!draftLoading) setShowWeeklyDraft(false); }} />
+          <div className="fixed inset-0 z-40 bg-black/20 animate-backdropFade" onClick={() => { if (!draftLoading) setShowWeeklyDraft(false); }} />
           <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-lg bg-white shadow-[var(--shadow-elevated)] flex flex-col animate-slideIn">
             {/* Header */}
             <div className="shrink-0 bg-white border-b border-[#E5E5EA] px-5 py-4 flex items-center justify-between">
