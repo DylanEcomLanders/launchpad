@@ -17,6 +17,7 @@ import {
   TrashIcon,
   ArrowPathIcon,
   LinkIcon,
+  ArrowUpTrayIcon,
 } from "@heroicons/react/24/outline";
 import { LockClosedIcon } from "@heroicons/react/24/solid";
 import {
@@ -265,6 +266,10 @@ export default function CalendarPage() {
   const [repurposeLoading, setRepurposeLoading] = useState(false);
   const [repurposeError, setRepurposeError] = useState("");
 
+  // Typefully state
+  const [typefullyLoading, setTypefullyLoading] = useState(false);
+  const [typefullyResult, setTypefullyResult] = useState<{ sent: number; failed: number } | null>(null);
+
   // Drag & drop state
   const [dragPostId, setDragPostId] = useState<string | null>(null);
   const [dragOverDate, setDragOverDate] = useState<string | null>(null);
@@ -508,6 +513,76 @@ export default function CalendarPage() {
     setAllPosts(updated);
     await savePosts(updated);
     setShowStudio(false);
+  }
+
+  // ── Typefully: Schedule posts ──
+  async function scheduleToTypefully() {
+    // Get posts for the current week view that have captions
+    const schedulable = weekPosts.filter(p => p.caption && p.caption.trim());
+    if (schedulable.length === 0) {
+      alert("No posts with captions to schedule. Write your captions first!");
+      return;
+    }
+
+    const count = schedulable.length;
+    if (!confirm(`Schedule ${count} post${count > 1 ? "s" : ""} to Typefully for this week?`)) return;
+
+    setTypefullyLoading(true);
+    setTypefullyResult(null);
+
+    try {
+      // Step 1: Get social sets to find the right account
+      const setsRes = await fetch("/api/typefully?action=social-sets");
+      const setsData = await setsRes.json();
+      if (!setsRes.ok) throw new Error(setsData.error || "Failed to load Typefully accounts");
+
+      const sets = setsData.sets;
+      if (!sets || sets.length === 0) throw new Error("No Typefully accounts found. Connect an account in Typefully first.");
+
+      // Use the first social set (most users have one)
+      const socialSetId = sets[0].id;
+
+      // Step 2: Build the batch payload
+      const batchPosts = schedulable.map(p => ({
+        text: p.caption,
+        platform: p.platform as "x" | "linkedin" | "instagram",
+        publish_at: `${p.scheduled_date}T${p.scheduled_time || "09:00"}:00Z`,
+      }));
+
+      // Step 3: Send the batch
+      const res = await fetch("/api/typefully", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "schedule-batch",
+          social_set_id: socialSetId,
+          posts: batchPosts,
+        }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Failed to schedule posts");
+
+      const sent = result.success?.length || 0;
+      const failed = result.errors?.length || 0;
+      setTypefullyResult({ sent, failed });
+
+      // Mark successfully scheduled posts
+      if (sent > 0) {
+        const updated = allPosts.map(p => {
+          if (schedulable.some(s => s.id === p.id)) {
+            return { ...p, status: "scheduled" as PostStatus };
+          }
+          return p;
+        });
+        setAllPosts(updated);
+        await savePosts(updated);
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to schedule to Typefully");
+    } finally {
+      setTypefullyLoading(false);
+    }
   }
 
   async function clearAllPosts() {
@@ -979,6 +1054,14 @@ export default function CalendarPage() {
             Idea Engine
           </button>
           <button
+            onClick={scheduleToTypefully}
+            disabled={typefullyLoading || weekPosts.filter(p => p.caption?.trim()).length === 0}
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-emerald-200 text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <ArrowUpTrayIcon className="size-3.5" />
+            {typefullyLoading ? "Scheduling..." : "Schedule to Typefully"}
+          </button>
+          <button
             onClick={generateWeeklyDraft}
             disabled={draftLoading}
             className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg bg-[#1B1B1B] text-white hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
@@ -988,6 +1071,22 @@ export default function CalendarPage() {
           </button>
         </div>
       </div>
+
+      {/* Typefully result toast */}
+      {typefullyResult && (
+        <div className="mb-4 flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl px-5 py-3 animate-fadeInUp">
+          <div className="flex items-center gap-2">
+            <CheckIcon className="size-4 text-emerald-600" />
+            <p className="text-sm font-medium text-emerald-800">
+              {typefullyResult.sent} post{typefullyResult.sent !== 1 ? "s" : ""} scheduled to Typefully
+              {typefullyResult.failed > 0 && <span className="text-red-500 ml-1">({typefullyResult.failed} failed)</span>}
+            </p>
+          </div>
+          <button onClick={() => setTypefullyResult(null)} className="text-emerald-400 hover:text-emerald-600">
+            <XMarkIcon className="size-4" />
+          </button>
+        </div>
+      )}
 
       {/* ── Calendar header bar (like Untitled UI) ── */}
       <div className="border border-[#E5E5EA] rounded-t-xl bg-white px-5 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3 animate-fadeInUp-d1">
