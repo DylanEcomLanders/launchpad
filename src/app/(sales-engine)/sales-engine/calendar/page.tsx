@@ -129,13 +129,12 @@ export default function CalendarPage() {
 
   // Weekly draft state
   interface DraftPost {
-    platform: Platform;
     content_type: ContentType;
     post_format: PostFormat;
     scheduled_date: string;
     scheduled_time: string;
+    angle: string;
     brief: string;
-    caption_draft: string;
     selected: boolean;
   }
   const [showWeeklyDraft, setShowWeeklyDraft] = useState(false);
@@ -253,7 +252,7 @@ export default function CalendarPage() {
     } else {
       setStudioPost({
         id: "",
-        platform: "linkedin",
+        platform: "x",
         content_type: "educational",
         post_format: "text",
         caption: "",
@@ -272,7 +271,7 @@ export default function CalendarPage() {
   function openStudioForSlot(date: string, time: string) {
     setStudioPost({
       id: "",
-      platform: "linkedin",
+      platform: "x",
       content_type: "educational",
       post_format: "text",
       caption: "",
@@ -331,7 +330,7 @@ export default function CalendarPage() {
     setShowStudio(false);
   }
 
-  async function generateCaptions() {
+  async function generateCaptions(overrides?: { imageData?: string }) {
     if (!studioPost.platform || !studioPost.content_type) return;
     setCaptionLoading(true);
     setCaptionError("");
@@ -345,7 +344,7 @@ export default function CalendarPage() {
           contentType: contentTypeLabels[studioPost.content_type],
           postFormat: studioPost.post_format || "text",
           brief: studioPost.caption || `${contentTypeLabels[studioPost.content_type]} post about CRO and landing pages`,
-          imageData: studioPost.media_data || undefined,
+          imageData: overrides?.imageData || studioPost.media_data || undefined,
         }),
       });
       const data = await res.json();
@@ -356,6 +355,21 @@ export default function CalendarPage() {
     } finally {
       setCaptionLoading(false);
     }
+  }
+
+  function handleImageUpload(file: File) {
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image must be under 5MB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result as string;
+      setStudioPost(prev => ({ ...prev, media_data: base64 }));
+      // Auto-generate captions based on the image
+      generateCaptions({ imageData: base64 });
+    };
+    reader.readAsDataURL(file);
   }
 
   async function generateIdeas() {
@@ -594,17 +608,18 @@ export default function CalendarPage() {
     if (selected.length === 0) return;
     setDraftSaving(true);
     const now = new Date().toISOString();
+    // All ideas land as X posts — repurpose to other platforms later
     const newPosts: ContentPost[] = selected.map(d => ({
       id: uuid(),
-      platform: d.platform,
+      platform: "x" as Platform,
       content_type: d.content_type,
       post_format: d.post_format || "text",
-      caption: d.caption_draft,
+      caption: d.brief || d.angle,
       status: "idea" as PostStatus,
       scheduled_date: d.scheduled_date,
       scheduled_time: d.scheduled_time,
       analytics_score: getSlotScore(
-        d.platform,
+        "x",
         new Date(d.scheduled_date + "T00:00:00").getDay(),
         parseInt(d.scheduled_time)
       ),
@@ -1136,12 +1151,7 @@ export default function CalendarPage() {
                             className="hidden"
                             onChange={e => {
                               const file = e.target.files?.[0];
-                              if (!file) return;
-                              const reader = new FileReader();
-                              reader.onloadend = () => {
-                                setStudioPost(prev => ({ ...prev, media_data: reader.result as string }));
-                              };
-                              reader.readAsDataURL(file);
+                              if (file) handleImageUpload(file);
                             }}
                           />
                         </label>
@@ -1152,9 +1162,14 @@ export default function CalendarPage() {
                           Remove
                         </button>
                       </div>
-                      {studioPost.post_format === "image" && (
+                      {studioPost.post_format === "image" && !captionLoading && (
                         <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 text-white text-[9px] font-semibold rounded-lg backdrop-blur-sm">
-                          AI captions will be based on this image
+                          Captions generated from this image
+                        </div>
+                      )}
+                      {captionLoading && (
+                        <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 text-white text-[9px] font-semibold rounded-lg backdrop-blur-sm animate-pulse">
+                          Generating captions from image...
                         </div>
                       )}
                     </div>
@@ -1162,23 +1177,14 @@ export default function CalendarPage() {
                     <label className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-[#E5E5EA] rounded-xl cursor-pointer hover:border-[#C5C5C5] hover:bg-[#FAFAFA] transition-colors">
                       <PhotoIcon className="size-8 text-[#CCC]" />
                       <span className="text-xs text-[#7A7A7A]">Click to upload {studioPost.post_format === "video" ? "thumbnail" : "image"}</span>
-                      <span className="text-[10px] text-[#AAA]">PNG, JPG, WebP up to 5MB</span>
+                      <span className="text-[10px] text-[#AAA]">PNG, JPG, WebP — captions auto-generate</span>
                       <input
                         type="file"
                         accept="image/*"
                         className="hidden"
                         onChange={e => {
                           const file = e.target.files?.[0];
-                          if (!file) return;
-                          if (file.size > 5 * 1024 * 1024) {
-                            alert("Image must be under 5MB");
-                            return;
-                          }
-                          const reader = new FileReader();
-                          reader.onloadend = () => {
-                            setStudioPost(prev => ({ ...prev, media_data: reader.result as string }));
-                          };
-                          reader.readAsDataURL(file);
+                          if (file) handleImageUpload(file);
                         }}
                       />
                     </label>
@@ -1238,7 +1244,7 @@ export default function CalendarPage() {
                 <div className="flex items-center justify-between mb-2">
                   <label className={`${labelClass} !mb-0`}>Caption</label>
                   <button
-                    onClick={generateCaptions}
+                    onClick={() => generateCaptions()}
                     disabled={captionLoading}
                     className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
                   >
@@ -1475,7 +1481,7 @@ export default function CalendarPage() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between mb-1">
                     <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
-                      {draftPosts.filter(d => d.selected).length} of {draftPosts.length} selected
+                      {draftPosts.filter(d => d.selected).length} of {draftPosts.length} ideas
                     </p>
                     <button
                       onClick={() => setDraftPosts(prev => prev.map(d => ({ ...d, selected: !prev.every(p => p.selected) })))}
@@ -1499,13 +1505,10 @@ export default function CalendarPage() {
                         }`}
                       >
                         {/* Top row: badges + actions */}
-                        <div className="flex items-center justify-between mb-2.5">
+                        <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span
-                              className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
-                              style={{ backgroundColor: platformColors[draft.platform] + "15", color: platformColors[draft.platform] }}
-                            >
-                              {platformLabels[draft.platform]}
+                            <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-[#F0F0F0] text-[#555]">
+                              X first
                             </span>
                             <span
                               className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
@@ -1543,18 +1546,16 @@ export default function CalendarPage() {
                           <ClockIcon className="size-3 text-[#AAA]" />
                           <span className="text-[10px] font-semibold text-[#555]">{dayLabel}</span>
                           <span className="text-[10px] text-[#AAA]">{(() => { const [h,m] = draft.scheduled_time.split(":").map(Number); return `${h % 12 || 12}:${m.toString().padStart(2,"0")} ${h >= 12 ? "PM" : "AM"}`; })()}</span>
-                          {getSlotScore(draft.platform, new Date(draft.scheduled_date + "T00:00:00").getDay(), parseInt(draft.scheduled_time)) >= 80 && (
+                          {getSlotScore("x", new Date(draft.scheduled_date + "T00:00:00").getDay(), parseInt(draft.scheduled_time)) >= 80 && (
                             <span className="text-[8px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Optimal</span>
                           )}
                         </div>
 
-                        {/* Brief */}
-                        <p className="text-[10px] text-[#7A7A7A] italic mb-2">{draft.brief}</p>
+                        {/* Angle */}
+                        <p className="text-xs font-semibold text-[#1B1B1B] mb-1">{draft.angle}</p>
 
-                        {/* Caption draft */}
-                        <div className="bg-[#F7F8FA] rounded-lg p-3">
-                          <p className="text-xs text-[#1B1B1B] leading-relaxed">{draft.caption_draft}</p>
-                        </div>
+                        {/* Brief */}
+                        <p className="text-[11px] text-[#7A7A7A] leading-relaxed">{draft.brief}</p>
                       </div>
                     );
                   })}
@@ -1578,10 +1579,10 @@ export default function CalendarPage() {
                   className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
                 >
                   <CheckIcon className="size-3.5" />
-                  {draftSaving ? "Adding to calendar..." : `Add ${draftPosts.filter(d => d.selected).length} drafts to calendar`}
+                  {draftSaving ? "Adding to calendar..." : `Add ${draftPosts.filter(d => d.selected).length} ideas to calendar`}
                 </button>
                 <p className="text-[10px] text-[#AAA] text-center mt-2">
-                  Posts will be added as "Idea" status — edit and promote them through your workflow
+                  Ideas land as X posts — click each to write the caption, then Repurpose to all platforms
                 </p>
               </div>
             )}

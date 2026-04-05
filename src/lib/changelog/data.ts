@@ -63,6 +63,9 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Platform tabs in Caption Studio — linked posts show tabs to switch between platform variants, each with independent status tracking" },
       { type: "added", text: "TikTok added as a platform — video-first format with hook-style caption generation" },
       { type: "improved", text: "Calendar event cards show link icon for repurposed content groups" },
+      { type: "improved", text: "Image upload auto-generates captions — drop an image and AI writes captions based on it immediately, no extra button click" },
+      { type: "improved", text: "All new posts default to X (Twitter) first — write the sharpest take, then repurpose outward" },
+      { type: "improved", text: "Weekly Draft now generates ideas/angles at optimal slots, not full captions — click through each to write content and repurpose" },
     ],
   },
   {
