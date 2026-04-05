@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   PlusIcon,
   ChevronLeftIcon,
@@ -162,6 +162,10 @@ export default function CalendarPage() {
   // Repurpose state
   const [repurposeLoading, setRepurposeLoading] = useState(false);
   const [repurposeError, setRepurposeError] = useState("");
+
+  // Drag & drop state
+  const [dragPostId, setDragPostId] = useState<string | null>(null);
+  const [dragOverDate, setDragOverDate] = useState<string | null>(null);
 
   const weekDates = useMemo(() => getWeekDates(weekOffset), [weekOffset]);
   const monthDates = useMemo(
@@ -343,6 +347,53 @@ export default function CalendarPage() {
     setPosts(updated);
     await savePosts(updated);
     setShowStudio(false);
+  }
+
+  async function clearAllPosts() {
+    if (!confirm("Delete ALL posts? This cannot be undone.")) return;
+    setPosts([]);
+    await savePosts([]);
+  }
+
+  // ── Drag & Drop helpers ──
+
+  function handleDragStart(e: React.DragEvent, postId: string) {
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", postId);
+    setDragPostId(postId);
+  }
+
+  function handleDragOver(e: React.DragEvent, dateStr: string) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (dragOverDate !== dateStr) setDragOverDate(dateStr);
+  }
+
+  function handleDragLeave() {
+    setDragOverDate(null);
+  }
+
+  async function handleDrop(e: React.DragEvent, targetDate: string) {
+    e.preventDefault();
+    setDragOverDate(null);
+    const postId = e.dataTransfer.getData("text/plain") || dragPostId;
+    if (!postId) return;
+    setDragPostId(null);
+
+    const post = posts.find(p => p.id === postId);
+    if (!post || post.scheduled_date === targetDate) return;
+
+    const now = new Date().toISOString();
+    const updated = posts.map(p =>
+      p.id === postId ? { ...p, scheduled_date: targetDate, updated_at: now } : p
+    );
+    setPosts(updated);
+    await savePosts(updated);
+  }
+
+  function handleDragEnd() {
+    setDragPostId(null);
+    setDragOverDate(null);
   }
 
   async function generateCaptions(overrides?: { imageData?: string }) {
@@ -704,6 +755,15 @@ export default function CalendarPage() {
           <p className="text-sm text-[#7A7A7A] mt-0.5">Plan, write, and organise content before publishing</p>
         </div>
         <div className="flex items-center gap-2">
+          {posts.length > 0 && (
+            <button
+              onClick={clearAllPosts}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-red-200 text-red-400 hover:bg-red-50 transition-colors"
+            >
+              <TrashIcon className="size-3.5" />
+              Clear All
+            </button>
+          )}
           <button
             onClick={() => setShowPipeline(!showPipeline)}
             className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border transition-colors ${
@@ -833,13 +893,19 @@ export default function CalendarPage() {
                     const isToday = toDateStr(d) === toDateStr(new Date());
                     const dayPosts = postsForDate(toDateStr(d));
 
+                    const dStr = toDateStr(d);
+                    const isDragOver = dragOverDate === dStr;
+
                     return (
                       <div
                         key={col}
                         className={`min-h-[120px] px-3 py-2 ${col > 0 ? "border-l border-[#E5E5EA]" : ""} ${
                           !isCurrentMonth ? "bg-[#FAFAFA]" : "bg-white"
-                        } hover:bg-[#F5F8FF] cursor-pointer transition-colors group`}
-                        onClick={() => openStudioForSlot(toDateStr(d), "09:00")}
+                        } ${isDragOver ? "!bg-blue-50 ring-2 ring-inset ring-blue-300" : ""} hover:bg-[#F5F8FF] cursor-pointer transition-colors group`}
+                        onClick={() => openStudioForSlot(dStr, "09:00")}
+                        onDragOver={(e) => handleDragOver(e, dStr)}
+                        onDragLeave={handleDragLeave}
+                        onDrop={(e) => handleDrop(e, dStr)}
                       >
                         {/* Date number */}
                         <div className="flex items-center justify-between mb-1.5">
@@ -857,19 +923,35 @@ export default function CalendarPage() {
                           {dayPosts.slice(0, 3).map(p => {
                             const cc = cardColors(p.status);
                             return (
-                            <button
+                            <div
                               key={p.id}
-                              onClick={(e) => { e.stopPropagation(); openStudio(p); }}
-                              className="w-full text-left flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] transition-all hover:shadow-sm"
+                              draggable
+                              onDragStart={(e) => { e.stopPropagation(); handleDragStart(e, p.id); }}
+                              onDragEnd={handleDragEnd}
+                              className={`w-full text-left flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] transition-all hover:shadow-sm cursor-grab active:cursor-grabbing group/card relative ${
+                                dragPostId === p.id ? "opacity-40" : ""
+                              }`}
                               style={{ backgroundColor: cc.bg, color: cc.text }}
                             >
-                              <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: cc.dot }} />
-                              <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: platformColors[p.platform] }} />
-                              <FormatBadge format={p.post_format || "text"} size="xs" />
-                              {p.group_id && <LinkIcon className="size-2 shrink-0 opacity-40" />}
-                              <span className="font-medium truncate">{p.caption.slice(0, 16)}{p.caption.length > 16 ? "..." : ""}</span>
-                              <span className="text-[10px] ml-auto shrink-0 opacity-70">{fmtTime(p.scheduled_time)}</span>
-                            </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); openStudio(p); }}
+                                className="flex items-center gap-1.5 min-w-0 flex-1"
+                              >
+                                <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: cc.dot }} />
+                                <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: platformColors[p.platform] }} />
+                                <FormatBadge format={p.post_format || "text"} size="xs" />
+                                {p.group_id && <LinkIcon className="size-2 shrink-0 opacity-40" />}
+                                <span className="font-medium truncate">{p.caption.slice(0, 16)}{p.caption.length > 16 ? "..." : ""}</span>
+                                <span className="text-[10px] ml-auto shrink-0 opacity-70">{fmtTime(p.scheduled_time)}</span>
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleDeletePost(p.id); }}
+                                className="hidden group-hover/card:flex items-center justify-center size-4 rounded hover:bg-red-100 shrink-0 transition-colors"
+                                title="Delete post"
+                              >
+                                <XMarkIcon className="size-2.5 text-red-400" />
+                              </button>
+                            </div>
                             );
                           })}
                           {dayPosts.length > 3 && (
@@ -910,34 +992,59 @@ export default function CalendarPage() {
               {/* Day columns with posts */}
               <div className="grid grid-cols-7 min-h-[480px]">
                 {weekDates.map((d, i) => {
-                  const dateStr = toDateStr(d);
-                  const dayPosts = postsForDate(dateStr).sort((a, b) => a.scheduled_time.localeCompare(b.scheduled_time));
-                  const isToday = dateStr === toDateStr(new Date());
+                  const dStr = toDateStr(d);
+                  const dayPosts = postsForDate(dStr).sort((a, b) => a.scheduled_time.localeCompare(b.scheduled_time));
+                  const isToday = dStr === toDateStr(new Date());
+                  const isDragOver = dragOverDate === dStr;
 
                   return (
                     <div
                       key={i}
-                      className={`${i > 0 ? "border-l border-[#E5E5EA]" : ""} ${isToday ? "bg-[#F5F8FF]/50" : ""} px-2 py-2 hover:bg-[#F5F8FF]/30 cursor-pointer transition-colors group`}
-                      onClick={() => openStudioForSlot(dateStr, "09:00")}
+                      className={`${i > 0 ? "border-l border-[#E5E5EA]" : ""} ${isToday ? "bg-[#F5F8FF]/50" : ""} ${isDragOver ? "!bg-blue-50 ring-2 ring-inset ring-blue-300" : ""} px-2 py-2 hover:bg-[#F5F8FF]/30 cursor-pointer transition-colors group`}
+                      onClick={() => openStudioForSlot(dStr, "09:00")}
+                      onDragOver={(e) => handleDragOver(e, dStr)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => handleDrop(e, dStr)}
                     >
                       {dayPosts.map(p => {
                         const cc = cardColors(p.status);
                         return (
-                        <button
+                        <div
                           key={p.id}
-                          onClick={(e) => { e.stopPropagation(); openStudio(p); }}
-                          className="w-full text-left px-2.5 py-1.5 rounded-md mb-1.5 transition-all hover:shadow-sm"
+                          draggable
+                          onDragStart={(e) => { e.stopPropagation(); handleDragStart(e, p.id); }}
+                          onDragEnd={handleDragEnd}
+                          className={`w-full text-left px-2.5 py-1.5 rounded-md mb-1.5 transition-all hover:shadow-sm cursor-grab active:cursor-grabbing group/card relative ${
+                            dragPostId === p.id ? "opacity-40" : ""
+                          }`}
                           style={{ backgroundColor: cc.bg, color: cc.text }}
                         >
                           <div className="flex items-center gap-1.5">
-                            <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: cc.dot }} />
-                            <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: platformColors[p.platform] }} />
-                            <FormatBadge format={p.post_format || "text"} size="xs" />
-                            {p.group_id && <LinkIcon className="size-2 shrink-0 opacity-40" />}
-                            <span className="text-[11px] font-medium truncate">{p.caption.slice(0, 20)}{p.caption.length > 20 ? "..." : ""}</span>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); openStudio(p); }}
+                              className="flex items-center gap-1.5 min-w-0 flex-1"
+                            >
+                              <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: cc.dot }} />
+                              <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: platformColors[p.platform] }} />
+                              <FormatBadge format={p.post_format || "text"} size="xs" />
+                              {p.group_id && <LinkIcon className="size-2 shrink-0 opacity-40" />}
+                              <span className="text-[11px] font-medium truncate">{p.caption.slice(0, 20)}{p.caption.length > 20 ? "..." : ""}</span>
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleDeletePost(p.id); }}
+                              className="hidden group-hover/card:flex items-center justify-center size-4 rounded hover:bg-red-100 shrink-0 transition-colors"
+                              title="Delete post"
+                            >
+                              <XMarkIcon className="size-2.5 text-red-400" />
+                            </button>
                           </div>
-                          <span className="text-[10px] opacity-70 ml-3.5">{fmtTime(p.scheduled_time)}</span>
-                        </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); openStudio(p); }}
+                            className="block"
+                          >
+                            <span className="text-[10px] opacity-70 ml-3.5">{fmtTime(p.scheduled_time)}</span>
+                          </button>
+                        </div>
                         );
                       })}
                       {dayPosts.length === 0 && (

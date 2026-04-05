@@ -44,6 +44,9 @@ const seedChangelog: ChangelogEntry[] = [
     changes: [
       { type: "improved", text: "Weekly Draft now generates 3-4 posts per day (21-28 total) evenly spread across all 7 days, with content types matched to their best-performing days and times" },
       { type: "improved", text: "Weekly Draft review drawer groups posts by day with headers, post counts, and per-day select/deselect toggles for faster review" },
+      { type: "added", text: "Drag and drop posts between days on both month and week views — grab any card and drop it onto a different day" },
+      { type: "added", text: "Delete posts directly from calendar cards — hover to reveal X button, no need to open the post first" },
+      { type: "added", text: "Clear All button in header to wipe all posts at once (with confirmation)" },
     ],
   },
   {
