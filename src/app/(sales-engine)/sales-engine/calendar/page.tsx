@@ -1567,11 +1567,20 @@ export default function CalendarPage() {
                 </div>
               )}
 
-              {!draftLoading && draftPosts.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between mb-1">
+              {!draftLoading && draftPosts.length > 0 && (() => {
+                // Group by date
+                const byDate: Record<string, { draft: typeof draftPosts[0]; index: number }[]> = {};
+                draftPosts.forEach((d, i) => {
+                  if (!byDate[d.scheduled_date]) byDate[d.scheduled_date] = [];
+                  byDate[d.scheduled_date].push({ draft: d, index: i });
+                });
+                const sortedDates = Object.keys(byDate).sort();
+
+                return (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
                     <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
-                      {draftPosts.filter(d => d.selected).length} of {draftPosts.length} ideas
+                      {draftPosts.filter(d => d.selected).length} of {draftPosts.length} ideas · {sortedDates.length} days
                     </p>
                     <button
                       onClick={() => setDraftPosts(prev => prev.map(d => ({ ...d, selected: !prev.every(p => p.selected) })))}
@@ -1581,76 +1590,90 @@ export default function CalendarPage() {
                     </button>
                   </div>
 
-                  {draftPosts.map((draft, i) => {
-                    const Icon = formatIcons[draft.post_format] || DocumentTextIcon;
-                    const dayLabel = new Date(draft.scheduled_date + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+                  {sortedDates.map(date => {
+                    const dayItems = byDate[date];
+                    const dayLabel = new Date(date + "T00:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" });
+                    const allSelected = dayItems.every(d => d.draft.selected);
 
                     return (
-                      <div
-                        key={i}
-                        className={`border rounded-xl p-4 transition-all ${
-                          draft.selected
-                            ? "border-[#1B1B1B] bg-white shadow-sm"
-                            : "border-[#E5E5EA] bg-[#FAFAFA] opacity-50"
-                        }`}
-                      >
-                        {/* Top row: badges + actions */}
+                      <div key={date}>
+                        {/* Day header */}
                         <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-[#F0F0F0] text-[#555]">
-                              X first
-                            </span>
-                            <span
-                              className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
-                              style={{ backgroundColor: contentTypeColors[draft.content_type] + "15", color: contentTypeColors[draft.content_type] }}
-                            >
-                              {contentTypeLabels[draft.content_type]}
-                            </span>
-                            <span className="flex items-center gap-0.5 text-[9px] font-semibold text-[#7A7A7A] bg-[#F3F3F5] px-1.5 py-0.5 rounded-full">
-                              <Icon className="size-2.5" />
-                              {postFormatLabels[draft.post_format]}
-                            </span>
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-xs font-bold text-[#1B1B1B]">{dayLabel}</h4>
+                            <span className="text-[9px] text-[#AAA]">{dayItems.length} posts</span>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => toggleDraft(i)}
-                              className={`size-5 rounded-md border flex items-center justify-center transition-colors ${
-                                draft.selected
-                                  ? "bg-[#1B1B1B] border-[#1B1B1B]"
-                                  : "border-[#D4D4D4] hover:border-[#AAA]"
-                              }`}
-                            >
-                              {draft.selected && <CheckIcon className="size-3 text-white" />}
-                            </button>
-                            <button
-                              onClick={() => removeDraft(i)}
-                              className="p-0.5 rounded hover:bg-red-50 transition-colors"
-                            >
-                              <TrashIcon className="size-3.5 text-[#CCC] hover:text-red-400" />
-                            </button>
-                          </div>
+                          <button
+                            onClick={() => {
+                              const indices = dayItems.map(d => d.index);
+                              setDraftPosts(prev => prev.map((d, i) => indices.includes(i) ? { ...d, selected: !allSelected } : d));
+                            }}
+                            className="text-[9px] font-semibold text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+                          >
+                            {allSelected ? "Deselect day" : "Select day"}
+                          </button>
                         </div>
 
-                        {/* Schedule */}
-                        <div className="flex items-center gap-2 mb-2">
-                          <ClockIcon className="size-3 text-[#AAA]" />
-                          <span className="text-[10px] font-semibold text-[#555]">{dayLabel}</span>
-                          <span className="text-[10px] text-[#AAA]">{(() => { const [h,m] = draft.scheduled_time.split(":").map(Number); return `${h % 12 || 12}:${m.toString().padStart(2,"0")} ${h >= 12 ? "PM" : "AM"}`; })()}</span>
-                          {getSlotScore("x", new Date(draft.scheduled_date + "T00:00:00").getDay(), parseInt(draft.scheduled_time)) >= 80 && (
-                            <span className="text-[8px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Optimal</span>
-                          )}
+                        {/* Day posts */}
+                        <div className="space-y-2 mb-1">
+                          {dayItems.map(({ draft, index }) => {
+                            const Icon = formatIcons[draft.post_format] || DocumentTextIcon;
+                            const fmtTimeStr = (() => { const [h,m] = draft.scheduled_time.split(":").map(Number); return `${h % 12 || 12}:${m.toString().padStart(2,"0")} ${h >= 12 ? "PM" : "AM"}`; })();
+
+                            return (
+                              <div
+                                key={index}
+                                className={`border rounded-lg px-3 py-2.5 transition-all ${
+                                  draft.selected
+                                    ? "border-[#D4D4D4] bg-white"
+                                    : "border-[#E5E5EA] bg-[#FAFAFA] opacity-40"
+                                }`}
+                              >
+                                <div className="flex items-start gap-2">
+                                  {/* Checkbox */}
+                                  <button
+                                    onClick={() => toggleDraft(index)}
+                                    className={`size-4 rounded border flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
+                                      draft.selected ? "bg-[#1B1B1B] border-[#1B1B1B]" : "border-[#D4D4D4]"
+                                    }`}
+                                  >
+                                    {draft.selected && <CheckIcon className="size-2.5 text-white" />}
+                                  </button>
+
+                                  {/* Content */}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-1.5 mb-1">
+                                      <span className="text-[9px] font-semibold text-[#555]">{fmtTimeStr}</span>
+                                      <span
+                                        className="text-[8px] font-semibold px-1 py-0.5 rounded-full"
+                                        style={{ backgroundColor: contentTypeColors[draft.content_type] + "15", color: contentTypeColors[draft.content_type] }}
+                                      >
+                                        {contentTypeLabels[draft.content_type]}
+                                      </span>
+                                      <span className="flex items-center gap-0.5 text-[8px] font-semibold text-[#999] bg-[#F3F3F5] px-1 py-0.5 rounded-full">
+                                        <Icon className="size-2" />
+                                        {postFormatLabels[draft.post_format]}
+                                      </span>
+                                    </div>
+                                    <p className="text-[11px] font-semibold text-[#1B1B1B] leading-snug">{draft.angle}</p>
+                                    <p className="text-[10px] text-[#7A7A7A] mt-0.5 leading-relaxed">{draft.brief}</p>
+                                  </div>
+
+                                  {/* Remove */}
+                                  <button onClick={() => removeDraft(index)} className="p-0.5 rounded hover:bg-red-50 shrink-0">
+                                    <TrashIcon className="size-3 text-[#CCC] hover:text-red-400" />
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
-
-                        {/* Angle */}
-                        <p className="text-xs font-semibold text-[#1B1B1B] mb-1">{draft.angle}</p>
-
-                        {/* Brief */}
-                        <p className="text-[11px] text-[#7A7A7A] leading-relaxed">{draft.brief}</p>
                       </div>
                     );
                   })}
                 </div>
-              )}
+                );
+              })()}
 
               {!draftLoading && draftPosts.length === 0 && !draftError && (
                 <div className="text-center py-10">

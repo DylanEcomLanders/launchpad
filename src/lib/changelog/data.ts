@@ -37,6 +37,16 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-23",
+    date: "5 Apr 2026",
+    version: "0.19.2",
+    title: "Weekly Draft Volume & Day-Grouped Review",
+    changes: [
+      { type: "improved", text: "Weekly Draft now generates 3-4 posts per day (21-28 total) evenly spread across all 7 days, with content types matched to their best-performing days and times" },
+      { type: "improved", text: "Weekly Draft review drawer groups posts by day with headers, post counts, and per-day select/deselect toggles for faster review" },
+    ],
+  },
+  {
     id: "cl-22",
     date: "4 Apr 2026",
     version: "0.19.1",
