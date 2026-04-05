@@ -675,6 +675,19 @@ export default function CalendarPage() {
     reader.readAsDataURL(file);
   }
 
+  function handlePaste(e: React.ClipboardEvent) {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith("image/")) {
+        e.preventDefault();
+        const file = items[i].getAsFile();
+        if (file) handleImageUpload(file);
+        return;
+      }
+    }
+  }
+
   async function generateIdeas() {
     setIdeasLoading(true);
     setIdeasError("");
@@ -1399,7 +1412,7 @@ export default function CalendarPage() {
       {showStudio && (
         <>
           <div className="fixed inset-0 z-40 bg-black/20 animate-backdropFade" onClick={() => setShowStudio(false)} />
-          <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-md bg-white shadow-[var(--shadow-elevated)] flex flex-col animate-slideIn">
+          <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-md bg-white shadow-[var(--shadow-elevated)] flex flex-col animate-slideIn" onPaste={handlePaste}>
             {/* Header */}
             <div className="shrink-0 bg-white border-b border-[#E5E5EA] px-5 py-3 flex items-center justify-between z-10">
               <h2 className="text-sm font-bold text-[#1B1B1B]">{studioPost.id ? "Edit Post" : "New Post"}</h2>
@@ -1508,7 +1521,7 @@ export default function CalendarPage() {
                     {!studioPost.media_data && (studioPost.post_format === "image" || studioPost.post_format === "video") && (
                       <label className="flex items-center justify-center gap-2 py-5 border border-dashed border-[#E0E0E0] rounded-xl cursor-pointer hover:border-[#B0B0B0] hover:bg-[#FAFAFA] transition-colors mb-4">
                         <PhotoIcon className="size-5 text-[#CCC]" />
-                        <span className="text-[11px] text-[#999]">Upload image</span>
+                        <span className="text-[11px] text-[#999]">Upload or paste image</span>
                         <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
                       </label>
                     )}
@@ -1909,7 +1922,7 @@ export default function CalendarPage() {
                       ) : (
                         <label className="flex flex-col items-center justify-center gap-2 py-12 border-2 border-dashed border-[#E5E5EA] rounded-xl cursor-pointer hover:border-[#C5C5C5] hover:bg-[#FAFAFA] transition-colors mb-4">
                           <PhotoIcon className="size-10 text-[#CCC]" />
-                          <span className="text-xs text-[#7A7A7A]">Click to upload</span>
+                          <span className="text-xs text-[#7A7A7A]">Click to upload or paste a screenshot</span>
                           <span className="text-[10px] text-[#AAA]">PNG, JPG, WebP — captions auto-generate</span>
                           <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
                         </label>

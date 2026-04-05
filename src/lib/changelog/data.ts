@@ -37,6 +37,16 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-26",
+    date: "6 Apr 2026",
+    version: "0.21.1",
+    title: "Screenshot Paste & Scheduling Accuracy",
+    changes: [
+      { type: "added", text: "Paste screenshots directly into post drafts — Cmd+V anywhere in the studio panel drops the image in and auto-generates captions" },
+      { type: "improved", text: "Post scheduling now uses natural minute values (e.g. 08:23, 12:36, 17:08) based on analytics instead of rounding to the hour" },
+    ],
+  },
+  {
     id: "cl-25",
     date: "5 Apr 2026",
     version: "0.21.0",
