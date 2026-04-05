@@ -66,6 +66,8 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Image upload auto-generates captions — drop an image and AI writes captions based on it immediately, no extra button click" },
       { type: "improved", text: "All new posts default to X (Twitter) first — write the sharpest take, then repurpose outward" },
       { type: "improved", text: "Weekly Draft now generates ideas/angles at optimal slots, not full captions — click through each to write content and repurpose" },
+      { type: "improved", text: "Caption Studio is now a step-by-step flow — Format → Content Type → Media → Caption → Schedule — one choice at a time, no option overload" },
+      { type: "improved", text: "Calendar cards colour-coded by status — grey for ideas/drafts, blue for scripted, purple for media ready, green for approved/exported" },
     ],
   },
   {

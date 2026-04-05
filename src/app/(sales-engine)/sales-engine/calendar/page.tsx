@@ -95,6 +95,20 @@ const formatIcons: Record<PostFormat, typeof DocumentTextIcon> = {
   video: VideoCameraIcon,
 };
 
+function cardColors(status: PostStatus): { bg: string; text: string; dot: string } {
+  switch (status) {
+    case "approved":
+    case "exported":
+      return { bg: "#ECFDF5", text: "#059669", dot: "#10B981" }; // green
+    case "media_ready":
+      return { bg: "#F5F3FF", text: "#7C3AED", dot: "#8B5CF6" }; // purple
+    case "scripted":
+      return { bg: "#EFF6FF", text: "#2563EB", dot: "#3B82F6" }; // blue
+    default: // idea
+      return { bg: "#F3F3F5", text: "#7A7A7A", dot: "#94A3B8" }; // grey
+  }
+}
+
 function FormatBadge({ format, size = "sm" }: { format: PostFormat; size?: "sm" | "xs" }) {
   const Icon = formatIcons[format];
   if (size === "xs") return <Icon className="size-2.5 shrink-0 opacity-60" />;
@@ -142,6 +156,9 @@ export default function CalendarPage() {
   const [draftLoading, setDraftLoading] = useState(false);
   const [draftError, setDraftError] = useState("");
   const [draftSaving, setDraftSaving] = useState(false);
+
+  // Studio step flow: 1=format, 2=type, 3=media, 4=caption, 5=schedule
+  const [studioStep, setStudioStep] = useState(1);
 
   // Repurpose state
   const [repurposeLoading, setRepurposeLoading] = useState(false);
@@ -249,6 +266,7 @@ export default function CalendarPage() {
     if (post) {
       setStudioPost({ ...post });
       setSelectedCaption(-1);
+      setStudioStep(4); // jump to caption step for existing posts
     } else {
       setStudioPost({
         id: "",
@@ -262,6 +280,7 @@ export default function CalendarPage() {
         analytics_score: 0,
       });
       setSelectedCaption(-1);
+      setStudioStep(1); // start from beginning
     }
     setCaptions([]);
     setCaptionError("");
@@ -283,6 +302,7 @@ export default function CalendarPage() {
     setCaptions([]);
     setCaptionError("");
     setSelectedCaption(-1);
+    setStudioStep(1);
     setShowStudio(true);
   }
 
@@ -839,25 +859,24 @@ export default function CalendarPage() {
 
                         {/* Event cards */}
                         <div className="space-y-1">
-                          {dayPosts.slice(0, 3).map(p => (
+                          {dayPosts.slice(0, 3).map(p => {
+                            const cc = cardColors(p.status);
+                            return (
                             <button
                               key={p.id}
                               onClick={(e) => { e.stopPropagation(); openStudio(p); }}
-                              className={`w-full text-left flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] transition-all hover:shadow-sm ${
-                                p.status === "idea" ? "opacity-60" : ""
-                              }`}
-                              style={{
-                                backgroundColor: platformColors[p.platform] + "12",
-                                color: platformColors[p.platform],
-                              }}
+                              className="w-full text-left flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] transition-all hover:shadow-sm"
+                              style={{ backgroundColor: cc.bg, color: cc.text }}
                             >
+                              <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: cc.dot }} />
                               <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: platformColors[p.platform] }} />
                               <FormatBadge format={p.post_format || "text"} size="xs" />
                               {p.group_id && <LinkIcon className="size-2 shrink-0 opacity-40" />}
-                              <span className="font-medium truncate">{p.caption.slice(0, 18)}{p.caption.length > 18 ? "..." : ""}</span>
+                              <span className="font-medium truncate">{p.caption.slice(0, 16)}{p.caption.length > 16 ? "..." : ""}</span>
                               <span className="text-[10px] ml-auto shrink-0 opacity-70">{fmtTime(p.scheduled_time)}</span>
                             </button>
-                          ))}
+                            );
+                          })}
                           {dayPosts.length > 3 && (
                             <p className="text-[10px] text-[#AAA] pl-2">{dayPosts.length - 3} more...</p>
                           )}
@@ -906,27 +925,26 @@ export default function CalendarPage() {
                       className={`${i > 0 ? "border-l border-[#E5E5EA]" : ""} ${isToday ? "bg-[#F5F8FF]/50" : ""} px-2 py-2 hover:bg-[#F5F8FF]/30 cursor-pointer transition-colors group`}
                       onClick={() => openStudioForSlot(dateStr, "09:00")}
                     >
-                      {dayPosts.map(p => (
+                      {dayPosts.map(p => {
+                        const cc = cardColors(p.status);
+                        return (
                         <button
                           key={p.id}
                           onClick={(e) => { e.stopPropagation(); openStudio(p); }}
-                          className={`w-full text-left px-2.5 py-1.5 rounded-md mb-1.5 transition-all hover:shadow-sm ${
-                            p.status === "idea" ? "opacity-60" : ""
-                          }`}
-                          style={{
-                            backgroundColor: platformColors[p.platform] + "12",
-                            color: platformColors[p.platform],
-                          }}
+                          className="w-full text-left px-2.5 py-1.5 rounded-md mb-1.5 transition-all hover:shadow-sm"
+                          style={{ backgroundColor: cc.bg, color: cc.text }}
                         >
                           <div className="flex items-center gap-1.5">
+                            <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: cc.dot }} />
                             <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: platformColors[p.platform] }} />
                             <FormatBadge format={p.post_format || "text"} size="xs" />
                             {p.group_id && <LinkIcon className="size-2 shrink-0 opacity-40" />}
-                            <span className="text-[11px] font-medium truncate">{p.caption.slice(0, 22)}{p.caption.length > 22 ? "..." : ""}</span>
+                            <span className="text-[11px] font-medium truncate">{p.caption.slice(0, 20)}{p.caption.length > 20 ? "..." : ""}</span>
                           </div>
                           <span className="text-[10px] opacity-70 ml-3.5">{fmtTime(p.scheduled_time)}</span>
                         </button>
-                      ))}
+                        );
+                      })}
                       {dayPosts.length === 0 && (
                         <div className="flex items-center justify-center h-12 opacity-0 group-hover:opacity-100 transition-opacity">
                           <PlusIcon className="size-4 text-[#CCC]" />
@@ -1060,113 +1078,124 @@ export default function CalendarPage() {
               </div>
             )}
 
+            {/* Step progress */}
+            <div className="shrink-0 px-5 pt-4 pb-2 flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map(s => (
+                <button
+                  key={s}
+                  onClick={() => setStudioStep(s)}
+                  className={`h-1 flex-1 rounded-full transition-colors ${
+                    s <= studioStep ? "bg-[#1B1B1B]" : "bg-[#E5E5EA]"
+                  }`}
+                />
+              ))}
+            </div>
+
             <div className="flex-1 overflow-y-auto p-5 space-y-5">
-              {/* Platform (only when NOT in a group — single post mode) */}
-              {!studioPost.group_id && (
-              <div>
-                <label className={labelClass}>Platform</label>
-                <div className="flex gap-2">
-                  {(["x", "linkedin", "instagram", "tiktok"] as Platform[]).map(p => (
-                    <button
-                      key={p}
-                      onClick={() => setStudioPost(prev => ({ ...prev, platform: p }))}
-                      className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg border transition-colors ${
-                        studioPost.platform === p
-                          ? "border-[#1B1B1B] bg-[#1B1B1B] text-white"
-                          : "border-[#E5E5EA] text-[#7A7A7A] hover:bg-[#F5F5F5]"
-                      }`}
-                    >
-                      <span className="size-2 rounded-full inline-block mr-1.5" style={{ backgroundColor: studioPost.platform === p ? "white" : platformColors[p] }} />
-                      {platformLabels[p]}
-                    </button>
-                  ))}
+
+              {/* ── STEP 1: Post Format ── */}
+              {studioStep === 1 && (
+                <div className="animate-fadeIn">
+                  <p className="text-lg font-bold text-[#1B1B1B] mb-1">What type of post?</p>
+                  <p className="text-xs text-[#7A7A7A] mb-5">Choose the format first — this determines what content you need.</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {(["text", "image", "article", "video"] as PostFormat[]).map(f => {
+                      const Icon = formatIcons[f];
+                      const descriptions: Record<PostFormat, string> = {
+                        text: "Pure text post — the caption IS the content",
+                        image: "Photo or graphic with a caption",
+                        article: "Long-form article or blog post",
+                        video: "Reel, TikTok, or video content",
+                      };
+                      return (
+                        <button
+                          key={f}
+                          onClick={() => {
+                            setStudioPost(prev => ({ ...prev, post_format: f }));
+                            setStudioStep(2);
+                          }}
+                          className={`flex flex-col items-start gap-2 p-4 rounded-xl border transition-all hover:shadow-sm text-left ${
+                            studioPost.post_format === f
+                              ? "border-[#1B1B1B] bg-[#F7F8FA]"
+                              : "border-[#E5E5EA] hover:border-[#C5C5C5]"
+                          }`}
+                        >
+                          <Icon className="size-6 text-[#1B1B1B]" />
+                          <div>
+                            <p className="text-xs font-semibold text-[#1B1B1B]">{postFormatLabels[f]}</p>
+                            <p className="text-[10px] text-[#7A7A7A] mt-0.5">{descriptions[f]}</p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
               )}
 
-              {/* Content type */}
-              <div>
-                <label className={labelClass}>Content Type</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {(["educational", "social_proof", "personal", "promotional"] as ContentType[]).map(t => (
-                    <button
-                      key={t}
-                      onClick={() => setStudioPost(prev => ({ ...prev, content_type: t }))}
-                      className={`px-3 py-2 text-xs font-medium rounded-lg border transition-colors text-left ${
-                        studioPost.content_type === t
-                          ? "border-[#1B1B1B] bg-[#F5F5F5]"
-                          : "border-[#E5E5EA] text-[#7A7A7A] hover:bg-[#F5F5F5]"
-                      }`}
-                    >
-                      <span className="size-2 rounded-full inline-block mr-1.5" style={{ backgroundColor: contentTypeColors[t] }} />
-                      {contentTypeLabels[t]}
-                    </button>
-                  ))}
+              {/* ── STEP 2: Content Type ── */}
+              {studioStep === 2 && (
+                <div className="animate-fadeIn">
+                  <p className="text-lg font-bold text-[#1B1B1B] mb-1">What's the angle?</p>
+                  <p className="text-xs text-[#7A7A7A] mb-5">Pick the content category — this helps AI generate the right tone.</p>
+                  <div className="space-y-2.5">
+                    {(["educational", "social_proof", "personal", "promotional"] as ContentType[]).map(t => {
+                      const descriptions: Record<ContentType, string> = {
+                        educational: "Teach something — frameworks, insights, how-tos",
+                        social_proof: "Results, case studies, before/after",
+                        personal: "Behind the scenes, opinions, agency life",
+                        promotional: "Offers, availability, CTAs",
+                      };
+                      return (
+                        <button
+                          key={t}
+                          onClick={() => {
+                            setStudioPost(prev => ({ ...prev, content_type: t }));
+                            // Skip media step if text/article, go straight to caption
+                            const fmt = studioPost.post_format;
+                            setStudioStep(fmt === "image" || fmt === "video" ? 3 : 4);
+                          }}
+                          className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-all hover:shadow-sm text-left ${
+                            studioPost.content_type === t
+                              ? "border-[#1B1B1B] bg-[#F7F8FA]"
+                              : "border-[#E5E5EA] hover:border-[#C5C5C5]"
+                          }`}
+                        >
+                          <span className="size-3 rounded-full shrink-0" style={{ backgroundColor: contentTypeColors[t] }} />
+                          <div>
+                            <p className="text-xs font-semibold text-[#1B1B1B]">{contentTypeLabels[t]}</p>
+                            <p className="text-[10px] text-[#7A7A7A]">{descriptions[t]}</p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Post format */}
-              <div>
-                <label className={labelClass}>Post Format</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {(["text", "image", "article", "video"] as PostFormat[]).map(f => {
-                    const Icon = formatIcons[f];
-                    return (
-                      <button
-                        key={f}
-                        onClick={() => setStudioPost(prev => ({ ...prev, post_format: f }))}
-                        className={`flex flex-col items-center gap-1 px-2 py-2.5 text-[10px] font-medium rounded-lg border transition-colors ${
-                          studioPost.post_format === f
-                            ? "border-[#1B1B1B] bg-[#F5F5F5] text-[#1B1B1B]"
-                            : "border-[#E5E5EA] text-[#7A7A7A] hover:bg-[#F5F5F5]"
-                        }`}
-                      >
-                        <Icon className="size-4" />
-                        {postFormatLabels[f]}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              {/* ── STEP 3: Media Upload (image/video only) ── */}
+              {studioStep === 3 && (
+                <div className="animate-fadeIn">
+                  <p className="text-lg font-bold text-[#1B1B1B] mb-1">
+                    {studioPost.post_format === "video" ? "Add a thumbnail" : "Upload your image"}
+                  </p>
+                  <p className="text-xs text-[#7A7A7A] mb-5">
+                    {studioPost.post_format === "image"
+                      ? "Upload the image — AI will write captions based on it automatically."
+                      : "Add a thumbnail for the video — or skip this step."}
+                  </p>
 
-              {/* Image upload (shown for image/video formats) */}
-              {(studioPost.post_format === "image" || studioPost.post_format === "video") && (
-                <div>
-                  <label className={labelClass}>
-                    {studioPost.post_format === "video" ? "Thumbnail" : "Image"}
-                  </label>
                   {studioPost.media_data ? (
-                    <div className="relative rounded-xl overflow-hidden border border-[#E5E5EA] bg-[#FAFAFA]">
-                      <img
-                        src={studioPost.media_data}
-                        alt="Post media"
-                        className="w-full h-48 object-cover"
-                      />
+                    <div className="relative rounded-xl overflow-hidden border border-[#E5E5EA] bg-[#FAFAFA] mb-4">
+                      <img src={studioPost.media_data} alt="Post media" className="w-full h-56 object-cover" />
                       <div className="absolute top-2 right-2 flex gap-1.5">
                         <label className="cursor-pointer px-2 py-1 bg-white/90 backdrop-blur-sm text-[10px] font-semibold rounded-lg shadow-sm hover:bg-white transition-colors">
                           Replace
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={e => {
-                              const file = e.target.files?.[0];
-                              if (file) handleImageUpload(file);
-                            }}
-                          />
+                          <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
                         </label>
-                        <button
-                          onClick={() => setStudioPost(prev => ({ ...prev, media_data: undefined }))}
-                          className="px-2 py-1 bg-white/90 backdrop-blur-sm text-[10px] font-semibold text-red-500 rounded-lg shadow-sm hover:bg-white transition-colors"
-                        >
+                        <button onClick={() => setStudioPost(prev => ({ ...prev, media_data: undefined }))} className="px-2 py-1 bg-white/90 backdrop-blur-sm text-[10px] font-semibold text-red-500 rounded-lg shadow-sm hover:bg-white transition-colors">
                           Remove
                         </button>
                       </div>
-                      {studioPost.post_format === "image" && !captionLoading && (
-                        <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 text-white text-[9px] font-semibold rounded-lg backdrop-blur-sm">
-                          Captions generated from this image
-                        </div>
-                      )}
                       {captionLoading && (
                         <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 text-white text-[9px] font-semibold rounded-lg backdrop-blur-sm animate-pulse">
                           Generating captions from image...
@@ -1174,164 +1203,230 @@ export default function CalendarPage() {
                       )}
                     </div>
                   ) : (
-                    <label className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-[#E5E5EA] rounded-xl cursor-pointer hover:border-[#C5C5C5] hover:bg-[#FAFAFA] transition-colors">
-                      <PhotoIcon className="size-8 text-[#CCC]" />
-                      <span className="text-xs text-[#7A7A7A]">Click to upload {studioPost.post_format === "video" ? "thumbnail" : "image"}</span>
+                    <label className="flex flex-col items-center justify-center gap-2 py-12 border-2 border-dashed border-[#E5E5EA] rounded-xl cursor-pointer hover:border-[#C5C5C5] hover:bg-[#FAFAFA] transition-colors mb-4">
+                      <PhotoIcon className="size-10 text-[#CCC]" />
+                      <span className="text-xs text-[#7A7A7A]">Click to upload</span>
                       <span className="text-[10px] text-[#AAA]">PNG, JPG, WebP — captions auto-generate</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={e => {
-                          const file = e.target.files?.[0];
-                          if (file) handleImageUpload(file);
-                        }}
-                      />
+                      <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
                     </label>
                   )}
+
+                  <button
+                    onClick={() => setStudioStep(4)}
+                    className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors"
+                  >
+                    {studioPost.media_data ? "Continue" : "Skip — add image later"}
+                  </button>
                 </div>
               )}
 
-              {/* Date & Time */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelClass}>Date</label>
-                  <input
-                    type="date"
-                    value={studioPost.scheduled_date || ""}
-                    onChange={e => setStudioPost(prev => ({ ...prev, scheduled_date: e.target.value }))}
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Time</label>
-                  <input
-                    type="time"
-                    value={studioPost.scheduled_time || ""}
-                    onChange={e => setStudioPost(prev => ({ ...prev, scheduled_time: e.target.value }))}
-                    className={inputClass}
-                  />
-                </div>
-              </div>
-
-              {/* Slot score */}
-              {studioPost.platform && studioPost.scheduled_date && studioPost.scheduled_time && (
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#F7F8FA]">
-                  <ClockIcon className="size-3.5 text-[#7A7A7A]" />
-                  <span className="text-[11px] text-[#7A7A7A]">
-                    Slot score:{" "}
-                    <span className="font-semibold text-[#1B1B1B]">
-                      {getSlotScore(
-                        studioPost.platform,
-                        new Date(studioPost.scheduled_date + "T00:00:00").getDay(),
-                        parseInt(studioPost.scheduled_time)
-                      ) || "—"}
+              {/* ── STEP 4: Caption ── */}
+              {studioStep === 4 && (
+                <div className="animate-fadeIn">
+                  {/* Context bar */}
+                  <div className="flex items-center gap-2 mb-4 flex-wrap">
+                    {!studioPost.group_id && (
+                      <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: platformColors[studioPost.platform || "x"] + "15", color: platformColors[studioPost.platform || "x"] }}>
+                        {platformLabels[studioPost.platform || "x"]}
+                      </span>
+                    )}
+                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: contentTypeColors[studioPost.content_type || "educational"] + "15", color: contentTypeColors[studioPost.content_type || "educational"] }}>
+                      {contentTypeLabels[studioPost.content_type || "educational"]}
                     </span>
-                    /100
-                  </span>
-                  {getSlotScore(
-                    studioPost.platform,
-                    new Date(studioPost.scheduled_date + "T00:00:00").getDay(),
-                    parseInt(studioPost.scheduled_time)
-                  ) >= 80 && (
-                    <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Optimal</span>
+                    <span className="text-[9px] font-semibold text-[#7A7A7A] bg-[#F3F3F5] px-1.5 py-0.5 rounded-full">
+                      {postFormatLabels[studioPost.post_format || "text"]}
+                    </span>
+                    {studioPost.media_data && (
+                      <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Image attached</span>
+                    )}
+                  </div>
+
+                  {/* Image preview (compact) */}
+                  {studioPost.media_data && (
+                    <div className="relative rounded-lg overflow-hidden border border-[#E5E5EA] mb-4">
+                      <img src={studioPost.media_data} alt="Post media" className="w-full h-32 object-cover" />
+                      <div className="absolute top-1.5 right-1.5">
+                        <label className="cursor-pointer px-1.5 py-0.5 bg-white/90 backdrop-blur-sm text-[9px] font-semibold rounded shadow-sm">
+                          Replace
+                          <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
+                        </label>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Caption */}
+                  <div className="flex items-center justify-between mb-2">
+                    <label className={`${labelClass} !mb-0`}>Caption</label>
+                    <button
+                      onClick={() => generateCaptions()}
+                      disabled={captionLoading}
+                      className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
+                    >
+                      <SparklesIcon className="size-3" />
+                      {captionLoading ? "Generating..." : "Generate"}
+                    </button>
+                  </div>
+                  <textarea
+                    value={studioPost.caption || ""}
+                    onChange={e => setStudioPost(prev => ({ ...prev, caption: e.target.value }))}
+                    placeholder={studioPost.platform === "x" ? "Write your tweet..." : "Write your caption..."}
+                    className={`${textareaClass} min-h-[100px]`}
+                    rows={4}
+                    autoFocus
+                  />
+
+                  {/* Caption variants */}
+                  {captionError && <p className="text-[11px] text-red-500 mt-2">{captionError}</p>}
+                  {captions.length > 0 && (
+                    <div className="space-y-2 mt-3">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">Pick a variant</p>
+                      {captions.map((c, i) => (
+                        <button
+                          key={i}
+                          onClick={() => { setSelectedCaption(i); setStudioPost(prev => ({ ...prev, caption: c })); }}
+                          className={`w-full text-left p-3 rounded-lg border transition-colors text-xs leading-relaxed ${
+                            selectedCaption === i ? "border-[#1B1B1B] bg-[#F7F8FA]" : "border-[#E5E5EA] hover:bg-[#FAFAFA]"
+                          }`}
+                        >
+                          {selectedCaption === i && <span className="float-right ml-2"><CheckIcon className="size-3.5 text-emerald-500" /></span>}
+                          {c}
+                        </button>
+                      ))}
+                    </div>
                   )}
                 </div>
               )}
 
-              {/* Caption */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className={`${labelClass} !mb-0`}>Caption</label>
-                  <button
-                    onClick={() => generateCaptions()}
-                    disabled={captionLoading}
-                    className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
-                  >
-                    <SparklesIcon className="size-3" />
-                    {captionLoading ? "Generating..." : "Generate Captions"}
-                  </button>
-                </div>
-                <textarea
-                  value={studioPost.caption || ""}
-                  onChange={e => setStudioPost(prev => ({ ...prev, caption: e.target.value }))}
-                  placeholder="Write your caption or generate with AI..."
-                  className={`${textareaClass} min-h-[100px]`}
-                  rows={4}
-                />
-              </div>
+              {/* ── STEP 5: Schedule & Status ── */}
+              {studioStep === 5 && (
+                <div className="animate-fadeIn">
+                  <p className="text-lg font-bold text-[#1B1B1B] mb-1">Schedule & status</p>
+                  <p className="text-xs text-[#7A7A7A] mb-5">Set when this goes out and mark its current status.</p>
 
-              {/* Caption variants */}
-              {captionError && (
-                <p className="text-[11px] text-red-500">{captionError}</p>
-              )}
-              {captions.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">Caption variants</p>
-                  {captions.map((c, i) => (
-                    <button
-                      key={i}
-                      onClick={() => {
-                        setSelectedCaption(i);
-                        setStudioPost(prev => ({ ...prev, caption: c }));
-                      }}
-                      className={`w-full text-left p-3 rounded-lg border transition-colors text-xs leading-relaxed ${
-                        selectedCaption === i
-                          ? "border-[#1B1B1B] bg-[#F7F8FA]"
-                          : "border-[#E5E5EA] hover:bg-[#FAFAFA]"
-                      }`}
-                    >
-                      {selectedCaption === i && (
-                        <span className="float-right ml-2">
-                          <CheckIcon className="size-3.5 text-emerald-500" />
-                        </span>
+                  {/* Platform (for single posts) */}
+                  {!studioPost.group_id && (
+                    <div className="mb-5">
+                      <label className={labelClass}>Platform</label>
+                      <div className="flex gap-2">
+                        {(["x", "linkedin", "instagram", "tiktok"] as Platform[]).map(p => (
+                          <button
+                            key={p}
+                            onClick={() => setStudioPost(prev => ({ ...prev, platform: p }))}
+                            className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg border transition-colors ${
+                              studioPost.platform === p
+                                ? "border-[#1B1B1B] bg-[#1B1B1B] text-white"
+                                : "border-[#E5E5EA] text-[#7A7A7A] hover:bg-[#F5F5F5]"
+                            }`}
+                          >
+                            <span className="size-2 rounded-full inline-block mr-1.5" style={{ backgroundColor: studioPost.platform === p ? "white" : platformColors[p] }} />
+                            {platformLabels[p]}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Date & Time */}
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div>
+                      <label className={labelClass}>Date</label>
+                      <input type="date" value={studioPost.scheduled_date || ""} onChange={e => setStudioPost(prev => ({ ...prev, scheduled_date: e.target.value }))} className={inputClass} />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Time</label>
+                      <input type="time" value={studioPost.scheduled_time || ""} onChange={e => setStudioPost(prev => ({ ...prev, scheduled_time: e.target.value }))} className={inputClass} />
+                    </div>
+                  </div>
+
+                  {/* Slot score */}
+                  {studioPost.platform && studioPost.scheduled_date && studioPost.scheduled_time && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#F7F8FA] mb-5">
+                      <ClockIcon className="size-3.5 text-[#7A7A7A]" />
+                      <span className="text-[11px] text-[#7A7A7A]">
+                        Slot score: <span className="font-semibold text-[#1B1B1B]">{getSlotScore(studioPost.platform, new Date(studioPost.scheduled_date + "T00:00:00").getDay(), parseInt(studioPost.scheduled_time)) || "—"}</span>/100
+                      </span>
+                      {getSlotScore(studioPost.platform, new Date(studioPost.scheduled_date + "T00:00:00").getDay(), parseInt(studioPost.scheduled_time)) >= 80 && (
+                        <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Optimal</span>
                       )}
-                      {c}
+                    </div>
+                  )}
+
+                  {/* Status */}
+                  <label className={labelClass}>Status</label>
+                  <div className="flex flex-wrap gap-1.5 mb-5">
+                    {(["idea", "scripted", "media_ready", "approved", "exported"] as PostStatus[]).map(s => (
+                      <button
+                        key={s}
+                        onClick={() => setStudioPost(prev => ({ ...prev, status: s }))}
+                        className={`px-2.5 py-1.5 text-[10px] font-semibold rounded-full border transition-colors ${
+                          studioPost.status === s ? "text-white" : "border-[#E5E5EA] text-[#7A7A7A] hover:bg-[#F5F5F5]"
+                        }`}
+                        style={studioPost.status === s ? { backgroundColor: statusColors[s], borderColor: statusColors[s] } : {}}
+                      >
+                        {statusLabels[s]}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Save */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleSavePost}
+                      disabled={saving}
+                      className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
+                    >
+                      <CheckIcon className="size-3.5" />
+                      {saving ? "Saving..." : "Save Post"}
                     </button>
-                  ))}
+                    {studioPost.id && (
+                      <button onClick={() => handleDeletePost(studioPost.id!)} className="px-4 py-2.5 text-xs font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors">
+                        Delete
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
+            </div>
 
-              {/* Status */}
-              <div>
-                <label className={labelClass}>Status</label>
-                <div className="flex flex-wrap gap-1.5">
-                  {(["idea", "scripted", "media_ready", "approved", "exported"] as PostStatus[]).map(s => (
-                    <button
-                      key={s}
-                      onClick={() => setStudioPost(prev => ({ ...prev, status: s }))}
-                      className={`px-2.5 py-1.5 text-[10px] font-semibold rounded-full border transition-colors ${
-                        studioPost.status === s
-                          ? "text-white"
-                          : "border-[#E5E5EA] text-[#7A7A7A] hover:bg-[#F5F5F5]"
-                      }`}
-                      style={studioPost.status === s ? { backgroundColor: statusColors[s], borderColor: statusColors[s] } : {}}
-                    >
-                      {statusLabels[s]}
-                    </button>
-                  ))}
-                </div>
+            {/* Step navigation footer */}
+            <div className="shrink-0 border-t border-[#E5E5EA] px-5 py-3 bg-white flex items-center justify-between">
+              <button
+                onClick={() => setStudioStep(s => Math.max(1, s - 1))}
+                disabled={studioStep === 1}
+                className="px-3 py-1.5 text-[11px] font-medium text-[#7A7A7A] hover:text-[#1B1B1B] disabled:opacity-30 transition-colors"
+              >
+                Back
+              </button>
+              <div className="text-[10px] text-[#AAA]">
+                {studioStep === 1 && "Format"}
+                {studioStep === 2 && "Content type"}
+                {studioStep === 3 && "Media"}
+                {studioStep === 4 && "Caption"}
+                {studioStep === 5 && "Schedule"}
               </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-2 pt-2">
+              {studioStep < 5 ? (
+                <button
+                  onClick={() => {
+                    // Skip media step if not image/video
+                    if (studioStep === 2 && studioPost.post_format !== "image" && studioPost.post_format !== "video") {
+                      setStudioStep(4);
+                    } else {
+                      setStudioStep(s => Math.min(5, s + 1));
+                    }
+                  }}
+                  className="px-3 py-1.5 text-[11px] font-semibold text-[#1B1B1B] hover:bg-[#F5F5F5] rounded-lg transition-colors"
+                >
+                  Next →
+                </button>
+              ) : (
                 <button
                   onClick={handleSavePost}
                   disabled={saving}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
+                  className="px-3 py-1.5 text-[11px] font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
                 >
-                  <CheckIcon className="size-3.5" />
-                  {saving ? "Saving..." : "Save Post"}
+                  {saving ? "Saving..." : "Save"}
                 </button>
-                {studioPost.id && (
-                  <button
-                    onClick={() => handleDeletePost(studioPost.id!)}
-                    className="px-4 py-2.5 text-xs font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
-                  >
-                    Delete
-                  </button>
-                )}
-              </div>
+              )}
             </div>
           </div>
         </>
