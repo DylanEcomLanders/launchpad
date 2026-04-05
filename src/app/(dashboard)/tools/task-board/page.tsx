@@ -11,6 +11,8 @@ interface Task {
   dueDate: string;
   status: "todo" | "in-progress" | "done";
   client?: string;
+  portalId?: string;
+  deliverableId?: string;
 }
 
 interface BoardData {

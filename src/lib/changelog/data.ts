@@ -37,6 +37,19 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-24",
+    date: "5 Apr 2026",
+    version: "0.20.0",
+    title: "Portal Process Wiring — Phases, Handoff & Task Sync",
+    changes: [
+      { type: "improved", text: "Phase movement now properly gated — only one phase in-progress at a time, must complete previous before advancing, completing a phase auto-starts the next" },
+      { type: "improved", text: "Phase dots show disabled state with tooltip when transition is blocked (e.g. 'Complete the previous phase first')" },
+      { type: "improved", text: "Design & Dev Handoff completely redesigned — clean version timeline with Figma + Staging links (no iframes), inline status toggles, version notes, and feedback history per version" },
+      { type: "added", text: "Typed scope items (deliverables) auto-populate to the task board — design items go to Design Tasks, everything else to Dev Tasks" },
+      { type: "added", text: "Task board tasks now link back to portal via portalId and deliverableId fields" },
+    ],
+  },
+  {
     id: "cl-23",
     date: "5 Apr 2026",
     version: "0.19.2",

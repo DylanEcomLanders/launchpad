@@ -38,7 +38,7 @@ import {
   updateReviewStatus,
   updateFeedbackResolved,
 } from "@/lib/portal/reviews";
-import { isFigmaUrl, toFigmaEmbed } from "@/lib/portal/review-types";
+// review-types used via reviews.ts
 import type {
   PortalData,
   PortalUpdate,
@@ -57,6 +57,8 @@ import type {
   PortalReport,
   BlockerHistory,
 } from "@/lib/portal/types";
+import { cyclePhaseStatus, canPhaseAdvance } from "@/lib/portal/phase-logic";
+import { syncDeliverableToBoard } from "@/lib/portal/task-sync";
 import { deliverableTypes } from "@/lib/config";
 import { BrandedReport } from "@/components/branded-report";
 import { InternalSection, GateStatusPills } from "@/components/internal-section";
@@ -245,22 +247,10 @@ export default function PortalDetailPage() {
 
   const handleCyclePhaseStatus = async (phaseId: string) => {
     if (!portal) return;
-    const order: PortalPhase["status"][] = ["upcoming", "in-progress", "complete"];
-    const updatedPhases = portal.phases.map((p) => {
-      if (p.id !== phaseId) return p;
-      const nextStatus = order[(order.indexOf(p.status) + 1) % order.length];
-      return {
-        ...p,
-        status: nextStatus,
-        completedDate: nextStatus === "complete" ? new Date().toISOString().slice(0, 10) : undefined,
-      };
-    });
-    // Auto-sync current_phase to the in-progress phase
-    const inProgress = updatedPhases.find((p) => p.status === "in-progress");
-    const currentPhase = inProgress?.name || updatedPhases.filter((p) => p.status === "complete").pop()?.name || portal.current_phase;
-    // Optimistic update
-    setPortal({ ...portal, phases: updatedPhases, current_phase: currentPhase });
-    await updatePortal(portal.id, { phases: updatedPhases, current_phase: currentPhase });
+    const result = cyclePhaseStatus(portal.phases, phaseId);
+    if (!result.changed) return; // transition blocked by gating rules
+    setPortal({ ...portal, phases: result.phases, current_phase: result.current_phase });
+    await updatePortal(portal.id, { phases: result.phases, current_phase: result.current_phase });
   };
 
   const handleUpdateTouchpoint = async (field: "date" | "description", value: string) => {
@@ -276,6 +266,16 @@ export default function PortalDetailPage() {
     const updatedScope = [...portal.scope, newItem];
     setPortal({ ...portal, scope: updatedScope });
     await updatePortal(portal.id, { scope: updatedScope });
+    // Auto-sync typed scope items to task board as deliverables
+    if (type) {
+      syncDeliverableToBoard(portal.id, {
+        id: `scope-${Date.now()}`,
+        name: `${item.trim()} (${type})`,
+        phase: type.toLowerCase().includes("design") ? "Design" : "Development",
+        status: "not-started",
+        assignee: "",
+      }, portal.client_name);
+    }
   };
 
   const handleRemoveScope = async (index: number) => {
@@ -390,25 +390,25 @@ export default function PortalDetailPage() {
 
   const handleProjectCyclePhaseStatus = async (phaseId: string) => {
     if (!selectedProject) return;
-    const order: PortalPhase["status"][] = ["upcoming", "in-progress", "complete"];
-    const updatedPhases = (selectedProject.phases || []).map((p) => {
-      if (p.id !== phaseId) return p;
-      const nextStatus = order[(order.indexOf(p.status) + 1) % order.length];
-      return {
-        ...p,
-        status: nextStatus,
-        completedDate: nextStatus === "complete" ? new Date().toISOString().slice(0, 10) : undefined,
-      };
-    });
-    const inProgress = updatedPhases.find((p) => p.status === "in-progress");
-    const currentPhase = inProgress?.name || updatedPhases.filter((p) => p.status === "complete").pop()?.name || selectedProject.current_phase || "";
-    await updateSelectedProject({ phases: updatedPhases, current_phase: currentPhase });
+    const result = cyclePhaseStatus(selectedProject.phases || [], phaseId);
+    if (!result.changed) return; // transition blocked by gating rules
+    await updateSelectedProject({ phases: result.phases, current_phase: result.current_phase });
   };
 
   const handleProjectAddScope = async (item: string, type?: string) => {
-    if (!selectedProject || !item.trim()) return;
+    if (!selectedProject || !portal || !item.trim()) return;
     const newItem = type ? { description: item.trim(), type } : item.trim();
     await updateSelectedProject({ scope: [...(selectedProject.scope || []), newItem] });
+    // Auto-sync typed scope items to task board
+    if (type) {
+      syncDeliverableToBoard(portal.id, {
+        id: `scope-${Date.now()}`,
+        name: `${item.trim()} (${type})`,
+        phase: type.toLowerCase().includes("design") ? "Design" : "Development",
+        status: "not-started",
+        assignee: "",
+      }, portal.client_name);
+    }
   };
 
   const handleProjectRemoveScope = async (index: number) => {
@@ -1384,21 +1384,38 @@ function OverviewSection({
                   <div key={phase.id} className="relative flex gap-4 py-3 group">
                     {/* Status dot */}
                     <div className="relative z-10 mt-0.5">
-                      <button
-                        onClick={() => onCyclePhaseStatus(phase.id)}
-                        className={`size-[15px] rounded-full border-2 transition-colors ${
-                          phase.status === "complete"
-                            ? "bg-emerald-400 border-emerald-400"
-                            : phase.status === "in-progress"
-                            ? "bg-[#1B1B1B] border-[#1B1B1B]"
-                            : "bg-white border-[#D4D4D4] hover:border-[#999]"
-                        }`}
-                        title={`${phase.status} — click to cycle`}
-                      >
-                        {phase.status === "complete" && (
-                          <CheckIcon className="size-2.5 text-white mx-auto" />
-                        )}
-                      </button>
+                      {(() => {
+                        const canAdvance = canPhaseAdvance(phases, phase.id);
+                        const hint = phase.status === "upcoming" && !canAdvance
+                          ? "Complete the previous phase first"
+                          : phase.status === "complete" && !canAdvance
+                          ? "Later phases have progressed — can't undo"
+                          : phase.status === "upcoming"
+                          ? "Click to start this phase"
+                          : phase.status === "in-progress"
+                          ? "Click to mark complete"
+                          : "Click to reopen";
+                        return (
+                          <button
+                            onClick={() => onCyclePhaseStatus(phase.id)}
+                            disabled={!canAdvance}
+                            className={`size-[15px] rounded-full border-2 transition-colors ${
+                              phase.status === "complete"
+                                ? "bg-emerald-400 border-emerald-400"
+                                : phase.status === "in-progress"
+                                ? "bg-[#1B1B1B] border-[#1B1B1B]"
+                                : canAdvance
+                                ? "bg-white border-[#D4D4D4] hover:border-[#999]"
+                                : "bg-white border-[#E8E8E8] opacity-40 cursor-not-allowed"
+                            }`}
+                            title={hint}
+                          >
+                            {phase.status === "complete" && (
+                              <CheckIcon className="size-2.5 text-white mx-auto" />
+                            )}
+                          </button>
+                        );
+                      })()}
                     </div>
                     {/* Content */}
                     <div className="flex-1 min-w-0">
@@ -2113,7 +2130,7 @@ function ApprovalsSection({
   );
 }
 
-/* ── Designs Section ── */
+/* ── Designs Section (clean handoff — no embeds) ── */
 
 function DesignsSection({
   portal,
@@ -2126,19 +2143,18 @@ function DesignsSection({
 }) {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
   const [figmaUrl, setFigmaUrl] = useState("");
   const [saving, setSaving] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  // Expanded review state for adding versions / viewing feedback
   const [expandedReview, setExpandedReview] = useState<string | null>(null);
-  const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
   const [versions, setVersions] = useState<DesignReviewVersion[]>([]);
   const [feedbackList, setFeedbackList] = useState<DesignReviewFeedback[]>([]);
   const [newVersionUrl, setNewVersionUrl] = useState("");
+  const [newVersionStagingUrl, setNewVersionStagingUrl] = useState("");
   const [newVersionNotes, setNewVersionNotes] = useState("");
   const [addingVersion, setAddingVersion] = useState(false);
+  const [showAddVersion, setShowAddVersion] = useState(false);
 
   const handleCreate = async () => {
     if (!title.trim() || !figmaUrl.trim()) return;
@@ -2147,22 +2163,21 @@ function DesignsSection({
       const review = await createReview({
         portal_id: portal.id,
         title: title.trim(),
-        description: description.trim(),
+        description: "",
       });
-      const v1 = await addVersion({
+      await addVersion({
         review_id: review.id,
         version_number: 1,
         figma_url: figmaUrl.trim(),
         notes: "",
       });
       onReviewsChange([review, ...reviews]);
-      // Auto-select the new review and load its V1
       setExpandedReview(review.id);
-      setVersions([v1]);
-      setSelectedVersionId(v1.id);
-      setFeedbackList([]);
+      // Reload
+      const [v, f] = await Promise.all([getVersions(review.id), getFeedback(review.id)]);
+      setVersions(v);
+      setFeedbackList(f);
       setTitle("");
-      setDescription("");
       setFigmaUrl("");
       setShowCreateForm(false);
     } finally {
@@ -2173,34 +2188,20 @@ function DesignsSection({
   const handleDelete = async (id: string) => {
     await deleteReview(id);
     onReviewsChange(reviews.filter((r) => r.id !== id));
-    if (expandedReview === id) setExpandedReview(null);
+    if (expandedReview === id) { setExpandedReview(null); setVersions([]); setFeedbackList([]); }
   };
 
   const loadReview = useCallback(async (reviewId: string) => {
-    if (expandedReview === reviewId) return;
+    if (expandedReview === reviewId) { setExpandedReview(null); return; }
     setExpandedReview(reviewId);
-    setSelectedVersionId(null);
-    const [v, f] = await Promise.all([
-      getVersions(reviewId),
-      getFeedback(reviewId),
-    ]);
+    const [v, f] = await Promise.all([getVersions(reviewId), getFeedback(reviewId)]);
     setVersions(v);
     setFeedbackList(f);
-    if (v.length > 0) {
-      const sorted = [...v].sort((a, b) => b.version_number - a.version_number);
-      setSelectedVersionId(sorted[0].id);
-    }
   }, [expandedReview]);
 
-  // Auto-load first review
   useEffect(() => {
-    if (reviews.length > 0 && !expandedReview) {
-      loadReview(reviews[0].id);
-    }
+    if (reviews.length > 0 && !expandedReview) loadReview(reviews[0].id);
   }, [reviews.length]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Keep toggleExpand as alias for the selector buttons
-  const toggleExpand = loadReview;
 
   const handleAddVersion = async (reviewId: string) => {
     if (!newVersionUrl.trim()) return;
@@ -2211,15 +2212,22 @@ function DesignsSection({
         review_id: reviewId,
         version_number: nextNum,
         figma_url: newVersionUrl.trim(),
+        staging_url: newVersionStagingUrl.trim() || undefined,
         notes: newVersionNotes.trim(),
       });
       setVersions([...versions, v]);
-      setSelectedVersionId(v.id);
       setNewVersionUrl("");
+      setNewVersionStagingUrl("");
       setNewVersionNotes("");
+      setShowAddVersion(false);
     } finally {
       setAddingVersion(false);
     }
+  };
+
+  const handleSetStatus = async (reviewId: string, status: "pending" | "changes_requested" | "approved") => {
+    await updateReviewStatus(reviewId, status);
+    onReviewsChange(reviews.map(r => r.id === reviewId ? { ...r, status } : r));
   };
 
   const copyReviewLink = (reviewId: string) => {
@@ -2229,312 +2237,177 @@ function DesignsSection({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const statusColor = (status: string) => {
-    switch (status) {
-      case "approved": return "bg-emerald-500";
-      case "changes_requested": return "bg-amber-500";
-      default: return "bg-blue-500";
-    }
-  };
-
-  const statusLabel = (status: string) => {
-    switch (status) {
-      case "approved": return "Approved";
-      case "changes_requested": return "Amends";
-      default: return "Pending";
-    }
-  };
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold text-[#1A1A1A]">
-          Design Reviews
-        </h3>
+        <h3 className="text-xs font-semibold text-[#1A1A1A]">Design & Dev Handoff</h3>
         <button
-          onClick={() => setShowCreateForm(true)}
+          onClick={() => setShowCreateForm(!showCreateForm)}
           className="flex items-center gap-1 text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
         >
           <PlusIcon className="size-3.5" />
-          New Review
+          New
         </button>
       </div>
 
       {/* Create form */}
       {showCreateForm && (
-        <div className="bg-[#F7F8FA] border border-[#E8E8E8] rounded-lg p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold">Create Design Review</h3>
-            <button
-              onClick={() => setShowCreateForm(false)}
-              className="text-[#A0A0A0] hover:text-[#1B1B1B]"
-            >
-              <XMarkIcon className="size-4" />
-            </button>
-          </div>
-          <div className="space-y-4">
+        <div className="bg-[#F7F8FA] border border-[#E8E8E8] rounded-lg p-4 space-y-3 animate-fadeIn">
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelClass}>Page Name *</label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g., Homepage, Collection Page, PDP"
-                className={inputClass}
-              />
+              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Homepage, PDP" className={inputClass} />
             </div>
             <div>
               <label className={labelClass}>Figma URL *</label>
-              <input
-                type="text"
-                value={figmaUrl}
-                onChange={(e) => setFigmaUrl(e.target.value)}
-                placeholder="https://www.figma.com/design/..."
-                className={inputClass}
-              />
-              {figmaUrl && !isFigmaUrl(figmaUrl) && (
-                <p className="text-[11px] text-red-400 mt-1">
-                  Please paste a valid Figma URL
-                </p>
-              )}
+              <input type="text" value={figmaUrl} onChange={(e) => setFigmaUrl(e.target.value)} placeholder="https://figma.com/..." className={inputClass} />
             </div>
-            <button
-              onClick={handleCreate}
-              disabled={!title.trim() || !figmaUrl.trim() || !isFigmaUrl(figmaUrl) || saving}
-              className="flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <CheckIcon className="size-3.5" />
-              {saving ? "Creating..." : "Add Design"}
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={handleCreate} disabled={!title.trim() || !figmaUrl.trim() || saving} className="px-3 py-1.5 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40">
+              {saving ? "Creating..." : "Create"}
             </button>
+            <button onClick={() => setShowCreateForm(false)} className="px-3 py-1.5 text-xs text-[#7A7A7A] hover:text-[#1B1B1B]">Cancel</button>
           </div>
         </div>
       )}
 
-      {/* Reviews */}
+      {/* Review list */}
       {reviews.length === 0 && !showCreateForm ? (
-        <div className="bg-white border border-dashed border-[#E8E8E8] rounded-lg p-8 text-center">
-          <p className="text-xs text-[#A0A0A0] mb-2">No designs yet</p>
-          <button
-            onClick={() => setShowCreateForm(true)}
-            className="text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
-          >
-            + Add your first design
-          </button>
+        <div className="border border-dashed border-[#E8E8E8] rounded-lg p-8 text-center">
+          <p className="text-xs text-[#A0A0A0] mb-2">No handoffs yet</p>
+          <button onClick={() => setShowCreateForm(true)} className="text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B]">+ Add first handoff</button>
         </div>
       ) : (
-        <div className="space-y-5">
-          {/* Design selector tabs — horizontal pills when multiple */}
-          {reviews.length > 1 && (
-            <div className="flex items-center gap-2 flex-wrap">
-              {reviews.map((review) => (
-                <button
-                  key={review.id}
-                  onClick={() => toggleExpand(review.id)}
-                  className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
-                    expandedReview === review.id
-                      ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
-                      : "bg-white text-[#7A7A7A] border-[#E8E8E8] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"
-                  }`}
-                >
-                  {review.title}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Active design — split panel view */}
-          {(() => {
-            const activeReviewId = expandedReview || reviews[0]?.id;
-            const review = reviews.find(r => r.id === activeReviewId);
-            if (!review) return null;
-
-            const sorted = [...versions].sort((a, b) => b.version_number - a.version_number);
-            const activeVersion = sorted.find(v => v.id === selectedVersionId) || sorted[0];
+        <div className="space-y-3">
+          {reviews.map((review) => {
+            const isExpanded = expandedReview === review.id;
+            const sorted = isExpanded ? [...versions].sort((a, b) => b.version_number - a.version_number) : [];
+            const latestVersion = sorted[0];
 
             return (
-              <div className="bg-white border border-[#E8E8E8] rounded-lg overflow-hidden">
-                {/* Review header */}
-                <div className="flex items-center gap-3 px-4 py-3 border-b border-[#E8E8E8]">
+              <div key={review.id} className="border border-[#E8E8E8] rounded-lg overflow-hidden">
+                {/* Review row */}
+                <button
+                  onClick={() => loadReview(review.id)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${isExpanded ? "bg-[#FAFAFA]" : "hover:bg-[#FAFAFA]"}`}
+                >
                   <h4 className="text-sm font-semibold flex-1 min-w-0 truncate">{review.title}</h4>
                   <span className={`px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider rounded-full shrink-0 ${
                     review.status === "approved" ? "bg-emerald-50 text-emerald-600" :
                     review.status === "changes_requested" ? "bg-amber-50 text-amber-600" :
                     "bg-[#EDEDEF] text-[#999]"
                   }`}>
-                    {review.status === "approved" ? "Approved" : review.status === "changes_requested" ? "Amends Needed" : "Pending"}
+                    {review.status === "approved" ? "Approved" : review.status === "changes_requested" ? "Amends" : "Pending"}
                   </span>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <button
-                      onClick={() => copyReviewLink(review.id)}
-                      className="flex items-center gap-1 text-[10px] font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
-                    >
-                      <ClipboardDocumentIcon className="size-3" />
-                      {copiedId === review.id ? "Copied!" : "Link"}
-                    </button>
-                    <a
-                      href={`/portal/${portal.token}/review/${review.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-[10px] font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
-                    >
-                      <ArrowTopRightOnSquareIcon className="size-3" />
-                    </a>
-                    <button
-                      onClick={() => handleDelete(review.id)}
-                      className="p-0.5 text-[#A0A0A0] hover:text-red-400 transition-colors"
-                    >
-                      <TrashIcon className="size-3" />
-                    </button>
-                  </div>
-                </div>
+                  {isExpanded && versions.length > 0 && (
+                    <span className="text-[10px] text-[#A0A0A0]">v{latestVersion?.version_number}</span>
+                  )}
+                </button>
 
-                {/* Split panel: vertical version tabs + preview */}
-                <div className="flex min-h-[420px]">
-                  {/* Left: vertical version tabs */}
-                  <div className="w-44 shrink-0 border-r border-[#E8E8E8] bg-[#F7F8FA] flex flex-col">
-                    {sorted.map((v, i) => {
-                      const isCurrent = i === 0;
-                      const isSelected = v.id === selectedVersionId || (!selectedVersionId && i === 0);
-                      // Check feedback status for this version
-                      const vFeedback = feedbackList.filter(f => f.version_id === v.id);
-                      const lastAction = vFeedback.length > 0 ? vFeedback[vFeedback.length - 1].action : null;
-                      return (
-                        <button
-                          key={v.id}
-                          onClick={() => setSelectedVersionId(v.id)}
-                          className={`text-left px-3 py-2.5 border-b border-[#E8E8E8] transition-colors ${
-                            isSelected
-                              ? "bg-white"
-                              : "hover:bg-[#FAFAFA]"
-                          }`}
-                        >
-                          <div className="flex items-center gap-1.5">
-                            <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded ${
-                              isCurrent ? "bg-[#1B1B1B] text-white" : "bg-[#E5E5EA] text-[#999]"
-                            }`}>
-                              v{v.version_number}
-                            </span>
-                            {isCurrent && (
-                              <span className="text-[9px] font-semibold text-emerald-600 uppercase tracking-wider">Current</span>
+                {/* Expanded: version timeline */}
+                {isExpanded && (
+                  <div className="border-t border-[#E8E8E8] animate-fadeIn">
+                    {/* Actions bar */}
+                    <div className="flex items-center gap-2 px-4 py-2 border-b border-[#F3F3F5] bg-white">
+                      <div className="flex items-center gap-1">
+                        {(["pending", "changes_requested", "approved"] as const).map((s) => (
+                          <button
+                            key={s}
+                            onClick={() => handleSetStatus(review.id, s)}
+                            className={`px-2 py-1 text-[10px] font-medium rounded transition-colors ${
+                              review.status === s
+                                ? s === "approved" ? "bg-emerald-500 text-white" : s === "changes_requested" ? "bg-amber-500 text-white" : "bg-[#1B1B1B] text-white"
+                                : "text-[#999] hover:text-[#1B1B1B] hover:bg-[#F3F3F5]"
+                            }`}
+                          >
+                            {s === "approved" ? "Approved" : s === "changes_requested" ? "Amends" : "Pending"}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="flex-1" />
+                      <button onClick={() => copyReviewLink(review.id)} className="text-[10px] text-[#A0A0A0] hover:text-[#1B1B1B]">
+                        {copiedId === review.id ? "Copied!" : "Copy Link"}
+                      </button>
+                      <button onClick={() => handleDelete(review.id)} className="text-[10px] text-[#A0A0A0] hover:text-red-400">Delete</button>
+                    </div>
+
+                    {/* Version list */}
+                    <div className="divide-y divide-[#F3F3F5]">
+                      {sorted.map((v) => {
+                        const vFeedback = feedbackList.filter(f => f.version_id === v.id);
+                        const isCurrent = v.id === latestVersion?.id;
+                        return (
+                          <div key={v.id} className="px-4 py-3">
+                            <div className="flex items-center gap-3">
+                              <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded ${isCurrent ? "bg-[#1B1B1B] text-white" : "bg-[#E5E5EA] text-[#999]"}`}>
+                                v{v.version_number}
+                              </span>
+                              <span className="text-[11px] text-[#A0A0A0]">
+                                {new Date(v.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                              </span>
+                              {isCurrent && <span className="text-[9px] font-semibold text-emerald-600 uppercase tracking-wider">Latest</span>}
+                              <div className="flex-1" />
+                              {/* Links */}
+                              <a href={v.figma_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-[#1B1B1B] bg-[#F3F3F5] rounded hover:bg-[#E8E8E8] transition-colors">
+                                Figma <ArrowTopRightOnSquareIcon className="size-2.5" />
+                              </a>
+                              {v.staging_url && (
+                                <a href={v.staging_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-[#1B1B1B] bg-[#F3F3F5] rounded hover:bg-[#E8E8E8] transition-colors">
+                                  Staging <ArrowTopRightOnSquareIcon className="size-2.5" />
+                                </a>
+                              )}
+                            </div>
+                            {v.notes && <p className="text-xs text-[#7A7A7A] mt-1.5 ml-8">{v.notes}</p>}
+                            {/* Feedback for this version */}
+                            {vFeedback.length > 0 && (
+                              <div className="ml-8 mt-2 space-y-1">
+                                {vFeedback.map((entry) => {
+                                  const isApproval = entry.action === "approved";
+                                  return (
+                                    <div key={entry.id} className={`flex items-start gap-2 text-xs px-2.5 py-1.5 rounded-md ${isApproval ? "bg-emerald-50" : entry.action === "changes_requested" ? "bg-amber-50" : "bg-[#F7F8FA]"}`}>
+                                      <span className={`size-1.5 rounded-full shrink-0 mt-1 ${isApproval ? "bg-emerald-500" : entry.action === "changes_requested" ? "bg-amber-500" : "bg-[#C5C5C5]"}`} />
+                                      <div className="min-w-0">
+                                        <span className="font-medium">{entry.submitted_by}</span>
+                                        <span className="text-[#7A7A7A] ml-1">{isApproval ? "approved" : entry.action === "changes_requested" ? "requested changes" : "commented"}</span>
+                                        {entry.comment && <p className="text-[#666] mt-0.5">{entry.comment}</p>}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
                             )}
                           </div>
-                          <p className="text-[10px] text-[#A0A0A0] mt-1">
-                            {new Date(v.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                          </p>
-                          {lastAction && (
-                            <span className={`inline-block mt-1 px-1.5 py-0.5 text-[9px] font-semibold rounded ${
-                              lastAction === "approved"
-                                ? "bg-emerald-50 text-emerald-600"
-                                : "bg-amber-50 text-amber-600"
-                            }`}>
-                              {lastAction === "approved" ? "Approved" : "Amends Needed"}
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
 
-                    {/* Add version button */}
-                    <button
-                      onClick={() => setSelectedVersionId("__new__")}
-                      className={`text-left px-3 py-2.5 transition-colors mt-auto border-t border-[#E8E8E8] ${
-                        selectedVersionId === "__new__" ? "bg-white" : "hover:bg-[#FAFAFA]"
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <PlusIcon className="size-3 text-[#A0A0A0]" />
-                        <span className="text-[11px] font-medium text-[#7A7A7A]">New Version</span>
-                      </div>
-                    </button>
-                  </div>
-
-                  {/* Right: preview / details */}
-                  <div className="flex-1 min-w-0 p-4">
-                    {selectedVersionId === "__new__" ? (
-                      <div className="space-y-3">
-                        <h5 className="text-xs font-semibold text-[#7A7A7A]">Upload New Version</h5>
-                        <input
-                          type="text"
-                          value={newVersionUrl}
-                          onChange={(e) => setNewVersionUrl(e.target.value)}
-                          placeholder="Paste Figma URL..."
-                          className={inputClass}
-                        />
-                        <button
-                          onClick={() => handleAddVersion(review.id)}
-                          disabled={!newVersionUrl.trim() || !isFigmaUrl(newVersionUrl) || addingVersion}
-                          className="px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                        >
-                          {addingVersion ? "Uploading..." : `Upload v${versions.length + 1}`}
-                        </button>
-                      </div>
-                    ) : activeVersion ? (
-                      <div className="space-y-3 h-full flex flex-col">
-                        {/* Version info */}
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded ${
-                              activeVersion.id === sorted[0]?.id ? "bg-[#1B1B1B] text-white" : "bg-[#E5E5EA] text-[#999]"
-                            }`}>
-                              v{activeVersion.version_number}
-                            </span>
-                            <span className="text-xs text-[#A0A0A0]">
-                              {new Date(activeVersion.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                            </span>
-                          </div>
-                          <a
-                            href={activeVersion.figma_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-[11px] font-medium text-[#1B1B1B] hover:text-[#333] transition-colors"
-                          >
-                            Open Figma
-                            <ArrowTopRightOnSquareIcon className="size-3" />
-                          </a>
+                    {/* Add version form */}
+                    {showAddVersion ? (
+                      <div className="px-4 py-3 border-t border-[#E8E8E8] bg-[#F7F8FA] space-y-2 animate-fadeIn">
+                        <div className="grid grid-cols-2 gap-2">
+                          <input type="text" value={newVersionUrl} onChange={(e) => setNewVersionUrl(e.target.value)} placeholder="Figma URL *" className={inputClass} />
+                          <input type="text" value={newVersionStagingUrl} onChange={(e) => setNewVersionStagingUrl(e.target.value)} placeholder="Staging URL (optional)" className={inputClass} />
                         </div>
-
-                        {/* Figma embed */}
-                        {toFigmaEmbed(activeVersion.figma_url) && (
-                          <div className="relative w-full rounded-lg overflow-hidden border border-[#E8E8E8] flex-1 min-h-[340px]">
-                            <iframe
-                              src={toFigmaEmbed(activeVersion.figma_url) || ""}
-                              className="absolute inset-0 w-full h-full"
-                              allowFullScreen
-                            />
-                          </div>
-                        )}
-
-                        {/* Feedback for this version */}
-                        {(() => {
-                          const vFeedback = feedbackList.filter(f => f.version_id === activeVersion.id);
-                          if (vFeedback.length === 0) return null;
-                          return (
-                            <div className="space-y-1.5 pt-2">
-                              {vFeedback.map((entry) => {
-                                const isApproval = entry.action === "approved";
-                                return (
-                                  <div key={entry.id} className={`flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-md ${isApproval ? "bg-emerald-50" : "bg-amber-50"}`}>
-                                    <span className={`size-1.5 rounded-full shrink-0 ${isApproval ? "bg-emerald-500" : "bg-amber-500"}`} />
-                                    <span className="font-medium">{entry.submitted_by}</span>
-                                    <span className="text-[#7A7A7A]">{isApproval ? "approved" : "requested changes"}</span>
-                                    {entry.comment && <span className="text-[#999] truncate">&mdash; {entry.comment}</span>}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          );
-                        })()}
+                        <input type="text" value={newVersionNotes} onChange={(e) => setNewVersionNotes(e.target.value)} placeholder="Notes — what changed in this version?" className={inputClass} />
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => handleAddVersion(review.id)} disabled={!newVersionUrl.trim() || addingVersion} className="px-3 py-1.5 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] disabled:opacity-40">
+                            {addingVersion ? "Adding..." : `Add v${versions.length + 1}`}
+                          </button>
+                          <button onClick={() => setShowAddVersion(false)} className="px-3 py-1.5 text-xs text-[#7A7A7A]">Cancel</button>
+                        </div>
                       </div>
                     ) : (
-                      <div className="flex items-center justify-center h-full text-xs text-[#A0A0A0]">
-                        No versions yet — add one to get started
-                      </div>
+                      <button onClick={() => setShowAddVersion(true)} className="w-full px-4 py-2.5 border-t border-[#E8E8E8] text-left flex items-center gap-1.5 text-[11px] font-medium text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-[#FAFAFA] transition-colors">
+                        <PlusIcon className="size-3" />
+                        New Version
+                      </button>
                     )}
                   </div>
-                </div>
+                )}
               </div>
             );
-          })()}
+          })}
         </div>
       )}
     </div>
