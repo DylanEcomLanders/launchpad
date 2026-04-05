@@ -82,7 +82,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .animate-slideIn {
-  animation: slideIn 0.25s ease-out;
+  animation: slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 /* Fade in for portal tab transitions */
@@ -105,7 +105,7 @@ h1, h2, h3, h4, h5, h6 {
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -114,27 +114,27 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .animate-fadeInUp {
-  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fadeInUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }
 
 .animate-fadeInUp-d1 {
-  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
+  animation: fadeInUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s both;
 }
 
 .animate-fadeInUp-d2 {
-  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+  animation: fadeInUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s both;
 }
 
 .animate-fadeInUp-d3 {
-  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+  animation: fadeInUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s both;
 }
 
 .animate-fadeInUp-d4 {
-  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+  animation: fadeInUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s both;
 }
 
 .animate-fadeInUp-d5 {
-  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+  animation: fadeInUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s both;
 }
 
 /* Scale fade for cards / modals */
@@ -150,7 +150,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .animate-scaleFadeIn {
-  animation: scaleFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: scaleFadeIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }
 
 /* Backdrop fade */
@@ -160,7 +160,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .animate-backdropFade {
-  animation: backdropFade 0.2s ease-out both;
+  animation: backdropFade 0.35s ease-out both;
 }
 
 /* Hide scrollbar but keep scrolling */
