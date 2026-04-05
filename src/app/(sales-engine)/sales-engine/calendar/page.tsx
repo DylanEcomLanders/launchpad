@@ -44,6 +44,8 @@ import {
   isOptimalSlot,
   getSlotScore,
   getBestDay,
+  getBestTimes,
+  getTopSlots,
 } from "@/lib/sales-engine/calendar-data";
 import { inputClass, textareaClass, labelClass } from "@/lib/form-styles";
 
@@ -1103,63 +1105,50 @@ export default function CalendarPage() {
           <div className="fixed inset-0 z-40 bg-black/20" onClick={() => setShowStudio(false)} />
           <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-md bg-white shadow-[var(--shadow-elevated)] flex flex-col animate-slideIn">
             {/* Header */}
-            <div className="shrink-0 bg-white border-b border-[#E5E5EA] px-5 py-4 flex items-center justify-between z-10">
-              <div className="flex items-center gap-2">
-                <h2 className="text-sm font-bold text-[#1B1B1B]">{studioPost.id ? "Edit Post" : "New Post"}</h2>
-                {studioPost.group_id && (
-                  <span className="flex items-center gap-0.5 text-[9px] font-semibold text-[#7A7A7A] bg-[#F3F3F5] px-1.5 py-0.5 rounded-full">
-                    <LinkIcon className="size-2.5" />
-                    Linked
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={repurposePost}
-                  disabled={repurposeLoading || !studioPost.caption?.trim()}
-                  className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
-                  title="Repurpose to other platforms"
-                >
-                  <ArrowPathIcon className={`size-3 ${repurposeLoading ? "animate-spin" : ""}`} />
-                  {repurposeLoading ? "Repurposing..." : "Repurpose"}
-                </button>
-                <button onClick={() => setShowStudio(false)} className="p-1 rounded-lg hover:bg-[#F3F3F5]">
-                  <XMarkIcon className="size-5 text-[#7A7A7A]" />
-                </button>
-              </div>
+            <div className="shrink-0 bg-white border-b border-[#E5E5EA] px-5 py-3 flex items-center justify-between z-10">
+              <h2 className="text-sm font-bold text-[#1B1B1B]">{studioPost.id ? "Edit Post" : "New Post"}</h2>
+              <button onClick={() => setShowStudio(false)} className="p-1 rounded-lg hover:bg-[#F3F3F5]">
+                <XMarkIcon className="size-5 text-[#7A7A7A]" />
+              </button>
             </div>
 
-            {/* Platform tabs (when post has siblings) */}
+            {/* Platform tabs — always visible */}
             {(() => {
               const siblings = studioPost.group_id ? getGroupSiblings(studioPost.group_id) : [];
-              const hasSiblings = siblings.length > 1 || (siblings.length === 1 && siblings[0].id !== studioPost.id);
-              if (!hasSiblings && !studioPost.group_id) return null;
-              const allGroupPlatforms = siblings.length > 0
-                ? [...new Set(siblings.map(s => s.platform))]
-                : [studioPost.platform!];
-              // Sort in standard order
+              const hasSiblings = siblings.length > 1;
               const platformOrder: Platform[] = ["x", "linkedin", "instagram", "tiktok"];
-              const sorted = platformOrder.filter(p => allGroupPlatforms.includes(p));
+
+              // For linked posts: show only platforms with siblings
+              // For single posts: show all platforms as selector
+              const tabPlatforms = hasSiblings
+                ? platformOrder.filter(p => siblings.some(s => s.platform === p))
+                : platformOrder;
 
               return (
-                <div className="shrink-0 border-b border-[#E5E5EA] bg-[#FAFAFA]">
+                <div className="shrink-0 border-b border-[#E5E5EA]">
                   <div className="flex">
-                    {sorted.map(p => {
+                    {tabPlatforms.map(p => {
                       const isActive = studioPost.platform === p;
                       const sibling = siblings.find(s => s.platform === p);
                       return (
                         <button
                           key={p}
-                          onClick={() => sibling && switchToSibling(p)}
-                          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-[11px] font-semibold transition-colors border-b-2 ${
+                          onClick={() => {
+                            if (hasSiblings && sibling) {
+                              switchToSibling(p);
+                            } else if (!hasSiblings) {
+                              setStudioPost(prev => ({ ...prev, platform: p }));
+                            }
+                          }}
+                          className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2.5 text-[11px] font-semibold transition-colors border-b-2 ${
                             isActive
-                              ? "border-[#1B1B1B] text-[#1B1B1B] bg-white"
-                              : "border-transparent text-[#7A7A7A] hover:text-[#555] hover:bg-[#F3F3F5]"
+                              ? "border-[#1B1B1B] text-[#1B1B1B]"
+                              : "border-transparent text-[#B0B0B0] hover:text-[#555]"
                           }`}
                         >
-                          <span className="size-2 rounded-full" style={{ backgroundColor: platformColors[p] }} />
+                          <span className="size-2 rounded-full" style={{ backgroundColor: isActive ? platformColors[p] : "#D4D4D4" }} />
                           {platformLabels[p]}
-                          {sibling && (
+                          {hasSiblings && sibling && (
                             <span className={`text-[8px] px-1 py-0.5 rounded-full ${
                               isActive ? "bg-[#F3F3F5]" : "bg-[#EDEDEF]"
                             }`}>
@@ -1180,81 +1169,65 @@ export default function CalendarPage() {
               </div>
             )}
 
-            {/* ═══ EXISTING POST — Detail / Edit view ═══ */}
+            {/* ═══ EXISTING POST — Clean detail view ═══ */}
             {studioPost.id ? (
               <>
-                <div className="flex-1 overflow-y-auto p-5 space-y-5">
-                  {/* Meta badges */}
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: platformColors[studioPost.platform || "x"] + "15", color: platformColors[studioPost.platform || "x"] }}>
-                      {platformLabels[studioPost.platform || "x"]}
-                    </span>
-                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: contentTypeColors[studioPost.content_type || "educational"] + "15", color: contentTypeColors[studioPost.content_type || "educational"] }}>
-                      {contentTypeLabels[studioPost.content_type || "educational"]}
-                    </span>
-                    <span className="text-[9px] font-semibold text-[#7A7A7A] bg-[#F3F3F5] px-1.5 py-0.5 rounded-full">
-                      {postFormatLabels[studioPost.post_format || "text"]}
-                    </span>
+                <div className="flex-1 overflow-y-auto">
+                  {/* ── Caption section ── */}
+                  <div className="px-5 pt-4 pb-5 border-b border-[#F0F0F0]">
+                    {/* Image preview */}
                     {studioPost.media_data && (
-                      <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Image attached</span>
-                    )}
-                  </div>
-
-                  {/* Image preview */}
-                  {studioPost.media_data && (
-                    <div className="relative rounded-lg overflow-hidden border border-[#E5E5EA]">
-                      <img src={studioPost.media_data} alt="Post media" className="w-full h-40 object-cover" />
-                      <div className="absolute top-1.5 right-1.5 flex gap-1">
-                        <label className="cursor-pointer px-1.5 py-0.5 bg-white/90 backdrop-blur-sm text-[9px] font-semibold rounded shadow-sm">
-                          Replace
-                          <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
-                        </label>
-                        <button onClick={() => setStudioPost(prev => ({ ...prev, media_data: undefined }))} className="px-1.5 py-0.5 bg-white/90 backdrop-blur-sm text-[9px] font-semibold text-red-500 rounded shadow-sm">
-                          Remove
-                        </button>
-                      </div>
-                      {captionLoading && (
-                        <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 text-white text-[9px] font-semibold rounded-lg backdrop-blur-sm animate-pulse">
-                          Generating captions from image...
+                      <div className="relative rounded-xl overflow-hidden border border-[#E5E5EA] mb-4">
+                        <img src={studioPost.media_data} alt="Post media" className="w-full h-36 object-cover" />
+                        <div className="absolute top-2 right-2 flex gap-1">
+                          <label className="cursor-pointer px-2 py-1 bg-white/90 backdrop-blur-sm text-[9px] font-semibold rounded-lg shadow-sm hover:bg-white transition-colors">
+                            Replace
+                            <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
+                          </label>
+                          <button onClick={() => setStudioPost(prev => ({ ...prev, media_data: undefined }))} className="px-2 py-1 bg-white/90 backdrop-blur-sm text-[9px] font-semibold text-red-400 rounded-lg shadow-sm hover:bg-white transition-colors">
+                            Remove
+                          </button>
                         </div>
-                      )}
-                    </div>
-                  )}
+                        {captionLoading && (
+                          <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 text-white text-[9px] font-semibold rounded-lg backdrop-blur-sm animate-pulse">
+                            Generating captions...
+                          </div>
+                        )}
+                      </div>
+                    )}
 
-                  {/* Upload image (if none) */}
-                  {!studioPost.media_data && (studioPost.post_format === "image" || studioPost.post_format === "video") && (
-                    <label className="flex items-center justify-center gap-2 py-6 border-2 border-dashed border-[#E5E5EA] rounded-xl cursor-pointer hover:border-[#C5C5C5] hover:bg-[#FAFAFA] transition-colors">
-                      <PhotoIcon className="size-5 text-[#CCC]" />
-                      <span className="text-xs text-[#7A7A7A]">Upload image</span>
-                      <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
-                    </label>
-                  )}
+                    {/* Upload image prompt */}
+                    {!studioPost.media_data && (studioPost.post_format === "image" || studioPost.post_format === "video") && (
+                      <label className="flex items-center justify-center gap-2 py-5 border border-dashed border-[#E0E0E0] rounded-xl cursor-pointer hover:border-[#B0B0B0] hover:bg-[#FAFAFA] transition-colors mb-4">
+                        <PhotoIcon className="size-5 text-[#CCC]" />
+                        <span className="text-[11px] text-[#999]">Upload image</span>
+                        <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
+                      </label>
+                    )}
 
-                  {/* Caption */}
-                  <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className={`${labelClass} !mb-0`}>Caption</label>
+                      <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider">Caption</p>
                       <button
                         onClick={() => generateCaptions()}
                         disabled={captionLoading}
-                        className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
+                        className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-[#7A7A7A] bg-[#F3F3F5] rounded-md hover:bg-[#EBEBEB] transition-colors disabled:opacity-50"
                       >
                         <SparklesIcon className="size-3" />
-                        {captionLoading ? "Generating..." : "Generate"}
+                        {captionLoading ? "Generating..." : "AI Generate"}
                       </button>
                     </div>
                     <textarea
                       value={studioPost.caption || ""}
                       onChange={e => setStudioPost(prev => ({ ...prev, caption: e.target.value }))}
-                      placeholder={studioPost.platform === "x" ? "Write your tweet..." : "Write your caption..."}
-                      className={`${textareaClass} min-h-[100px]`}
-                      rows={4}
+                      placeholder="Write your caption..."
+                      className="w-full bg-transparent text-sm text-[#1B1B1B] leading-relaxed resize-none outline-none placeholder:text-[#CCC] min-h-[80px]"
+                      rows={3}
                     />
 
                     {captionError && <p className="text-[11px] text-red-500 mt-2">{captionError}</p>}
                     {captions.length > 0 && (
-                      <div className="space-y-2 mt-3">
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">Pick a variant</p>
+                      <div className="space-y-2 mt-3 pt-3 border-t border-[#F0F0F0]">
+                        <p className="text-[10px] font-semibold text-[#AAA] uppercase tracking-wider">Variants</p>
                         {captions.map((c, i) => (
                           <button
                             key={i}
@@ -1271,21 +1244,23 @@ export default function CalendarPage() {
                     )}
                   </div>
 
-                  {/* Format & Type selectors (inline, compact) */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={labelClass}>Format</label>
-                      <div className="flex flex-wrap gap-1.5">
+                  {/* ── Settings section ── */}
+                  <div className="px-5 py-4 space-y-4">
+                    {/* Format row */}
+                    <div className="flex items-center justify-between">
+                      <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider shrink-0">Format</p>
+                      <div className="flex gap-1">
                         {(["text", "image", "article", "video"] as PostFormat[]).map(f => {
                           const Icon = formatIcons[f];
+                          const active = studioPost.post_format === f;
                           return (
                             <button
                               key={f}
                               onClick={() => setStudioPost(prev => ({ ...prev, post_format: f }))}
-                              className={`flex items-center gap-1 px-2 py-1.5 text-[10px] font-medium rounded-lg border transition-colors ${
-                                studioPost.post_format === f
-                                  ? "border-[#1B1B1B] bg-[#1B1B1B] text-white"
-                                  : "border-[#E5E5EA] text-[#7A7A7A] hover:bg-[#F5F5F5]"
+                              className={`flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-medium rounded-lg transition-colors ${
+                                active
+                                  ? "bg-[#1B1B1B] text-white"
+                                  : "text-[#999] hover:bg-[#F3F3F5]"
                               }`}
                             >
                               <Icon className="size-3" />
@@ -1295,107 +1270,177 @@ export default function CalendarPage() {
                         })}
                       </div>
                     </div>
-                    <div>
-                      <label className={labelClass}>Type</label>
-                      <div className="flex flex-wrap gap-1.5">
-                        {(["educational", "social_proof", "personal", "promotional"] as ContentType[]).map(t => (
-                          <button
-                            key={t}
-                            onClick={() => setStudioPost(prev => ({ ...prev, content_type: t }))}
-                            className={`flex items-center gap-1 px-2 py-1.5 text-[10px] font-medium rounded-lg border transition-colors ${
-                              studioPost.content_type === t
-                                ? "text-white"
-                                : "border-[#E5E5EA] text-[#7A7A7A] hover:bg-[#F5F5F5]"
-                            }`}
-                            style={studioPost.content_type === t ? { backgroundColor: contentTypeColors[t], borderColor: contentTypeColors[t] } : {}}
-                          >
-                            {contentTypeLabels[t]}
-                          </button>
-                        ))}
+
+                    {/* Divider */}
+                    <div className="border-t border-[#F0F0F0]" />
+
+                    {/* Type row */}
+                    <div className="flex items-center justify-between">
+                      <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider shrink-0">Type</p>
+                      <div className="flex gap-1">
+                        {(["educational", "social_proof", "personal", "promotional"] as ContentType[]).map(t => {
+                          const active = studioPost.content_type === t;
+                          return (
+                            <button
+                              key={t}
+                              onClick={() => setStudioPost(prev => ({ ...prev, content_type: t }))}
+                              className={`px-2.5 py-1.5 text-[10px] font-medium rounded-lg transition-colors ${
+                                active ? "text-white" : "text-[#999] hover:bg-[#F3F3F5]"
+                              }`}
+                              style={active ? { backgroundColor: contentTypeColors[t] } : {}}
+                            >
+                              {contentTypeLabels[t]}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
-                  </div>
 
-                  {/* Platform (for single posts) */}
-                  {!studioPost.group_id && (
+                    {/* Divider */}
+                    <div className="border-t border-[#F0F0F0]" />
+
+                    {/* Schedule row */}
                     <div>
-                      <label className={labelClass}>Platform</label>
-                      <div className="flex gap-2">
-                        {(["x", "linkedin", "instagram", "tiktok"] as Platform[]).map(p => (
-                          <button
-                            key={p}
-                            onClick={() => setStudioPost(prev => ({ ...prev, platform: p }))}
-                            className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg border transition-colors ${
-                              studioPost.platform === p
-                                ? "border-[#1B1B1B] bg-[#1B1B1B] text-white"
-                                : "border-[#E5E5EA] text-[#7A7A7A] hover:bg-[#F5F5F5]"
-                            }`}
-                          >
-                            <span className="size-2 rounded-full inline-block mr-1.5" style={{ backgroundColor: studioPost.platform === p ? "white" : platformColors[p] }} />
-                            {platformLabels[p]}
-                          </button>
-                        ))}
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider">Schedule</p>
+                        {/* Slot score inline */}
+                        {studioPost.platform && studioPost.scheduled_date && studioPost.scheduled_time && (() => {
+                          const score = getSlotScore(studioPost.platform, new Date(studioPost.scheduled_date + "T00:00:00").getDay(), parseInt(studioPost.scheduled_time));
+                          return score > 0 ? (
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] text-[#999]">Slot score</span>
+                              <span className={`text-[10px] font-bold ${score >= 80 ? "text-emerald-600" : score >= 50 ? "text-amber-600" : "text-[#999]"}`}>{score}/100</span>
+                              {score >= 80 && <span className="text-[8px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Optimal</span>}
+                            </div>
+                          ) : null;
+                        })()}
                       </div>
-                    </div>
-                  )}
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="date"
+                          value={studioPost.scheduled_date || ""}
+                          onChange={e => setStudioPost(prev => ({ ...prev, scheduled_date: e.target.value }))}
+                          className="w-full px-3 py-2 text-xs border border-[#E5E5EA] rounded-lg bg-white outline-none focus:border-[#1B1B1B] transition-colors"
+                        />
+                        <input
+                          type="time"
+                          value={studioPost.scheduled_time || ""}
+                          onChange={e => setStudioPost(prev => ({ ...prev, scheduled_time: e.target.value }))}
+                          className="w-full px-3 py-2 text-xs border border-[#E5E5EA] rounded-lg bg-white outline-none focus:border-[#1B1B1B] transition-colors"
+                        />
+                      </div>
 
-                  {/* Date, Time & Status */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={labelClass}>Date</label>
-                      <input type="date" value={studioPost.scheduled_date || ""} onChange={e => setStudioPost(prev => ({ ...prev, scheduled_date: e.target.value }))} className={inputClass} />
-                    </div>
-                    <div>
-                      <label className={labelClass}>Time</label>
-                      <input type="time" value={studioPost.scheduled_time || ""} onChange={e => setStudioPost(prev => ({ ...prev, scheduled_time: e.target.value }))} className={inputClass} />
-                    </div>
-                  </div>
+                      {/* Suggested times from analytics */}
+                      {studioPost.platform && studioPost.scheduled_date && (() => {
+                        const dayOfWeek = new Date(studioPost.scheduled_date + "T00:00:00").getDay();
+                        const bestTimes = getBestTimes(studioPost.platform, dayOfWeek);
+                        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                        // Also show top slots for this platform (different days)
+                        const topSlots = getTopSlots(studioPost.platform).filter(s => s.day !== dayOfWeek).slice(0, 2);
 
-                  {/* Slot score */}
-                  {studioPost.platform && studioPost.scheduled_date && studioPost.scheduled_time && (
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#F7F8FA]">
-                      <ClockIcon className="size-3.5 text-[#7A7A7A]" />
-                      <span className="text-[11px] text-[#7A7A7A]">
-                        Slot score: <span className="font-semibold text-[#1B1B1B]">{getSlotScore(studioPost.platform, new Date(studioPost.scheduled_date + "T00:00:00").getDay(), parseInt(studioPost.scheduled_time)) || "—"}</span>/100
-                      </span>
-                      {getSlotScore(studioPost.platform, new Date(studioPost.scheduled_date + "T00:00:00").getDay(), parseInt(studioPost.scheduled_time)) >= 80 && (
-                        <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Optimal</span>
-                      )}
+                        return bestTimes.length > 0 || topSlots.length > 0 ? (
+                          <div className="mt-2.5">
+                            {bestTimes.length > 0 && (
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-[9px] text-[#BBB]">Best for {dayNames[dayOfWeek]}:</span>
+                                {bestTimes.map((t, i) => (
+                                  <button
+                                    key={i}
+                                    onClick={() => setStudioPost(prev => ({ ...prev, scheduled_time: `${t.hour.toString().padStart(2, "0")}:00` }))}
+                                    className={`text-[9px] font-semibold px-2 py-1 rounded-md transition-colors ${
+                                      studioPost.scheduled_time === `${t.hour.toString().padStart(2, "0")}:00`
+                                        ? "bg-emerald-100 text-emerald-700"
+                                        : "bg-[#F3F3F5] text-[#666] hover:bg-[#EBEBEB]"
+                                    }`}
+                                  >
+                                    {t.hour % 12 || 12}:00 {t.hour >= 12 ? "PM" : "AM"}
+                                    <span className="ml-1 text-[8px] opacity-60">{t.score}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                            {bestTimes.length === 0 && topSlots.length > 0 && (
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-[9px] text-[#BBB]">Try instead:</span>
+                                {topSlots.map((t, i) => (
+                                  <button
+                                    key={i}
+                                    onClick={() => {
+                                      // Find the date for this day of week in the current week context
+                                      const current = new Date(studioPost.scheduled_date + "T00:00:00");
+                                      const currentDay = current.getDay();
+                                      const diff = t.day - currentDay;
+                                      const target = new Date(current);
+                                      target.setDate(target.getDate() + diff);
+                                      setStudioPost(prev => ({
+                                        ...prev,
+                                        scheduled_date: toDateStr(target),
+                                        scheduled_time: `${t.hour.toString().padStart(2, "0")}:00`
+                                      }));
+                                    }}
+                                    className="text-[9px] font-semibold px-2 py-1 rounded-md bg-[#F3F3F5] text-[#666] hover:bg-[#EBEBEB] transition-colors"
+                                  >
+                                    {dayNames[t.day]} {t.hour % 12 || 12}{t.hour >= 12 ? "pm" : "am"}
+                                    <span className="ml-1 text-[8px] opacity-60">{t.score}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ) : null;
+                      })()}
                     </div>
-                  )}
 
-                  {/* Status */}
-                  <div>
-                    <label className={labelClass}>Status</label>
-                    <div className="flex flex-wrap gap-1.5">
-                      {(["idea", "scripted", "media_ready", "approved", "exported"] as PostStatus[]).map(s => (
-                        <button
-                          key={s}
-                          onClick={() => setStudioPost(prev => ({ ...prev, status: s }))}
-                          className={`px-2.5 py-1.5 text-[10px] font-semibold rounded-full border transition-colors ${
-                            studioPost.status === s ? "text-white" : "border-[#E5E5EA] text-[#7A7A7A] hover:bg-[#F5F5F5]"
-                          }`}
-                          style={studioPost.status === s ? { backgroundColor: statusColors[s], borderColor: statusColors[s] } : {}}
-                        >
-                          {statusLabels[s]}
-                        </button>
-                      ))}
+                    {/* Divider */}
+                    <div className="border-t border-[#F0F0F0]" />
+
+                    {/* Status row */}
+                    <div className="flex items-center justify-between">
+                      <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider shrink-0">Status</p>
+                      <div className="flex gap-1">
+                        {(["idea", "scripted", "media_ready", "approved", "exported"] as PostStatus[]).map(s => {
+                          const active = studioPost.status === s;
+                          return (
+                            <button
+                              key={s}
+                              onClick={() => setStudioPost(prev => ({ ...prev, status: s }))}
+                              className={`px-2.5 py-1.5 text-[10px] font-medium rounded-lg transition-colors ${
+                                active ? "text-white" : "text-[#999] hover:bg-[#F3F3F5]"
+                              }`}
+                              style={active ? { backgroundColor: statusColors[s] } : {}}
+                            >
+                              {statusLabels[s]}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Footer — Save / Delete */}
+                {/* Footer */}
                 <div className="shrink-0 border-t border-[#E5E5EA] px-5 py-3 bg-white flex items-center gap-2">
+                  <button
+                    onClick={repurposePost}
+                    disabled={repurposeLoading || !studioPost.caption?.trim()}
+                    className="flex items-center gap-1 px-3 py-2.5 text-[10px] font-semibold border border-[#E5E5EA] text-[#7A7A7A] rounded-lg hover:bg-[#F5F5F5] transition-colors disabled:opacity-40"
+                  >
+                    <ArrowPathIcon className={`size-3 ${repurposeLoading ? "animate-spin" : ""}`} />
+                    {repurposeLoading ? "..." : "Repurpose"}
+                  </button>
                   <button
                     onClick={handleSavePost}
                     disabled={saving}
                     className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
                   >
-                    <CheckIcon className="size-3.5" />
                     {saving ? "Saving..." : "Save"}
                   </button>
-                  <button onClick={() => handleDeletePost(studioPost.id!)} className="px-4 py-2.5 text-xs font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors">
-                    Delete
+                  <button
+                    onClick={() => handleDeletePost(studioPost.id!)}
+                    className="p-2.5 text-[#CCC] hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Delete post"
+                  >
+                    <TrashIcon className="size-4" />
                   </button>
                 </div>
               </>

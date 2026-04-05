@@ -137,6 +137,23 @@ export function isOptimalSlot(day: number, hour: number): boolean {
   return optimalSlots.some(s => s.day === day && s.hour === hour && s.score >= 80);
 }
 
+// ── Helper: get best times for platform on a specific day ──
+
+export function getBestTimes(platform: Platform, day: number): { hour: number; score: number }[] {
+  return optimalSlots
+    .filter(s => s.platform === platform && s.day === day)
+    .sort((a, b) => b.score - a.score);
+}
+
+// ── Helper: get overall best slots for platform (top 3) ──
+
+export function getTopSlots(platform: Platform): { day: number; hour: number; score: number }[] {
+  return optimalSlots
+    .filter(s => s.platform === platform)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
+}
+
 // ── Helper: get best day for platform ──
 
 export function getBestDay(platform: Platform): string {
