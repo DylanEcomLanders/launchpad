@@ -230,6 +230,9 @@ export interface PortalData {
   deleted_at?: string | null; // ISO date — soft delete (trash bin)
   team_member_ids?: string[]; // IDs from settings.team — who's working on this client
 
+  // Client-level context (not tied to a specific project)
+  context_entries?: ContextEntry[];
+
   // Multi-project support
   projects: PortalProject[];
 }

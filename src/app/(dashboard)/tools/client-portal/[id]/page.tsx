@@ -11,6 +11,7 @@ import {
   ArrowTopRightOnSquareIcon,
   TrashIcon,
   ClockIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { inputClass, textareaClass, labelClass } from "@/lib/form-styles";
@@ -56,6 +57,7 @@ import type {
   ProjectType,
   PortalReport,
   BlockerHistory,
+  ContextEntry,
 } from "@/lib/portal/types";
 import { cyclePhaseStatus, canPhaseAdvance } from "@/lib/portal/phase-logic";
 import { syncDeliverableToBoard } from "@/lib/portal/task-sync";
@@ -68,8 +70,8 @@ import type {
   DesignReviewFeedback,
 } from "@/lib/portal/review-types";
 
-type DashTab = "overview" | "context" | "build" | "results";
-type ClientTab = "projects" | "tickets" | "funnels" | "settings";
+type DashTab = "overview" | "build" | "results";
+type ClientTab = "projects" | "context" | "tickets" | "funnels" | "settings";
 
 export default function PortalDetailPage() {
   const params = useParams();
@@ -471,16 +473,19 @@ export default function PortalDetailPage() {
   const isRetainerPortal = portal.client_type === "retainer";
 
   // Simplified tabs — same for retainer and project
-  const contextCount = selectedProject?.context_entries?.length || 0;
   const dashTabs: { key: DashTab; label: string }[] = [
     { key: "overview", label: "Overview" },
-    { key: "context", label: contextCount > 0 ? `Context (${contextCount})` : "Context" },
     { key: "build", label: "Build" },
     { key: "results", label: "Results" },
   ];
 
+  const allContextEntries = [
+    ...(portal?.context_entries || []).map(e => ({ ...e, _project: "General" })),
+    ...(portal?.projects || []).flatMap(p => (p.context_entries || []).map(e => ({ ...e, _project: p.name }))),
+  ];
   const clientTabs: { key: ClientTab; label: string }[] = [
     { key: "projects", label: "Projects" },
+    { key: "context", label: allContextEntries.length > 0 ? `Context (${allContextEntries.length})` : "Context" },
     ...(portalTickets.length > 0 ? [{ key: "tickets" as ClientTab, label: `Tickets (${portalTickets.filter(t => t.status !== "resolved" && !t.deleted_at).length})` }] : []),
     ...(funnels.length > 0 ? [{ key: "funnels" as ClientTab, label: "Funnels" }] : []),
     { key: "settings", label: "Settings" },
@@ -782,6 +787,18 @@ export default function PortalDetailPage() {
           </div>
         )}
 
+        {/* ── Context tab ── */}
+        {clientTab === "context" && portal && (
+          <ClientContextTab portal={portal} onUpdatePortal={async (patch) => {
+            await updatePortal(portal.id, patch as Partial<PortalData>);
+            setPortal({ ...portal, ...patch } as PortalData);
+          }} onUpdateProject={async (projectId, patch) => {
+            const updatedProjects = portal.projects.map(p => p.id === projectId ? { ...p, ...patch } : p);
+            await updatePortal(portal.id, { projects: updatedProjects } as any);
+            setPortal({ ...portal, projects: updatedProjects });
+          }} />
+        )}
+
         {/* ── Settings tab ── */}
         {clientTab === "settings" && (
           <ClientDetailsPanel portal={portal} team={team} onUpdateField={handleUpdateField} />
@@ -873,25 +890,6 @@ export default function PortalDetailPage() {
           </div>
         )}
 
-        {/* ── CONTEXT: Transcript cleaning + project context ── */}
-        {activeTab === "context" && portal && (
-          <div>
-            <InternalSection
-              project={selectedProject}
-              hideGates
-              onUpdateProject={async (patch) => {
-                if (!portal) return;
-                const updatedProjects = portal.projects.map((p) =>
-                  p.id === selectedProject.id ? { ...p, ...patch } : p
-                );
-                await updatePortal(portal.id, { projects: updatedProjects } as any);
-                setPortal({ ...portal, projects: updatedProjects });
-              }}
-              slackInternalChannelId={portal.slack_internal_channel_id}
-              clientName={portal.client_name}
-            />
-          </div>
-        )}
 
         {/* ── BUILD: Updates + Designs + Development ── */}
         {activeTab === "build" && portal && (
@@ -4584,6 +4582,223 @@ function ResolveBlockerModal({
             Cancel
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Client-Level Context Tab ─── */
+function ClientContextTab({
+  portal,
+  onUpdatePortal,
+  onUpdateProject,
+}: {
+  portal: PortalData;
+  onUpdatePortal: (patch: Partial<PortalData>) => Promise<void>;
+  onUpdateProject: (projectId: string, patch: Partial<PortalProject>) => Promise<void>;
+}) {
+  const [showForm, setShowForm] = useState(false);
+  const [source, setSource] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [rawTranscript, setRawTranscript] = useState("");
+  const [cleanVersion, setCleanVersion] = useState("");
+  const [cleaning, setCleaning] = useState(false);
+  const [targetProject, setTargetProject] = useState<string>("_client");
+
+  const handleClean = async () => {
+    if (!rawTranscript.trim()) return;
+    setCleaning(true);
+    try {
+      const res = await fetch("/api/context-clean", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rawTranscript }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCleanVersion(data.cleanVersion);
+      }
+    } catch { /* silent */ }
+    setCleaning(false);
+  };
+
+  const handleSave = async () => {
+    if (!cleanVersion.trim()) return;
+    const entry: ContextEntry = {
+      id: crypto.randomUUID(),
+      date,
+      source: source.trim() || "Voice note",
+      rawTranscript: rawTranscript.trim(),
+      cleanVersion: cleanVersion.trim(),
+      created_at: new Date().toISOString(),
+    };
+
+    if (targetProject === "_client") {
+      await onUpdatePortal({ context_entries: [entry, ...(portal.context_entries || [])] });
+    } else {
+      const project = portal.projects.find(p => p.id === targetProject);
+      if (project) {
+        await onUpdateProject(targetProject, { context_entries: [entry, ...(project.context_entries || [])] });
+      }
+    }
+
+    setShowForm(false);
+    setSource("");
+    setRawTranscript("");
+    setCleanVersion("");
+    setTargetProject("_client");
+  };
+
+  const handleDelete = async (entryId: string, projectId?: string) => {
+    if (projectId) {
+      const project = portal.projects.find(p => p.id === projectId);
+      if (project) {
+        await onUpdateProject(projectId, { context_entries: (project.context_entries || []).filter(e => e.id !== entryId) });
+      }
+    } else {
+      await onUpdatePortal({ context_entries: (portal.context_entries || []).filter(e => e.id !== entryId) });
+    }
+  };
+
+  // Aggregate all entries with source project info
+  const allEntries: Array<ContextEntry & { _projectId?: string; _projectName: string }> = [
+    ...(portal.context_entries || []).map(e => ({ ...e, _projectName: "General" })),
+    ...portal.projects.flatMap(p =>
+      (p.context_entries || []).map(e => ({ ...e, _projectId: p.id, _projectName: p.name }))
+    ),
+  ].sort((a, b) => b.created_at.localeCompare(a.created_at));
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <h3 className="text-sm font-semibold text-[#1A1A1A]">Context</h3>
+          <p className="text-xs text-[#999] mt-0.5">Drop in call transcripts, voice notes — AI strips pricing and organises for the team</p>
+        </div>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#777] border border-[#E5E5EA] rounded-lg hover:bg-[#F7F8FA] transition-colors"
+        >
+          <PlusIcon className="size-3" />
+          Add Context
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="border border-[#E5E5EA] rounded-xl p-5 mb-6 space-y-4 bg-[#FAFAFA]">
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="text-[11px] font-medium text-[#777] block mb-1.5">Source</label>
+              <input
+                type="text"
+                value={source}
+                onChange={(e) => setSource(e.target.value)}
+                placeholder="e.g. AJ voice note"
+                className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg bg-white focus:border-[#1B1B1B] outline-none transition-colors"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-medium text-[#777] block mb-1.5">Date</label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg bg-white focus:border-[#1B1B1B] outline-none transition-colors"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-medium text-[#777] block mb-1.5">Save to</label>
+              <select
+                value={targetProject}
+                onChange={(e) => setTargetProject(e.target.value)}
+                className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg bg-white focus:border-[#1B1B1B] outline-none transition-colors"
+              >
+                <option value="_client">General (client-level)</option>
+                {portal.projects.map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[11px] font-medium text-[#777] block mb-1.5">Raw Transcript</label>
+            <textarea
+              value={rawTranscript}
+              onChange={(e) => setRawTranscript(e.target.value)}
+              placeholder="Paste the voice note or call transcript here..."
+              className="w-full text-sm px-3 py-2.5 border border-[#E5E5EA] rounded-lg bg-white min-h-[140px] resize-y focus:border-[#1B1B1B] outline-none transition-colors"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleClean}
+              disabled={!rawTranscript.trim() || cleaning}
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40"
+            >
+              <SparklesIcon className="size-3.5" />
+              {cleaning ? "Cleaning..." : "Clean with AI"}
+            </button>
+            <button
+              onClick={() => { setShowForm(false); setRawTranscript(""); setCleanVersion(""); }}
+              className="px-3 py-2 text-xs text-[#999] hover:text-[#1B1B1B] transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+
+          {cleanVersion && (
+            <div className="border-t border-[#E5E5EA] pt-4 mt-2">
+              <label className="text-[11px] font-medium text-[#777] block mb-1.5">Cleaned Version (editable)</label>
+              <textarea
+                value={cleanVersion}
+                onChange={(e) => setCleanVersion(e.target.value)}
+                className="w-full text-sm px-3 py-2.5 border border-[#E5E5EA] rounded-lg bg-white min-h-[160px] resize-y focus:border-[#1B1B1B] outline-none transition-colors"
+              />
+              <button
+                onClick={handleSave}
+                className="mt-3 px-5 py-2.5 text-sm font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors"
+              >
+                Save Context
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {allEntries.length === 0 && !showForm && (
+        <div className="text-center py-12 border border-dashed border-[#E5E5EA] rounded-xl">
+          <p className="text-sm text-[#CCC]">No context entries yet</p>
+          <p className="text-xs text-[#DDD] mt-1">Add a voice note or call transcript to get started</p>
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {allEntries.map((entry) => (
+          <div key={entry.id} className="border border-[#E5E5EA] rounded-xl p-5 bg-white">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2.5">
+                <span className="text-sm font-medium text-[#1A1A1A]">{entry.source}</span>
+                <span className="text-xs text-[#AAA]">
+                  {new Date(entry.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                </span>
+                <span className="text-[10px] font-medium text-[#BBB] bg-[#F3F3F5] px-2 py-0.5 rounded-md">{entry._projectName}</span>
+              </div>
+              <button
+                onClick={() => handleDelete(entry.id, entry._projectId)}
+                className="text-[#DDD] hover:text-red-400 transition-colors"
+              >
+                <TrashIcon className="size-3.5" />
+              </button>
+            </div>
+            <div className="text-sm text-[#444] leading-relaxed whitespace-pre-wrap">{entry.cleanVersion}</div>
+            <details className="mt-3">
+              <summary className="text-[11px] text-[#CCC] cursor-pointer hover:text-[#999] transition-colors">Raw transcript</summary>
+              <p className="text-xs text-[#AAA] mt-2 whitespace-pre-wrap leading-relaxed">{entry.rawTranscript}</p>
+            </details>
+          </div>
+        ))}
       </div>
     </div>
   );
