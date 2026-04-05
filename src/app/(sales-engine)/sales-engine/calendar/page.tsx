@@ -964,8 +964,11 @@ export default function CalendarPage() {
   // ── Render helpers ──
 
   function postsForSlot(date: string, hour: number): ContentPost[] {
-    const hStr = hour.toString().padStart(2, "0") + ":00";
-    return weekPosts.filter(p => p.scheduled_date === date && p.scheduled_time === hStr);
+    return weekPosts.filter(p => {
+      if (p.scheduled_date !== date) return false;
+      const postHour = parseInt(p.scheduled_time?.split(":")[0] || "0");
+      return postHour === hour;
+    });
   }
 
   function postsForDate(date: string): ContentPost[] {
@@ -1668,20 +1671,26 @@ export default function CalendarPage() {
                             {bestTimes.length > 0 && (
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className="text-[9px] text-[#BBB]">Best for {dayNames[dayOfWeek]}:</span>
-                                {bestTimes.map((t, i) => (
+                                {bestTimes.map((t, i) => {
+                                  const timeStr = t.time || `${t.hour.toString().padStart(2, "0")}:${(t.minute || 0).toString().padStart(2, "0")}`;
+                                  const displayHour = t.hour % 12 || 12;
+                                  const displayMin = (t.minute || 0).toString().padStart(2, "0");
+                                  const ampm = t.hour >= 12 ? "PM" : "AM";
+                                  return (
                                   <button
                                     key={i}
-                                    onClick={() => setStudioPost(prev => ({ ...prev, scheduled_time: `${t.hour.toString().padStart(2, "0")}:00` }))}
+                                    onClick={() => setStudioPost(prev => ({ ...prev, scheduled_time: timeStr }))}
                                     className={`text-[9px] font-semibold px-2 py-1 rounded-md transition-colors ${
-                                      studioPost.scheduled_time === `${t.hour.toString().padStart(2, "0")}:00`
+                                      studioPost.scheduled_time === timeStr
                                         ? "bg-emerald-100 text-emerald-700"
                                         : "bg-[#F3F3F5] text-[#666] hover:bg-[#EBEBEB]"
                                     }`}
                                   >
-                                    {t.hour % 12 || 12}:00 {t.hour >= 12 ? "PM" : "AM"}
+                                    {displayHour}:{displayMin} {ampm}
                                     <span className="ml-1 text-[8px] opacity-60">{t.score}</span>
                                   </button>
-                                ))}
+                                  );
+                                })}
                               </div>
                             )}
                             {bestTimes.length === 0 && topSlots.length > 0 && (
@@ -1697,15 +1706,16 @@ export default function CalendarPage() {
                                       const diff = t.day - currentDay;
                                       const target = new Date(current);
                                       target.setDate(target.getDate() + diff);
+                                      const timeStr = t.time || `${t.hour.toString().padStart(2, "0")}:${(t.minute || 0).toString().padStart(2, "0")}`;
                                       setStudioPost(prev => ({
                                         ...prev,
                                         scheduled_date: toDateStr(target),
-                                        scheduled_time: `${t.hour.toString().padStart(2, "0")}:00`
+                                        scheduled_time: timeStr
                                       }));
                                     }}
                                     className="text-[9px] font-semibold px-2 py-1 rounded-md bg-[#F3F3F5] text-[#666] hover:bg-[#EBEBEB] transition-colors"
                                   >
-                                    {dayNames[t.day]} {t.hour % 12 || 12}{t.hour >= 12 ? "pm" : "am"}
+                                    {dayNames[t.day]} {t.hour % 12 || 12}:{(t.minute || 0).toString().padStart(2, "0")}{t.hour >= 12 ? "pm" : "am"}
                                     <span className="ml-1 text-[8px] opacity-60">{t.score}</span>
                                   </button>
                                 ))}

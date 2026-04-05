@@ -42,13 +42,15 @@ export async function POST(req: NextRequest) {
 That means EXACTLY 21 posts total (3 per day x 7 days). Do NOT exceed 3 per day or 21 total.
 
 Optimal posting slots (from analytics — higher score = better engagement):
-${JSON.stringify(optimalSlots, null, 2)}
+${JSON.stringify(optimalSlots?.map((s: any) => ({ ...s, time: `${String(s.hour).padStart(2, "0")}:${String(s.minute ?? 0).padStart(2, "0")}` })), null, 2)}
 
-Use these slots to place posts at the best times. For days/times not in the analytics data, use these general best times:
-- Morning: 08:00-09:00
-- Midday: 12:00-13:00
-- Afternoon: 15:00-16:00
-- Evening: 18:00-19:00
+IMPORTANT: Use the EXACT times from the analytics data above (e.g. "08:15", "12:30", "18:45"). Do NOT round to the hour.
+For days/platforms not in the analytics data, stagger times naturally — avoid posting on the hour. Use realistic times like:
+- Morning: 07:45, 08:15, 08:30, 09:10
+- Midday: 11:50, 12:15, 12:30
+- Afternoon: 15:15, 15:30, 16:45
+- Evening: 17:15, 18:30, 18:45, 19:15
+Never schedule two posts at the same time on the same day.
 
 ${pastPerformance ? `Past performance insights:
 - Top content types: ${pastPerformance.topContentTypes || "N/A"}

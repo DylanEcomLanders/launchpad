@@ -99,58 +99,82 @@ export interface SlotAnalytics {
   score: number; // 0-100
 }
 
-export const optimalSlots: SlotAnalytics[] = [
-  // LinkedIn: Tue/Thu 8am and 12pm peak
-  { platform: "linkedin", day: 2, hour: 8, score: 95 },
-  { platform: "linkedin", day: 2, hour: 12, score: 88 },
-  { platform: "linkedin", day: 4, hour: 8, score: 92 },
-  { platform: "linkedin", day: 4, hour: 12, score: 85 },
-  { platform: "linkedin", day: 1, hour: 8, score: 70 },
-  { platform: "linkedin", day: 3, hour: 8, score: 72 },
-  { platform: "linkedin", day: 5, hour: 9, score: 65 },
-  // Instagram: Mon/Wed 12pm and 7pm peak
-  { platform: "instagram", day: 1, hour: 12, score: 93 },
-  { platform: "instagram", day: 1, hour: 19, score: 90 },
-  { platform: "instagram", day: 3, hour: 12, score: 91 },
-  { platform: "instagram", day: 3, hour: 19, score: 87 },
-  { platform: "instagram", day: 5, hour: 12, score: 68 },
-  { platform: "instagram", day: 2, hour: 19, score: 65 },
-  // X: any weekday 9am peak
-  { platform: "x", day: 1, hour: 9, score: 88 },
-  { platform: "x", day: 2, hour: 9, score: 90 },
-  { platform: "x", day: 3, hour: 9, score: 87 },
-  { platform: "x", day: 4, hour: 9, score: 89 },
-  { platform: "x", day: 5, hour: 9, score: 85 },
-  { platform: "x", day: 1, hour: 12, score: 60 },
-  { platform: "x", day: 3, hour: 15, score: 55 },
+export interface SlotTime {
+  hour: number;
+  minute: number;
+}
+
+export const optimalSlots: (SlotAnalytics & { minute?: number })[] = [
+  // LinkedIn: Tue/Thu mornings + lunch — professionals check feeds at commute + lunch
+  { platform: "linkedin", day: 2, hour: 7, minute: 45, score: 93 },
+  { platform: "linkedin", day: 2, hour: 11, minute: 30, score: 88 },
+  { platform: "linkedin", day: 4, hour: 8, minute: 15, score: 95 },
+  { platform: "linkedin", day: 4, hour: 12, minute: 10, score: 85 },
+  { platform: "linkedin", day: 1, hour: 8, minute: 30, score: 70 },
+  { platform: "linkedin", day: 3, hour: 7, minute: 50, score: 72 },
+  { platform: "linkedin", day: 5, hour: 9, minute: 15, score: 65 },
+  // Instagram: Mon/Wed lunchtime + evening scroll
+  { platform: "instagram", day: 1, hour: 12, minute: 15, score: 93 },
+  { platform: "instagram", day: 1, hour: 18, minute: 45, score: 90 },
+  { platform: "instagram", day: 3, hour: 11, minute: 50, score: 91 },
+  { platform: "instagram", day: 3, hour: 19, minute: 15, score: 87 },
+  { platform: "instagram", day: 5, hour: 12, minute: 30, score: 68 },
+  { platform: "instagram", day: 2, hour: 18, minute: 30, score: 65 },
+  { platform: "instagram", day: 6, hour: 10, minute: 15, score: 72 },
+  { platform: "instagram", day: 0, hour: 11, minute: 0, score: 70 },
+  // X (Twitter): mornings + afternoon lull breaks
+  { platform: "x", day: 1, hour: 8, minute: 45, score: 88 },
+  { platform: "x", day: 2, hour: 9, minute: 10, score: 90 },
+  { platform: "x", day: 3, hour: 8, minute: 30, score: 87 },
+  { platform: "x", day: 4, hour: 9, minute: 0, score: 89 },
+  { platform: "x", day: 5, hour: 8, minute: 15, score: 85 },
+  { platform: "x", day: 1, hour: 12, minute: 20, score: 60 },
+  { platform: "x", day: 3, hour: 15, minute: 30, score: 55 },
+  { platform: "x", day: 4, hour: 17, minute: 15, score: 62 },
+  // TikTok: evenings + lunch — scroll-heavy times
+  { platform: "tiktok", day: 1, hour: 12, minute: 0, score: 80 },
+  { platform: "tiktok", day: 2, hour: 19, minute: 0, score: 88 },
+  { platform: "tiktok", day: 3, hour: 18, minute: 30, score: 85 },
+  { platform: "tiktok", day: 4, hour: 12, minute: 15, score: 78 },
+  { platform: "tiktok", day: 5, hour: 17, minute: 0, score: 82 },
+  { platform: "tiktok", day: 6, hour: 10, minute: 30, score: 90 },
+  { platform: "tiktok", day: 0, hour: 11, minute: 15, score: 87 },
 ];
 
 // ── Helper: get slot score for a platform/day/hour ──
 
 export function getSlotScore(platform: Platform, day: number, hour: number): number {
-  const match = optimalSlots.find(s => s.platform === platform && s.day === day && s.hour === hour);
+  // Match within ±1 hour to be forgiving of slight time differences
+  const match = optimalSlots.find(s => s.platform === platform && s.day === day && Math.abs(s.hour - hour) <= 1);
   return match?.score ?? 0;
 }
 
 export function isOptimalSlot(day: number, hour: number): boolean {
-  return optimalSlots.some(s => s.day === day && s.hour === hour && s.score >= 80);
+  return optimalSlots.some(s => s.day === day && Math.abs(s.hour - hour) <= 1 && s.score >= 80);
+}
+
+/** Format a slot time as HH:mm string */
+export function formatSlotTime(slot: { hour: number; minute?: number }): string {
+  return `${slot.hour.toString().padStart(2, "0")}:${(slot.minute ?? 0).toString().padStart(2, "0")}`;
 }
 
 // ── Helper: get best times for platform on a specific day ──
 
-export function getBestTimes(platform: Platform, day: number): { hour: number; score: number }[] {
+export function getBestTimes(platform: Platform, day: number): { hour: number; minute: number; score: number; time: string }[] {
   return optimalSlots
     .filter(s => s.platform === platform && s.day === day)
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => b.score - a.score)
+    .map(s => ({ hour: s.hour, minute: s.minute ?? 0, score: s.score, time: formatSlotTime(s) }));
 }
 
 // ── Helper: get overall best slots for platform (top 3) ──
 
-export function getTopSlots(platform: Platform): { day: number; hour: number; score: number }[] {
+export function getTopSlots(platform: Platform): { day: number; hour: number; minute: number; score: number; time: string }[] {
   return optimalSlots
     .filter(s => s.platform === platform)
     .sort((a, b) => b.score - a.score)
-    .slice(0, 3);
+    .slice(0, 3)
+    .map(s => ({ day: s.day, hour: s.hour, minute: s.minute ?? 0, score: s.score, time: formatSlotTime(s) }));
 }
 
 // ── Helper: get best day for platform ──
@@ -209,7 +233,7 @@ export function seedPosts(): ContentPost[] {
       caption: "Most brands test button colours. The ones scaling past 8 figures test their entire purchase flow. Here's the framework we use to prioritise what actually moves revenue.",
       status: "scheduled",
       scheduled_date: dateStr(mon, 1), // Tuesday
-      scheduled_time: "08:00",
+      scheduled_time: "07:45",
       analytics_score: 95,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -223,7 +247,7 @@ export function seedPosts(): ContentPost[] {
       caption: "Before and after. Same product. Same traffic. Different landing page. 34% conversion lift in 21 days. The gallery did most of the heavy lifting.",
       status: "created",
       scheduled_date: dateStr(mon, 0), // Monday
-      scheduled_time: "12:00",
+      scheduled_time: "12:15",
       analytics_score: 93,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -237,7 +261,7 @@ export function seedPosts(): ContentPost[] {
       caption: "Turned down a 6-figure retainer last week. Wrong fit. Best decision we made this quarter.",
       status: "draft",
       scheduled_date: dateStr(mon, 2), // Wednesday
-      scheduled_time: "09:00",
+      scheduled_time: "08:30",
       analytics_score: 87,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -251,7 +275,7 @@ export function seedPosts(): ContentPost[] {
       caption: "We just opened 2 spots for Q2 landing page builds. DTC brands doing £500k+/mo only. If your PDP converts under 4%, we should talk.",
       status: "created",
       scheduled_date: dateStr(mon, 3), // Thursday
-      scheduled_time: "12:00",
+      scheduled_time: "12:10",
       analytics_score: 85,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -265,7 +289,7 @@ export function seedPosts(): ContentPost[] {
       caption: "Your hero image is not a billboard. It is the first frame of a sales conversation. Treat it like one.",
       status: "scheduled",
       scheduled_date: dateStr(mon, 2), // Wednesday
-      scheduled_time: "19:00",
+      scheduled_time: "19:15",
       analytics_score: 91,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
