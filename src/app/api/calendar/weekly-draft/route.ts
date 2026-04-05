@@ -7,18 +7,19 @@ const SYSTEM_PROMPT = `You are a content strategist for Ecom Landers, an ecommer
 
 The content workflow: every idea starts as an X (Twitter) post — short, punchy take. The team repurposes each to LinkedIn, Instagram, and TikTok after. So generate X-first angles.
 
-Rules:
-- Target 3-4 posts PER DAY, 7 days a week (21-28 total posts for the week)
-- Spread EVENLY across all 7 days — no day should have fewer than 3 posts
+CRITICAL RULES:
+- EXACTLY 3 posts per day, 7 days = EXACTLY 21 posts total. NOT MORE. Never exceed 3 per day.
+- Spread EVENLY across all 7 days
 - Place each post at the optimal time for that specific day based on analytics data
 - Match content types to the days they perform best on
 - Every idea must be a specific angle — not a topic. Someone should be able to write the tweet in 60 seconds
 - No generic filler like "share a tip" or "post about growth"
 - Reference real CRO patterns, landing page strategies, A/B tests, DTC brand teardowns, agency behind-the-scenes
 - Content mix across the week: educational (40-50%), social proof (20-30%), personal (15-20%), promotional (under 10%)
-- Vary formats: mostly text, but include 5-8 image posts and AT LEAST 3 article posts across the week (articles are important for authority — aim for 3-4)
+- Vary formats: mostly text, but include 4-5 image posts and 3 article posts across the week
 - No emojis
-- Space posts throughout the day — morning, midday, afternoon/evening slots`;
+- Space posts throughout the day — morning, midday, afternoon/evening slots
+- The JSON array MUST have EXACTLY 21 items. If you return more, the system will reject it.`;
 
 export async function POST(req: NextRequest) {
   try {
@@ -36,9 +37,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const prompt = `Fill the week of ${weekDates[0]} (Monday) to ${weekDates[6]} (Sunday) with 3-4 content ideas PER DAY.
+    const prompt = `Fill the week of ${weekDates[0]} (Monday) to ${weekDates[6]} (Sunday) with EXACTLY 3 content ideas PER DAY.
 
-That means 21-28 posts total, evenly spread. Every day must have at least 3 posts.
+That means EXACTLY 21 posts total (3 per day x 7 days). Do NOT exceed 3 per day or 21 total.
 
 Optimal posting slots (from analytics — higher score = better engagement):
 ${JSON.stringify(optimalSlots, null, 2)}
@@ -60,7 +61,7 @@ Already scheduled: ${existingPosts?.length || 0} posts${existingPosts?.length > 
 Here are the 7 days to fill:
 ${weekDates.map((d: string, i: number) => `  ${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][i]}: ${d}`).join("\n")}
 
-Generate exactly 3-4 ideas for EACH of the 7 days. Return ONLY a JSON array (21-28 items):
+Generate EXACTLY 3 ideas for EACH of the 7 days. Return ONLY a JSON array with EXACTLY 21 items:
 [
   {
     "content_type": "educational" | "social_proof" | "personal" | "promotional",
@@ -76,7 +77,7 @@ No other text outside the JSON array.`;
 
     const response = await client.messages.create({
       model: "claude-sonnet-4-20250514",
-      max_tokens: 8000,
+      max_tokens: 4000,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: prompt }],
     });
@@ -92,7 +93,17 @@ No other text outside the JSON array.`;
       );
     }
 
-    const drafts = JSON.parse(jsonMatch[0]);
+    const allDrafts = JSON.parse(jsonMatch[0]);
+
+    // Hard cap: max 3 posts per day, no matter what the AI returns
+    const perDay: Record<string, any[]> = {};
+    for (const d of allDrafts) {
+      const date = d.scheduled_date;
+      if (!perDay[date]) perDay[date] = [];
+      if (perDay[date].length < 3) perDay[date].push(d);
+    }
+    const drafts = Object.values(perDay).flat();
+
     return NextResponse.json({ drafts });
   } catch (err: any) {
     console.error("Weekly draft generation error:", err);
