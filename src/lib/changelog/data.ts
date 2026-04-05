@@ -50,6 +50,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Client Details panel restyled — consistent input fields, clean tag chips with remove buttons, proper focus states, and unified spacing across Designers, Developers, Slack channels, and Touchpoint fields" },
       { type: "added", text: "Content Calendar PIN gate — personal PINs for Dylan and Ajay, auto-sets creator on unlock, numpad UI with shake animation on wrong code, lock button to switch users" },
       { type: "added", text: "Typefully integration — 'Schedule to Typefully' button on the calendar toolbar pushes the entire week's posts to Typefully in one click, with batch scheduling, auto-status update, and success toast" },
+      { type: "improved", text: "Context cleaner moved to its own dedicated 'Context' tab on each client project — paste transcripts, clean with AI, all saved against the client" },
     ],
   },
   {

@@ -68,7 +68,7 @@ import type {
   DesignReviewFeedback,
 } from "@/lib/portal/review-types";
 
-type DashTab = "overview" | "build" | "results";
+type DashTab = "overview" | "context" | "build" | "results";
 type ClientTab = "projects" | "tickets" | "funnels" | "settings";
 
 export default function PortalDetailPage() {
@@ -471,8 +471,10 @@ export default function PortalDetailPage() {
   const isRetainerPortal = portal.client_type === "retainer";
 
   // Simplified tabs — same for retainer and project
+  const contextCount = selectedProject?.context_entries?.length || 0;
   const dashTabs: { key: DashTab; label: string }[] = [
     { key: "overview", label: "Overview" },
+    { key: "context", label: contextCount > 0 ? `Context (${contextCount})` : "Context" },
     { key: "build", label: "Build" },
     { key: "results", label: "Results" },
   ];
@@ -868,23 +870,26 @@ export default function PortalDetailPage() {
               onUpdateSelectedProject={selectedProject ? updateSelectedProject : undefined}
             />
 
-            {/* Project Context + Weekly Loop below overview */}
-            {portal && (
-              <InternalSection
-                project={selectedProject}
-                hideGates
-                onUpdateProject={async (patch) => {
-                  if (!portal) return;
-                  const updatedProjects = portal.projects.map((p) =>
-                    p.id === selectedProject.id ? { ...p, ...patch } : p
-                  );
-                  await updatePortal(portal.id, { projects: updatedProjects } as any);
-                  setPortal({ ...portal, projects: updatedProjects });
-                }}
-                slackInternalChannelId={portal.slack_internal_channel_id}
-                clientName={portal.client_name}
-              />
-            )}
+          </div>
+        )}
+
+        {/* ── CONTEXT: Transcript cleaning + project context ── */}
+        {activeTab === "context" && portal && (
+          <div>
+            <InternalSection
+              project={selectedProject}
+              hideGates
+              onUpdateProject={async (patch) => {
+                if (!portal) return;
+                const updatedProjects = portal.projects.map((p) =>
+                  p.id === selectedProject.id ? { ...p, ...patch } : p
+                );
+                await updatePortal(portal.id, { projects: updatedProjects } as any);
+                setPortal({ ...portal, projects: updatedProjects });
+              }}
+              slackInternalChannelId={portal.slack_internal_channel_id}
+              clientName={portal.client_name}
+            />
           </div>
         )}
 
