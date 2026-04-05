@@ -27,7 +27,6 @@ import {
 import {
   getPosts,
   savePosts,
-  seedPosts,
   type ContentPost,
   type Platform,
   type ContentType,
@@ -173,11 +172,7 @@ export default function CalendarPage() {
   // ── Load data ──
   const load = useCallback(async () => {
     setLoading(true);
-    let data = await getPosts();
-    if (data.length === 0) {
-      data = seedPosts();
-      await savePosts(data);
-    }
+    const data = await getPosts();
     setPosts(data);
     setLoading(false);
   }, []);
