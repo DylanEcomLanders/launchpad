@@ -18,7 +18,7 @@ export default function ProposalLayout({
       </header>
 
       {/* Main content */}
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 animate-fadeInUp">{children}</main>
 
       {/* Footer */}
       <footer className="border-t border-[#EDEDEF] px-6 md:px-12 py-8 text-center">

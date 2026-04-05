@@ -4,6 +4,6 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main className="min-h-screen">{children}</main>
+    <main className="min-h-screen animate-fadeInUp">{children}</main>
   );
 }

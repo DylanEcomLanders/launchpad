@@ -1,6 +1,7 @@
 "use client";
 
 import { TeamSidebar } from "@/components/team-sidebar";
+import { PageTransition } from "@/components/page-transition";
 
 export default function TeamLayout({
   children,
@@ -10,7 +11,9 @@ export default function TeamLayout({
   return (
     <div className="flex h-screen overflow-hidden">
       <TeamSidebar />
-      <main className="flex-1 overflow-y-auto">{children}</main>
+      <main className="flex-1 overflow-y-auto">
+        <PageTransition>{children}</PageTransition>
+      </main>
     </div>
   );
 }

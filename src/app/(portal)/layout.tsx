@@ -1,9 +1,6 @@
-import { Logo } from "@/components/logo";
+"use client";
 
-export const metadata = {
-  title: "Client Portal — Ecomlanders",
-  description: "View your project status, timeline, and documents",
-};
+import { PageTransition } from "@/components/page-transition";
 
 export default function PortalLayout({
   children,
@@ -12,7 +9,7 @@ export default function PortalLayout({
 }) {
   return (
     <div className="min-h-screen bg-white">
-      {children}
+      <PageTransition>{children}</PageTransition>
     </div>
   );
 }
