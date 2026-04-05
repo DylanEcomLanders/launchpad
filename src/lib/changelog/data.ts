@@ -47,6 +47,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Design & Dev Handoff completely redesigned — clean version timeline with Figma + Staging links (no iframes), inline status toggles, version notes, and feedback history per version" },
       { type: "added", text: "Typed scope items (deliverables) auto-populate to the task board — design items go to Design Tasks, everything else to Dev Tasks" },
       { type: "added", text: "Task board tasks now link back to portal via portalId and deliverableId fields" },
+      { type: "improved", text: "Client Details panel restyled — consistent input fields, clean tag chips with remove buttons, proper focus states, and unified spacing across Designers, Developers, Slack channels, and Touchpoint fields" },
     ],
   },
   {
