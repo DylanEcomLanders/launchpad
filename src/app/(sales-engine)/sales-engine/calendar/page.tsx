@@ -18,6 +18,7 @@ import {
   ArrowPathIcon,
   LinkIcon,
 } from "@heroicons/react/24/outline";
+import { LockClosedIcon } from "@heroicons/react/24/solid";
 import {
   PhotoIcon,
   DocumentTextIcon,
@@ -114,12 +115,112 @@ function FormatBadge({ format, size = "sm" }: { format: PostFormat; size?: "sm" 
   return <Icon className="size-3 shrink-0 opacity-50" />;
 }
 
+// ── Calendar PIN Gate ──
+
+const CALENDAR_PINS: Record<string, Creator> = {
+  "1111": "dylan",
+  "2222": "ajay",
+};
+const PIN_SESSION_KEY = "calendar-creator-pin";
+
+function CalendarPinGate({ onUnlock }: { onUnlock: (creator: Creator) => void }) {
+  const [pin, setPin] = useState("");
+  const [error, setError] = useState(false);
+  const [shake, setShake] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { inputRef.current?.focus(); }, []);
+
+  const handleDigit = (digit: string) => {
+    if (pin.length >= 4) return;
+    const next = pin + digit;
+    setPin(next);
+    setError(false);
+    if (next.length === 4) {
+      const creator = CALENDAR_PINS[next];
+      if (creator) {
+        sessionStorage.setItem(PIN_SESSION_KEY, JSON.stringify({ creator }));
+        onUnlock(creator);
+      } else {
+        setError(true);
+        setShake(true);
+        setTimeout(() => { setPin(""); setShake(false); }, 500);
+      }
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Backspace") { setPin(p => p.slice(0, -1)); setError(false); }
+    else if (/^\d$/.test(e.key)) handleDigit(e.key);
+  };
+
+  return (
+    <div className="min-h-[80vh] flex items-center justify-center animate-fadeInUp">
+      <div className="w-full max-w-[280px] text-center">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#F3F3F5] border border-[#E5E5EA] mb-5">
+          <LockClosedIcon className="size-6 text-[#7A7A7A]" />
+        </div>
+        <h1 className="text-xl font-bold tracking-tight mb-1">Content Calendar</h1>
+        <p className="text-sm text-[#999] mb-8">Enter your PIN to continue</p>
+
+        {/* PIN dots */}
+        <div className={`flex justify-center gap-3 mb-8 ${shake ? "animate-[shake_0.4s_ease-in-out]" : ""}`}>
+          {[0, 1, 2, 3].map(i => (
+            <div
+              key={i}
+              className={`w-3.5 h-3.5 rounded-full transition-all duration-200 ${
+                i < pin.length
+                  ? error ? "bg-red-400 scale-110" : "bg-[#1B1B1B] scale-110"
+                  : "bg-[#E5E5EA]"
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Number pad */}
+        <div
+          className="grid grid-cols-3 gap-2 max-w-[220px] mx-auto outline-none"
+          tabIndex={0}
+          onKeyDown={handleKeyDown}
+          ref={inputRef as React.RefObject<HTMLDivElement>}
+        >
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
+            <button
+              key={n}
+              onClick={() => handleDigit(String(n))}
+              className="h-14 rounded-xl bg-white border border-[#E5E5EA] text-lg font-semibold text-[#1B1B1B] hover:bg-[#F7F8FA] active:bg-[#EDEDEF] transition-colors"
+            >
+              {n}
+            </button>
+          ))}
+          <div />
+          <button
+            onClick={() => handleDigit("0")}
+            className="h-14 rounded-xl bg-white border border-[#E5E5EA] text-lg font-semibold text-[#1B1B1B] hover:bg-[#F7F8FA] active:bg-[#EDEDEF] transition-colors"
+          >
+            0
+          </button>
+          <button
+            onClick={() => { setPin(p => p.slice(0, -1)); setError(false); }}
+            className="h-14 rounded-xl text-sm font-medium text-[#999] hover:text-[#1B1B1B] hover:bg-[#F7F8FA] transition-colors"
+          >
+            ⌫
+          </button>
+        </div>
+
+        {error && <p className="text-xs text-red-400 mt-4">Incorrect PIN</p>}
+      </div>
+    </div>
+  );
+}
+
 // ── Main Component ──
 
 export default function CalendarPage() {
   const [allPosts, setAllPosts] = useState<ContentPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeCreator, setActiveCreator] = useState<Creator>("ajay");
+  const [activeCreator, setActiveCreator] = useState<Creator | null>(null);
+  const [pinUnlocked, setPinUnlocked] = useState(false);
   const [weekOffset, setWeekOffset] = useState(0);
   const [view, setView] = useState<"week" | "month">("week");
   const [monthDate, setMonthDate] = useState(new Date());
@@ -168,6 +269,28 @@ export default function CalendarPage() {
   const [dragPostId, setDragPostId] = useState<string | null>(null);
   const [dragOverDate, setDragOverDate] = useState<string | null>(null);
 
+  // ── PIN session check ──
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem(PIN_SESSION_KEY);
+      if (stored) {
+        const { creator } = JSON.parse(stored);
+        if (creator) { setActiveCreator(creator); setPinUnlocked(true); }
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  const handlePinUnlock = useCallback((creator: Creator) => {
+    setActiveCreator(creator);
+    setPinUnlocked(true);
+  }, []);
+
+  const handleLockCalendar = useCallback(() => {
+    sessionStorage.removeItem(PIN_SESSION_KEY);
+    setPinUnlocked(false);
+    setActiveCreator(null);
+  }, []);
+
   const weekDates = useMemo(() => getWeekDates(weekOffset), [weekOffset]);
   const monthDates = useMemo(
     () => getMonthDates(monthDate.getFullYear(), monthDate.getMonth()),
@@ -206,10 +329,14 @@ export default function CalendarPage() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { if (pinUnlocked) load(); }, [load, pinUnlocked]);
 
-  // Filter by active creator
-  const posts = useMemo(() => allPosts.filter(p => p.creator === activeCreator), [allPosts, activeCreator]);
+  // Show PIN gate if not unlocked
+  if (!pinUnlocked) return <CalendarPinGate onUnlock={handlePinUnlock} />;
+
+  // Filter by active creator (safe: PIN gate ensures activeCreator is set before reaching here)
+  const creator = activeCreator as Creator;
+  const posts = useMemo(() => allPosts.filter(p => p.creator === creator), [allPosts, creator]);
 
   // ── Derived data ──
   const weekPosts = useMemo(() => {
@@ -297,7 +424,7 @@ export default function CalendarPage() {
     } else {
       setStudioPost({
         id: "",
-        creator: activeCreator,
+        creator: creator,
         platform: "x",
         content_type: "educational",
         post_format: "text",
@@ -319,7 +446,7 @@ export default function CalendarPage() {
   function openStudioForSlot(date: string, time: string) {
     setStudioPost({
       id: "",
-      creator: activeCreator,
+      creator: creator,
       platform: "x",
       content_type: "educational",
       post_format: "text",
@@ -343,7 +470,7 @@ export default function CalendarPage() {
     const now = new Date().toISOString();
     const post: ContentPost = {
       id: studioPost.id || uuid(),
-      creator: studioPost.creator || activeCreator,
+      creator: studioPost.creator || creator,
       group_id: studioPost.group_id,
       platform: studioPost.platform!,
       content_type: studioPost.content_type || "educational",
@@ -384,8 +511,8 @@ export default function CalendarPage() {
   }
 
   async function clearAllPosts() {
-    if (!confirm("Delete ALL posts for " + (activeCreator === "ajay" ? "Ajay" : "Dylan") + "?")) return;
-    const updated = allPosts.filter(p => p.creator !== activeCreator);
+    if (!confirm("Delete ALL posts for " + (creator === "ajay" ? "Ajay" : "Dylan") + "?")) return;
+    const updated = allPosts.filter(p => p.creator !== creator);
     setAllPosts(updated);
     await savePosts(updated);
   }
@@ -547,7 +674,7 @@ export default function CalendarPage() {
         const now = new Date().toISOString();
         const currentPost: ContentPost = {
           id: studioPost.id || uuid(),
-          creator: studioPost.creator || activeCreator,
+          creator: studioPost.creator || creator,
           group_id: currentGroupId,
           platform: studioPost.platform!,
           content_type: studioPost.content_type || "educational",
@@ -594,7 +721,7 @@ export default function CalendarPage() {
         const platform = (Object.entries(platformLabels).find(([, label]) => label.toLowerCase() === v.platform.toLowerCase())?.[0] || v.platform.toLowerCase()) as Platform;
         return {
           id: uuid(),
-          creator: studioPost.creator || activeCreator,
+          creator: studioPost.creator || creator,
           group_id: currentGroupId,
           platform,
           content_type: studioPost.content_type || "educational",
@@ -717,7 +844,7 @@ export default function CalendarPage() {
 
     // Remove existing draft posts for this creator on those dates (replace, don't stack)
     const kept = allPosts.filter(p => {
-      if (p.creator !== activeCreator) return true; // other creator's posts untouched
+      if (p.creator !== creator) return true; // other creator's posts untouched
       if (!draftDates.has(p.scheduled_date)) return true; // different week untouched
       if (p.status !== "draft") return true; // non-draft posts (created/scheduled) kept
       return false; // remove old drafts for this week
@@ -726,7 +853,7 @@ export default function CalendarPage() {
     // All ideas land as X posts — repurpose to other platforms later
     const newPosts: ContentPost[] = selected.map(d => ({
       id: uuid(),
-      creator: activeCreator,
+      creator: creator,
       platform: "x" as Platform,
       content_type: d.content_type,
       post_format: d.post_format || "text",
@@ -806,26 +933,23 @@ export default function CalendarPage() {
             <h1 className="text-2xl font-bold tracking-tight">Content Calendar</h1>
             <p className="text-sm text-[#7A7A7A] mt-0.5">Plan, write, and organise content before publishing</p>
           </div>
-          {/* Creator toggle */}
-          <div className="flex items-center bg-[#F3F3F5] rounded-xl p-1 ml-2">
-            {(["ajay", "dylan"] as Creator[]).map(c => (
-              <button
-                key={c}
-                onClick={() => setActiveCreator(c)}
-                className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
-                  activeCreator === c
-                    ? "bg-white text-[#1B1B1B] shadow-sm"
-                    : "text-[#999] hover:text-[#666]"
-                }`}
-              >
-                <span className={`size-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${
-                  c === "ajay" ? "bg-[#1B1B1B]" : "bg-[#2563EB]"
-                }`}>
-                  {c === "ajay" ? "AJ" : "DE"}
-                </span>
-                {c === "ajay" ? "Ajay" : "Dylan"}
-              </button>
-            ))}
+          {/* Active creator badge + lock */}
+          <div className="flex items-center gap-2 ml-2">
+            <div className="flex items-center gap-2 bg-white border border-[#E5E5EA] rounded-xl px-3.5 py-2">
+              <span className={`size-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white ${
+                creator === "ajay" ? "bg-[#1B1B1B]" : "bg-[#2563EB]"
+              }`}>
+                {creator === "ajay" ? "AJ" : "DE"}
+              </span>
+              <span className="text-sm font-semibold text-[#1B1B1B]">{creator === "ajay" ? "Ajay" : "Dylan"}</span>
+            </div>
+            <button
+              onClick={handleLockCalendar}
+              title="Lock calendar"
+              className="p-2 rounded-lg text-[#C5C5C5] hover:text-[#1B1B1B] hover:bg-[#F3F3F5] transition-colors"
+            >
+              <LockClosedIcon className="size-4" />
+            </button>
           </div>
         </div>
         <div className="flex items-center gap-2">
