@@ -696,6 +696,18 @@ export default function CalendarPage() {
     if (selected.length === 0) return;
     setDraftSaving(true);
     const now = new Date().toISOString();
+
+    // Figure out which dates the draft covers
+    const draftDates = new Set(selected.map(d => d.scheduled_date));
+
+    // Remove existing draft posts for this creator on those dates (replace, don't stack)
+    const kept = allPosts.filter(p => {
+      if (p.creator !== activeCreator) return true; // other creator's posts untouched
+      if (!draftDates.has(p.scheduled_date)) return true; // different week untouched
+      if (p.status !== "draft") return true; // non-draft posts (created/scheduled) kept
+      return false; // remove old drafts for this week
+    });
+
     // All ideas land as X posts — repurpose to other platforms later
     const newPosts: ContentPost[] = selected.map(d => ({
       id: uuid(),
@@ -716,7 +728,7 @@ export default function CalendarPage() {
       created_at: now,
       updated_at: now,
     }));
-    const updated = [...allPosts, ...newPosts];
+    const updated = [...kept, ...newPosts];
     setAllPosts(updated);
     await savePosts(updated);
     setDraftSaving(false);

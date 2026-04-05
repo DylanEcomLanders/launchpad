@@ -54,6 +54,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Weekly Draft now generates at least 3 article posts per week for authority building" },
       { type: "added", text: "Ajay/Dylan creator toggle — prominent switcher with avatar initials in the header, filters the entire calendar by person" },
       { type: "fixed", text: "Posts without a creator field (from previous sessions) now auto-migrate to Ajay on load, preventing ghost posts appearing on reload" },
+      { type: "fixed", text: "Weekly Draft now replaces existing drafts for that week instead of stacking — no more 500 accumulated draft posts on reload" },
     ],
   },
   {
