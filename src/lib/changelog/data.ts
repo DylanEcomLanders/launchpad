@@ -47,6 +47,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Drag and drop posts between days on both month and week views — grab any card and drop it onto a different day" },
       { type: "added", text: "Delete posts directly from calendar cards — hover to reveal X button, no need to open the post first" },
       { type: "added", text: "Clear All button in header to wipe all posts at once (with confirmation)" },
+      { type: "improved", text: "Clicking an existing post now opens a detail/edit view showing all info at once (caption, format, type, platform, schedule, status) instead of the step-by-step wizard which is now only used for new posts" },
     ],
   },
   {
