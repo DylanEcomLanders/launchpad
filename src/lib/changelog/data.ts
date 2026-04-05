@@ -52,6 +52,8 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Typefully integration — 'Schedule to Typefully' button on the calendar toolbar pushes the entire week's posts to Typefully in one click, with batch scheduling, auto-status update, and success toast" },
       { type: "improved", text: "Context cleaner moved to client-level 'Context' tab (between Projects and Settings) — paste transcripts from any call, clean with AI, choose which project to save to or keep as general client context, all entries aggregated in one view" },
       { type: "improved", text: "Portal team view restructured — merged Timeline + Deliverables into 'Scope & Timeline', merged Designs + Development into 'Build' with version history for both, renamed Internal to 'Handover' showing all 3 QA gates vertically without role picker" },
+      { type: "added", text: "Team members can upload new design versions (with Figma URL) and development versions (with Staging URL) directly from the Build tab — auto-creates or appends to existing reviews" },
+      { type: "improved", text: "QA gate labels simplified — 'CRO Design', 'Design Handoff', 'Dev to Senior Dev QA'; all gates always accessible without prerequisite locks" },
     ],
   },
   {

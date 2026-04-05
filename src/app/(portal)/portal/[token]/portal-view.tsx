@@ -23,6 +23,7 @@ import { toLoomEmbed } from "@/lib/portal/loom";
 import { toFigmaEmbed } from "@/lib/portal/review-types";
 import { BrandedReport } from "@/components/branded-report";
 import { InternalSection } from "@/components/internal-section";
+import { createReview, addVersion } from "@/lib/portal/reviews";
 
 /* ── Tab type ── */
 type Tab = "overview" | "timeline" | "testing" | "updates" | "scope" | "designs" | "development" | "build" | "results" | "requests" | "funnels" | "reports" | "internal";
@@ -191,6 +192,7 @@ export function PortalView({
   onSubmitRequest,
   viewMode = "client",
   onUpdateProject,
+  onReload,
 }: {
   portal: PortalData;
   updates?: PortalUpdate[];
@@ -203,6 +205,7 @@ export function PortalView({
   onSubmitRequest?: (title: string, description: string) => Promise<void>;
   viewMode?: "client" | "team";
   onUpdateProject?: (projectId: string, patch: Partial<PortalProject>) => Promise<void>;
+  onReload?: () => Promise<void>;
 }) {
   const isRetainerPortal = portal.client_type === "retainer";
   const [activeTab, setActiveTab] = useState<Tab>("overview");
@@ -213,6 +216,15 @@ export function PortalView({
 
   const hasDesigns = reviews.length > 0;
   const hasPageReviews = pageReviews.length > 0;
+
+  // Team-only: add version forms
+  const [showAddDesign, setShowAddDesign] = useState(false);
+  const [showAddDev, setShowAddDev] = useState(false);
+  const [addTitle, setAddTitle] = useState("");
+  const [addFigmaUrl, setAddFigmaUrl] = useState("");
+  const [addStagingUrl, setAddStagingUrl] = useState("");
+  const [addNotes, setAddNotes] = useState("");
+  const [addSaving, setAddSaving] = useState(false);
 
   const hasProjects = portal.projects && portal.projects.length > 0;
   const selectedProject: PortalProject | null = selectedProjectIdx >= 0 && hasProjects ? portal.projects[selectedProjectIdx] ?? null : null;
@@ -428,7 +440,61 @@ export function PortalView({
                 <div className="space-y-10">
                   {/* Design Section */}
                   <div>
-                    <h3 className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">Design</h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA]">Design</h3>
+                      {viewMode === "team" && (
+                        <button
+                          onClick={() => { setShowAddDesign(!showAddDesign); setShowAddDev(false); setAddTitle(""); setAddFigmaUrl(""); setAddNotes(""); }}
+                          className="text-[11px] font-medium text-[#777] hover:text-[#1A1A1A] transition-colors"
+                        >
+                          {showAddDesign ? "Cancel" : "+ New Version"}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Team: Add design version form */}
+                    {showAddDesign && viewMode === "team" && (
+                      <div className="border border-[#E5E5EA] rounded-xl p-4 mb-4 bg-[#FAFAFA] space-y-3">
+                        <div>
+                          <label className="text-[11px] font-medium text-[#555] block mb-1">Title</label>
+                          <input type="text" value={addTitle} onChange={(e) => setAddTitle(e.target.value)} placeholder="e.g. Homepage Design" className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg bg-white focus:border-[#1B1B1B] outline-none" />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-medium text-[#555] block mb-1">Figma URL</label>
+                          <input type="url" value={addFigmaUrl} onChange={(e) => setAddFigmaUrl(e.target.value)} placeholder="https://www.figma.com/file/..." className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg bg-white focus:border-[#1B1B1B] outline-none" />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-medium text-[#555] block mb-1">Notes</label>
+                          <textarea value={addNotes} onChange={(e) => setAddNotes(e.target.value)} placeholder="What changed in this version..." className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg bg-white min-h-[60px] resize-y focus:border-[#1B1B1B] outline-none" />
+                        </div>
+                        <button
+                          disabled={!addTitle.trim() || !addFigmaUrl.trim() || addSaving}
+                          onClick={async () => {
+                            setAddSaving(true);
+                            try {
+                              // Check if a review with this title already exists
+                              const existing = reviews.find(r => r.title === addTitle.trim());
+                              let reviewId: string;
+                              if (existing) {
+                                reviewId = existing.id;
+                              } else {
+                                const newReview = await createReview({ portal_id: portal.id, title: addTitle.trim(), description: "" });
+                                reviewId = newReview.id;
+                              }
+                              const versions = reviewVersions[reviewId] || [];
+                              await addVersion({ review_id: reviewId, version_number: versions.length + 1, figma_url: addFigmaUrl.trim(), notes: addNotes.trim() });
+                              setShowAddDesign(false); setAddTitle(""); setAddFigmaUrl(""); setAddNotes("");
+                              if (onReload) await onReload();
+                            } catch { /* silent */ }
+                            setAddSaving(false);
+                          }}
+                          className="px-4 py-2 text-xs font-medium bg-[#1A1A1A] text-white rounded-lg hover:bg-[#333] disabled:opacity-40 transition-colors"
+                        >
+                          {addSaving ? "Saving..." : "Upload Design Version"}
+                        </button>
+                      </div>
+                    )}
+
                     {hasDesigns ? (
                       <DesignsTab
                         reviews={reviews}
@@ -446,7 +512,60 @@ export function PortalView({
 
                   {/* Development Section */}
                   <div>
-                    <h3 className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">Development</h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA]">Development</h3>
+                      {viewMode === "team" && (
+                        <button
+                          onClick={() => { setShowAddDev(!showAddDev); setShowAddDesign(false); setAddTitle(""); setAddStagingUrl(""); setAddNotes(""); }}
+                          className="text-[11px] font-medium text-[#777] hover:text-[#1A1A1A] transition-colors"
+                        >
+                          {showAddDev ? "Cancel" : "+ New Version"}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Team: Add development version form */}
+                    {showAddDev && viewMode === "team" && (
+                      <div className="border border-[#E5E5EA] rounded-xl p-4 mb-4 bg-[#FAFAFA] space-y-3">
+                        <div>
+                          <label className="text-[11px] font-medium text-[#555] block mb-1">Title</label>
+                          <input type="text" value={addTitle} onChange={(e) => setAddTitle(e.target.value)} placeholder="e.g. Homepage Development" className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg bg-white focus:border-[#1B1B1B] outline-none" />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-medium text-[#555] block mb-1">Staging URL</label>
+                          <input type="url" value={addStagingUrl} onChange={(e) => setAddStagingUrl(e.target.value)} placeholder="https://staging.example.com/page" className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg bg-white focus:border-[#1B1B1B] outline-none" />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-medium text-[#555] block mb-1">Notes</label>
+                          <textarea value={addNotes} onChange={(e) => setAddNotes(e.target.value)} placeholder="What changed in this version..." className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg bg-white min-h-[60px] resize-y focus:border-[#1B1B1B] outline-none" />
+                        </div>
+                        <button
+                          disabled={!addTitle.trim() || !addStagingUrl.trim() || addSaving}
+                          onClick={async () => {
+                            setAddSaving(true);
+                            try {
+                              const existing = pageReviews.find(r => r.title === addTitle.trim());
+                              let reviewId: string;
+                              if (existing) {
+                                reviewId = existing.id;
+                              } else {
+                                const newReview = await createReview({ portal_id: portal.id, title: addTitle.trim(), description: "", review_type: "page" });
+                                reviewId = newReview.id;
+                              }
+                              const versions = reviewVersions[reviewId] || [];
+                              await addVersion({ review_id: reviewId, version_number: versions.length + 1, figma_url: "", staging_url: addStagingUrl.trim(), notes: addNotes.trim() });
+                              setShowAddDev(false); setAddTitle(""); setAddStagingUrl(""); setAddNotes("");
+                              if (onReload) await onReload();
+                            } catch { /* silent */ }
+                            setAddSaving(false);
+                          }}
+                          className="px-4 py-2 text-xs font-medium bg-[#1A1A1A] text-white rounded-lg hover:bg-[#333] disabled:opacity-40 transition-colors"
+                        >
+                          {addSaving ? "Saving..." : "Upload Dev Version"}
+                        </button>
+                      </div>
+                    )}
+
                     {hasPageReviews ? (
                       <div className="space-y-4">
                         {pageReviews.map((review) => {

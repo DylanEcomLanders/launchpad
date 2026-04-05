@@ -81,7 +81,7 @@ export function arePrerequisitesMet(project: PortalProject, gateKey: "cro_brief"
 
 /** Gate display config */
 export const GATE_CONFIG: Record<string, { title: string; color: string; role: string }> = {
-  cro_brief: { title: "CRO Pre-Design Brief", color: "#DC2626", role: "CRO Strategist" },
-  design_handoff: { title: "Design → Dev Handoff", color: "#7C3AED", role: "Designer" },
-  dev_handoff: { title: "Dev → Senior Dev QA", color: "#059669", role: "Developer" },
+  cro_brief: { title: "CRO Design", color: "#DC2626", role: "CRO Strategist" },
+  design_handoff: { title: "Design Handoff", color: "#7C3AED", role: "Designer" },
+  dev_handoff: { title: "Dev to Senior Dev QA", color: "#059669", role: "Developer" },
 };

@@ -530,6 +530,7 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
   };
 
   /* ── Determine which gates to show ── */
+  // Always show all three gates — CRO can be toggled on/off but design + dev are always there
   const gateEntries: Array<{ key: string; gate: QAGate; items: string[] }> = [];
   if (gates.cro_brief_enabled) {
     gateEntries.push({ key: "cro_brief", gate: gates.cro_brief || createDefaultGate(CRO_BRIEF_ITEMS), items: CRO_BRIEF_ITEMS });
@@ -537,13 +538,8 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
   gateEntries.push({ key: "design_handoff", gate: gates.design_handoff || createDefaultGate(DESIGN_HANDOFF_ITEMS), items: DESIGN_HANDOFF_ITEMS });
   gateEntries.push({ key: "dev_handoff", gate: gates.dev_handoff || createDefaultGate(DEV_HANDOFF_ITEMS), items: DEV_HANDOFF_ITEMS });
 
-  /* ── Can the current user open this gate? ── */
-  const canOpenGate = (gateKey: string) => {
-    if (!readOnly) return true; // Admin can always open
-    // Team members can only open their role's gate
-    const config = GATE_CONFIG[gateKey];
-    return teamRole === config.role;
-  };
+  /* ── Can the current user open this gate? Always yes now ── */
+  const canOpenGate = () => true;
 
   return (
     <div className="space-y-8">
@@ -569,20 +565,15 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
           </div>
         )}
 
-        {/* Three-column gate overview cards */}
+        {/* Three-column gate overview cards — all always accessible */}
         <div className="flex gap-2">
           {gateEntries.map(({ key, gate }) => (
             <GateOverviewCard
               key={key}
               gateKey={key}
               gate={gate}
-              locked={!arePrerequisitesMet(project, key as any)}
-              lockReason={
-                key === "design_handoff" ? "Complete CRO Brief first"
-                : key === "dev_handoff" ? "Complete Design Handoff first"
-                : undefined
-              }
-              canOpen={canOpenGate(key)}
+              locked={false}
+              canOpen={true}
               onOpen={() => setOpenGateModal(key)}
             />
           ))}
