@@ -4,6 +4,7 @@ import { createStore } from "@/lib/supabase-store";
 
 // ── Types ──
 
+export type Creator = "ajay" | "dylan";
 export type Platform = "linkedin" | "instagram" | "x" | "tiktok";
 export type ContentType = "educational" | "social_proof" | "personal" | "promotional";
 export type PostStatus = "draft" | "created" | "scheduled";
@@ -11,6 +12,7 @@ export type PostFormat = "text" | "image" | "article" | "video";
 
 export interface ContentPost {
   id: string;
+  creator: Creator;
   group_id?: string; // links repurposed variants together
   platform: Platform;
   content_type: ContentType;
@@ -200,6 +202,7 @@ export function seedPosts(): ContentPost[] {
   return [
     {
       id: "seed-1",
+      creator: "ajay",
       platform: "linkedin",
       content_type: "educational",
       post_format: "text",
@@ -213,6 +216,7 @@ export function seedPosts(): ContentPost[] {
     },
     {
       id: "seed-2",
+      creator: "dylan",
       platform: "instagram",
       content_type: "social_proof",
       post_format: "image",
@@ -226,6 +230,7 @@ export function seedPosts(): ContentPost[] {
     },
     {
       id: "seed-3",
+      creator: "ajay",
       platform: "x",
       content_type: "personal",
       post_format: "text",
@@ -239,6 +244,7 @@ export function seedPosts(): ContentPost[] {
     },
     {
       id: "seed-4",
+      creator: "ajay",
       platform: "linkedin",
       content_type: "promotional",
       post_format: "article",
@@ -252,6 +258,7 @@ export function seedPosts(): ContentPost[] {
     },
     {
       id: "seed-5",
+      creator: "dylan",
       platform: "instagram",
       content_type: "educational",
       post_format: "image",

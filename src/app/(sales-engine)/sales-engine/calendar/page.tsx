@@ -28,6 +28,7 @@ import {
   getPosts,
   savePosts,
   type ContentPost,
+  type Creator,
   type Platform,
   type ContentType,
   type PostStatus,
@@ -116,8 +117,9 @@ function FormatBadge({ format, size = "sm" }: { format: PostFormat; size?: "sm" 
 // ── Main Component ──
 
 export default function CalendarPage() {
-  const [posts, setPosts] = useState<ContentPost[]>([]);
+  const [allPosts, setAllPosts] = useState<ContentPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeCreator, setActiveCreator] = useState<Creator>("ajay");
   const [weekOffset, setWeekOffset] = useState(0);
   const [view, setView] = useState<"week" | "month">("week");
   const [monthDate, setMonthDate] = useState(new Date());
@@ -176,11 +178,14 @@ export default function CalendarPage() {
   const load = useCallback(async () => {
     setLoading(true);
     const data = await getPosts();
-    setPosts(data);
+    setAllPosts(data);
     setLoading(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // Filter by active creator
+  const posts = useMemo(() => allPosts.filter(p => p.creator === activeCreator), [allPosts, activeCreator]);
 
   // ── Derived data ──
   const weekPosts = useMemo(() => {
@@ -268,6 +273,7 @@ export default function CalendarPage() {
     } else {
       setStudioPost({
         id: "",
+        creator: activeCreator,
         platform: "x",
         content_type: "educational",
         post_format: "text",
@@ -289,6 +295,7 @@ export default function CalendarPage() {
   function openStudioForSlot(date: string, time: string) {
     setStudioPost({
       id: "",
+      creator: activeCreator,
       platform: "x",
       content_type: "educational",
       post_format: "text",
@@ -312,6 +319,7 @@ export default function CalendarPage() {
     const now = new Date().toISOString();
     const post: ContentPost = {
       id: studioPost.id || uuid(),
+      creator: studioPost.creator || activeCreator,
       group_id: studioPost.group_id,
       platform: studioPost.platform!,
       content_type: studioPost.content_type || "educational",
@@ -331,30 +339,31 @@ export default function CalendarPage() {
       created_at: studioPost.created_at || now,
       updated_at: now,
     };
-    const existing = posts.findIndex(p => p.id === post.id);
+    const existing = allPosts.findIndex(p => p.id === post.id);
     let updated: ContentPost[];
     if (existing >= 0) {
-      updated = posts.map(p => p.id === post.id ? post : p);
+      updated = allPosts.map(p => p.id === post.id ? post : p);
     } else {
-      updated = [...posts, post];
+      updated = [...allPosts, post];
     }
-    setPosts(updated);
+    setAllPosts(updated);
     await savePosts(updated);
     setSaving(false);
     setShowStudio(false);
   }
 
   async function handleDeletePost(id: string) {
-    const updated = posts.filter(p => p.id !== id);
-    setPosts(updated);
+    const updated = allPosts.filter(p => p.id !== id);
+    setAllPosts(updated);
     await savePosts(updated);
     setShowStudio(false);
   }
 
   async function clearAllPosts() {
-    if (!confirm("Delete ALL posts? This cannot be undone.")) return;
-    setPosts([]);
-    await savePosts([]);
+    if (!confirm("Delete ALL posts for " + (activeCreator === "ajay" ? "Ajay" : "Dylan") + "?")) return;
+    const updated = allPosts.filter(p => p.creator !== activeCreator);
+    setAllPosts(updated);
+    await savePosts(updated);
   }
 
   // ── Drag & Drop helpers ──
@@ -382,14 +391,14 @@ export default function CalendarPage() {
     if (!postId) return;
     setDragPostId(null);
 
-    const post = posts.find(p => p.id === postId);
+    const post = allPosts.find(p => p.id === postId);
     if (!post || post.scheduled_date === targetDate) return;
 
     const now = new Date().toISOString();
-    const updated = posts.map(p =>
+    const updated = allPosts.map(p =>
       p.id === postId ? { ...p, scheduled_date: targetDate, updated_at: now } : p
     );
-    setPosts(updated);
+    setAllPosts(updated);
     await savePosts(updated);
   }
 
@@ -514,6 +523,7 @@ export default function CalendarPage() {
         const now = new Date().toISOString();
         const currentPost: ContentPost = {
           id: studioPost.id || uuid(),
+          creator: studioPost.creator || activeCreator,
           group_id: currentGroupId,
           platform: studioPost.platform!,
           content_type: studioPost.content_type || "educational",
@@ -528,14 +538,14 @@ export default function CalendarPage() {
           created_at: studioPost.created_at || now,
           updated_at: now,
         };
-        const existingIdx = posts.findIndex(p => p.id === currentPost.id);
+        const existingIdx = allPosts.findIndex(p => p.id === currentPost.id);
         if (existingIdx >= 0) {
-          const updated = posts.map(p => p.id === currentPost.id ? currentPost : p);
-          setPosts(updated);
+          const updated = allPosts.map(p => p.id === currentPost.id ? currentPost : p);
+          setAllPosts(updated);
           await savePosts(updated);
         } else {
-          const updated = [...posts, currentPost];
-          setPosts(updated);
+          const updated = [...allPosts, currentPost];
+          setAllPosts(updated);
           await savePosts(updated);
         }
       }
@@ -560,6 +570,7 @@ export default function CalendarPage() {
         const platform = (Object.entries(platformLabels).find(([, label]) => label.toLowerCase() === v.platform.toLowerCase())?.[0] || v.platform.toLowerCase()) as Platform;
         return {
           id: uuid(),
+          creator: studioPost.creator || activeCreator,
           group_id: currentGroupId,
           platform,
           content_type: studioPost.content_type || "educational",
@@ -578,12 +589,12 @@ export default function CalendarPage() {
         };
       });
 
-      const updatedPosts = [...posts, ...newPosts];
+      const updatedPosts = [...allPosts, ...newPosts];
       // Make sure the source post has the group_id too
       const final = updatedPosts.map(p =>
         p.id === studioPost.id ? { ...p, group_id: currentGroupId } : p
       );
-      setPosts(final);
+      setAllPosts(final);
       await savePosts(final);
 
       // Update studio post to reflect group_id
@@ -679,6 +690,7 @@ export default function CalendarPage() {
     // All ideas land as X posts — repurpose to other platforms later
     const newPosts: ContentPost[] = selected.map(d => ({
       id: uuid(),
+      creator: activeCreator,
       platform: "x" as Platform,
       content_type: d.content_type,
       post_format: d.post_format || "text",
@@ -695,8 +707,8 @@ export default function CalendarPage() {
       created_at: now,
       updated_at: now,
     }));
-    const updated = [...posts, ...newPosts];
-    setPosts(updated);
+    const updated = [...allPosts, ...newPosts];
+    setAllPosts(updated);
     await savePosts(updated);
     setDraftSaving(false);
     setShowWeeklyDraft(false);
@@ -753,9 +765,27 @@ export default function CalendarPage() {
     <div className="py-8 px-6 md:px-8 overflow-x-hidden">
       {/* ── Page header ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Content Calendar</h1>
-          <p className="text-sm text-[#7A7A7A] mt-0.5">Plan, write, and organise content before publishing</p>
+        <div className="flex items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Content Calendar</h1>
+            <p className="text-sm text-[#7A7A7A] mt-0.5">Plan, write, and organise content before publishing</p>
+          </div>
+          {/* Creator toggle */}
+          <div className="flex items-center bg-[#F3F3F5] rounded-lg p-0.5">
+            {(["ajay", "dylan"] as Creator[]).map(c => (
+              <button
+                key={c}
+                onClick={() => setActiveCreator(c)}
+                className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                  activeCreator === c
+                    ? "bg-white text-[#1B1B1B] shadow-sm"
+                    : "text-[#999] hover:text-[#666]"
+                }`}
+              >
+                {c === "ajay" ? "Ajay" : "Dylan"}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="flex items-center gap-2">
           {posts.length > 0 && (
