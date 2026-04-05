@@ -65,6 +65,15 @@ export interface BusinessSettings {
 
   /* CRO Audit knowledge base — editable framework fed into every audit */
   audit_knowledge_base?: string;
+
+  /* Slack notification toggles */
+  notifications?: {
+    payment_received: boolean;
+    qa_gate_submitted: boolean;
+    deadline_warnings: boolean;
+    monday_breakdown: boolean;
+    friday_digest: boolean;
+  };
 }
 
 export const DEFAULT_SETTINGS: BusinessSettings = {
@@ -97,6 +106,13 @@ export const DEFAULT_SETTINGS: BusinessSettings = {
     fri: true,
     sat: false,
     sun: false,
+  },
+  notifications: {
+    payment_received: true,
+    qa_gate_submitted: true,
+    deadline_warnings: true,
+    monday_breakdown: true,
+    friday_digest: true,
   },
 };
 

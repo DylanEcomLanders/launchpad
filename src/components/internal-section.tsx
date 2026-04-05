@@ -21,6 +21,7 @@ interface Props {
   // For Slack notifications
   slackInternalChannelId?: string;
   clientName?: string;
+  portalId?: string;
 }
 
 /* ── Gate Status Pill (for overview) ── */
@@ -418,7 +419,7 @@ function GateOverviewCard({
 }
 
 /* ── Main Component ── */
-export function InternalSection({ project, onUpdateProject, readOnly = false, teamRole, gatesOnly = false, hideGates = false, slackInternalChannelId, clientName }: Props) {
+export function InternalSection({ project, onUpdateProject, readOnly = false, teamRole, gatesOnly = false, hideGates = false, slackInternalChannelId, clientName, portalId }: Props) {
   const [showContextForm, setShowContextForm] = useState(false);
   const [contextSource, setContextSource] = useState("");
   const [contextDate, setContextDate] = useState(new Date().toISOString().split("T")[0]);
@@ -461,6 +462,7 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
           projectName: project.name,
           submittedBy: submittedGate.submitted_by || teamRole || "Team member",
           nextRole,
+          portalId,
         }),
       }).catch(() => {});
     }

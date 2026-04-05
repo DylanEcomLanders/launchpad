@@ -728,6 +728,7 @@ export function PortalView({
                   onUpdateProject={onUpdateProject ? (patch) => onUpdateProject(selectedProject.id, patch) : undefined}
                   slackInternalChannelId={portal.slack_internal_channel_id}
                   clientName={portal.client_name}
+                  portalId={portal.id}
                 />
               </>
             )}
@@ -2644,11 +2645,13 @@ function TeamInternalView({
   onUpdateProject,
   slackInternalChannelId,
   clientName,
+  portalId,
 }: {
   project: PortalProject;
   onUpdateProject?: (patch: Partial<PortalProject>) => Promise<void>;
   slackInternalChannelId?: string;
   clientName?: string;
+  portalId?: string;
 }) {
   return (
     <InternalSection
@@ -2658,6 +2661,7 @@ function TeamInternalView({
       gatesOnly
       slackInternalChannelId={slackInternalChannelId}
       clientName={clientName}
+      portalId={portalId}
     />
   );
 }

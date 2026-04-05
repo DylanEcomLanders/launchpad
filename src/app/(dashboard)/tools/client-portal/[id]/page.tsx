@@ -865,6 +865,7 @@ export default function PortalDetailPage() {
                 }}
                 slackInternalChannelId={portal.slack_internal_channel_id}
                 clientName={portal.client_name}
+                portalId={portal.id}
               />
             )}
 

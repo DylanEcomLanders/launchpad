@@ -37,6 +37,23 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-25",
+    date: "5 Apr 2026",
+    version: "0.21.0",
+    title: "Slack Notification Engine & Payment Automation",
+    changes: [
+      { type: "added", text: "Payment webhook now creates a draft portal and posts an approval message to #ops with 'Approve & Send to Client' button — no more manual channel creation on payment" },
+      { type: "added", text: "Portal approval loop — PM reviews draft portal in Launchpad, clicks approve in Slack, bot posts portal link to client's external channel" },
+      { type: "improved", text: "QA gate notifications now include a 'View in Portal' link pointing to the specific client portal" },
+      { type: "added", text: "Deadline warning cron — daily check posts to internal Slack channels when a phase is due in 2 days or overdue" },
+      { type: "added", text: "Monday Breakdown — weekly #ops digest with deadlines, blockers, retainer mission statement status, and active project counts" },
+      { type: "added", text: "Friday Digest — end-of-week #ops summary with completed phases, in-progress work, blockers, overdue items, and retainer report upload status" },
+      { type: "added", text: "Notification settings panel in Business Settings — toggle each Slack notification on/off with a clean switch UI" },
+      { type: "improved", text: "All automated Slack messages now use the Ecomlanders bot token instead of personal account — branded, consistent identity" },
+      { type: "improved", text: "Sales Engine dashboard redesigned — pipeline overview, active clients, content this week, follow-up tracker, and quick actions replace old social analytics view" },
+    ],
+  },
+  {
     id: "cl-24",
     date: "5 Apr 2026",
     version: "0.20.0",

@@ -543,6 +543,43 @@ export default function SettingsPage() {
         </div>
       </section>
 
+      {/* Slack Notifications */}
+      <section className="mb-10">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
+          Slack Notifications
+        </h2>
+        <p className="text-xs text-[#A0A0A0] mb-4">
+          Control which automated Slack notifications are active. All notifications are sent via the Ecomlanders bot.
+        </p>
+
+        <div className="border border-[#E5E5EA] rounded-lg divide-y divide-[#EDEDEF]">
+          {([
+            { key: "payment_received" as const, label: "Payment Received", desc: "Post to #ops when a Whop payment comes in with draft portal" },
+            { key: "qa_gate_submitted" as const, label: "QA Gate Submitted", desc: "Post to internal channel when a CRO brief, design handoff, or dev checklist is submitted" },
+            { key: "deadline_warnings" as const, label: "Deadline Warnings", desc: "Daily check — posts to internal channel when a phase is due in 2 days or overdue" },
+            { key: "monday_breakdown" as const, label: "Monday Breakdown", desc: "Weekly #ops digest — deadlines, blockers, retainer status, and action items" },
+            { key: "friday_digest" as const, label: "Friday Digest", desc: "End-of-week #ops summary — completed work, blockers, overdue, and retainer reports" },
+          ]).map(({ key, label, desc }) => {
+            const notifications = settings.notifications || { payment_received: true, qa_gate_submitted: true, deadline_warnings: true, monday_breakdown: true, friday_digest: true };
+            const enabled = notifications[key] ?? true;
+            return (
+              <div key={key} className="flex items-center justify-between px-4 py-3">
+                <div>
+                  <p className="text-sm font-medium">{label}</p>
+                  <p className="text-xs text-[#A0A0A0]">{desc}</p>
+                </div>
+                <button
+                  onClick={() => setSettings({ ...settings, notifications: { ...notifications, [key]: !enabled } })}
+                  className={`relative w-10 h-5 rounded-full transition-colors ${enabled ? "bg-emerald-500" : "bg-[#D1D1D6]"}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 size-4 rounded-full bg-white shadow transition-transform ${enabled ? "translate-x-5" : ""}`} />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       {/* Audit Knowledge Base */}
       <section className="mb-10">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">

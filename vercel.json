@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/deadline-check",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/monday-breakdown",
+      "schedule": "30 8 * * 1"
+    },
+    {
+      "path": "/api/cron/friday-digest",
+      "schedule": "30 16 * * 5"
+    }
+  ]
+}

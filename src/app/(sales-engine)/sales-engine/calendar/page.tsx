@@ -336,11 +336,8 @@ export default function CalendarPage() {
 
   useEffect(() => { if (pinUnlocked) load(); }, [load, pinUnlocked]);
 
-  // Show PIN gate if not unlocked
-  if (!pinUnlocked) return <CalendarPinGate onUnlock={handlePinUnlock} />;
-
-  // Filter by active creator (safe: PIN gate ensures activeCreator is set before reaching here)
-  const creator = activeCreator as Creator;
+  // Filter by active creator — hooks must run before any early return
+  const creator = (activeCreator || "dylan") as Creator;
   const posts = useMemo(() => allPosts.filter(p => p.creator === creator), [allPosts, creator]);
 
   // ── Derived data ──
@@ -418,6 +415,9 @@ export default function CalendarPage() {
     const sorted = Object.entries(contentMix).sort(([, a], [, b]) => b - a);
     return sorted[0]?.[1] > 0 ? contentTypeLabels[sorted[0][0] as ContentType] : "—";
   }, [contentMix]);
+
+  // Show PIN gate if not unlocked (AFTER all hooks)
+  if (!pinUnlocked) return <CalendarPinGate onUnlock={handlePinUnlock} />;
 
   // ── Actions ──
 

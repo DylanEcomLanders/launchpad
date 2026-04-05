@@ -1,21 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isNotificationEnabled } from "@/lib/notification-settings";
 
 const BOT_TOKEN = process.env.SLACK_BOT_TOKEN || "";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://ecomlanders.app";
 
 /**
  * POST /api/slack/gate-notify
  * Sends a Slack message when a QA gate is submitted.
- * Body: { channelId, gateTitle, clientName, projectName, submittedBy, nextRole }
+ * Body: { channelId, gateTitle, clientName, projectName, submittedBy, nextRole, portalId }
  */
 export async function POST(req: NextRequest) {
   try {
-    const { channelId, gateTitle, clientName, projectName, submittedBy, nextRole } = await req.json();
+    const { channelId, gateTitle, clientName, projectName, submittedBy, nextRole, portalId } = await req.json();
 
     if (!channelId || !BOT_TOKEN) {
       return NextResponse.json({ ok: false, error: "Missing channel or bot token" }, { status: 400 });
     }
 
-    const blocks = [
+    // Check if notification is enabled in settings
+    if (!(await isNotificationEnabled("qa_gate_submitted"))) {
+      return NextResponse.json({ ok: true, skipped: true, reason: "disabled" });
+    }
+
+    const portalUrl = portalId ? `${APP_URL}/tools/client-portal/${portalId}` : null;
+
+    const blocks: any[] = [
       {
         type: "section",
         text: {
@@ -39,7 +48,15 @@ export async function POST(req: NextRequest) {
         type: "section",
         text: {
           type: "mrkdwn",
-          text: `👉 *${nextRole}* can now pick this up.`,
+          text: `👉 *${nextRole}* can now pick this up.${portalUrl ? ` <${portalUrl}|View in Portal →>` : ""}`,
+        },
+      });
+    } else if (portalUrl) {
+      blocks.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `<${portalUrl}|View in Portal →>`,
         },
       });
     }

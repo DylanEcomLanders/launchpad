@@ -28,50 +28,47 @@ export default function TeamPortalPage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
-  useEffect(() => {
+  const load = useCallback(async () => {
     if (!token) return;
+    setLoading(true);
+    const p = await getPortalByToken(token);
 
-    async function load() {
-      setLoading(true);
-      const p = await getPortalByToken(token);
-
-      if (!p) {
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
-
-      const [u, a, allReviews, fnls] = await Promise.all([
-        getUpdates(p.id),
-        getApprovals(p.id),
-        getReviews(p.id),
-        getFunnelsByClientId(p.id),
-      ]);
-
-      const versionMap: Record<string, DesignReviewVersion[]> = {};
-      const feedbackMap: Record<string, DesignReviewFeedback[]> = {};
-      for (const review of allReviews) {
-        const [versions, fb] = await Promise.all([getVersions(review.id), getFeedback(review.id)]);
-        versionMap[review.id] = versions;
-        for (const f of fb) {
-          if (!feedbackMap[f.version_id]) feedbackMap[f.version_id] = [];
-          feedbackMap[f.version_id].push(f);
-        }
-      }
-
-      setPortal(p);
-      setUpdates(u);
-      setApprovals(a);
-      setReviews(allReviews.filter((r) => !r.review_type || r.review_type === "design"));
-      setPageReviews(allReviews.filter((r) => r.review_type === "page"));
-      setReviewVersions(versionMap);
-      setReviewFeedback(feedbackMap);
-      setFunnels(fnls);
+    if (!p) {
+      setNotFound(true);
       setLoading(false);
+      return;
     }
 
-    load();
+    const [u, a, allReviews, fnls] = await Promise.all([
+      getUpdates(p.id),
+      getApprovals(p.id),
+      getReviews(p.id),
+      getFunnelsByClientId(p.id),
+    ]);
+
+    const versionMap: Record<string, DesignReviewVersion[]> = {};
+    const feedbackMap: Record<string, DesignReviewFeedback[]> = {};
+    for (const review of allReviews) {
+      const [versions, fb] = await Promise.all([getVersions(review.id), getFeedback(review.id)]);
+      versionMap[review.id] = versions;
+      for (const f of fb) {
+        if (!feedbackMap[f.version_id]) feedbackMap[f.version_id] = [];
+        feedbackMap[f.version_id].push(f);
+      }
+    }
+
+    setPortal(p);
+    setUpdates(u);
+    setApprovals(a);
+    setReviews(allReviews.filter((r) => !r.review_type || r.review_type === "design"));
+    setPageReviews(allReviews.filter((r) => r.review_type === "page"));
+    setReviewVersions(versionMap);
+    setReviewFeedback(feedbackMap);
+    setFunnels(fnls);
+    setLoading(false);
   }, [token]);
+
+  useEffect(() => { load(); }, [load]);
 
   // Handle gate submission from team view
   const handleUpdateProject = useCallback(async (projectId: string, patch: Partial<PortalProject>) => {
@@ -117,6 +114,7 @@ export default function TeamPortalPage() {
       funnels={funnels}
       viewMode="team"
       onUpdateProject={handleUpdateProject}
+      onReload={load}
     />
   );
 }
