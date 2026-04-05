@@ -3828,7 +3828,7 @@ function ClientDetailsPanel({ portal, team, onUpdateField }: { portal: PortalDat
             <select
               value=""
               onChange={(e) => { if (e.target.value) addMember(e.target.value); }}
-              className="text-xs text-[#A0A0A0] bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg px-2.5 py-1 cursor-pointer hover:border-[#CCC] transition-colors"
+              className="text-[13px] text-[#A0A0A0] bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg pl-3 pr-7 py-1.5 cursor-pointer hover:border-[#CCC] transition-colors appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23999%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22M6%209l6%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[right_8px_center]"
             >
               <option value="">+ Add</option>
               {allDesigners.filter(m => !designers.some(d => d.id === m.id)).map(m => (
@@ -3856,7 +3856,7 @@ function ClientDetailsPanel({ portal, team, onUpdateField }: { portal: PortalDat
             <select
               value=""
               onChange={(e) => { if (e.target.value) addMember(e.target.value); }}
-              className="text-xs text-[#A0A0A0] bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg px-2.5 py-1 cursor-pointer hover:border-[#CCC] transition-colors"
+              className="text-[13px] text-[#A0A0A0] bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg pl-3 pr-7 py-1.5 cursor-pointer hover:border-[#CCC] transition-colors appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23999%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22M6%209l6%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[right_8px_center]"
             >
               <option value="">+ Add</option>
               {allDevs.filter(m => !devs.some(d => d.id === m.id)).map(m => (
@@ -3886,8 +3886,8 @@ function ClientDetailsPanel({ portal, team, onUpdateField }: { portal: PortalDat
             <button onClick={() => { setSlackVal(portal.slack_channel_url || ""); setEditingSlack(false); }} className="text-xs text-[#A0A0A0] hover:text-[#666]">Cancel</button>
           </div>
         ) : (
-          <button onClick={() => setEditingSlack(true)} className="text-[13px] text-[#1A1A1A] font-mono hover:text-blue-600 transition-colors">
-            {portal.slack_channel_url || <span className={EMPTY}>Click to set</span>}
+          <button onClick={() => setEditingSlack(true)} className={`text-[13px] font-mono px-3 py-1.5 rounded-lg border transition-colors ${portal.slack_channel_url ? "text-[#1A1A1A] bg-[#F7F8FA] border-[#E5E5EA] hover:border-[#CCC]" : "text-[#C5C5C5] bg-[#F7F8FA] border-[#E5E5EA] hover:border-[#CCC]"}`}>
+            {portal.slack_channel_url || "Click to set"}
           </button>
         )}
       </div>
@@ -3910,8 +3910,8 @@ function ClientDetailsPanel({ portal, team, onUpdateField }: { portal: PortalDat
             <button onClick={() => { setInternalSlackVal(portal.slack_internal_channel_id || ""); setEditingInternalSlack(false); }} className="text-xs text-[#A0A0A0] hover:text-[#666]">Cancel</button>
           </div>
         ) : (
-          <button onClick={() => setEditingInternalSlack(true)} className="text-[13px] text-[#1A1A1A] font-mono hover:text-blue-600 transition-colors">
-            {portal.slack_internal_channel_id || <span className={EMPTY}>Click to set</span>}
+          <button onClick={() => setEditingInternalSlack(true)} className={`text-[13px] font-mono px-3 py-1.5 rounded-lg border transition-colors ${portal.slack_internal_channel_id ? "text-[#1A1A1A] bg-[#F7F8FA] border-[#E5E5EA] hover:border-[#CCC]" : "text-[#C5C5C5] bg-[#F7F8FA] border-[#E5E5EA] hover:border-[#CCC]"}`}>
+            {portal.slack_internal_channel_id || "Click to set"}
           </button>
         )}
       </div>
