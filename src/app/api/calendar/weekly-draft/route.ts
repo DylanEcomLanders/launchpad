@@ -44,13 +44,9 @@ That means EXACTLY 21 posts total (3 per day x 7 days). Do NOT exceed 3 per day 
 Optimal posting slots (from analytics — higher score = better engagement):
 ${JSON.stringify(optimalSlots?.map((s: any) => ({ ...s, time: `${String(s.hour).padStart(2, "0")}:${String(s.minute ?? 0).padStart(2, "0")}` })), null, 2)}
 
-IMPORTANT: Use the EXACT times from the analytics data above (e.g. "08:15", "12:30", "18:45"). Do NOT round to the hour.
-For days/platforms not in the analytics data, stagger times naturally — avoid posting on the hour. Use realistic times like:
-- Morning: 07:45, 08:15, 08:30, 09:10
-- Midday: 11:50, 12:15, 12:30
-- Afternoon: 15:15, 15:30, 16:45
-- Evening: 17:15, 18:30, 18:45, 19:15
-Never schedule two posts at the same time on the same day.
+IMPORTANT: Use the analytics times as a starting point but vary each post's time by a few minutes so nothing lands at the same time. Posts should feel naturally scheduled — use any minute value, not just :00, :15, :30, :45. Examples: "08:23", "12:36", "17:08", "09:41", "18:52", "07:38".
+For days/platforms not in the analytics data, pick realistic times across the day. Spread posts so there's at least 2 hours between them on the same day.
+Never schedule two posts at the exact same time on the same day.
 
 ${pastPerformance ? `Past performance insights:
 - Top content types: ${pastPerformance.topContentTypes || "N/A"}
