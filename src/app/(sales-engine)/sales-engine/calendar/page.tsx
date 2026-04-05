@@ -178,16 +178,31 @@ export default function CalendarPage() {
   const load = useCallback(async () => {
     setLoading(true);
     const data = await getPosts();
-    // Migrate old posts that don't have a creator field
-    const migrated = data.map(p => ({
+    // Migrate old posts without creator field
+    let cleaned = data.map(p => ({
       ...p,
       creator: p.creator || ("ajay" as Creator),
     }));
-    // If any posts were missing creator, save the migrated data
-    if (data.some(p => !p.creator)) {
-      await savePosts(migrated);
+
+    // Enforce max 3 draft posts per day per creator — discard extras
+    const keep: ContentPost[] = [];
+    const draftCount: Record<string, number> = {}; // "creator|date" → count
+    // Keep non-drafts first, then drafts up to 3 per day per creator (newest first)
+    const nonDrafts = cleaned.filter(p => p.status !== "draft");
+    const drafts = cleaned.filter(p => p.status === "draft")
+      .sort((a, b) => b.created_at.localeCompare(a.created_at)); // newest first
+    keep.push(...nonDrafts);
+    for (const p of drafts) {
+      const key = `${p.creator}|${p.scheduled_date}`;
+      draftCount[key] = (draftCount[key] || 0) + 1;
+      if (draftCount[key] <= 3) keep.push(p);
     }
-    setAllPosts(migrated);
+
+    // Save if anything was cleaned up
+    if (keep.length !== data.length || data.some(p => !p.creator)) {
+      await savePosts(keep);
+    }
+    setAllPosts(keep);
     setLoading(false);
   }, []);
 
