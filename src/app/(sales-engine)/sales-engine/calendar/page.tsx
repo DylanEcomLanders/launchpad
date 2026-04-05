@@ -907,13 +907,12 @@ export default function CalendarPage() {
                         key={col}
                         className={`min-h-[120px] px-3 py-2 ${col > 0 ? "border-l border-[#E5E5EA]" : ""} ${
                           !isCurrentMonth ? "bg-[#FAFAFA]" : "bg-white"
-                        } ${isDragOver ? "!bg-blue-50 ring-2 ring-inset ring-blue-300" : ""} hover:bg-[#F5F8FF] cursor-pointer transition-colors group`}
-                        onClick={() => openStudioForSlot(dStr, "09:00")}
+                        } ${isDragOver ? "!bg-blue-50 ring-2 ring-inset ring-blue-300" : ""} transition-colors group`}
                         onDragOver={(e) => handleDragOver(e, dStr)}
                         onDragLeave={handleDragLeave}
                         onDrop={(e) => handleDrop(e, dStr)}
                       >
-                        {/* Date number */}
+                        {/* Date number + add button */}
                         <div className="flex items-center justify-between mb-1.5">
                           <span className={`text-sm font-semibold ${
                             isToday
@@ -922,6 +921,12 @@ export default function CalendarPage() {
                           }`}>
                             {d.getDate()}
                           </span>
+                          <button
+                            onClick={() => openStudioForSlot(dStr, "09:00")}
+                            className="size-5 flex items-center justify-center rounded hover:bg-[#F0F0F0] opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <PlusIcon className="size-3 text-[#AAA]" />
+                          </button>
                         </div>
 
                         {/* Event cards */}
@@ -932,11 +937,12 @@ export default function CalendarPage() {
                             <div
                               key={p.id}
                               draggable
+                              onMouseDown={(e) => { e.stopPropagation(); }}
                               onClick={(e) => { e.stopPropagation(); openStudio(p); }}
-                              onDragStart={(e) => { e.stopPropagation(); handleDragStart(e, p.id); }}
+                              onDragStart={(e) => handleDragStart(e, p.id)}
                               onDragEnd={handleDragEnd}
-                              className={`w-full text-left flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] transition-all hover:shadow-sm cursor-grab active:cursor-grabbing group/card relative ${
-                                dragPostId === p.id ? "opacity-40" : ""
+                              className={`w-full text-left flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] transition-all hover:shadow-sm cursor-pointer group/card relative ${
+                                dragPostId === p.id ? "opacity-40 cursor-grabbing" : ""
                               }`}
                               style={{ backgroundColor: cc.bg, color: cc.text }}
                             >
@@ -1002,8 +1008,7 @@ export default function CalendarPage() {
                   return (
                     <div
                       key={i}
-                      className={`${i > 0 ? "border-l border-[#E5E5EA]" : ""} ${isToday ? "bg-[#F5F8FF]/50" : ""} ${isDragOver ? "!bg-blue-50 ring-2 ring-inset ring-blue-300" : ""} px-2 py-2 hover:bg-[#F5F8FF]/30 cursor-pointer transition-colors group`}
-                      onClick={() => openStudioForSlot(dStr, "09:00")}
+                      className={`${i > 0 ? "border-l border-[#E5E5EA]" : ""} ${isToday ? "bg-[#F5F8FF]/50" : ""} ${isDragOver ? "!bg-blue-50 ring-2 ring-inset ring-blue-300" : ""} px-2 py-2 transition-colors group`}
                       onDragOver={(e) => handleDragOver(e, dStr)}
                       onDragLeave={handleDragLeave}
                       onDrop={(e) => handleDrop(e, dStr)}
@@ -1014,11 +1019,12 @@ export default function CalendarPage() {
                         <div
                           key={p.id}
                           draggable
+                          onMouseDown={(e) => { e.stopPropagation(); }}
                           onClick={(e) => { e.stopPropagation(); openStudio(p); }}
-                          onDragStart={(e) => { e.stopPropagation(); handleDragStart(e, p.id); }}
+                          onDragStart={(e) => handleDragStart(e, p.id)}
                           onDragEnd={handleDragEnd}
-                          className={`w-full text-left px-2.5 py-1.5 rounded-md mb-1.5 transition-all hover:shadow-sm cursor-grab active:cursor-grabbing group/card relative ${
-                            dragPostId === p.id ? "opacity-40" : ""
+                          className={`w-full text-left px-2.5 py-1.5 rounded-md mb-1.5 transition-all hover:shadow-sm cursor-pointer group/card relative ${
+                            dragPostId === p.id ? "opacity-40 cursor-grabbing" : ""
                           }`}
                           style={{ backgroundColor: cc.bg, color: cc.text }}
                         >
@@ -1040,11 +1046,16 @@ export default function CalendarPage() {
                         </div>
                         );
                       })}
-                      {dayPosts.length === 0 && (
-                        <div className="flex items-center justify-center h-12 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <PlusIcon className="size-4 text-[#CCC]" />
-                        </div>
-                      )}
+                      {/* Add post button — only in empty space */}
+                      <button
+                        onClick={() => openStudioForSlot(dStr, "09:00")}
+                        className={`w-full flex items-center justify-center gap-1 py-2 rounded-md text-[10px] text-[#BBB] hover:bg-[#F3F3F5] hover:text-[#999] transition-all ${
+                          dayPosts.length === 0 ? "mt-4" : "mt-1 opacity-0 group-hover:opacity-100"
+                        }`}
+                      >
+                        <PlusIcon className="size-3" />
+                        Add
+                      </button>
                     </div>
                   );
                 })}
