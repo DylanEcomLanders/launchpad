@@ -52,6 +52,8 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "fixed", text: "Clicking calendar post cards now reliably opens the edit view instead of sometimes triggering the new post wizard" },
       { type: "improved", text: "Idea-first content flow — posts show the angle/idea at the top, hit Generate Caption to create variants from it, pick one, then edit. No caption shown until you generate one" },
       { type: "improved", text: "Weekly Draft now generates at least 3 article posts per week for authority building" },
+      { type: "added", text: "Ajay/Dylan creator toggle — prominent switcher with avatar initials in the header, filters the entire calendar by person" },
+      { type: "fixed", text: "Posts without a creator field (from previous sessions) now auto-migrate to Ajay on load, preventing ghost posts appearing on reload" },
     ],
   },
   {

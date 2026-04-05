@@ -178,7 +178,16 @@ export default function CalendarPage() {
   const load = useCallback(async () => {
     setLoading(true);
     const data = await getPosts();
-    setAllPosts(data);
+    // Migrate old posts that don't have a creator field
+    const migrated = data.map(p => ({
+      ...p,
+      creator: p.creator || ("ajay" as Creator),
+    }));
+    // If any posts were missing creator, save the migrated data
+    if (data.some(p => !p.creator)) {
+      await savePosts(migrated);
+    }
+    setAllPosts(migrated);
     setLoading(false);
   }, []);
 
@@ -771,17 +780,22 @@ export default function CalendarPage() {
             <p className="text-sm text-[#7A7A7A] mt-0.5">Plan, write, and organise content before publishing</p>
           </div>
           {/* Creator toggle */}
-          <div className="flex items-center bg-[#F3F3F5] rounded-lg p-0.5">
+          <div className="flex items-center bg-[#F3F3F5] rounded-xl p-1 ml-2">
             {(["ajay", "dylan"] as Creator[]).map(c => (
               <button
                 key={c}
                 onClick={() => setActiveCreator(c)}
-                className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                   activeCreator === c
                     ? "bg-white text-[#1B1B1B] shadow-sm"
                     : "text-[#999] hover:text-[#666]"
                 }`}
               >
+                <span className={`size-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${
+                  c === "ajay" ? "bg-[#1B1B1B]" : "bg-[#2563EB]"
+                }`}>
+                  {c === "ajay" ? "AJ" : "DE"}
+                </span>
                 {c === "ajay" ? "Ajay" : "Dylan"}
               </button>
             ))}
