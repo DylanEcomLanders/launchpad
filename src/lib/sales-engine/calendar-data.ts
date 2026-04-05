@@ -15,7 +15,8 @@ export interface ContentPost {
   platform: Platform;
   content_type: ContentType;
   post_format: PostFormat;
-  caption: string;
+  angle?: string; // the idea/hook — one punchy line
+  caption: string; // the full written caption (generated from angle)
   status: PostStatus;
   scheduled_date: string; // ISO date
   scheduled_time: string; // HH:mm

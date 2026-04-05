@@ -16,7 +16,7 @@ Rules:
 - No generic filler like "share a tip" or "post about growth"
 - Reference real CRO patterns, landing page strategies, A/B tests, DTC brand teardowns, agency behind-the-scenes
 - Content mix across the week: educational (40-50%), social proof (20-30%), personal (15-20%), promotional (under 10%)
-- Vary formats: mostly text, but include 5-8 image posts and 2-3 article posts across the week
+- Vary formats: mostly text, but include 5-8 image posts and AT LEAST 3 article posts across the week (articles are important for authority — aim for 3-4)
 - No emojis
 - Space posts throughout the day — morning, midday, afternoon/evening slots`;
 

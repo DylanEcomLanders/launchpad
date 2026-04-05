@@ -274,6 +274,7 @@ export default function CalendarPage() {
         platform: "x",
         content_type: "educational",
         post_format: "text",
+        angle: "",
         caption: "",
         status: "idea",
         scheduled_date: toDateStr(new Date()),
@@ -294,6 +295,7 @@ export default function CalendarPage() {
       platform: "x",
       content_type: "educational",
       post_format: "text",
+      angle: "",
       caption: "",
       status: "idea",
       scheduled_date: date,
@@ -317,6 +319,7 @@ export default function CalendarPage() {
       platform: studioPost.platform!,
       content_type: studioPost.content_type || "educational",
       post_format: studioPost.post_format || "text",
+      angle: studioPost.angle || "",
       caption: studioPost.caption || "",
       status: studioPost.status || "idea",
       scheduled_date: studioPost.scheduled_date!,
@@ -411,7 +414,7 @@ export default function CalendarPage() {
           platform: studioPost.platform,
           contentType: contentTypeLabels[studioPost.content_type],
           postFormat: studioPost.post_format || "text",
-          brief: studioPost.caption || `${contentTypeLabels[studioPost.content_type]} post about CRO and landing pages`,
+          brief: studioPost.angle || studioPost.caption || `${contentTypeLabels[studioPost.content_type]} post about CRO and landing pages`,
           imageData: overrides?.imageData || studioPost.media_data || undefined,
         }),
       });
@@ -682,7 +685,8 @@ export default function CalendarPage() {
       platform: "x" as Platform,
       content_type: d.content_type,
       post_format: d.post_format || "text",
-      caption: d.brief || d.angle,
+      angle: d.angle,
+      caption: "",
       status: "idea" as PostStatus,
       scheduled_date: d.scheduled_date,
       scheduled_time: d.scheduled_time,
@@ -928,6 +932,7 @@ export default function CalendarPage() {
                             <div
                               key={p.id}
                               draggable
+                              onClick={(e) => { e.stopPropagation(); openStudio(p); }}
                               onDragStart={(e) => { e.stopPropagation(); handleDragStart(e, p.id); }}
                               onDragEnd={handleDragEnd}
                               className={`w-full text-left flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] transition-all hover:shadow-sm cursor-grab active:cursor-grabbing group/card relative ${
@@ -935,17 +940,12 @@ export default function CalendarPage() {
                               }`}
                               style={{ backgroundColor: cc.bg, color: cc.text }}
                             >
-                              <button
-                                onClick={(e) => { e.stopPropagation(); openStudio(p); }}
-                                className="flex items-center gap-1.5 min-w-0 flex-1"
-                              >
-                                <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: cc.dot }} />
-                                <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: platformColors[p.platform] }} />
-                                <FormatBadge format={p.post_format || "text"} size="xs" />
-                                {p.group_id && <LinkIcon className="size-2 shrink-0 opacity-40" />}
-                                <span className="font-medium truncate">{p.caption.slice(0, 16)}{p.caption.length > 16 ? "..." : ""}</span>
-                                <span className="text-[10px] ml-auto shrink-0 opacity-70">{fmtTime(p.scheduled_time)}</span>
-                              </button>
+                              <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: cc.dot }} />
+                              <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: platformColors[p.platform] }} />
+                              <FormatBadge format={p.post_format || "text"} size="xs" />
+                              {p.group_id && <LinkIcon className="size-2 shrink-0 opacity-40" />}
+                              <span className="font-medium truncate">{(p.angle || p.caption).slice(0, 16)}{(p.angle || p.caption).length > 16 ? "..." : ""}</span>
+                              <span className="text-[10px] ml-auto shrink-0 opacity-70">{fmtTime(p.scheduled_time)}</span>
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleDeletePost(p.id); }}
                                 className="hidden group-hover/card:flex items-center justify-center size-4 rounded hover:bg-red-100 shrink-0 transition-colors"
@@ -1014,6 +1014,7 @@ export default function CalendarPage() {
                         <div
                           key={p.id}
                           draggable
+                          onClick={(e) => { e.stopPropagation(); openStudio(p); }}
                           onDragStart={(e) => { e.stopPropagation(); handleDragStart(e, p.id); }}
                           onDragEnd={handleDragEnd}
                           className={`w-full text-left px-2.5 py-1.5 rounded-md mb-1.5 transition-all hover:shadow-sm cursor-grab active:cursor-grabbing group/card relative ${
@@ -1022,16 +1023,11 @@ export default function CalendarPage() {
                           style={{ backgroundColor: cc.bg, color: cc.text }}
                         >
                           <div className="flex items-center gap-1.5">
-                            <button
-                              onClick={(e) => { e.stopPropagation(); openStudio(p); }}
-                              className="flex items-center gap-1.5 min-w-0 flex-1"
-                            >
-                              <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: cc.dot }} />
-                              <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: platformColors[p.platform] }} />
-                              <FormatBadge format={p.post_format || "text"} size="xs" />
-                              {p.group_id && <LinkIcon className="size-2 shrink-0 opacity-40" />}
-                              <span className="text-[11px] font-medium truncate">{p.caption.slice(0, 20)}{p.caption.length > 20 ? "..." : ""}</span>
-                            </button>
+                            <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: cc.dot }} />
+                            <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: platformColors[p.platform] }} />
+                            <FormatBadge format={p.post_format || "text"} size="xs" />
+                            {p.group_id && <LinkIcon className="size-2 shrink-0 opacity-40" />}
+                            <span className="text-[11px] font-medium truncate flex-1">{(p.angle || p.caption).slice(0, 20)}{(p.angle || p.caption).length > 20 ? "..." : ""}</span>
                             <button
                               onClick={(e) => { e.stopPropagation(); handleDeletePost(p.id); }}
                               className="hidden group-hover/card:flex items-center justify-center size-4 rounded hover:bg-red-100 shrink-0 transition-colors"
@@ -1040,12 +1036,7 @@ export default function CalendarPage() {
                               <XMarkIcon className="size-2.5 text-red-400" />
                             </button>
                           </div>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); openStudio(p); }}
-                            className="block"
-                          >
-                            <span className="text-[10px] opacity-70 ml-3.5">{fmtTime(p.scheduled_time)}</span>
-                          </button>
+                          <span className="text-[10px] opacity-70 ml-3.5">{fmtTime(p.scheduled_time)}</span>
                         </div>
                         );
                       })}
@@ -1088,7 +1079,7 @@ export default function CalendarPage() {
                     >
                       <div className="flex items-center gap-1.5">
                         <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: platformColors[p.platform] }} />
-                        <span className="text-[10px] text-[#555] truncate">{p.caption.slice(0, 30)}...</span>
+                        <span className="text-[10px] text-[#555] truncate">{(p.angle || p.caption).slice(0, 30)}...</span>
                       </div>
                     </button>
                   ))}
@@ -1173,6 +1164,18 @@ export default function CalendarPage() {
             {studioPost.id ? (
               <>
                 <div className="flex-1 overflow-y-auto">
+                  {/* ── Angle / Idea section ── */}
+                  <div className="px-5 pt-4 pb-4 border-b border-[#F0F0F0]">
+                    <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider mb-2">Idea</p>
+                    <textarea
+                      value={studioPost.angle || ""}
+                      onChange={e => setStudioPost(prev => ({ ...prev, angle: e.target.value }))}
+                      placeholder="What's the hook? One punchy line..."
+                      className="w-full bg-[#F7F8FA] rounded-lg px-3 py-2.5 text-sm text-[#1B1B1B] leading-relaxed resize-none outline-none placeholder:text-[#CCC] border border-[#E5E5EA] focus:border-[#1B1B1B] transition-colors"
+                      rows={2}
+                    />
+                  </div>
+
                   {/* ── Caption section ── */}
                   <div className="px-5 pt-4 pb-5 border-b border-[#F0F0F0]">
                     {/* Image preview */}
@@ -1205,29 +1208,49 @@ export default function CalendarPage() {
                       </label>
                     )}
 
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider">Caption</p>
-                      <button
-                        onClick={() => generateCaptions()}
-                        disabled={captionLoading}
-                        className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-[#7A7A7A] bg-[#F3F3F5] rounded-md hover:bg-[#EBEBEB] transition-colors disabled:opacity-50"
-                      >
-                        <SparklesIcon className="size-3" />
-                        {captionLoading ? "Generating..." : "AI Generate"}
-                      </button>
-                    </div>
-                    <textarea
-                      value={studioPost.caption || ""}
-                      onChange={e => setStudioPost(prev => ({ ...prev, caption: e.target.value }))}
-                      placeholder="Write your caption..."
-                      className="w-full bg-transparent text-sm text-[#1B1B1B] leading-relaxed resize-none outline-none placeholder:text-[#CCC] min-h-[80px]"
-                      rows={3}
-                    />
+                    {/* Caption — either show generate button or the written caption */}
+                    {!studioPost.caption ? (
+                      <div>
+                        <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider mb-3">Caption</p>
+                        <button
+                          onClick={() => generateCaptions()}
+                          disabled={captionLoading || !studioPost.angle?.trim()}
+                          className="w-full flex items-center justify-center gap-2 py-3 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40"
+                        >
+                          <SparklesIcon className="size-4" />
+                          {captionLoading ? "Generating captions..." : "Generate Caption from Idea"}
+                        </button>
+                        {!studioPost.angle?.trim() && (
+                          <p className="text-[10px] text-[#BBB] text-center mt-2">Write an idea above first</p>
+                        )}
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider">Caption</p>
+                          <button
+                            onClick={() => generateCaptions()}
+                            disabled={captionLoading}
+                            className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-[#7A7A7A] bg-[#F3F3F5] rounded-md hover:bg-[#EBEBEB] transition-colors disabled:opacity-50"
+                          >
+                            <SparklesIcon className="size-3" />
+                            {captionLoading ? "Generating..." : "Regenerate"}
+                          </button>
+                        </div>
+                        <textarea
+                          value={studioPost.caption || ""}
+                          onChange={e => setStudioPost(prev => ({ ...prev, caption: e.target.value }))}
+                          placeholder="Write your caption..."
+                          className="w-full bg-transparent text-sm text-[#1B1B1B] leading-relaxed resize-none outline-none placeholder:text-[#CCC] min-h-[80px]"
+                          rows={3}
+                        />
+                      </div>
+                    )}
 
                     {captionError && <p className="text-[11px] text-red-500 mt-2">{captionError}</p>}
                     {captions.length > 0 && (
                       <div className="space-y-2 mt-3 pt-3 border-t border-[#F0F0F0]">
-                        <p className="text-[10px] font-semibold text-[#AAA] uppercase tracking-wider">Variants</p>
+                        <p className="text-[10px] font-semibold text-[#AAA] uppercase tracking-wider">Pick a variant</p>
                         {captions.map((c, i) => (
                           <button
                             key={i}

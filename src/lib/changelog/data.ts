@@ -49,6 +49,9 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Clear All button in header to wipe all posts at once (with confirmation)" },
       { type: "improved", text: "Redesigned post edit panel — platform tabs always at top, clean caption area, inline settings rows (Format / Type / Schedule / Status) with consistent styling and dividers" },
       { type: "added", text: "Suggested posting times — when editing a post, analytics-based time suggestions appear below the schedule picker showing best times for that platform + day, click to apply" },
+      { type: "fixed", text: "Clicking calendar post cards now reliably opens the edit view instead of sometimes triggering the new post wizard" },
+      { type: "improved", text: "Idea-first content flow — posts show the angle/idea at the top, hit Generate Caption to create variants from it, pick one, then edit. No caption shown until you generate one" },
+      { type: "improved", text: "Weekly Draft now generates at least 3 article posts per week for authority building" },
     ],
   },
   {
