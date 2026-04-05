@@ -25,7 +25,7 @@ import { BrandedReport } from "@/components/branded-report";
 import { InternalSection } from "@/components/internal-section";
 
 /* ── Tab type ── */
-type Tab = "overview" | "timeline" | "testing" | "updates" | "scope" | "designs" | "development" | "results" | "requests" | "funnels" | "reports" | "internal";
+type Tab = "overview" | "timeline" | "testing" | "updates" | "scope" | "designs" | "development" | "build" | "results" | "requests" | "funnels" | "reports" | "internal";
 
 /* ── SVG Progress Ring ── */
 function ProgressRing({
@@ -171,6 +171,7 @@ function NavIcon({ type }: { type: Tab }) {
     case "requests": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" /></svg>;
     case "funnels": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd" /></svg>;
     case "reports": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" /></svg>;
+    case "build": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clipRule="evenodd" /><path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z" /></svg>;
     case "internal": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>;
     default: return null;
   }
@@ -227,7 +228,7 @@ export function PortalView({
       setActiveTab("testing");
     } else {
       setDrillView("project");
-      setActiveTab("timeline");
+      setActiveTab("scope");
     }
   };
 
@@ -254,7 +255,7 @@ export function PortalView({
   // Nav items depend on drill view
   const publishedReports = (portal.reports || []).filter((r) => r.published);
 
-  const internalTab = viewMode === "team" ? [{ key: "internal" as Tab, label: "Internal" }] : [];
+  const internalTab = viewMode === "team" ? [{ key: "internal" as Tab, label: "Handover" }] : [];
 
   const navItems: { key: Tab; label: string }[] = drillView === "home"
     ? [
@@ -272,10 +273,8 @@ export function PortalView({
       ]
     : [
         { key: "overview" as Tab, label: "Overview" },
-        { key: "timeline" as Tab, label: "Timeline" },
-        { key: "designs" as Tab, label: "Designs" },
-        { key: "development", label: "Development" },
-        { key: "scope", label: "Deliverables" },
+        { key: "scope" as Tab, label: "Scope & Timeline" },
+        { key: "build" as Tab, label: "Build" },
         ...(funnels.length > 0 ? [{ key: "funnels" as Tab, label: "Funnels" }] : []),
         ...(publishedReports.length > 0 ? [{ key: "reports" as Tab, label: "Reports" }] : []),
         ...internalTab,
@@ -378,12 +377,7 @@ export function PortalView({
                 onRequestClick={() => setShowRequestPopup(true)}
               />
             )}
-            {activeTab === "timeline" && !isRetainer && (
-              <>
-                <PageHeader title="Timeline" subtitle="Your project phases and milestones" />
-                <TimelineTab phases={activePhases} blockerHistory={portal.blocker_history} />
-              </>
-            )}
+            {/* timeline tab kept for backward compat but merged into scope */}
             {activeTab === "testing" && isRetainer && (
               <>
                 <PageHeader title="Weekly Testing" subtitle="Your testing cadence and schedule" />
@@ -401,22 +395,17 @@ export function PortalView({
             )}
             {activeTab === "scope" && (
               <>
-                <PageHeader title="Deliverables & Documents" subtitle="Everything included in your project" />
+                <PageHeader title="Scope & Timeline" subtitle="Deliverables, documents, and project phases" />
                 <ScopeTab scope={[]} deliverables={activeDeliverables} documents={activeDocuments} />
+                {!isRetainer && activePhases.length > 0 && (
+                  <div className="mt-8">
+                    <h3 className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">Timeline</h3>
+                    <TimelineTab phases={activePhases} blockerHistory={portal.blocker_history} />
+                  </div>
+                )}
               </>
             )}
-            {activeTab === "designs" && (
-              <>
-                <PageHeader title="Designs" subtitle="Review and approve design work" />
-                <DesignsTab
-                  reviews={reviews}
-                  reviewVersions={reviewVersions}
-                  reviewFeedback={reviewFeedback}
-                  portalToken={portal.token}
-                  clientName={portal.client_name}
-                />
-              </>
-            )}
+            {/* designs tab merged into build */}
             {activeTab === "results" && portal.show_results && (
               <>
                 <PageHeader title="Test Results" subtitle="A/B tests and optimisation results" />
@@ -432,117 +421,121 @@ export function PortalView({
                 <ResultsTab results={portal.results} />
               </>
             )}
-            {activeTab === "development" && (
+            {/* ── BUILD: Design + Development combined ── */}
+            {activeTab === "build" && (
               <>
-                <PageHeader title="Development" subtitle="Review staging pages and leave feedback" />
-                {hasPageReviews ? (
-                  <div className="space-y-4">
-                    {pageReviews.map((review) => {
-                      const versions = reviewVersions[review.id] || [];
-                      const latestVersion = versions[versions.length - 1];
-                      const fb = Object.values(reviewFeedback)
-                        .flat()
-                        .filter((f) => f.review_id === review.id);
+                <PageHeader title="Build" subtitle="Design and development version history" />
+                <div className="space-y-10">
+                  {/* Design Section */}
+                  <div>
+                    <h3 className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">Design</h3>
+                    {hasDesigns ? (
+                      <DesignsTab
+                        reviews={reviews}
+                        reviewVersions={reviewVersions}
+                        reviewFeedback={reviewFeedback}
+                        portalToken={portal.token}
+                        clientName={portal.client_name}
+                      />
+                    ) : (
+                      <div className="text-center py-12 border border-dashed border-[#E8E8E8] rounded-xl">
+                        <p className="text-sm text-[#AAA]">Design versions will appear here</p>
+                      </div>
+                    )}
+                  </div>
 
-                      return (
-                        <div key={review.id} className="border border-[#E8E8E8] rounded-xl bg-white overflow-hidden">
-                          {/* Page Header */}
-                          <div className="flex items-center justify-between px-5 py-3 border-b border-[#F0F0F0]">
-                            <div>
-                              <p className="text-sm font-semibold text-[#1A1A1A]">{review.title}</p>
-                              {review.description && (
-                                <p className="text-xs text-[#7A7A7A] mt-0.5">{review.description}</p>
-                              )}
-                            </div>
-                            <span className={`px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border ${
-                              review.status === "approved"
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                : review.status === "changes_requested"
-                                ? "bg-amber-50 text-amber-700 border-amber-200"
-                                : "bg-blue-50 text-blue-700 border-blue-200"
-                            }`}>
-                              {review.status === "changes_requested" ? "Changes Requested" : review.status === "approved" ? "Approved" : "In Review"}
-                            </span>
-                          </div>
+                  {/* Development Section */}
+                  <div>
+                    <h3 className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">Development</h3>
+                    {hasPageReviews ? (
+                      <div className="space-y-4">
+                        {pageReviews.map((review) => {
+                          const versions = reviewVersions[review.id] || [];
+                          const latestVersion = versions[versions.length - 1];
+                          const fb = Object.values(reviewFeedback)
+                            .flat()
+                            .filter((f) => f.review_id === review.id);
 
-                          {/* Version History */}
-                          <div className="px-5 py-3">
-                            {versions.length > 0 ? (
-                              <div className="space-y-2">
-                                {[...versions].reverse().map((v, i) => {
-                                  const isLatest = v.id === latestVersion?.id;
-                                  const vDate = new Date(v.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-                                  return (
-                                    <div key={v.id} className={`flex items-center justify-between p-3 rounded-lg ${isLatest ? "bg-[#F7F8FA] border border-[#E5E5EA]" : "bg-white"}`}>
-                                      <div className="flex items-center gap-3">
-                                        <span className={`inline-flex items-center justify-center size-7 rounded-full text-[11px] font-bold ${isLatest ? "bg-[#1A1A1A] text-white" : "bg-[#F0F0F0] text-[#777]"}`}>
-                                          V{v.version_number}
-                                        </span>
+                          return (
+                            <div key={review.id} className="border border-[#E8E8E8] rounded-xl bg-white overflow-hidden">
+                              <div className="flex items-center justify-between px-5 py-3 border-b border-[#F0F0F0]">
+                                <div>
+                                  <p className="text-sm font-semibold text-[#1A1A1A]">{review.title}</p>
+                                  {review.description && (
+                                    <p className="text-xs text-[#7A7A7A] mt-0.5">{review.description}</p>
+                                  )}
+                                </div>
+                                <span className={`px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border ${
+                                  review.status === "approved"
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    : review.status === "changes_requested"
+                                    ? "bg-amber-50 text-amber-700 border-amber-200"
+                                    : "bg-blue-50 text-blue-700 border-blue-200"
+                                }`}>
+                                  {review.status === "changes_requested" ? "Changes Requested" : review.status === "approved" ? "Approved" : "In Review"}
+                                </span>
+                              </div>
+                              <div className="px-5 py-3">
+                                {versions.length > 0 ? (
+                                  <div className="space-y-2">
+                                    {[...versions].reverse().map((v) => {
+                                      const isLatest = v.id === latestVersion?.id;
+                                      const vDate = new Date(v.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+                                      return (
+                                        <div key={v.id} className={`flex items-center justify-between p-3 rounded-lg ${isLatest ? "bg-[#F7F8FA] border border-[#E5E5EA]" : "bg-white"}`}>
+                                          <div className="flex items-center gap-3">
+                                            <span className={`inline-flex items-center justify-center size-7 rounded-full text-[11px] font-bold ${isLatest ? "bg-[#1A1A1A] text-white" : "bg-[#F0F0F0] text-[#777]"}`}>
+                                              V{v.version_number}
+                                            </span>
+                                            <div>
+                                              <p className="text-xs font-medium text-[#1A1A1A]">
+                                                Version {v.version_number}
+                                                {isLatest && <span className="ml-2 text-[10px] text-emerald-600 font-semibold">Latest</span>}
+                                              </p>
+                                              <p className="text-[10px] text-[#AAA]">{vDate}{v.notes ? ` — ${v.notes}` : ""}</p>
+                                            </div>
+                                          </div>
+                                          {v.staging_url && (
+                                            <a href={v.staging_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-white bg-[#1A1A1A] rounded-lg hover:bg-[#333] transition-colors">
+                                              <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5zm7.25-.75a.75.75 0 01.75-.75h3.5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0V6.31l-5.47 5.47a.75.75 0 01-1.06-1.06l5.47-5.47H12.25a.75.75 0 01-.75-.75z" clipRule="evenodd" /></svg>
+                                              Review Page
+                                            </a>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                ) : (
+                                  <p className="text-xs text-[#AAA] text-center py-4">Staging link coming soon</p>
+                                )}
+                              </div>
+                              {fb.length > 0 && (
+                                <div className="px-5 py-3 border-t border-[#F0F0F0] bg-[#FAFAFA]">
+                                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Feedback</p>
+                                  <div className="space-y-2">
+                                    {fb.map((item) => (
+                                      <div key={item.id} className="flex items-start gap-2">
+                                        <div className={`size-2 rounded-full mt-1.5 shrink-0 ${item.resolved ? "bg-emerald-400" : "bg-amber-400"}`} />
                                         <div>
-                                          <p className="text-xs font-medium text-[#1A1A1A]">
-                                            Version {v.version_number}
-                                            {isLatest && <span className="ml-2 text-[10px] text-emerald-600 font-semibold">Latest</span>}
-                                          </p>
-                                          <p className="text-[10px] text-[#AAA]">{vDate}{v.notes ? ` — ${v.notes}` : ""}</p>
+                                          <p className="text-xs text-[#1A1A1A]">{item.comment}</p>
+                                          <p className="text-[10px] text-[#AAA]">{item.submitted_by} · {new Date(item.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}{item.resolved && " · Resolved"}</p>
                                         </div>
                                       </div>
-                                      {v.staging_url && (
-                                        <a
-                                          href={v.staging_url}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-white bg-[#1A1A1A] rounded-lg hover:bg-[#333] transition-colors"
-                                        >
-                                          <svg className="size-3" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fillRule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5zm7.25-.75a.75.75 0 01.75-.75h3.5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0V6.31l-5.47 5.47a.75.75 0 01-1.06-1.06l5.47-5.47H12.25a.75.75 0 01-.75-.75z" clipRule="evenodd" />
-                                          </svg>
-                                          Review Page
-                                        </a>
-                                      )}
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            ) : (
-                              <p className="text-xs text-[#AAA] text-center py-4">Staging link coming soon</p>
-                            )}
-                          </div>
-
-                          {/* Feedback */}
-                          {fb.length > 0 && (
-                            <div className="px-5 py-3 border-t border-[#F0F0F0] bg-[#FAFAFA]">
-                              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Feedback</p>
-                              <div className="space-y-2">
-                                {fb.map((item) => (
-                                  <div key={item.id} className="flex items-start gap-2">
-                                    <div className={`size-2 rounded-full mt-1.5 shrink-0 ${item.resolved ? "bg-emerald-400" : "bg-amber-400"}`} />
-                                    <div>
-                                      <p className="text-xs text-[#1A1A1A]">{item.comment}</p>
-                                      <p className="text-[10px] text-[#AAA]">
-                                        {item.submitted_by} · {new Date(item.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                                        {item.resolved && " · Resolved"}
-                                      </p>
-                                    </div>
+                                    ))}
                                   </div>
-                                ))}
-                              </div>
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12 border border-dashed border-[#E8E8E8] rounded-xl">
+                        <p className="text-sm text-[#AAA]">Staging links and dev versions will appear here</p>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="text-center py-20">
-                    <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#F0F0F0] mb-4">
-                      <svg className="size-5 text-[#AAA]" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <p className="text-sm text-[#777] mb-1">Development updates coming soon</p>
-                    <p className="text-xs text-[#AAA]">Build progress and staging links will appear here</p>
-                  </div>
-                )}
+                </div>
               </>
             )}
             {activeTab === "funnels" && funnels.length > 0 && (
@@ -610,7 +603,7 @@ export function PortalView({
             )}
             {activeTab === "internal" && viewMode === "team" && selectedProject && (
               <>
-                <PageHeader title="Internal" subtitle="QA gates, project context, and weekly deliverables" />
+                <PageHeader title="Handover" subtitle="QA gates for each stage of the build" />
                 <TeamInternalView
                   project={selectedProject}
                   onUpdateProject={onUpdateProject ? (patch) => onUpdateProject(selectedProject.id, patch) : undefined}
@@ -2526,7 +2519,7 @@ function ReportsTab({ reports }: { reports: PortalReport[] }) {
   );
 }
 
-/* ─── Team Internal View (wrapper with role selector) ─── */
+/* ─── Team Internal View (all QA gates vertically, no role picker) ─── */
 function TeamInternalView({
   project,
   onUpdateProject,
@@ -2538,32 +2531,14 @@ function TeamInternalView({
   slackInternalChannelId?: string;
   clientName?: string;
 }) {
-  const [teamRole, setTeamRole] = useState("Designer");
-
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3 p-3 bg-[#FAFAFA] border border-[#E5E5EA] rounded-lg">
-        <span className="text-xs text-[#777]">I am a:</span>
-        {["Designer", "Developer", "CRO Strategist"].map((role) => (
-          <button
-            key={role}
-            onClick={() => setTeamRole(role)}
-            className={`px-3 py-1.5 text-[11px] font-medium rounded-full transition-colors ${
-              teamRole === role ? "bg-[#1A1A1A] text-white" : "bg-white text-[#777] border border-[#E5E5EA] hover:border-[#999]"
-            }`}
-          >
-            {role}
-          </button>
-        ))}
-      </div>
-      <InternalSection
-        project={project}
-        onUpdateProject={onUpdateProject || (async () => {})}
-        readOnly={true}
-        teamRole={teamRole}
-        slackInternalChannelId={slackInternalChannelId}
-        clientName={clientName}
-      />
-    </div>
+    <InternalSection
+      project={project}
+      onUpdateProject={onUpdateProject || (async () => {})}
+      readOnly={false}
+      gatesOnly
+      slackInternalChannelId={slackInternalChannelId}
+      clientName={clientName}
+    />
   );
 }
