@@ -55,6 +55,10 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Ajay/Dylan creator toggle — prominent switcher with avatar initials in the header, filters the entire calendar by person" },
       { type: "fixed", text: "Posts without a creator field (from previous sessions) now auto-migrate to Ajay on load, preventing ghost posts appearing on reload" },
       { type: "fixed", text: "Weekly Draft now replaces existing drafts for that week instead of stacking — no more 500 accumulated draft posts on reload" },
+      { type: "fixed", text: "Weekly Draft hard-capped to exactly 3 posts per day (21 total) — server-side enforcement so AI can never exceed the limit" },
+      { type: "fixed", text: "saveAll store layer now deletes removed rows from Supabase — previously only upserted, causing deleted posts to reappear on reload" },
+      { type: "fixed", text: "Load-time cleanup caps drafts to 3 per day per creator and permanently removes excess from Supabase" },
+      { type: "fixed", text: "Changelog now always reflects latest code entries — seed data in code overrides stale Supabase entries so version stays current" },
     ],
   },
   {
@@ -550,6 +554,11 @@ function ensureSeeded<T extends { id: string }>(key: string, seed: T[]): T[] {
 // ═══════════════════════════════════════════════════════════════════
 
 export async function getChangelog(): Promise<ChangelogEntry[]> {
+  // Seed data in code is always the source of truth for changelog.
+  // Merge: seed entries win over Supabase for matching IDs (so code updates are reflected),
+  // and any Supabase-only entries (user-created) are kept too.
+  let dbEntries: ChangelogEntry[] = [];
+
   if (isSupabaseConfigured()) {
     try {
       const { data, error } = await supabase
@@ -557,12 +566,40 @@ export async function getChangelog(): Promise<ChangelogEntry[]> {
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      if (data && data.length > 0) return data.map(mapChangelogRow);
+      if (data) dbEntries = data.map(mapChangelogRow);
     } catch {
-      /* fall through to localStorage */
+      /* fall through */
     }
   }
-  return ensureSeeded(CHANGELOG_KEY, seedChangelog);
+
+  // Build merged list: seed entries always override DB entries with same ID
+  const seedIds = new Set(seedChangelog.map(s => s.id));
+  const dbOnly = dbEntries.filter(e => !seedIds.has(e.id));
+  const merged = [...seedChangelog, ...dbOnly];
+
+  // Persist any new/updated seed entries to Supabase
+  if (isSupabaseConfigured() && dbEntries.length > 0) {
+    const dbMap = new Map(dbEntries.map(e => [e.id, e]));
+    for (const entry of seedChangelog) {
+      const existing = dbMap.get(entry.id);
+      if (!existing) {
+        // New seed entry — insert
+        supabase.from("changelog").insert({
+          id: entry.id, date: entry.date, version: entry.version,
+          title: entry.title, changes: entry.changes,
+          created_at: new Date().toISOString(),
+        }).then(() => {});
+      } else if (JSON.stringify(existing.changes) !== JSON.stringify(entry.changes)) {
+        // Updated seed entry — update
+        supabase.from("changelog").update({
+          date: entry.date, version: entry.version,
+          title: entry.title, changes: entry.changes,
+        }).eq("id", entry.id).then(() => {});
+      }
+    }
+  }
+
+  return merged;
 }
 
 // ═══════════════════════════════════════════════════════════════════
