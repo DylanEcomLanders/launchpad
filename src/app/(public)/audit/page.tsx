@@ -231,13 +231,13 @@ export default function AuditLandingPage() {
                     key={idx}
                     src={src}
                     alt=""
-                    className="shrink-0 w-[160px] h-[240px] object-cover rounded-xl border border-[#EBEBEB]"
+                    className="shrink-0 w-[160px] h-[360px] object-cover rounded-xl border border-[#EBEBEB]"
                   />
                 ))
               : Array.from({ length: 20 }, (_, idx) => (
                   <div
                     key={idx}
-                    className="shrink-0 w-[160px] h-[240px] bg-[#F5F5F5] rounded-xl border border-[#EBEBEB]"
+                    className="shrink-0 w-[160px] h-[360px] bg-[#F5F5F5] rounded-xl border border-[#EBEBEB]"
                   />
                 ))}
           </div>
@@ -246,8 +246,8 @@ export default function AuditLandingPage() {
       </div>
 
       {/* ── Footer ── */}
-      <footer className="relative w-full -mt-[120px]" style={{ backgroundColor: "#1B1B1B", boxShadow: "0 100px 0 0 #1B1B1B, 0 200px 0 0 #1B1B1B" }}>
-        <div className="max-w-6xl mx-auto px-6 md:px-10 pt-[140px] pb-6 flex items-center justify-between">
+      <footer className="relative w-full -mt-[160px]" style={{ backgroundColor: "#1B1B1B", boxShadow: "0 100px 0 0 #1B1B1B, 0 200px 0 0 #1B1B1B" }}>
+        <div className="max-w-6xl mx-auto px-6 md:px-10 pt-[180px] pb-6 flex items-center justify-between">
           <p className="text-sm md:text-base font-medium text-white tracking-tight" style={{ fontFamily: "var(--font-body)" }}>
             The Funnel Architects Behind <em className="font-medium">Shopify&apos;s Fastest-Growing Brands.</em>
           </p>
