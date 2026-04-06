@@ -1,5 +1,8 @@
 /* ── Typefully API proxy ── */
 
+// Increase body size limit for image uploads (base64 can be large)
+export const maxDuration = 30;
+
 import { NextRequest, NextResponse } from "next/server";
 import {
   listSocialSets,
@@ -7,7 +10,7 @@ import {
   createMultiPlatformDraft,
   scheduleBatch,
   listDrafts,
-  uploadMediaFromUrl,
+  initMediaUpload,
   type SchedulePostInput,
   type MultiPlatformPostInput,
 } from "@/lib/typefully";
@@ -78,27 +81,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ draft });
     }
 
-    // Upload media (base64 image → Typefully media_id)
-    if (action === "upload-media") {
-      const { base64_data } = body;
-      if (!base64_data) {
-        return NextResponse.json({ error: "base64_data required" }, { status: 400 });
+    // Step 1 of image upload: get presigned URL from Typefully (client will upload directly to S3)
+    if (action === "upload-media-init") {
+      const { filename, content_type } = body;
+      if (!filename || !content_type) {
+        return NextResponse.json({ error: "filename and content_type required" }, { status: 400 });
       }
-
-      // Parse data URL: "data:image/png;base64,..."
-      const match = base64_data.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
-      if (!match) {
-        return NextResponse.json({ error: "Invalid base64 image data" }, { status: 400 });
-      }
-
-      const contentType = match[1];
-      const raw = match[2];
-      const buffer = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
-      const ext = contentType.split("/")[1] || "png";
-      const filename = `launchpad-${Date.now()}.${ext}`;
-
-      const media_id = await uploadMediaFromUrl(social_set_id, filename, contentType, buffer);
-      return NextResponse.json({ media_id });
+      const result = await initMediaUpload(social_set_id, filename, content_type);
+      return NextResponse.json(result);
     }
 
     return NextResponse.json({ error: "Unknown action — use 'create', 'schedule-batch', or 'upload-media'" }, { status: 400 });
