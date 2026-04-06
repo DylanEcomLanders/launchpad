@@ -230,27 +230,24 @@ export default function AuditLandingPage() {
         </div>
 
         {/* ── Footer ── */}
-        <div className="w-full bg-[#1B1B1B]">
-          <div className="max-w-6xl mx-auto px-6 md:px-10 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex flex-col md:flex-row items-center gap-4">
-              <Logo height={16} className="text-white shrink-0" />
-              <p className="text-sm md:text-base font-medium text-white/80 tracking-tight" style={{ fontFamily: "var(--font-body)" }}>
-                The Funnel Architects Behind Shopify&apos;s Fastest-Growing Brands.
-              </p>
-            </div>
-            <div className="flex items-center gap-2.5 shrink-0">
-              <div className="w-8 h-8 bg-[#95BF47] rounded-lg flex items-center justify-center">
-                <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M15.337 3.415c-.15-.08-.3-.02-.345.13-.045.15-.54 1.05-.54 1.05s-.615-1.275-1.815-1.275c-.03 0-.06 0-.09.003C12.187 2.893 11.807 2.5 11.397 2.5c-2.31 0-3.42 2.895-3.765 4.365-.885.275-1.515.47-1.59.495-.495.155-.51.17-.575.64C5.432 8.27 4 19.695 4 19.695L15.59 21.5l.005-.02V3.54c-.105-.06-.18-.1-.258-.125zM12.052 5.55v.17c-.63.195-1.32.41-2.01.62.39-1.5.965-2.225 1.515-2.495.14.175.315.485.495 1.045v.66z"/></svg>
-              </div>
-              <div className="text-[10px] leading-tight font-semibold text-white/70 uppercase tracking-wider">
-                Shopify<br />Select Partner
-              </div>
-            </div>
+        <div className="w-full bg-[#1B1B1B] overflow-hidden">
+          {/* Top bar */}
+          <div className="max-w-6xl mx-auto px-6 md:px-10 pt-10 pb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <p className="text-base md:text-lg font-medium text-white tracking-tight" style={{ fontFamily: "var(--font-body)" }}>
+              The Funnel Architects Behind <em className="font-medium">Shopify&apos;s Fastest-Growing Brands.</em>
+            </p>
+            {/* Shopify Select Partner — replace src with your official logo file */}
+            <img
+              src="/shopify-select-partner.png"
+              alt="Shopify Select Partner"
+              className="h-10 md:h-12 w-auto shrink-0 opacity-90"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
           </div>
 
-          {/* Big Brand Text */}
-          <div className="w-full border-t border-white/10 py-6 overflow-hidden">
-            <p className="text-[6rem] md:text-[10rem] font-bold text-white/10 leading-none tracking-tighter text-center whitespace-nowrap select-none" style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}>
+          {/* Big Brand Text — bleeds off bottom */}
+          <div className="w-full px-4 pb-0 -mb-[0.15em]">
+            <p className="text-[6rem] md:text-[12rem] lg:text-[16rem] font-bold text-white leading-[0.85] tracking-tighter text-center whitespace-nowrap select-none" style={{ fontFamily: "var(--font-heading)" }}>
               ecomlanders
             </p>
           </div>
