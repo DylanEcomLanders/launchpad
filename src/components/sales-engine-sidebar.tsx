@@ -33,23 +33,31 @@ interface NavSection {
 
 const navSections: NavSection[] = [
   {
+    title: "Funnels",
+    icon: <FunnelIcon className="size-4" />,
+    defaultOpen: true,
+    items: [
+      { label: "Calendar", href: "/sales-engine/calendar" },
+      { label: "Funnel Planner", href: "/sales-engine/growth-engine" },
+      { label: "Lead Magnets", href: "/sales-engine/lead-magnets" },
+    ],
+  },
+  {
     title: "Content",
     icon: <svg className="size-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h9.621a1.5 1.5 0 011.06.44l2.379 2.379A1.5 1.5 0 0117 5.879V16.5a1.5 1.5 0 01-1.5 1.5h-12A1.5 1.5 0 012 16.5v-13zm4.75 7a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5zm0-3a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z" clipRule="evenodd" /></svg>,
     defaultOpen: true,
     items: [
       { label: "Articles", href: "/sales-engine/articles" },
-      { label: "Calendar", href: "/sales-engine/calendar" },
       { label: "Portfolio", href: "/sales-engine/portfolio" },
     ],
   },
   {
     title: "Pipeline",
-    icon: <FunnelIcon className="size-4" />,
+    icon: <svg className="size-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zM6 8a2 2 0 11-4 0 2 2 0 014 0zM1.49 15.326a.78.78 0 01-.358-.442 3 3 0 014.308-3.516 6.484 6.484 0 00-1.905 3.959c-.023.222-.014.442.025.654a4.97 4.97 0 01-2.07-.655zM16.44 15.98a4.97 4.97 0 002.07-.654.78.78 0 00.357-.442 3 3 0 00-4.308-3.517 6.484 6.484 0 011.907 3.96 2.32 2.32 0 01-.026.654zM18 8a2 2 0 11-4 0 2 2 0 014 0zM5.304 16.19a.844.844 0 01-.277-.71 5 5 0 019.947 0 .843.843 0 01-.277.71A6.975 6.975 0 0110 18a6.974 6.974 0 01-4.696-1.81z" /></svg>,
     defaultOpen: true,
     items: [
       { label: "Pipeline", href: "/sales-engine/pipeline" },
       { label: "Audits", href: "/sales-engine/audits" },
-      { label: "Funnels", href: "/sales-engine/growth-engine" },
     ],
   },
   {

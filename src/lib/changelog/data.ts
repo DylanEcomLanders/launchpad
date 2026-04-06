@@ -47,6 +47,8 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Pipeline source badges — kanban cards now show funnel and source tags so you can see where each lead came from" },
       { type: "improved", text: "Dashboard empty states — helpful messages with action links when no data exists yet instead of blank sections" },
       { type: "improved", text: "Recent leads on dashboard now show funnel and source badges inline" },
+      { type: "added", text: "Lead Magnets hub — view all lead magnet pages with pre-generated tracked links per team member and platform (X, LinkedIn, TikTok, Email). Copy any link with one click and see per-link view/lead stats" },
+      { type: "improved", text: "Sidebar restructured — Funnels (Calendar, Funnel Planner, Lead Magnets), Content (Articles, Portfolio), Pipeline, Revenue, Resources" },
     ],
   },
   {
