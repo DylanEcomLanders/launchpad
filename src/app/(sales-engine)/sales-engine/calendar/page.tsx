@@ -279,6 +279,9 @@ export default function CalendarPage() {
   // Typefully state
   const [typefullyLoading, setTypefullyLoading] = useState(false);
   const [typefullyResult, setTypefullyResult] = useState<{ sent: number; failed: number; failedErrors?: string[] } | null>(null);
+  const [showTypefullyModal, setShowTypefullyModal] = useState(false);
+  const [typefullyPlatforms, setTypefullyPlatforms] = useState<Set<Platform>>(new Set(["x", "linkedin"]));
+  const [typefullyAdapting, setTypefullyAdapting] = useState(false);
 
   // Drag & drop state
   const [dragPostId, setDragPostId] = useState<string | null>(null);
@@ -539,48 +542,65 @@ export default function CalendarPage() {
     setShowStudio(false);
   }
 
-  // ── Typefully: Schedule posts ──
-  async function scheduleToTypefully() {
-    // Get posts for the current week view that have captions
+  // ── Typefully: Open platform picker ──
+  function openTypefullyScheduler() {
     const allSchedulable = weekPosts.filter(p => p.caption && p.caption.trim());
     if (allSchedulable.length === 0) {
       alert("No posts with captions to schedule. Write your captions first!");
       return;
     }
-
     // Filter out posts scheduled in the past
     const now = new Date();
-    const schedulable = allSchedulable.filter(p => {
+    const future = allSchedulable.filter(p => {
+      const postDate = new Date(`${p.scheduled_date}T${p.scheduled_time || "09:00"}:00`);
+      return postDate > now;
+    });
+    if (future.length === 0) {
+      alert("All posts are scheduled in the past. Move them to a future date first.");
+      return;
+    }
+    setShowTypefullyModal(true);
+  }
+
+  function toggleTypefullyPlatform(p: Platform) {
+    setTypefullyPlatforms(prev => {
+      const next = new Set(prev);
+      if (next.has(p)) next.delete(p);
+      else next.add(p);
+      return next;
+    });
+  }
+
+  // ── Typefully: Schedule posts to selected platforms ──
+  async function scheduleToTypefully() {
+    const selectedPlatforms = Array.from(typefullyPlatforms);
+    if (selectedPlatforms.length === 0) {
+      alert("Select at least one platform");
+      return;
+    }
+
+    // Get future posts with captions
+    const now = new Date();
+    const schedulable = weekPosts.filter(p => {
+      if (!p.caption?.trim()) return false;
       const postDate = new Date(`${p.scheduled_date}T${p.scheduled_time || "09:00"}:00`);
       return postDate > now;
     });
 
-    const skipped = allSchedulable.length - schedulable.length;
-    if (schedulable.length === 0) {
-      alert(`All ${allSchedulable.length} post${allSchedulable.length > 1 ? "s" : ""} are scheduled in the past. Move them to a future date first.`);
-      return;
-    }
-
-    const count = schedulable.length;
-    const skippedMsg = skipped > 0 ? `\n\n(${skipped} post${skipped > 1 ? "s" : ""} in the past will be skipped)` : "";
-    if (!confirm(`Schedule ${count} post${count > 1 ? "s" : ""} to Typefully for this week?${skippedMsg}`)) return;
-
     setTypefullyLoading(true);
     setTypefullyResult(null);
+    setShowTypefullyModal(false);
 
     try {
-      // Step 1: Get social sets to find the right account
+      // Step 1: Get social sets
       const setsRes = await fetch("/api/typefully?action=social-sets");
       const setsData = await setsRes.json();
       if (!setsRes.ok) throw new Error(setsData.error || "Failed to load Typefully accounts");
-
       const sets = setsData.sets;
-      if (!sets || sets.length === 0) throw new Error("No Typefully accounts found. Connect an account in Typefully first.");
-
-      // Use the first social set (most users have one)
+      if (!sets || sets.length === 0) throw new Error("No Typefully accounts found.");
       const socialSetId = sets[0].id;
 
-      // Step 2: Upload images for posts that have media_data
+      // Step 2: Upload images
       const mediaIds: Record<string, string> = {};
       for (const p of schedulable) {
         if (p.media_data && (p.post_format === "image" || p.post_format === "video")) {
@@ -588,60 +608,133 @@ export default function CalendarPage() {
             const uploadRes = await fetch("/api/typefully", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                action: "upload-media",
-                social_set_id: socialSetId,
-                base64_data: p.media_data,
-              }),
+              body: JSON.stringify({ action: "upload-media", social_set_id: socialSetId, base64_data: p.media_data }),
             });
             const uploadData = await uploadRes.json();
-            if (uploadRes.ok && uploadData.media_id) {
-              mediaIds[p.id] = uploadData.media_id;
-            }
+            if (uploadRes.ok && uploadData.media_id) mediaIds[p.id] = uploadData.media_id;
           } catch (e) {
-            console.warn(`Failed to upload image for post ${p.id}:`, e);
+            console.warn(`Image upload failed for post ${p.id}:`, e);
           }
         }
       }
 
-      // Step 3: Build the batch payload
-      const batchPosts = schedulable.map(p => {
-        // Ensure time is properly formatted HH:mm
-        const timeParts = (p.scheduled_time || "09:00").split(":");
-        const hh = (timeParts[0] || "09").padStart(2, "0");
-        const mm = (timeParts[1] || "00").padStart(2, "0");
-        return {
-          text: p.caption,
-          platform: p.platform as "x" | "linkedin" | "instagram",
-          publish_at: `${p.scheduled_date}T${hh}:${mm}:00Z`,
-          ...(mediaIds[p.id] ? { media_ids: [mediaIds[p.id]] } : {}),
-        };
-      });
+      // Step 3: For each post, adapt caption for selected platforms and create multi-platform draft
+      let successCount = 0;
+      let failCount = 0;
+      const failedErrors: string[] = [];
 
-      // Step 4: Send the batch
-      const res = await fetch("/api/typefully", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "schedule-batch",
-          social_set_id: socialSetId,
-          posts: batchPosts,
-        }),
-      });
+      for (const p of schedulable) {
+        try {
+          // Get adapted captions for each selected platform
+          const platformCaptions: { platform: string; text: string; media_ids?: string[] }[] = [];
 
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Failed to schedule posts");
+          // Start with the post's own platform/caption
+          const postPlatform = p.platform as Platform;
+          const otherPlatforms = selectedPlatforms.filter(sp => sp !== postPlatform);
 
-      const sent = result.success?.length || 0;
-      const failed = result.errors?.length || 0;
-      const failedErrors = (result.errors || []).map((e: any) => e.error || "Unknown error");
-      if (failed > 0) {
-        console.error("Typefully scheduling errors:", result.errors);
+          // If the post's platform is selected, include it directly
+          if (selectedPlatforms.includes(postPlatform)) {
+            platformCaptions.push({
+              platform: postPlatform,
+              text: p.caption,
+              ...(mediaIds[p.id] ? { media_ids: [mediaIds[p.id]] } : {}),
+            });
+          }
+
+          // For other selected platforms, check for group siblings first, then adapt
+          if (otherPlatforms.length > 0) {
+            // Check if there are already saved sibling posts for these platforms
+            const siblings = p.group_id ? posts.filter(s => s.group_id === p.group_id && s.id !== p.id) : [];
+
+            const needAdapt: Platform[] = [];
+            for (const op of otherPlatforms) {
+              const sibling = siblings.find(s => s.platform === op && s.caption?.trim());
+              if (sibling) {
+                platformCaptions.push({
+                  platform: op,
+                  text: sibling.caption,
+                  ...(mediaIds[p.id] ? { media_ids: [mediaIds[p.id]] } : {}),
+                });
+              } else {
+                needAdapt.push(op);
+              }
+            }
+
+            // Adapt caption for platforms without siblings
+            if (needAdapt.length > 0) {
+              try {
+                const adaptRes = await fetch("/api/calendar/repurpose", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    sourcePlatform: platformLabels[postPlatform],
+                    sourceCaption: p.caption,
+                    sourceFormat: p.post_format || "text",
+                    contentType: contentTypeLabels[p.content_type || "educational"],
+                    targetPlatforms: needAdapt.map(np => platformLabels[np]),
+                  }),
+                });
+                const adaptData = await adaptRes.json();
+                if (adaptData.variants) {
+                  for (const v of adaptData.variants) {
+                    const vPlatform = (Object.entries(platformLabels).find(([, label]) => label.toLowerCase() === v.platform.toLowerCase())?.[0] || v.platform.toLowerCase()) as Platform;
+                    platformCaptions.push({
+                      platform: vPlatform,
+                      text: v.caption,
+                      ...(mediaIds[p.id] ? { media_ids: [mediaIds[p.id]] } : {}),
+                    });
+                  }
+                }
+              } catch (e) {
+                console.warn("Caption adaptation failed, using original:", e);
+                // Fallback: use original caption for all
+                for (const np of needAdapt) {
+                  platformCaptions.push({
+                    platform: np,
+                    text: p.caption,
+                    ...(mediaIds[p.id] ? { media_ids: [mediaIds[p.id]] } : {}),
+                  });
+                }
+              }
+            }
+          }
+
+          if (platformCaptions.length === 0) continue;
+
+          // Create multi-platform draft
+          const timeParts = (p.scheduled_time || "09:00").split(":");
+          const hh = (timeParts[0] || "09").padStart(2, "0");
+          const mm = (timeParts[1] || "00").padStart(2, "0");
+
+          const draftRes = await fetch("/api/typefully", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "create-multi",
+              social_set_id: socialSetId,
+              platforms: platformCaptions,
+              publish_at: `${p.scheduled_date}T${hh}:${mm}:00Z`,
+            }),
+          });
+
+          const draftData = await draftRes.json();
+          if (!draftRes.ok) throw new Error(draftData.error || "Draft creation failed");
+          successCount++;
+        } catch (e: any) {
+          failCount++;
+          failedErrors.push(e.message || "Unknown error");
+          console.error("Typefully scheduling error:", e);
+        }
       }
-      setTypefullyResult({ sent, failed, failedErrors });
+
+      setTypefullyResult({
+        sent: successCount,
+        failed: failCount,
+        failedErrors,
+      });
 
       // Mark successfully scheduled posts
-      if (sent > 0) {
+      if (successCount > 0) {
         const updated = allPosts.map(p => {
           if (schedulable.some(s => s.id === p.id)) {
             return { ...p, status: "scheduled" as PostStatus };
@@ -1259,7 +1352,7 @@ export default function CalendarPage() {
             Idea Engine
           </button>
           <button
-            onClick={scheduleToTypefully}
+            onClick={openTypefullyScheduler}
             disabled={typefullyLoading || weekPosts.filter(p => p.caption?.trim()).length === 0}
             className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-emerald-200 text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
@@ -1291,6 +1384,89 @@ export default function CalendarPage() {
             <XMarkIcon className="size-4" />
           </button>
         </div>
+      )}
+
+      {/* ── Typefully platform picker modal ── */}
+      {showTypefullyModal && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/20 animate-backdropFade" onClick={() => setShowTypefullyModal(false)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-[var(--shadow-elevated)] w-full max-w-sm p-6 animate-fadeInUp">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-base font-bold text-[#1B1B1B]">Schedule to Typefully</h3>
+                <button onClick={() => setShowTypefullyModal(false)} className="p-1 rounded-lg hover:bg-[#F3F3F5]">
+                  <XMarkIcon className="size-5 text-[#7A7A7A]" />
+                </button>
+              </div>
+
+              <p className="text-xs text-[#7A7A7A] mb-4">
+                Pick the platforms to post to. Captions will be automatically adapted for each platform.
+              </p>
+
+              <div className="space-y-2 mb-6">
+                {(["x", "linkedin", "instagram", "tiktok"] as Platform[]).map(p => {
+                  const selected = typefullyPlatforms.has(p);
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => toggleTypefullyPlatform(p)}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
+                        selected
+                          ? "border-[#1B1B1B] bg-[#F7F8FA]"
+                          : "border-[#E5E5EA] hover:border-[#C5C5C5]"
+                      }`}
+                    >
+                      <span
+                        className={`size-4 rounded border-2 flex items-center justify-center transition-colors ${
+                          selected ? "border-[#1B1B1B] bg-[#1B1B1B]" : "border-[#D4D4D4]"
+                        }`}
+                      >
+                        {selected && <CheckIcon className="size-2.5 text-white" />}
+                      </span>
+                      <span className="size-2.5 rounded-full" style={{ backgroundColor: platformColors[p] }} />
+                      <span className="text-sm font-medium text-[#1B1B1B]">{platformLabels[p]}</span>
+                      {p === "tiktok" && (
+                        <span className="text-[9px] text-[#AAA] ml-auto">via Threads</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Post count */}
+              {(() => {
+                const now = new Date();
+                const futureCount = weekPosts.filter(p => {
+                  if (!p.caption?.trim()) return false;
+                  return new Date(`${p.scheduled_date}T${p.scheduled_time || "09:00"}:00`) > now;
+                }).length;
+                return (
+                  <p className="text-xs text-[#999] mb-4">
+                    {futureCount} post{futureCount !== 1 ? "s" : ""} will be scheduled to {typefullyPlatforms.size} platform{typefullyPlatforms.size !== 1 ? "s" : ""}
+                    {typefullyPlatforms.size > 1 && " — captions auto-adapted per platform"}
+                  </p>
+                );
+              })()}
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowTypefullyModal(false)}
+                  className="flex-1 px-4 py-2.5 text-xs font-semibold border border-[#E5E5EA] text-[#7A7A7A] rounded-lg hover:bg-[#F5F5F5] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={scheduleToTypefully}
+                  disabled={typefullyPlatforms.size === 0}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-40"
+                >
+                  <ArrowUpTrayIcon className="size-3.5" />
+                  Schedule
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
       )}
 
       {/* ── Calendar header bar (like Untitled UI) ── */}

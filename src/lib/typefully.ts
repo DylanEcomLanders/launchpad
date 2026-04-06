@@ -33,6 +33,15 @@ export interface SchedulePostInput {
   media_ids?: string[];
 }
 
+export interface MultiPlatformPostInput {
+  platforms: {
+    platform: "x" | "linkedin" | "instagram" | "threads";
+    text: string;
+    media_ids?: string[];
+  }[];
+  publish_at: string;
+}
+
 // ── Map our platform names to Typefully's ──
 
 const PLATFORM_MAP: Record<string, string> = {
@@ -74,6 +83,44 @@ export async function createDraft(
         posts: [postObj],
       },
     },
+    publish_at: post.publish_at,
+  };
+
+  const res = await fetch(`${BASE}/social-sets/${socialSetId}/drafts`, {
+    method: "POST",
+    headers: headers(),
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const errBody = await res.text();
+    throw new Error(`Typefully createDraft failed (${res.status}): ${errBody}`);
+  }
+
+  return res.json();
+}
+
+/** Create a multi-platform scheduled draft on Typefully (one draft, multiple platforms) */
+export async function createMultiPlatformDraft(
+  socialSetId: number,
+  post: MultiPlatformPostInput
+): Promise<TypefullyDraft> {
+  const platforms: Record<string, unknown> = {};
+
+  for (const p of post.platforms) {
+    const mapped = PLATFORM_MAP[p.platform] || p.platform;
+    const postObj: Record<string, unknown> = { text: p.text };
+    if (p.media_ids && p.media_ids.length > 0) {
+      postObj.media_ids = p.media_ids;
+    }
+    platforms[mapped] = {
+      enabled: true,
+      posts: [postObj],
+    };
+  }
+
+  const body = {
+    platforms,
     publish_at: post.publish_at,
   };
 

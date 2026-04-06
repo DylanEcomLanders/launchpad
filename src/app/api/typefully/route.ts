@@ -4,10 +4,12 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   listSocialSets,
   createDraft,
+  createMultiPlatformDraft,
   scheduleBatch,
   listDrafts,
   uploadMediaFromUrl,
   type SchedulePostInput,
+  type MultiPlatformPostInput,
 } from "@/lib/typefully";
 
 /** GET — list social sets or drafts */
@@ -64,6 +66,16 @@ export async function POST(req: NextRequest) {
       }
       const result = await scheduleBatch(social_set_id, posts);
       return NextResponse.json(result);
+    }
+
+    // Multi-platform draft (one draft, multiple platforms with different captions)
+    if (action === "create-multi") {
+      const { platforms: platformInputs, publish_at } = body;
+      if (!platformInputs || !Array.isArray(platformInputs) || platformInputs.length === 0 || !publish_at) {
+        return NextResponse.json({ error: "platforms array and publish_at required" }, { status: 400 });
+      }
+      const draft = await createMultiPlatformDraft(social_set_id, { platforms: platformInputs, publish_at });
+      return NextResponse.json({ draft });
     }
 
     // Upload media (base64 image → Typefully media_id)
