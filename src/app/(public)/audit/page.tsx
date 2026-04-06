@@ -245,10 +245,8 @@ export default function AuditLandingPage() {
 
       </div>
 
-      {/* ── Footer — overlaps bottom of portfolio strip ── */}
-      <footer className="relative z-10 w-full -mt-[60px]" style={{ backgroundColor: "#1B1B1B", boxShadow: "0 100px 0 0 #1B1B1B, 0 200px 0 0 #1B1B1B" }}>
-        {/* Spacer for the overlap zone */}
-        <div className="h-[60px]" />
+      {/* ── Footer ── */}
+      <footer className="w-full" style={{ backgroundColor: "#1B1B1B", boxShadow: "0 100px 0 0 #1B1B1B, 0 200px 0 0 #1B1B1B" }}>
         <div className="max-w-6xl mx-auto px-6 md:px-10 py-6 flex items-center justify-between">
           <p className="text-sm md:text-base font-medium text-white tracking-tight" style={{ fontFamily: "var(--font-body)" }}>
             The Funnel Architects Behind <em className="font-medium">Shopify&apos;s Fastest-Growing Brands.</em>
