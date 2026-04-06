@@ -32,6 +32,9 @@ export default async function PortfolioV2IndexPage() {
         <p className="text-white/60 text-base md:text-lg mt-5 max-w-2xl">
           Over 4,000+ pages and counting, here&rsquo;s a few of our favourites...
         </p>
+        <p className="text-white/40 text-xs md:text-sm mt-3 uppercase tracking-wider">
+          Click any thumbnail to view the full design →
+        </p>
       </section>
 
       <section className="max-w-7xl mx-auto px-6 md:px-10 pb-24">
