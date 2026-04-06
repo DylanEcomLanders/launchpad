@@ -54,6 +54,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "fixed", text: "Calendar grid now fills the full viewport height — no more grey dead space below the week/month grid" },
       { type: "fixed", text: "Typefully now sends correct per-platform captions instead of duplicating one caption to both X and LinkedIn" },
       { type: "fixed", text: "Images now upload to Typefully correctly — pasted screenshots auto-set format to image, and upload runs regardless of post format" },
+      { type: "fixed", text: "Typefully now creates separate drafts per platform — guarantees X and LinkedIn each get their own caption and image instead of one shared draft" },
     ],
   },
   {

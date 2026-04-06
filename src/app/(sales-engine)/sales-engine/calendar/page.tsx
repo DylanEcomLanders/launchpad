@@ -626,6 +626,7 @@ export default function CalendarPage() {
   }
 
   // ── Typefully: Schedule posts to selected platforms ──
+  // Creates ONE SEPARATE DRAFT PER PLATFORM so each gets its own caption and image.
   async function scheduleToTypefully() {
     const selectedPlatforms = Array.from(typefullyPlatforms);
     if (selectedPlatforms.length === 0) {
@@ -654,74 +655,73 @@ export default function CalendarPage() {
       if (!sets || sets.length === 0) throw new Error("No Typefully accounts found.");
       const socialSetId = sets[0].id;
 
-      // Step 2: Upload images
+      // Step 2: Upload images — one per post
       const mediaIds: Record<string, string> = {};
       for (const p of schedulable) {
         if (p.media_data) {
           try {
+            console.log(`[Typefully] Uploading image for post ${p.id} (${p.media_data.slice(0, 30)}...)`);
             const uploadRes = await fetch("/api/typefully", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ action: "upload-media", social_set_id: socialSetId, base64_data: p.media_data }),
             });
             const uploadData = await uploadRes.json();
-            if (uploadRes.ok && uploadData.media_id) mediaIds[p.id] = uploadData.media_id;
+            console.log(`[Typefully] Upload response:`, uploadRes.status, uploadData);
+            if (uploadRes.ok && uploadData.media_id) {
+              mediaIds[p.id] = uploadData.media_id;
+            } else {
+              console.error(`[Typefully] Image upload failed:`, uploadData);
+            }
           } catch (e) {
-            console.warn(`Image upload failed for post ${p.id}:`, e);
+            console.error(`[Typefully] Image upload exception for post ${p.id}:`, e);
           }
         }
       }
 
-      // Step 3: For each post, adapt caption for selected platforms and create multi-platform draft
+      // Step 3: Create ONE DRAFT PER PLATFORM per post (separate drafts = guaranteed different captions)
       let successCount = 0;
       let failCount = 0;
       const failedErrors: string[] = [];
 
       for (const p of schedulable) {
-        try {
-          // Build platform captions from post data
-          const postPlatforms = p.platforms || [p.platform];
-          // Filter to only platforms selected in the modal
-          const targetPlats = postPlatforms.filter((pp: Platform) => selectedPlatforms.includes(pp));
-          if (targetPlats.length === 0) continue;
+        const postPlatforms = p.platforms || [p.platform];
+        const targetPlats = postPlatforms.filter((pp: Platform) => selectedPlatforms.includes(pp));
+        if (targetPlats.length === 0) continue;
 
-          const platCaptions: { platform: string; text: string; media_ids?: string[] }[] = [];
+        const timeParts = (p.scheduled_time || "09:00").split(":");
+        const hh = (timeParts[0] || "09").padStart(2, "0");
+        const mm = (timeParts[1] || "00").padStart(2, "0");
+        const publishAt = new Date(`${p.scheduled_date}T${hh}:${mm}:00`).toISOString();
 
-          for (const tp of targetPlats) {
-            // Use platform_captions if available, otherwise use main caption
+        for (const tp of targetPlats) {
+          try {
+            // Use platform-specific caption, fall back to main caption
             const caption = p.platform_captions?.[tp as Platform] || p.caption;
-            platCaptions.push({
-              platform: tp,
-              text: caption,
-              ...(mediaIds[p.id] ? { media_ids: [mediaIds[p.id]] } : {}),
+            console.log(`[Typefully] Creating draft for ${tp}: "${caption?.slice(0, 50)}..." media_id=${mediaIds[p.id] || "none"}`);
+
+            const draftRes = await fetch("/api/typefully", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                action: "create",
+                social_set_id: socialSetId,
+                text: caption,
+                platform: tp,
+                publish_at: publishAt,
+                ...(mediaIds[p.id] ? { media_ids: [mediaIds[p.id]] } : {}),
+              }),
             });
+
+            const draftData = await draftRes.json();
+            console.log(`[Typefully] Draft response (${tp}):`, draftRes.status, draftData);
+            if (!draftRes.ok) throw new Error(draftData.error || `Draft creation failed for ${tp}`);
+            successCount++;
+          } catch (e: any) {
+            failCount++;
+            failedErrors.push(`${tp}: ${e.message || "Unknown error"}`);
+            console.error(`[Typefully] Draft error (${tp}):`, e);
           }
-
-          if (platCaptions.length === 0) continue;
-
-          // Create multi-platform draft with correct timezone
-          const timeParts = (p.scheduled_time || "09:00").split(":");
-          const hh = (timeParts[0] || "09").padStart(2, "0");
-          const mm = (timeParts[1] || "00").padStart(2, "0");
-
-          const draftRes = await fetch("/api/typefully", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              action: "create-multi",
-              social_set_id: socialSetId,
-              platforms: platCaptions,
-              publish_at: new Date(`${p.scheduled_date}T${hh}:${mm}:00`).toISOString(),
-            }),
-          });
-
-          const draftData = await draftRes.json();
-          if (!draftRes.ok) throw new Error(draftData.error || "Draft creation failed");
-          successCount++;
-        } catch (e: any) {
-          failCount++;
-          failedErrors.push(e.message || "Unknown error");
-          console.error("Typefully scheduling error:", e);
         }
       }
 
