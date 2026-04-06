@@ -139,7 +139,7 @@ export default function AuditLandingPage() {
           </h1>
 
           {/* Subtext */}
-          <p className="text-[15px] md:text-lg text-[#666] leading-[1.7] max-w-2xl mx-auto mb-10" style={{ fontFamily: "var(--font-body)" }}>
+          <p className="text-[15px] md:text-lg text-[#666] leading-[1.7] max-w-3xl mx-auto mb-10" style={{ fontFamily: "var(--font-body)" }}>
             We&apos;ve built and delivered over <strong className="text-[#1B1B1B]">3,500+ product pages</strong> to some of the fastest growing DTC ecom brands in the world. Now we&apos;re giving away the same auditing framework - completely free - so you can find exactly what&apos;s stopping you from reaching &pound;100k+ / month.
           </p>
 
