@@ -12,6 +12,20 @@ export default function AuditLandingPage() {
   const [error, setError] = useState("");
   const [source, setSource] = useState("direct");
 
+  // Force dark bg on body/main to prevent white strip below footer
+  useEffect(() => {
+    const body = document.body;
+    const main = body.querySelector("main");
+    const prevBodyBg = body.style.backgroundColor;
+    const prevMainBg = main?.style.backgroundColor || "";
+    body.style.backgroundColor = "#1B1B1B";
+    if (main) main.style.backgroundColor = "#1B1B1B";
+    return () => {
+      body.style.backgroundColor = prevBodyBg;
+      if (main) main.style.backgroundColor = prevMainBg;
+    };
+  }, []);
+
   // Capture UTM/ref param on mount + fire view event
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -248,19 +262,14 @@ export default function AuditLandingPage() {
         </div>
       </div>
 
-      {/* Scroll animation + override parent bg */}
-      <style jsx global>{`
+      {/* Scroll animation */}
+      <style jsx>{`
         @keyframes scroll {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
         }
         .animate-scroll {
           animation: scroll 30s linear infinite;
-        }
-        html, body, main {
-          background-color: #1B1B1B !important;
-          margin: 0 !important;
-          padding: 0 !important;
         }
       `}</style>
     </div>
