@@ -49,6 +49,8 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "fixed", text: "Typefully timezone — posts now schedule at the correct local time instead of 1 hour late (BST/UTC conversion fix)" },
       { type: "improved", text: "Simplified status — only Draft and Scheduled. Sending to Typefully auto-sets to Scheduled" },
       { type: "removed", text: "Removed Instagram and TikTok from content calendar — focused on X and LinkedIn for now" },
+      { type: "added", text: "Voice profile system — per-creator tone, avoid list, writing rules, example posts, and voice notes that feed directly into caption generation" },
+      { type: "added", text: "Self-improving captions — when you edit a generated caption before saving, the before/after is tracked and fed into future generations so the AI learns your style" },
     ],
   },
   {
