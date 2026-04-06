@@ -31,6 +31,8 @@ export interface SchedulePostInput {
   platform: "x" | "linkedin" | "instagram" | "threads";
   publish_at: string; // ISO 8601
   media_ids?: string[];
+  auto_plug_enabled?: boolean;
+  auto_retweet_enabled?: boolean;
 }
 
 export interface MultiPlatformPostInput {
@@ -74,7 +76,7 @@ export async function createDraft(
     postObj.media_ids = post.media_ids;
   }
 
-  const body = {
+  const body: Record<string, unknown> = {
     platforms: {
       [platform]: {
         enabled: true,
@@ -83,6 +85,11 @@ export async function createDraft(
     },
     publish_at: post.publish_at,
   };
+  // Only meaningful for X — Typefully ignores on other platforms
+  if (platform === "x") {
+    if (post.auto_plug_enabled) body.auto_plug_enabled = true;
+    if (post.auto_retweet_enabled) body.auto_retweet_enabled = true;
+  }
 
   const res = await fetch(`${BASE}/social-sets/${socialSetId}/drafts`, {
     method: "POST",

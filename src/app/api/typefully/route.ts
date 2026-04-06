@@ -62,11 +62,18 @@ export async function POST(req: NextRequest) {
 
     // Single draft
     if (action === "create") {
-      const { text, platform, publish_at, media_ids } = body;
+      const { text, platform, publish_at, media_ids, auto_plug_enabled, auto_retweet_enabled } = body;
       if (!text || !platform || !publish_at) {
         return NextResponse.json({ error: "text, platform, publish_at required" }, { status: 400 });
       }
-      const draft = await createDraft(social_set_id, { text, platform, publish_at, media_ids });
+      const draft = await createDraft(social_set_id, {
+        text,
+        platform,
+        publish_at,
+        media_ids,
+        auto_plug_enabled,
+        auto_retweet_enabled,
+      });
       return NextResponse.json({ draft });
     }
 

@@ -292,6 +292,16 @@ export default function CalendarPage() {
   const [showTypefullyModal, setShowTypefullyModal] = useState(false);
   const [typefullyPlatforms, setTypefullyPlatforms] = useState<Set<Platform>>(new Set(["x", "linkedin"]));
   const [typefullyAdapting, setTypefullyAdapting] = useState(false);
+  const [autoPlugX, setAutoPlugX] = useState(false);
+  const [autoRetweetX, setAutoRetweetX] = useState(false);
+
+  // Persist X automation toggles
+  useEffect(() => {
+    setAutoPlugX(localStorage.getItem("typefully_autoplug_x") === "1");
+    setAutoRetweetX(localStorage.getItem("typefully_autort_x") === "1");
+  }, []);
+  useEffect(() => { localStorage.setItem("typefully_autoplug_x", autoPlugX ? "1" : "0"); }, [autoPlugX]);
+  useEffect(() => { localStorage.setItem("typefully_autort_x", autoRetweetX ? "1" : "0"); }, [autoRetweetX]);
 
   // Voice profile state
   const [showVoice, setShowVoice] = useState(false);
@@ -736,6 +746,8 @@ export default function CalendarPage() {
                 platform: tp,
                 publish_at: publishAt,
                 ...(mediaIds[p.id] ? { media_ids: [mediaIds[p.id]] } : {}),
+                ...(tp === "x" && autoPlugX ? { auto_plug_enabled: true } : {}),
+                ...(tp === "x" && autoRetweetX ? { auto_retweet_enabled: true } : {}),
               }),
             });
 
@@ -1479,6 +1491,31 @@ export default function CalendarPage() {
                   );
                 })}
               </div>
+
+              {/* X automation toggles */}
+              {typefullyPlatforms.has("x") && (
+                <div className="mb-4 p-3 border border-[#EDEDEF] rounded-lg space-y-2">
+                  <p className="text-[10px] uppercase tracking-wider text-[#999] font-semibold">X Automation (uses your Typefully defaults)</p>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={autoPlugX}
+                      onChange={(e) => setAutoPlugX(e.target.checked)}
+                      className="size-3.5"
+                    />
+                    <span className="text-xs text-[#1B1B1B]">Auto-plug</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={autoRetweetX}
+                      onChange={(e) => setAutoRetweetX(e.target.checked)}
+                      className="size-3.5"
+                    />
+                    <span className="text-xs text-[#1B1B1B]">Auto-retweet</span>
+                  </label>
+                </div>
+              )}
 
               {/* Post count */}
               {(() => {
