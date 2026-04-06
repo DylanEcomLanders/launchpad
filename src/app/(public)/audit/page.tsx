@@ -208,33 +208,33 @@ export default function AuditLandingPage() {
           </form>
         </div>
 
-        {/* ── Portfolio Strip + Footer (footer overlaps strip) ── */}
+        {/* ── Footer with portfolio overlapping into it ── */}
         <div className="relative w-full">
-          {/* Portfolio images */}
-          <div className="w-full overflow-hidden py-8 pb-32">
-            <div className="flex gap-4 animate-scroll">
-              {portfolioImages.length > 0
-                ? [...portfolioImages, ...portfolioImages].map((src, idx) => (
-                    <img
-                      key={idx}
-                      src={src}
-                      alt=""
-                      className="shrink-0 w-[160px] h-[240px] object-cover rounded-xl border border-[#EBEBEB]"
-                    />
-                  ))
-                : Array.from({ length: 20 }, (_, idx) => (
-                    <div
-                      key={idx}
-                      className="shrink-0 w-[160px] h-[240px] bg-[#F5F5F5] rounded-xl border border-[#EBEBEB]"
-                    />
-                  ))}
+          {/* Dark background — full bleed */}
+          <div className="w-full bg-[#1B1B1B]">
+            {/* Portfolio strip — sits on top, overlapping into the dark bg */}
+            <div className="w-full overflow-hidden pt-8 pb-6 -mt-0" style={{ transform: "translateY(-50%)" }}>
+              <div className="flex gap-4 animate-scroll">
+                {portfolioImages.length > 0
+                  ? [...portfolioImages, ...portfolioImages].map((src, idx) => (
+                      <img
+                        key={idx}
+                        src={src}
+                        alt=""
+                        className="shrink-0 w-[160px] h-[240px] object-cover rounded-xl border border-[#EBEBEB]"
+                      />
+                    ))
+                  : Array.from({ length: 20 }, (_, idx) => (
+                      <div
+                        key={idx}
+                        className="shrink-0 w-[160px] h-[240px] bg-[#F5F5F5] rounded-xl border border-[#EBEBEB]"
+                      />
+                    ))}
+              </div>
             </div>
-          </div>
 
-          {/* Footer — overlaps portfolio strip */}
-          <div className="absolute bottom-0 left-0 right-0 bg-[#1B1B1B] overflow-hidden rounded-t-2xl" style={{ height: "clamp(280px, 40vw, 420px)" }}>
-            {/* Top bar */}
-            <div className="max-w-6xl mx-auto px-6 md:px-10 pt-8 pb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            {/* Tagline + Shopify badge */}
+            <div className="max-w-6xl mx-auto px-6 md:px-10 pb-6 -mt-16 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <p className="text-base md:text-lg font-medium text-white tracking-tight" style={{ fontFamily: "var(--font-body)" }}>
                 The Funnel Architects Behind <em className="font-medium">Shopify&apos;s Fastest-Growing Brands.</em>
               </p>
@@ -249,9 +249,9 @@ export default function AuditLandingPage() {
               </div>
             </div>
 
-            {/* Big Brand Text — clipped at bottom */}
-            <div className="w-full overflow-hidden flex-1">
-              <p className="text-[6rem] md:text-[12rem] lg:text-[16rem] font-bold text-white leading-[0.85] tracking-tighter text-center whitespace-nowrap select-none" style={{ fontFamily: "var(--font-heading)" }}>
+            {/* Big Brand Text — clipped at bottom of page */}
+            <div className="w-full overflow-hidden" style={{ maxHeight: "clamp(150px, 18vw, 300px)" }}>
+              <p className="text-[6rem] md:text-[12rem] lg:text-[16rem] font-bold text-white leading-[0.82] tracking-tighter text-center whitespace-nowrap select-none" style={{ fontFamily: "var(--font-heading)" }}>
                 ecomlanders
               </p>
             </div>
