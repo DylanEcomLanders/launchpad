@@ -257,8 +257,10 @@ export default function AuditLandingPage() {
         .animate-scroll {
           animation: scroll 30s linear infinite;
         }
-        body, main {
+        html, body, main {
           background-color: #1B1B1B !important;
+          margin: 0 !important;
+          padding: 0 !important;
         }
       `}</style>
     </div>
