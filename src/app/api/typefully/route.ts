@@ -10,7 +10,7 @@ import {
   createMultiPlatformDraft,
   scheduleBatch,
   listDrafts,
-  initMediaUpload,
+  uploadMedia,
   type SchedulePostInput,
   type MultiPlatformPostInput,
 } from "@/lib/typefully";
@@ -81,14 +81,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ draft });
     }
 
-    // Step 1 of image upload: get presigned URL from Typefully (client will upload directly to S3)
-    if (action === "upload-media-init") {
-      const { filename } = body;
-      if (!filename) {
-        return NextResponse.json({ error: "filename required" }, { status: 400 });
+    // Upload media: base64 → server-side S3 upload (avoids CORS issues)
+    if (action === "upload-media") {
+      const { base64_data } = body;
+      if (!base64_data) {
+        return NextResponse.json({ error: "base64_data required" }, { status: 400 });
       }
-      const result = await initMediaUpload(social_set_id, filename);
-      return NextResponse.json(result);
+
+      const match = base64_data.match(/^data:(image\/[a-zA-Z+\-.]+);base64,(.+)$/);
+      if (!match) {
+        console.error("[Typefully] Invalid base64 format:", base64_data.slice(0, 60));
+        return NextResponse.json({ error: "Invalid base64 image data" }, { status: 400 });
+      }
+
+      const contentType = match[1];
+      const raw = match[2];
+      const buffer = Buffer.from(raw, "base64");
+      const ext = contentType.split("/")[1]?.replace("+xml", "") || "png";
+      const filename = `launchpad_${Date.now()}.${ext}`;
+
+      console.log(`[Typefully] Server uploading ${filename} (${buffer.length} bytes)`);
+      const media_id = await uploadMedia(social_set_id, filename, new Uint8Array(buffer));
+      console.log(`[Typefully] Upload success: ${media_id}`);
+      return NextResponse.json({ media_id });
     }
 
     return NextResponse.json({ error: "Unknown action — use 'create', 'schedule-batch', or 'upload-media'" }, { status: 400 });

@@ -136,11 +136,13 @@ export async function createMultiPlatformDraft(
   return res.json();
 }
 
-/** Get presigned upload URL from Typefully — client will upload directly to S3 */
-export async function initMediaUpload(
+/** Upload media to Typefully — full server-side flow (init + S3 PUT) */
+export async function uploadMedia(
   socialSetId: number,
   fileName: string,
-): Promise<{ media_id: string; upload_url: string }> {
+  fileBuffer: Uint8Array,
+): Promise<string> {
+  // Step 1: Get presigned upload URL
   const initRes = await fetch(`${BASE}/social-sets/${socialSetId}/media/upload`, {
     method: "POST",
     headers: headers(),
@@ -153,7 +155,18 @@ export async function initMediaUpload(
   }
 
   const { media_id, upload_url } = await initRes.json();
-  return { media_id, upload_url };
+
+  // Step 2: PUT raw bytes to S3 — no extra headers per Typefully docs
+  const uploadRes = await fetch(upload_url, {
+    method: "PUT",
+    body: fileBuffer as unknown as BodyInit,
+  });
+
+  if (!uploadRes.ok && uploadRes.status !== 204) {
+    throw new Error(`S3 upload failed (${uploadRes.status})`);
+  }
+
+  return media_id;
 }
 
 /** Schedule a batch of posts — returns results for each */

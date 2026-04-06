@@ -655,53 +655,24 @@ export default function CalendarPage() {
       if (!sets || sets.length === 0) throw new Error("No Typefully accounts found.");
       const socialSetId = sets[0].id;
 
-      // Step 2: Upload images — get presigned URL from our API, then upload directly to S3 from browser
-      // This avoids sending the full base64 image through our API route (body size limits)
+      // Step 2: Upload images server-side (base64 → API route → Typefully S3)
       const mediaIds: Record<string, string> = {};
       for (const p of schedulable) {
         if (p.media_data) {
           try {
-            // Parse the data URL to get content type and raw bytes
-            const dataMatch = p.media_data.match(/^data:(image\/[a-zA-Z+\-.]+);base64,(.+)$/);
-            if (!dataMatch) {
-              console.error(`[Typefully] Invalid image data format for post ${p.id}`);
-              continue;
-            }
-            const contentType = dataMatch[1];
-            const raw = dataMatch[2];
-            const ext = contentType.split("/")[1]?.replace("+xml", "") || "png";
-            const filename = `launchpad-${Date.now()}.${ext}`;
-
-            // Step 2a: Get presigned upload URL from Typefully (via our API to keep the key server-side)
-            console.log(`[Typefully] Requesting upload URL for ${filename}`);
-            const initRes = await fetch("/api/typefully", {
+            console.log(`[Typefully] Uploading image for post ${p.id}...`);
+            const uploadRes = await fetch("/api/typefully", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ action: "upload-media-init", social_set_id: socialSetId, filename }),
+              body: JSON.stringify({ action: "upload-media", social_set_id: socialSetId, base64_data: p.media_data }),
             });
-            const initData = await initRes.json();
-            if (!initRes.ok || !initData.media_id || !initData.upload_url) {
-              console.error(`[Typefully] Failed to get upload URL:`, initData);
-              continue;
-            }
-
-            // Step 2b: Convert base64 to binary and upload directly to S3
-            // Typefully docs: "send a plain PUT with only raw file bytes — no extra headers"
-            const binaryStr = atob(raw);
-            const bytes = new Uint8Array(binaryStr.length);
-            for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
-
-            console.log(`[Typefully] Uploading ${bytes.length} bytes to S3...`);
-            const s3Res = await fetch(initData.upload_url, {
-              method: "PUT",
-              body: bytes,
-            });
-
-            if (s3Res.ok || s3Res.status === 204) {
-              mediaIds[p.id] = initData.media_id;
-              console.log(`[Typefully] Image uploaded, media_id: ${initData.media_id}`);
+            const uploadData = await uploadRes.json();
+            console.log(`[Typefully] Upload response:`, uploadRes.status, uploadData);
+            if (uploadRes.ok && uploadData.media_id) {
+              mediaIds[p.id] = uploadData.media_id;
+              console.log(`[Typefully] Image uploaded, media_id: ${uploadData.media_id}`);
             } else {
-              console.error(`[Typefully] S3 upload failed (${s3Res.status})`);
+              console.error(`[Typefully] Image upload failed:`, uploadData);
             }
           } catch (e) {
             console.error(`[Typefully] Image upload exception for post ${p.id}:`, e);
