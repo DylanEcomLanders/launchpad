@@ -47,8 +47,6 @@ export interface MultiPlatformPostInput {
 const PLATFORM_MAP: Record<string, string> = {
   x: "x",
   linkedin: "linkedin",
-  instagram: "instagram",
-  tiktok: "threads", // closest match — TikTok not natively supported
 };
 
 // ── API Methods ──

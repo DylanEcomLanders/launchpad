@@ -5,20 +5,23 @@ import { createStore } from "@/lib/supabase-store";
 // ── Types ──
 
 export type Creator = "ajay" | "dylan";
-export type Platform = "linkedin" | "instagram" | "x" | "tiktok";
+export type Platform = "linkedin" | "x";
 export type ContentType = "educational" | "social_proof" | "personal" | "promotional";
-export type PostStatus = "draft" | "created" | "scheduled";
+export type PostStatus = "draft" | "scheduled";
 export type PostFormat = "text" | "image" | "article" | "video";
+export type CaptionLength = "short" | "medium" | "long";
 
 export interface ContentPost {
   id: string;
   creator: Creator;
   group_id?: string; // links repurposed variants together
   platform: Platform;
+  platforms?: Platform[]; // multi-platform target (X + LinkedIn)
   content_type: ContentType;
   post_format: PostFormat;
   angle?: string; // the idea/hook — one punchy line
   caption: string; // the full written caption (generated from angle)
+  platform_captions?: Partial<Record<Platform, string>>; // per-platform adapted captions
   status: PostStatus;
   scheduled_date: string; // ISO date
   scheduled_time: string; // HH:mm
@@ -39,16 +42,12 @@ export interface ContentIdea {
 
 export const platformColors: Record<Platform, string> = {
   linkedin: "#0A66C2",
-  instagram: "#E1306C",
   x: "#777",
-  tiktok: "#000000",
 };
 
 export const platformLabels: Record<Platform, string> = {
   linkedin: "LinkedIn",
-  instagram: "Instagram",
   x: "X",
-  tiktok: "TikTok",
 };
 
 // ── Content type colours ──
@@ -80,13 +79,11 @@ export const postFormatLabels: Record<PostFormat, string> = {
 
 export const statusColors: Record<PostStatus, string> = {
   draft: "#94A3B8",
-  created: "#3B82F6",
   scheduled: "#10B981",
 };
 
 export const statusLabels: Record<PostStatus, string> = {
   draft: "Draft",
-  created: "Created",
   scheduled: "Scheduled",
 };
 
@@ -113,15 +110,6 @@ export const optimalSlots: (SlotAnalytics & { minute?: number })[] = [
   { platform: "linkedin", day: 1, hour: 8, minute: 30, score: 70 },
   { platform: "linkedin", day: 3, hour: 7, minute: 50, score: 72 },
   { platform: "linkedin", day: 5, hour: 9, minute: 15, score: 65 },
-  // Instagram: Mon/Wed lunchtime + evening scroll
-  { platform: "instagram", day: 1, hour: 12, minute: 15, score: 93 },
-  { platform: "instagram", day: 1, hour: 18, minute: 45, score: 90 },
-  { platform: "instagram", day: 3, hour: 11, minute: 50, score: 91 },
-  { platform: "instagram", day: 3, hour: 19, minute: 15, score: 87 },
-  { platform: "instagram", day: 5, hour: 12, minute: 30, score: 68 },
-  { platform: "instagram", day: 2, hour: 18, minute: 30, score: 65 },
-  { platform: "instagram", day: 6, hour: 10, minute: 15, score: 72 },
-  { platform: "instagram", day: 0, hour: 11, minute: 0, score: 70 },
   // X (Twitter): mornings + afternoon lull breaks
   { platform: "x", day: 1, hour: 8, minute: 45, score: 88 },
   { platform: "x", day: 2, hour: 9, minute: 10, score: 90 },
@@ -131,14 +119,6 @@ export const optimalSlots: (SlotAnalytics & { minute?: number })[] = [
   { platform: "x", day: 1, hour: 12, minute: 20, score: 60 },
   { platform: "x", day: 3, hour: 15, minute: 30, score: 55 },
   { platform: "x", day: 4, hour: 17, minute: 15, score: 62 },
-  // TikTok: evenings + lunch — scroll-heavy times
-  { platform: "tiktok", day: 1, hour: 12, minute: 0, score: 80 },
-  { platform: "tiktok", day: 2, hour: 19, minute: 0, score: 88 },
-  { platform: "tiktok", day: 3, hour: 18, minute: 30, score: 85 },
-  { platform: "tiktok", day: 4, hour: 12, minute: 15, score: 78 },
-  { platform: "tiktok", day: 5, hour: 17, minute: 0, score: 82 },
-  { platform: "tiktok", day: 6, hour: 10, minute: 30, score: 90 },
-  { platform: "tiktok", day: 0, hour: 11, minute: 15, score: 87 },
 ];
 
 // ── Helper: get slot score for a platform/day/hour ──
@@ -231,27 +211,18 @@ export function seedPosts(): ContentPost[] {
       id: "seed-1",
       creator: "ajay",
       platform: "linkedin",
+      platforms: ["linkedin", "x"],
       content_type: "educational",
       post_format: "text",
       caption: "Most brands test button colours. The ones scaling past 8 figures test their entire purchase flow. Here's the framework we use to prioritise what actually moves revenue.",
+      platform_captions: {
+        linkedin: "Most brands test button colours. The ones scaling past 8 figures test their entire purchase flow. Here's the framework we use to prioritise what actually moves revenue.",
+        x: "Most brands test button colours. The ones scaling past 8 figures test their entire purchase flow.",
+      },
       status: "scheduled",
-      scheduled_date: dateStr(mon, 1), // Tuesday
+      scheduled_date: dateStr(mon, 1),
       scheduled_time: "07:45",
       analytics_score: 95,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      id: "seed-2",
-      creator: "dylan",
-      platform: "instagram",
-      content_type: "social_proof",
-      post_format: "image",
-      caption: "Before and after. Same product. Same traffic. Different landing page. 34% conversion lift in 21 days. The gallery did most of the heavy lifting.",
-      status: "created",
-      scheduled_date: dateStr(mon, 0), // Monday
-      scheduled_time: "12:15",
-      analytics_score: 93,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     },
@@ -259,11 +230,12 @@ export function seedPosts(): ContentPost[] {
       id: "seed-3",
       creator: "ajay",
       platform: "x",
+      platforms: ["x"],
       content_type: "personal",
       post_format: "text",
       caption: "Turned down a 6-figure retainer last week. Wrong fit. Best decision we made this quarter.",
       status: "draft",
-      scheduled_date: dateStr(mon, 2), // Wednesday
+      scheduled_date: dateStr(mon, 2),
       scheduled_time: "08:30",
       analytics_score: 87,
       created_at: new Date().toISOString(),
@@ -273,27 +245,14 @@ export function seedPosts(): ContentPost[] {
       id: "seed-4",
       creator: "ajay",
       platform: "linkedin",
+      platforms: ["linkedin"],
       content_type: "promotional",
       post_format: "article",
       caption: "We just opened 2 spots for Q2 landing page builds. DTC brands doing £500k+/mo only. If your PDP converts under 4%, we should talk.",
-      status: "created",
-      scheduled_date: dateStr(mon, 3), // Thursday
+      status: "draft",
+      scheduled_date: dateStr(mon, 3),
       scheduled_time: "12:10",
       analytics_score: 85,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      id: "seed-5",
-      creator: "dylan",
-      platform: "instagram",
-      content_type: "educational",
-      post_format: "image",
-      caption: "Your hero image is not a billboard. It is the first frame of a sales conversation. Treat it like one.",
-      status: "scheduled",
-      scheduled_date: dateStr(mon, 2), // Wednesday
-      scheduled_time: "19:15",
-      analytics_score: 91,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     },

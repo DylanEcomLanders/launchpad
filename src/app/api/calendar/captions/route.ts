@@ -3,77 +3,119 @@ import Anthropic from "@anthropic-ai/sdk";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || "" });
 
-const SYSTEM_PROMPT = `You are a caption writer for an ecommerce CRO agency called Ecom Landers. Write in a direct, confident, no-fluff tone. No emojis. No hashtags. Lead with an observation or insight, not a conclusion. Short punchy sentences. Platform-aware length — LinkedIn can be longer (3-5 sentences), X must be concise (1-2 sentences max, under 280 chars), Instagram punchy mid-length (2-3 sentences). Do NOT start with "I" or "We". Start with an observation about the industry, a pattern you've noticed, or a bold statement.`;
+const SYSTEM_PROMPT = `You are a caption writer for an ecommerce CRO agency called Ecom Landers. You build high-converting landing pages, product pages, and email flows for ecommerce brands.
+
+Tone: Direct, confident, no-fluff. No emojis. No hashtags. Do NOT start with "I" or "We". Start with an observation about the industry, a pattern you've noticed, or a bold statement.
+
+You write in the voice of someone who has deep expertise in CRO, landing pages, and ecommerce — sharing real insights, not generic marketing advice.`;
+
+function getLengthInstructions(length: string, platform: string): string {
+  const isX = platform.toLowerCase() === "x";
+
+  switch (length) {
+    case "short":
+      return isX
+        ? "Write 1-2 punchy sentences. Under 200 characters. A bold take or sharp observation — no explanation needed."
+        : "Write 2-3 sentences max. Lead with the insight, one supporting point, done. Tight and punchy.";
+
+    case "long":
+      return isX
+        ? "Write 3-5 sentences. Open with a hook, develop the point with a specific example or data point, close with a takeaway. Under 280 characters is NOT required — this is a longer X post."
+        : "Write 8-15 sentences. Open with a hook that stops the scroll. Develop the argument with specifics — real examples, frameworks, data, lessons learned. Use line breaks between paragraphs for readability. Close with a clear takeaway or perspective. This should be a proper thought-leadership post that someone would save or share.";
+
+    case "medium":
+    default:
+      return isX
+        ? "Write 2-3 sentences. A clear observation with one supporting point. Under 280 characters."
+        : "Write 4-6 sentences. Lead with the insight, expand with a supporting point or example, close with a takeaway. Professional but direct — no corporate jargon.";
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
-    const { platform, contentType, postFormat, brief, imageData } = await req.json();
+    const { platforms, platform, contentType, postFormat, brief, imageData, captionLength } = await req.json();
 
-    if (!platform || !contentType) {
+    // Support both single platform (legacy) and multi-platform
+    const targetPlatforms: string[] = platforms || (platform ? [platform] : []);
+    const length = captionLength || "medium";
+
+    if (targetPlatforms.length === 0 || !contentType) {
       return NextResponse.json(
-        { error: "platform and contentType are required" },
+        { error: "platforms (or platform) and contentType are required" },
         { status: 400 }
       );
     }
 
-    const validPlatforms = ["linkedin", "instagram", "x"];
-    if (!validPlatforms.includes(platform)) {
-      return NextResponse.json(
-        { error: `Invalid platform. Must be one of: ${validPlatforms.join(", ")}` },
-        { status: 400 }
-      );
-    }
+    // Generate captions for each platform
+    const results: { platform: string; captions: string[] }[] = [];
 
-    // Build the user message content — either text-only or image + text
-    const formatContext = postFormat
-      ? `Post format: ${postFormat}. ${postFormat === "image" ? "The caption should complement and describe the image being posted." : postFormat === "article" ? "This is a longer-form article post — the caption should tease the key insight to drive clicks." : postFormat === "video" ? "This is a video/reel post — the caption should be a punchy hook that makes people stop scrolling." : "This is a text-only post — the caption IS the content."}`
-      : "";
+    for (const plat of targetPlatforms) {
+      const lengthInstructions = getLengthInstructions(length, plat);
+      const platformName = plat === "x" ? "X (Twitter)" : "LinkedIn";
 
-    const userPrompt = `Write 3 caption variants for a ${platform} post. Content type: ${contentType}. ${formatContext}${brief ? ` Brief/context: ${brief}` : ""}${imageData ? " Use the attached image as context — describe what you see and write captions that complement the visual." : ""}. Return ONLY a JSON array of 3 strings, no other text.`;
+      const formatContext = postFormat
+        ? `Post format: ${postFormat}. ${postFormat === "image" ? "The caption should complement and describe the image being posted." : postFormat === "article" ? "This is a longer-form article post — the caption should tease the key insight to drive clicks." : "This is a text post — the caption IS the content."}`
+        : "";
 
-    const userContent: Anthropic.Messages.ContentBlockParam[] = [];
+      const userPrompt = `Write 3 caption variants for a ${platformName} post.
 
-    // If we have image data, add it as an image block first
-    if (imageData && (postFormat === "image" || postFormat === "video")) {
-      // imageData comes as "data:image/png;base64,..." — extract the base64 and media type
-      const match = imageData.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
-      if (match) {
-        const mediaType = match[1] as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
-        const base64Data = match[2];
-        userContent.push({
-          type: "image",
-          source: {
-            type: "base64",
-            media_type: mediaType,
-            data: base64Data,
-          },
-        });
+Content type: ${contentType}
+${formatContext}
+${brief ? `Idea/context: ${brief}` : ""}
+${imageData ? "Use the attached image as context — describe what you see and write captions that complement the visual." : ""}
+
+LENGTH INSTRUCTIONS: ${lengthInstructions}
+
+Important: Write substantive, insightful captions. Don't just restate the brief — add a real perspective, example, or framework. Each variant should take a different angle on the idea.
+
+Return ONLY a JSON array of 3 strings, no other text.`;
+
+      const userContent: Anthropic.Messages.ContentBlockParam[] = [];
+
+      if (imageData && (postFormat === "image" || postFormat === "video")) {
+        const match = imageData.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+        if (match) {
+          userContent.push({
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: match[1] as "image/jpeg" | "image/png" | "image/gif" | "image/webp",
+              data: match[2],
+            },
+          });
+        }
+      }
+
+      userContent.push({ type: "text", text: userPrompt });
+
+      const response = await client.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 2000,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: "user", content: userContent }],
+      });
+
+      const textBlock = response.content.find((b) => b.type === "text");
+      const raw = textBlock?.type === "text" ? textBlock.text : "";
+
+      const jsonMatch = raw.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        const captions: string[] = JSON.parse(jsonMatch[0]);
+        results.push({ platform: plat, captions });
+      } else {
+        results.push({ platform: plat, captions: [] });
       }
     }
 
-    userContent.push({ type: "text", text: userPrompt });
-
-    const response = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: userContent }],
-    });
-
-    const textBlock = response.content.find((b) => b.type === "text");
-    const raw = textBlock?.type === "text" ? textBlock.text : "";
-
-    const jsonMatch = raw.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
-      return NextResponse.json(
-        { error: "Failed to parse captions from response" },
-        { status: 500 }
-      );
+    // For backward compatibility, if single platform was requested, also return flat captions array
+    if (targetPlatforms.length === 1) {
+      return NextResponse.json({
+        captions: results[0]?.captions || [],
+        variants: results,
+      });
     }
 
-    const captions: string[] = JSON.parse(jsonMatch[0]);
-
-    return NextResponse.json({ captions });
+    return NextResponse.json({ variants: results });
   } catch (err: any) {
     console.error("Caption generation error:", err);
     return NextResponse.json(

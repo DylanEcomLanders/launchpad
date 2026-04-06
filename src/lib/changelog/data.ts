@@ -37,6 +37,21 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-27",
+    date: "6 Apr 2026",
+    version: "0.22.0",
+    title: "Content Studio Redesign",
+    changes: [
+      { type: "improved", text: "Redesigned post studio — single unified editor replaces 5-step wizard. Platforms, idea, format, captions, image, and schedule all on one page" },
+      { type: "added", text: "Caption length control — choose Short, Medium, or Long before generating. Long captions now produce real thought-leadership posts with frameworks and examples" },
+      { type: "added", text: "Multi-platform posts — tick X and LinkedIn on the same post, get tailored captions for each, schedule both in one click" },
+      { type: "improved", text: "Caption generation quality — improved AI prompt with deeper instructions for each length level and platform-specific guidance" },
+      { type: "fixed", text: "Typefully timezone — posts now schedule at the correct local time instead of 1 hour late (BST/UTC conversion fix)" },
+      { type: "improved", text: "Simplified status — only Draft and Scheduled. Sending to Typefully auto-sets to Scheduled" },
+      { type: "removed", text: "Removed Instagram and TikTok from content calendar — focused on X and LinkedIn for now" },
+    ],
+  },
+  {
     id: "cl-26",
     date: "6 Apr 2026",
     version: "0.21.1",

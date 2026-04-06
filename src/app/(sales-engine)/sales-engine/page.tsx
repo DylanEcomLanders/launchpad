@@ -66,7 +66,7 @@ export default function SalesEngineDashboard() {
   const wonLeads = leads.filter((l) => l.status === "won");
 
   // Follow-ups due
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toLocaleDateString("en-CA");
   const overdue = leads.filter(
     (l) => l.follow_up_date && l.follow_up_date <= today && l.status !== "won" && l.status !== "lost"
   );
@@ -76,14 +76,13 @@ export default function SalesEngineDashboard() {
   const mondayDate = getMonday(now);
   const sundayDate = new Date(mondayDate);
   sundayDate.setDate(sundayDate.getDate() + 6);
-  const mondayStr = mondayDate.toISOString().split("T")[0];
-  const sundayStr = sundayDate.toISOString().split("T")[0];
+  const mondayStr = mondayDate.toLocaleDateString("en-CA");
+  const sundayStr = sundayDate.toLocaleDateString("en-CA");
 
   const thisWeekPosts = contentPosts.filter(
     (p) => p.scheduled_date >= mondayStr && p.scheduled_date <= sundayStr
   );
   const scheduledPosts = thisWeekPosts.filter((p) => p.status === "scheduled");
-  const createdPosts = thisWeekPosts.filter((p) => p.status === "created");
   const draftPosts = thisWeekPosts.filter((p) => p.status === "draft");
 
   // Active clients
@@ -173,7 +172,7 @@ export default function SalesEngineDashboard() {
             <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Content This Week</p>
             <p className="text-2xl font-bold text-[#1A1A1A]">{thisWeekPosts.length}</p>
             <p className="text-[10px] text-[#999] mt-0.5">
-              {scheduledPosts.length} scheduled · {createdPosts.length} ready · {draftPosts.length} draft
+              {scheduledPosts.length} scheduled · {draftPosts.length} draft
             </p>
           </div>
           <div className="border border-[#E5E5EA] rounded-xl p-4">

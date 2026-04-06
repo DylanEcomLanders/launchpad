@@ -35,6 +35,7 @@ import {
   type ContentType,
   type PostStatus,
   type PostFormat,
+  type CaptionLength,
   type ContentIdea,
   platformColors,
   platformLabels,
@@ -106,8 +107,6 @@ function cardColors(status: PostStatus): { bg: string; text: string; dot: string
   switch (status) {
     case "scheduled":
       return { bg: "#ECFDF5", text: "#059669", dot: "#10B981" }; // green
-    case "created":
-      return { bg: "#EFF6FF", text: "#2563EB", dot: "#3B82F6" }; // blue
     default: // draft
       return { bg: "#F3F3F5", text: "#7A7A7A", dot: "#94A3B8" }; // grey
   }
@@ -262,8 +261,11 @@ export default function CalendarPage() {
   const [draftError, setDraftError] = useState("");
   const [draftSaving, setDraftSaving] = useState(false);
 
-  // Studio step flow: 1=format, 2=type, 3=media, 4=caption, 5=schedule
-  const [studioStep, setStudioStep] = useState(1);
+  // Caption length
+  const [captionLength, setCaptionLength] = useState<CaptionLength>("medium");
+  // Per-platform caption variants from generation
+  const [platformCaptions, setPlatformCaptions] = useState<Partial<Record<Platform, string[]>>>({});
+  const [activeCaptionPlatform, setActiveCaptionPlatform] = useState<Platform>("x");
 
   // Repurpose state
   const [repurposeLoading, setRepurposeLoading] = useState(false);
@@ -397,7 +399,7 @@ export default function CalendarPage() {
   // Platform neglect: 5+ days without posts (check across all posts)
   const neglectedPlatforms = useMemo(() => {
     const neglected: Platform[] = [];
-    const platforms: Platform[] = ["linkedin", "instagram", "x", "tiktok"];
+    const platforms: Platform[] = ["linkedin", "x"];
     const today = new Date();
     platforms.forEach(p => {
       const platPosts = posts.filter(pp => pp.platform === p);
@@ -436,11 +438,9 @@ export default function CalendarPage() {
 
   function openStudio(post?: ContentPost) {
     if (post) {
-      setStudioPost({ ...post });
+      setStudioPost({ ...post, platforms: post.platforms || [post.platform] });
       setSelectedCaption(-1);
-      setStudioStep(4); // jump to caption step for existing posts
-      // Seed draft cache with existing caption
-      setDraftCaptions(post.caption ? { [post.platform]: post.caption } : {});
+      setDraftCaptions(post.platform_captions || (post.caption ? { [post.platform]: post.caption } : {}));
       setDraftFormats(post.post_format ? { [post.platform]: post.post_format } : {});
       setSourceCaptionForAdapt(post.caption || "");
     } else {
@@ -448,6 +448,7 @@ export default function CalendarPage() {
         id: "",
         creator: creator,
         platform: "x",
+        platforms: ["x", "linkedin"],
         content_type: "educational",
         post_format: "text",
         angle: "",
@@ -458,13 +459,14 @@ export default function CalendarPage() {
         analytics_score: 0,
       });
       setSelectedCaption(-1);
-      setStudioStep(1); // start from beginning
       setDraftCaptions({});
       setDraftFormats({});
       setSourceCaptionForAdapt("");
     }
     setCaptions([]);
     setCaptionError("");
+    setPlatformCaptions({});
+    setActiveCaptionPlatform("x");
     setAdaptingPlatform(null);
     adaptRequestRef.current = 0;
     setShowStudio(true);
@@ -475,6 +477,7 @@ export default function CalendarPage() {
       id: "",
       creator: creator,
       platform: "x",
+      platforms: ["x", "linkedin"],
       content_type: "educational",
       post_format: "text",
       angle: "",
@@ -486,8 +489,9 @@ export default function CalendarPage() {
     });
     setCaptions([]);
     setCaptionError("");
+    setPlatformCaptions({});
+    setActiveCaptionPlatform("x");
     setSelectedCaption(-1);
-    setStudioStep(1);
     setDraftCaptions({});
     setDraftFormats({});
     setAdaptingPlatform(null);
@@ -497,25 +501,28 @@ export default function CalendarPage() {
   }
 
   async function handleSavePost() {
-    if (!studioPost.platform || !studioPost.scheduled_date) return;
+    const postPlatforms = studioPost.platforms || (studioPost.platform ? [studioPost.platform] : ["x"]);
+    if (postPlatforms.length === 0 || !studioPost.scheduled_date) return;
     setSaving(true);
     const now = new Date().toISOString();
     const post: ContentPost = {
       id: studioPost.id || uuid(),
       creator: studioPost.creator || creator,
       group_id: studioPost.group_id,
-      platform: studioPost.platform!,
+      platform: postPlatforms[0] as Platform,
+      platforms: postPlatforms as Platform[],
       content_type: studioPost.content_type || "educational",
       post_format: studioPost.post_format || "text",
       angle: studioPost.angle || "",
       caption: studioPost.caption || "",
-      status: studioPost.status || "draft",
+      platform_captions: studioPost.platform_captions || draftCaptions as Record<Platform, string>,
+      status: "draft",
       scheduled_date: studioPost.scheduled_date!,
       scheduled_time: studioPost.scheduled_time || "09:00",
       media_url: studioPost.media_url,
       media_data: studioPost.media_data,
       analytics_score: studioPost.analytics_score || getSlotScore(
-        studioPost.platform!,
+        postPlatforms[0] as Platform,
         new Date(studioPost.scheduled_date! + "T00:00:00").getDay(),
         parseInt(studioPost.scheduled_time || "9")
       ),
@@ -625,83 +632,27 @@ export default function CalendarPage() {
 
       for (const p of schedulable) {
         try {
-          // Get adapted captions for each selected platform
-          const platformCaptions: { platform: string; text: string; media_ids?: string[] }[] = [];
+          // Build platform captions from post data
+          const postPlatforms = p.platforms || [p.platform];
+          // Filter to only platforms selected in the modal
+          const targetPlats = postPlatforms.filter((pp: Platform) => selectedPlatforms.includes(pp));
+          if (targetPlats.length === 0) continue;
 
-          // Start with the post's own platform/caption
-          const postPlatform = p.platform as Platform;
-          const otherPlatforms = selectedPlatforms.filter(sp => sp !== postPlatform);
+          const platCaptions: { platform: string; text: string; media_ids?: string[] }[] = [];
 
-          // If the post's platform is selected, include it directly
-          if (selectedPlatforms.includes(postPlatform)) {
-            platformCaptions.push({
-              platform: postPlatform,
-              text: p.caption,
+          for (const tp of targetPlats) {
+            // Use platform_captions if available, otherwise use main caption
+            const caption = p.platform_captions?.[tp as Platform] || p.caption;
+            platCaptions.push({
+              platform: tp,
+              text: caption,
               ...(mediaIds[p.id] ? { media_ids: [mediaIds[p.id]] } : {}),
             });
           }
 
-          // For other selected platforms, check for group siblings first, then adapt
-          if (otherPlatforms.length > 0) {
-            // Check if there are already saved sibling posts for these platforms
-            const siblings = p.group_id ? posts.filter(s => s.group_id === p.group_id && s.id !== p.id) : [];
+          if (platCaptions.length === 0) continue;
 
-            const needAdapt: Platform[] = [];
-            for (const op of otherPlatforms) {
-              const sibling = siblings.find(s => s.platform === op && s.caption?.trim());
-              if (sibling) {
-                platformCaptions.push({
-                  platform: op,
-                  text: sibling.caption,
-                  ...(mediaIds[p.id] ? { media_ids: [mediaIds[p.id]] } : {}),
-                });
-              } else {
-                needAdapt.push(op);
-              }
-            }
-
-            // Adapt caption for platforms without siblings
-            if (needAdapt.length > 0) {
-              try {
-                const adaptRes = await fetch("/api/calendar/repurpose", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    sourcePlatform: platformLabels[postPlatform],
-                    sourceCaption: p.caption,
-                    sourceFormat: p.post_format || "text",
-                    contentType: contentTypeLabels[p.content_type || "educational"],
-                    targetPlatforms: needAdapt.map(np => platformLabels[np]),
-                  }),
-                });
-                const adaptData = await adaptRes.json();
-                if (adaptData.variants) {
-                  for (const v of adaptData.variants) {
-                    const vPlatform = (Object.entries(platformLabels).find(([, label]) => label.toLowerCase() === v.platform.toLowerCase())?.[0] || v.platform.toLowerCase()) as Platform;
-                    platformCaptions.push({
-                      platform: vPlatform,
-                      text: v.caption,
-                      ...(mediaIds[p.id] ? { media_ids: [mediaIds[p.id]] } : {}),
-                    });
-                  }
-                }
-              } catch (e) {
-                console.warn("Caption adaptation failed, using original:", e);
-                // Fallback: use original caption for all
-                for (const np of needAdapt) {
-                  platformCaptions.push({
-                    platform: np,
-                    text: p.caption,
-                    ...(mediaIds[p.id] ? { media_ids: [mediaIds[p.id]] } : {}),
-                  });
-                }
-              }
-            }
-          }
-
-          if (platformCaptions.length === 0) continue;
-
-          // Create multi-platform draft
+          // Create multi-platform draft with correct timezone
           const timeParts = (p.scheduled_time || "09:00").split(":");
           const hh = (timeParts[0] || "09").padStart(2, "0");
           const mm = (timeParts[1] || "00").padStart(2, "0");
@@ -712,8 +663,8 @@ export default function CalendarPage() {
             body: JSON.stringify({
               action: "create-multi",
               social_set_id: socialSetId,
-              platforms: platformCaptions,
-              publish_at: `${p.scheduled_date}T${hh}:${mm}:00Z`,
+              platforms: platCaptions,
+              publish_at: new Date(`${p.scheduled_date}T${hh}:${mm}:00`).toISOString(),
             }),
           });
 
@@ -800,25 +751,43 @@ export default function CalendarPage() {
   }
 
   async function generateCaptions(overrides?: { imageData?: string }) {
-    if (!studioPost.platform || !studioPost.content_type) return;
+    const postPlatforms = studioPost.platforms || (studioPost.platform ? [studioPost.platform] : ["x"]);
+    if (postPlatforms.length === 0 || !studioPost.content_type) return;
     setCaptionLoading(true);
     setCaptionError("");
     setCaptions([]);
+    setPlatformCaptions({});
     try {
       const res = await fetch("/api/calendar/captions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          platform: studioPost.platform,
+          platforms: postPlatforms,
           contentType: contentTypeLabels[studioPost.content_type],
           postFormat: studioPost.post_format || "text",
           brief: studioPost.angle || studioPost.caption || `${contentTypeLabels[studioPost.content_type]} post about CRO and landing pages`,
           imageData: overrides?.imageData || studioPost.media_data || undefined,
+          captionLength,
         }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      setCaptions(data.captions || []);
+
+      // Handle multi-platform response
+      if (data.variants) {
+        const pc: Partial<Record<Platform, string[]>> = {};
+        for (const v of data.variants) {
+          pc[v.platform as Platform] = v.captions;
+        }
+        setPlatformCaptions(pc);
+        // Set active tab to first platform
+        setActiveCaptionPlatform(postPlatforms[0] as Platform);
+        // Show first platform's captions in the flat array for backward compat
+        const firstCaptions = pc[postPlatforms[0] as Platform] || [];
+        setCaptions(firstCaptions);
+      } else if (data.captions) {
+        setCaptions(data.captions);
+      }
     } catch (e: any) {
       setCaptionError(e.message || "Failed to generate captions");
     } finally {
@@ -1005,7 +974,7 @@ export default function CalendarPage() {
     setRepurposeError("");
 
     // Figure out which platforms we need variants for
-    const allPlatforms: Platform[] = ["x", "linkedin", "instagram", "tiktok"];
+    const allPlatforms: Platform[] = ["x", "linkedin"];
     const currentGroupId = studioPost.group_id || studioPost.id || uuid();
     const existingSiblings = getGroupSiblings(currentGroupId);
     const existingPlatforms = new Set(existingSiblings.map(p => p.platform));
@@ -1404,7 +1373,7 @@ export default function CalendarPage() {
               </p>
 
               <div className="space-y-2 mb-6">
-                {(["x", "linkedin", "instagram", "tiktok"] as Platform[]).map(p => {
+                {(["x", "linkedin"] as Platform[]).map(p => {
                   const selected = typefullyPlatforms.has(p);
                   return (
                     <button
@@ -1425,9 +1394,6 @@ export default function CalendarPage() {
                       </span>
                       <span className="size-2.5 rounded-full" style={{ backgroundColor: platformColors[p] }} />
                       <span className="text-sm font-medium text-[#1B1B1B]">{platformLabels[p]}</span>
-                      {p === "tiktok" && (
-                        <span className="text-[9px] text-[#AAA] ml-auto">via Threads</span>
-                      )}
                     </button>
                   );
                 })}
@@ -1745,7 +1711,7 @@ export default function CalendarPage() {
                 <XMarkIcon className="size-3.5 text-[#AAA]" />
               </button>
             </div>
-            {(["draft", "created", "scheduled"] as PostStatus[]).map(status => {
+            {(["draft", "scheduled"] as PostStatus[]).map(status => {
               const statusPosts = posts.filter(p => p.status === status);
               return (
                 <div key={status} className="mb-3">
@@ -1790,7 +1756,7 @@ export default function CalendarPage() {
             {(() => {
               const siblings = studioPost.group_id ? getGroupSiblings(studioPost.group_id) : [];
               const hasSiblings = siblings.length > 1;
-              const platformOrder: Platform[] = ["x", "linkedin", "instagram", "tiktok"];
+              const platformOrder: Platform[] = ["x", "linkedin"];
 
               // For linked posts: show platforms with siblings + any with draft captions
               // For single posts: show all platforms as selector
@@ -1848,675 +1814,416 @@ export default function CalendarPage() {
               </div>
             )}
 
-            {/* ═══ EXISTING POST — Clean detail view ═══ */}
-            {studioPost.id ? (
-              <>
-                <div className="flex-1 overflow-y-auto">
-                  {/* ── Angle / Idea section ── */}
-                  <div className="px-5 pt-4 pb-4 border-b border-[#F0F0F0]">
-                    <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider mb-2">Idea</p>
-                    <textarea
-                      value={studioPost.angle || ""}
-                      onChange={e => setStudioPost(prev => ({ ...prev, angle: e.target.value }))}
-                      placeholder="What's the hook? One punchy line..."
-                      className="w-full bg-[#F7F8FA] rounded-lg px-3 py-2.5 text-sm text-[#1B1B1B] leading-relaxed resize-none outline-none placeholder:text-[#CCC] border border-[#E5E5EA] focus:border-[#1B1B1B] transition-colors"
-                      rows={2}
-                    />
-                  </div>
-
-                  {/* ── Caption section ── */}
-                  <div className="px-5 pt-4 pb-5 border-b border-[#F0F0F0]">
-                    {/* Image preview */}
-                    {studioPost.media_data && (
-                      <div className="relative rounded-xl overflow-hidden border border-[#E5E5EA] mb-4">
-                        <img src={studioPost.media_data} alt="Post media" className="w-full h-36 object-cover" />
-                        <div className="absolute top-2 right-2 flex gap-1">
-                          <label className="cursor-pointer px-2 py-1 bg-white/90 backdrop-blur-sm text-[9px] font-semibold rounded-lg shadow-sm hover:bg-white transition-colors">
-                            Replace
-                            <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
-                          </label>
-                          <button onClick={() => setStudioPost(prev => ({ ...prev, media_data: undefined }))} className="px-2 py-1 bg-white/90 backdrop-blur-sm text-[9px] font-semibold text-red-400 rounded-lg shadow-sm hover:bg-white transition-colors">
-                            Remove
-                          </button>
-                        </div>
-                        {captionLoading && (
-                          <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 text-white text-[9px] font-semibold rounded-lg backdrop-blur-sm animate-pulse">
-                            Generating captions...
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Upload image prompt */}
-                    {!studioPost.media_data && (studioPost.post_format === "image" || studioPost.post_format === "video") && (
-                      <label className="flex items-center justify-center gap-2 py-5 border border-dashed border-[#E0E0E0] rounded-xl cursor-pointer hover:border-[#B0B0B0] hover:bg-[#FAFAFA] transition-colors mb-4">
-                        <PhotoIcon className="size-5 text-[#CCC]" />
-                        <span className="text-[11px] text-[#999]">Upload or paste image</span>
-                        <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
-                      </label>
-                    )}
-
-                    {/* Caption — adapting / generate / edit */}
-                    {adaptingPlatform === studioPost.platform ? (
-                      <div className="py-6">
-                        <div className="flex items-center justify-center gap-2">
-                          <ArrowPathIcon className="size-4 text-[#999] animate-spin" />
-                          <p className="text-xs text-[#999]">Adapting for {platformLabels[studioPost.platform || "x"]}...</p>
-                        </div>
-                      </div>
-                    ) : !studioPost.caption ? (
-                      <div>
-                        <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider mb-3">Caption</p>
+            {/* ═══ UNIFIED POST EDITOR ═══ */}
+            <div className="flex-1 overflow-y-auto">
+              {/* ── 1. Platforms (multi-select) ── */}
+              <div className="px-5 pt-4 pb-3 border-b border-[#F0F0F0]">
+                <div className="flex items-center gap-3">
+                  <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider shrink-0">Post to</p>
+                  <div className="flex gap-1.5">
+                    {(["x", "linkedin"] as Platform[]).map(p => {
+                      const platforms = (studioPost.platforms as Platform[]) || ["x", "linkedin"];
+                      const active = platforms.includes(p);
+                      return (
                         <button
-                          onClick={() => generateCaptions()}
-                          disabled={captionLoading || !studioPost.angle?.trim()}
-                          className="w-full flex items-center justify-center gap-2 py-3 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40"
-                        >
-                          <SparklesIcon className="size-4" />
-                          {captionLoading ? "Generating captions..." : "Generate Caption from Idea"}
-                        </button>
-                        {!studioPost.angle?.trim() && (
-                          <p className="text-[10px] text-[#BBB] text-center mt-2">Write an idea above first</p>
-                        )}
-                      </div>
-                    ) : (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider">Caption</p>
-                          <button
-                            onClick={() => generateCaptions()}
-                            disabled={captionLoading}
-                            className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-[#7A7A7A] bg-[#F3F3F5] rounded-md hover:bg-[#EBEBEB] transition-colors disabled:opacity-50"
-                          >
-                            <SparklesIcon className="size-3" />
-                            {captionLoading ? "Generating..." : "Regenerate"}
-                          </button>
-                        </div>
-                        <textarea
-                          value={studioPost.caption || ""}
-                          onChange={e => {
-                            const val = e.target.value;
-                            setStudioPost(prev => ({ ...prev, caption: val }));
-                            // Update draft cache so switching tabs preserves edits
-                            if (studioPost.platform) {
-                              setDraftCaptions(prev => ({ ...prev, [studioPost.platform!]: val }));
+                          key={p}
+                          onClick={() => {
+                            const current = (studioPost.platforms as Platform[]) || ["x", "linkedin"];
+                            const next = active
+                              ? current.filter(pp => pp !== p)
+                              : [...current, p];
+                            if (next.length === 0) return; // must have at least one
+                            setStudioPost(prev => ({ ...prev, platforms: next, platform: next[0] }));
+                            if (!next.includes(activeCaptionPlatform)) {
+                              setActiveCaptionPlatform(next[0]);
                             }
                           }}
-                          placeholder="Write your caption..."
-                          className="w-full bg-transparent text-sm text-[#1B1B1B] leading-relaxed resize-none outline-none placeholder:text-[#CCC] min-h-[80px]"
-                          rows={3}
-                        />
-                      </div>
-                    )}
-
-                    {captionError && <p className="text-[11px] text-red-500 mt-2">{captionError}</p>}
-                    {captions.length > 0 && (
-                      <div className="space-y-2 mt-3 pt-3 border-t border-[#F0F0F0]">
-                        <p className="text-[10px] font-semibold text-[#AAA] uppercase tracking-wider">Pick a variant</p>
-                        {captions.map((c, i) => (
-                          <button
-                            key={i}
-                            onClick={() => {
-                              setSelectedCaption(i);
-                              setStudioPost(prev => ({ ...prev, caption: c }));
-                              if (studioPost.platform) {
-                                setDraftCaptions(prev => ({ ...prev, [studioPost.platform!]: c }));
-                                if (!sourceCaptionForAdapt) setSourceCaptionForAdapt(c);
-                              }
-                            }}
-                            className={`w-full text-left p-3 rounded-lg border transition-colors text-xs leading-relaxed ${
-                              selectedCaption === i ? "border-[#1B1B1B] bg-[#F7F8FA]" : "border-[#E5E5EA] hover:bg-[#FAFAFA]"
-                            }`}
-                          >
-                            {selectedCaption === i && <span className="float-right ml-2"><CheckIcon className="size-3.5 text-emerald-500" /></span>}
-                            {c}
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-lg border transition-colors ${
+                            active
+                              ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                              : "border-[#E5E5EA] text-[#999] hover:bg-[#F3F3F5]"
+                          }`}
+                        >
+                          {active && <CheckIcon className="size-3" />}
+                          <span className="size-2 rounded-full" style={{ backgroundColor: platformColors[p] }} />
+                          {platformLabels[p]}
+                        </button>
+                      );
+                    })}
                   </div>
+                </div>
+              </div>
 
-                  {/* ── Settings section ── */}
-                  <div className="px-5 py-4 space-y-4">
-                    {/* Format row */}
-                    <div className="flex items-center justify-between">
-                      <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider shrink-0">Format</p>
-                      <div className="flex gap-1">
-                        {(["text", "image", "article", "video"] as PostFormat[]).map(f => {
-                          const Icon = formatIcons[f];
-                          const active = studioPost.post_format === f;
-                          return (
-                            <button
-                              key={f}
-                              onClick={() => setStudioPost(prev => ({ ...prev, post_format: f }))}
-                              className={`flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-medium rounded-lg transition-colors ${
-                                active
-                                  ? "bg-[#1B1B1B] text-white"
-                                  : "text-[#999] hover:bg-[#F3F3F5]"
-                              }`}
-                            >
-                              <Icon className="size-3" />
-                              {postFormatLabels[f]}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
+              {/* ── 2. Idea / Angle ── */}
+              <div className="px-5 pt-4 pb-4 border-b border-[#F0F0F0]">
+                <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider mb-2">Idea / Angle</p>
+                <textarea
+                  value={studioPost.angle || ""}
+                  onChange={e => setStudioPost(prev => ({ ...prev, angle: e.target.value }))}
+                  placeholder="What's the idea? e.g. Most brands test button colours but ignore the full purchase flow..."
+                  className="w-full bg-[#F7F8FA] rounded-lg px-3 py-2.5 text-sm text-[#1B1B1B] leading-relaxed resize-none outline-none placeholder:text-[#CCC] border border-[#E5E5EA] focus:border-[#1B1B1B] transition-colors"
+                  rows={2}
+                />
+              </div>
 
-                    {/* Divider */}
-                    <div className="border-t border-[#F0F0F0]" />
-
-                    {/* Type row */}
-                    <div className="flex items-center justify-between">
-                      <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider shrink-0">Type</p>
-                      <div className="flex gap-1">
-                        {(["educational", "social_proof", "personal", "promotional"] as ContentType[]).map(t => {
-                          const active = studioPost.content_type === t;
-                          return (
-                            <button
-                              key={t}
-                              onClick={() => setStudioPost(prev => ({ ...prev, content_type: t }))}
-                              className={`px-2.5 py-1.5 text-[10px] font-medium rounded-lg transition-colors ${
-                                active ? "text-white" : "text-[#999] hover:bg-[#F3F3F5]"
-                              }`}
-                              style={active ? { backgroundColor: contentTypeColors[t] } : {}}
-                            >
-                              {contentTypeLabels[t]}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Divider */}
-                    <div className="border-t border-[#F0F0F0]" />
-
-                    {/* Schedule row */}
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider">Schedule</p>
-                        {/* Slot score inline */}
-                        {studioPost.platform && studioPost.scheduled_date && studioPost.scheduled_time && (() => {
-                          const score = getSlotScore(studioPost.platform, new Date(studioPost.scheduled_date + "T00:00:00").getDay(), parseInt(studioPost.scheduled_time));
-                          return score > 0 ? (
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-[10px] text-[#999]">Slot score</span>
-                              <span className={`text-[10px] font-bold ${score >= 80 ? "text-emerald-600" : score >= 50 ? "text-amber-600" : "text-[#999]"}`}>{score}/100</span>
-                              {score >= 80 && <span className="text-[8px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Optimal</span>}
-                            </div>
-                          ) : null;
-                        })()}
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <input
-                          type="date"
-                          value={studioPost.scheduled_date || ""}
-                          onChange={e => setStudioPost(prev => ({ ...prev, scheduled_date: e.target.value }))}
-                          className="w-full px-3 py-2 text-xs border border-[#E5E5EA] rounded-lg bg-white outline-none focus:border-[#1B1B1B] transition-colors"
-                        />
-                        <input
-                          type="time"
-                          value={studioPost.scheduled_time || ""}
-                          onChange={e => setStudioPost(prev => ({ ...prev, scheduled_time: e.target.value }))}
-                          className="w-full px-3 py-2 text-xs border border-[#E5E5EA] rounded-lg bg-white outline-none focus:border-[#1B1B1B] transition-colors"
-                        />
-                      </div>
-
-                      {/* Suggested times from analytics */}
-                      {studioPost.platform && studioPost.scheduled_date && (() => {
-                        const dayOfWeek = new Date(studioPost.scheduled_date + "T00:00:00").getDay();
-                        const bestTimes = getBestTimes(studioPost.platform, dayOfWeek);
-                        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-                        // Also show top slots for this platform (different days)
-                        const topSlots = getTopSlots(studioPost.platform).filter(s => s.day !== dayOfWeek).slice(0, 2);
-
-                        return bestTimes.length > 0 || topSlots.length > 0 ? (
-                          <div className="mt-2.5">
-                            {bestTimes.length > 0 && (
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="text-[9px] text-[#BBB]">Best for {dayNames[dayOfWeek]}:</span>
-                                {bestTimes.map((t, i) => {
-                                  const timeStr = t.time || `${t.hour.toString().padStart(2, "0")}:${(t.minute || 0).toString().padStart(2, "0")}`;
-                                  const displayHour = t.hour % 12 || 12;
-                                  const displayMin = (t.minute || 0).toString().padStart(2, "0");
-                                  const ampm = t.hour >= 12 ? "PM" : "AM";
-                                  return (
-                                  <button
-                                    key={i}
-                                    onClick={() => setStudioPost(prev => ({ ...prev, scheduled_time: timeStr }))}
-                                    className={`text-[9px] font-semibold px-2 py-1 rounded-md transition-colors ${
-                                      studioPost.scheduled_time === timeStr
-                                        ? "bg-emerald-100 text-emerald-700"
-                                        : "bg-[#F3F3F5] text-[#666] hover:bg-[#EBEBEB]"
-                                    }`}
-                                  >
-                                    {displayHour}:{displayMin} {ampm}
-                                    <span className="ml-1 text-[8px] opacity-60">{t.score}</span>
-                                  </button>
-                                  );
-                                })}
-                              </div>
-                            )}
-                            {bestTimes.length === 0 && topSlots.length > 0 && (
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="text-[9px] text-[#BBB]">Try instead:</span>
-                                {topSlots.map((t, i) => (
-                                  <button
-                                    key={i}
-                                    onClick={() => {
-                                      // Find the date for this day of week in the current week context
-                                      const current = new Date(studioPost.scheduled_date + "T00:00:00");
-                                      const currentDay = current.getDay();
-                                      const diff = t.day - currentDay;
-                                      const target = new Date(current);
-                                      target.setDate(target.getDate() + diff);
-                                      const timeStr = t.time || `${t.hour.toString().padStart(2, "0")}:${(t.minute || 0).toString().padStart(2, "0")}`;
-                                      setStudioPost(prev => ({
-                                        ...prev,
-                                        scheduled_date: toDateStr(target),
-                                        scheduled_time: timeStr
-                                      }));
-                                    }}
-                                    className="text-[9px] font-semibold px-2 py-1 rounded-md bg-[#F3F3F5] text-[#666] hover:bg-[#EBEBEB] transition-colors"
-                                  >
-                                    {dayNames[t.day]} {t.hour % 12 || 12}:{(t.minute || 0).toString().padStart(2, "0")}{t.hour >= 12 ? "pm" : "am"}
-                                    <span className="ml-1 text-[8px] opacity-60">{t.score}</span>
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ) : null;
-                      })()}
-                    </div>
-
-                    {/* Divider */}
-                    <div className="border-t border-[#F0F0F0]" />
-
-                    {/* Status row */}
-                    <div className="flex items-center justify-between">
-                      <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider shrink-0">Status</p>
-                      <div className="flex gap-1">
-                        {(["draft", "created", "scheduled"] as PostStatus[]).map(s => {
-                          const active = studioPost.status === s;
-                          return (
-                            <button
-                              key={s}
-                              onClick={() => setStudioPost(prev => ({ ...prev, status: s }))}
-                              className={`px-2.5 py-1.5 text-[10px] font-medium rounded-lg transition-colors ${
-                                active ? "text-white" : "text-[#999] hover:bg-[#F3F3F5]"
-                              }`}
-                              style={active ? { backgroundColor: statusColors[s] } : {}}
-                            >
-                              {statusLabels[s]}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
+              {/* ── 3. Format & Type (compact rows) ── */}
+              <div className="px-5 py-3 border-b border-[#F0F0F0] space-y-3">
+                {/* Format row */}
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider shrink-0">Format</p>
+                  <div className="flex gap-1">
+                    {(["text", "image", "article"] as PostFormat[]).map(f => {
+                      const Icon = formatIcons[f];
+                      const active = studioPost.post_format === f;
+                      return (
+                        <button
+                          key={f}
+                          onClick={() => setStudioPost(prev => ({ ...prev, post_format: f }))}
+                          className={`flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-medium rounded-lg transition-colors ${
+                            active
+                              ? "bg-[#1B1B1B] text-white"
+                              : "text-[#999] hover:bg-[#F3F3F5]"
+                          }`}
+                        >
+                          <Icon className="size-3" />
+                          {postFormatLabels[f]}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* Footer */}
-                <div className="shrink-0 border-t border-[#E5E5EA] px-5 py-3 bg-white flex items-center gap-2">
-                  <button
-                    onClick={repurposePost}
-                    disabled={repurposeLoading || !studioPost.caption?.trim()}
-                    className="flex items-center gap-1 px-3 py-2.5 text-[10px] font-semibold border border-[#E5E5EA] text-[#7A7A7A] rounded-lg hover:bg-[#F5F5F5] transition-colors disabled:opacity-40"
-                  >
-                    <ArrowPathIcon className={`size-3 ${repurposeLoading ? "animate-spin" : ""}`} />
-                    {repurposeLoading ? "..." : "Repurpose"}
-                  </button>
-                  <button
-                    onClick={handleSavePost}
-                    disabled={saving}
-                    className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
-                  >
-                    {saving ? "Saving..." : "Save"}
-                  </button>
-                  <button
-                    onClick={() => handleDeletePost(studioPost.id!)}
-                    className="p-2.5 text-[#CCC] hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Delete post"
-                  >
-                    <TrashIcon className="size-4" />
-                  </button>
+                {/* Type row */}
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider shrink-0">Type</p>
+                  <div className="flex gap-1">
+                    {(["educational", "social_proof", "personal", "promotional"] as ContentType[]).map(t => {
+                      const active = studioPost.content_type === t;
+                      return (
+                        <button
+                          key={t}
+                          onClick={() => setStudioPost(prev => ({ ...prev, content_type: t }))}
+                          className={`px-2.5 py-1.5 text-[10px] font-medium rounded-lg transition-colors ${
+                            active ? "text-white" : "text-[#999] hover:bg-[#F3F3F5]"
+                          }`}
+                          style={active ? { backgroundColor: contentTypeColors[t] } : {}}
+                        >
+                          {contentTypeLabels[t]}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </>
-            ) : (
-              <>
-                {/* ═══ NEW POST — Step-by-step wizard ═══ */}
+              </div>
 
-                {/* Step progress */}
-                <div className="shrink-0 px-5 pt-4 pb-2 flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map(s => (
-                    <button
-                      key={s}
-                      onClick={() => setStudioStep(s)}
-                      className={`h-1 flex-1 rounded-full transition-colors ${
-                        s <= studioStep ? "bg-[#1B1B1B]" : "bg-[#E5E5EA]"
-                      }`}
-                    />
-                  ))}
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-5 space-y-5">
-
-                  {/* ── STEP 1: Post Format ── */}
-                  {studioStep === 1 && (
-                    <div className="animate-fadeIn">
-                      <p className="text-lg font-bold text-[#1B1B1B] mb-1">What type of post?</p>
-                      <p className="text-xs text-[#7A7A7A] mb-5">Choose the format first — this determines what content you need.</p>
-                      <div className="grid grid-cols-2 gap-3">
-                        {(["text", "image", "article", "video"] as PostFormat[]).map(f => {
-                          const Icon = formatIcons[f];
-                          const descriptions: Record<PostFormat, string> = {
-                            text: "Pure text post — the caption IS the content",
-                            image: "Photo or graphic with a caption",
-                            article: "Long-form article or blog post",
-                            video: "Reel, TikTok, or video content",
-                          };
-                          return (
-                            <button
-                              key={f}
-                              onClick={() => {
-                                setStudioPost(prev => ({ ...prev, post_format: f }));
-                                setStudioStep(2);
-                              }}
-                              className={`flex flex-col items-start gap-2 p-4 rounded-xl border transition-all hover:shadow-sm text-left ${
-                                studioPost.post_format === f
-                                  ? "border-[#1B1B1B] bg-[#F7F8FA]"
-                                  : "border-[#E5E5EA] hover:border-[#C5C5C5]"
-                              }`}
-                            >
-                              <Icon className="size-6 text-[#1B1B1B]" />
-                              <div>
-                                <p className="text-xs font-semibold text-[#1B1B1B]">{postFormatLabels[f]}</p>
-                                <p className="text-[10px] text-[#7A7A7A] mt-0.5">{descriptions[f]}</p>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* ── STEP 2: Content Type ── */}
-                  {studioStep === 2 && (
-                    <div className="animate-fadeIn">
-                      <p className="text-lg font-bold text-[#1B1B1B] mb-1">What's the angle?</p>
-                      <p className="text-xs text-[#7A7A7A] mb-5">Pick the content category — this helps AI generate the right tone.</p>
-                      <div className="space-y-2.5">
-                        {(["educational", "social_proof", "personal", "promotional"] as ContentType[]).map(t => {
-                          const descriptions: Record<ContentType, string> = {
-                            educational: "Teach something — frameworks, insights, how-tos",
-                            social_proof: "Results, case studies, before/after",
-                            personal: "Behind the scenes, opinions, agency life",
-                            promotional: "Offers, availability, CTAs",
-                          };
-                          return (
-                            <button
-                              key={t}
-                              onClick={() => {
-                                setStudioPost(prev => ({ ...prev, content_type: t }));
-                                const fmt = studioPost.post_format;
-                                setStudioStep(fmt === "image" || fmt === "video" ? 3 : 4);
-                              }}
-                              className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-all hover:shadow-sm text-left ${
-                                studioPost.content_type === t
-                                  ? "border-[#1B1B1B] bg-[#F7F8FA]"
-                                  : "border-[#E5E5EA] hover:border-[#C5C5C5]"
-                              }`}
-                            >
-                              <span className="size-3 rounded-full shrink-0" style={{ backgroundColor: contentTypeColors[t] }} />
-                              <div>
-                                <p className="text-xs font-semibold text-[#1B1B1B]">{contentTypeLabels[t]}</p>
-                                <p className="text-[10px] text-[#7A7A7A]">{descriptions[t]}</p>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* ── STEP 3: Media Upload (image/video only) ── */}
-                  {studioStep === 3 && (
-                    <div className="animate-fadeIn">
-                      <p className="text-lg font-bold text-[#1B1B1B] mb-1">
-                        {studioPost.post_format === "video" ? "Add a thumbnail" : "Upload your image"}
-                      </p>
-                      <p className="text-xs text-[#7A7A7A] mb-5">
-                        {studioPost.post_format === "image"
-                          ? "Upload the image — AI will write captions based on it automatically."
-                          : "Add a thumbnail for the video — or skip this step."}
-                      </p>
-
-                      {studioPost.media_data ? (
-                        <div className="relative rounded-xl overflow-hidden border border-[#E5E5EA] bg-[#FAFAFA] mb-4">
-                          <img src={studioPost.media_data} alt="Post media" className="w-full h-56 object-cover" />
-                          <div className="absolute top-2 right-2 flex gap-1.5">
-                            <label className="cursor-pointer px-2 py-1 bg-white/90 backdrop-blur-sm text-[10px] font-semibold rounded-lg shadow-sm hover:bg-white transition-colors">
-                              Replace
-                              <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
-                            </label>
-                            <button onClick={() => setStudioPost(prev => ({ ...prev, media_data: undefined }))} className="px-2 py-1 bg-white/90 backdrop-blur-sm text-[10px] font-semibold text-red-500 rounded-lg shadow-sm hover:bg-white transition-colors">
-                              Remove
-                            </button>
-                          </div>
-                          {captionLoading && (
-                            <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 text-white text-[9px] font-semibold rounded-lg backdrop-blur-sm animate-pulse">
-                              Generating captions from image...
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <label className="flex flex-col items-center justify-center gap-2 py-12 border-2 border-dashed border-[#E5E5EA] rounded-xl cursor-pointer hover:border-[#C5C5C5] hover:bg-[#FAFAFA] transition-colors mb-4">
-                          <PhotoIcon className="size-10 text-[#CCC]" />
-                          <span className="text-xs text-[#7A7A7A]">Click to upload or paste a screenshot</span>
-                          <span className="text-[10px] text-[#AAA]">PNG, JPG, WebP — captions auto-generate</span>
+              {/* ── 4. Image upload (only for image/article) ── */}
+              {(studioPost.post_format === "image" || studioPost.post_format === "article") && (
+                <div className="px-5 pt-4 pb-4 border-b border-[#F0F0F0]">
+                  {studioPost.media_data ? (
+                    <div className="relative rounded-xl overflow-hidden border border-[#E5E5EA]">
+                      <img src={studioPost.media_data} alt="Post media" className="w-full h-36 object-cover" />
+                      <div className="absolute top-2 right-2 flex gap-1">
+                        <label className="cursor-pointer px-2 py-1 bg-white/90 backdrop-blur-sm text-[9px] font-semibold rounded-lg shadow-sm hover:bg-white transition-colors">
+                          Replace
                           <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
                         </label>
-                      )}
-
-                      <button
-                        onClick={() => setStudioStep(4)}
-                        className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors"
-                      >
-                        {studioPost.media_data ? "Continue" : "Skip — add image later"}
-                      </button>
-                    </div>
-                  )}
-
-                  {/* ── STEP 4: Caption ── */}
-                  {studioStep === 4 && (
-                    <div className="animate-fadeIn">
-                      <div className="flex items-center gap-2 mb-4 flex-wrap">
-                        <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: platformColors[studioPost.platform || "x"] + "15", color: platformColors[studioPost.platform || "x"] }}>
-                          {platformLabels[studioPost.platform || "x"]}
-                        </span>
-                        <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: contentTypeColors[studioPost.content_type || "educational"] + "15", color: contentTypeColors[studioPost.content_type || "educational"] }}>
-                          {contentTypeLabels[studioPost.content_type || "educational"]}
-                        </span>
-                        <span className="text-[9px] font-semibold text-[#7A7A7A] bg-[#F3F3F5] px-1.5 py-0.5 rounded-full">
-                          {postFormatLabels[studioPost.post_format || "text"]}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between mb-2">
-                        <label className={`${labelClass} !mb-0`}>Caption</label>
-                        <button
-                          onClick={() => generateCaptions()}
-                          disabled={captionLoading}
-                          className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
-                        >
-                          <SparklesIcon className="size-3" />
-                          {captionLoading ? "Generating..." : "Generate"}
+                        <button onClick={() => setStudioPost(prev => ({ ...prev, media_data: undefined }))} className="px-2 py-1 bg-white/90 backdrop-blur-sm text-[9px] font-semibold text-red-400 rounded-lg shadow-sm hover:bg-white transition-colors">
+                          Remove
                         </button>
                       </div>
-                      <textarea
-                        value={studioPost.caption || ""}
-                        onChange={e => {
-                          const val = e.target.value;
-                          setStudioPost(prev => ({ ...prev, caption: val }));
+                      {captionLoading && (
+                        <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 text-white text-[9px] font-semibold rounded-lg backdrop-blur-sm animate-pulse">
+                          Generating captions...
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <label className="flex items-center justify-center gap-2 py-5 border border-dashed border-[#E0E0E0] rounded-xl cursor-pointer hover:border-[#B0B0B0] hover:bg-[#FAFAFA] transition-colors">
+                      <PhotoIcon className="size-5 text-[#CCC]" />
+                      <span className="text-[11px] text-[#999]">Upload or paste image</span>
+                      <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
+                    </label>
+                  )}
+                </div>
+              )}
+
+              {/* ── 5. Caption Length toggle ── */}
+              <div className="px-5 pt-4 pb-3 border-b border-[#F0F0F0]">
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider shrink-0">Length</p>
+                  <div className="flex gap-1">
+                    {(["short", "medium", "long"] as CaptionLength[]).map(l => {
+                      const active = captionLength === l;
+                      return (
+                        <button
+                          key={l}
+                          onClick={() => setCaptionLength(l)}
+                          className={`px-3 py-1.5 text-[10px] font-medium rounded-lg transition-colors capitalize ${
+                            active
+                              ? "bg-[#1B1B1B] text-white"
+                              : "text-[#999] hover:bg-[#F3F3F5]"
+                          }`}
+                        >
+                          {l}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* ── 6. Generate + Caption display ── */}
+              <div className="px-5 pt-4 pb-5 border-b border-[#F0F0F0]">
+                {/* Generate button */}
+                <button
+                  onClick={() => generateCaptions()}
+                  disabled={captionLoading || !studioPost.angle?.trim()}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40 mb-3"
+                >
+                  <SparklesIcon className="size-4" />
+                  {captionLoading ? "Generating captions..." : "Generate Captions"}
+                </button>
+                {!studioPost.angle?.trim() && !studioPost.caption && (
+                  <p className="text-[10px] text-[#BBB] text-center mb-3">Write an idea above first</p>
+                )}
+
+                {captionError && <p className="text-[11px] text-red-500 mb-2">{captionError}</p>}
+
+                {/* Platform caption tabs (when multiple platforms selected and captions exist) */}
+                {(() => {
+                  const platforms = (studioPost.platforms as Platform[]) || ["x"];
+                  const hasMultiple = platforms.length > 1 && (captions.length > 0 || Object.keys(platformCaptions).length > 0);
+                  if (!hasMultiple) return null;
+                  return (
+                    <div className="flex gap-1 mb-3">
+                      {platforms.map(p => (
+                        <button
+                          key={p}
+                          onClick={() => {
+                            setActiveCaptionPlatform(p);
+                            // Load platform-specific captions if available
+                            if (platformCaptions[p]) {
+                              setCaptions(platformCaptions[p]!);
+                            }
+                            // Load draft caption for this platform
+                            if (draftCaptions[p]) {
+                              setStudioPost(prev => ({ ...prev, caption: draftCaptions[p], platform: p }));
+                            }
+                          }}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold rounded-lg transition-colors ${
+                            activeCaptionPlatform === p
+                              ? "bg-[#1B1B1B] text-white"
+                              : "text-[#999] hover:bg-[#F3F3F5]"
+                          }`}
+                        >
+                          <span className="size-2 rounded-full" style={{ backgroundColor: activeCaptionPlatform === p ? "white" : platformColors[p] }} />
+                          {platformLabels[p]}
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
+
+                {/* Adapting indicator */}
+                {adaptingPlatform === studioPost.platform && (
+                  <div className="py-4 flex items-center justify-center gap-2">
+                    <ArrowPathIcon className="size-4 text-[#999] animate-spin" />
+                    <p className="text-xs text-[#999]">Adapting for {platformLabels[studioPost.platform || "x"]}...</p>
+                  </div>
+                )}
+
+                {/* Caption variants */}
+                {captions.length > 0 && adaptingPlatform !== studioPost.platform && (
+                  <div className="space-y-2 mb-3">
+                    <p className="text-[10px] font-semibold text-[#AAA] uppercase tracking-wider">Pick a variant</p>
+                    {captions.map((c, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          setSelectedCaption(i);
+                          setStudioPost(prev => ({ ...prev, caption: c }));
                           if (studioPost.platform) {
-                            setDraftCaptions(prev => ({ ...prev, [studioPost.platform!]: val }));
+                            setDraftCaptions(prev => ({ ...prev, [studioPost.platform!]: c }));
+                            if (!sourceCaptionForAdapt) setSourceCaptionForAdapt(c);
                           }
                         }}
-                        placeholder={studioPost.platform === "x" ? "Write your tweet..." : "Write your caption..."}
-                        className={`${textareaClass} min-h-[100px]`}
-                        rows={4}
-                        autoFocus
-                      />
+                        className={`w-full text-left p-3 rounded-lg border transition-colors text-xs leading-relaxed ${
+                          selectedCaption === i ? "border-[#1B1B1B] bg-[#F7F8FA]" : "border-[#E5E5EA] hover:bg-[#FAFAFA]"
+                        }`}
+                      >
+                        {selectedCaption === i && <span className="float-right ml-2"><CheckIcon className="size-3.5 text-emerald-500" /></span>}
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-                      {captionError && <p className="text-[11px] text-red-500 mt-2">{captionError}</p>}
-                      {captions.length > 0 && (
-                        <div className="space-y-2 mt-3">
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">Pick a variant</p>
-                          {captions.map((c, i) => (
+                {/* Editable caption textarea */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider">Caption</p>
+                    {studioPost.caption && (
+                      <button
+                        onClick={() => generateCaptions()}
+                        disabled={captionLoading}
+                        className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-[#7A7A7A] bg-[#F3F3F5] rounded-md hover:bg-[#EBEBEB] transition-colors disabled:opacity-50"
+                      >
+                        <SparklesIcon className="size-3" />
+                        {captionLoading ? "..." : "Regenerate"}
+                      </button>
+                    )}
+                  </div>
+                  <textarea
+                    value={studioPost.caption || ""}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setStudioPost(prev => ({ ...prev, caption: val }));
+                      if (studioPost.platform) {
+                        setDraftCaptions(prev => ({ ...prev, [studioPost.platform!]: val }));
+                      }
+                    }}
+                    placeholder="Write your caption..."
+                    className="w-full bg-[#F7F8FA] rounded-lg px-3 py-2.5 text-sm text-[#1B1B1B] leading-relaxed resize-none outline-none placeholder:text-[#CCC] border border-[#E5E5EA] focus:border-[#1B1B1B] transition-colors min-h-[80px]"
+                    rows={3}
+                  />
+                </div>
+              </div>
+
+              {/* ── 7. Schedule (date + time) ── */}
+              <div className="px-5 py-4">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider">Schedule</p>
+                  {studioPost.platform && studioPost.scheduled_date && studioPost.scheduled_time && (() => {
+                    const score = getSlotScore(studioPost.platform, new Date(studioPost.scheduled_date + "T00:00:00").getDay(), parseInt(studioPost.scheduled_time));
+                    return score > 0 ? (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-[#999]">Slot score</span>
+                        <span className={`text-[10px] font-bold ${score >= 80 ? "text-emerald-600" : score >= 50 ? "text-amber-600" : "text-[#999]"}`}>{score}/100</span>
+                        {score >= 80 && <span className="text-[8px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Optimal</span>}
+                      </div>
+                    ) : null;
+                  })()}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="date"
+                    value={studioPost.scheduled_date || ""}
+                    onChange={e => setStudioPost(prev => ({ ...prev, scheduled_date: e.target.value }))}
+                    className="w-full px-3 py-2 text-xs border border-[#E5E5EA] rounded-lg bg-white outline-none focus:border-[#1B1B1B] transition-colors"
+                  />
+                  <input
+                    type="time"
+                    value={studioPost.scheduled_time || ""}
+                    onChange={e => setStudioPost(prev => ({ ...prev, scheduled_time: e.target.value }))}
+                    className="w-full px-3 py-2 text-xs border border-[#E5E5EA] rounded-lg bg-white outline-none focus:border-[#1B1B1B] transition-colors"
+                  />
+                </div>
+
+                {/* Suggested times from analytics */}
+                {studioPost.platform && studioPost.scheduled_date && (() => {
+                  const dayOfWeek = new Date(studioPost.scheduled_date + "T00:00:00").getDay();
+                  const bestTimes = getBestTimes(studioPost.platform, dayOfWeek);
+                  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                  const topSlots = getTopSlots(studioPost.platform).filter(s => s.day !== dayOfWeek).slice(0, 2);
+
+                  return bestTimes.length > 0 || topSlots.length > 0 ? (
+                    <div className="mt-2.5">
+                      {bestTimes.length > 0 && (
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[9px] text-[#BBB]">Best for {dayNames[dayOfWeek]}:</span>
+                          {bestTimes.map((t, i) => {
+                            const timeStr = t.time || `${t.hour.toString().padStart(2, "0")}:${(t.minute || 0).toString().padStart(2, "0")}`;
+                            const displayHour = t.hour % 12 || 12;
+                            const displayMin = (t.minute || 0).toString().padStart(2, "0");
+                            const ampm = t.hour >= 12 ? "PM" : "AM";
+                            return (
+                            <button
+                              key={i}
+                              onClick={() => setStudioPost(prev => ({ ...prev, scheduled_time: timeStr }))}
+                              className={`text-[9px] font-semibold px-2 py-1 rounded-md transition-colors ${
+                                studioPost.scheduled_time === timeStr
+                                  ? "bg-emerald-100 text-emerald-700"
+                                  : "bg-[#F3F3F5] text-[#666] hover:bg-[#EBEBEB]"
+                              }`}
+                            >
+                              {displayHour}:{displayMin} {ampm}
+                              <span className="ml-1 text-[8px] opacity-60">{t.score}</span>
+                            </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                      {bestTimes.length === 0 && topSlots.length > 0 && (
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[9px] text-[#BBB]">Try instead:</span>
+                          {topSlots.map((t, i) => (
                             <button
                               key={i}
                               onClick={() => {
-                                setSelectedCaption(i);
-                                setStudioPost(prev => ({ ...prev, caption: c }));
-                                if (studioPost.platform) {
-                                  setDraftCaptions(prev => ({ ...prev, [studioPost.platform!]: c }));
-                                  if (!sourceCaptionForAdapt) setSourceCaptionForAdapt(c);
-                                }
+                                const current = new Date(studioPost.scheduled_date + "T00:00:00");
+                                const currentDay = current.getDay();
+                                const diff = t.day - currentDay;
+                                const target = new Date(current);
+                                target.setDate(target.getDate() + diff);
+                                const timeStr = t.time || `${t.hour.toString().padStart(2, "0")}:${(t.minute || 0).toString().padStart(2, "0")}`;
+                                setStudioPost(prev => ({
+                                  ...prev,
+                                  scheduled_date: toDateStr(target),
+                                  scheduled_time: timeStr
+                                }));
                               }}
-                              className={`w-full text-left p-3 rounded-lg border transition-colors text-xs leading-relaxed ${
-                                selectedCaption === i ? "border-[#1B1B1B] bg-[#F7F8FA]" : "border-[#E5E5EA] hover:bg-[#FAFAFA]"
-                              }`}
+                              className="text-[9px] font-semibold px-2 py-1 rounded-md bg-[#F3F3F5] text-[#666] hover:bg-[#EBEBEB] transition-colors"
                             >
-                              {selectedCaption === i && <span className="float-right ml-2"><CheckIcon className="size-3.5 text-emerald-500" /></span>}
-                              {c}
+                              {dayNames[t.day]} {t.hour % 12 || 12}:{(t.minute || 0).toString().padStart(2, "0")}{t.hour >= 12 ? "pm" : "am"}
+                              <span className="ml-1 text-[8px] opacity-60">{t.score}</span>
                             </button>
                           ))}
                         </div>
                       )}
                     </div>
-                  )}
+                  ) : null;
+                })()}
+              </div>
+            </div>
 
-                  {/* ── STEP 5: Schedule & Status ── */}
-                  {studioStep === 5 && (
-                    <div className="animate-fadeIn">
-                      <p className="text-lg font-bold text-[#1B1B1B] mb-1">Schedule & status</p>
-                      <p className="text-xs text-[#7A7A7A] mb-5">Set when this goes out and mark its current status.</p>
-
-                      {!studioPost.group_id && (
-                        <div className="mb-5">
-                          <label className={labelClass}>Platform</label>
-                          <div className="flex gap-2">
-                            {(["x", "linkedin", "instagram", "tiktok"] as Platform[]).map(p => (
-                              <button
-                                key={p}
-                                onClick={() => setStudioPost(prev => ({ ...prev, platform: p }))}
-                                className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg border transition-colors ${
-                                  studioPost.platform === p
-                                    ? "border-[#1B1B1B] bg-[#1B1B1B] text-white"
-                                    : "border-[#E5E5EA] text-[#7A7A7A] hover:bg-[#F5F5F5]"
-                                }`}
-                              >
-                                <span className="size-2 rounded-full inline-block mr-1.5" style={{ backgroundColor: studioPost.platform === p ? "white" : platformColors[p] }} />
-                                {platformLabels[p]}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="grid grid-cols-2 gap-3 mb-4">
-                        <div>
-                          <label className={labelClass}>Date</label>
-                          <input type="date" value={studioPost.scheduled_date || ""} onChange={e => setStudioPost(prev => ({ ...prev, scheduled_date: e.target.value }))} className={inputClass} />
-                        </div>
-                        <div>
-                          <label className={labelClass}>Time</label>
-                          <input type="time" value={studioPost.scheduled_time || ""} onChange={e => setStudioPost(prev => ({ ...prev, scheduled_time: e.target.value }))} className={inputClass} />
-                        </div>
-                      </div>
-
-                      {studioPost.platform && studioPost.scheduled_date && studioPost.scheduled_time && (
-                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#F7F8FA] mb-5">
-                          <ClockIcon className="size-3.5 text-[#7A7A7A]" />
-                          <span className="text-[11px] text-[#7A7A7A]">
-                            Slot score: <span className="font-semibold text-[#1B1B1B]">{getSlotScore(studioPost.platform, new Date(studioPost.scheduled_date + "T00:00:00").getDay(), parseInt(studioPost.scheduled_time)) || "—"}</span>/100
-                          </span>
-                          {getSlotScore(studioPost.platform, new Date(studioPost.scheduled_date + "T00:00:00").getDay(), parseInt(studioPost.scheduled_time)) >= 80 && (
-                            <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Optimal</span>
-                          )}
-                        </div>
-                      )}
-
-                      <label className={labelClass}>Status</label>
-                      <div className="flex flex-wrap gap-1.5 mb-5">
-                        {(["draft", "created", "scheduled"] as PostStatus[]).map(s => (
-                          <button
-                            key={s}
-                            onClick={() => setStudioPost(prev => ({ ...prev, status: s }))}
-                            className={`px-2.5 py-1.5 text-[10px] font-semibold rounded-full border transition-colors ${
-                              studioPost.status === s ? "text-white" : "border-[#E5E5EA] text-[#7A7A7A] hover:bg-[#F5F5F5]"
-                            }`}
-                            style={studioPost.status === s ? { backgroundColor: statusColors[s], borderColor: statusColors[s] } : {}}
-                          >
-                            {statusLabels[s]}
-                          </button>
-                        ))}
-                      </div>
-
-                      <button
-                        onClick={handleSavePost}
-                        disabled={saving}
-                        className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
-                      >
-                        <CheckIcon className="size-3.5" />
-                        {saving ? "Saving..." : "Save Post"}
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Step navigation footer */}
-                <div className="shrink-0 border-t border-[#E5E5EA] px-5 py-3 bg-white flex items-center justify-between">
-                  <button
-                    onClick={() => setStudioStep(s => Math.max(1, s - 1))}
-                    disabled={studioStep === 1}
-                    className="px-3 py-1.5 text-[11px] font-medium text-[#7A7A7A] hover:text-[#1B1B1B] disabled:opacity-30 transition-colors"
-                  >
-                    Back
-                  </button>
-                  <div className="text-[10px] text-[#AAA]">
-                    {studioStep === 1 && "Format"}
-                    {studioStep === 2 && "Content type"}
-                    {studioStep === 3 && "Media"}
-                    {studioStep === 4 && "Caption"}
-                    {studioStep === 5 && "Schedule"}
-                  </div>
-                  {studioStep < 5 ? (
-                    <button
-                      onClick={() => {
-                        if (studioStep === 2 && studioPost.post_format !== "image" && studioPost.post_format !== "video") {
-                          setStudioStep(4);
-                        } else {
-                          setStudioStep(s => Math.min(5, s + 1));
-                        }
-                      }}
-                      className="px-3 py-1.5 text-[11px] font-semibold text-[#1B1B1B] hover:bg-[#F5F5F5] rounded-lg transition-colors"
-                    >
-                      Next →
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleSavePost}
-                      disabled={saving}
-                      className="px-3 py-1.5 text-[11px] font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
-                    >
-                      {saving ? "Saving..." : "Save"}
-                    </button>
-                  )}
-                </div>
-              </>
-            )}
+            {/* ── 8. Footer (sticky bottom) ── */}
+            <div className="shrink-0 border-t border-[#E5E5EA] px-5 py-3 bg-white flex items-center gap-2">
+              <button
+                onClick={repurposePost}
+                disabled={repurposeLoading || !studioPost.caption?.trim()}
+                className="flex items-center gap-1 px-3 py-2.5 text-[10px] font-semibold border border-[#E5E5EA] text-[#7A7A7A] rounded-lg hover:bg-[#F5F5F5] transition-colors disabled:opacity-40"
+              >
+                <ArrowPathIcon className={`size-3 ${repurposeLoading ? "animate-spin" : ""}`} />
+                {repurposeLoading ? "..." : "Repurpose"}
+              </button>
+              <button
+                onClick={handleSavePost}
+                disabled={saving}
+                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
+              >
+                {saving ? "Saving..." : "Save"}
+              </button>
+              <button
+                onClick={() => {
+                  setStudioPost(prev => ({ ...prev, status: "scheduled" as PostStatus }));
+                  setShowTypefullyModal(true);
+                }}
+                disabled={!studioPost.caption?.trim()}
+                className="flex items-center gap-1 px-3 py-2.5 text-[10px] font-semibold border border-emerald-200 text-emerald-700 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors disabled:opacity-40"
+              >
+                <ArrowUpTrayIcon className="size-3" />
+                Typefully
+              </button>
+              {studioPost.id && (
+                <button
+                  onClick={() => handleDeletePost(studioPost.id!)}
+                  className="p-2.5 text-[#CCC] hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Delete post"
+                >
+                  <TrashIcon className="size-4" />
+                </button>
+              )}
+            </div>
           </div>
         </>
       )}
