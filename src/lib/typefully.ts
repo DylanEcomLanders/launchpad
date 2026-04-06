@@ -157,9 +157,10 @@ export async function uploadMediaFromUrl(
 
   const { media_id, upload_url } = await initRes.json();
 
-  // Step 2: PUT raw bytes to presigned S3 URL (no extra headers!)
+  // Step 2: PUT raw bytes to presigned S3 URL
   const uploadRes = await fetch(upload_url, {
     method: "PUT",
+    headers: { "Content-Type": contentType },
     body: fileBuffer as unknown as BodyInit,
   });
 

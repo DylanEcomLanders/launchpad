@@ -530,6 +530,14 @@ export default function CalendarPage() {
     if (postPlatforms.length === 0 || !studioPost.scheduled_date) return;
     setSaving(true);
     const now = new Date().toISOString();
+
+    // Merge current textarea caption into draftCaptions before saving
+    const currentPlat = studioPost.platform as Platform;
+    const mergedCaptions: Record<string, string> = { ...draftCaptions };
+    if (currentPlat && studioPost.caption) {
+      mergedCaptions[currentPlat] = studioPost.caption;
+    }
+
     const post: ContentPost = {
       id: studioPost.id || uuid(),
       creator: studioPost.creator || creator,
@@ -540,7 +548,7 @@ export default function CalendarPage() {
       post_format: studioPost.post_format || "text",
       angle: studioPost.angle || "",
       caption: studioPost.caption || "",
-      platform_captions: studioPost.platform_captions || draftCaptions as Record<Platform, string>,
+      platform_captions: mergedCaptions as Record<Platform, string>,
       status: "draft",
       scheduled_date: studioPost.scheduled_date!,
       scheduled_time: studioPost.scheduled_time || "09:00",
@@ -649,7 +657,7 @@ export default function CalendarPage() {
       // Step 2: Upload images
       const mediaIds: Record<string, string> = {};
       for (const p of schedulable) {
-        if (p.media_data && (p.post_format === "image" || p.post_format === "video")) {
+        if (p.media_data) {
           try {
             const uploadRes = await fetch("/api/typefully", {
               method: "POST",
@@ -843,7 +851,7 @@ export default function CalendarPage() {
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64 = reader.result as string;
-      setStudioPost(prev => ({ ...prev, media_data: base64 }));
+      setStudioPost(prev => ({ ...prev, media_data: base64, post_format: "image" as PostFormat }));
       // Auto-generate captions based on the image
       generateCaptions({ imageData: base64 });
     };

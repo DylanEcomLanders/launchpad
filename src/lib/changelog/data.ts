@@ -52,6 +52,8 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Voice profile system — per-creator tone, avoid list, writing rules, example posts, and voice notes that feed directly into caption generation" },
       { type: "added", text: "Self-improving captions — when you edit a generated caption before saving, the before/after is tracked and fed into future generations so the AI learns your style" },
       { type: "fixed", text: "Calendar grid now fills the full viewport height — no more grey dead space below the week/month grid" },
+      { type: "fixed", text: "Typefully now sends correct per-platform captions instead of duplicating one caption to both X and LinkedIn" },
+      { type: "fixed", text: "Images now upload to Typefully correctly — pasted screenshots auto-set format to image, and upload runs regardless of post format" },
     ],
   },
   {
