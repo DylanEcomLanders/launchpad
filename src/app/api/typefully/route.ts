@@ -11,6 +11,7 @@ import {
   scheduleBatch,
   listDrafts,
   uploadMedia,
+  getMediaStatus,
   type SchedulePostInput,
   type MultiPlatformPostInput,
 } from "@/lib/typefully";
@@ -32,6 +33,14 @@ export async function GET(req: NextRequest) {
       if (!socialSetId) return NextResponse.json({ error: "social_set_id required" }, { status: 400 });
       const drafts = await listDrafts(socialSetId, status || undefined);
       return NextResponse.json({ drafts });
+    }
+
+    if (action === "media-status") {
+      const socialSetId = Number(searchParams.get("social_set_id"));
+      const mediaId = searchParams.get("media_id");
+      if (!socialSetId || !mediaId) return NextResponse.json({ error: "social_set_id and media_id required" }, { status: 400 });
+      const result = await getMediaStatus(socialSetId, mediaId);
+      return NextResponse.json(result);
     }
 
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });

@@ -169,6 +169,21 @@ export async function uploadMedia(
   return media_id;
 }
 
+/** Check if media has finished processing */
+export async function getMediaStatus(
+  socialSetId: number,
+  mediaId: string,
+): Promise<{ status: string }> {
+  const res = await fetch(`${BASE}/social-sets/${socialSetId}/media/${mediaId}`, {
+    headers: headers(),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Media status check failed (${res.status}): ${body}`);
+  }
+  return res.json();
+}
+
 /** Schedule a batch of posts — returns results for each */
 export async function scheduleBatch(
   socialSetId: number,

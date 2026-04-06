@@ -680,6 +680,31 @@ export default function CalendarPage() {
         }
       }
 
+      // Step 2b: Wait for all uploaded media to finish processing
+      if (Object.keys(mediaIds).length > 0) {
+        console.log(`[Typefully] Waiting for ${Object.keys(mediaIds).length} image(s) to process...`);
+        for (const [postId, mediaId] of Object.entries(mediaIds)) {
+          let ready = false;
+          for (let attempt = 0; attempt < 15; attempt++) {
+            try {
+              const statusRes = await fetch(`/api/typefully?action=media-status&social_set_id=${socialSetId}&media_id=${mediaId}`);
+              const statusData = await statusRes.json();
+              console.log(`[Typefully] Media ${mediaId} status:`, statusData.status || statusData);
+              if (statusData.status === "ready" || statusData.status === "completed" || statusData.status === "processed") {
+                ready = true;
+                break;
+              }
+            } catch (e) {
+              console.warn(`[Typefully] Media status check failed:`, e);
+            }
+            await new Promise(r => setTimeout(r, 2000)); // wait 2s between polls
+          }
+          if (!ready) {
+            console.warn(`[Typefully] Media ${mediaId} still processing after 30s, proceeding anyway`);
+          }
+        }
+      }
+
       // Step 3: Create ONE DRAFT PER PLATFORM per post (separate drafts = guaranteed different captions)
       let successCount = 0;
       let failCount = 0;
