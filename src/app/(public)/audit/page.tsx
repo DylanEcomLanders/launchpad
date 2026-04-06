@@ -119,7 +119,7 @@ export default function AuditLandingPage() {
 
       {/* ── Hero ── */}
       <div className="flex-1 flex flex-col items-center">
-        <div className="w-full max-w-2xl mx-auto px-6 md:px-10 pt-12 md:pt-20 pb-12 text-center">
+        <div className="w-full max-w-4xl mx-auto px-6 md:px-10 pt-12 md:pt-20 pb-12 text-center">
           {/* Badges */}
           <div className="flex items-center justify-center gap-3 mb-8">
             <span className="flex items-center gap-1.5 text-sm text-[#666]">
