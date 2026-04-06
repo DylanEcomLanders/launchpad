@@ -266,6 +266,13 @@ export default function CalendarPage() {
   const [repurposeLoading, setRepurposeLoading] = useState(false);
   const [repurposeError, setRepurposeError] = useState("");
 
+  // Per-platform draft caption cache (for auto-adaptation)
+  const [draftCaptions, setDraftCaptions] = useState<Partial<Record<Platform, string>>>({});
+  const [draftFormats, setDraftFormats] = useState<Partial<Record<Platform, PostFormat>>>({});
+  const [adaptingPlatform, setAdaptingPlatform] = useState<Platform | null>(null);
+  const [sourceCaptionForAdapt, setSourceCaptionForAdapt] = useState<string>("");
+  const adaptRequestRef = useRef(0); // to discard stale adapt responses
+
   // Typefully state
   const [typefullyLoading, setTypefullyLoading] = useState(false);
   const [typefullyResult, setTypefullyResult] = useState<{ sent: number; failed: number } | null>(null);
@@ -426,6 +433,10 @@ export default function CalendarPage() {
       setStudioPost({ ...post });
       setSelectedCaption(-1);
       setStudioStep(4); // jump to caption step for existing posts
+      // Seed draft cache with existing caption
+      setDraftCaptions(post.caption ? { [post.platform]: post.caption } : {});
+      setDraftFormats(post.post_format ? { [post.platform]: post.post_format } : {});
+      setSourceCaptionForAdapt(post.caption || "");
     } else {
       setStudioPost({
         id: "",
@@ -442,9 +453,14 @@ export default function CalendarPage() {
       });
       setSelectedCaption(-1);
       setStudioStep(1); // start from beginning
+      setDraftCaptions({});
+      setDraftFormats({});
+      setSourceCaptionForAdapt("");
     }
     setCaptions([]);
     setCaptionError("");
+    setAdaptingPlatform(null);
+    adaptRequestRef.current = 0;
     setShowStudio(true);
   }
 
@@ -466,6 +482,11 @@ export default function CalendarPage() {
     setCaptionError("");
     setSelectedCaption(-1);
     setStudioStep(1);
+    setDraftCaptions({});
+    setDraftFormats({});
+    setAdaptingPlatform(null);
+    setSourceCaptionForAdapt("");
+    adaptRequestRef.current = 0;
     setShowStudio(true);
   }
 
@@ -688,6 +709,104 @@ export default function CalendarPage() {
     }
   }
 
+  // ── Auto-adapt caption for a target platform ──
+  async function adaptCaptionForPlatform(
+    sourceCaption: string,
+    sourcePlatform: Platform,
+    targetPlatform: Platform
+  ) {
+    const requestId = ++adaptRequestRef.current;
+    setAdaptingPlatform(targetPlatform);
+
+    try {
+      const res = await fetch("/api/calendar/repurpose", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sourcePlatform: platformLabels[sourcePlatform],
+          sourceCaption,
+          sourceFormat: studioPost.post_format || "text",
+          contentType: contentTypeLabels[studioPost.content_type || "educational"],
+          targetPlatforms: [platformLabels[targetPlatform]],
+        }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      // Only apply if this is still the latest request
+      if (requestId !== adaptRequestRef.current) return;
+
+      const variant = data.variants?.[0];
+      if (variant) {
+        const adaptedCaption = variant.caption;
+        const adaptedFormat = (variant.post_format || "text") as PostFormat;
+
+        setDraftCaptions(prev => ({ ...prev, [targetPlatform]: adaptedCaption }));
+        setDraftFormats(prev => ({ ...prev, [targetPlatform]: adaptedFormat }));
+        setStudioPost(prev => ({
+          ...prev,
+          caption: adaptedCaption,
+          post_format: adaptedFormat,
+        }));
+      }
+    } catch (e: any) {
+      console.error("Adapt caption error:", e);
+    } finally {
+      if (requestId === adaptRequestRef.current) {
+        setAdaptingPlatform(null);
+      }
+    }
+  }
+
+  // ── Switch platform tab with auto-adaptation ──
+  function handlePlatformSwitch(targetPlatform: Platform) {
+    const currentPlatform = studioPost.platform;
+    if (targetPlatform === currentPlatform) return;
+
+    // Save current caption to draft cache before switching
+    if (currentPlatform && studioPost.caption?.trim()) {
+      setDraftCaptions(prev => ({ ...prev, [currentPlatform]: studioPost.caption! }));
+      setDraftFormats(prev => ({ ...prev, [currentPlatform]: studioPost.post_format || "text" }));
+      // Track source caption for re-adaptation detection
+      if (!sourceCaptionForAdapt && studioPost.caption?.trim()) {
+        setSourceCaptionForAdapt(studioPost.caption);
+      }
+    }
+
+    // Check if we already have a cached draft for this platform
+    if (draftCaptions[targetPlatform]) {
+      setStudioPost(prev => ({
+        ...prev,
+        platform: targetPlatform,
+        caption: draftCaptions[targetPlatform]!,
+        post_format: draftFormats[targetPlatform] || prev.post_format || "text",
+      }));
+      setCaptions([]);
+      setSelectedCaption(-1);
+      return;
+    }
+
+    // If we have a caption to adapt from, auto-adapt
+    const captionToAdapt = studioPost.caption?.trim() || sourceCaptionForAdapt;
+    const sourceP = currentPlatform || "x";
+
+    if (captionToAdapt) {
+      setStudioPost(prev => ({
+        ...prev,
+        platform: targetPlatform,
+        caption: "", // will be filled by adapt
+      }));
+      setCaptions([]);
+      setSelectedCaption(-1);
+      adaptCaptionForPlatform(captionToAdapt, sourceP as Platform, targetPlatform);
+    } else {
+      // No caption yet — just switch platform
+      setStudioPost(prev => ({ ...prev, platform: targetPlatform }));
+      setCaptions([]);
+      setSelectedCaption(-1);
+    }
+  }
+
   async function generateIdeas() {
     setIdeasLoading(true);
     setIdeasError("");
@@ -789,23 +908,41 @@ export default function CalendarPage() {
         }
       }
 
-      const res = await fetch("/api/calendar/repurpose", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sourcePlatform: platformLabels[studioPost.platform],
-          sourceCaption: studioPost.caption,
-          sourceFormat: studioPost.post_format || "text",
-          contentType: contentTypeLabels[studioPost.content_type || "educational"],
-          targetPlatforms: targetPlatforms.map(p => platformLabels[p]),
-        }),
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
+      // Use cached draft captions where available, only call API for uncached platforms
+      const uncachedPlatforms = targetPlatforms.filter(p => !draftCaptions[p]);
+      let apiVariants: any[] = [];
+
+      if (uncachedPlatforms.length > 0) {
+        const res = await fetch("/api/calendar/repurpose", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sourcePlatform: platformLabels[studioPost.platform],
+            sourceCaption: studioPost.caption,
+            sourceFormat: studioPost.post_format || "text",
+            contentType: contentTypeLabels[studioPost.content_type || "educational"],
+            targetPlatforms: uncachedPlatforms.map(p => platformLabels[p]),
+          }),
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        apiVariants = data.variants || [];
+      }
+
+      // Merge cached drafts with API results
+      const cachedVariants = targetPlatforms
+        .filter(p => draftCaptions[p])
+        .map(p => ({
+          platform: platformLabels[p],
+          post_format: draftFormats[p] || "text",
+          caption: draftCaptions[p]!,
+        }));
+
+      const allVariants = [...cachedVariants, ...apiVariants];
 
       // Create new posts for each variant
       const now = new Date().toISOString();
-      const newPosts: ContentPost[] = (data.variants || []).map((v: any) => {
+      const newPosts: ContentPost[] = allVariants.map((v: any) => {
         const platform = (Object.entries(platformLabels).find(([, label]) => label.toLowerCase() === v.platform.toLowerCase())?.[0] || v.platform.toLowerCase()) as Platform;
         return {
           id: uuid(),
@@ -1427,10 +1564,10 @@ export default function CalendarPage() {
               const hasSiblings = siblings.length > 1;
               const platformOrder: Platform[] = ["x", "linkedin", "instagram", "tiktok"];
 
-              // For linked posts: show only platforms with siblings
+              // For linked posts: show platforms with siblings + any with draft captions
               // For single posts: show all platforms as selector
               const tabPlatforms = hasSiblings
-                ? platformOrder.filter(p => siblings.some(s => s.platform === p))
+                ? platformOrder.filter(p => siblings.some(s => s.platform === p) || draftCaptions[p])
                 : platformOrder;
 
               return (
@@ -1439,14 +1576,16 @@ export default function CalendarPage() {
                     {tabPlatforms.map(p => {
                       const isActive = studioPost.platform === p;
                       const sibling = siblings.find(s => s.platform === p);
+                      const hasDraft = !!draftCaptions[p];
+                      const isAdapting = adaptingPlatform === p;
                       return (
                         <button
                           key={p}
                           onClick={() => {
                             if (hasSiblings && sibling) {
                               switchToSibling(p);
-                            } else if (!hasSiblings) {
-                              setStudioPost(prev => ({ ...prev, platform: p }));
+                            } else {
+                              handlePlatformSwitch(p);
                             }
                           }}
                           className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2.5 text-[11px] font-semibold transition-colors border-b-2 ${
@@ -1455,7 +1594,7 @@ export default function CalendarPage() {
                               : "border-transparent text-[#B0B0B0] hover:text-[#555]"
                           }`}
                         >
-                          <span className="size-2 rounded-full" style={{ backgroundColor: isActive ? platformColors[p] : "#D4D4D4" }} />
+                          <span className={`size-2 rounded-full ${isAdapting ? "animate-pulse" : ""}`} style={{ backgroundColor: isActive ? platformColors[p] : hasDraft ? platformColors[p] + "80" : "#D4D4D4" }} />
                           {platformLabels[p]}
                           {hasSiblings && sibling && (
                             <span className={`text-[8px] px-1 py-0.5 rounded-full ${
@@ -1463,6 +1602,9 @@ export default function CalendarPage() {
                             }`}>
                               {statusLabels[sibling.status]}
                             </span>
+                          )}
+                          {!hasSiblings && hasDraft && !isActive && (
+                            <span className="size-1 rounded-full bg-emerald-400" />
                           )}
                         </button>
                       );
@@ -1526,8 +1668,15 @@ export default function CalendarPage() {
                       </label>
                     )}
 
-                    {/* Caption — either show generate button or the written caption */}
-                    {!studioPost.caption ? (
+                    {/* Caption — adapting / generate / edit */}
+                    {adaptingPlatform === studioPost.platform ? (
+                      <div className="py-6">
+                        <div className="flex items-center justify-center gap-2">
+                          <ArrowPathIcon className="size-4 text-[#999] animate-spin" />
+                          <p className="text-xs text-[#999]">Adapting for {platformLabels[studioPost.platform || "x"]}...</p>
+                        </div>
+                      </div>
+                    ) : !studioPost.caption ? (
                       <div>
                         <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider mb-3">Caption</p>
                         <button
@@ -1557,7 +1706,14 @@ export default function CalendarPage() {
                         </div>
                         <textarea
                           value={studioPost.caption || ""}
-                          onChange={e => setStudioPost(prev => ({ ...prev, caption: e.target.value }))}
+                          onChange={e => {
+                            const val = e.target.value;
+                            setStudioPost(prev => ({ ...prev, caption: val }));
+                            // Update draft cache so switching tabs preserves edits
+                            if (studioPost.platform) {
+                              setDraftCaptions(prev => ({ ...prev, [studioPost.platform!]: val }));
+                            }
+                          }}
                           placeholder="Write your caption..."
                           className="w-full bg-transparent text-sm text-[#1B1B1B] leading-relaxed resize-none outline-none placeholder:text-[#CCC] min-h-[80px]"
                           rows={3}
@@ -1572,7 +1728,14 @@ export default function CalendarPage() {
                         {captions.map((c, i) => (
                           <button
                             key={i}
-                            onClick={() => { setSelectedCaption(i); setStudioPost(prev => ({ ...prev, caption: c })); }}
+                            onClick={() => {
+                              setSelectedCaption(i);
+                              setStudioPost(prev => ({ ...prev, caption: c }));
+                              if (studioPost.platform) {
+                                setDraftCaptions(prev => ({ ...prev, [studioPost.platform!]: c }));
+                                if (!sourceCaptionForAdapt) setSourceCaptionForAdapt(c);
+                              }
+                            }}
                             className={`w-full text-left p-3 rounded-lg border transition-colors text-xs leading-relaxed ${
                               selectedCaption === i ? "border-[#1B1B1B] bg-[#F7F8FA]" : "border-[#E5E5EA] hover:bg-[#FAFAFA]"
                             }`}
@@ -1965,7 +2128,13 @@ export default function CalendarPage() {
                       </div>
                       <textarea
                         value={studioPost.caption || ""}
-                        onChange={e => setStudioPost(prev => ({ ...prev, caption: e.target.value }))}
+                        onChange={e => {
+                          const val = e.target.value;
+                          setStudioPost(prev => ({ ...prev, caption: val }));
+                          if (studioPost.platform) {
+                            setDraftCaptions(prev => ({ ...prev, [studioPost.platform!]: val }));
+                          }
+                        }}
                         placeholder={studioPost.platform === "x" ? "Write your tweet..." : "Write your caption..."}
                         className={`${textareaClass} min-h-[100px]`}
                         rows={4}
@@ -1979,7 +2148,14 @@ export default function CalendarPage() {
                           {captions.map((c, i) => (
                             <button
                               key={i}
-                              onClick={() => { setSelectedCaption(i); setStudioPost(prev => ({ ...prev, caption: c })); }}
+                              onClick={() => {
+                                setSelectedCaption(i);
+                                setStudioPost(prev => ({ ...prev, caption: c }));
+                                if (studioPost.platform) {
+                                  setDraftCaptions(prev => ({ ...prev, [studioPost.platform!]: c }));
+                                  if (!sourceCaptionForAdapt) setSourceCaptionForAdapt(c);
+                                }
+                              }}
                               className={`w-full text-left p-3 rounded-lg border transition-colors text-xs leading-relaxed ${
                                 selectedCaption === i ? "border-[#1B1B1B] bg-[#F7F8FA]" : "border-[#E5E5EA] hover:bg-[#FAFAFA]"
                               }`}

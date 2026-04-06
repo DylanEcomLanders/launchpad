@@ -44,6 +44,7 @@ const seedChangelog: ChangelogEntry[] = [
     changes: [
       { type: "added", text: "Paste screenshots directly into post drafts — Cmd+V anywhere in the studio panel drops the image in and auto-generates captions" },
       { type: "improved", text: "Post scheduling now uses natural minute values (e.g. 08:23, 12:36, 17:08) based on analytics instead of rounding to the hour" },
+      { type: "added", text: "Auto-adapt captions across platforms — write for X, click the LinkedIn tab and it auto-generates a LinkedIn version. Cached per tab so edits are preserved when switching" },
     ],
   },
   {
