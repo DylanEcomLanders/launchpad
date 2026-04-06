@@ -87,20 +87,38 @@ const DEFAULT_PROFILES: Record<string, VoiceProfile> = {
 export async function getVoiceProfile(
   creatorId: string
 ): Promise<VoiceProfile> {
+  const def = DEFAULT_PROFILES[creatorId];
   const profile = await store.getById(creatorId);
-  if (profile) return profile;
-  // Return default (and persist it)
-  const def = DEFAULT_PROFILES[creatorId] || {
-    id: creatorId,
-    tone: [],
-    avoid: [],
-    rules: [],
-    examples: [],
-    voiceNotes: "",
-    editHistory: [],
-  };
-  await store.create(def);
-  return def;
+
+  if (!profile) {
+    // No saved profile — persist and return the default
+    const fallback = def || {
+      id: creatorId,
+      tone: [],
+      avoid: [],
+      rules: [],
+      examples: [],
+      voiceNotes: "",
+      editHistory: [],
+    };
+    await store.create(fallback);
+    return fallback;
+  }
+
+  // If a code default exists, merge it in — code defaults win for tone/avoid/rules/voiceNotes,
+  // but preserve user's examples and editHistory (those are user-generated)
+  if (def) {
+    const merged: VoiceProfile = {
+      ...def,
+      examples: profile.examples.length > 0 ? profile.examples : def.examples,
+      editHistory: profile.editHistory,
+    };
+    // Persist the merged version
+    await store.update(creatorId, merged);
+    return merged;
+  }
+
+  return profile;
 }
 
 export async function saveVoiceProfile(
