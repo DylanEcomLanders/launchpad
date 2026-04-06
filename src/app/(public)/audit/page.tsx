@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { LogoMark } from "@/components/logo";
+import { Logo } from "@/components/logo";
 
 export default function AuditLandingPage() {
   const [email, setEmail] = useState("");
@@ -107,10 +107,7 @@ export default function AuditLandingPage() {
       {/* ── Nav ── */}
       <nav className="w-full border-b border-[#F0F0F0]">
         <div className="max-w-6xl mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <LogoMark size={22} className="text-[#1B1B1B]" />
-            <span className="font-bold text-[#1B1B1B] text-lg tracking-tight">ecomlanders</span>
-          </div>
+          <Logo height={18} className="text-[#1B1B1B]" />
           <span className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#666]">
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -126,28 +123,29 @@ export default function AuditLandingPage() {
           {/* Badges */}
           <div className="flex items-center justify-center gap-3 mb-8">
             <span className="flex items-center gap-1.5 text-sm text-[#666]">
-              <span className="text-amber-500">&#9889;</span> 30 Second Form
+              <svg className="w-3.5 h-3.5 text-amber-500" viewBox="0 0 20 20" fill="currentColor"><path d="M11.983 1.907a.75.75 0 00-1.292-.657l-8.5 9.5A.75.75 0 002.75 12h6.572l-1.305 6.093a.75.75 0 001.292.657l8.5-9.5A.75.75 0 0017.25 8h-6.572l1.305-6.093z" /></svg>
+              30 Second Form
             </span>
             <span className="text-[#DDD]">&middot;</span>
             <span className="flex items-center gap-1.5 text-sm text-[#666]">
-              <span className="text-amber-500">&#9889;</span> 48 Hour Delivery
+              <svg className="w-3.5 h-3.5 text-amber-500" viewBox="0 0 20 20" fill="currentColor"><path d="M11.983 1.907a.75.75 0 00-1.292-.657l-8.5 9.5A.75.75 0 002.75 12h6.572l-1.305 6.093a.75.75 0 001.292.657l8.5-9.5A.75.75 0 0017.25 8h-6.572l1.305-6.093z" /></svg>
+              48 Hour Delivery
             </span>
           </div>
 
           {/* Headline */}
-          <h1 className="text-3xl md:text-[2.8rem] font-bold text-[#1B1B1B] leading-[1.1] tracking-tight mb-6 uppercase">
-            Claim Your <span className="bg-[#D1FF4C] px-2 py-0.5 rounded">Free</span> 8-Point Shopify Product Page Audit
+          <h1 className="text-3xl md:text-[3.5rem] font-bold text-[#1B1B1B] leading-[1.08] tracking-tight mb-8 uppercase" style={{ fontFamily: "var(--font-heading)" }}>
+            Claim Your <span className="bg-[#D1FF4C] px-2 py-0.5 rounded">Free</span> 8-Point
+            <br />Shopify Product Page Audit
           </h1>
 
           {/* Subtext */}
-          <p className="text-base text-[#666] leading-relaxed max-w-lg mx-auto mb-10">
-            We&apos;ve built and delivered over <strong className="text-[#1B1B1B]">3,500+ product pages</strong> to some of the fastest growing DTC ecom brands in the world.
-            <br /><br />
-            Now we&apos;re giving away the same auditing framework - completely free - so you can find exactly what&apos;s stopping you from reaching &pound;100k+ / month.
+          <p className="text-[15px] md:text-base text-[#666] leading-[1.7] max-w-xl mx-auto mb-10" style={{ fontFamily: "var(--font-body)" }}>
+            We&apos;ve built and delivered over <strong className="text-[#1B1B1B]">3,500+ product pages</strong> to some of the fastest growing DTC ecom brands in the world. Now we&apos;re giving away the same auditing framework - completely free - so you can find exactly what&apos;s stopping you from reaching &pound;100k+ / month.
           </p>
 
           {/* ── Form ── */}
-          <form id="form" onSubmit={handleSubmit} className="max-w-md mx-auto space-y-5">
+          <form id="form" onSubmit={handleSubmit} className="max-w-md mx-auto space-y-5" style={{ fontFamily: "var(--font-body)" }}>
             <div>
               <label className="block text-sm font-medium text-[#1B1B1B] mb-2">What&apos;s your name?</label>
               <input
@@ -235,9 +233,9 @@ export default function AuditLandingPage() {
         {/* ── Footer ── */}
         <div className="w-full bg-[#1B1B1B]">
           <div className="max-w-6xl mx-auto px-6 md:px-10 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <LogoMark size={24} className="text-white" />
-              <p className="text-base md:text-lg font-semibold text-white tracking-tight">
+            <div className="flex flex-col md:flex-row items-center gap-4">
+              <Logo height={16} className="text-white shrink-0" />
+              <p className="text-sm md:text-base font-medium text-white/80 tracking-tight" style={{ fontFamily: "var(--font-body)" }}>
                 The Funnel Architects Behind Shopify&apos;s Fastest-Growing Brands.
               </p>
             </div>
