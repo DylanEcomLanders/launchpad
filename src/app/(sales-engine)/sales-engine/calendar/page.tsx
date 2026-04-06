@@ -539,14 +539,28 @@ export default function CalendarPage() {
   // ── Typefully: Schedule posts ──
   async function scheduleToTypefully() {
     // Get posts for the current week view that have captions
-    const schedulable = weekPosts.filter(p => p.caption && p.caption.trim());
-    if (schedulable.length === 0) {
+    const allSchedulable = weekPosts.filter(p => p.caption && p.caption.trim());
+    if (allSchedulable.length === 0) {
       alert("No posts with captions to schedule. Write your captions first!");
       return;
     }
 
+    // Filter out posts scheduled in the past
+    const now = new Date();
+    const schedulable = allSchedulable.filter(p => {
+      const postDate = new Date(`${p.scheduled_date}T${p.scheduled_time || "09:00"}:00`);
+      return postDate > now;
+    });
+
+    const skipped = allSchedulable.length - schedulable.length;
+    if (schedulable.length === 0) {
+      alert(`All ${allSchedulable.length} post${allSchedulable.length > 1 ? "s" : ""} are scheduled in the past. Move them to a future date first.`);
+      return;
+    }
+
     const count = schedulable.length;
-    if (!confirm(`Schedule ${count} post${count > 1 ? "s" : ""} to Typefully for this week?`)) return;
+    const skippedMsg = skipped > 0 ? `\n\n(${skipped} post${skipped > 1 ? "s" : ""} in the past will be skipped)` : "";
+    if (!confirm(`Schedule ${count} post${count > 1 ? "s" : ""} to Typefully for this week?${skippedMsg}`)) return;
 
     setTypefullyLoading(true);
     setTypefullyResult(null);
@@ -1242,7 +1256,7 @@ export default function CalendarPage() {
             <CheckIcon className="size-4 text-emerald-600" />
             <p className="text-sm font-medium text-emerald-800">
               {typefullyResult.sent} post{typefullyResult.sent !== 1 ? "s" : ""} scheduled to Typefully
-              {typefullyResult.failed > 0 && <span className="text-red-500 ml-1">({typefullyResult.failed} failed{typefullyResult.failedErrors?.[0] ? `: ${typefullyResult.failedErrors[0].slice(0, 80)}` : ""})</span>}
+              {typefullyResult.failed > 0 && <span className="text-red-500 ml-1">({typefullyResult.failed} failed{typefullyResult.failedErrors?.[0] ? `: ${typefullyResult.failedErrors[0].slice(0, 200)}` : ""})</span>}
             </p>
           </div>
           <button onClick={() => setTypefullyResult(null)} className="text-emerald-400 hover:text-emerald-600">
