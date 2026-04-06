@@ -2,19 +2,22 @@
 
 import { useState, useEffect } from "react";
 import {
-  ArrowTrendingUpIcon,
   PlusIcon,
   PaperAirplaneIcon,
   MagnifyingGlassIcon,
   CalendarDaysIcon,
   UserGroupIcon,
   BoltIcon,
+  FunnelIcon,
+  GlobeAltIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { getLeads } from "@/lib/sales-engine/leads-data";
 import { LEAD_STATUSES, type Lead, type LeadStatus } from "@/lib/sales-engine/types";
 import { getPosts as getContentPosts, type ContentPost } from "@/lib/sales-engine/calendar-data";
 import { getPortals } from "@/lib/portal/data";
 import type { PortalData } from "@/lib/portal/types";
+import { getEvents, type FunnelEvent } from "@/lib/sales-engine/funnel-events";
 import Link from "next/link";
 
 function timeAgo(dateStr: string): string {
@@ -29,18 +32,37 @@ function timeAgo(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
+function parseSourceLabel(source: string): string {
+  if (!source || source === "direct") return "Direct";
+  if (source.startsWith("x-")) return "X";
+  if (source.startsWith("li-")) return "LinkedIn";
+  if (source.startsWith("tiktok-")) return "TikTok";
+  if (source.startsWith("email-")) return "Email";
+  return source.length > 20 ? source.slice(0, 20) + "..." : source;
+}
+
+const SOURCE_COLORS: Record<string, string> = {
+  X: "#1B1B1B",
+  LinkedIn: "#0A66C2",
+  TikTok: "#FF0050",
+  Email: "#F59E0B",
+  Direct: "#94A3B8",
+};
+
 export default function SalesEngineDashboard() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [contentPosts, setContentPosts] = useState<ContentPost[]>([]);
   const [portals, setPortals] = useState<PortalData[]>([]);
+  const [funnelEvents, setFunnelEvents] = useState<FunnelEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([getLeads(), getContentPosts(), getPortals()]).then(
-      ([l, c, p]) => {
+    Promise.all([getLeads(), getContentPosts(), getPortals(), getEvents()]).then(
+      ([l, c, p, e]) => {
         setLeads(l);
         setContentPosts(c);
         setPortals(p.filter((p) => !p.deleted_at));
+        setFunnelEvents(e);
         setLoading(false);
       }
     );
@@ -54,7 +76,7 @@ export default function SalesEngineDashboard() {
     );
   }
 
-  // ── Derived data ──────────────────────────────────────────
+  // ── Derived data ──
 
   // Pipeline counts by status
   const pipelineCounts: Record<LeadStatus, number> = {
@@ -100,6 +122,38 @@ export default function SalesEngineDashboard() {
     .sort((a, b) => (a.follow_up_date || "").localeCompare(b.follow_up_date || ""))
     .slice(0, 5);
 
+  // ── Funnel Analytics ──
+
+  // Group events by funnel
+  const funnelMap = new Map<string, { views: number; submissions: number }>();
+  for (const event of funnelEvents) {
+    const existing = funnelMap.get(event.funnel) || { views: 0, submissions: 0 };
+    if (event.event_type === "view") existing.views++;
+    if (event.event_type === "submission") existing.submissions++;
+    funnelMap.set(event.funnel, existing);
+  }
+  const funnelStats = Array.from(funnelMap.entries()).map(([name, stats]) => ({
+    name,
+    label: name.charAt(0).toUpperCase() + name.slice(1),
+    views: stats.views,
+    submissions: stats.submissions,
+    cvr: stats.views > 0 ? ((stats.submissions / stats.views) * 100).toFixed(1) : "0",
+  }));
+
+  // Lead sources breakdown
+  const sourceMap = new Map<string, number>();
+  for (const lead of leads) {
+    const label = parseSourceLabel(lead.source);
+    sourceMap.set(label, (sourceMap.get(label) || 0) + 1);
+  }
+  const sourceStats = Array.from(sourceMap.entries())
+    .map(([source, count]) => ({ source, count }))
+    .sort((a, b) => b.count - a.count);
+  const maxSourceCount = Math.max(...sourceStats.map((s) => s.count), 1);
+
+  const hasFunnelData = funnelStats.length > 0;
+  const hasLeads = leads.length > 0;
+
   return (
     <div className="max-w-5xl mx-auto py-10 px-6">
       {/* Header */}
@@ -129,40 +183,136 @@ export default function SalesEngineDashboard() {
       </div>
 
       <div className="space-y-6">
-        {/* ── Pipeline Overview ── */}
+        {/* ── Funnel Performance ── */}
         <div className="animate-fadeInUp-d1">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Pipeline</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {LEAD_STATUSES.filter((s) => s.key !== "lost").map((status) => (
-              <Link
-                key={status.key}
-                href="/sales-engine/pipeline"
-                className="border border-[#E5E5EA] rounded-xl p-4 hover:border-[#CCC] transition-colors"
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: status.color }} />
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">
-                    {status.label}
-                  </span>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Funnel Performance</h2>
+            {hasFunnelData && (
+              <span className="text-[10px] text-[#CCC]">All time</span>
+            )}
+          </div>
+          {hasFunnelData ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {funnelStats.map((f) => (
+                <div key={f.name} className="border border-[#E5E5EA] rounded-xl p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <FunnelIcon className="size-3.5 text-[#AAA]" />
+                    <span className="text-xs font-semibold text-[#1B1B1B]">{f.label}</span>
+                    <span className="text-[9px] text-[#CCC] font-medium ml-auto">/{f.name}</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-lg font-bold text-[#1B1B1B]">{f.views}</p>
+                      <p className="text-[10px] text-[#AAA]">Views</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold text-[#1B1B1B]">{f.submissions}</p>
+                      <p className="text-[10px] text-[#AAA]">Leads</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold text-emerald-600">{f.cvr}%</p>
+                      <p className="text-[10px] text-[#AAA]">CVR</p>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-2xl font-bold text-[#1A1A1A]">{pipelineCounts[status.key]}</p>
-              </Link>
-            ))}
-            <div className="border border-[#E5E5EA] rounded-xl p-4 bg-[#FAFAFA]">
-              <div className="flex items-center gap-2 mb-2">
-                <BoltIcon className="size-3 text-[#AAA]" />
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">
-                  Active Pipeline
-                </span>
+              ))}
+            </div>
+          ) : (
+            <div className="border border-dashed border-[#E5E5EA] rounded-xl p-8 text-center">
+              <FunnelIcon className="size-5 text-[#DDD] mx-auto mb-2" />
+              <p className="text-sm text-[#CCC] mb-1">No funnel data yet</p>
+              <p className="text-xs text-[#DDD]">
+                Share your <Link href="/audit" className="text-[#AAA] underline hover:text-[#1B1B1B]">/audit</Link> page to start tracking views and conversions
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* ── Lead Sources + Pipeline Health ── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fadeInUp-d2">
+          {/* Lead Sources */}
+          <div>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Lead Sources</h2>
+            {sourceStats.length > 0 ? (
+              <div className="border border-[#E5E5EA] rounded-xl p-5">
+                <div className="space-y-3">
+                  {sourceStats.slice(0, 6).map((s) => (
+                    <div key={s.source}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-[#1B1B1B]">{s.source}</span>
+                        <span className="text-xs text-[#7A7A7A]">{s.count} lead{s.count !== 1 ? "s" : ""}</span>
+                      </div>
+                      <div className="h-2 bg-[#F3F3F5] rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{
+                            width: `${(s.count / maxSourceCount) * 100}%`,
+                            backgroundColor: SOURCE_COLORS[s.source] || "#94A3B8",
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <p className="text-2xl font-bold text-[#1A1A1A]">{activeLeads.length}</p>
-              <p className="text-[10px] text-[#999] mt-0.5">{wonLeads.length} won total</p>
+            ) : (
+              <div className="border border-dashed border-[#E5E5EA] rounded-xl p-8 text-center">
+                <GlobeAltIcon className="size-5 text-[#DDD] mx-auto mb-2" />
+                <p className="text-sm text-[#CCC] mb-1">No leads tracked yet</p>
+                <p className="text-xs text-[#DDD]">
+                  Add <span className="font-mono text-[#BBB]">?ref=x-dylan-bio</span> to your links to track sources
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Pipeline Health */}
+          <div>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Pipeline</h2>
+            <div className="border border-[#E5E5EA] rounded-xl p-5">
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <div>
+                  <p className="text-2xl font-bold text-[#1A1A1A]">{activeLeads.length}</p>
+                  <p className="text-[10px] text-[#AAA]">Active</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-emerald-600">{wonLeads.length}</p>
+                  <p className="text-[10px] text-[#AAA]">Won</p>
+                </div>
+                <div>
+                  <p className={`text-2xl font-bold ${overdue.length > 0 ? "text-amber-600" : "text-[#1A1A1A]"}`}>
+                    {overdue.length}
+                  </p>
+                  <p className="text-[10px] text-[#AAA]">Overdue</p>
+                </div>
+              </div>
+              <div className="flex gap-1 h-3 rounded-full overflow-hidden bg-[#F3F3F5]">
+                {LEAD_STATUSES.filter((s) => s.key !== "lost" && pipelineCounts[s.key] > 0).map((s) => (
+                  <div
+                    key={s.key}
+                    className="h-full transition-all"
+                    style={{
+                      width: `${(pipelineCounts[s.key] / Math.max(leads.length, 1)) * 100}%`,
+                      backgroundColor: s.color,
+                    }}
+                    title={`${s.label}: ${pipelineCounts[s.key]}`}
+                  />
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3">
+                {LEAD_STATUSES.filter((s) => s.key !== "lost" && pipelineCounts[s.key] > 0).map((s) => (
+                  <div key={s.key} className="flex items-center gap-1.5">
+                    <span className="size-2 rounded-full" style={{ backgroundColor: s.color }} />
+                    <span className="text-[10px] text-[#7A7A7A]">{s.label} ({pipelineCounts[s.key]})</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
         {/* ── Stats Row ── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-fadeInUp-d2">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="border border-[#E5E5EA] rounded-xl p-4">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Active Clients</p>
             <p className="text-2xl font-bold text-[#1A1A1A]">{portals.length}</p>
@@ -176,12 +326,14 @@ export default function SalesEngineDashboard() {
             </p>
           </div>
           <div className="border border-[#E5E5EA] rounded-xl p-4">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Follow-ups Due</p>
-            <p className={`text-2xl font-bold ${overdue.length > 0 ? "text-amber-600" : "text-[#1A1A1A]"}`}>
-              {overdue.length}
-            </p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Total Leads</p>
+            <p className="text-2xl font-bold text-[#1A1A1A]">{leads.length}</p>
             <p className="text-[10px] text-[#999] mt-0.5">
-              {overdue.length > 0 ? "needs attention" : "all clear"}
+              {leads.filter((l) => {
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                return new Date(l.created_at) >= weekAgo;
+              }).length} this week
             </p>
           </div>
           <Link
@@ -212,7 +364,7 @@ export default function SalesEngineDashboard() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">Recent Leads</h2>
-              <Link href="/sales-engine/leads" className="text-[10px] text-[#AAA] hover:text-[#1A1A1A] transition-colors">
+              <Link href="/sales-engine/pipeline" className="text-[10px] text-[#AAA] hover:text-[#1A1A1A] transition-colors">
                 View all →
               </Link>
             </div>
@@ -223,12 +375,22 @@ export default function SalesEngineDashboard() {
                   return (
                     <Link
                       key={lead.id}
-                      href="/sales-engine/leads"
+                      href="/sales-engine/pipeline"
                       className="flex items-center justify-between px-4 py-3 border-b border-[#EDEDEF] last:border-0 hover:bg-[#FAFAFA] transition-colors"
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-[#1A1A1A] truncate">{lead.brand_name || "Unnamed"}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium text-[#1A1A1A] truncate">{lead.brand_name || "Unnamed"}</p>
+                          {lead.funnel && (
+                            <span className="text-[9px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full shrink-0">
+                              {lead.funnel}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-[10px] text-[#999] mt-0.5">
+                          {lead.source && lead.source !== "direct" && (
+                            <span className="text-[#BBB]">{parseSourceLabel(lead.source)} · </span>
+                          )}
                           {lead.contact_name && `${lead.contact_name} · `}{timeAgo(lead.created_at)}
                         </p>
                       </div>
@@ -248,9 +410,9 @@ export default function SalesEngineDashboard() {
             ) : (
               <div className="border border-dashed border-[#E5E5EA] rounded-xl p-8 text-center">
                 <p className="text-sm text-[#CCC]">No leads yet</p>
-                <Link href="/sales-engine/leads" className="text-xs text-[#AAA] hover:text-[#1A1A1A] mt-1 inline-block">
-                  Add your first lead →
-                </Link>
+                <p className="text-xs text-[#DDD] mt-1">
+                  Leads will appear here when prospects submit your funnel forms
+                </p>
               </div>
             )}
           </div>
@@ -312,7 +474,7 @@ export default function SalesEngineDashboard() {
           <h2 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Quick Actions</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <Link
-              href="/sales-engine/leads"
+              href="/sales-engine/pipeline"
               className="flex items-center gap-2.5 px-4 py-3 border border-[#E5E5EA] rounded-xl hover:border-[#CCC] transition-colors"
             >
               <PlusIcon className="size-4 text-[#AAA]" />

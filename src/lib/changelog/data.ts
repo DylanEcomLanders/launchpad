@@ -37,6 +37,19 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-28",
+    date: "6 Apr 2026",
+    version: "0.23.0",
+    title: "Lead Funnel System",
+    changes: [
+      { type: "added", text: "Sales dashboard analytics — funnel performance (views, submissions, CVR), lead source breakdown with bar charts, pipeline health visualisation" },
+      { type: "added", text: "Funnel event tracking — page views and form submissions tracked per funnel with source attribution" },
+      { type: "added", text: "Pipeline source badges — kanban cards now show funnel and source tags so you can see where each lead came from" },
+      { type: "improved", text: "Dashboard empty states — helpful messages with action links when no data exists yet instead of blank sections" },
+      { type: "improved", text: "Recent leads on dashboard now show funnel and source badges inline" },
+    ],
+  },
+  {
     id: "cl-27",
     date: "6 Apr 2026",
     version: "0.22.0",

@@ -100,6 +100,21 @@ export default function PipelinePage() {
                         <p className="text-xs font-semibold text-[#1A1A1A] mb-1">{lead.brand_name || "Untitled"}</p>
                         {lead.contact_name && <p className="text-[10px] text-[#999]">{lead.contact_name}</p>}
                         {lead.notes && <p className="text-[10px] text-[#CCC] mt-1 line-clamp-2">{lead.notes}</p>}
+                        {(lead.funnel || (lead.source && lead.source !== "direct")) && (
+                          <div className="flex flex-wrap items-center gap-1 mt-1.5">
+                            {lead.funnel && (
+                              <span className="inline-flex items-center gap-0.5 bg-blue-50 text-blue-600 text-[10px] font-medium px-2 py-0.5 rounded-full">
+                                <svg className="size-2.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" /></svg>
+                                {lead.funnel}
+                              </span>
+                            )}
+                            {lead.source && lead.source !== "direct" && (
+                              <span className="inline-flex items-center bg-gray-100 text-gray-600 text-[10px] font-medium px-2 py-0.5 rounded-full">
+                                {lead.source.startsWith("x-") ? "X" : lead.source.startsWith("li-") ? "LinkedIn" : lead.source.startsWith("tiktok-") ? "TikTok" : lead.source.length > 14 ? lead.source.slice(0, 14) + "..." : lead.source}
+                              </span>
+                            )}
+                          </div>
+                        )}
                         <div className="flex items-center gap-2 mt-2">
                           {lead.store_url && (
                             <a

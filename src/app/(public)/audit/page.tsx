@@ -11,11 +11,23 @@ export default function AuditLandingPage() {
   const [error, setError] = useState("");
   const [source, setSource] = useState("direct");
 
-  // Capture UTM/ref param on mount
+  // Capture UTM/ref param on mount + fire view event
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const ref = params.get("ref") || params.get("utm_source") || "direct";
     setSource(ref);
+
+    // Track page view
+    fetch("/api/leads/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        funnel: "audit",
+        event_type: "view",
+        source: ref,
+        referrer: document.referrer || "",
+      }),
+    }).catch(() => {});
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -40,6 +52,18 @@ export default function AuditLandingPage() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong");
+
+      // Track submission event
+      fetch("/api/leads/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          funnel: "audit",
+          event_type: "submission",
+          source,
+          referrer: document.referrer || "",
+        }),
+      }).catch(() => {});
 
       setSubmitted(true);
     } catch (err) {
