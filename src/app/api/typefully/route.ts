@@ -83,11 +83,11 @@ export async function POST(req: NextRequest) {
 
     // Step 1 of image upload: get presigned URL from Typefully (client will upload directly to S3)
     if (action === "upload-media-init") {
-      const { filename, content_type } = body;
-      if (!filename || !content_type) {
-        return NextResponse.json({ error: "filename and content_type required" }, { status: 400 });
+      const { filename } = body;
+      if (!filename) {
+        return NextResponse.json({ error: "filename required" }, { status: 400 });
       }
-      const result = await initMediaUpload(social_set_id, filename, content_type);
+      const result = await initMediaUpload(social_set_id, filename);
       return NextResponse.json(result);
     }
 

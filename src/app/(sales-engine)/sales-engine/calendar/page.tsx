@@ -673,11 +673,11 @@ export default function CalendarPage() {
             const filename = `launchpad-${Date.now()}.${ext}`;
 
             // Step 2a: Get presigned upload URL from Typefully (via our API to keep the key server-side)
-            console.log(`[Typefully] Requesting upload URL for ${filename} (${contentType})`);
+            console.log(`[Typefully] Requesting upload URL for ${filename}`);
             const initRes = await fetch("/api/typefully", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ action: "upload-media-init", social_set_id: socialSetId, filename, content_type: contentType }),
+              body: JSON.stringify({ action: "upload-media-init", social_set_id: socialSetId, filename }),
             });
             const initData = await initRes.json();
             if (!initRes.ok || !initData.media_id || !initData.upload_url) {
@@ -686,6 +686,7 @@ export default function CalendarPage() {
             }
 
             // Step 2b: Convert base64 to binary and upload directly to S3
+            // Typefully docs: "send a plain PUT with only raw file bytes — no extra headers"
             const binaryStr = atob(raw);
             const bytes = new Uint8Array(binaryStr.length);
             for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
@@ -693,7 +694,6 @@ export default function CalendarPage() {
             console.log(`[Typefully] Uploading ${bytes.length} bytes to S3...`);
             const s3Res = await fetch(initData.upload_url, {
               method: "PUT",
-              headers: { "Content-Type": contentType },
               body: bytes,
             });
 

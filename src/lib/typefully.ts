@@ -139,13 +139,12 @@ export async function createMultiPlatformDraft(
 /** Get presigned upload URL from Typefully — client will upload directly to S3 */
 export async function initMediaUpload(
   socialSetId: number,
-  filename: string,
-  contentType: string,
+  fileName: string,
 ): Promise<{ media_id: string; upload_url: string }> {
   const initRes = await fetch(`${BASE}/social-sets/${socialSetId}/media/upload`, {
     method: "POST",
     headers: headers(),
-    body: JSON.stringify({ filename, content_type: contentType }),
+    body: JSON.stringify({ file_name: fileName }),
   });
 
   if (!initRes.ok) {
