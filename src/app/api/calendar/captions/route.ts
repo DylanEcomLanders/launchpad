@@ -26,6 +26,7 @@ WHAT TO WRITE:
 WHAT TO NEVER DO:
 - ❌ Made-up stats. NEVER fabricate "+47% AOV" or "18-31% CVR" — only use numbers if explicitly given in the brief.
 - ❌ Listicle voice ("The anatomy of...", "5 ways to...", "Hero benefit statement, star ratings above the fold...")
+- ❌ NEVER list multiple design elements or tactics inline as a sentence: "Outcome-driven headlines Social proof above the fold Benefit stacking Risk reversal" — this is the WORST possible voice. If you genuinely need to list things, use line-broken bullets only.
 - ❌ Course-outline structure (claim → framework → outcome)
 - ❌ "Game-changer", "unlock", "leverage", "at the end of the day", "needle-mover"
 - ❌ "Here's the thing", "I've been thinking", "Hot take:", "Unpopular opinion:"
@@ -163,9 +164,21 @@ ${imageData ? "Use the attached image as context — describe what you see and w
 
 LENGTH INSTRUCTIONS: ${lengthInstructions}
 
-Important: Write substantive, insightful captions. Don't just restate the brief — add a real perspective, example, or framework. Each variant should take a different angle on the idea.
+Each variant should take a different angle. NEVER list features or design elements as a horizontal list (e.g. "Outcome-driven headlines Social proof Benefit stacking" — this is the LinkedIn listicle voice we banned). If you list things, they go on separate lines as bullets.
 
-Return ONLY a JSON array of 3 strings, no other text.`;
+Output format — VERY IMPORTANT:
+Separate the 3 variants with the exact delimiter "===NEXT===" on its own line. Use REAL line breaks within each variant (press enter for new lines). Do NOT output JSON. Do NOT number them. Just plain text with line breaks, separated by ===NEXT===.
+
+Example output structure:
+First variant text
+with real line breaks
+between thoughts
+===NEXT===
+Second variant text
+also with line breaks
+===NEXT===
+Third variant text
+same here`;
 
       const userContent: Anthropic.Messages.ContentBlockParam[] = [];
 
@@ -200,13 +213,26 @@ Return ONLY a JSON array of 3 strings, no other text.`;
       const textBlock = response.content.find((b) => b.type === "text");
       const raw = textBlock?.type === "text" ? textBlock.text : "";
 
-      const jsonMatch = raw.match(/\[[\s\S]*\]/);
-      if (jsonMatch) {
-        const captions: string[] = JSON.parse(jsonMatch[0]);
-        results.push({ platform: plat, captions });
+      // Parse delimiter-separated variants (preserves newlines reliably)
+      let captions: string[] = [];
+      if (raw.includes("===NEXT===")) {
+        captions = raw
+          .split("===NEXT===")
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .slice(0, 3);
       } else {
-        results.push({ platform: plat, captions: [] });
+        // Legacy JSON fallback
+        const jsonMatch = raw.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          try {
+            captions = JSON.parse(jsonMatch[0]);
+          } catch {
+            captions = [];
+          }
+        }
       }
+      results.push({ platform: plat, captions });
     }
 
     // For backward compatibility, if single platform was requested, also return flat captions array
