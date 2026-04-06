@@ -92,7 +92,7 @@ export default function PortfolioV2AdminPage() {
     setProgress(`Re-syncing ${project.name}...`);
     try {
       const base = `https://www.figma.com/design/${project.figma_file_key}/x`;
-      const desktopFrameUrl = `${base}?node-id=${project.figma_desktop_node_id.replace(/:/g, "-")}`;
+      const desktopFrameUrl = `${base}?node-id=${(project.figma_desktop_node_id ?? "").replace(/:/g, "-")}`;
       const mobileFrameUrl = project.figma_mobile_node_id
         ? `${base}?node-id=${project.figma_mobile_node_id.replace(/:/g, "-")}`
         : undefined;
