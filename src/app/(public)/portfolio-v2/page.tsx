@@ -15,10 +15,12 @@ export default async function PortfolioV2IndexPage() {
             <Logo height={22} />
           </Link>
           <Link
-            href="/audit"
+            href="https://cal.com/dylanevans"
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-xs md:text-sm font-semibold px-4 py-2 bg-white text-[#0A0A0B] rounded-full hover:bg-white/90 transition-colors"
           >
-            Get a free audit
+            Book a call
           </Link>
         </div>
       </header>
@@ -38,43 +40,44 @@ export default async function PortfolioV2IndexPage() {
             No projects published yet.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {projects.map((p) => {
-              const thumb = p.desktop_slices[0] ?? p.mobile_slices[0];
+              const desktop = p.desktop_slices[0];
+              const mobile = p.mobile_slices[0];
               return (
                 <Link
                   key={p.id}
                   href={`/portfolio-v2/${p.slug}`}
-                  className="group block"
+                  className="group relative block aspect-[4/3] overflow-hidden rounded-2xl bg-white/5 border border-white/10"
                 >
-                  <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-white/5 border border-white/10">
-                    {thumb && (
+                  {desktop && (
+                    <img
+                      src={desktop.url}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
+                    />
+                  )}
+
+                  {/* Mobile preview floating bottom-right */}
+                  {mobile && (
+                    <div className="absolute bottom-5 right-5 w-[22%] aspect-[9/19] rounded-xl overflow-hidden border border-white/20 shadow-2xl bg-black">
                       <img
-                        src={thumb.url}
-                        alt={p.name}
+                        src={mobile.url}
+                        alt=""
                         loading="lazy"
                         decoding="async"
-                        className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
+                        className="w-full h-full object-cover object-top"
                       />
-                    )}
-                  </div>
-                  <div className="mt-4">
-                    <h3 className="text-lg font-semibold">{p.name}</h3>
-                    {p.client && (
-                      <p className="text-sm text-white/50">{p.client}</p>
-                    )}
-                    {p.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        {p.tags.slice(0, 3).map((t) => (
-                          <span
-                            key={t}
-                            className="text-[10px] uppercase tracking-wide px-2 py-0.5 bg-white/5 text-white/60 rounded-full border border-white/10"
-                          >
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                    </div>
+                  )}
+
+                  {/* Hover CTA */}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="text-sm font-semibold px-5 py-2.5 bg-white text-[#0A0A0B] rounded-full">
+                      View full case →
+                    </span>
                   </div>
                 </Link>
               );
