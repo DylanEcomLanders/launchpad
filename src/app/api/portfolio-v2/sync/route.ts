@@ -27,33 +27,16 @@ const BUCKET = "portfolio-v2";
 const MAX_SLICE_HEIGHT = 1500;
 const AVIF_QUALITY = 60;
 
-type FigmaNode = {
-  id: string;
-  name: string;
-  type: string;
-  children?: FigmaNode[];
-};
-
 function parseFigmaKey(url: string): string | null {
   const m = url.match(/figma\.com\/(?:file|design)\/([A-Za-z0-9]+)/);
   return m?.[1] ?? null;
 }
 
-function findFrameByName(node: FigmaNode, name: string): FigmaNode | null {
-  if (!node) return null;
-  if (
-    node.name?.trim().toLowerCase() === name.trim().toLowerCase() &&
-    (node.type === "FRAME" || node.type === "COMPONENT" || node.type === "GROUP" || node.type === "SECTION")
-  ) {
-    return node;
-  }
-  if (node.children) {
-    for (const child of node.children) {
-      const found = findFrameByName(child, name);
-      if (found) return found;
-    }
-  }
-  return null;
+function parseFigmaNodeId(url: string): string | null {
+  const m = url.match(/[?&]node-id=([^&]+)/);
+  if (!m) return null;
+  // Figma URLs use "4-567" but API expects "4:567"
+  return decodeURIComponent(m[1]).replace(/-/g, ":");
 }
 
 async function figmaFetch(path: string, token: string) {
@@ -145,70 +128,52 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const {
-      figmaUrl,
       name,
       slug,
-      client,
-      tags,
-      notes,
-      results,
-      desktopFrameName,
-      mobileFrameName,
+      desktopFrameUrl,
+      mobileFrameUrl,
     }: {
-      figmaUrl: string;
       name: string;
       slug: string;
-      client?: string;
-      tags?: string[];
-      notes?: string;
-      results?: string;
-      desktopFrameName: string;
-      mobileFrameName?: string;
+      desktopFrameUrl: string;
+      mobileFrameUrl?: string;
     } = body;
 
-    if (!figmaUrl || !name || !slug || !desktopFrameName) {
+    if (!name || !slug || !desktopFrameUrl) {
       return NextResponse.json(
-        { error: "Missing required fields: figmaUrl, name, slug, desktopFrameName" },
+        { error: "Missing required fields: name, slug, desktopFrameUrl" },
         { status: 400 }
       );
     }
 
-    const fileKey = parseFigmaKey(figmaUrl);
-    if (!fileKey) {
+    const fileKey = parseFigmaKey(desktopFrameUrl);
+    const desktopNodeId = parseFigmaNodeId(desktopFrameUrl);
+    if (!fileKey || !desktopNodeId) {
       return NextResponse.json(
-        { error: "Invalid Figma URL — could not extract file key" },
+        { error: "Invalid desktop frame URL — must include file key and node-id" },
         { status: 400 }
       );
     }
 
-    // Fetch full file tree
-    const file = await figmaFetch(`/files/${fileKey}`, token);
-    const root: FigmaNode = file.document;
-
-    const desktopNode = findFrameByName(root, desktopFrameName);
-    if (!desktopNode) {
-      return NextResponse.json(
-        { error: `Desktop frame "${desktopFrameName}" not found in Figma file` },
-        { status: 404 }
-      );
-    }
-
-    const mobileNode = mobileFrameName ? findFrameByName(root, mobileFrameName) : null;
-    if (mobileFrameName && !mobileNode) {
-      return NextResponse.json(
-        { error: `Mobile frame "${mobileFrameName}" not found in Figma file` },
-        { status: 404 }
-      );
+    let mobileNodeId: string | null = null;
+    if (mobileFrameUrl) {
+      mobileNodeId = parseFigmaNodeId(mobileFrameUrl);
+      if (!mobileNodeId) {
+        return NextResponse.json(
+          { error: "Invalid mobile frame URL — must include node-id" },
+          { status: 400 }
+        );
+      }
     }
 
     // Fetch + slice desktop
-    const desktopPng = await fetchFigmaFrameImage(fileKey, desktopNode.id, token);
+    const desktopPng = await fetchFigmaFrameImage(fileKey, desktopNodeId, token);
     const desktopSlices = await sliceAndUpload(desktopPng, slug, "desktop");
 
     // Fetch + slice mobile (optional)
     let mobileSlices: PortfolioSlice[] = [];
-    if (mobileNode) {
-      const mobilePng = await fetchFigmaFrameImage(fileKey, mobileNode.id, token);
+    if (mobileNodeId) {
+      const mobilePng = await fetchFigmaFrameImage(fileKey, mobileNodeId, token);
       mobileSlices = await sliceAndUpload(mobilePng, slug, "mobile");
     }
 
@@ -217,15 +182,12 @@ export async function POST(req: NextRequest) {
       id: slug,
       slug,
       name,
-      client,
-      tags: tags ?? [],
+      tags: [],
       figma_file_key: fileKey,
-      figma_desktop_node_id: desktopNode.id,
-      figma_mobile_node_id: mobileNode?.id,
+      figma_desktop_node_id: desktopNodeId,
+      figma_mobile_node_id: mobileNodeId ?? undefined,
       desktop_slices: desktopSlices,
       mobile_slices: mobileSlices,
-      notes,
-      results,
       created_at: now,
       updated_at: now,
     };

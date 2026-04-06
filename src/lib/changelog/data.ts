@@ -51,6 +51,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Sidebar restructured — Funnels (Calendar, Funnel Planner, Lead Magnets), Content (Articles, Portfolio), Pipeline, Revenue, Resources" },
       { type: "improved", text: "Audit landing page — footer now overlays bottom of portfolio strip with gradient fade for cleaner visual transition" },
       { type: "added", text: "Audit Portfolio manager — upload, reorder, and delete portfolio images from Launchpad settings. Images stored in Supabase Storage" },
+      { type: "improved", text: "Portfolio v2 sync simplified — paste a Figma frame link (right-click → Copy link to selection) for desktop and mobile. No more separate file URL or frame names; file key + node ID extracted automatically" },
     ],
   },
   {

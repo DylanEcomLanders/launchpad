@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ModalPortal } from "@/components/modal-portal";
-import { inputClass, textareaClass, labelClass } from "@/lib/form-styles";
+import { inputClass, labelClass } from "@/lib/form-styles";
 import type { PortfolioProject } from "@/lib/portfolio-v2/types";
 
 function slugify(s: string): string {
@@ -24,13 +24,8 @@ export default function PortfolioV2AdminPage() {
   const [form, setForm] = useState({
     name: "",
     slug: "",
-    client: "",
-    tags: "",
-    figmaUrl: "",
-    desktopFrameName: "",
-    mobileFrameName: "",
-    notes: "",
-    results: "",
+    desktopFrameUrl: "",
+    mobileFrameUrl: "",
   });
 
   const slugEdited = form.slug && form.slug !== slugify(form.name);
@@ -56,13 +51,8 @@ export default function PortfolioV2AdminPage() {
     setForm({
       name: "",
       slug: "",
-      client: "",
-      tags: "",
-      figmaUrl: "",
-      desktopFrameName: "",
-      mobileFrameName: "",
-      notes: "",
-      results: "",
+      desktopFrameUrl: "",
+      mobileFrameUrl: "",
     });
     setError(null);
     setProgress(null);
@@ -79,18 +69,10 @@ export default function PortfolioV2AdminPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          figmaUrl: form.figmaUrl,
           name: form.name,
           slug: form.slug || slugify(form.name),
-          client: form.client || undefined,
-          tags: form.tags
-            .split(",")
-            .map((t) => t.trim())
-            .filter(Boolean),
-          notes: form.notes || undefined,
-          results: form.results || undefined,
-          desktopFrameName: form.desktopFrameName,
-          mobileFrameName: form.mobileFrameName || undefined,
+          desktopFrameUrl: form.desktopFrameUrl,
+          mobileFrameUrl: form.mobileFrameUrl || undefined,
         }),
       });
       const data = await res.json();
@@ -109,18 +91,19 @@ export default function PortfolioV2AdminPage() {
     if (!confirm(`Re-sync "${project.name}" from Figma?`)) return;
     setProgress(`Re-syncing ${project.name}...`);
     try {
+      const base = `https://www.figma.com/design/${project.figma_file_key}/x`;
+      const desktopFrameUrl = `${base}?node-id=${project.figma_desktop_node_id.replace(/:/g, "-")}`;
+      const mobileFrameUrl = project.figma_mobile_node_id
+        ? `${base}?node-id=${project.figma_mobile_node_id.replace(/:/g, "-")}`
+        : undefined;
       const res = await fetch("/api/portfolio-v2/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          figmaUrl: `https://www.figma.com/file/${project.figma_file_key}/`,
           name: project.name,
           slug: project.slug,
-          client: project.client,
-          tags: project.tags,
-          notes: project.notes,
-          results: project.results,
-          desktopFrameName: "", // will fail unless user keeps frames — resync uses stored node ids
+          desktopFrameUrl,
+          mobileFrameUrl,
         }),
       });
       const data = await res.json();
@@ -267,75 +250,26 @@ export default function PortfolioV2AdminPage() {
                     onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
                   />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className={labelClass}>Client</label>
-                    <input
-                      className={inputClass}
-                      value={form.client}
-                      onChange={(e) => setForm((f) => ({ ...f, client: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Tags (comma separated)</label>
-                    <input
-                      className={inputClass}
-                      value={form.tags}
-                      onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))}
-                      placeholder="shopify, ecommerce, apparel"
-                    />
-                  </div>
-                </div>
                 <div>
-                  <label className={labelClass}>Figma File URL</label>
+                  <label className={labelClass}>Desktop Frame URL</label>
                   <input
                     required
                     className={inputClass}
-                    value={form.figmaUrl}
-                    onChange={(e) => setForm((f) => ({ ...f, figmaUrl: e.target.value }))}
-                    placeholder="https://www.figma.com/design/ABC123/..."
+                    value={form.desktopFrameUrl}
+                    onChange={(e) => setForm((f) => ({ ...f, desktopFrameUrl: e.target.value }))}
+                    placeholder="https://www.figma.com/design/ABC123/Portfolio?node-id=4-567"
                   />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className={labelClass}>Desktop Frame Name</label>
-                    <input
-                      required
-                      className={inputClass}
-                      value={form.desktopFrameName}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, desktopFrameName: e.target.value }))
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Mobile Frame Name (optional)</label>
-                    <input
-                      className={inputClass}
-                      value={form.mobileFrameName}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, mobileFrameName: e.target.value }))
-                      }
-                    />
-                  </div>
+                  <p className="text-[11px] text-[#A0A0A0] mt-1">
+                    Right-click frame in Figma → Copy link to selection
+                  </p>
                 </div>
                 <div>
-                  <label className={labelClass}>Notes</label>
-                  <textarea
-                    rows={3}
-                    className={textareaClass}
-                    value={form.notes}
-                    onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Results</label>
-                  <textarea
-                    rows={3}
-                    className={textareaClass}
-                    value={form.results}
-                    onChange={(e) => setForm((f) => ({ ...f, results: e.target.value }))}
-                    placeholder="+38% CVR, +$240k/month revenue..."
+                  <label className={labelClass}>Mobile Frame URL (optional)</label>
+                  <input
+                    className={inputClass}
+                    value={form.mobileFrameUrl}
+                    onChange={(e) => setForm((f) => ({ ...f, mobileFrameUrl: e.target.value }))}
+                    placeholder="https://www.figma.com/design/ABC123/Portfolio?node-id=4-890"
                   />
                 </div>
 
