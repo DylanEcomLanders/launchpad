@@ -51,6 +51,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "removed", text: "Removed Instagram and TikTok from content calendar — focused on X and LinkedIn for now" },
       { type: "added", text: "Voice profile system — per-creator tone, avoid list, writing rules, example posts, and voice notes that feed directly into caption generation" },
       { type: "added", text: "Self-improving captions — when you edit a generated caption before saving, the before/after is tracked and fed into future generations so the AI learns your style" },
+      { type: "fixed", text: "Calendar grid now fills the full viewport height — no more grey dead space below the week/month grid" },
     ],
   },
   {

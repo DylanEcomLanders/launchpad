@@ -1307,7 +1307,7 @@ export default function CalendarPage() {
     : `${monthDate.toLocaleDateString("en-GB", { month: "short", day: "numeric" })}, ${monthDate.getFullYear()} - ${new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).toLocaleDateString("en-GB", { month: "short", day: "numeric", year: "numeric" })}`;
 
   return (
-    <div className="py-8 px-6 md:px-8 overflow-x-hidden">
+    <div className="py-8 px-6 md:px-8 overflow-x-hidden flex flex-col h-[calc(100vh-64px)]">
       {/* ── Page header ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 animate-fadeInUp">
         <div className="flex items-center gap-4">
@@ -1561,13 +1561,13 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      <div className="flex animate-fadeInUp-d2">
+      <div className="flex flex-1 min-h-0 animate-fadeInUp-d2">
         {/* ── Main calendar grid ── */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 flex flex-col">
 
           {/* ═══ MONTH VIEW (default, like Untitled UI) ═══ */}
           {view === "month" && (
-            <div className="border-x border-b border-[#E5E5EA] rounded-b-xl overflow-hidden">
+            <div className="border-x border-b border-[#E5E5EA] rounded-b-xl overflow-hidden flex-1 flex flex-col">
               {/* Day-of-week header row */}
               <div className="grid grid-cols-7 border-b border-[#E5E5EA]">
                 {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => (
@@ -1577,8 +1577,9 @@ export default function CalendarPage() {
                 ))}
               </div>
               {/* Calendar grid — 6 rows of 7 */}
+              <div className="flex-1 flex flex-col">
               {Array.from({ length: 6 }).map((_, row) => (
-                <div key={row} className={`grid grid-cols-7 ${row < 5 ? "border-b border-[#E5E5EA]" : ""}`}>
+                <div key={row} className={`grid grid-cols-7 flex-1 ${row < 5 ? "border-b border-[#E5E5EA]" : ""}`}>
                   {monthDates.slice(row * 7, row * 7 + 7).map((d, col) => {
                     const isCurrentMonth = d.getMonth() === monthDate.getMonth();
                     const isToday = toDateStr(d) === toDateStr(new Date());
@@ -1656,12 +1657,13 @@ export default function CalendarPage() {
                   })}
                 </div>
               ))}
+              </div>
             </div>
           )}
 
           {/* ═══ WEEK VIEW ═══ */}
           {view === "week" && (
-            <div className="border-x border-b border-[#E5E5EA] rounded-b-xl overflow-hidden">
+            <div className="border-x border-b border-[#E5E5EA] rounded-b-xl overflow-hidden flex-1 flex flex-col">
               {/* Day headers */}
               <div className="grid grid-cols-7 border-b border-[#E5E5EA]">
                 {weekDates.map((d, i) => {
@@ -1683,7 +1685,7 @@ export default function CalendarPage() {
                 })}
               </div>
               {/* Day columns with posts */}
-              <div className="grid grid-cols-7 min-h-[480px]">
+              <div className="grid grid-cols-7 flex-1">
                 {weekDates.map((d, i) => {
                   const dStr = toDateStr(d);
                   const dayPosts = postsForDate(dStr).sort((a, b) => a.scheduled_time.localeCompare(b.scheduled_time));
