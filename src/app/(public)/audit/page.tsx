@@ -230,8 +230,8 @@ export default function AuditLandingPage() {
         </div>
 
         {/* ── Footer ── */}
-        <div className="relative z-10 w-full bg-[#1B1B1B] -mt-[80px]">
-          <div className="max-w-6xl mx-auto px-6 md:px-10 flex items-center justify-between" style={{ paddingTop: "calc(80px + 24px)", paddingBottom: "24px" }}>
+        <div className="relative z-10 w-full bg-[#1B1B1B] -mt-[60px]">
+          <div className="max-w-6xl mx-auto px-6 md:px-10 flex items-center justify-between" style={{ paddingTop: "calc(60px + 20px)", paddingBottom: "20px" }}>
             <p className="text-sm md:text-base font-medium text-white tracking-tight" style={{ fontFamily: "var(--font-body)" }}>
               The Funnel Architects Behind <em className="font-medium">Shopify&apos;s Fastest-Growing Brands.</em>
             </p>
