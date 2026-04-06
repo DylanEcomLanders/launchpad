@@ -217,21 +217,21 @@ export default function AuditLandingPage() {
                     key={idx}
                     src={src}
                     alt=""
-                    className="shrink-0 w-[160px] h-[240px] object-cover rounded-xl border border-[#EBEBEB]"
+                    className="shrink-0 w-[160px] h-[280px] object-cover rounded-xl border border-[#EBEBEB]"
                   />
                 ))
               : Array.from({ length: 20 }, (_, idx) => (
                   <div
                     key={idx}
-                    className="shrink-0 w-[160px] h-[240px] bg-[#F5F5F5] rounded-xl border border-[#EBEBEB]"
+                    className="shrink-0 w-[160px] h-[280px] bg-[#F5F5F5] rounded-xl border border-[#EBEBEB]"
                   />
                 ))}
           </div>
         </div>
 
         {/* ── Footer — pulls up over bottom half of portfolio ── */}
-        <div className="relative z-10 w-full bg-[#1B1B1B] -mt-[120px]">
-          <div className="max-w-6xl mx-auto px-6 md:px-10 py-8 pt-[140px] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="relative z-10 w-full bg-[#1B1B1B] -mt-[180px]">
+          <div className="max-w-6xl mx-auto px-6 md:px-10 py-8 pt-[200px] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <p className="text-base md:text-lg font-medium text-white tracking-tight" style={{ fontFamily: "var(--font-body)" }}>
               The Funnel Architects Behind <em className="font-medium">Shopify&apos;s Fastest-Growing Brands.</em>
             </p>
