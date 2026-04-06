@@ -27,10 +27,10 @@ export default async function PortfolioV2IndexPage() {
 
       <section className="max-w-7xl mx-auto px-6 md:px-10 pt-16 md:pt-24 pb-12">
         <h1 className="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.05]">
-          Work that moves the needle.
+          Our Work
         </h1>
         <p className="text-white/60 text-base md:text-lg mt-5 max-w-2xl">
-          Handpicked Shopify builds, landing pages, and CRO projects from Ecom Landers.
+          Over 4,000+ pages and counting, here&rsquo;s a few of our favourites...
         </p>
       </section>
 
@@ -40,19 +40,18 @@ export default async function PortfolioV2IndexPage() {
             No projects published yet.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5">
             {projects.map((p) => {
-              const desktop = p.desktop_slices[0];
-              const mobile = p.mobile_slices[0];
+              const thumb = p.mobile_slices[0] ?? p.desktop_slices[0];
               return (
                 <Link
                   key={p.id}
                   href={`/portfolio-v2/${p.slug}`}
-                  className="group relative block aspect-[4/3] overflow-hidden rounded-2xl bg-white/5 border border-white/10"
+                  className="group relative block aspect-[9/19] overflow-hidden rounded-xl bg-white/5 border border-white/10"
                 >
-                  {desktop && (
+                  {thumb && (
                     <img
-                      src={desktop.url}
+                      src={thumb.url}
                       alt=""
                       loading="lazy"
                       decoding="async"
@@ -60,23 +59,10 @@ export default async function PortfolioV2IndexPage() {
                     />
                   )}
 
-                  {/* Mobile preview floating bottom-right */}
-                  {mobile && (
-                    <div className="absolute bottom-5 right-5 w-[22%] aspect-[9/19] rounded-xl overflow-hidden border border-white/20 shadow-2xl bg-black">
-                      <img
-                        src={mobile.url}
-                        alt=""
-                        loading="lazy"
-                        decoding="async"
-                        className="w-full h-full object-cover object-top"
-                      />
-                    </div>
-                  )}
-
                   {/* Hover CTA */}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <span className="text-sm font-semibold px-5 py-2.5 bg-white text-[#0A0A0B] rounded-full">
-                      View full case →
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="text-xs font-semibold px-4 py-2 bg-white text-[#0A0A0B] rounded-full">
+                      View →
                     </span>
                   </div>
                 </Link>
