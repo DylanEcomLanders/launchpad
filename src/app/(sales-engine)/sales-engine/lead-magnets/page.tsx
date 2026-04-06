@@ -16,6 +16,7 @@ import { getEvents, type FunnelEvent } from "@/lib/sales-engine/funnel-events";
 interface TrackedLink {
   label: string;
   ref: string;
+  trackingRef: string;
   description: string;
 }
 
@@ -31,13 +32,12 @@ interface LeadMagnet {
 const TEAM_MEMBERS = ["Dylan", "Ajay"] as const;
 type TeamMember = (typeof TEAM_MEMBERS)[number];
 
-const LINK_TEMPLATES: { label: string; refPrefix: string; description: string }[] = [
-  { label: "X Bio", refPrefix: "x-{name}-bio", description: "Pin in your X bio link" },
-  { label: "X Posts", refPrefix: "x-{name}-post", description: "Use in X post CTAs" },
-  { label: "LinkedIn Bio", refPrefix: "li-{name}-bio", description: "LinkedIn about / featured" },
-  { label: "LinkedIn Posts", refPrefix: "li-{name}-post", description: "Use in LinkedIn post CTAs" },
-  { label: "TikTok Bio", refPrefix: "tiktok-{name}-bio", description: "TikTok profile link" },
-  { label: "Email Sig", refPrefix: "email-{name}-sig", description: "Email signature link" },
+const LINK_TEMPLATES: { label: string; path: string; ref: string; description: string }[] = [
+  { label: "X Bio", path: "/{name}", ref: "x-{name}-bio", description: "Pin in your X bio link" },
+  { label: "X Posts", path: "/{name}/x", ref: "x-{name}-post", description: "Use in X post CTAs" },
+  { label: "LinkedIn", path: "/{name}/linkedin", ref: "li-{name}-post", description: "LinkedIn bio / posts" },
+  { label: "TikTok", path: "/{name}/tiktok", ref: "tiktok-{name}-bio", description: "TikTok profile link" },
+  { label: "Email Sig", path: "/{name}/email", ref: "email-{name}-sig", description: "Email signature link" },
 ];
 
 const LEAD_MAGNETS: LeadMagnet[] = [
@@ -56,7 +56,8 @@ function generateLinks(magnet: LeadMagnet, member: TeamMember): TrackedLink[] {
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://ecomlanders.app";
   return LINK_TEMPLATES.map((t) => ({
     label: t.label,
-    ref: `${baseUrl}${magnet.path}?ref=${t.refPrefix.replace("{name}", name)}`,
+    ref: `${baseUrl}${magnet.path}${t.path.replace("{name}", name)}`,
+    trackingRef: t.ref.replace("{name}", name),
     description: t.description,
   }));
 }
@@ -282,7 +283,7 @@ export default function LeadMagnetsPage() {
                         const isCopied = copiedLink === key;
 
                         // Count events for this specific ref
-                        const ref = new URL(link.ref).searchParams.get("ref") || "";
+                        const ref = link.trackingRef;
                         const refViews = events.filter(
                           (e) => e.funnel === magnet.funnel && e.event_type === "view" && e.source === ref
                         ).length;
