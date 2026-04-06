@@ -251,14 +251,8 @@ export default function AuditLandingPage() {
           <p className="text-sm md:text-base font-medium text-white tracking-tight" style={{ fontFamily: "var(--font-body)" }}>
             The Funnel Architects Behind <em className="font-medium">Shopify&apos;s Fastest-Growing Brands.</em>
           </p>
-          <div className="flex items-center gap-2 shrink-0">
-            <svg className="h-8 w-auto text-white" viewBox="0 0 109 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="0.5" y="0.5" width="31" height="39" rx="1.5" stroke="currentColor" strokeOpacity="0.4"/>
-              <path d="M20.67 10.235c-.105-.056-.21-.014-.243.091-.032.105-.378.735-.378.735s-.43-.893-1.27-.893h-.046c-.147-.193-.33-.276-.484-.276-1.197 0-1.77 1.498-1.949 2.26-.465.144-.798.247-.84.262-.261.082-.27.09-.304.337-.024.173-.893 6.876-.893 6.876l5.698.982V10.282c-.147-.025-.27-.042-.291-.047zm-1.963.88v.098c-.336.103-.7.217-1.066.329.205-.788.589-1.17.925-1.314.088.22.14.52.14.887zm-.607-1.155c.06 0 .12.02.175.062-.435.205-.903.72-1.1 1.753l-.844.261c.254-1.016.712-2.076 1.77-2.076zm.189 5.663s-.356-.192-.791-.192c-.64 0-.672.402-.672.503 0 .553 1.442.765 1.442 2.06 0 1.019-.702 1.675-1.649 1.675-1.136 0-1.717-.58-1.717-.58l.304-1.005s.597.513 1.1.513a.448.448 0 00.465-.449c0-.784-1.183-.819-1.183-1.939 0-.998.716-1.964 2.162-1.964.556 0 .832.16.832.16l-.293 1.218z" fill="currentColor"/>
-              <text x="38" y="14" fill="currentColor" fontSize="8" fontWeight="700" letterSpacing="0.12em" fontFamily="system-ui, sans-serif">SHOPIFY</text>
-              <text x="38" y="24" fill="currentColor" fontSize="8" fontWeight="700" letterSpacing="0.12em" fontFamily="system-ui, sans-serif">SELECT</text>
-              <text x="38" y="34" fill="currentColor" fontSize="8" fontWeight="700" letterSpacing="0.12em" fontFamily="system-ui, sans-serif">PARTNER</text>
-            </svg>
+          <div className="flex items-center shrink-0">
+            <img src="/shopify-select-partner.svg" alt="Shopify Select Partner" className="h-10 w-auto" />
           </div>
         </div>
       </footer>
