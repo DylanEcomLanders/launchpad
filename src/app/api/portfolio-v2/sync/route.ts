@@ -130,11 +130,13 @@ export async function POST(req: NextRequest) {
     const {
       name,
       slug,
+      category,
       desktopFrameUrl,
       mobileFrameUrl,
     }: {
       name: string;
       slug: string;
+      category?: string;
       desktopFrameUrl: string;
       mobileFrameUrl?: string;
     } = body;
@@ -182,6 +184,7 @@ export async function POST(req: NextRequest) {
       id: slug,
       slug,
       name,
+      category,
       tags: [],
       figma_file_key: fileKey,
       figma_desktop_node_id: desktopNodeId,

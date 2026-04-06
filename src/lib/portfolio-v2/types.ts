@@ -1,3 +1,14 @@
+export const PORTFOLIO_CATEGORIES = [
+  "Product Pages",
+  "Highlight Pages",
+  "Advertorials / Listicles",
+  "Carts",
+  "Homepages",
+  "Webflow Pages",
+] as const;
+
+export type PortfolioCategory = (typeof PORTFOLIO_CATEGORIES)[number];
+
 export interface PortfolioSlice {
   url: string;          // Public Supabase storage URL (AVIF)
   width: number;
@@ -10,6 +21,7 @@ export interface PortfolioProject {
   slug: string;
   name: string;
   client?: string;
+  category?: string;
   tags: string[];
   figma_file_key: string;
   figma_desktop_node_id?: string;

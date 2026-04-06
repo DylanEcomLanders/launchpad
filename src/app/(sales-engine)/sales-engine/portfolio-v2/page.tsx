@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ModalPortal } from "@/components/modal-portal";
 import { inputClass, labelClass } from "@/lib/form-styles";
-import type { PortfolioProject } from "@/lib/portfolio-v2/types";
+import { PORTFOLIO_CATEGORIES, type PortfolioProject } from "@/lib/portfolio-v2/types";
 
 function slugify(s: string): string {
   return s
@@ -24,6 +24,7 @@ export default function PortfolioV2AdminPage() {
   const [form, setForm] = useState({
     name: "",
     slug: "",
+    category: PORTFOLIO_CATEGORIES[0] as string,
     desktopFrameUrl: "",
     mobileFrameUrl: "",
   });
@@ -51,6 +52,7 @@ export default function PortfolioV2AdminPage() {
     setForm({
       name: "",
       slug: "",
+      category: PORTFOLIO_CATEGORIES[0],
       desktopFrameUrl: "",
       mobileFrameUrl: "",
     });
@@ -71,6 +73,7 @@ export default function PortfolioV2AdminPage() {
         body: JSON.stringify({
           name: form.name,
           slug: form.slug || slugify(form.name),
+          category: form.category,
           desktopFrameUrl: form.desktopFrameUrl,
           mobileFrameUrl: form.mobileFrameUrl || undefined,
         }),
@@ -102,6 +105,7 @@ export default function PortfolioV2AdminPage() {
         body: JSON.stringify({
           name: project.name,
           slug: project.slug,
+          category: project.category,
           desktopFrameUrl,
           mobileFrameUrl,
         }),
@@ -249,6 +253,18 @@ export default function PortfolioV2AdminPage() {
                     value={form.slug}
                     onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
                   />
+                </div>
+                <div>
+                  <label className={labelClass}>Category</label>
+                  <select
+                    className={inputClass}
+                    value={form.category}
+                    onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+                  >
+                    {PORTFOLIO_CATEGORIES.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className={labelClass}>Desktop Frame URL</label>
