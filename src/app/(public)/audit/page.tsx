@@ -75,7 +75,14 @@ export default function AuditLandingPage() {
   }
 
   // Portfolio images for the scrolling strip
-  const portfolioImages = Array.from({ length: 10 }, (_, i) => i);
+  // Drop screenshots into /public/audit-portfolio/ as 1.png, 2.png, etc.
+  const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
+  useEffect(() => {
+    fetch("/api/audit-portfolio")
+      .then((r) => r.json())
+      .then((data) => setPortfolioImages(data.images || []))
+      .catch(() => setPortfolioImages([]));
+  }, []);
 
   if (submitted) {
     return (
@@ -128,14 +135,15 @@ export default function AuditLandingPage() {
           </div>
 
           {/* Headline */}
-          <h1 className="text-4xl md:text-[3.2rem] font-bold text-[#1B1B1B] leading-[1.1] tracking-tight mb-6 uppercase">
-            Claim Your <span className="bg-[#D1FF4C] px-2 py-0.5 rounded">Free</span> 8-Point
-            <br className="hidden md:block" />{" "}Shopify Product Page Audit
+          <h1 className="text-3xl md:text-[2.8rem] font-bold text-[#1B1B1B] leading-[1.1] tracking-tight mb-6 uppercase">
+            Claim Your <span className="bg-[#D1FF4C] px-2 py-0.5 rounded">Free</span> 8-Point Shopify Product Page Audit
           </h1>
 
           {/* Subtext */}
-          <p className="text-base text-[#666] leading-relaxed max-w-xl mx-auto mb-10">
-            We&apos;ve built and delivered over <strong className="text-[#1B1B1B]">3,500+ product pages</strong> to some of the fastest growing DTC ecom brands in the world. Now we&apos;re giving away the same auditing framework - completely free - so you can find exactly what&apos;s stopping you from reaching &pound;100k+ / month.
+          <p className="text-base text-[#666] leading-relaxed max-w-lg mx-auto mb-10">
+            We&apos;ve built and delivered over <strong className="text-[#1B1B1B]">3,500+ product pages</strong> to some of the fastest growing DTC ecom brands in the world.
+            <br /><br />
+            Now we&apos;re giving away the same auditing framework - completely free - so you can find exactly what&apos;s stopping you from reaching &pound;100k+ / month.
           </p>
 
           {/* ── Form ── */}
@@ -197,7 +205,8 @@ export default function AuditLandingPage() {
             {/* Social proof counter */}
             <p className="text-sm text-center pt-2">
               <strong className="text-[#1B1B1B]">456+ audits</strong>{" "}
-              <span className="text-[#999]">delivered as of {new Date().toLocaleDateString("en-GB", { month: "long", day: "numeric" })}</span>
+              <span className="text-[#999]">delivered as of </span>
+              <strong className="text-[#1B1B1B]">{new Date().toLocaleDateString("en-GB", { month: "long", day: "numeric" })}</strong>
             </p>
           </form>
         </div>
@@ -205,37 +214,49 @@ export default function AuditLandingPage() {
         {/* ── Portfolio Strip ── */}
         <div className="w-full overflow-hidden py-8">
           <div className="flex gap-4 animate-scroll">
-            {[...portfolioImages, ...portfolioImages].map((i, idx) => (
-              <div
-                key={idx}
-                className="shrink-0 w-[160px] h-[240px] bg-[#F5F5F5] rounded-xl border border-[#EBEBEB]"
-              />
-            ))}
+            {portfolioImages.length > 0
+              ? [...portfolioImages, ...portfolioImages].map((src, idx) => (
+                  <img
+                    key={idx}
+                    src={src}
+                    alt=""
+                    className="shrink-0 w-[160px] h-[240px] object-cover rounded-xl border border-[#EBEBEB]"
+                  />
+                ))
+              : Array.from({ length: 20 }, (_, idx) => (
+                  <div
+                    key={idx}
+                    className="shrink-0 w-[160px] h-[240px] bg-[#F5F5F5] rounded-xl border border-[#EBEBEB]"
+                  />
+                ))}
           </div>
         </div>
 
         {/* ── Footer ── */}
-        <div className="w-full border-t border-[#F0F0F0]">
-          <div className="max-w-6xl mx-auto px-6 md:px-10 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-lg md:text-xl font-semibold text-[#1B1B1B] tracking-tight">
-              The Funnel Architects Behind <em className="not-italic font-semibold">Shopify&apos;s Fastest-Growing Brands.</em>
-            </p>
-            <div className="flex items-center gap-2 shrink-0">
+        <div className="w-full bg-[#1B1B1B]">
+          <div className="max-w-6xl mx-auto px-6 md:px-10 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <LogoMark size={24} className="text-white" />
+              <p className="text-base md:text-lg font-semibold text-white tracking-tight">
+                The Funnel Architects Behind Shopify&apos;s Fastest-Growing Brands.
+              </p>
+            </div>
+            <div className="flex items-center gap-2.5 shrink-0">
               <div className="w-8 h-8 bg-[#95BF47] rounded-lg flex items-center justify-center">
-                <span className="text-white text-xs font-bold">S</span>
+                <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M15.337 3.415c-.15-.08-.3-.02-.345.13-.045.15-.54 1.05-.54 1.05s-.615-1.275-1.815-1.275c-.03 0-.06 0-.09.003C12.187 2.893 11.807 2.5 11.397 2.5c-2.31 0-3.42 2.895-3.765 4.365-.885.275-1.515.47-1.59.495-.495.155-.51.17-.575.64C5.432 8.27 4 19.695 4 19.695L15.59 21.5l.005-.02V3.54c-.105-.06-.18-.1-.258-.125zM12.052 5.55v.17c-.63.195-1.32.41-2.01.62.39-1.5.965-2.225 1.515-2.495.14.175.315.485.495 1.045v.66z"/></svg>
               </div>
-              <div className="text-[10px] leading-tight font-semibold text-[#1B1B1B] uppercase tracking-wider">
-                Shopify<br />Select<br />Partner
+              <div className="text-[10px] leading-tight font-semibold text-white/70 uppercase tracking-wider">
+                Shopify<br />Select Partner
               </div>
             </div>
           </div>
-        </div>
 
-        {/* ── Big Brand Text ── */}
-        <div className="w-full bg-[#1B1B1B] py-6 overflow-hidden">
-          <p className="text-[8rem] md:text-[12rem] font-bold text-white leading-none tracking-tighter text-center whitespace-nowrap select-none" style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}>
-            ecomlanders
-          </p>
+          {/* Big Brand Text */}
+          <div className="w-full border-t border-white/10 py-6 overflow-hidden">
+            <p className="text-[6rem] md:text-[10rem] font-bold text-white/10 leading-none tracking-tighter text-center whitespace-nowrap select-none" style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}>
+              ecomlanders
+            </p>
+          </div>
         </div>
       </div>
 
