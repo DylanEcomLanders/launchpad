@@ -8,6 +8,7 @@ import {
   ArrowDownTrayIcon,
   ArrowLeftIcon,
   DocumentDuplicateIcon,
+  CloudArrowUpIcon,
 } from "@heroicons/react/24/outline";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 import FunnelCanvas, { type FunnelCanvasHandle } from "@/components/funnel-builder/FunnelCanvas";
@@ -113,6 +114,7 @@ export default function FunnelBuilderPage() {
   const [activeFunnel, setActiveFunnel] = useState<FunnelData | null>(null);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [backupStatus, setBackupStatus] = useState<"idle" | "saving" | "done" | "error">("idle");
   const canvasRef = useRef<HTMLDivElement>(null);
   const canvasHandle = useRef<FunnelCanvasHandle>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -126,6 +128,26 @@ export default function FunnelBuilderPage() {
   }, []);
 
   const reloadFunnels = () => getFunnels().then(setFunnels);
+
+  /* ── Backup to Supabase ── */
+  const handleBackup = async () => {
+    if (funnels.length === 0 || backupStatus === "saving") return;
+    setBackupStatus("saving");
+    try {
+      const res = await fetch("/api/funnels/backup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(funnels),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      setBackupStatus("done");
+      setTimeout(() => setBackupStatus("idle"), 3000);
+    } catch (err) {
+      console.error("Backup failed:", err);
+      setBackupStatus("error");
+      setTimeout(() => setBackupStatus("idle"), 4000);
+    }
+  };
 
   /* ── CRUD ── */
 
@@ -362,7 +384,31 @@ export default function FunnelBuilderPage() {
           {/* Existing funnels */}
           {funnels.length > 0 && (
             <div>
-              <p className={labelClass}>Your funnels</p>
+              <div className="flex items-center justify-between mb-1">
+                <p className={labelClass + " mb-0"}>Your funnels</p>
+                <button
+                  onClick={handleBackup}
+                  disabled={backupStatus === "saving"}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                    backupStatus === "done"
+                      ? "bg-emerald-50 text-emerald-600"
+                      : backupStatus === "error"
+                      ? "bg-red-50 text-red-500"
+                      : backupStatus === "saving"
+                      ? "bg-[#F5F5F5] text-[#AAA] cursor-wait"
+                      : "bg-[#F5F5F5] text-[#7A7A7A] hover:bg-[#E5E5EA] hover:text-[#1B1B1B]"
+                  }`}
+                >
+                  <CloudArrowUpIcon className="size-3.5" />
+                  {backupStatus === "saving"
+                    ? "Backing up…"
+                    : backupStatus === "done"
+                    ? "Backed up ✓"
+                    : backupStatus === "error"
+                    ? "Backup failed"
+                    : "Backup to Cloud"}
+                </button>
+              </div>
               <div className="space-y-2">
                 {funnels.map((f) => (
                   <div
