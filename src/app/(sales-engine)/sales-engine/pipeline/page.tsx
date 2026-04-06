@@ -5,6 +5,7 @@ import { LEAD_STATUSES, type Lead, type LeadStatus } from "@/lib/sales-engine/ty
 import { getLeads, saveLead, deleteLead, updateLeadStatus, createNewLead } from "@/lib/sales-engine/leads-data";
 import { inputClass, labelClass } from "@/lib/form-styles";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { ModalPortal } from "@/components/modal-portal";
 
 export default function PipelinePage() {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -166,19 +167,21 @@ export default function PipelinePage() {
         </div>
       )}
 
-      {/* Edit modal */}
+      {/* Edit modal — portal to body so transform parents don't break fixed positioning */}
       {showForm && editLead && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => { setShowForm(false); setEditLead(null); }}>
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-5 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold">{editLead.created_at ? "Edit Lead" : "New Lead"}</h3>
-              <button onClick={() => { setShowForm(false); setEditLead(null); }} className="text-[#AAA] hover:text-[#1A1A1A]">
-                <XMarkIcon className="size-4" />
-              </button>
+        <ModalPortal>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => { setShowForm(false); setEditLead(null); }}>
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-5 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold">{editLead.created_at ? "Edit Lead" : "New Lead"}</h3>
+                <button onClick={() => { setShowForm(false); setEditLead(null); }} className="text-[#AAA] hover:text-[#1A1A1A]">
+                  <XMarkIcon className="size-4" />
+                </button>
+              </div>
+              <LeadForm lead={editLead} onSave={handleSave} onDelete={handleDelete} />
             </div>
-            <LeadForm lead={editLead} onSave={handleSave} onDelete={handleDelete} />
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );

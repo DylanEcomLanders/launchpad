@@ -5,6 +5,7 @@ import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { getLeads, saveLead, deleteLead, updateLeadStatus, createNewLead } from "@/lib/sales-engine/leads-data";
 import { LEAD_STATUSES, type Lead, type LeadStatus } from "@/lib/sales-engine/types";
 import { inputClass, labelClass } from "@/lib/form-styles";
+import { ModalPortal } from "@/components/modal-portal";
 
 export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -180,15 +181,17 @@ export default function LeadsPage() {
 
       {/* Form modal */}
       {showForm && editLead && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => { setShowForm(false); setEditLead(null); }}>
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-5 py-3 border-b border-[#F0F0F0]">
-              <h3 className="text-sm font-semibold">{leads.some((l) => l.id === editLead.id) ? "Edit Lead" : "New Lead"}</h3>
-              <button onClick={() => { setShowForm(false); setEditLead(null); }} className="text-[#AAA] hover:text-[#1A1A1A]"><XMarkIcon className="size-5" /></button>
+        <ModalPortal>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => { setShowForm(false); setEditLead(null); }}>
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between px-5 py-3 border-b border-[#F0F0F0]">
+                <h3 className="text-sm font-semibold">{leads.some((l) => l.id === editLead.id) ? "Edit Lead" : "New Lead"}</h3>
+                <button onClick={() => { setShowForm(false); setEditLead(null); }} className="text-[#AAA] hover:text-[#1A1A1A]"><XMarkIcon className="size-5" /></button>
+              </div>
+              <LeadForm lead={editLead} onSave={handleSave} />
             </div>
-            <LeadForm lead={editLead} onSave={handleSave} />
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );
