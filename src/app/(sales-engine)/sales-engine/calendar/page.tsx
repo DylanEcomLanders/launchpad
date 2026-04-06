@@ -275,7 +275,7 @@ export default function CalendarPage() {
 
   // Typefully state
   const [typefullyLoading, setTypefullyLoading] = useState(false);
-  const [typefullyResult, setTypefullyResult] = useState<{ sent: number; failed: number } | null>(null);
+  const [typefullyResult, setTypefullyResult] = useState<{ sent: number; failed: number; failedErrors?: string[] } | null>(null);
 
   // Drag & drop state
   const [dragPostId, setDragPostId] = useState<string | null>(null);
@@ -564,11 +564,17 @@ export default function CalendarPage() {
       const socialSetId = sets[0].id;
 
       // Step 2: Build the batch payload
-      const batchPosts = schedulable.map(p => ({
-        text: p.caption,
-        platform: p.platform as "x" | "linkedin" | "instagram",
-        publish_at: `${p.scheduled_date}T${p.scheduled_time || "09:00"}:00Z`,
-      }));
+      const batchPosts = schedulable.map(p => {
+        // Ensure time is properly formatted HH:mm
+        const timeParts = (p.scheduled_time || "09:00").split(":");
+        const hh = (timeParts[0] || "09").padStart(2, "0");
+        const mm = (timeParts[1] || "00").padStart(2, "0");
+        return {
+          text: p.caption,
+          platform: p.platform as "x" | "linkedin" | "instagram",
+          publish_at: `${p.scheduled_date}T${hh}:${mm}:00Z`,
+        };
+      });
 
       // Step 3: Send the batch
       const res = await fetch("/api/typefully", {
@@ -586,7 +592,11 @@ export default function CalendarPage() {
 
       const sent = result.success?.length || 0;
       const failed = result.errors?.length || 0;
-      setTypefullyResult({ sent, failed });
+      const failedErrors = (result.errors || []).map((e: any) => e.error || "Unknown error");
+      if (failed > 0) {
+        console.error("Typefully scheduling errors:", result.errors);
+      }
+      setTypefullyResult({ sent, failed, failedErrors });
 
       // Mark successfully scheduled posts
       if (sent > 0) {
@@ -1232,7 +1242,7 @@ export default function CalendarPage() {
             <CheckIcon className="size-4 text-emerald-600" />
             <p className="text-sm font-medium text-emerald-800">
               {typefullyResult.sent} post{typefullyResult.sent !== 1 ? "s" : ""} scheduled to Typefully
-              {typefullyResult.failed > 0 && <span className="text-red-500 ml-1">({typefullyResult.failed} failed)</span>}
+              {typefullyResult.failed > 0 && <span className="text-red-500 ml-1">({typefullyResult.failed} failed{typefullyResult.failedErrors?.[0] ? `: ${typefullyResult.failedErrors[0].slice(0, 80)}` : ""})</span>}
             </p>
           </div>
           <button onClick={() => setTypefullyResult(null)} className="text-emerald-400 hover:text-emerald-600">
