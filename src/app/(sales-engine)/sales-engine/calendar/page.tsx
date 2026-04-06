@@ -580,7 +580,31 @@ export default function CalendarPage() {
       // Use the first social set (most users have one)
       const socialSetId = sets[0].id;
 
-      // Step 2: Build the batch payload
+      // Step 2: Upload images for posts that have media_data
+      const mediaIds: Record<string, string> = {};
+      for (const p of schedulable) {
+        if (p.media_data && (p.post_format === "image" || p.post_format === "video")) {
+          try {
+            const uploadRes = await fetch("/api/typefully", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                action: "upload-media",
+                social_set_id: socialSetId,
+                base64_data: p.media_data,
+              }),
+            });
+            const uploadData = await uploadRes.json();
+            if (uploadRes.ok && uploadData.media_id) {
+              mediaIds[p.id] = uploadData.media_id;
+            }
+          } catch (e) {
+            console.warn(`Failed to upload image for post ${p.id}:`, e);
+          }
+        }
+      }
+
+      // Step 3: Build the batch payload
       const batchPosts = schedulable.map(p => {
         // Ensure time is properly formatted HH:mm
         const timeParts = (p.scheduled_time || "09:00").split(":");
@@ -590,10 +614,11 @@ export default function CalendarPage() {
           text: p.caption,
           platform: p.platform as "x" | "linkedin" | "instagram",
           publish_at: `${p.scheduled_date}T${hh}:${mm}:00Z`,
+          ...(mediaIds[p.id] ? { media_ids: [mediaIds[p.id]] } : {}),
         };
       });
 
-      // Step 3: Send the batch
+      // Step 4: Send the batch
       const res = await fetch("/api/typefully", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

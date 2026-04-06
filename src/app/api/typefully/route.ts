@@ -6,6 +6,7 @@ import {
   createDraft,
   scheduleBatch,
   listDrafts,
+  uploadMediaFromUrl,
   type SchedulePostInput,
 } from "@/lib/typefully";
 
@@ -65,7 +66,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(result);
     }
 
-    return NextResponse.json({ error: "Unknown action — use 'create' or 'schedule-batch'" }, { status: 400 });
+    // Upload media (base64 image → Typefully media_id)
+    if (action === "upload-media") {
+      const { base64_data } = body;
+      if (!base64_data) {
+        return NextResponse.json({ error: "base64_data required" }, { status: 400 });
+      }
+
+      // Parse data URL: "data:image/png;base64,..."
+      const match = base64_data.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+      if (!match) {
+        return NextResponse.json({ error: "Invalid base64 image data" }, { status: 400 });
+      }
+
+      const contentType = match[1];
+      const raw = match[2];
+      const buffer = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
+      const ext = contentType.split("/")[1] || "png";
+      const filename = `launchpad-${Date.now()}.${ext}`;
+
+      const media_id = await uploadMediaFromUrl(social_set_id, filename, contentType, buffer);
+      return NextResponse.json({ media_id });
+    }
+
+    return NextResponse.json({ error: "Unknown action — use 'create', 'schedule-batch', or 'upload-media'" }, { status: 400 });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ error: msg }, { status: 500 });

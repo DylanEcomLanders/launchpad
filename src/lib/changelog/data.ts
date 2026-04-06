@@ -45,6 +45,8 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Paste screenshots directly into post drafts — Cmd+V anywhere in the studio panel drops the image in and auto-generates captions" },
       { type: "improved", text: "Post scheduling now uses natural minute values (e.g. 08:23, 12:36, 17:08) based on analytics instead of rounding to the hour" },
       { type: "added", text: "Auto-adapt captions across platforms — write for X, click the LinkedIn tab and it auto-generates a LinkedIn version. Cached per tab so edits are preserved when switching" },
+      { type: "fixed", text: "Typefully scheduling now uploads images and sends them with the draft — previously only the caption text was sent" },
+      { type: "fixed", text: "Calendar timezone bug — dates were off by one day in BST/non-UTC timezones due to toISOString() conversion" },
     ],
   },
   {
