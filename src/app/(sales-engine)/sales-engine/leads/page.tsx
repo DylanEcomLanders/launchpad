@@ -26,17 +26,27 @@ export default function LeadsPage() {
   const sorted = [...filtered].sort((a, b) => b.updated_at.localeCompare(a.updated_at));
 
   const handleSave = async (lead: Lead) => {
-    await saveLead(lead);
-    setShowForm(false);
-    setEditLead(null);
-    load();
+    try {
+      await saveLead(lead);
+      setShowForm(false);
+      setEditLead(null);
+      load();
+    } catch (err) {
+      console.error("Failed to save lead:", err);
+      alert("Failed to save. Please try again.");
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (confirmDelete !== id) { setConfirmDelete(id); return; }
-    await deleteLead(id);
-    setConfirmDelete(null);
-    load();
+    try {
+      await deleteLead(id);
+      setConfirmDelete(null);
+      load();
+    } catch (err) {
+      console.error("Failed to delete lead:", err);
+      alert("Failed to delete. Please try again.");
+    }
   };
 
   const cycleStatus = async (lead: Lead) => {
@@ -171,7 +181,7 @@ export default function LeadsPage() {
       {/* Form modal */}
       {showForm && editLead && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => { setShowForm(false); setEditLead(null); }}>
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-3 border-b border-[#F0F0F0]">
               <h3 className="text-sm font-semibold">{leads.some((l) => l.id === editLead.id) ? "Edit Lead" : "New Lead"}</h3>
               <button onClick={() => { setShowForm(false); setEditLead(null); }} className="text-[#AAA] hover:text-[#1A1A1A]"><XMarkIcon className="size-5" /></button>

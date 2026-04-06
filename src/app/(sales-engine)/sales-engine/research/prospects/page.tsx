@@ -118,15 +118,20 @@ export default function EcomProspectingPage() {
   };
 
   const addToPipeline = async (store: StoreResult) => {
-    const lead = createNewLead({
-      brand_name: store.name,
-      contact_email: store.email,
-      source: "Ecom Prospecting",
-      store_url: store.url,
-      notes: `Products: ${store.products_count}\nCountry: ${store.country}\n${store.description}`,
-    });
-    await saveLead(lead);
-    setAddedToPipeline((prev) => new Set([...prev, store.url]));
+    try {
+      const lead = createNewLead({
+        brand_name: store.name,
+        contact_email: store.email,
+        source: "Ecom Prospecting",
+        store_url: store.url,
+        notes: `Products: ${store.products_count}\nCountry: ${store.country}\n${store.description}`,
+      });
+      await saveLead(lead);
+      setAddedToPipeline((prev) => new Set([...prev, store.url]));
+    } catch (err) {
+      console.error("Failed to add to pipeline:", err);
+      alert("Failed to save. Please try again.");
+    }
   };
 
   return (

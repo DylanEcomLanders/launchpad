@@ -18,22 +18,27 @@ export function ReportIssueButton() {
     e.preventDefault();
     if (!title.trim()) return;
 
-    await createIssue({
-      title: title.trim(),
-      description: description.trim(),
-      type,
-      page: pathname,
-      reported_by: "",
-    });
+    try {
+      await createIssue({
+        title: title.trim(),
+        description: description.trim(),
+        type,
+        page: pathname,
+        reported_by: "",
+      });
 
-    setTitle("");
-    setDescription("");
-    setType("bug");
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setOpen(false);
-    }, 1500);
+      setTitle("");
+      setDescription("");
+      setType("bug");
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+        setOpen(false);
+      }, 1500);
+    } catch (err) {
+      console.error("Failed to submit issue:", err);
+      alert("Failed to submit issue. Please try again.");
+    }
   }
 
   return (
@@ -56,7 +61,7 @@ export function ReportIssueButton() {
             className="absolute inset-0 bg-black/20"
             onClick={() => setOpen(false)}
           />
-          <div className="relative bg-white rounded-t-xl sm:rounded-lg w-full max-w-md mx-4 mb-0 sm:mb-0 shadow-xl">
+          <div className="relative bg-white rounded-t-xl sm:rounded-lg w-full max-w-md mx-4 mb-0 sm:mb-0 shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#E5E5EA]">
               <h3 className="text-sm font-semibold">Report an Issue</h3>
               <button

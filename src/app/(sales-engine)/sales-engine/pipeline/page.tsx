@@ -22,15 +22,25 @@ export default function PipelinePage() {
   useEffect(() => { load(); }, []);
 
   const handleSave = async (lead: Lead) => {
-    await saveLead(lead);
-    setShowForm(false);
-    setEditLead(null);
-    load();
+    try {
+      await saveLead(lead);
+      setShowForm(false);
+      setEditLead(null);
+      load();
+    } catch (err) {
+      console.error("Failed to save lead:", err);
+      alert("Failed to save. Please try again.");
+    }
   };
 
   const handleDelete = async (id: string) => {
-    await deleteLead(id);
-    load();
+    try {
+      await deleteLead(id);
+      load();
+    } catch (err) {
+      console.error("Failed to delete lead:", err);
+      alert("Failed to delete. Please try again.");
+    }
   };
 
   const handleDrop = async (status: LeadStatus) => {

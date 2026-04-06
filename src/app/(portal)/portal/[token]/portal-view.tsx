@@ -2185,7 +2185,7 @@ function DocumentPreview({
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-lg bg-white border border-[#E8E8E8] rounded-lg shadow-2xl animate-fadeIn">
+      <div className="relative w-full max-w-lg bg-white border border-[#E8E8E8] rounded-lg shadow-2xl animate-fadeIn max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-start justify-between p-6 border-b border-[#E8E8E8]">
           <div className="flex items-start gap-4">
@@ -2511,7 +2511,7 @@ function RequestPopup({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-white border border-[#E8E8E8] rounded-lg shadow-2xl animate-fadeIn">
+      <div className="relative w-full max-w-md bg-white border border-[#E8E8E8] rounded-lg shadow-2xl animate-fadeIn max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-[#E8E8E8]">
           <h3 className="text-base font-bold text-[#1A1A1A]">Submit a Request</h3>
           <button onClick={onClose} className="p-1.5 rounded-md hover:bg-[#F0F0F0] transition-colors text-[#AAA] hover:text-[#1A1A1A]">
