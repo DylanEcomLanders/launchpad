@@ -49,6 +49,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Recent leads on dashboard now show funnel and source badges inline" },
       { type: "added", text: "Lead Magnets hub — view all lead magnet pages with pre-generated tracked links per team member and platform (X, LinkedIn, TikTok, Email). Copy any link with one click and see per-link view/lead stats" },
       { type: "improved", text: "Sidebar restructured — Funnels (Calendar, Funnel Planner, Lead Magnets), Content (Articles, Portfolio), Pipeline, Revenue, Resources" },
+      { type: "improved", text: "Audit landing page — footer now overlays bottom of portfolio strip with gradient fade for cleaner visual transition" },
     ],
   },
   {

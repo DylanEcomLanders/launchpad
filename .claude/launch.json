@@ -4,7 +4,7 @@
     {
       "name": "launchpad",
       "runtimeExecutable": "/usr/local/bin/node",
-      "runtimeArgs": ["/usr/local/bin/npx", "next", "dev"],
+      "runtimeArgs": ["./node_modules/.bin/next", "dev"],
       "port": 3000
     }
   ]
