@@ -217,31 +217,32 @@ export default function AuditLandingPage() {
                     key={idx}
                     src={src}
                     alt=""
-                    className="shrink-0 w-[160px] h-[280px] object-cover rounded-xl border border-[#EBEBEB]"
+                    className="shrink-0 w-[160px] h-[240px] object-cover rounded-xl border border-[#EBEBEB]"
                   />
                 ))
               : Array.from({ length: 20 }, (_, idx) => (
                   <div
                     key={idx}
-                    className="shrink-0 w-[160px] h-[280px] bg-[#F5F5F5] rounded-xl border border-[#EBEBEB]"
+                    className="shrink-0 w-[160px] h-[240px] bg-[#F5F5F5] rounded-xl border border-[#EBEBEB]"
                   />
                 ))}
           </div>
         </div>
 
-        {/* ── Footer — pulls up over bottom half of portfolio ── */}
-        <div className="relative z-10 w-full bg-[#1B1B1B] -mt-[180px]">
-          <div className="max-w-6xl mx-auto px-6 md:px-10 py-8 pt-[200px] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <p className="text-base md:text-lg font-medium text-white tracking-tight" style={{ fontFamily: "var(--font-body)" }}>
+        {/* ── Footer ── */}
+        <div className="relative z-10 w-full bg-[#1B1B1B] -mt-[80px]">
+          <div className="max-w-6xl mx-auto px-6 md:px-10 py-5 pt-[100px] flex items-center justify-between">
+            <p className="text-sm md:text-base font-medium text-white tracking-tight" style={{ fontFamily: "var(--font-body)" }}>
               The Funnel Architects Behind <em className="font-medium">Shopify&apos;s Fastest-Growing Brands.</em>
             </p>
-            <div className="flex items-center gap-2.5 shrink-0">
-              <div className="w-9 h-9 border border-white/30 rounded flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M17.543 3.77a.461.461 0 00-.395-.22.461.461 0 00-.198.044s-1.83.53-2.058.595c-.24-.7-.66-1.345-1.404-1.345h-.065c-.21-.275-.47-.395-.69-.395-1.71 0-2.528 2.14-2.784 3.228-.665.206-1.14.353-1.2.375-.373.118-.385.13-.434.482C8.28 6.764 7 16.871 7 16.871l8.14 1.404V3.84c-.21-.035-.385-.06-.597-.07zM14.74 4.672v.14c-.48.148-.998.31-1.523.47.293-1.126.842-1.672 1.322-1.877.126.315.2.743.2 1.267zm-.867-1.65c.086 0 .172.03.25.088-.622.293-1.29 1.03-1.572 2.504l-1.205.373C11.75 4.467 12.48 3.023 13.873 3.023zm.27 8.09s-.508-.274-1.13-.274c-.914 0-.96.574-.96.718 0 .79 2.06 1.092 2.06 2.942 0 1.456-1.003 2.393-2.356 2.393-1.623 0-2.453-.828-2.453-.828l.435-1.437s.853.733 1.572.733a.64.64 0 00.664-.642c0-1.12-1.69-1.17-1.69-2.77 0-1.425 1.022-2.805 3.088-2.805.794 0 1.188.228 1.188.228l-.418 1.542z"/></svg>
-              </div>
-              <div className="text-[11px] leading-tight font-semibold text-white uppercase tracking-[0.15em]">
-                Shopify<br />Select<br />Partner
-              </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <svg className="h-8 w-auto text-white" viewBox="0 0 109 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="0.5" y="0.5" width="31" height="39" rx="1.5" stroke="currentColor" strokeOpacity="0.4"/>
+                <path d="M20.67 10.235c-.105-.056-.21-.014-.243.091-.032.105-.378.735-.378.735s-.43-.893-1.27-.893h-.046c-.147-.193-.33-.276-.484-.276-1.197 0-1.77 1.498-1.949 2.26-.465.144-.798.247-.84.262-.261.082-.27.09-.304.337-.024.173-.893 6.876-.893 6.876l5.698.982V10.282c-.147-.025-.27-.042-.291-.047zm-1.963.88v.098c-.336.103-.7.217-1.066.329.205-.788.589-1.17.925-1.314.088.22.14.52.14.887zm-.607-1.155c.06 0 .12.02.175.062-.435.205-.903.72-1.1 1.753l-.844.261c.254-1.016.712-2.076 1.77-2.076zm.189 5.663s-.356-.192-.791-.192c-.64 0-.672.402-.672.503 0 .553 1.442.765 1.442 2.06 0 1.019-.702 1.675-1.649 1.675-1.136 0-1.717-.58-1.717-.58l.304-1.005s.597.513 1.1.513a.448.448 0 00.465-.449c0-.784-1.183-.819-1.183-1.939 0-.998.716-1.964 2.162-1.964.556 0 .832.16.832.16l-.293 1.218z" fill="currentColor"/>
+                <text x="38" y="14" fill="currentColor" fontSize="8" fontWeight="700" letterSpacing="0.12em" fontFamily="system-ui, sans-serif">SHOPIFY</text>
+                <text x="38" y="24" fill="currentColor" fontSize="8" fontWeight="700" letterSpacing="0.12em" fontFamily="system-ui, sans-serif">SELECT</text>
+                <text x="38" y="34" fill="currentColor" fontSize="8" fontWeight="700" letterSpacing="0.12em" fontFamily="system-ui, sans-serif">PARTNER</text>
+              </svg>
             </div>
           </div>
         </div>
