@@ -208,42 +208,39 @@ export default function AuditLandingPage() {
           </form>
         </div>
 
-        {/* ── Portfolio Strip + Footer ── */}
-        <div className="relative w-full">
-          {/* Portfolio strip — scrolls behind the footer */}
-          <div className="w-full overflow-hidden py-8 pb-28">
-            <div className="flex gap-4 animate-scroll">
-              {portfolioImages.length > 0
-                ? [...portfolioImages, ...portfolioImages].map((src, idx) => (
-                    <img
-                      key={idx}
-                      src={src}
-                      alt=""
-                      className="shrink-0 w-[160px] h-[240px] object-cover rounded-xl border border-[#EBEBEB]"
-                    />
-                  ))
-                : Array.from({ length: 20 }, (_, idx) => (
-                    <div
-                      key={idx}
-                      className="shrink-0 w-[160px] h-[240px] bg-[#F5F5F5] rounded-xl border border-[#EBEBEB]"
-                    />
-                  ))}
-            </div>
+        {/* ── Portfolio Strip ── */}
+        <div className="w-full overflow-hidden pt-8 mb-0">
+          <div className="flex gap-4 animate-scroll">
+            {portfolioImages.length > 0
+              ? [...portfolioImages, ...portfolioImages].map((src, idx) => (
+                  <img
+                    key={idx}
+                    src={src}
+                    alt=""
+                    className="shrink-0 w-[160px] h-[240px] object-cover rounded-xl border border-[#EBEBEB]"
+                  />
+                ))
+              : Array.from({ length: 20 }, (_, idx) => (
+                  <div
+                    key={idx}
+                    className="shrink-0 w-[160px] h-[240px] bg-[#F5F5F5] rounded-xl border border-[#EBEBEB]"
+                  />
+                ))}
           </div>
+        </div>
 
-          {/* Footer — overlaps portfolio */}
-          <div className="absolute bottom-0 left-0 right-0 bg-[#1B1B1B]">
-            <div className="max-w-6xl mx-auto px-6 md:px-10 py-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-              <p className="text-base md:text-lg font-medium text-white tracking-tight" style={{ fontFamily: "var(--font-body)" }}>
-                The Funnel Architects Behind <em className="font-medium">Shopify&apos;s Fastest-Growing Brands.</em>
-              </p>
-              <div className="flex items-center gap-2.5 shrink-0">
-                <div className="w-9 h-9 border border-white/30 rounded flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M17.543 3.77a.461.461 0 00-.395-.22.461.461 0 00-.198.044s-1.83.53-2.058.595c-.24-.7-.66-1.345-1.404-1.345h-.065c-.21-.275-.47-.395-.69-.395-1.71 0-2.528 2.14-2.784 3.228-.665.206-1.14.353-1.2.375-.373.118-.385.13-.434.482C8.28 6.764 7 16.871 7 16.871l8.14 1.404V3.84c-.21-.035-.385-.06-.597-.07zM14.74 4.672v.14c-.48.148-.998.31-1.523.47.293-1.126.842-1.672 1.322-1.877.126.315.2.743.2 1.267zm-.867-1.65c.086 0 .172.03.25.088-.622.293-1.29 1.03-1.572 2.504l-1.205.373C11.75 4.467 12.48 3.023 13.873 3.023zm.27 8.09s-.508-.274-1.13-.274c-.914 0-.96.574-.96.718 0 .79 2.06 1.092 2.06 2.942 0 1.456-1.003 2.393-2.356 2.393-1.623 0-2.453-.828-2.453-.828l.435-1.437s.853.733 1.572.733a.64.64 0 00.664-.642c0-1.12-1.69-1.17-1.69-2.77 0-1.425 1.022-2.805 3.088-2.805.794 0 1.188.228 1.188.228l-.418 1.542z"/></svg>
-                </div>
-                <div className="text-[11px] leading-tight font-semibold text-white uppercase tracking-[0.15em]">
-                  Shopify<br />Select<br />Partner
-                </div>
+        {/* ── Footer — pulls up over bottom half of portfolio ── */}
+        <div className="relative z-10 w-full bg-[#1B1B1B] -mt-[120px]">
+          <div className="max-w-6xl mx-auto px-6 md:px-10 py-8 pt-[140px] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <p className="text-base md:text-lg font-medium text-white tracking-tight" style={{ fontFamily: "var(--font-body)" }}>
+              The Funnel Architects Behind <em className="font-medium">Shopify&apos;s Fastest-Growing Brands.</em>
+            </p>
+            <div className="flex items-center gap-2.5 shrink-0">
+              <div className="w-9 h-9 border border-white/30 rounded flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M17.543 3.77a.461.461 0 00-.395-.22.461.461 0 00-.198.044s-1.83.53-2.058.595c-.24-.7-.66-1.345-1.404-1.345h-.065c-.21-.275-.47-.395-.69-.395-1.71 0-2.528 2.14-2.784 3.228-.665.206-1.14.353-1.2.375-.373.118-.385.13-.434.482C8.28 6.764 7 16.871 7 16.871l8.14 1.404V3.84c-.21-.035-.385-.06-.597-.07zM14.74 4.672v.14c-.48.148-.998.31-1.523.47.293-1.126.842-1.672 1.322-1.877.126.315.2.743.2 1.267zm-.867-1.65c.086 0 .172.03.25.088-.622.293-1.29 1.03-1.572 2.504l-1.205.373C11.75 4.467 12.48 3.023 13.873 3.023zm.27 8.09s-.508-.274-1.13-.274c-.914 0-.96.574-.96.718 0 .79 2.06 1.092 2.06 2.942 0 1.456-1.003 2.393-2.356 2.393-1.623 0-2.453-.828-2.453-.828l.435-1.437s.853.733 1.572.733a.64.64 0 00.664-.642c0-1.12-1.69-1.17-1.69-2.77 0-1.425 1.022-2.805 3.088-2.805.794 0 1.188.228 1.188.228l-.418 1.542z"/></svg>
+              </div>
+              <div className="text-[11px] leading-tight font-semibold text-white uppercase tracking-[0.15em]">
+                Shopify<br />Select<br />Partner
               </div>
             </div>
           </div>
