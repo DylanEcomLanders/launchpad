@@ -73,18 +73,21 @@ export default function AuditLandingPage() {
     }
   }
 
+  // Portfolio images for the scrolling strip
+  const portfolioImages = Array.from({ length: 10 }, (_, i) => i);
+
   if (submitted) {
     return (
-      <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center px-6">
-        <div className="max-w-md w-full text-center animate-fadeInUp">
-          <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-emerald-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+      <div className="min-h-screen bg-white flex items-center justify-center px-6">
+        <div className="max-w-md w-full text-center">
+          <div className="w-16 h-16 bg-[#D1FF4C]/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-[#1B1B1B]" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-[#1B1B1B] mb-3">You&apos;re in.</h1>
-          <p className="text-[#7A7A7A] leading-relaxed">
-            We&apos;ll review your product page and send over a detailed audit within 48 hours. Keep an eye on your inbox.
+          <h1 className="text-3xl font-bold text-[#1B1B1B] tracking-tight mb-3">You&apos;re in.</h1>
+          <p className="text-[#666] leading-relaxed text-lg">
+            We&apos;ll review your product page and send over a detailed 8-point audit within 48 hours. Keep an eye on your inbox.
           </p>
         </div>
       </div>
@@ -92,146 +95,164 @@ export default function AuditLandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
-      {/* Nav */}
-      <nav className="border-b border-[#E5E5EA] bg-white">
-        <div className="max-w-5xl mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* ── Nav ── */}
+      <nav className="w-full border-b border-[#F0F0F0]">
+        <div className="max-w-6xl mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[#1B1B1B] rounded-lg flex items-center justify-center">
-              <span className="text-white text-sm font-bold">E</span>
-            </div>
-            <span className="font-semibold text-[#1B1B1B] text-sm">Ecom Landers</span>
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#1B1B1B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span className="font-bold text-[#1B1B1B] text-lg tracking-tight">ecomlanders</span>
           </div>
           <a
-            href="https://ecomlanders.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+            href="#form"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#1B1B1B] border border-[#E5E5E5] rounded-lg hover:bg-[#F9F9F9] transition-colors"
           >
-            ecomlanders.com
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            FREE Shopify Audit
           </a>
         </div>
       </nav>
 
-      {/* Hero */}
-      <div className="max-w-5xl mx-auto px-6 md:px-10">
-        <div className="py-16 md:py-24">
-          <div className="max-w-2xl">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-[#E5E5EA] rounded-full mb-8">
-              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-              <span className="text-xs font-medium text-[#7A7A7A]">Free for Shopify brands</span>
+      {/* ── Hero ── */}
+      <div className="flex-1 flex flex-col items-center">
+        <div className="w-full max-w-2xl mx-auto px-6 md:px-10 pt-12 md:pt-20 pb-12 text-center">
+          {/* Badges */}
+          <div className="flex items-center justify-center gap-3 mb-8">
+            <span className="flex items-center gap-1.5 text-sm text-[#666]">
+              <span className="text-amber-500">&#9889;</span> 30 Second Form
+            </span>
+            <span className="text-[#DDD]">&middot;</span>
+            <span className="flex items-center gap-1.5 text-sm text-[#666]">
+              <span className="text-amber-500">&#9889;</span> 48 Hour Delivery
+            </span>
+          </div>
+
+          {/* Headline */}
+          <h1 className="text-4xl md:text-[3.2rem] font-bold text-[#1B1B1B] leading-[1.1] tracking-tight mb-6 uppercase">
+            Claim Your <span className="bg-[#D1FF4C] px-2 py-0.5 rounded">Free</span> 8-Point
+            <br className="hidden md:block" />{" "}Shopify Product Page Audit
+          </h1>
+
+          {/* Subtext */}
+          <p className="text-base text-[#666] leading-relaxed max-w-xl mx-auto mb-10">
+            We&apos;ve built and delivered over <strong className="text-[#1B1B1B]">3,500+ product pages</strong> to some of the fastest growing DTC ecom brands in the world. Now we&apos;re giving away the same auditing framework - completely free - so you can find exactly what&apos;s stopping you from reaching &pound;100k+ / month.
+          </p>
+
+          {/* ── Form ── */}
+          <form id="form" onSubmit={handleSubmit} className="max-w-md mx-auto space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-[#1B1B1B] mb-2">What&apos;s your name?</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your name"
+                className="w-full px-4 py-3 bg-white border border-[#E5E5E5] rounded-lg text-sm text-[#1B1B1B] outline-none placeholder:text-[#CCC] focus:border-[#1B1B1B] transition-colors"
+              />
             </div>
 
-            <h1 className="text-4xl md:text-5xl font-bold text-[#1B1B1B] leading-[1.1] tracking-tight mb-5">
-              Your product page is
-              <br />
-              <span className="text-[#7A7A7A]">leaking revenue.</span>
-            </h1>
+            <div>
+              <label className="block text-sm font-medium text-[#1B1B1B] mb-2">Where should we send your audit?</label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                className="w-full px-4 py-3 bg-white border border-[#E5E5E5] rounded-lg text-sm text-[#1B1B1B] outline-none placeholder:text-[#CCC] focus:border-[#1B1B1B] transition-colors"
+              />
+            </div>
 
-            <p className="text-lg text-[#7A7A7A] leading-relaxed mb-4 max-w-xl">
-              Most Shopify stores lose 20-40% of potential sales to friction, weak copy, and missing trust signals. We&apos;ll show you exactly where.
+            <div>
+              <label className="block text-sm font-medium text-[#1B1B1B] mb-2">Which page should we audit?</label>
+              <input
+                type="text"
+                required
+                value={storeUrl}
+                onChange={(e) => setStoreUrl(e.target.value)}
+                placeholder="Enter your brand URL"
+                className="w-full px-4 py-3 bg-white border border-[#E5E5E5] rounded-lg text-sm text-[#1B1B1B] outline-none placeholder:text-[#CCC] focus:border-[#1B1B1B] transition-colors"
+              />
+            </div>
+
+            {error && (
+              <p className="text-xs text-red-500 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading || !email.trim() || !storeUrl.trim()}
+              className="w-full py-3.5 bg-[#1B1B1B] text-white text-sm font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {loading ? "Submitting..." : (
+                <>
+                  Get My Free Audit
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                  </svg>
+                </>
+              )}
+            </button>
+
+            {/* Social proof counter */}
+            <p className="text-sm text-center pt-2">
+              <strong className="text-[#1B1B1B]">456+ audits</strong>{" "}
+              <span className="text-[#999]">delivered as of {new Date().toLocaleDateString("en-GB", { month: "long", day: "numeric" })}</span>
             </p>
-            <p className="text-base text-[#999] leading-relaxed mb-10 max-w-xl">
-              Get a personalised CRO audit of your product page — scoring layout, copy, social proof, CTAs, and mobile experience. No fluff, just actionable fixes ranked by impact.
+          </form>
+        </div>
+
+        {/* ── Portfolio Strip ── */}
+        <div className="w-full overflow-hidden py-8">
+          <div className="flex gap-4 animate-scroll">
+            {[...portfolioImages, ...portfolioImages].map((i, idx) => (
+              <div
+                key={idx}
+                className="shrink-0 w-[160px] h-[240px] bg-[#F5F5F5] rounded-xl border border-[#EBEBEB]"
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* ── Footer ── */}
+        <div className="w-full border-t border-[#F0F0F0]">
+          <div className="max-w-6xl mx-auto px-6 md:px-10 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-lg md:text-xl font-semibold text-[#1B1B1B] tracking-tight">
+              The Funnel Architects Behind <em className="not-italic font-semibold">Shopify&apos;s Fastest-Growing Brands.</em>
             </p>
-          </div>
-
-          {/* Form card */}
-          <div className="max-w-lg">
-            <div className="bg-white border border-[#E5E5EA] rounded-2xl p-6 md:p-8 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-              <h2 className="text-lg font-bold text-[#1B1B1B] mb-1">Get your free audit</h2>
-              <p className="text-sm text-[#7A7A7A] mb-6">Takes 2 minutes. Delivered to your inbox within 48 hours.</p>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-[#1B1B1B] mb-1.5">Your name</label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Dylan Evans"
-                    className="w-full px-4 py-3 bg-[#F7F8FA] border border-[#E5E5EA] rounded-xl text-sm text-[#1B1B1B] outline-none placeholder:text-[#CCC] focus:border-[#1B1B1B] transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-[#1B1B1B] mb-1.5">
-                    Email address <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="dylan@brand.com"
-                    className="w-full px-4 py-3 bg-[#F7F8FA] border border-[#E5E5EA] rounded-xl text-sm text-[#1B1B1B] outline-none placeholder:text-[#CCC] focus:border-[#1B1B1B] transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-[#1B1B1B] mb-1.5">
-                    Product page URL <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={storeUrl}
-                    onChange={(e) => setStoreUrl(e.target.value)}
-                    placeholder="yourstore.com/products/best-seller"
-                    className="w-full px-4 py-3 bg-[#F7F8FA] border border-[#E5E5EA] rounded-xl text-sm text-[#1B1B1B] outline-none placeholder:text-[#CCC] focus:border-[#1B1B1B] transition-colors"
-                  />
-                  <p className="text-[11px] text-[#AAA] mt-1.5">Paste the URL of the page you want us to audit</p>
-                </div>
-
-                {error && (
-                  <p className="text-xs text-red-500 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={loading || !email.trim() || !storeUrl.trim()}
-                  className="w-full py-3.5 bg-[#1B1B1B] text-white text-sm font-semibold rounded-xl hover:bg-[#2D2D2D] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? "Submitting..." : "Get my free audit"}
-                </button>
-
-                <p className="text-[11px] text-[#CCC] text-center">
-                  No spam, no sales pitch. Just a straight-up audit of your page.
-                </p>
-              </form>
-            </div>
-          </div>
-
-          {/* Social proof / what you get */}
-          <div className="mt-16 max-w-2xl">
-            <h3 className="text-sm font-bold text-[#1B1B1B] uppercase tracking-wider mb-6">What you&apos;ll get</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {[
-                { title: "Page Scorecard", desc: "Your page scored across 6 key areas with a clear overall rating" },
-                { title: "Issue Breakdown", desc: "Every friction point identified, ranked by revenue impact" },
-                { title: "Priority Fixes", desc: "Exactly what to change first for the biggest uplift in CVR" },
-              ].map((item) => (
-                <div key={item.title} className="bg-white border border-[#E5E5EA] rounded-xl p-5">
-                  <h4 className="text-sm font-semibold text-[#1B1B1B] mb-1.5">{item.title}</h4>
-                  <p className="text-xs text-[#7A7A7A] leading-relaxed">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Credentials */}
-          <div className="mt-12 pb-16">
-            <div className="flex items-center gap-6 text-xs text-[#AAA]">
-              <span>100+ pages audited</span>
-              <span className="w-1 h-1 bg-[#DDD] rounded-full" />
-              <span>6-8 figure Shopify brands</span>
-              <span className="w-1 h-1 bg-[#DDD] rounded-full" />
-              <span>Avg. 23% CVR uplift</span>
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="w-8 h-8 bg-[#95BF47] rounded-lg flex items-center justify-center">
+                <span className="text-white text-xs font-bold">S</span>
+              </div>
+              <div className="text-[10px] leading-tight font-semibold text-[#1B1B1B] uppercase tracking-wider">
+                Shopify<br />Select<br />Partner
+              </div>
             </div>
           </div>
         </div>
+
+        {/* ── Big Brand Text ── */}
+        <div className="w-full bg-[#1B1B1B] py-6 overflow-hidden">
+          <p className="text-[8rem] md:text-[12rem] font-bold text-white leading-none tracking-tighter text-center whitespace-nowrap select-none" style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}>
+            ecomlanders
+          </p>
+        </div>
       </div>
+
+      {/* Scroll animation */}
+      <style jsx>{`
+        @keyframes scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-scroll {
+          animation: scroll 30s linear infinite;
+        }
+      `}</style>
     </div>
   );
 }
