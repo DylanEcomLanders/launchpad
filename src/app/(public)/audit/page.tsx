@@ -86,7 +86,7 @@ export default function AuditLandingPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-6">
+      <div className="min-h-screen bg-white flex items-center justify-center px-6" style={{ background: "white" }}>
         <div className="max-w-md w-full text-center">
           <div className="w-16 h-16 bg-[#D1FF4C]/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <svg className="w-8 h-8 text-[#1B1B1B]" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
@@ -103,9 +103,9 @@ export default function AuditLandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-[#1B1B1B] flex flex-col">
       {/* ── Nav ── */}
-      <nav className="w-full border-b border-[#F0F0F0]">
+      <nav className="w-full border-b border-[#F0F0F0] bg-white">
         <div className="max-w-6xl mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
           <Logo height={18} className="text-[#1B1B1B]" />
           <span className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#666]">
@@ -118,7 +118,7 @@ export default function AuditLandingPage() {
       </nav>
 
       {/* ── Hero ── */}
-      <div className="flex-1 flex flex-col items-center">
+      <div className="flex-1 flex flex-col items-center bg-white">
         <div className="w-full max-w-5xl mx-auto px-6 md:px-10 pt-12 md:pt-20 pb-12 text-center">
           {/* Badges */}
           <div className="flex items-center justify-center gap-3 mb-8">
@@ -231,7 +231,7 @@ export default function AuditLandingPage() {
 
         {/* ── Footer ── */}
         <div className="relative z-10 w-full bg-[#1B1B1B] -mt-[80px]">
-          <div className="max-w-6xl mx-auto px-6 md:px-10 py-5 pt-[100px] flex items-center justify-between">
+          <div className="max-w-6xl mx-auto px-6 md:px-10 flex items-center justify-between" style={{ paddingTop: "calc(80px + 24px)", paddingBottom: "24px" }}>
             <p className="text-sm md:text-base font-medium text-white tracking-tight" style={{ fontFamily: "var(--font-body)" }}>
               The Funnel Architects Behind <em className="font-medium">Shopify&apos;s Fastest-Growing Brands.</em>
             </p>
