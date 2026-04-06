@@ -49,7 +49,7 @@ const navSections: NavSection[] = [
     items: [
       { label: "Pipeline", href: "/sales-engine/pipeline" },
       { label: "Audits", href: "/sales-engine/audits" },
-      { label: "Agency Funnels", href: "/sales-engine/growth-engine" },
+      { label: "Funnels", href: "/sales-engine/growth-engine" },
     ],
   },
   {

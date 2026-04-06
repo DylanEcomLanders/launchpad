@@ -60,7 +60,8 @@ export interface Lead {
   contact_name: string;
   contact_email: string;
   status: LeadStatus;
-  source: string;
+  source: string; // platform: "x-dylan-bio", "li-ajay-post", etc.
+  funnel?: string; // which lead magnet: "audit", "checklist", etc.
   notes: string;
   follow_up_date?: string;
   store_url?: string;

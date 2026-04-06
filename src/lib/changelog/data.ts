@@ -55,6 +55,10 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "fixed", text: "Typefully now sends correct per-platform captions instead of duplicating one caption to both X and LinkedIn" },
       { type: "fixed", text: "Images now upload to Typefully correctly — pasted screenshots auto-set format to image, and upload runs regardless of post format" },
       { type: "fixed", text: "Typefully now creates separate drafts per platform — guarantees X and LinkedIn each get their own caption and image instead of one shared draft" },
+      { type: "fixed", text: "Typefully image uploads now work — correct API field names, server-side S3 upload, and media processing wait before attaching to drafts" },
+      { type: "added", text: "Audit lead magnet landing page at /audit — public page with form that auto-creates pipeline entries with source attribution" },
+      { type: "added", text: "UTM/ref tracking on lead magnet pages — ?ref=x-dylan-bio tags the lead source automatically" },
+      { type: "improved", text: "Agency Funnels renamed to Funnels in sidebar" },
     ],
   },
   {
