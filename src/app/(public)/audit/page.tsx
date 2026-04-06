@@ -225,13 +225,13 @@ export default function AuditLandingPage() {
                     key={idx}
                     src={src}
                     alt=""
-                    className="shrink-0 w-[160px] h-[360px] object-cover rounded-xl border border-[#EBEBEB]"
+                    className="shrink-0 w-[360px] h-[360px] object-cover rounded-xl border border-[#EBEBEB]"
                   />
                 ))
               : Array.from({ length: 20 }, (_, idx) => (
                   <div
                     key={idx}
-                    className="shrink-0 w-[160px] h-[360px] bg-[#F5F5F5] rounded-xl border border-[#EBEBEB]"
+                    className="shrink-0 w-[360px] h-[360px] bg-[#F5F5F5] rounded-xl border border-[#EBEBEB]"
                   />
                 ))}
           </div>
