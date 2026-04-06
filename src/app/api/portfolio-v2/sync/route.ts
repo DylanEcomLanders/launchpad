@@ -1,7 +1,7 @@
 /* ── Portfolio v2 Sync API ──
  *
  * REQUIRES:
- *  - env: FIGMA_API_TOKEN
+ *  - env: FIGMA_ACCESS_TOKEN
  *  - Supabase storage bucket `portfolio-v2` (public). Create it manually in Supabase
  *    dashboard with an all-access policy (same as `audit-portfolio`).
  *  - Supabase table `portfolio_v2` (see src/lib/portfolio-v2/data.ts for schema)
@@ -135,10 +135,10 @@ async function fetchFigmaFrameImage(
 
 export async function POST(req: NextRequest) {
   try {
-    const token = process.env.FIGMA_API_TOKEN;
+    const token = process.env.FIGMA_ACCESS_TOKEN;
     if (!token) {
       return NextResponse.json(
-        { error: "FIGMA_API_TOKEN env var not set" },
+        { error: "FIGMA_ACCESS_TOKEN env var not set" },
         { status: 500 }
       );
     }
