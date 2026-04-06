@@ -49,6 +49,7 @@ const navSections: NavSection[] = [
     items: [
       { label: "Articles", href: "/sales-engine/articles" },
       { label: "Portfolio", href: "/sales-engine/portfolio" },
+      { label: "Portfolio v2", href: "/sales-engine/portfolio-v2" },
     ],
   },
   {
