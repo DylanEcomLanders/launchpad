@@ -906,6 +906,18 @@ export default function CalendarPage() {
           for (const id of Object.values(p.typefully_draft_ids)) if (id) knownIds.add(String(id));
         }
       }
+      // Fuzzy dedupe: match legacy posts without stored draft IDs by caption+date
+      const fuzzyKey = (text: string, date: string) =>
+        `${(text || "").trim().slice(0, 40).toLowerCase()}|${date}`;
+      const knownFuzzy = new Set<string>();
+      for (const p of updated) {
+        if (p.caption) knownFuzzy.add(fuzzyKey(p.caption, p.scheduled_date));
+        if (p.platform_captions) {
+          for (const t of Object.values(p.platform_captions)) {
+            if (t) knownFuzzy.add(fuzzyKey(t, p.scheduled_date));
+          }
+        }
+      }
       const allLiveDrafts: any[] = [
         ...(schedData.drafts || []),
         ...(draftData.drafts || []),
@@ -918,12 +930,48 @@ export default function CalendarPage() {
         if (kk === "linkedin") return "linkedin";
         return null;
       };
-      console.log("[Sync] Sample draft JSON:", JSON.stringify(allLiveDrafts[0], null, 2));
-      console.log("[Sync] Sample draft keys:", allLiveDrafts[0] ? Object.keys(allLiveDrafts[0]) : []);
+      // Backfill draft ids onto existing posts that fuzzy-match
+      const backfillUpdated = updated.map(p => {
+        if (p.typefully_draft_ids && Object.keys(p.typefully_draft_ids).length > 0) return p;
+        const match = allLiveDrafts.find(d => {
+          const txt = (d as any).preview || (d as any).text || "";
+          const rawDate = (d as any).scheduled_date || (d as any).publish_at;
+          if (!rawDate) return false;
+          const dt = new Date(rawDate);
+          const yyyy = dt.getFullYear();
+          const mm = String(dt.getMonth() + 1).padStart(2, "0");
+          const dd = String(dt.getDate()).padStart(2, "0");
+          const date = `${yyyy}-${mm}-${dd}`;
+          return fuzzyKey(txt, date) === fuzzyKey(p.caption || "", p.scheduled_date);
+        });
+        if (!match) return p;
+        const ids: Partial<Record<Platform, string>> = {};
+        if ((match as any).x_post_enabled) ids.x = String(match.id);
+        if ((match as any).linkedin_post_enabled) ids.linkedin = String(match.id);
+        return { ...p, typefully_draft_ids: ids };
+      });
+      for (const p of backfillUpdated) {
+        if (p.typefully_draft_ids) {
+          for (const id of Object.values(p.typefully_draft_ids)) if (id) knownIds.add(String(id));
+        }
+      }
       for (const d of allLiveDrafts) {
         const id = String(d.id);
         if (seen.has(id) || knownIds.has(id)) continue;
         seen.add(id);
+        // Fuzzy skip — matches existing post with same caption+date
+        const txtForKey = (d as any).preview || (d as any).text || "";
+        const rawDateForKey = (d as any).scheduled_date || (d as any).publish_at;
+        if (rawDateForKey) {
+          const dt2 = new Date(rawDateForKey);
+          const yyyy2 = dt2.getFullYear();
+          const mm2 = String(dt2.getMonth() + 1).padStart(2, "0");
+          const dd2 = String(dt2.getDate()).padStart(2, "0");
+          if (knownFuzzy.has(fuzzyKey(txtForKey, `${yyyy2}-${mm2}-${dd2}`))) {
+            console.log(`[Sync] Fuzzy skip draft ${id} — matches existing post`);
+            continue;
+          }
+        }
         // Typefully v2 real shape uses flat per-platform enabled flags:
         // { x_post_enabled, linkedin_post_enabled, preview, scheduled_date, status, ... }
         const rawPlats = (d as any).platforms;
@@ -995,7 +1043,7 @@ export default function CalendarPage() {
         });
       }
       console.log(`[Sync] Imported ${imported.length} posts:`, imported);
-      const finalPosts = [...updated, ...imported];
+      const finalPosts = [...backfillUpdated, ...imported];
       setAllPosts(finalPosts);
       await savePosts(finalPosts);
       alert(`Synced. Typefully returned ${schedData.drafts?.length || 0} scheduled + ${draftData.drafts?.length || 0} drafts. Imported ${imported.length}, cleared ${cleared} stale ref${cleared === 1 ? "" : "s"}, ${reset} post${reset === 1 ? "" : "s"} flipped back to saved.`);
