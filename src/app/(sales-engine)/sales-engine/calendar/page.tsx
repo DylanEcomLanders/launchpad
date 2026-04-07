@@ -293,6 +293,14 @@ export default function CalendarPage() {
   const [autoPlugX, setAutoPlugX] = useState(false);
   const [autoRetweetX, setAutoRetweetX] = useState(false);
 
+  // Bulk upload state
+  const [showBulkModal, setShowBulkModal] = useState(false);
+  const [bulkFiles, setBulkFiles] = useState<File[]>([]);
+  const [bulkStartDate, setBulkStartDate] = useState<string>(toDateStr(new Date()));
+  const [bulkPostsPerDay, setBulkPostsPerDay] = useState<number>(1);
+  const [bulkSkipWeekends, setBulkSkipWeekends] = useState<boolean>(true);
+  const [bulkLoading, setBulkLoading] = useState<boolean>(false);
+
   // Persist X automation toggles
   useEffect(() => {
     setAutoPlugX(localStorage.getItem("typefully_autoplug_x") === "1");
@@ -985,6 +993,109 @@ export default function CalendarPage() {
     });
   }
 
+  // ── Bulk upload: drop N images, create N draft posts spread across days ──
+  async function runBulkUpload() {
+    if (bulkFiles.length === 0) return;
+    setBulkLoading(true);
+    try {
+      const valid = bulkFiles.filter(f => f.size <= 5 * 1024 * 1024);
+      if (valid.length === 0) {
+        alert("All files are over 5MB");
+        return;
+      }
+
+      // Read all to base64
+      const base64s = await Promise.all(valid.map(f => new Promise<string>(resolve => {
+        const r = new FileReader();
+        r.onloadend = () => resolve(r.result as string);
+        r.readAsDataURL(f);
+      })));
+
+      // Compute scheduled slots: spread across days starting from bulkStartDate.
+      // bulkPostsPerDay per day. Skip weekends if toggled. Use best slot for X.
+      const contentTypes: ContentType[] = ["educational", "social_proof", "personal", "promotional"];
+      const now = new Date();
+      const start = new Date(bulkStartDate + "T00:00:00");
+      if (start < new Date(now.toDateString())) start.setTime(new Date(now.toDateString()).getTime());
+
+      const posts: ContentPost[] = [];
+      const dayCursor = new Date(start);
+      let postsToday = 0;
+      const usedTypesByDate: Record<string, ContentType[]> = {};
+
+      function nextDay() {
+        dayCursor.setDate(dayCursor.getDate() + 1);
+        postsToday = 0;
+      }
+      function isWeekend(d: Date) { return d.getDay() === 0 || d.getDay() === 6; }
+      function pickTypeFor(dateStr: string, idx: number): ContentType {
+        const used = usedTypesByDate[dateStr] || [];
+        // Round-robin starting from idx, prefer unused for the day
+        for (let i = 0; i < contentTypes.length; i++) {
+          const t = contentTypes[(idx + i) % contentTypes.length];
+          if (!used.includes(t)) return t;
+        }
+        return contentTypes[idx % contentTypes.length];
+      }
+      function pickTimeFor(dateStr: string, slotIdx: number): string {
+        const dow = new Date(dateStr + "T00:00:00").getDay();
+        const best = getBestTimes("x", dow);
+        if (best.length > 0) {
+          const t = best[slotIdx % best.length];
+          return t.time || `${t.hour.toString().padStart(2, "0")}:${(t.minute || 0).toString().padStart(2, "0")}`;
+        }
+        // Fallback: spread across the day
+        const fallback = ["09:00", "13:00", "17:00", "20:00"];
+        return fallback[slotIdx % fallback.length];
+      }
+
+      const nowIso = new Date().toISOString();
+      for (let i = 0; i < base64s.length; i++) {
+        // Skip weekends if needed
+        while (bulkSkipWeekends && isWeekend(dayCursor)) nextDay();
+        if (postsToday >= bulkPostsPerDay) {
+          nextDay();
+          while (bulkSkipWeekends && isWeekend(dayCursor)) nextDay();
+        }
+        const dateStr = toDateStr(dayCursor);
+        const contentType = pickTypeFor(dateStr, i);
+        const scheduledTime = pickTimeFor(dateStr, postsToday);
+        usedTypesByDate[dateStr] = [...(usedTypesByDate[dateStr] || []), contentType];
+
+        posts.push({
+          id: uuid(),
+          creator: creator,
+          platform: "x",
+          platforms: ["x", "linkedin"],
+          content_type: contentType,
+          post_format: "image",
+          angle: "",
+          caption: "",
+          status: "draft",
+          scheduled_date: dateStr,
+          scheduled_time: scheduledTime,
+          media_data: base64s[i],
+          media_data_list: [base64s[i]],
+          analytics_score: getSlotScore("x", dayCursor.getDay(), parseInt(scheduledTime)),
+          created_at: nowIso,
+          updated_at: nowIso,
+        });
+        postsToday++;
+      }
+
+      const updated = [...allPosts, ...posts];
+      setAllPosts(updated);
+      await savePosts(updated);
+      setBulkFiles([]);
+      setShowBulkModal(false);
+      alert(`Created ${posts.length} draft posts. Open each to write captions before scheduling.`);
+    } catch (e: any) {
+      alert(e?.message || "Bulk upload failed");
+    } finally {
+      setBulkLoading(false);
+    }
+  }
+
   function removeImageAt(idx: number) {
     setStudioPost(prev => {
       const list = prev.media_data_list || (prev.media_data ? [prev.media_data] : []);
@@ -1549,6 +1660,112 @@ export default function CalendarPage() {
         </div>
       )}
 
+      {/* ── Bulk upload modal ── */}
+      {showBulkModal && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/30 animate-backdropFade" onClick={() => !bulkLoading && setShowBulkModal(false)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-[var(--shadow-elevated)] w-full max-w-md p-6 animate-fadeInUp max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-base font-bold text-[#1B1B1B]">Bulk upload posts</h3>
+                <button onClick={() => !bulkLoading && setShowBulkModal(false)} className="p-1 rounded-lg hover:bg-[#F3F3F5]">
+                  <XMarkIcon className="size-5 text-[#7A7A7A]" />
+                </button>
+              </div>
+
+              <p className="text-[11px] text-[#7A7A7A] leading-relaxed mb-4">
+                Drop up to 50 images. We&apos;ll create one draft post per image, spread across days, with content types rotated so you don&apos;t cluster the same kind back-to-back. Captions stay empty so you can fill them in after.
+              </p>
+
+              {/* Drop zone */}
+              <label className="block mb-4">
+                <div className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-[#E0E0E0] rounded-xl cursor-pointer hover:border-[#1B1B1B] hover:bg-[#FAFAFA] transition-colors">
+                  <PhotoIcon className="size-7 text-[#CCC]" />
+                  <span className="text-xs font-medium text-[#1B1B1B]">{bulkFiles.length > 0 ? `${bulkFiles.length} image${bulkFiles.length === 1 ? "" : "s"} selected` : "Click or drop images"}</span>
+                  <span className="text-[10px] text-[#999]">Up to 50 · Max 5MB each</span>
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={e => {
+                    const files = Array.from(e.target.files || []).slice(0, 50);
+                    setBulkFiles(files);
+                  }}
+                />
+              </label>
+
+              {/* Settings */}
+              <div className="space-y-3 mb-5">
+                <div>
+                  <p className="text-[10px] font-semibold text-[#999] uppercase tracking-wider mb-1.5">Start date</p>
+                  <input
+                    type="date"
+                    value={bulkStartDate}
+                    onChange={e => setBulkStartDate(e.target.value)}
+                    className="w-full px-3 py-2 text-xs border border-[#E5E5EA] rounded-lg bg-white outline-none focus:border-[#1B1B1B] transition-colors"
+                  />
+                </div>
+                <div>
+                  <p className="text-[10px] font-semibold text-[#999] uppercase tracking-wider mb-1.5">Posts per day</p>
+                  <div className="flex gap-1">
+                    {[1, 2, 3].map(n => (
+                      <button
+                        key={n}
+                        onClick={() => setBulkPostsPerDay(n)}
+                        className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                          bulkPostsPerDay === n ? "bg-[#1B1B1B] text-white" : "bg-[#F3F3F5] text-[#7A7A7A] hover:bg-[#EBEBEB]"
+                        }`}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={bulkSkipWeekends}
+                    onChange={e => setBulkSkipWeekends(e.target.checked)}
+                    className="size-4 rounded border-[#E5E5EA]"
+                  />
+                  <span className="text-xs text-[#1B1B1B]">Skip weekends</span>
+                </label>
+              </div>
+
+              {/* Preview summary */}
+              {bulkFiles.length > 0 && (
+                <div className="px-3 py-2.5 bg-[#F7F8FA] rounded-lg mb-4">
+                  <p className="text-[11px] text-[#1B1B1B]">
+                    <span className="font-semibold">{bulkFiles.length}</span> draft posts ·{" "}
+                    <span className="font-semibold">{Math.ceil(bulkFiles.length / bulkPostsPerDay)}</span>{" "}
+                    {bulkSkipWeekends ? "weekdays" : "days"} starting {new Date(bulkStartDate + "T00:00:00").toLocaleDateString()}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowBulkModal(false)}
+                  disabled={bulkLoading}
+                  className="flex-1 px-4 py-2.5 text-xs font-semibold text-[#7A7A7A] bg-[#F3F3F5] rounded-lg hover:bg-[#EBEBEB] transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={runBulkUpload}
+                  disabled={bulkLoading || bulkFiles.length === 0}
+                  className="flex-1 px-4 py-2.5 text-xs font-semibold text-white bg-[#1B1B1B] rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40"
+                >
+                  {bulkLoading ? "Creating..." : `Create ${bulkFiles.length || ""} draft${bulkFiles.length === 1 ? "" : "s"}`}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* ── Typefully platform picker modal ── */}
       {showTypefullyModal && (
         <>
@@ -1721,6 +1938,15 @@ export default function CalendarPage() {
               Week view
             </button>
           </div>
+
+          {/* Bulk upload */}
+          <button
+            onClick={() => setShowBulkModal(true)}
+            className="flex items-center gap-1.5 px-4 py-2 bg-white border border-[#E5E5EA] text-[#1B1B1B] text-xs font-medium rounded-lg hover:bg-[#F5F5F5] transition-colors"
+          >
+            <PhotoIcon className="size-3.5" />
+            Bulk upload
+          </button>
 
           {/* Add post */}
           <button

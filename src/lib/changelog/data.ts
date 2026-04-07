@@ -71,6 +71,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Studio shows X and LinkedIn captions stacked side-by-side instead of platform tabs. One Generate fills both from the same idea + image. Each caption has its own Regenerate button. Content creation in one screen, no tab switching" },
       { type: "added", text: "Multi-image posts — upload up to 4 images per post (Typefully cap). Drag in multiple at once, remove individually, all uploaded to Typefully on schedule" },
       { type: "fixed", text: "Typefully scheduler creating 3-4 duplicate drafts per post — the retry-on-failure loop was firing again even when the original request had actually succeeded. Removed retries; now one attempt per draft" },
+      { type: "added", text: "Bulk upload — drop up to 50 images and the calendar auto-creates one draft post per image, spread across days with content types rotated so you don't cluster the same kind back-to-back. Pick start date, posts per day (1-3), skip weekends. Captions stay empty so you can fill them in after. Massively faster content creation" },
     ],
   },
   {
