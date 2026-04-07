@@ -918,13 +918,20 @@ export default function CalendarPage() {
         if (kk === "linkedin") return "linkedin";
         return null;
       };
+      console.log("[Sync] Sample draft object:", allLiveDrafts[0]);
       for (const d of allLiveDrafts) {
         const id = String(d.id);
         if (seen.has(id) || knownIds.has(id)) continue;
         seen.add(id);
-        // platforms can be object { x:{...} } or array [{platform:"x",...}]
-        const rawPlats = (d as any).platforms || {};
+        // v2 Typefully draft shape is actually flat: { id, text, platform, scheduled_date, status }
+        // but might also be nested { platforms: { x: {...} } } — handle both.
+        const rawPlats = (d as any).platforms;
         const platEntries: { key: Platform; text: string }[] = [];
+        // Flat shape
+        if (!rawPlats && (d as any).platform) {
+          const k = normalizePlat((d as any).platform);
+          if (k) platEntries.push({ key: k, text: (d as any).text || "" });
+        }
         if (Array.isArray(rawPlats)) {
           for (const entry of rawPlats) {
             const k = normalizePlat(entry.platform || entry.name || "");
@@ -955,8 +962,10 @@ export default function CalendarPage() {
         const text = platEntries[0].text;
         const platform_captions: Partial<Record<Platform, string>> = {};
         for (const e of platEntries) platform_captions[e.key] = e.text;
-        const whenRaw = (d as any).publish_at || (d as any).scheduled_date || (d as any).scheduled_at || (d as any).publishAt;
-        const when = whenRaw ? new Date(whenRaw) : new Date();
+        const whenRaw = (d as any).publish_at || (d as any).scheduled_date || (d as any).scheduled_at || (d as any).publishAt || (d as any).schedule_date;
+        const when = whenRaw
+          ? new Date(typeof whenRaw === "number" ? whenRaw : whenRaw)
+          : new Date();
         const yyyy = when.getFullYear();
         const mm = String(when.getMonth() + 1).padStart(2, "0");
         const dd = String(when.getDate()).padStart(2, "0");
