@@ -188,9 +188,8 @@ export async function POST(req: NextRequest) {
 
       const userPrompt = `Write 3 caption variants for a ${platformName} post.
 
-${brief ? `Idea/angle: ${brief}` : ""}
+${brief ? `THE IDEA — this is the ONLY source of truth for what the post is about:\n"${brief}"\n\nWrite captions that express THIS idea. Do not drift off-topic. Do not invent adjacent angles. Stay on the point above.` : ""}
 ${formatContext}
-${imageData ? "An image is attached as CONTEXT ONLY. Do NOT describe what's in it literally. Do NOT list the brands or elements you see. The image is the hook — the caption should make someone curious enough to look at it, not narrate it." : ""}
 
 LENGTH RULES: ${lengthInstructions}
 
@@ -216,23 +215,11 @@ HARD RULES:
 Output format:
 Separate the 3 variants with "===NEXT===" on its own line. Plain text with real line breaks inside each variant. No JSON. No numbering. No meta-commentary.`;
 
-      const userContent: Anthropic.Messages.ContentBlockParam[] = [];
-
-      if (imageData && (postFormat === "image" || postFormat === "video")) {
-        const match = imageData.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
-        if (match) {
-          userContent.push({
-            type: "image",
-            source: {
-              type: "base64",
-              media_type: match[1] as "image/jpeg" | "image/png" | "image/gif" | "image/webp",
-              data: match[2],
-            },
-          });
-        }
-      }
-
-      userContent.push({ type: "text", text: userPrompt });
+      // Image is attached to the final Typefully post — never sent to the model.
+      // Captions are written from the idea/brief only, so they don't get distracted.
+      const userContent: Anthropic.Messages.ContentBlockParam[] = [
+        { type: "text", text: userPrompt },
+      ];
 
       // Build system prompt with optional voice profile
       const systemPrompt = voiceProfile
