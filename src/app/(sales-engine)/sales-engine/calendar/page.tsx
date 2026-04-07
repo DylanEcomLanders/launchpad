@@ -288,6 +288,7 @@ export default function CalendarPage() {
 
   // Typefully state
   const [typefullyLoading, setTypefullyLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [typefullyResult, setTypefullyResult] = useState<{ sent: number; failed: number; failedErrors?: string[] } | null>(null);
   const [showTypefullyModal, setShowTypefullyModal] = useState(false);
   const [typefullyPlatforms, setTypefullyPlatforms] = useState<Set<Platform>>(new Set(["x", "linkedin"]));
@@ -744,6 +745,8 @@ export default function CalendarPage() {
       // Track which posts had EVERY targeted platform succeed — only those
       // get marked as scheduled, so partial failures stay re-schedulable.
       const fullySuccessfulPostIds = new Set<string>();
+      // Per-post map of platform → newly created Typefully draft id
+      const newDraftIdsByPost: Record<string, Partial<Record<Platform, string>>> = {};
 
       for (const p of schedulable) {
         // If post has explicit platforms, intersect with modal selection.
@@ -761,6 +764,11 @@ export default function CalendarPage() {
         const publishAt = new Date(`${p.scheduled_date}T${hh}:${mm}:00`).toISOString();
 
         for (const tp of targetPlats) {
+          // Skip platforms that already have a live Typefully draft for this post
+          if (p.typefully_draft_ids?.[tp as Platform]) {
+            console.log(`[Typefully] Skipping ${tp} for post ${p.id} — already has draft ${p.typefully_draft_ids[tp as Platform]}`);
+            continue;
+          }
           // Use platform-specific caption, fall back to main caption
           const caption = p.platform_captions?.[tp as Platform] || p.caption;
           const payload = {
@@ -790,6 +798,13 @@ export default function CalendarPage() {
             console.log(`[Typefully] Draft response (${tp}):`, draftRes.status, draftData);
             if (draftRes.ok) {
               success = true;
+              const newId = draftData?.draft?.id || draftData?.id;
+              if (newId) {
+                newDraftIdsByPost[p.id] = {
+                  ...(newDraftIdsByPost[p.id] || {}),
+                  [tp as Platform]: String(newId),
+                };
+              }
             } else {
               lastError = draftData.error || `HTTP ${draftRes.status}`;
             }
@@ -817,12 +832,15 @@ export default function CalendarPage() {
 
       // Mark only fully successful posts as scheduled — partial failures
       // stay as 'saved' so the user can retry without double-scheduling.
-      if (fullySuccessfulPostIds.size > 0) {
+      if (fullySuccessfulPostIds.size > 0 || Object.keys(newDraftIdsByPost).length > 0) {
         const updated = allPosts.map(p => {
-          if (fullySuccessfulPostIds.has(p.id)) {
-            return { ...p, status: "scheduled" as PostStatus };
-          }
-          return p;
+          const newIds = newDraftIdsByPost[p.id];
+          if (!newIds && !fullySuccessfulPostIds.has(p.id)) return p;
+          return {
+            ...p,
+            ...(fullySuccessfulPostIds.has(p.id) ? { status: "scheduled" as PostStatus } : {}),
+            ...(newIds ? { typefully_draft_ids: { ...(p.typefully_draft_ids || {}), ...newIds } } : {}),
+          };
         });
         setAllPosts(updated);
         await savePosts(updated);
@@ -831,6 +849,61 @@ export default function CalendarPage() {
       alert(err instanceof Error ? err.message : "Failed to schedule to Typefully");
     } finally {
       setTypefullyLoading(false);
+    }
+  }
+
+  // ── Typefully: Reconcile local state with what's actually in Typefully ──
+  // For each locally scheduled post, check its stored draft ids still exist
+  // in Typefully's scheduled list. If Typefully no longer has them (user
+  // deleted them there), flip the post back to "saved" so it can be rescheduled.
+  async function syncWithTypefully() {
+    if (syncing) return;
+    setSyncing(true);
+    try {
+      const setsRes = await fetch("/api/typefully?action=social-sets");
+      const setsData = await setsRes.json();
+      if (!setsRes.ok) throw new Error(setsData.error || "Failed to load Typefully accounts");
+      const socialSetId = setsData.sets?.[0]?.id;
+      if (!socialSetId) throw new Error("No Typefully account connected");
+
+      const [schedRes, draftRes] = await Promise.all([
+        fetch(`/api/typefully?action=drafts&social_set_id=${socialSetId}&status=scheduled`),
+        fetch(`/api/typefully?action=drafts&social_set_id=${socialSetId}`),
+      ]);
+      const schedData = await schedRes.json();
+      const draftData = await draftRes.json();
+      const liveIds = new Set<string>([
+        ...((schedData.drafts || []).map((d: any) => String(d.id))),
+        ...((draftData.drafts || []).map((d: any) => String(d.id))),
+      ]);
+
+      let reset = 0;
+      let cleared = 0;
+      const updated = allPosts.map(p => {
+        if (!p.typefully_draft_ids) return p;
+        const next: Partial<Record<Platform, string>> = {};
+        let changed = false;
+        for (const [plat, id] of Object.entries(p.typefully_draft_ids) as [Platform, string][]) {
+          if (liveIds.has(String(id))) {
+            next[plat] = id;
+          } else {
+            changed = true;
+            cleared++;
+          }
+        }
+        if (!changed) return p;
+        const hasAny = Object.keys(next).length > 0;
+        const newStatus: PostStatus = p.status === "scheduled" && !hasAny ? "saved" : p.status;
+        if (newStatus !== p.status) reset++;
+        return { ...p, typefully_draft_ids: hasAny ? next : undefined, status: newStatus };
+      });
+      setAllPosts(updated);
+      await savePosts(updated);
+      alert(`Synced. ${cleared} stale draft ref${cleared === 1 ? "" : "s"} cleared, ${reset} post${reset === 1 ? "" : "s"} flipped back to saved.`);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Sync failed");
+    } finally {
+      setSyncing(false);
     }
   }
 
@@ -1654,6 +1727,14 @@ export default function CalendarPage() {
           >
             <ArrowUpTrayIcon className="size-3.5" />
             {typefullyLoading ? "Scheduling..." : "Schedule to Typefully"}
+          </button>
+          <button
+            onClick={syncWithTypefully}
+            disabled={syncing}
+            title="Reconcile local state with Typefully — clears stale draft refs and flips orphaned posts back to saved"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-[#E5E5EA] text-[#7A7A7A] hover:bg-[#F5F5F5] transition-colors disabled:opacity-40"
+          >
+            {syncing ? "Syncing..." : "Sync"}
           </button>
           <button
             onClick={generateWeeklyDraft}
