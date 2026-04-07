@@ -918,7 +918,8 @@ export default function CalendarPage() {
         if (kk === "linkedin") return "linkedin";
         return null;
       };
-      console.log("[Sync] Sample draft object:", allLiveDrafts[0]);
+      console.log("[Sync] Sample draft JSON:", JSON.stringify(allLiveDrafts[0], null, 2));
+      console.log("[Sync] Sample draft keys:", allLiveDrafts[0] ? Object.keys(allLiveDrafts[0]) : []);
       for (const d of allLiveDrafts) {
         const id = String(d.id);
         if (seen.has(id) || knownIds.has(id)) continue;
@@ -954,7 +955,7 @@ export default function CalendarPage() {
           platEntries.push({ key: "x", text: (d as any).text });
         }
         if (platEntries.length === 0) {
-          console.warn("[Sync] Skipping draft with no parseable platforms", d);
+          console.warn("[Sync] Skipping draft with no parseable platforms. Keys:", Object.keys(d || {}), "JSON:", JSON.stringify(d).slice(0, 500));
           continue;
         }
         const validPlats = platEntries.map(e => e.key);
