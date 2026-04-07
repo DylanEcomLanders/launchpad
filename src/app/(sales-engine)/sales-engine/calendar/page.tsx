@@ -1027,10 +1027,10 @@ export default function CalendarPage() {
         // Merge into an existing imported post if same date+time+fuzzy text
         // (Launchpad creates 1 Typefully draft per platform — we want them
         // collapsed back into a single multi-platform post on sync.)
-        const mergeKey = `${scheduled_date}T${scheduled_time}|${(text || "").trim().slice(0, 40).toLowerCase()}`;
-        const existing = imported.find(ip =>
-          `${ip.scheduled_date}T${ip.scheduled_time}|${(ip.caption || "").trim().slice(0, 40).toLowerCase()}` === mergeKey
-        );
+        // Merge purely by date+time — Launchpad only ever schedules X+LinkedIn
+        // pairs at the same slot, so matching time alone is safe and simpler.
+        const mergeKey = `${scheduled_date}T${scheduled_time}`;
+        const existing = imported.find(ip => `${ip.scheduled_date}T${ip.scheduled_time}` === mergeKey);
         if (existing) {
           const mergedPlats = Array.from(new Set([...(existing.platforms || []), ...validPlats])) as Platform[];
           existing.platforms = mergedPlats;
