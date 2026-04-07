@@ -1,31 +1,28 @@
 /* ── Voice Profile Store ──
- * Per-creator voice profiles that feed into caption generation.
- * Self-improving: tracks before/after edits so the AI learns.
+ * Per-creator voice profile = a single freeform doc (markdown / text).
+ * Upload a file or paste text in the panel; it gets injected as raw context
+ * into every caption generation call.
  */
 
 import { createStore } from "@/lib/supabase-store";
 
-export interface VoiceExample {
-  text: string;
-  platform: string;
-  note?: string;
-}
-
-export interface VoiceEdit {
-  original: string;
-  edited: string;
-  platform: string;
-  timestamp: string;
-}
-
 export interface VoiceProfile {
   id: string; // creator name: "dylan" | "ajay"
-  tone: string[];
-  avoid: string[];
-  rules: string[];
-  examples: VoiceExample[];
-  voiceNotes: string;
-  editHistory: VoiceEdit[];
+  voiceDoc: string; // raw markdown / text used as voice context
+  fileName?: string; // optional source filename for display
+
+  // ── Legacy fields, kept optional for backwards compatibility with old rows ──
+  tone?: string[];
+  avoid?: string[];
+  rules?: string[];
+  examples?: { text: string; platform: string; note?: string }[];
+  voiceNotes?: string;
+  editHistory?: {
+    original: string;
+    edited: string;
+    platform: string;
+    timestamp: string;
+  }[];
 }
 
 const store = createStore<VoiceProfile>({
@@ -33,162 +30,62 @@ const store = createStore<VoiceProfile>({
   lsKey: "launchpad-voice-profiles",
 });
 
-// Default profiles — used when none exists yet
-const DEFAULT_PROFILES: Record<string, VoiceProfile> = {
-  dylan: {
-    id: "dylan",
-    tone: ["direct", "confident", "conversational", "advisory", "approachable"],
-    avoid: [
-      "game-changer",
-      "at the end of the day",
-      "unlock potential",
-      "In addition / Furthermore / In conclusion / That said",
-      "excessive superlatives or hype language",
-      "em-dashes unless essential",
-      "hashtags unless specifically requested",
-      "more than 1 emoji per post",
-      "listicle formatting unless appropriate",
-      "throat-clearing intros like 'I've been thinking about...' or 'Here's the thing...'",
-      "corporate or formal tone",
-      "starting with I or We",
-      "generic marketing advice",
-      "buzzwords like leverage/synergy/unlock",
-      "American English spellings",
-    ],
-    rules: [
-      "Lead with a pattern or observation, not a personal statement",
-      "Use specific numbers and examples (CVR, AOV, real metrics)",
-      "Write like you're talking to one person, not broadcasting",
-      "Short sentences. Punch. Then expand.",
-      "Brisk pacing with short paragraphs for quick reads",
-      "Mix industry acronyms (CVR, AOV, CRO) with informal phrasing",
-      "Imperative and emphatic, focus on key takeaways succinctly",
-      "Sound conversational and approachable, never robotic",
-      "Use UK English always (optimise, colour, behaviour, etc.)",
-      "Front-load value with visuals and social proof references",
-      "Address objections swiftly to convert cold traffic mindset",
-    ],
-    examples: [],
-    voiceNotes:
-      "Dylan Evans is COO at Ecom Landers, specialising in funnels, landing pages, and email design for 6-8 figure Shopify brands. Focus is on reducing friction, front-loading value, and addressing objections to convert cold traffic. Target audience: ecommerce brand owners and digital marketers running Shopify stores (mid-to-high revenue) seeking practical, actionable CRO advice and quick wins. Style blends casual conversation with deep ecom expertise. Structures are concise, often thread-based with hooks like bookmark prompts and visual aids.",
-    editHistory: [],
-  },
-  ajay: {
-    id: "ajay",
-    tone: ["analytical", "data-driven", "clear"],
-    avoid: ["emojis", "hashtags", "fluff"],
-    rules: ["Back claims with data", "Keep it concise"],
-    examples: [],
-    voiceNotes: "",
-    editHistory: [],
-  },
+const EMPTY_DOC: VoiceProfile = {
+  id: "",
+  voiceDoc: "",
 };
 
-export async function getVoiceProfile(
-  creatorId: string
-): Promise<VoiceProfile> {
-  const def = DEFAULT_PROFILES[creatorId];
-  const profile = await store.getById(creatorId);
-
-  if (!profile) {
-    // No saved profile — persist and return the default
-    const fallback = def || {
-      id: creatorId,
-      tone: [],
-      avoid: [],
-      rules: [],
-      examples: [],
-      voiceNotes: "",
-      editHistory: [],
-    };
-    await store.create(fallback);
-    return fallback;
+export async function getVoiceProfile(creatorId: string): Promise<VoiceProfile> {
+  const existing = await store.getById(creatorId);
+  if (existing) {
+    // Migrate any legacy structured profile into a single doc on first load
+    if (!existing.voiceDoc && (existing.tone?.length || existing.rules?.length || existing.voiceNotes)) {
+      const migrated = legacyToDoc(existing);
+      const next: VoiceProfile = { id: creatorId, voiceDoc: migrated };
+      await store.update(creatorId, next);
+      return next;
+    }
+    return { ...existing, id: creatorId, voiceDoc: existing.voiceDoc || "" };
   }
-
-  // If a code default exists, merge it in — code defaults win for tone/avoid/rules/voiceNotes,
-  // but preserve user's examples and editHistory (those are user-generated)
-  if (def) {
-    const merged: VoiceProfile = {
-      ...def,
-      examples: profile.examples.length > 0 ? profile.examples : def.examples,
-      editHistory: profile.editHistory,
-    };
-    // Persist the merged version
-    await store.update(creatorId, merged);
-    return merged;
-  }
-
-  return profile;
+  const fresh: VoiceProfile = { ...EMPTY_DOC, id: creatorId };
+  await store.create(fresh);
+  return fresh;
 }
 
-export async function saveVoiceProfile(
-  profile: VoiceProfile
-): Promise<VoiceProfile> {
+export async function saveVoiceProfile(profile: VoiceProfile): Promise<VoiceProfile> {
+  const clean: VoiceProfile = {
+    id: profile.id,
+    voiceDoc: profile.voiceDoc || "",
+    fileName: profile.fileName,
+  };
   const existing = await store.getById(profile.id);
   if (existing) {
-    await store.update(profile.id, profile);
+    await store.update(profile.id, clean);
   } else {
-    await store.create(profile);
+    await store.create(clean);
   }
-  return profile;
+  return clean;
 }
 
-/** Record an edit pair (AI original vs user edit). Caps at 20 entries. */
-export async function recordEdit(
-  creatorId: string,
-  original: string,
-  edited: string,
-  platform: string
-): Promise<void> {
-  const profile = await getVoiceProfile(creatorId);
-  const entry: VoiceEdit = {
-    original,
-    edited,
-    platform,
-    timestamp: new Date().toISOString(),
-  };
-  profile.editHistory = [entry, ...profile.editHistory].slice(0, 20);
-  await saveVoiceProfile(profile);
+/** Legacy → doc converter for one-time migration of older profiles */
+function legacyToDoc(p: VoiceProfile): string {
+  const out: string[] = [];
+  if (p.tone?.length) out.push(`# Tone\n${p.tone.join(", ")}`);
+  if (p.avoid?.length) out.push(`# Never\n- ${p.avoid.join("\n- ")}`);
+  if (p.rules?.length) out.push(`# Rules\n- ${p.rules.join("\n- ")}`);
+  if (p.examples?.length) {
+    out.push(
+      `# Example posts\n${p.examples
+        .map((ex) => `> ${ex.text}\n(${ex.platform}${ex.note ? ` — ${ex.note}` : ""})`)
+        .join("\n\n")}`
+    );
+  }
+  if (p.voiceNotes?.trim()) out.push(`# Notes\n${p.voiceNotes}`);
+  return out.join("\n\n");
 }
 
 /** Build the voice instruction block for the AI prompt */
 export function buildVoicePromptBlock(profile: VoiceProfile): string {
-  const lines: string[] = ["VOICE PROFILE:"];
-
-  if (profile.tone.length > 0) {
-    lines.push(`Tone: ${profile.tone.join(", ")}`);
-  }
-
-  if (profile.avoid.length > 0) {
-    lines.push(`Never: ${profile.avoid.join(", ")}`);
-  }
-
-  if (profile.rules.length > 0) {
-    lines.push("Rules:");
-    profile.rules.forEach((r) => lines.push(`- ${r}`));
-  }
-
-  if (profile.examples.length > 0) {
-    lines.push("Examples of this voice:");
-    profile.examples.slice(0, 5).forEach((ex) => {
-      lines.push(`"${ex.text}" (${ex.platform})`);
-    });
-  }
-
-  if (profile.voiceNotes.trim()) {
-    lines.push(`Additional voice notes: ${profile.voiceNotes}`);
-  }
-
-  // Include recent edits as learning examples
-  const recentEdits = profile.editHistory.slice(0, 5);
-  if (recentEdits.length > 0) {
-    lines.push(
-      "\nThe user edited these AI-generated captions. Learn from the pattern:"
-    );
-    recentEdits.forEach((e) => {
-      lines.push(`Original: "${e.original}" → User's version: "${e.edited}"`);
-    });
-  }
-
-  return lines.join("\n");
+  if (!profile.voiceDoc?.trim()) return "";
+  return `\n\nVOICE REFERENCE — read this carefully and write in the voice it describes:\n\n${profile.voiceDoc.trim()}`;
 }

@@ -55,10 +55,8 @@ import {
 import { inputClass, textareaClass, labelClass } from "@/lib/form-styles";
 import {
   type VoiceProfile,
-  type VoiceExample,
   getVoiceProfile,
   saveVoiceProfile,
-  recordEdit,
 } from "@/lib/sales-engine/voice-profiles";
 
 // ── Helpers ──
@@ -307,10 +305,7 @@ export default function CalendarPage() {
   const [showVoice, setShowVoice] = useState(false);
   const [voiceProfile, setVoiceProfile] = useState<VoiceProfile | null>(null);
   const [voiceSaving, setVoiceSaving] = useState(false);
-  const [newToneTag, setNewToneTag] = useState("");
-  const [newAvoidTag, setNewAvoidTag] = useState("");
-  const [newRule, setNewRule] = useState("");
-  const [newExample, setNewExample] = useState<{ text: string; platform: string; note: string }>({ text: "", platform: "x", note: "" });
+  const voiceFileInputRef = useRef<HTMLInputElement | null>(null);
   // Track AI-generated caption for edit detection
   const [aiGeneratedCaption, setAiGeneratedCaption] = useState<string | null>(null);
 
@@ -590,17 +585,6 @@ export default function CalendarPage() {
     setAllPosts(updated);
     await savePosts(updated);
 
-    // Self-improving: if caption was AI-generated and user edited it, record the edit
-    if (aiGeneratedCaption && post.caption && post.caption !== aiGeneratedCaption) {
-      await recordEdit(
-        creator,
-        aiGeneratedCaption,
-        post.caption,
-        post.platform
-      );
-      // Reload profile so in-memory state stays fresh
-      getVoiceProfile(creator).then(setVoiceProfile);
-    }
     setAiGeneratedCaption(null);
 
     setSaving(false);
@@ -2626,255 +2610,56 @@ export default function CalendarPage() {
             </div>
 
             {/* Scrollable content */}
-            <div className="flex-1 overflow-y-auto">
-              {/* ── Tone Tags ── */}
-              <div className="px-5 py-4 border-b border-[#F3F3F5]">
-                <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider mb-3">Tone</p>
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {voiceProfile.tone.map((tag, i) => (
-                    <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#F3F3F5] text-xs font-medium text-[#1B1B1B] rounded-full">
-                      {tag}
-                      <button
-                        onClick={() => {
-                          const next = { ...voiceProfile, tone: voiceProfile.tone.filter((_, j) => j !== i) };
-                          setVoiceProfile(next);
-                        }}
-                        className="text-[#C5C5C5] hover:text-red-400 transition-colors ml-0.5"
-                      >
-                        <XMarkIcon className="size-3" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-                <div className="flex gap-1.5">
-                  <input
-                    value={newToneTag}
-                    onChange={e => setNewToneTag(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === "Enter" && newToneTag.trim()) {
-                        setVoiceProfile({ ...voiceProfile, tone: [...voiceProfile.tone, newToneTag.trim()] });
-                        setNewToneTag("");
-                      }
-                    }}
-                    placeholder="Add tone (e.g. witty)..."
-                    className="flex-1 px-2.5 py-1.5 text-xs bg-white border border-[#E5E5EA] rounded-lg outline-none focus:border-[#1B1B1B] transition-colors"
-                  />
-                  <button
-                    onClick={() => {
-                      if (newToneTag.trim()) {
-                        setVoiceProfile({ ...voiceProfile, tone: [...voiceProfile.tone, newToneTag.trim()] });
-                        setNewToneTag("");
-                      }
-                    }}
-                    className="px-2.5 py-1.5 text-xs font-medium bg-[#F3F3F5] rounded-lg hover:bg-[#EBEBEB] transition-colors"
-                  >
-                    <PlusIcon className="size-3.5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* ── Avoid List ── */}
-              <div className="px-5 py-4 border-b border-[#F3F3F5]">
-                <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider mb-3">Avoid</p>
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {voiceProfile.avoid.map((tag, i) => (
-                    <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 text-xs font-medium text-red-600 rounded-full">
-                      {tag}
-                      <button
-                        onClick={() => {
-                          const next = { ...voiceProfile, avoid: voiceProfile.avoid.filter((_, j) => j !== i) };
-                          setVoiceProfile(next);
-                        }}
-                        className="text-red-300 hover:text-red-500 transition-colors ml-0.5"
-                      >
-                        <XMarkIcon className="size-3" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-                <div className="flex gap-1.5">
-                  <input
-                    value={newAvoidTag}
-                    onChange={e => setNewAvoidTag(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === "Enter" && newAvoidTag.trim()) {
-                        setVoiceProfile({ ...voiceProfile, avoid: [...voiceProfile.avoid, newAvoidTag.trim()] });
-                        setNewAvoidTag("");
-                      }
-                    }}
-                    placeholder="Add avoid (e.g. cliches)..."
-                    className="flex-1 px-2.5 py-1.5 text-xs bg-white border border-[#E5E5EA] rounded-lg outline-none focus:border-[#1B1B1B] transition-colors"
-                  />
-                  <button
-                    onClick={() => {
-                      if (newAvoidTag.trim()) {
-                        setVoiceProfile({ ...voiceProfile, avoid: [...voiceProfile.avoid, newAvoidTag.trim()] });
-                        setNewAvoidTag("");
-                      }
-                    }}
-                    className="px-2.5 py-1.5 text-xs font-medium bg-[#F3F3F5] rounded-lg hover:bg-[#EBEBEB] transition-colors"
-                  >
-                    <PlusIcon className="size-3.5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* ── Writing Rules ── */}
-              <div className="px-5 py-4 border-b border-[#F3F3F5]">
-                <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider mb-3">Writing Rules</p>
-                <div className="space-y-1.5 mb-2">
-                  {voiceProfile.rules.map((rule, i) => (
-                    <div key={i} className="flex items-start gap-2 group">
-                      <span className="text-[10px] text-[#CCC] mt-1 font-mono">{i + 1}.</span>
-                      <input
-                        value={rule}
-                        onChange={e => {
-                          const rules = [...voiceProfile.rules];
-                          rules[i] = e.target.value;
-                          setVoiceProfile({ ...voiceProfile, rules });
-                        }}
-                        className="flex-1 text-xs text-[#1B1B1B] bg-transparent outline-none border-b border-transparent focus:border-[#E5E5EA] transition-colors py-1"
-                      />
-                      <button
-                        onClick={() => setVoiceProfile({ ...voiceProfile, rules: voiceProfile.rules.filter((_, j) => j !== i) })}
-                        className="text-[#E5E5EA] hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
-                      >
-                        <XMarkIcon className="size-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex gap-1.5">
-                  <input
-                    value={newRule}
-                    onChange={e => setNewRule(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === "Enter" && newRule.trim()) {
-                        setVoiceProfile({ ...voiceProfile, rules: [...voiceProfile.rules, newRule.trim()] });
-                        setNewRule("");
-                      }
-                    }}
-                    placeholder="Add a writing rule..."
-                    className="flex-1 px-2.5 py-1.5 text-xs bg-white border border-[#E5E5EA] rounded-lg outline-none focus:border-[#1B1B1B] transition-colors"
-                  />
-                  <button
-                    onClick={() => {
-                      if (newRule.trim()) {
-                        setVoiceProfile({ ...voiceProfile, rules: [...voiceProfile.rules, newRule.trim()] });
-                        setNewRule("");
-                      }
-                    }}
-                    className="px-2.5 py-1.5 text-xs font-medium bg-[#F3F3F5] rounded-lg hover:bg-[#EBEBEB] transition-colors"
-                  >
-                    <PlusIcon className="size-3.5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* ── Example Posts ── */}
-              <div className="px-5 py-4 border-b border-[#F3F3F5]">
-                <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider mb-3">Example Posts</p>
-                {voiceProfile.examples.length > 0 && (
-                  <div className="space-y-2 mb-3">
-                    {voiceProfile.examples.map((ex, i) => (
-                      <div key={i} className="relative bg-[#F7F8FA] rounded-lg p-3 group">
-                        <button
-                          onClick={() => setVoiceProfile({ ...voiceProfile, examples: voiceProfile.examples.filter((_, j) => j !== i) })}
-                          className="absolute top-2 right-2 text-[#E5E5EA] hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
-                        >
-                          <XMarkIcon className="size-3.5" />
-                        </button>
-                        <p className="text-xs text-[#1B1B1B] leading-relaxed mb-1.5">&ldquo;{ex.text}&rdquo;</p>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-semibold text-[#999] bg-white px-1.5 py-0.5 rounded">{ex.platform}</span>
-                          {ex.note && <span className="text-[10px] text-[#BBB]">{ex.note}</span>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div className="space-y-1.5 bg-[#FAFAFA] rounded-lg p-3 border border-[#E5E5EA]">
-                  <textarea
-                    value={newExample.text}
-                    onChange={e => setNewExample(prev => ({ ...prev, text: e.target.value }))}
-                    placeholder="Paste a real post you've written..."
-                    className="w-full text-xs bg-transparent outline-none resize-none placeholder:text-[#CCC] min-h-[60px]"
-                    rows={3}
-                  />
-                  <div className="flex items-center gap-2">
-                    <select
-                      value={newExample.platform}
-                      onChange={e => setNewExample(prev => ({ ...prev, platform: e.target.value }))}
-                      className="text-[10px] font-medium bg-white border border-[#E5E5EA] rounded px-2 py-1 outline-none"
-                    >
-                      <option value="x">X</option>
-                      <option value="linkedin">LinkedIn</option>
-                      <option value="other">Other</option>
-                    </select>
-                    <input
-                      value={newExample.note}
-                      onChange={e => setNewExample(prev => ({ ...prev, note: e.target.value }))}
-                      placeholder="Note (optional)"
-                      className="flex-1 text-[10px] bg-white border border-[#E5E5EA] rounded px-2 py-1 outline-none"
-                    />
-                    <button
-                      onClick={() => {
-                        if (newExample.text.trim()) {
-                          const ex: VoiceExample = { text: newExample.text.trim(), platform: newExample.platform };
-                          if (newExample.note.trim()) ex.note = newExample.note.trim();
-                          setVoiceProfile({ ...voiceProfile, examples: [...voiceProfile.examples, ex] });
-                          setNewExample({ text: "", platform: "x", note: "" });
-                        }
-                      }}
-                      disabled={!newExample.text.trim()}
-                      className="px-2.5 py-1 text-[10px] font-semibold bg-[#1B1B1B] text-white rounded hover:bg-[#2D2D2D] transition-colors disabled:opacity-30"
-                    >
-                      Add
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* ── Voice Notes ── */}
-              <div className="px-5 py-4 border-b border-[#F3F3F5]">
-                <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider mb-3">Voice Notes</p>
-                <textarea
-                  value={voiceProfile.voiceNotes}
-                  onChange={e => setVoiceProfile({ ...voiceProfile, voiceNotes: e.target.value })}
-                  placeholder="Anything else about your voice — audience, personality quirks, references..."
-                  className={textareaClass + " min-h-[80px]"}
-                  rows={4}
+            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+              <div>
+                <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider mb-2">Voice Document</p>
+                <p className="text-[11px] text-[#999] leading-relaxed mb-3">
+                  Upload a markdown or text file (or paste below). Its full contents are injected into every caption generation as voice context. One source of truth — no fields, no settings.
+                </p>
+                <input
+                  ref={voiceFileInputRef}
+                  type="file"
+                  accept=".md,.markdown,.txt,text/plain,text/markdown"
+                  className="hidden"
+                  onChange={async e => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const text = await file.text();
+                    setVoiceProfile({ ...voiceProfile, voiceDoc: text, fileName: file.name });
+                    if (voiceFileInputRef.current) voiceFileInputRef.current.value = "";
+                  }}
                 />
-              </div>
-
-              {/* ── Edit History (read-only) ── */}
-              {voiceProfile.editHistory.length > 0 && (
-                <div className="px-5 py-4">
-                  <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider mb-3">
-                    Edit History <span className="text-[#CCC] font-normal">({voiceProfile.editHistory.length})</span>
-                  </p>
-                  <div className="space-y-2 max-h-[240px] overflow-y-auto">
-                    {voiceProfile.editHistory.slice(0, 10).map((edit, i) => (
-                      <div key={i} className="bg-[#F7F8FA] rounded-lg p-3 text-[11px]">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="font-semibold text-[#999] bg-white px-1.5 py-0.5 rounded text-[9px]">{edit.platform}</span>
-                          <span className="text-[#CCC]">{new Date(edit.timestamp).toLocaleDateString()}</span>
-                        </div>
-                        <div className="space-y-1.5">
-                          <div>
-                            <span className="text-[9px] font-semibold text-red-400 uppercase">AI</span>
-                            <p className="text-[#999] leading-relaxed line-clamp-2 mt-0.5">&ldquo;{edit.original}&rdquo;</p>
-                          </div>
-                          <div>
-                            <span className="text-[9px] font-semibold text-emerald-600 uppercase">You</span>
-                            <p className="text-[#1B1B1B] leading-relaxed line-clamp-2 mt-0.5">&ldquo;{edit.edited}&rdquo;</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                <div className="flex items-center gap-2 mb-3">
+                  <button
+                    onClick={() => voiceFileInputRef.current?.click()}
+                    className="flex items-center gap-1.5 px-3 py-2 text-[11px] font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors"
+                  >
+                    <ArrowUpTrayIcon className="size-3.5" />
+                    Upload .md / .txt
+                  </button>
+                  {voiceProfile.fileName && (
+                    <span className="text-[11px] text-[#999] truncate">{voiceProfile.fileName}</span>
+                  )}
+                  {voiceProfile.voiceDoc && (
+                    <button
+                      onClick={() => setVoiceProfile({ ...voiceProfile, voiceDoc: "", fileName: undefined })}
+                      className="ml-auto text-[10px] text-red-400 hover:text-red-500"
+                    >
+                      Clear
+                    </button>
+                  )}
                 </div>
-              )}
+                <textarea
+                  value={voiceProfile.voiceDoc}
+                  onChange={e => setVoiceProfile({ ...voiceProfile, voiceDoc: e.target.value })}
+                  placeholder="Or paste your voice doc here — markdown, examples, rules, anything. The whole thing gets used as context."
+                  className={textareaClass + " min-h-[420px] font-mono text-[11px] leading-relaxed"}
+                  rows={20}
+                />
+                <p className="text-[10px] text-[#BBB] mt-2 text-right">
+                  {voiceProfile.voiceDoc.length.toLocaleString()} characters
+                </p>
+              </div>
             </div>
 
             {/* Footer — Save */}

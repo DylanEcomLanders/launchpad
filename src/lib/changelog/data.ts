@@ -64,6 +64,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Stopped the caption model recycling Dylan's signature phrases (shite, whack, proper, cheat code, i'll wait) on every post. Reference examples now explicitly marked as rhythm-only, with hard rules against reusing their vocabulary" },
       { type: "improved", text: "Captions now pull from the idea/angle you type, not the image. The image is attached to the Typefully post but no longer sent to the caption model, so it stops drifting off-topic and describing what it sees" },
       { type: "improved", text: "Removed the duplicate platform switcher above the caption variants — only the top tab bar controls X vs LinkedIn now" },
+      { type: "improved", text: "Voice Profile is now a single uploaded document — drop in a markdown or text file (or paste it) and the whole thing becomes the voice context for every caption. No more tone/avoid/rules/examples fields" },
     ],
   },
   {

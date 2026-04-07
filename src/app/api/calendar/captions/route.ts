@@ -103,39 +103,19 @@ Set your listicles up correctly and they will print"
 Match THIS rhythm, energy, and attitude. Write forwards. Earn the point. Write like Dylan would actually type it.`;
 
 interface VoiceProfilePayload {
+  voiceDoc?: string;
+  // legacy fields, ignored — kept so old clients don't crash
   tone?: string[];
   avoid?: string[];
   rules?: string[];
   examples?: { text: string; platform: string; note?: string }[];
   voiceNotes?: string;
-  editHistory?: { original: string; edited: string; platform: string; timestamp: string }[];
 }
 
 function buildVoiceBlock(vp: VoiceProfilePayload): string {
-  const lines: string[] = ["\n\nVOICE PROFILE:"];
-  if (vp.tone && vp.tone.length > 0) lines.push(`Tone: ${vp.tone.join(", ")}`);
-  if (vp.avoid && vp.avoid.length > 0) lines.push(`Never: ${vp.avoid.join(", ")}`);
-  if (vp.rules && vp.rules.length > 0) {
-    lines.push("Rules:");
-    vp.rules.forEach(r => lines.push(`- ${r}`));
-  }
-  if (vp.examples && vp.examples.length > 0) {
-    lines.push("Examples of this voice:");
-    vp.examples.slice(0, 5).forEach(ex => {
-      lines.push(`"${ex.text}" (${ex.platform})`);
-    });
-  }
-  if (vp.voiceNotes?.trim()) {
-    lines.push(`Additional voice notes: ${vp.voiceNotes}`);
-  }
-  const recentEdits = (vp.editHistory || []).slice(0, 5);
-  if (recentEdits.length > 0) {
-    lines.push("\nThe user edited these AI-generated captions. Learn from the pattern:");
-    recentEdits.forEach(e => {
-      lines.push(`Original: "${e.original}" → User's version: "${e.edited}"`);
-    });
-  }
-  return lines.join("\n");
+  const doc = (vp.voiceDoc || "").trim();
+  if (!doc) return "";
+  return `\n\nVOICE REFERENCE — read this carefully and write in the voice it describes:\n\n${doc}`;
 }
 
 function getLengthInstructions(length: string, platform: string): string {
