@@ -173,24 +173,15 @@ ${formatContext}
 
 LENGTH RULES: ${lengthInstructions}
 
-THE 3 VARIANTS MUST BE STRUCTURALLY DIFFERENT. Not 3 rewordings of the same post. Each takes a genuinely different shape:
-
-Variant 1 — SHARP OPINION / CALL-OUT
-A confident take or mild provocation. Direct. No setup needed. Think: "Name one serious brand that uses whack template pages, i'll wait..." or "Thousands of pages later and we still do X." 2-4 lines max. Attitude over explanation.
-
-Variant 2 — OBSERVATION / PATTERN
-Starts mid-thought, like continuing a conversation. "Been looking at a lot of PDPs this week and..." or "Same thing keeps coming up with health brands lately." Builds through specifics. Lands on a quiet, earned point. No drumroll.
-
-Variant 3 — BULLETED TACTICAL BREAKDOWN (only if the topic genuinely warrants a list — otherwise do a third distinct structure: a question-led post, or a counterintuitive one-liner with a single supporting sentence)
-If bulleted: one framing line, 3-6 dash bullets on their own lines, one closing line. Each bullet a real insight, not filler.
+THE 3 VARIANTS MUST BE STRUCTURALLY DIFFERENT. Not 3 rewordings of the same post. Each takes a genuinely different shape, hook, and angle on the same idea — drawn from the voice reference, not from generic templates.
 
 HARD RULES:
-- Every variant must use ACTUAL line breaks (press enter, multiple newlines between thoughts). Not one paragraph blob.
-- Use proper punctuation — full stops, commas. Line breaks are in addition to punctuation, not instead of it.
-- No two variants should share more than one repeated keyword from the brief. If variant 1 says "FLO", variants 2 and 3 find a different angle that doesn't need to name it.
-- Never list features or design elements inline as a sentence.
-- Stop recycling the same connector words across variants ("actually", "generic", "properly", "genuinely").
-- Stop ending every post with a summary takeaway line. Sometimes just end on the last specific detail.
+- Every variant uses real line breaks between thoughts. Not one paragraph blob.
+- Proper punctuation — full stops, commas. Line breaks are IN ADDITION to punctuation, not instead of it.
+- No two variants should share repeated keywords or signature phrases.
+- Never list features or tactics inline as a sentence.
+- Stop recycling connector words across variants.
+- Don't end every post with a summary takeaway. Sometimes just end on the last specific detail.
 
 Output format:
 Separate the 3 variants with "===NEXT===" on its own line. Plain text with real line breaks inside each variant. No JSON. No numbering. No meta-commentary.`;
@@ -201,9 +192,13 @@ Separate the 3 variants with "===NEXT===" on its own line. Plain text with real 
         { type: "text", text: userPrompt },
       ];
 
-      // Build system prompt with optional voice profile
-      const systemPrompt = voiceProfile
-        ? BASE_SYSTEM_PROMPT + buildVoiceBlock(voiceProfile)
+      // Build system prompt:
+      // - If a voice doc is uploaded, IT IS the source of truth. Wrap it in a thin
+      //   minimal frame (no hardcoded examples / signature phrases / bans) so the
+      //   user's doc fully drives the voice. Otherwise fall back to BASE_SYSTEM_PROMPT.
+      const userDoc = (voiceProfile?.voiceDoc || "").trim();
+      const systemPrompt = userDoc
+        ? `You are writing social media content for a specific creator. The voice reference below is the SINGLE source of truth for tone, vocabulary, structure, and attitude. Follow it precisely. Do not invent rules that aren't in it. Do not impose generic "good writing" defaults. Do not add closers, signatures, or stylistic flourishes that aren't demonstrated in the reference.\n\nUse real line breaks between thoughts. Use proper punctuation. Never use emojis or hashtags unless the reference explicitly says to.\n\n=== VOICE REFERENCE ===\n\n${userDoc}\n\n=== END VOICE REFERENCE ===`
         : BASE_SYSTEM_PROMPT;
 
       const response = await client.messages.create({

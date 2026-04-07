@@ -65,6 +65,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Captions now pull from the idea/angle you type, not the image. The image is attached to the Typefully post but no longer sent to the caption model, so it stops drifting off-topic and describing what it sees" },
       { type: "improved", text: "Removed the duplicate platform switcher above the caption variants — only the top tab bar controls X vs LinkedIn now" },
       { type: "improved", text: "Voice Profile is now a single uploaded document — drop in a markdown or text file (or paste it) and the whole thing becomes the voice context for every caption. No more tone/avoid/rules/examples fields" },
+      { type: "fixed", text: "Voice Profile doc was being ignored — captions felt the same regardless of upload because the hardcoded base prompt (Dylan's example tweets, banned phrases) was always prepended. Now the uploaded doc fully replaces the base prompt and is the single source of truth for tone and structure" },
     ],
   },
   {
