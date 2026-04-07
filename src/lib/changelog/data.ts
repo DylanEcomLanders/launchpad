@@ -76,6 +76,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "fixed", text: "Typefully scheduling now only marks posts as Scheduled if EVERY targeted platform draft succeeded. Partial failures stay Saved so you can retry without double-scheduling the platforms that already worked. Plus a hard guard against double-firing the schedule button" },
       { type: "fixed", text: "Bulk upload now respects existing posts on each date — won't overwrite or stack onto saved/scheduled slots. Skips past full days automatically" },
       { type: "improved", text: "Caption + article voice rewritten to Dylan TOV v3 — tighter register ('someone explaining something at a desk, not presenting on a stage'), stronger 'write forwards not backwards' rule, Baymard/Shopify as the only allowed cited sources, and a 10-point self-check before every output. Same prompt across captions and articles so voice stays consistent" },
+      { type: "removed", text: "Uploaded voice profile no longer overrides the base TOV. TOV v3 is now hardcoded as the single source of truth for captions — edit the prompt file directly to change voice" },
     ],
   },
   {

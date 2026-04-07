@@ -221,22 +221,6 @@ SHIPPING COST:
 ACCOUNT CREATION:
 "Forced account creation before checkout. Baymard's been calling it a top abandonment cause for years. It's a settings change in Shopify. Takes ten minutes. Most stores that have this problem have had it for a long time while their checkout sits at 70%+ abandonment."`;
 
-interface VoiceProfilePayload {
-  voiceDoc?: string;
-  // legacy fields, ignored — kept so old clients don't crash
-  tone?: string[];
-  avoid?: string[];
-  rules?: string[];
-  examples?: { text: string; platform: string; note?: string }[];
-  voiceNotes?: string;
-}
-
-function buildVoiceBlock(vp: VoiceProfilePayload): string {
-  const doc = (vp.voiceDoc || "").trim();
-  if (!doc) return "";
-  return `\n\nVOICE REFERENCE — read this carefully and write in the voice it describes:\n\n${doc}`;
-}
-
 function getLengthInstructions(length: string, platform: string): string {
   const isX = platform.toLowerCase() === "x";
 
@@ -261,7 +245,7 @@ function getLengthInstructions(length: string, platform: string): string {
 
 export async function POST(req: NextRequest) {
   try {
-    const { platforms, platform, contentType, postFormat, brief, imageData, captionLength, voiceProfile } = await req.json();
+    const { platforms, platform, contentType, postFormat, brief, imageData, captionLength } = await req.json();
 
     // Support both single platform (legacy) and multi-platform
     const targetPlatforms: string[] = platforms || (platform ? [platform] : []);
@@ -328,14 +312,10 @@ Separate the 3 variants with "===NEXT===" on its own line. Plain text with real 
         }
       }
 
-      // Build system prompt:
-      // - If a voice doc is uploaded, IT IS the source of truth. Wrap it in a thin
-      //   minimal frame (no hardcoded examples / signature phrases / bans) so the
-      //   user's doc fully drives the voice. Otherwise fall back to BASE_SYSTEM_PROMPT.
-      const userDoc = (voiceProfile?.voiceDoc || "").trim();
-      const systemPrompt = userDoc
-        ? `You are writing social media content for a specific creator. The voice reference below is the SINGLE source of truth for tone, vocabulary, structure, and attitude. Follow it precisely. Do not invent rules that aren't in it. Do not impose generic "good writing" defaults. Do not add closers, signatures, or stylistic flourishes that aren't demonstrated in the reference.\n\nUse real line breaks between thoughts. Use proper punctuation. Never use emojis or hashtags unless the reference explicitly says to.\n\n=== VOICE REFERENCE ===\n\n${userDoc}\n\n=== END VOICE REFERENCE ===`
-        : BASE_SYSTEM_PROMPT;
+      // TOV v3 is hardcoded as BASE_SYSTEM_PROMPT and is ALWAYS the source of
+      // truth. No user voice-doc override. Edit the prompt in this file to
+      // change how captions sound.
+      const systemPrompt = BASE_SYSTEM_PROMPT;
 
       const response = await client.messages.create({
         model: "claude-sonnet-4-20250514",
