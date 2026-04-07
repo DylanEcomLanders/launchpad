@@ -2112,40 +2112,6 @@ export default function CalendarPage() {
                 {captionError && <p className="text-[11px] text-red-500 mb-2">{captionError}</p>}
 
                 {/* Platform caption tabs (when multiple platforms selected and captions exist) */}
-                {(() => {
-                  const platforms = (studioPost.platforms as Platform[]) || ["x"];
-                  const hasMultiple = platforms.length > 1 && (captions.length > 0 || Object.keys(platformCaptions).length > 0);
-                  if (!hasMultiple) return null;
-                  return (
-                    <div className="flex gap-1 mb-3">
-                      {platforms.map(p => (
-                        <button
-                          key={p}
-                          onClick={() => {
-                            setActiveCaptionPlatform(p);
-                            // Load platform-specific captions if available
-                            if (platformCaptions[p]) {
-                              setCaptions(platformCaptions[p]!);
-                            }
-                            // Load draft caption for this platform
-                            if (draftCaptions[p]) {
-                              setStudioPost(prev => ({ ...prev, caption: draftCaptions[p], platform: p }));
-                            }
-                          }}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold rounded-lg transition-colors ${
-                            activeCaptionPlatform === p
-                              ? "bg-[#1B1B1B] text-white"
-                              : "text-[#999] hover:bg-[#F3F3F5]"
-                          }`}
-                        >
-                          <span className="size-2 rounded-full" style={{ backgroundColor: activeCaptionPlatform === p ? "white" : platformColors[p] }} />
-                          {platformLabels[p]}
-                        </button>
-                      ))}
-                    </div>
-                  );
-                })()}
-
                 {/* Adapting indicator */}
                 {adaptingPlatform === studioPost.platform && (
                   <div className="py-4 flex items-center justify-center gap-2">
