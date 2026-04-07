@@ -72,6 +72,9 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Multi-image posts — upload up to 4 images per post (Typefully cap). Drag in multiple at once, remove individually, all uploaded to Typefully on schedule" },
       { type: "fixed", text: "Typefully scheduler creating 3-4 duplicate drafts per post — the retry-on-failure loop was firing again even when the original request had actually succeeded. Removed retries; now one attempt per draft" },
       { type: "added", text: "Bulk upload — drop up to 50 images and the calendar auto-creates one draft post per image, spread across days with content types rotated so you don't cluster the same kind back-to-back. Pick start date, posts per day (1-3), skip weekends. Captions stay empty so you can fill them in after. Massively faster content creation" },
+      { type: "added", text: "New 'Saved' post status (blue) — sits between Draft and Scheduled. Saving a post with a caption now marks it Saved (ready to schedule) instead of Draft, so it's protected from cleanup and won't be wiped by bulk upload, draft refresh, or any other operation that touches drafts" },
+      { type: "fixed", text: "Typefully scheduling now only marks posts as Scheduled if EVERY targeted platform draft succeeded. Partial failures stay Saved so you can retry without double-scheduling the platforms that already worked. Plus a hard guard against double-firing the schedule button" },
+      { type: "fixed", text: "Bulk upload now respects existing posts on each date — won't overwrite or stack onto saved/scheduled slots. Skips past full days automatically" },
     ],
   },
   {

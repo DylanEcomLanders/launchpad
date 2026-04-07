@@ -113,6 +113,8 @@ function cardColors(status: PostStatus): { bg: string; text: string; dot: string
   switch (status) {
     case "scheduled":
       return { bg: "#ECFDF5", text: "#059669", dot: "#10B981" }; // green
+    case "saved":
+      return { bg: "#EFF6FF", text: "#1D4ED8", dot: "#3B82F6" }; // blue
     default: // draft
       return { bg: "#F3F3F5", text: "#7A7A7A", dot: "#94A3B8" }; // grey
   }
@@ -567,7 +569,11 @@ export default function CalendarPage() {
       angle: studioPost.angle || "",
       caption: fallbackCaption,
       platform_captions: mergedCaptions as Record<Platform, string>,
-      status: "draft",
+      // Preserve existing scheduled state. Otherwise: if there's a real
+      // caption, mark as 'saved' (ready to schedule). Empty caption stays draft.
+      status: studioPost.status === "scheduled"
+        ? "scheduled"
+        : (fallbackCaption.trim() ? "saved" : "draft"),
       scheduled_date: studioPost.scheduled_date!,
       scheduled_time: studioPost.scheduled_time || "09:00",
       media_url: studioPost.media_url,
@@ -636,6 +642,7 @@ export default function CalendarPage() {
   // ── Typefully: Schedule posts to selected platforms ──
   // Creates ONE SEPARATE DRAFT PER PLATFORM so each gets its own caption and image.
   async function scheduleToTypefully() {
+    if (typefullyLoading) return; // hard guard against double-firing
     const selectedPlatforms = Array.from(typefullyPlatforms);
     if (selectedPlatforms.length === 0) {
       alert("Select at least one platform");
@@ -734,6 +741,9 @@ export default function CalendarPage() {
       let successCount = 0;
       let failCount = 0;
       const failedErrors: string[] = [];
+      // Track which posts had EVERY targeted platform succeed — only those
+      // get marked as scheduled, so partial failures stay re-schedulable.
+      const fullySuccessfulPostIds = new Set<string>();
 
       for (const p of schedulable) {
         // If post has explicit platforms, intersect with modal selection.
@@ -743,6 +753,7 @@ export default function CalendarPage() {
           ? p.platforms!.filter((pp: Platform) => selectedPlatforms.includes(pp))
           : selectedPlatforms;
         if (targetPlats.length === 0) continue;
+        let postAllSucceeded = true;
 
         const timeParts = (p.scheduled_time || "09:00").split(":");
         const hh = (timeParts[0] || "09").padStart(2, "0");
@@ -790,10 +801,12 @@ export default function CalendarPage() {
             successCount++;
           } else {
             failCount++;
+            postAllSucceeded = false;
             failedErrors.push(`${tp} (post ${p.id.slice(0, 6)}): ${lastError}`);
             console.error(`[Typefully] Draft failed (${tp}):`, lastError);
           }
         }
+        if (postAllSucceeded) fullySuccessfulPostIds.add(p.id);
       }
 
       setTypefullyResult({
@@ -802,10 +815,11 @@ export default function CalendarPage() {
         failedErrors,
       });
 
-      // Mark successfully scheduled posts
-      if (successCount > 0) {
+      // Mark only fully successful posts as scheduled — partial failures
+      // stay as 'saved' so the user can retry without double-scheduling.
+      if (fullySuccessfulPostIds.size > 0) {
         const updated = allPosts.map(p => {
-          if (schedulable.some(s => s.id === p.id)) {
+          if (fullySuccessfulPostIds.has(p.id)) {
             return { ...p, status: "scheduled" as PostStatus };
           }
           return p;
@@ -1049,15 +1063,31 @@ export default function CalendarPage() {
         return fallback[slotIdx % fallback.length];
       }
 
+      // Pre-count existing posts per date for this creator so bulk upload
+      // respects already-scheduled / saved / drafted slots and never overwrites.
+      const existingByDate: Record<string, number> = {};
+      for (const ep of allPosts) {
+        if (ep.creator !== creator) continue;
+        existingByDate[ep.scheduled_date] = (existingByDate[ep.scheduled_date] || 0) + 1;
+      }
+
       const nowIso = new Date().toISOString();
       for (let i = 0; i < base64s.length; i++) {
         // Skip weekends if needed
         while (bulkSkipWeekends && isWeekend(dayCursor)) nextDay();
+        // Skip days already at capacity (existing + freshly added)
+        let dateStr = toDateStr(dayCursor);
+        const totalForDay = () => (existingByDate[dateStr] || 0) + postsToday;
+        while (totalForDay() >= bulkPostsPerDay) {
+          nextDay();
+          while (bulkSkipWeekends && isWeekend(dayCursor)) nextDay();
+          dateStr = toDateStr(dayCursor);
+        }
         if (postsToday >= bulkPostsPerDay) {
           nextDay();
           while (bulkSkipWeekends && isWeekend(dayCursor)) nextDay();
+          dateStr = toDateStr(dayCursor);
         }
-        const dateStr = toDateStr(dayCursor);
         const contentType = pickTypeFor(dateStr, i);
         const scheduledTime = pickTimeFor(dateStr, postsToday);
         usedTypesByDate[dateStr] = [...(usedTypesByDate[dateStr] || []), contentType];
@@ -2158,7 +2188,7 @@ export default function CalendarPage() {
                 <XMarkIcon className="size-3.5 text-[#AAA]" />
               </button>
             </div>
-            {(["draft", "scheduled"] as PostStatus[]).map(status => {
+            {(["draft", "saved", "scheduled"] as PostStatus[]).map(status => {
               const statusPosts = posts.filter(p => p.status === status);
               return (
                 <div key={status} className="mb-3">
@@ -2521,15 +2551,16 @@ export default function CalendarPage() {
               {studioPost.id && studioPost.status === "scheduled" && (
                 <button
                   onClick={async () => {
+                    const newStatus: PostStatus = studioPost.caption?.trim() ? "saved" : "draft";
                     const updated = allPosts.map(p =>
-                      p.id === studioPost.id ? { ...p, status: "draft" as PostStatus } : p
+                      p.id === studioPost.id ? { ...p, status: newStatus } : p
                     );
                     setAllPosts(updated);
                     await savePosts(updated);
-                    setStudioPost(prev => ({ ...prev, status: "draft" as PostStatus }));
+                    setStudioPost(prev => ({ ...prev, status: newStatus }));
                   }}
                   className="flex items-center gap-1 px-3 py-2.5 text-[10px] font-semibold border border-amber-200 text-amber-700 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors"
-                  title="Mark as draft so it can be re-sent to Typefully"
+                  title="Reset so it can be re-sent to Typefully"
                 >
                   Reset
                 </button>

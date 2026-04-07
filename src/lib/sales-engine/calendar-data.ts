@@ -7,7 +7,7 @@ import { createStore } from "@/lib/supabase-store";
 export type Creator = "ajay" | "dylan";
 export type Platform = "linkedin" | "x";
 export type ContentType = "educational" | "social_proof" | "personal" | "promotional";
-export type PostStatus = "draft" | "scheduled";
+export type PostStatus = "draft" | "saved" | "scheduled";
 export type PostFormat = "text" | "image" | "article" | "video";
 export type CaptionLength = "short" | "medium" | "long";
 
@@ -80,11 +80,13 @@ export const postFormatLabels: Record<PostFormat, string> = {
 
 export const statusColors: Record<PostStatus, string> = {
   draft: "#94A3B8",
+  saved: "#3B82F6",
   scheduled: "#10B981",
 };
 
 export const statusLabels: Record<PostStatus, string> = {
   draft: "Draft",
+  saved: "Saved",
   scheduled: "Scheduled",
 };
 
