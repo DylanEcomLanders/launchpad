@@ -57,6 +57,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "fixed", text: "Audit page portfolio strip loaded in ~15s — now server-rendered with Supabase image transforms (320×944 @ q70) plus eager/lazy loading hints. Should be near-instant" },
       { type: "fixed", text: "Calendar Schedule to Typefully — posts ticked for both X and LinkedIn now actually schedule to both. Legacy posts without an explicit platforms array were falling back to X-only" },
       { type: "improved", text: "Post studio simplified — every post defaults to both X and LinkedIn (always repurposed). Removed the Post-To selector and Type selector. Just Format and Length now" },
+      { type: "added", text: "Calendar Reset button — if you delete a draft in Typefully and want to reschedule from Launchpad, open the post and hit Reset to flip it back to draft status" },
     ],
   },
   {

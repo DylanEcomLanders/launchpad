@@ -2330,6 +2330,22 @@ export default function CalendarPage() {
                 <ArrowUpTrayIcon className="size-3" />
                 Typefully
               </button>
+              {studioPost.id && studioPost.status === "scheduled" && (
+                <button
+                  onClick={async () => {
+                    const updated = allPosts.map(p =>
+                      p.id === studioPost.id ? { ...p, status: "draft" as PostStatus } : p
+                    );
+                    setAllPosts(updated);
+                    await savePosts(updated);
+                    setStudioPost(prev => ({ ...prev, status: "draft" as PostStatus }));
+                  }}
+                  className="flex items-center gap-1 px-3 py-2.5 text-[10px] font-semibold border border-amber-200 text-amber-700 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors"
+                  title="Mark as draft so it can be re-sent to Typefully"
+                >
+                  Reset
+                </button>
+              )}
               {studioPost.id && (
                 <button
                   onClick={() => handleDeletePost(studioPost.id!)}
