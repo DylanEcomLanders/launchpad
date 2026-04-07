@@ -564,6 +564,7 @@ export default function CalendarPage() {
       scheduled_time: studioPost.scheduled_time || "09:00",
       media_url: studioPost.media_url,
       media_data: studioPost.media_data,
+      media_data_list: studioPost.media_data_list,
       analytics_score: studioPost.analytics_score || getSlotScore(
         postPlatforms[0] as Platform,
         new Date(studioPost.scheduled_date! + "T00:00:00").getDay(),
@@ -661,21 +662,26 @@ export default function CalendarPage() {
       const socialSetId = sets[0].id;
 
       // Step 2: Upload images server-side (base64 → API route → Typefully S3)
-      const mediaIds: Record<string, string> = {};
+      // Each post can have up to 4 images.
+      const mediaIdsByPost: Record<string, string[]> = {};
       for (const p of schedulable) {
-        if (p.media_data) {
+        const images = p.media_data_list && p.media_data_list.length > 0
+          ? p.media_data_list
+          : (p.media_data ? [p.media_data] : []);
+        if (images.length === 0) continue;
+        const ids: string[] = [];
+        for (const [idx, img] of images.entries()) {
           try {
-            console.log(`[Typefully] Uploading image for post ${p.id}...`);
+            console.log(`[Typefully] Uploading image ${idx + 1}/${images.length} for post ${p.id}...`);
             const uploadRes = await fetch("/api/typefully", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ action: "upload-media", social_set_id: socialSetId, base64_data: p.media_data }),
+              body: JSON.stringify({ action: "upload-media", social_set_id: socialSetId, base64_data: img }),
             });
             const uploadData = await uploadRes.json();
             console.log(`[Typefully] Upload response:`, uploadRes.status, uploadData);
             if (uploadRes.ok && uploadData.media_id) {
-              mediaIds[p.id] = uploadData.media_id;
-              console.log(`[Typefully] Image uploaded, media_id: ${uploadData.media_id}`);
+              ids.push(uploadData.media_id);
             } else {
               console.error(`[Typefully] Image upload failed:`, uploadData);
             }
@@ -683,6 +689,12 @@ export default function CalendarPage() {
             console.error(`[Typefully] Image upload exception for post ${p.id}:`, e);
           }
         }
+        if (ids.length > 0) mediaIdsByPost[p.id] = ids;
+      }
+      // Backwards-compat alias for the polling step below
+      const mediaIds: Record<string, string> = {};
+      for (const [pid, ids] of Object.entries(mediaIdsByPost)) {
+        for (const id of ids) mediaIds[`${pid}:${id}`] = id;
       }
 
       // Step 2b: Wait for all uploaded media to finish processing
@@ -738,7 +750,7 @@ export default function CalendarPage() {
             text: caption,
             platform: tp,
             publish_at: publishAt,
-            ...(mediaIds[p.id] ? { media_ids: [mediaIds[p.id]] } : {}),
+            ...(mediaIdsByPost[p.id]?.length ? { media_ids: mediaIdsByPost[p.id] } : {}),
             ...(tp === "x" && autoPlugX ? { auto_plug_enabled: true } : {}),
             ...(tp === "x" && autoRetweetX ? { auto_retweet_enabled: true } : {}),
           };
@@ -941,18 +953,49 @@ export default function CalendarPage() {
   }
 
   function handleImageUpload(file: File) {
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Image must be under 5MB");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64 = reader.result as string;
-      setStudioPost(prev => ({ ...prev, media_data: base64, post_format: "image" as PostFormat }));
-      // Auto-generate captions based on the image
-      generateCaptions({ imageData: base64 });
-    };
-    reader.readAsDataURL(file);
+    handleImageUploads([file]);
+  }
+
+  function handleImageUploads(files: File[]) {
+    const valid = files.filter(f => {
+      if (f.size > 5 * 1024 * 1024) {
+        alert(`${f.name} is over 5MB — skipped`);
+        return false;
+      }
+      return true;
+    });
+    if (valid.length === 0) return;
+
+    Promise.all(valid.map(f => new Promise<string>((resolve) => {
+      const r = new FileReader();
+      r.onloadend = () => resolve(r.result as string);
+      r.readAsDataURL(f);
+    }))).then(base64s => {
+      setStudioPost(prev => {
+        const existing = prev.media_data_list || (prev.media_data ? [prev.media_data] : []);
+        const combined = [...existing, ...base64s].slice(0, 4); // Typefully cap = 4
+        return {
+          ...prev,
+          media_data: combined[0],
+          media_data_list: combined,
+          post_format: "image" as PostFormat,
+        };
+      });
+      // Auto-generate captions using the first image as visual context
+      generateCaptions({ imageData: base64s[0] });
+    });
+  }
+
+  function removeImageAt(idx: number) {
+    setStudioPost(prev => {
+      const list = prev.media_data_list || (prev.media_data ? [prev.media_data] : []);
+      const next = list.filter((_, i) => i !== idx);
+      return {
+        ...prev,
+        media_data: next[0],
+        media_data_list: next.length > 0 ? next : undefined,
+      };
+    });
   }
 
   function handlePaste(e: React.ClipboardEvent) {
@@ -1982,35 +2025,51 @@ export default function CalendarPage() {
               </div>
 
               {/* ── 4. Image upload (only for image/article) ── */}
-              {(studioPost.post_format === "image" || studioPost.post_format === "article") && (
-                <div className="px-5 pt-4 pb-4 border-b border-[#F0F0F0]">
-                  {studioPost.media_data ? (
-                    <div className="relative rounded-xl overflow-hidden border border-[#E5E5EA]">
-                      <img src={studioPost.media_data} alt="Post media" className="w-full h-36 object-cover" />
-                      <div className="absolute top-2 right-2 flex gap-1">
-                        <label className="cursor-pointer px-2 py-1 bg-white/90 backdrop-blur-sm text-[9px] font-semibold rounded-lg shadow-sm hover:bg-white transition-colors">
-                          Replace
-                          <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
-                        </label>
-                        <button onClick={() => setStudioPost(prev => ({ ...prev, media_data: undefined }))} className="px-2 py-1 bg-white/90 backdrop-blur-sm text-[9px] font-semibold text-red-400 rounded-lg shadow-sm hover:bg-white transition-colors">
-                          Remove
-                        </button>
-                      </div>
-                      {captionLoading && (
-                        <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 text-white text-[9px] font-semibold rounded-lg backdrop-blur-sm animate-pulse">
-                          Generating captions...
+              {(studioPost.post_format === "image" || studioPost.post_format === "article") && (() => {
+                const images = studioPost.media_data_list || (studioPost.media_data ? [studioPost.media_data] : []);
+                const canAddMore = images.length < 4;
+                return (
+                  <div className="px-5 pt-4 pb-4 border-b border-[#F0F0F0]">
+                    {images.length > 0 ? (
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          {images.map((src, i) => (
+                            <div key={i} className="relative rounded-lg overflow-hidden border border-[#E5E5EA] aspect-square">
+                              <img src={src} alt={`Post media ${i + 1}`} className="w-full h-full object-cover" />
+                              <button
+                                onClick={() => removeImageAt(i)}
+                                className="absolute top-1 right-1 px-1.5 py-0.5 bg-white/90 backdrop-blur-sm text-[9px] font-semibold text-red-400 rounded shadow-sm hover:bg-white transition-colors"
+                              >
+                                Remove
+                              </button>
+                              {i === 0 && images.length > 1 && (
+                                <span className="absolute top-1 left-1 px-1.5 py-0.5 bg-black/60 text-white text-[8px] font-semibold rounded">1st</span>
+                              )}
+                            </div>
+                          ))}
+                          {canAddMore && (
+                            <label className="flex flex-col items-center justify-center gap-1 aspect-square border border-dashed border-[#E0E0E0] rounded-lg cursor-pointer hover:border-[#B0B0B0] hover:bg-[#FAFAFA] transition-colors">
+                              <PhotoIcon className="size-5 text-[#CCC]" />
+                              <span className="text-[10px] text-[#999]">Add image</span>
+                              <input type="file" accept="image/*" multiple className="hidden" onChange={e => { const fs = Array.from(e.target.files || []); if (fs.length) handleImageUploads(fs); }} />
+                            </label>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  ) : (
-                    <label className="flex items-center justify-center gap-2 py-5 border border-dashed border-[#E0E0E0] rounded-xl cursor-pointer hover:border-[#B0B0B0] hover:bg-[#FAFAFA] transition-colors">
-                      <PhotoIcon className="size-5 text-[#CCC]" />
-                      <span className="text-[11px] text-[#999]">Upload or paste image</span>
-                      <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
-                    </label>
-                  )}
-                </div>
-              )}
+                        <p className="text-[9px] text-[#BBB] text-center">{images.length}/4 images · Typefully max</p>
+                        {captionLoading && (
+                          <p className="text-[10px] text-[#999] text-center animate-pulse">Generating captions...</p>
+                        )}
+                      </div>
+                    ) : (
+                      <label className="flex items-center justify-center gap-2 py-5 border border-dashed border-[#E0E0E0] rounded-xl cursor-pointer hover:border-[#B0B0B0] hover:bg-[#FAFAFA] transition-colors">
+                        <PhotoIcon className="size-5 text-[#CCC]" />
+                        <span className="text-[11px] text-[#999]">Upload or paste image(s)</span>
+                        <input type="file" accept="image/*" multiple className="hidden" onChange={e => { const fs = Array.from(e.target.files || []); if (fs.length) handleImageUploads(fs); }} />
+                      </label>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* ── 5. Caption Length toggle ── */}
               <div className="px-5 pt-4 pb-3 border-b border-[#F0F0F0]">

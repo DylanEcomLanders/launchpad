@@ -26,7 +26,8 @@ export interface ContentPost {
   scheduled_date: string; // ISO date
   scheduled_time: string; // HH:mm
   media_url?: string;
-  media_data?: string; // base64 image data for preview
+  media_data?: string; // base64 image data for preview (legacy single image)
+  media_data_list?: string[]; // multiple base64 images (Typefully supports up to 4)
   analytics_score: number; // 0-100
   created_at: string;
   updated_at: string;
