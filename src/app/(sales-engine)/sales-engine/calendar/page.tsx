@@ -835,6 +835,26 @@ export default function CalendarPage() {
     setDragOverDate(null);
   }
 
+  async function downscaleImage(dataUrl: string, maxDim = 1024, quality = 0.75): Promise<string> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return resolve(dataUrl);
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
+  }
+
   async function generateCaptions(overrides?: { imageData?: string }) {
     const postPlatforms = studioPost.platforms || (studioPost.platform ? [studioPost.platform] : ["x"]);
     if (postPlatforms.length === 0 || !studioPost.content_type) return;
@@ -843,6 +863,11 @@ export default function CalendarPage() {
     setCaptions([]);
     setPlatformCaptions({});
     try {
+      let imageData = overrides?.imageData || studioPost.media_data || undefined;
+      if (imageData && imageData.length > 500_000) {
+        imageData = await downscaleImage(imageData);
+      }
+
       const res = await fetch("/api/calendar/captions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -851,11 +876,15 @@ export default function CalendarPage() {
           contentType: contentTypeLabels[studioPost.content_type],
           postFormat: studioPost.post_format || "text",
           brief: studioPost.angle || studioPost.caption || `${contentTypeLabels[studioPost.content_type]} post about CRO and landing pages`,
-          imageData: overrides?.imageData || studioPost.media_data || undefined,
+          imageData,
           captionLength,
           voiceProfile: voiceProfile || undefined,
         }),
       });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text.slice(0, 200) || `Request failed (${res.status})`);
+      }
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
