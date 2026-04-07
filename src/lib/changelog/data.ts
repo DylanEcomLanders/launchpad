@@ -53,6 +53,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Audit Portfolio manager — upload, reorder, and delete portfolio images from Launchpad settings. Images stored in Supabase Storage" },
       { type: "improved", text: "Portfolio v2 sync simplified — paste a Figma frame link (right-click → Copy link to selection) for desktop and mobile. No more separate file URL or frame names; file key + node ID extracted automatically" },
       { type: "improved", text: "Caption generation voice — baked the social-copywriter skill into the system prompt: write forwards not backwards, no emojis, no hashtags, no analogies, varied openings, earned takeaways" },
+      { type: "improved", text: "Article generation voice — same social-copywriter principles applied to long-form Twitter/X articles" },
     ],
   },
   {
