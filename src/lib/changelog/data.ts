@@ -55,6 +55,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Caption generation voice — baked the social-copywriter skill into the system prompt: write forwards not backwards, no emojis, no hashtags, no analogies, varied openings, earned takeaways" },
       { type: "improved", text: "Article generation voice — same social-copywriter principles applied to long-form Twitter/X articles" },
       { type: "fixed", text: "Audit page portfolio strip loaded in ~15s — now server-rendered with Supabase image transforms (320×944 @ q70) plus eager/lazy loading hints. Should be near-instant" },
+      { type: "fixed", text: "Calendar Schedule to Typefully — posts ticked for both X and LinkedIn now actually schedule to both. Legacy posts without an explicit platforms array were falling back to X-only" },
     ],
   },
   {

@@ -727,8 +727,12 @@ export default function CalendarPage() {
       const failedErrors: string[] = [];
 
       for (const p of schedulable) {
-        const postPlatforms = p.platforms || [p.platform];
-        const targetPlats = postPlatforms.filter((pp: Platform) => selectedPlatforms.includes(pp));
+        // If post has explicit platforms, intersect with modal selection.
+        // Otherwise (legacy posts with only `p.platform` set), trust the modal selection.
+        const hasExplicit = Array.isArray(p.platforms) && p.platforms.length > 0;
+        const targetPlats = hasExplicit
+          ? p.platforms!.filter((pp: Platform) => selectedPlatforms.includes(pp))
+          : selectedPlatforms;
         if (targetPlats.length === 0) continue;
 
         const timeParts = (p.scheduled_time || "09:00").split(":");
