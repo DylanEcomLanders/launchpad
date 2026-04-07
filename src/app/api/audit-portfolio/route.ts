@@ -43,12 +43,15 @@ export async function GET() {
           /\.(png|jpg|jpeg|webp|avif)$/i.test(f.name)
         );
 
-        // Build URL map
+        // Build URL map — request resized variant via Supabase image transform
+        // Strip is rendered at 160×472 (≈320×944 @2x). Massive perf win vs raw PNGs.
         const urls: Record<string, string> = {};
         for (const f of imageFiles) {
           const { data: urlData } = supabase.storage
             .from(BUCKET)
-            .getPublicUrl(f.name);
+            .getPublicUrl(f.name, {
+              transform: { width: 320, height: 944, resize: "cover", quality: 70 },
+            });
           urls[f.name] = urlData.publicUrl;
         }
 
