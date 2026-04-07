@@ -924,14 +924,16 @@ export default function CalendarPage() {
         const id = String(d.id);
         if (seen.has(id) || knownIds.has(id)) continue;
         seen.add(id);
-        // v2 Typefully draft shape is actually flat: { id, text, platform, scheduled_date, status }
-        // but might also be nested { platforms: { x: {...} } } — handle both.
+        // Typefully v2 real shape uses flat per-platform enabled flags:
+        // { x_post_enabled, linkedin_post_enabled, preview, scheduled_date, status, ... }
         const rawPlats = (d as any).platforms;
         const platEntries: { key: Platform; text: string }[] = [];
-        // Flat shape
-        if (!rawPlats && (d as any).platform) {
+        const previewText: string = (d as any).preview || (d as any).text || "";
+        if ((d as any).x_post_enabled) platEntries.push({ key: "x", text: previewText });
+        if ((d as any).linkedin_post_enabled) platEntries.push({ key: "linkedin", text: previewText });
+        if (platEntries.length === 0 && !rawPlats && (d as any).platform) {
           const k = normalizePlat((d as any).platform);
-          if (k) platEntries.push({ key: k, text: (d as any).text || "" });
+          if (k) platEntries.push({ key: k, text: previewText });
         }
         if (Array.isArray(rawPlats)) {
           for (const entry of rawPlats) {
