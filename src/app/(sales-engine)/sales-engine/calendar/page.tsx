@@ -872,6 +872,8 @@ export default function CalendarPage() {
       ]);
       const schedData = await schedRes.json();
       const draftData = await draftRes.json();
+      console.log("[Sync] Typefully scheduled response:", schedData);
+      console.log("[Sync] Typefully drafts response:", draftData);
       const liveIds = new Set<string>([
         ...((schedData.drafts || []).map((d: any) => String(d.id))),
         ...((draftData.drafts || []).map((d: any) => String(d.id))),
@@ -957,7 +959,7 @@ export default function CalendarPage() {
       const finalPosts = [...updated, ...imported];
       setAllPosts(finalPosts);
       await savePosts(finalPosts);
-      alert(`Synced. Imported ${imported.length}, cleared ${cleared} stale ref${cleared === 1 ? "" : "s"}, ${reset} post${reset === 1 ? "" : "s"} flipped back to saved.`);
+      alert(`Synced. Typefully returned ${schedData.drafts?.length || 0} scheduled + ${draftData.drafts?.length || 0} drafts. Imported ${imported.length}, cleared ${cleared} stale ref${cleared === 1 ? "" : "s"}, ${reset} post${reset === 1 ? "" : "s"} flipped back to saved.`);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Sync failed");
     } finally {

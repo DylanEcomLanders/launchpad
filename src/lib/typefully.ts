@@ -61,7 +61,7 @@ export async function listSocialSets(): Promise<TypefullySocialSet[]> {
     throw new Error(`Typefully listSocialSets failed (${res.status}): ${body}`);
   }
   const data = await res.json();
-  return data.results || [];
+  return data.results || data.sets || data.data || [];
 }
 
 /** Create a scheduled draft on Typefully */
@@ -230,5 +230,7 @@ export async function listDrafts(
   }
 
   const data = await res.json();
-  return data.results || [];
+  const list = Array.isArray(data) ? data : (data.results || data.drafts || data.data || []);
+  console.log(`[Typefully] listDrafts(${socialSetId}, ${status || "all"}) → ${list.length} drafts. Top-level keys:`, Object.keys(data || {}));
+  return list;
 }
