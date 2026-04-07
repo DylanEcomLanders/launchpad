@@ -931,7 +931,6 @@ export default function CalendarPage() {
           brief: studioPost.angle || studioPost.caption || `${contentTypeLabels[studioPost.content_type]} post about CRO and landing pages`,
           imageData,
           captionLength,
-          voiceProfile: voiceProfile || undefined,
         }),
       });
       if (!res.ok) {
@@ -1619,13 +1618,6 @@ export default function CalendarPage() {
               className="p-2 rounded-lg text-[#C5C5C5] hover:text-[#1B1B1B] hover:bg-[#F3F3F5] transition-colors"
             >
               <LockClosedIcon className="size-4" />
-            </button>
-            <button
-              onClick={() => setShowVoice(true)}
-              title="Voice profile settings"
-              className="p-2 rounded-lg text-[#C5C5C5] hover:text-[#1B1B1B] hover:bg-[#F3F3F5] transition-colors"
-            >
-              <Cog6ToothIcon className="size-4" />
             </button>
           </div>
         </div>
@@ -2855,93 +2847,7 @@ export default function CalendarPage() {
         </>
       )}
 
-      {/* ═══ VOICE PROFILE PANEL (slide-in drawer) ═══ */}
-      {showVoice && voiceProfile && (
-        <>
-          <div className="fixed inset-0 z-40 bg-black/20 animate-backdropFade" onClick={() => setShowVoice(false)} />
-          <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-md bg-white shadow-[var(--shadow-elevated)] flex flex-col animate-slideIn">
-            {/* Header */}
-            <div className="shrink-0 bg-white border-b border-[#E5E5EA] px-5 py-3 flex items-center justify-between z-10">
-              <div className="flex items-center gap-2">
-                <Cog6ToothIcon className="size-4 text-[#7A7A7A]" />
-                <h2 className="text-sm font-bold text-[#1B1B1B]">Voice Profile — {creator === "ajay" ? "Ajay" : "Dylan"}</h2>
-              </div>
-              <button onClick={() => setShowVoice(false)} className="p-1 rounded-lg hover:bg-[#F3F3F5]">
-                <XMarkIcon className="size-5 text-[#7A7A7A]" />
-              </button>
-            </div>
-
-            {/* Scrollable content */}
-            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
-              <div>
-                <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider mb-2">Voice Document</p>
-                <p className="text-[11px] text-[#999] leading-relaxed mb-3">
-                  Upload a markdown or text file (or paste below). Its full contents are injected into every caption generation as voice context. One source of truth — no fields, no settings.
-                </p>
-                <input
-                  ref={voiceFileInputRef}
-                  type="file"
-                  accept=".md,.markdown,.txt,text/plain,text/markdown"
-                  className="hidden"
-                  onChange={async e => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    const text = await file.text();
-                    setVoiceProfile({ ...voiceProfile, voiceDoc: text, fileName: file.name });
-                    if (voiceFileInputRef.current) voiceFileInputRef.current.value = "";
-                  }}
-                />
-                <div className="flex items-center gap-2 mb-3">
-                  <button
-                    onClick={() => voiceFileInputRef.current?.click()}
-                    className="flex items-center gap-1.5 px-3 py-2 text-[11px] font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors"
-                  >
-                    <ArrowUpTrayIcon className="size-3.5" />
-                    Upload .md / .txt
-                  </button>
-                  {voiceProfile.fileName && (
-                    <span className="text-[11px] text-[#999] truncate">{voiceProfile.fileName}</span>
-                  )}
-                  {voiceProfile.voiceDoc && (
-                    <button
-                      onClick={() => setVoiceProfile({ ...voiceProfile, voiceDoc: "", fileName: undefined })}
-                      className="ml-auto text-[10px] text-red-400 hover:text-red-500"
-                    >
-                      Clear
-                    </button>
-                  )}
-                </div>
-                <textarea
-                  value={voiceProfile.voiceDoc}
-                  onChange={e => setVoiceProfile({ ...voiceProfile, voiceDoc: e.target.value })}
-                  placeholder="Or paste your voice doc here — markdown, examples, rules, anything. The whole thing gets used as context."
-                  className={textareaClass + " min-h-[420px] font-mono text-[11px] leading-relaxed"}
-                  rows={20}
-                />
-                <p className="text-[10px] text-[#BBB] mt-2 text-right">
-                  {voiceProfile.voiceDoc.length.toLocaleString()} characters
-                </p>
-              </div>
-            </div>
-
-            {/* Footer — Save */}
-            <div className="shrink-0 border-t border-[#E5E5EA] px-5 py-3 bg-white">
-              <button
-                onClick={async () => {
-                  setVoiceSaving(true);
-                  await saveVoiceProfile(voiceProfile);
-                  setVoiceSaving(false);
-                  setShowVoice(false);
-                }}
-                disabled={voiceSaving}
-                className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
-              >
-                {voiceSaving ? "Saving..." : "Save Voice Profile"}
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+      {/* Voice Profile panel removed — TOV v3 is hardcoded in the captions API */}
     </div>
   );
 }
