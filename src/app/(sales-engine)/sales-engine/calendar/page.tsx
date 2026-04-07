@@ -298,7 +298,7 @@ export default function CalendarPage() {
   const [bulkFiles, setBulkFiles] = useState<File[]>([]);
   const [bulkStartDate, setBulkStartDate] = useState<string>(toDateStr(new Date()));
   const [bulkPostsPerDay, setBulkPostsPerDay] = useState<number>(1);
-  const [bulkSkipWeekends, setBulkSkipWeekends] = useState<boolean>(true);
+  const [bulkSkipWeekends, setBulkSkipWeekends] = useState<boolean>(false);
   const [bulkLoading, setBulkLoading] = useState<boolean>(false);
 
   // Persist X automation toggles
