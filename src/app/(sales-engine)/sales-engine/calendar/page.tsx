@@ -897,9 +897,67 @@ export default function CalendarPage() {
         if (newStatus !== p.status) reset++;
         return { ...p, typefully_draft_ids: hasAny ? next : undefined, status: newStatus };
       });
-      setAllPosts(updated);
-      await savePosts(updated);
-      alert(`Synced. ${cleared} stale draft ref${cleared === 1 ? "" : "s"} cleared, ${reset} post${reset === 1 ? "" : "s"} flipped back to saved.`);
+      // Import Typefully drafts that Launchpad doesn't know about
+      const knownIds = new Set<string>();
+      for (const p of updated) {
+        if (p.typefully_draft_ids) {
+          for (const id of Object.values(p.typefully_draft_ids)) if (id) knownIds.add(String(id));
+        }
+      }
+      const allLiveDrafts: any[] = [
+        ...(schedData.drafts || []),
+        ...(draftData.drafts || []),
+      ];
+      const seen = new Set<string>();
+      const imported: ContentPost[] = [];
+      for (const d of allLiveDrafts) {
+        const id = String(d.id);
+        if (seen.has(id) || knownIds.has(id)) continue;
+        seen.add(id);
+        const plats = d.platforms || {};
+        const platKeys = Object.keys(plats).filter(k => {
+          const v = (plats as any)[k];
+          return v && (v.enabled !== false);
+        }) as Platform[];
+        const validPlats = platKeys.filter(k => k === "x" || k === "linkedin") as Platform[];
+        if (validPlats.length === 0) continue;
+        const primary = validPlats[0];
+        const firstPost = (plats as any)[primary]?.posts?.[0];
+        const text: string = firstPost?.text || "";
+        const platform_captions: Partial<Record<Platform, string>> = {};
+        for (const pk of validPlats) {
+          platform_captions[pk] = (plats as any)[pk]?.posts?.[0]?.text || text;
+        }
+        const when = d.publish_at ? new Date(d.publish_at) : new Date();
+        const yyyy = when.getFullYear();
+        const mm = String(when.getMonth() + 1).padStart(2, "0");
+        const dd = String(when.getDate()).padStart(2, "0");
+        const hh = String(when.getHours()).padStart(2, "0");
+        const mi = String(when.getMinutes()).padStart(2, "0");
+        const typefully_draft_ids: Partial<Record<Platform, string>> = {};
+        for (const pk of validPlats) typefully_draft_ids[pk] = id;
+        imported.push({
+          id: `tf-${id}`,
+          creator,
+          platform: primary,
+          platforms: validPlats,
+          content_type: "educational",
+          post_format: "text",
+          caption: text,
+          platform_captions,
+          status: (d.status === "scheduled" ? "scheduled" : "saved") as PostStatus,
+          scheduled_date: `${yyyy}-${mm}-${dd}`,
+          scheduled_time: `${hh}:${mi}`,
+          typefully_draft_ids,
+          analytics_score: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+      }
+      const finalPosts = [...updated, ...imported];
+      setAllPosts(finalPosts);
+      await savePosts(finalPosts);
+      alert(`Synced. Imported ${imported.length}, cleared ${cleared} stale ref${cleared === 1 ? "" : "s"}, ${reset} post${reset === 1 ? "" : "s"} flipped back to saved.`);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Sync failed");
     } finally {

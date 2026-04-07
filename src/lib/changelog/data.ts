@@ -42,7 +42,7 @@ const seedChangelog: ChangelogEntry[] = [
     version: "0.24.0",
     title: "Typefully Sync",
     changes: [
-      { type: "added", text: "Typefully Sync button on the calendar — reconciles local state with Typefully. Clears stale draft references and flips orphaned scheduled posts back to Saved so you can reschedule without duplicates" },
+      { type: "added", text: "Typefully Sync button on the calendar — reconciles local state with Typefully. Clears stale draft references, flips orphaned scheduled posts back to Saved, and imports drafts/scheduled posts that exist in Typefully but not in Launchpad" },
       { type: "added", text: "Per-platform Typefully draft IDs stored on each post — scheduling now skips any platform that already has a live draft so you can't double-schedule X or LinkedIn for the same post" },
       { type: "removed", text: "Voice Profile UI panel on the calendar — the backend ignores it now that TOV v3 is hardcoded as the single source of truth. Removed the gear button and slide-in panel to stop the confusion" },
     ],
