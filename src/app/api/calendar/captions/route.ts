@@ -186,11 +186,28 @@ HARD RULES:
 Output format:
 Separate the 3 variants with "===NEXT===" on its own line. Plain text with real line breaks inside each variant. No JSON. No numbering. No meta-commentary.`;
 
-      // Image is attached to the final Typefully post — never sent to the model.
-      // Captions are written from the idea/brief only, so they don't get distracted.
+      // The idea/brief is the source of truth. The image (if any) is supporting
+      // context only — helps the model see what's being posted, but must not
+      // override the brief.
       const userContent: Anthropic.Messages.ContentBlockParam[] = [
         { type: "text", text: userPrompt },
       ];
+
+      if (imageData && typeof imageData === "string" && imageData.startsWith("data:")) {
+        const match = imageData.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+        if (match) {
+          const mediaType = match[1] as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+          const base64 = match[2];
+          userContent.push({
+            type: "image",
+            source: { type: "base64", media_type: mediaType, data: base64 },
+          });
+          userContent.push({
+            type: "text",
+            text: "The image above is supporting visual context for the post. Let it inform tone/specifics where useful, but the IDEA in the brief is the source of truth — do not let the image hijack the message.",
+          });
+        }
+      }
 
       // Build system prompt:
       // - If a voice doc is uploaded, IT IS the source of truth. Wrap it in a thin

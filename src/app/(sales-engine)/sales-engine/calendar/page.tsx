@@ -872,13 +872,21 @@ export default function CalendarPage() {
     });
   }
 
-  async function generateCaptions(overrides?: { imageData?: string }) {
-    const postPlatforms = studioPost.platforms || (studioPost.platform ? [studioPost.platform] : ["x"]);
-    if (postPlatforms.length === 0 || !studioPost.content_type) return;
+  async function generateCaptions(overrides?: { imageData?: string; targetPlatform?: Platform }) {
+    // Only generate for the active platform tab — preserve any manually written
+    // captions on the other platform. User can click Generate again on the other
+    // tab when ready.
+    const activePlatform: Platform =
+      overrides?.targetPlatform ||
+      (studioPost.platform as Platform) ||
+      (studioPost.platforms?.[0] as Platform) ||
+      "x";
+    const postPlatforms: Platform[] = [activePlatform];
+    if (!studioPost.content_type) return;
     setCaptionLoading(true);
     setCaptionError("");
     setCaptions([]);
-    setPlatformCaptions({});
+    // Do NOT wipe platformCaptions — keep other platforms' variants intact.
     try {
       let imageData = overrides?.imageData || studioPost.media_data || undefined;
       if (imageData && imageData.length > 500_000) {
@@ -905,20 +913,21 @@ export default function CalendarPage() {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
-      // Handle multi-platform response
+      // Merge new platform's variants into existing cache — don't wipe others.
       if (data.variants) {
-        const pc: Partial<Record<Platform, string[]>> = {};
-        for (const v of data.variants) {
-          pc[v.platform as Platform] = v.captions;
-        }
-        setPlatformCaptions(pc);
-        // Set active tab to first platform
-        setActiveCaptionPlatform(postPlatforms[0] as Platform);
-        // Show first platform's captions in the flat array for backward compat
-        const firstCaptions = pc[postPlatforms[0] as Platform] || [];
-        setCaptions(firstCaptions);
+        setPlatformCaptions(prev => {
+          const next = { ...prev };
+          for (const v of data.variants) {
+            next[v.platform as Platform] = v.captions;
+          }
+          return next;
+        });
+        setActiveCaptionPlatform(activePlatform);
+        const newCaptions = data.variants.find((v: any) => v.platform === activePlatform)?.captions || [];
+        setCaptions(newCaptions);
       } else if (data.captions) {
         setCaptions(data.captions);
+        setPlatformCaptions(prev => ({ ...prev, [activePlatform]: data.captions }));
       }
     } catch (e: any) {
       setCaptionError(e.message || "Failed to generate captions");

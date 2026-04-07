@@ -66,6 +66,8 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Removed the duplicate platform switcher above the caption variants — only the top tab bar controls X vs LinkedIn now" },
       { type: "improved", text: "Voice Profile is now a single uploaded document — drop in a markdown or text file (or paste it) and the whole thing becomes the voice context for every caption. No more tone/avoid/rules/examples fields" },
       { type: "fixed", text: "Voice Profile doc was being ignored — captions felt the same regardless of upload because the hardcoded base prompt (Dylan's example tweets, banned phrases) was always prepended. Now the uploaded doc fully replaces the base prompt and is the single source of truth for tone and structure" },
+      { type: "fixed", text: "Generating LinkedIn captions no longer wipes the X caption you've already written — Generate now only fetches variants for the active platform tab and leaves the other one untouched" },
+      { type: "improved", text: "Caption model now sees the uploaded image again as supporting visual context (not the source of truth) — image informs the post, the idea/brief still drives it" },
     ],
   },
   {
