@@ -61,6 +61,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "fixed", text: "Legacy posts scheduling to X only — existing posts are now auto-backfilled on load so every post targets both X and LinkedIn by default" },
       { type: "fixed", text: "Caption variants rendering as a blob — the preview now uses whitespace-pre-wrap so line breaks actually show up instead of collapsing into one paragraph" },
       { type: "improved", text: "Caption variants now forced to be structurally different — Sharp Opinion, Observation, Tactical Breakdown (or similar) instead of 3 rewordings of the same post. Image context is used as a hook, not literally described. Temperature bumped so variants genuinely diverge" },
+      { type: "improved", text: "Stopped the caption model recycling Dylan's signature phrases (shite, whack, proper, cheat code, i'll wait) on every post. Reference examples now explicitly marked as rhythm-only, with hard rules against reusing their vocabulary" },
     ],
   },
   {
