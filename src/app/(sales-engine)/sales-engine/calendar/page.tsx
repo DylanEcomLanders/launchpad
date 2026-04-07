@@ -755,28 +755,27 @@ export default function CalendarPage() {
             ...(tp === "x" && autoRetweetX ? { auto_retweet_enabled: true } : {}),
           };
 
-          // Retry up to 3 times with backoff — flaky Typefully responses for X/LinkedIn
+          // Single attempt — retries were creating duplicate drafts because
+          // Typefully sometimes returns a non-2xx response after the draft was
+          // already created. If it fails, report it and let the user reschedule.
           let lastError = "";
           let success = false;
-          for (let attempt = 1; attempt <= 3; attempt++) {
-            try {
-              console.log(`[Typefully] Creating draft for ${tp} (attempt ${attempt}): "${caption?.slice(0, 50)}..."`);
-              const draftRes = await fetch("/api/typefully", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-              });
-              const draftData = await draftRes.json().catch(() => ({}));
-              console.log(`[Typefully] Draft response (${tp}, attempt ${attempt}):`, draftRes.status, draftData);
-              if (draftRes.ok) {
-                success = true;
-                break;
-              }
+          try {
+            console.log(`[Typefully] Creating draft for ${tp}: "${caption?.slice(0, 50)}..."`);
+            const draftRes = await fetch("/api/typefully", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+            const draftData = await draftRes.json().catch(() => ({}));
+            console.log(`[Typefully] Draft response (${tp}):`, draftRes.status, draftData);
+            if (draftRes.ok) {
+              success = true;
+            } else {
               lastError = draftData.error || `HTTP ${draftRes.status}`;
-            } catch (e: any) {
-              lastError = e?.message || "Network error";
             }
-            if (attempt < 3) await new Promise(r => setTimeout(r, 1000 * attempt));
+          } catch (e: any) {
+            lastError = e?.message || "Network error";
           }
 
           if (success) {
@@ -784,7 +783,7 @@ export default function CalendarPage() {
           } else {
             failCount++;
             failedErrors.push(`${tp} (post ${p.id.slice(0, 6)}): ${lastError}`);
-            console.error(`[Typefully] Draft failed after 3 attempts (${tp}):`, lastError);
+            console.error(`[Typefully] Draft failed (${tp}):`, lastError);
           }
         }
       }
