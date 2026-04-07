@@ -912,25 +912,51 @@ export default function CalendarPage() {
       ];
       const seen = new Set<string>();
       const imported: ContentPost[] = [];
+      const normalizePlat = (k: string): Platform | null => {
+        const kk = k.toLowerCase();
+        if (kk === "x" || kk === "twitter") return "x";
+        if (kk === "linkedin") return "linkedin";
+        return null;
+      };
       for (const d of allLiveDrafts) {
         const id = String(d.id);
         if (seen.has(id) || knownIds.has(id)) continue;
         seen.add(id);
-        const plats = d.platforms || {};
-        const platKeys = Object.keys(plats).filter(k => {
-          const v = (plats as any)[k];
-          return v && (v.enabled !== false);
-        }) as Platform[];
-        const validPlats = platKeys.filter(k => k === "x" || k === "linkedin") as Platform[];
-        if (validPlats.length === 0) continue;
-        const primary = validPlats[0];
-        const firstPost = (plats as any)[primary]?.posts?.[0];
-        const text: string = firstPost?.text || "";
-        const platform_captions: Partial<Record<Platform, string>> = {};
-        for (const pk of validPlats) {
-          platform_captions[pk] = (plats as any)[pk]?.posts?.[0]?.text || text;
+        // platforms can be object { x:{...} } or array [{platform:"x",...}]
+        const rawPlats = (d as any).platforms || {};
+        const platEntries: { key: Platform; text: string }[] = [];
+        if (Array.isArray(rawPlats)) {
+          for (const entry of rawPlats) {
+            const k = normalizePlat(entry.platform || entry.name || "");
+            if (!k) continue;
+            const txt = entry.posts?.[0]?.text || entry.text || (d as any).text || "";
+            platEntries.push({ key: k, text: txt });
+          }
+        } else if (typeof rawPlats === "object") {
+          for (const [rk, rv] of Object.entries(rawPlats)) {
+            const k = normalizePlat(rk);
+            if (!k) continue;
+            const v: any = rv;
+            if (v && v.enabled === false) continue;
+            const txt = v?.posts?.[0]?.text || v?.text || (d as any).text || "";
+            platEntries.push({ key: k, text: txt });
+          }
         }
-        const when = d.publish_at ? new Date(d.publish_at) : new Date();
+        // Fallback: if API returned nothing structured, treat as X post with top-level text
+        if (platEntries.length === 0 && (d as any).text) {
+          platEntries.push({ key: "x", text: (d as any).text });
+        }
+        if (platEntries.length === 0) {
+          console.warn("[Sync] Skipping draft with no parseable platforms", d);
+          continue;
+        }
+        const validPlats = platEntries.map(e => e.key);
+        const primary = validPlats[0];
+        const text = platEntries[0].text;
+        const platform_captions: Partial<Record<Platform, string>> = {};
+        for (const e of platEntries) platform_captions[e.key] = e.text;
+        const whenRaw = (d as any).publish_at || (d as any).scheduled_date || (d as any).scheduled_at || (d as any).publishAt;
+        const when = whenRaw ? new Date(whenRaw) : new Date();
         const yyyy = when.getFullYear();
         const mm = String(when.getMonth() + 1).padStart(2, "0");
         const dd = String(when.getDate()).padStart(2, "0");
@@ -956,6 +982,7 @@ export default function CalendarPage() {
           updated_at: new Date().toISOString(),
         });
       }
+      console.log(`[Sync] Imported ${imported.length} posts:`, imported);
       const finalPosts = [...updated, ...imported];
       setAllPosts(finalPosts);
       await savePosts(finalPosts);
