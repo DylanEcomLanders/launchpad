@@ -350,10 +350,14 @@ export default function CalendarPage() {
   const load = useCallback(async () => {
     setLoading(true);
     const data = await getPosts();
-    // Migrate old posts without creator field
+    // Migrate old posts: ensure creator + always target X + LinkedIn by default
     let cleaned = data.map(p => ({
       ...p,
       creator: p.creator || ("ajay" as Creator),
+      platforms:
+        Array.isArray(p.platforms) && p.platforms.length > 0
+          ? (Array.from(new Set([...p.platforms, "x", "linkedin"])) as Platform[])
+          : (["x", "linkedin"] as Platform[]),
     }));
 
     // Enforce max 3 draft posts per day per creator — discard extras
@@ -370,8 +374,11 @@ export default function CalendarPage() {
       if (draftCount[key] <= 3) keep.push(p);
     }
 
-    // Save if anything was cleaned up
-    if (keep.length !== data.length || data.some(p => !p.creator)) {
+    // Save if anything was cleaned up or backfilled
+    const needsBackfill = data.some(
+      p => !p.creator || !Array.isArray(p.platforms) || !p.platforms.includes("x") || !p.platforms.includes("linkedin")
+    );
+    if (keep.length !== data.length || needsBackfill) {
       await savePosts(keep);
     }
     setAllPosts(keep);
