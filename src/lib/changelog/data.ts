@@ -68,6 +68,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "fixed", text: "Voice Profile doc was being ignored — captions felt the same regardless of upload because the hardcoded base prompt (Dylan's example tweets, banned phrases) was always prepended. Now the uploaded doc fully replaces the base prompt and is the single source of truth for tone and structure" },
       { type: "fixed", text: "Generating LinkedIn captions no longer wipes the X caption you've already written — Generate now only fetches variants for the active platform tab and leaves the other one untouched" },
       { type: "improved", text: "Caption model now sees the uploaded image again as supporting visual context (not the source of truth) — image informs the post, the idea/brief still drives it" },
+      { type: "improved", text: "Studio shows X and LinkedIn captions stacked side-by-side instead of platform tabs. One Generate fills both from the same idea + image. Each caption has its own Regenerate button. Content creation in one screen, no tab switching" },
     ],
   },
   {

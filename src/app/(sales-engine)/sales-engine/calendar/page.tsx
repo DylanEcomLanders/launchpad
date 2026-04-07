@@ -544,12 +544,9 @@ export default function CalendarPage() {
     setSaving(true);
     const now = new Date().toISOString();
 
-    // Merge current textarea caption into draftCaptions before saving
-    const currentPlat = studioPost.platform as Platform;
+    // Both X and LinkedIn captions live in draftCaptions now.
     const mergedCaptions: Record<string, string> = { ...draftCaptions };
-    if (currentPlat && studioPost.caption) {
-      mergedCaptions[currentPlat] = studioPost.caption;
-    }
+    const fallbackCaption = mergedCaptions.x || mergedCaptions.linkedin || studioPost.caption || "";
 
     const post: ContentPost = {
       id: studioPost.id || uuid(),
@@ -560,7 +557,7 @@ export default function CalendarPage() {
       content_type: studioPost.content_type || "educational",
       post_format: studioPost.post_format || "text",
       angle: studioPost.angle || "",
-      caption: studioPost.caption || "",
+      caption: fallbackCaption,
       platform_captions: mergedCaptions as Record<Platform, string>,
       status: "draft",
       scheduled_date: studioPost.scheduled_date!,
@@ -873,15 +870,13 @@ export default function CalendarPage() {
   }
 
   async function generateCaptions(overrides?: { imageData?: string; targetPlatform?: Platform }) {
-    // Only generate for the active platform tab — preserve any manually written
-    // captions on the other platform. User can click Generate again on the other
-    // tab when ready.
-    const activePlatform: Platform =
-      overrides?.targetPlatform ||
-      (studioPost.platform as Platform) ||
-      (studioPost.platforms?.[0] as Platform) ||
-      "x";
-    const postPlatforms: Platform[] = [activePlatform];
+    // Default: generate for ALL platforms on the post in one call.
+    // Pass targetPlatform to regenerate just one platform (per-section button).
+    const postPlatforms: Platform[] = overrides?.targetPlatform
+      ? [overrides.targetPlatform]
+      : ((studioPost.platforms && studioPost.platforms.length > 0
+          ? studioPost.platforms
+          : ["x", "linkedin"]) as Platform[]);
     if (!studioPost.content_type) return;
     setCaptionLoading(true);
     setCaptionError("");
@@ -913,21 +908,30 @@ export default function CalendarPage() {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
-      // Merge new platform's variants into existing cache — don't wipe others.
+      // Merge new variants into platformCaptions cache. Auto-pick variant 0
+      // for each generated platform into draftCaptions so both textareas fill.
       if (data.variants) {
         setPlatformCaptions(prev => {
           const next = { ...prev };
+          for (const v of data.variants) next[v.platform as Platform] = v.captions;
+          return next;
+        });
+        setDraftCaptions(prev => {
+          const next = { ...prev };
           for (const v of data.variants) {
-            next[v.platform as Platform] = v.captions;
+            if (v.captions?.[0]) next[v.platform as Platform] = v.captions[0];
           }
           return next;
         });
-        setActiveCaptionPlatform(activePlatform);
-        const newCaptions = data.variants.find((v: any) => v.platform === activePlatform)?.captions || [];
-        setCaptions(newCaptions);
+        // Keep legacy single-caption state in sync with X (or first generated)
+        const firstPlat = (data.variants[0]?.platform as Platform) || postPlatforms[0];
+        const firstCap = data.variants.find((v: any) => v.platform === firstPlat)?.captions?.[0] || "";
+        if (firstCap) {
+          setStudioPost(prev => ({ ...prev, caption: prev.caption || firstCap }));
+        }
+        setCaptions([]);
       } else if (data.captions) {
         setCaptions(data.captions);
-        setPlatformCaptions(prev => ({ ...prev, [activePlatform]: data.captions }));
       }
     } catch (e: any) {
       setCaptionError(e.message || "Failed to generate captions");
@@ -1927,61 +1931,7 @@ export default function CalendarPage() {
               </button>
             </div>
 
-            {/* Platform tabs — always visible */}
-            {(() => {
-              const siblings = studioPost.group_id ? getGroupSiblings(studioPost.group_id) : [];
-              const hasSiblings = siblings.length > 1;
-              const platformOrder: Platform[] = ["x", "linkedin"];
-
-              // For linked posts: show platforms with siblings + any with draft captions
-              // For single posts: show all platforms as selector
-              const tabPlatforms = hasSiblings
-                ? platformOrder.filter(p => siblings.some(s => s.platform === p) || draftCaptions[p])
-                : platformOrder;
-
-              return (
-                <div className="shrink-0 border-b border-[#E5E5EA]">
-                  <div className="flex">
-                    {tabPlatforms.map(p => {
-                      const isActive = studioPost.platform === p;
-                      const sibling = siblings.find(s => s.platform === p);
-                      const hasDraft = !!draftCaptions[p];
-                      const isAdapting = adaptingPlatform === p;
-                      return (
-                        <button
-                          key={p}
-                          onClick={() => {
-                            if (hasSiblings && sibling) {
-                              switchToSibling(p);
-                            } else {
-                              handlePlatformSwitch(p);
-                            }
-                          }}
-                          className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2.5 text-[11px] font-semibold transition-colors border-b-2 ${
-                            isActive
-                              ? "border-[#1B1B1B] text-[#1B1B1B]"
-                              : "border-transparent text-[#B0B0B0] hover:text-[#555]"
-                          }`}
-                        >
-                          <span className={`size-2 rounded-full ${isAdapting ? "animate-pulse" : ""}`} style={{ backgroundColor: isActive ? platformColors[p] : hasDraft ? platformColors[p] + "80" : "#D4D4D4" }} />
-                          {platformLabels[p]}
-                          {hasSiblings && sibling && (
-                            <span className={`text-[8px] px-1 py-0.5 rounded-full ${
-                              isActive ? "bg-[#F3F3F5]" : "bg-[#EDEDEF]"
-                            }`}>
-                              {statusLabels[sibling.status]}
-                            </span>
-                          )}
-                          {!hasSiblings && hasDraft && !isActive && (
-                            <span className="size-1 rounded-full bg-emerald-400" />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })()}
+            {/* Platform tabs removed — both captions render side-by-side below */}
 
             {repurposeError && (
               <div className="shrink-0 px-5 py-2 bg-red-50 border-b border-red-100">
@@ -2104,71 +2054,59 @@ export default function CalendarPage() {
 
                 {captionError && <p className="text-[11px] text-red-500 mb-2">{captionError}</p>}
 
-                {/* Platform caption tabs (when multiple platforms selected and captions exist) */}
-                {/* Adapting indicator */}
-                {adaptingPlatform === studioPost.platform && (
-                  <div className="py-4 flex items-center justify-center gap-2">
-                    <ArrowPathIcon className="size-4 text-[#999] animate-spin" />
-                    <p className="text-xs text-[#999]">Adapting for {platformLabels[studioPost.platform || "x"]}...</p>
-                  </div>
-                )}
-
-                {/* Caption variants */}
-                {captions.length > 0 && adaptingPlatform !== studioPost.platform && (
-                  <div className="space-y-2 mb-3">
-                    <p className="text-[10px] font-semibold text-[#AAA] uppercase tracking-wider">Pick a variant</p>
-                    {captions.map((c, i) => (
-                      <button
-                        key={i}
-                        onClick={() => {
-                          setSelectedCaption(i);
-                          setStudioPost(prev => ({ ...prev, caption: c }));
-                          setAiGeneratedCaption(c);
-                          if (studioPost.platform) {
-                            setDraftCaptions(prev => ({ ...prev, [studioPost.platform!]: c }));
-                            if (!sourceCaptionForAdapt) setSourceCaptionForAdapt(c);
-                          }
+                {/* Two stacked caption blocks — X and LinkedIn — both filled by Generate */}
+                {(["x", "linkedin"] as Platform[]).map(plat => {
+                  const variants = platformCaptions[plat] || [];
+                  const value = draftCaptions[plat] || "";
+                  return (
+                    <div key={plat} className="mb-4 last:mb-0">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="size-2 rounded-full" style={{ backgroundColor: platformColors[plat] }} />
+                          <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider">{platformLabels[plat]} Caption</p>
+                        </div>
+                        <button
+                          onClick={() => generateCaptions({ targetPlatform: plat })}
+                          disabled={captionLoading || !studioPost.angle?.trim()}
+                          className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-[#7A7A7A] bg-[#F3F3F5] rounded-md hover:bg-[#EBEBEB] transition-colors disabled:opacity-50"
+                        >
+                          <SparklesIcon className="size-3" />
+                          {captionLoading ? "..." : "Regenerate"}
+                        </button>
+                      </div>
+                      {variants.length > 1 && (
+                        <div className="flex gap-1 mb-2">
+                          {variants.map((c, i) => {
+                            const isActive = value === c;
+                            return (
+                              <button
+                                key={i}
+                                onClick={() => setDraftCaptions(prev => ({ ...prev, [plat]: c }))}
+                                className={`flex-1 px-2 py-1 text-[9px] font-semibold rounded-md transition-colors ${
+                                  isActive ? "bg-[#1B1B1B] text-white" : "bg-[#F3F3F5] text-[#999] hover:bg-[#EBEBEB]"
+                                }`}
+                              >
+                                Variant {i + 1}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                      <textarea
+                        value={value}
+                        onChange={e => {
+                          const val = e.target.value;
+                          setDraftCaptions(prev => ({ ...prev, [plat]: val }));
+                          // Keep legacy single caption in sync with X for back-compat
+                          if (plat === "x") setStudioPost(prev => ({ ...prev, caption: val }));
                         }}
-                        className={`w-full text-left p-3 rounded-lg border transition-colors text-xs leading-relaxed whitespace-pre-wrap ${
-                          selectedCaption === i ? "border-[#1B1B1B] bg-[#F7F8FA]" : "border-[#E5E5EA] hover:bg-[#FAFAFA]"
-                        }`}
-                      >
-                        {selectedCaption === i && <span className="float-right ml-2"><CheckIcon className="size-3.5 text-emerald-500" /></span>}
-                        {c}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* Editable caption textarea */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider">Caption</p>
-                    {studioPost.caption && (
-                      <button
-                        onClick={() => generateCaptions()}
-                        disabled={captionLoading}
-                        className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-[#7A7A7A] bg-[#F3F3F5] rounded-md hover:bg-[#EBEBEB] transition-colors disabled:opacity-50"
-                      >
-                        <SparklesIcon className="size-3" />
-                        {captionLoading ? "..." : "Regenerate"}
-                      </button>
-                    )}
-                  </div>
-                  <textarea
-                    value={studioPost.caption || ""}
-                    onChange={e => {
-                      const val = e.target.value;
-                      setStudioPost(prev => ({ ...prev, caption: val }));
-                      if (studioPost.platform) {
-                        setDraftCaptions(prev => ({ ...prev, [studioPost.platform!]: val }));
-                      }
-                    }}
-                    placeholder="Write your caption..."
-                    className="w-full bg-[#F7F8FA] rounded-lg px-3 py-2.5 text-sm text-[#1B1B1B] leading-relaxed resize-none outline-none placeholder:text-[#CCC] border border-[#E5E5EA] focus:border-[#1B1B1B] transition-colors min-h-[80px]"
-                    rows={3}
-                  />
-                </div>
+                        placeholder={`${platformLabels[plat]} caption will appear here...`}
+                        className="w-full bg-[#F7F8FA] rounded-lg px-3 py-2.5 text-sm text-[#1B1B1B] leading-relaxed resize-none outline-none placeholder:text-[#CCC] border border-[#E5E5EA] focus:border-[#1B1B1B] transition-colors min-h-[100px] whitespace-pre-wrap"
+                        rows={4}
+                      />
+                    </div>
+                  );
+                })}
               </div>
 
               {/* ── 7. Schedule (date + time) ── */}
