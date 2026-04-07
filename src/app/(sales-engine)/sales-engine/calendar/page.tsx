@@ -473,7 +473,8 @@ export default function CalendarPage() {
 
   function openStudio(post?: ContentPost) {
     if (post) {
-      setStudioPost({ ...post, platforms: post.platforms || [post.platform] });
+      // Always default to both platforms — UI no longer lets you pick
+      setStudioPost({ ...post, platforms: post.platforms?.length ? post.platforms : ["x", "linkedin"] });
       setSelectedCaption(-1);
       setDraftCaptions(post.platform_captions || (post.caption ? { [post.platform]: post.caption } : {}));
       setDraftFormats(post.post_format ? { [post.platform]: post.post_format } : {});
@@ -1990,45 +1991,7 @@ export default function CalendarPage() {
 
             {/* ═══ UNIFIED POST EDITOR ═══ */}
             <div className="flex-1 overflow-y-auto">
-              {/* ── 1. Platforms (multi-select) ── */}
-              <div className="px-5 pt-4 pb-3 border-b border-[#F0F0F0]">
-                <div className="flex items-center gap-3">
-                  <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider shrink-0">Post to</p>
-                  <div className="flex gap-1.5">
-                    {(["x", "linkedin"] as Platform[]).map(p => {
-                      const platforms = (studioPost.platforms as Platform[]) || ["x", "linkedin"];
-                      const active = platforms.includes(p);
-                      return (
-                        <button
-                          key={p}
-                          onClick={() => {
-                            const current = (studioPost.platforms as Platform[]) || ["x", "linkedin"];
-                            const next = active
-                              ? current.filter(pp => pp !== p)
-                              : [...current, p];
-                            if (next.length === 0) return; // must have at least one
-                            setStudioPost(prev => ({ ...prev, platforms: next, platform: next[0] }));
-                            if (!next.includes(activeCaptionPlatform)) {
-                              setActiveCaptionPlatform(next[0]);
-                            }
-                          }}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-lg border transition-colors ${
-                            active
-                              ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                              : "border-[#E5E5EA] text-[#999] hover:bg-[#F3F3F5]"
-                          }`}
-                        >
-                          {active && <CheckIcon className="size-3" />}
-                          <span className="size-2 rounded-full" style={{ backgroundColor: platformColors[p] }} />
-                          {platformLabels[p]}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              {/* ── 2. Idea / Angle ── */}
+              {/* ── Idea / Angle ── */}
               <div className="px-5 pt-4 pb-4 border-b border-[#F0F0F0]">
                 <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider mb-2">Idea / Angle</p>
                 <textarea
@@ -2040,9 +2003,8 @@ export default function CalendarPage() {
                 />
               </div>
 
-              {/* ── 3. Format & Type (compact rows) ── */}
-              <div className="px-5 py-3 border-b border-[#F0F0F0] space-y-3">
-                {/* Format row */}
+              {/* ── Format ── */}
+              <div className="px-5 py-3 border-b border-[#F0F0F0]">
                 <div className="flex items-center justify-between">
                   <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider shrink-0">Format</p>
                   <div className="flex gap-1">
@@ -2067,27 +2029,6 @@ export default function CalendarPage() {
                   </div>
                 </div>
 
-                {/* Type row */}
-                <div className="flex items-center justify-between">
-                  <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider shrink-0">Type</p>
-                  <div className="flex gap-1">
-                    {(["educational", "social_proof", "personal", "promotional"] as ContentType[]).map(t => {
-                      const active = studioPost.content_type === t;
-                      return (
-                        <button
-                          key={t}
-                          onClick={() => setStudioPost(prev => ({ ...prev, content_type: t }))}
-                          className={`px-2.5 py-1.5 text-[10px] font-medium rounded-lg transition-colors ${
-                            active ? "text-white" : "text-[#999] hover:bg-[#F3F3F5]"
-                          }`}
-                          style={active ? { backgroundColor: contentTypeColors[t] } : {}}
-                        >
-                          {contentTypeLabels[t]}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
               </div>
 
               {/* ── 4. Image upload (only for image/article) ── */}
