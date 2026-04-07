@@ -644,13 +644,19 @@ export default function CalendarPage() {
       return;
     }
 
-    // Get future posts with captions
+    // Get future posts with captions that haven't already been scheduled to Typefully
     const now = new Date();
     const schedulable = weekPosts.filter(p => {
       if (!p.caption?.trim()) return false;
+      if (p.status === "scheduled") return false; // already sent — skip
       const postDate = new Date(`${p.scheduled_date}T${p.scheduled_time || "09:00"}:00`);
       return postDate > now;
     });
+
+    if (schedulable.length === 0) {
+      alert("No new posts to schedule. (Posts already sent to Typefully are skipped.)");
+      return;
+    }
 
     setTypefullyLoading(true);
     setTypefullyResult(null);
@@ -731,34 +737,49 @@ export default function CalendarPage() {
         const publishAt = new Date(`${p.scheduled_date}T${hh}:${mm}:00`).toISOString();
 
         for (const tp of targetPlats) {
-          try {
-            // Use platform-specific caption, fall back to main caption
-            const caption = p.platform_captions?.[tp as Platform] || p.caption;
-            console.log(`[Typefully] Creating draft for ${tp}: "${caption?.slice(0, 50)}..." media_id=${mediaIds[p.id] || "none"}`);
+          // Use platform-specific caption, fall back to main caption
+          const caption = p.platform_captions?.[tp as Platform] || p.caption;
+          const payload = {
+            action: "create",
+            social_set_id: socialSetId,
+            text: caption,
+            platform: tp,
+            publish_at: publishAt,
+            ...(mediaIds[p.id] ? { media_ids: [mediaIds[p.id]] } : {}),
+            ...(tp === "x" && autoPlugX ? { auto_plug_enabled: true } : {}),
+            ...(tp === "x" && autoRetweetX ? { auto_retweet_enabled: true } : {}),
+          };
 
-            const draftRes = await fetch("/api/typefully", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                action: "create",
-                social_set_id: socialSetId,
-                text: caption,
-                platform: tp,
-                publish_at: publishAt,
-                ...(mediaIds[p.id] ? { media_ids: [mediaIds[p.id]] } : {}),
-                ...(tp === "x" && autoPlugX ? { auto_plug_enabled: true } : {}),
-                ...(tp === "x" && autoRetweetX ? { auto_retweet_enabled: true } : {}),
-              }),
-            });
+          // Retry up to 3 times with backoff — flaky Typefully responses for X/LinkedIn
+          let lastError = "";
+          let success = false;
+          for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+              console.log(`[Typefully] Creating draft for ${tp} (attempt ${attempt}): "${caption?.slice(0, 50)}..."`);
+              const draftRes = await fetch("/api/typefully", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+              });
+              const draftData = await draftRes.json().catch(() => ({}));
+              console.log(`[Typefully] Draft response (${tp}, attempt ${attempt}):`, draftRes.status, draftData);
+              if (draftRes.ok) {
+                success = true;
+                break;
+              }
+              lastError = draftData.error || `HTTP ${draftRes.status}`;
+            } catch (e: any) {
+              lastError = e?.message || "Network error";
+            }
+            if (attempt < 3) await new Promise(r => setTimeout(r, 1000 * attempt));
+          }
 
-            const draftData = await draftRes.json();
-            console.log(`[Typefully] Draft response (${tp}):`, draftRes.status, draftData);
-            if (!draftRes.ok) throw new Error(draftData.error || `Draft creation failed for ${tp}`);
+          if (success) {
             successCount++;
-          } catch (e: any) {
+          } else {
             failCount++;
-            failedErrors.push(`${tp}: ${e.message || "Unknown error"}`);
-            console.error(`[Typefully] Draft error (${tp}):`, e);
+            failedErrors.push(`${tp} (post ${p.id.slice(0, 6)}): ${lastError}`);
+            console.error(`[Typefully] Draft failed after 3 attempts (${tp}):`, lastError);
           }
         }
       }
