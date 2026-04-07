@@ -173,28 +173,33 @@ export async function POST(req: NextRequest) {
 
       const userPrompt = `Write 3 caption variants for a ${platformName} post.
 
-Content type: ${contentType}
+${brief ? `Idea/angle: ${brief}` : ""}
 ${formatContext}
-${brief ? `Idea/context: ${brief}` : ""}
-${imageData ? "Use the attached image as context — describe what you see and write captions that complement the visual." : ""}
+${imageData ? "An image is attached as CONTEXT ONLY. Do NOT describe what's in it literally. Do NOT list the brands or elements you see. The image is the hook — the caption should make someone curious enough to look at it, not narrate it." : ""}
 
-LENGTH INSTRUCTIONS: ${lengthInstructions}
+LENGTH RULES: ${lengthInstructions}
 
-Each variant should take a different angle. NEVER list features or design elements as a horizontal list (e.g. "Outcome-driven headlines Social proof Benefit stacking" — this is the LinkedIn listicle voice we banned). If you list things, they go on separate lines as bullets.
+THE 3 VARIANTS MUST BE STRUCTURALLY DIFFERENT. Not 3 rewordings of the same post. Each takes a genuinely different shape:
 
-Output format — VERY IMPORTANT:
-Separate the 3 variants with the exact delimiter "===NEXT===" on its own line. Use REAL line breaks within each variant (press enter for new lines). Do NOT output JSON. Do NOT number them. Just plain text with line breaks, separated by ===NEXT===.
+Variant 1 — SHARP OPINION / CALL-OUT
+A confident take or mild provocation. Direct. No setup needed. Think: "Name one serious brand that uses whack template pages, i'll wait..." or "Thousands of pages later and we still do X." 2-4 lines max. Attitude over explanation.
 
-Example output structure:
-First variant text
-with real line breaks
-between thoughts
-===NEXT===
-Second variant text
-also with line breaks
-===NEXT===
-Third variant text
-same here`;
+Variant 2 — OBSERVATION / PATTERN
+Starts mid-thought, like continuing a conversation. "Been looking at a lot of PDPs this week and..." or "Same thing keeps coming up with health brands lately." Builds through specifics. Lands on a quiet, earned point. No drumroll.
+
+Variant 3 — BULLETED TACTICAL BREAKDOWN (only if the topic genuinely warrants a list — otherwise do a third distinct structure: a question-led post, or a counterintuitive one-liner with a single supporting sentence)
+If bulleted: one framing line, 3-6 dash bullets on their own lines, one closing line. Each bullet a real insight, not filler.
+
+HARD RULES:
+- Every variant must use ACTUAL line breaks (press enter, multiple newlines between thoughts). Not one paragraph blob.
+- Use proper punctuation — full stops, commas. Line breaks are in addition to punctuation, not instead of it.
+- No two variants should share more than one repeated keyword from the brief. If variant 1 says "FLO", variants 2 and 3 find a different angle that doesn't need to name it.
+- Never list features or design elements inline as a sentence.
+- Stop recycling the same connector words across variants ("actually", "generic", "properly", "genuinely").
+- Stop ending every post with a summary takeaway line. Sometimes just end on the last specific detail.
+
+Output format:
+Separate the 3 variants with "===NEXT===" on its own line. Plain text with real line breaks inside each variant. No JSON. No numbering. No meta-commentary.`;
 
       const userContent: Anthropic.Messages.ContentBlockParam[] = [];
 
@@ -222,6 +227,7 @@ same here`;
       const response = await client.messages.create({
         model: "claude-sonnet-4-20250514",
         max_tokens: 2000,
+        temperature: 1, // push structural variation between the 3 variants
         system: systemPrompt,
         messages: [{ role: "user", content: userContent }],
       });

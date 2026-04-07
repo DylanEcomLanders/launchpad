@@ -2170,7 +2170,7 @@ export default function CalendarPage() {
                             if (!sourceCaptionForAdapt) setSourceCaptionForAdapt(c);
                           }
                         }}
-                        className={`w-full text-left p-3 rounded-lg border transition-colors text-xs leading-relaxed ${
+                        className={`w-full text-left p-3 rounded-lg border transition-colors text-xs leading-relaxed whitespace-pre-wrap ${
                           selectedCaption === i ? "border-[#1B1B1B] bg-[#F7F8FA]" : "border-[#E5E5EA] hover:bg-[#FAFAFA]"
                         }`}
                       >

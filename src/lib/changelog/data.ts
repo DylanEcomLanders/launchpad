@@ -59,6 +59,8 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Post studio simplified — every post defaults to both X and LinkedIn (always repurposed). Removed the Post-To selector and Type selector. Just Format and Length now" },
       { type: "added", text: "Calendar Reset button — if you delete a draft in Typefully and want to reschedule from Launchpad, open the post and hit Reset to flip it back to draft status" },
       { type: "fixed", text: "Legacy posts scheduling to X only — existing posts are now auto-backfilled on load so every post targets both X and LinkedIn by default" },
+      { type: "fixed", text: "Caption variants rendering as a blob — the preview now uses whitespace-pre-wrap so line breaks actually show up instead of collapsing into one paragraph" },
+      { type: "improved", text: "Caption variants now forced to be structurally different — Sharp Opinion, Observation, Tactical Breakdown (or similar) instead of 3 rewordings of the same post. Image context is used as a hook, not literally described. Temperature bumped so variants genuinely diverge" },
     ],
   },
   {
