@@ -1022,6 +1022,23 @@ export default function CalendarPage() {
         const dd = String(when.getDate()).padStart(2, "0");
         const hh = String(when.getHours()).padStart(2, "0");
         const mi = String(when.getMinutes()).padStart(2, "0");
+        const scheduled_date = `${yyyy}-${mm}-${dd}`;
+        const scheduled_time = `${hh}:${mi}`;
+        // Merge into an existing imported post if same date+time+fuzzy text
+        // (Launchpad creates 1 Typefully draft per platform — we want them
+        // collapsed back into a single multi-platform post on sync.)
+        const mergeKey = `${scheduled_date}T${scheduled_time}|${(text || "").trim().slice(0, 40).toLowerCase()}`;
+        const existing = imported.find(ip =>
+          `${ip.scheduled_date}T${ip.scheduled_time}|${(ip.caption || "").trim().slice(0, 40).toLowerCase()}` === mergeKey
+        );
+        if (existing) {
+          const mergedPlats = Array.from(new Set([...(existing.platforms || []), ...validPlats])) as Platform[];
+          existing.platforms = mergedPlats;
+          existing.platform_captions = { ...(existing.platform_captions || {}), ...platform_captions };
+          existing.typefully_draft_ids = { ...(existing.typefully_draft_ids || {}) };
+          for (const pk of validPlats) existing.typefully_draft_ids[pk] = id;
+          continue;
+        }
         const typefully_draft_ids: Partial<Record<Platform, string>> = {};
         for (const pk of validPlats) typefully_draft_ids[pk] = id;
         imported.push({
@@ -1034,8 +1051,8 @@ export default function CalendarPage() {
           caption: text,
           platform_captions,
           status: (d.status === "scheduled" ? "scheduled" : "saved") as PostStatus,
-          scheduled_date: `${yyyy}-${mm}-${dd}`,
-          scheduled_time: `${hh}:${mi}`,
+          scheduled_date,
+          scheduled_time,
           typefully_draft_ids,
           analytics_score: 0,
           created_at: new Date().toISOString(),
