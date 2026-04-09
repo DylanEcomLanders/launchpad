@@ -58,6 +58,7 @@ const navSections: NavSection[] = [
     defaultOpen: true,
     items: [
       { label: "Pipeline", href: "/sales-engine/pipeline" },
+      { label: "Leads", href: "/sales-engine/leads" },
       { label: "Audits", href: "/sales-engine/audits" },
     ],
   },
