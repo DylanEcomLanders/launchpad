@@ -4,6 +4,7 @@ import { postSlackMessage } from "@/lib/slack-bot";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || "" });
 const MODEL = "claude-sonnet-4-5-20250929";
+const MAX_TOKENS = 64000;
 
 const SYSTEM_PROMPT = `You are Scout, an outreach research agent for Ecom Landers — a UK ecommerce CRO and landing page agency that has built 5,000+ landing pages for 500+ DTC brands.
 
@@ -92,18 +93,27 @@ export async function POST(req: Request) {
       try {
         const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || "" });
 
-        const userPrompt = `Find and research ${count} DTC brands in the "${niche}" niche that are likely doing £80K–£120K/month revenue. For each brand:
+        const userPrompt = `Find and research ${count} DTC brands in the "${niche}" niche that are likely doing £80K–£120K/month revenue.
 
-1. Search the web to discover brands in this niche
-2. Research their website, funnel structure, and post-click experience
-3. Find the decision-maker and their personal contact details
-4. Generate specific CRO observations and a personalised outreach hook
+IMPORTANT WORKFLOW — research and output ONE brand at a time:
+1. Search for DTC brands in this niche
+2. Pick one brand, research their site, funnel, and decision-maker
+3. Output the <lead> JSON immediately for that brand
+4. Then move to the next brand
+5. Repeat until you have ${count} brands
 
-Output each qualified lead as a JSON object wrapped in <lead> tags. Research thoroughly — use web search for every brand.`;
+Do NOT wait until you've researched all brands to output leads. Output each <lead> as soon as you've finished researching that brand. This is critical — output leads incrementally.
+
+For each brand:
+- Search their website to assess funnel quality and post-click experience
+- Search for the founder/CMO name and personal email (Companies House, LinkedIn, press)
+- Estimate revenue using at least 2 signals
+- Write specific CRO observations based on what you actually see
+- Write a personalised outreach hook scoped to post-click conversion`;
 
         const claudeStream = anthropic.messages.stream({
           model: MODEL,
-          max_tokens: 16000,
+          max_tokens: MAX_TOKENS,
           tools: [
             {
               type: "web_search_20250305" as any,
