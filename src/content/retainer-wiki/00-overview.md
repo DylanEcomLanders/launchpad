@@ -40,11 +40,23 @@ The anchor offer. Everything in Core, plus:
 
 The anchor makes Core feel accessible. Core is still premium — it's the full team — but compared to Pro it feels like the smart choice for brands not yet at 8 figures.
 
-The shift from deliverable to outcome means:
+### Sell to Outcome, Not Deliverables
+
+The retainer isn't a monthly page build — it's a share of recovered revenue. Frame it like this:
+
+- Brand doing £800K/mo
+- We get their site-wide CVR up 2%
+- That's £16K/mo in recovered revenue minimum
+- Retainer is £9K/mo — they're paying less than the value we create in month one
+
+The maths sells itself. Stop talking about "what's included" and start talking about what the CVR gap is costing them. The retainer pays for itself at a 0.1% lift — everything above that is pure ROI.
+
+This shift kills the common objections:
 - No more "how many pages do I get?" conversations
 - Value tied to revenue impact, not output volume
 - Stickier clients — they see compounding results, not isolated projects
 - Higher LTV — retainers run 6-12 months vs one-off 4-week builds
+- No price negotiation — the number is backed by their own data
 
 ## Target Client Profile
 

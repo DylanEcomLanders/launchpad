@@ -1,6 +1,29 @@
 # Delivery Framework
 
-## Monthly Rhythm
+## First 90 Days — The Conversion Roadmap
+
+The first 90 days follow a sequential 5-phase delivery, not a repeating monthly cycle. Each phase builds on the last. This is how we turn an audit into compounding results.
+
+### Phase 1: Discovery Audit
+Broad funnel review using public data + Call 1 intel. Score every layer of the conversion matrix. Identify the 3 biggest revenue leaks. This happens between Call 1 and Call 2 — it's what sells the retainer.
+
+### Phase 2: Specific Audit
+Once we have backend access (GA4, Shopify analytics, heatmaps), go deep. Validate or adjust the discovery scores with real data. This is where estimates become facts. Look at actual funnel drop-off rates, device-level conversion splits, and page-level performance.
+
+### Phase 3: Roadmap
+Prioritise the fixes: pages to build, offers to restructure, tests to run. Each item is a "conversion asset" — not a deliverable, but a revenue lever. Roadmap is sequenced by impact (ICE scoring), not by what's easiest or what the client wants first.
+
+### Phase 4: Design Brief per Conversion Asset → QA
+Every conversion asset gets a design brief (section-by-section breakdown, hypothesis, success metric). Build → client review → development → QA gate. Nothing goes live without passing QA.
+
+### Phase 5: Analytics Troubleshoot Roadmap per Asset
+After launch, set up tracking for each asset. Measure against the hypothesis. If it worked → iterate. If it didn't → diagnose why, test the alternative. This is the compounding engine — every asset feeds data back into the next cycle.
+
+> **Core system = main bottleneck.** If the pipeline (audit → score → roadmap → brief → build → measure) doesn't flow smoothly, everything stalls. This is what Launchpad automates.
+
+---
+
+## Ongoing Monthly Rhythm (Post-90 Days)
 
 ### Week 1: Strategy & Briefs
 - Review last month's test results and analytics

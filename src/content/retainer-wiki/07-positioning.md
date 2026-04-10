@@ -4,6 +4,20 @@
 
 "Ecom Landers is the post-click conversion engine for DTC brands. We don't build pages — we build revenue."
 
+## The Revenue Anchor
+
+Stop selling what's included. Sell what the CVR gap is costing them.
+
+> Brand doing £800K/mo. We lift site-wide CVR by 2%. That's £16K/mo in recovered revenue. The retainer is £9K. They're paying half the value we deliver — and it compounds every month.
+
+Frame every pricing conversation around this maths:
+- **Their number** — monthly revenue and traffic (from SimilarWeb or Call 1)
+- **The gap** — current CVR vs benchmark (from conversion matrix)
+- **The cost of doing nothing** — revenue gap × 12 months
+- **The retainer** — a fraction of the recovered revenue
+
+The retainer isn't an expense. It's the cheapest way to capture revenue they're already earning but losing at checkout.
+
 ## What We Say vs What We Don't
 
 | Say | Don't Say |
@@ -36,6 +50,18 @@ When sharing results:
 - Close with the method: "3 landing page builds + checkout optimisation"
 - Never name the client unless they've approved it
 
+## The Vendor-Jumping Problem
+
+Most brands in our target range have used 2-3 agencies or freelancers in the last 18 months. Each time they switch:
+- New onboarding, new context dump, new learning curve
+- Previous work gets abandoned or half-implemented
+- No compounding — every project starts from scratch
+- They lose momentum at every new engagement
+
+This is the single biggest argument for a retainer. We don't restart. We compound. Month 3 builds on Month 2. The data from the first test informs the next build. A new vendor can't do that — they're always starting cold.
+
+**Use this on Call 2 when they say "we've used agencies before."** It reframes the retainer as the solution to a problem they already feel.
+
 ## Content Angles That Sell Retainers
 
 1. "Your ads aren't the problem. Your landing pages are."
@@ -43,3 +69,5 @@ When sharing results:
 3. "You wouldn't hire a doctor for one appointment."
 4. "The brands scaling past 8 figures aren't testing button colours."
 5. "Your post-click experience is either making money or losing it. There's no neutral."
+6. "Every time you switch vendors, you lose 3 months of momentum."
+7. "The retainer pays for itself at a 0.1% CVR lift. We average 1-2% in 90 days."

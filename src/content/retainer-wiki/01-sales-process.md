@@ -16,12 +16,15 @@
 - "If your post-click experience is already optimised, we'll tell you"
 - "We're not pitching — we're diagnosing"
 
-### Between Calls: The Research Phase
-This is where the toolkit does the heavy lifting.
+### Between Calls: The Automated Research Pipeline
+This is where the system does the heavy lifting — not you. The goal is Call 2 prep in under 30 minutes.
 
-1. **Conversion Matrix** — Run their URL through the tool, score each funnel layer
-2. **Revenue Projector** — Calculate OTE based on their traffic × CVR gap × AOV
-3. **Slide Deck Generator** — Auto-build a branded deck with their numbers
+1. **Scrape public metrics** — BuiltWith (tech stack, platform, apps) + SimilarWeb (traffic estimate, sources, device split). Scout can automate this.
+2. **Run through the Conversion Matrix** — Score each funnel layer using maths and observation. The matrix generates the audit scores and identifies levers.
+3. **Calculate OTE revenue hypothesis** — Plug traffic × CVR gap × AOV into the Revenue Projector. This gives you the revenue gap and breakeven number.
+4. **Generate the deck** — Slide Deck Generator auto-builds a branded presentation with their scores, gap, roadmap, and pricing. Ready to present.
+
+> The end state: scrape → score → calculate → generate deck. All before you get on Call 2. The prospect sees a level of preparation no other agency delivers.
 
 ### Call 2: The Discovery Call
 **Goal:** Present findings, show revenue gap, close.
@@ -54,3 +57,4 @@ Before Call 2, gather:
 | "It's too expensive" | "Your current CVR gap is costing you £X/mo in lost revenue. The retainer is a fraction of that." |
 | "We want to see results first" | "That's exactly what the first 90 days deliver. Audit, roadmap, first builds, first tests. If the numbers don't move, we'll have an honest conversation." |
 | "Can we start smaller?" | "We can — but a half-effort gets half-results. The reason this works is we own the full post-click experience, not just one page." |
+| "We've used agencies before" | "That's exactly the problem. Every time you switch vendors you lose momentum — new onboarding, new context, back to zero. A retainer means we compound, not restart. The visibility gap from jumping between vendors is what's killing your progress." |
