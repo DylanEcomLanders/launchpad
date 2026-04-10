@@ -60,7 +60,6 @@ const navSections: NavSection[] = [
       { label: "Pipeline", href: "/sales-engine/pipeline" },
       { label: "Leads", href: "/sales-engine/leads" },
       { label: "Scout", href: "/sales-engine/scout" },
-      { label: "Deck Builder", href: "/sales-engine/deck-builder" },
       { label: "Audits", href: "/sales-engine/audits" },
     ],
   },
