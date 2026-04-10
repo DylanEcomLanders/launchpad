@@ -47,6 +47,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "removed", text: "Voice Profile UI panel on the calendar — the backend ignores it now that TOV v3 is hardcoded as the single source of truth. Removed the gear button and slide-in panel to stop the confusion" },
       { type: "added", text: "Leads database under Pipeline — minimal table (Name, Brand, URL, Rev Estimate, Status). Inline editing, status filter tabs (New / Reached Out / Responded), click-to-edit rows" },
       { type: "added", text: "Scout — native lead discovery agent. Pick a niche, hit Run, and it web-searches for DTC brands in the £80-120K/mo range, researches funnels, finds decision-makers, and saves qualified leads directly to Leads. Live progress feed, Slack reporting, duplicate detection. Same quality as the Claude Agent version at a fraction of the cost" },
+      { type: "added", text: "Retainer Wiki — command centre for the retainer offer. Docs + toolkit in one place: offer tiers, 2-call sales process, onboarding framework, delivery cadence, conversion matrix, revenue projector, slide deck generator, positioning guide. Sidebar nav with Process / Toolkit / Reference sections, full-text search, and tool links" },
     ],
   },
   {
