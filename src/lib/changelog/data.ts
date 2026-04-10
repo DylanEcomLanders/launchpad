@@ -46,6 +46,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Per-platform Typefully draft IDs stored on each post — scheduling now skips any platform that already has a live draft so you can't double-schedule X or LinkedIn for the same post" },
       { type: "removed", text: "Voice Profile UI panel on the calendar — the backend ignores it now that TOV v3 is hardcoded as the single source of truth. Removed the gear button and slide-in panel to stop the confusion" },
       { type: "added", text: "Leads database under Pipeline — minimal table (Name, Brand, URL, Rev Estimate, Status). Inline editing, status filter tabs (New / Reached Out / Responded), click-to-edit rows" },
+      { type: "added", text: "Scout — native lead discovery agent. Pick a niche, hit Run, and it web-searches for DTC brands in the £80-120K/mo range, researches funnels, finds decision-makers, and saves qualified leads directly to Leads. Live progress feed, Slack reporting, duplicate detection. Same quality as the Claude Agent version at a fraction of the cost" },
     ],
   },
   {
