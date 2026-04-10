@@ -82,6 +82,7 @@ const navSections: NavSection[] = [
       { label: "Revenue Projector", href: "/tools/retainer-wiki?section=05-revenue-projector" },
       { label: "Slide Deck", href: "/tools/retainer-wiki?section=06-slide-deck" },
       { label: "Positioning", href: "/tools/retainer-wiki?section=07-positioning" },
+      { label: "FAQ", href: "/tools/retainer-wiki?section=08-faq" },
     ],
   },
   {

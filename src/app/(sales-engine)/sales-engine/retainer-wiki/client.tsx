@@ -16,6 +16,7 @@ import {
   MagnifyingGlassIcon,
   ChevronRightIcon,
   WrenchScrewdriverIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 
 interface WikiModule {
@@ -37,6 +38,7 @@ const iconMap: Record<string, React.ReactNode> = {
   calculator: <CalculatorIcon className="size-4" />,
   presentation: <PresentationChartBarIcon className="size-4" />,
   megaphone: <MegaphoneIcon className="size-4" />,
+  chat: <ChatBubbleLeftRightIcon className="size-4" />,
 };
 
 const categoryLabels: Record<string, string> = {

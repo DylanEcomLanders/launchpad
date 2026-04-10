@@ -66,6 +66,12 @@ const moduleMap: Record<
     icon: "megaphone",
     category: "reference",
   },
+  "08-faq": {
+    title: "FAQ — Client & Internal",
+    shortTitle: "FAQ",
+    icon: "chat",
+    category: "reference",
+  },
 };
 
 export function getWikiModule(slug: string): WikiModule | null {
