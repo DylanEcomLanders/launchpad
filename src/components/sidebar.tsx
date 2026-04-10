@@ -70,6 +70,21 @@ const navSections: NavSection[] = [
     ],
   },
   {
+    title: "Retainer Wiki",
+    icon: <RocketLaunchIcon className="size-4" />,
+    defaultOpen: true,
+    items: [
+      { label: "Overview & Offers", href: "/tools/retainer-wiki" },
+      { label: "Sales Process", href: "/tools/retainer-wiki?section=01-sales-process" },
+      { label: "Onboarding", href: "/tools/retainer-wiki?section=02-onboarding" },
+      { label: "Delivery", href: "/tools/retainer-wiki?section=03-delivery" },
+      { label: "Conversion Matrix", href: "/tools/retainer-wiki?section=04-conversion-matrix" },
+      { label: "Revenue Projector", href: "/tools/retainer-wiki?section=05-revenue-projector" },
+      { label: "Slide Deck", href: "/tools/retainer-wiki?section=06-slide-deck" },
+      { label: "Positioning", href: "/tools/retainer-wiki?section=07-positioning" },
+    ],
+  },
+  {
     title: "CRO Lab (WIP)",
     icon: <BeakerIcon className="size-4" />,
     defaultOpen: false,

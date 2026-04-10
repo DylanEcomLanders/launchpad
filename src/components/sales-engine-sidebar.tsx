@@ -77,7 +77,6 @@ const navSections: NavSection[] = [
     icon: <svg className="size-4" viewBox="0 0 20 20" fill="currentColor"><path d="M13 4.5a2.5 2.5 0 11.702 2.98L10.168 11H14a.5.5 0 010 1H5a.5.5 0 010-1h3.832l-3.534-3.52A2.5 2.5 0 1110 5.5a.5.5 0 01-.16.133L13.268 9H10l3-4.5z" /></svg>,
     defaultOpen: true,
     items: [
-      { label: "Retainer Wiki", href: "/sales-engine/retainer-wiki" },
       { label: "Referrals", href: "/sales-engine/resources" },
     ],
   },
