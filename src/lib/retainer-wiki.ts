@@ -59,7 +59,6 @@ const moduleMap: Record<
     shortTitle: "Slide Deck",
     icon: "presentation",
     category: "toolkit",
-    toolHref: "/tools/deck-builder",
   },
   "07-positioning": {
     title: "Positioning & Language Guide",

@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Link from "next/link";
+import { DeckBuilderInline } from "@/components/deck-builder-inline";
 import {
   MapIcon,
   PhoneIcon,
@@ -163,8 +164,9 @@ export default function RetainerWikiClient({ modules }: { modules: WikiModule[] 
         {/* Content */}
         <main className="flex-1 overflow-y-auto px-6 md:px-12 py-8">
           <div className="max-w-3xl mx-auto">
-            {/* Tool link banner */}
-            {active.toolHref && (
+            {/* Inline tools */}
+            {active.slug === "06-slide-deck" && <DeckBuilderInline />}
+            {active.toolHref && active.slug !== "06-slide-deck" && (
               <Link
                 href={active.toolHref}
                 className="flex items-center gap-2 px-4 py-2.5 mb-6 bg-[#F8F8F8] border border-[#E5E5EA] rounded-lg text-xs text-[#666] hover:bg-[#F0F0F0] hover:text-[#1B1B1B] transition-colors"
