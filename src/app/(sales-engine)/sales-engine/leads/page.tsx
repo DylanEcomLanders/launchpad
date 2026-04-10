@@ -19,7 +19,12 @@ export default function LeadsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     const data = await getProspects();
-    setProspects(data.sort((a, b) => b.created_at.localeCompare(a.created_at)));
+    setProspects(data.sort((a, b) => {
+      // Priority leads first, then by created_at desc
+      if (a.priority_flag && !b.priority_flag) return -1;
+      if (!a.priority_flag && b.priority_flag) return 1;
+      return b.created_at.localeCompare(a.created_at);
+    }));
     setLoading(false);
   }, []);
 
@@ -138,10 +143,12 @@ export default function LeadsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[#F0F0F0]">
+                  <th className="text-left py-3 px-3 text-xs font-medium text-[#999] uppercase tracking-wider w-5"></th>
                   <th className="text-left py-3 px-3 text-xs font-medium text-[#999] uppercase tracking-wider">Name</th>
                   <th className="text-left py-3 px-3 text-xs font-medium text-[#999] uppercase tracking-wider">Brand</th>
                   <th className="text-left py-3 px-3 text-xs font-medium text-[#999] uppercase tracking-wider">URL</th>
-                  <th className="text-left py-3 px-3 text-xs font-medium text-[#999] uppercase tracking-wider">Rev Estimate</th>
+                  <th className="text-left py-3 px-3 text-xs font-medium text-[#999] uppercase tracking-wider">Rev</th>
+                  <th className="text-left py-3 px-3 text-xs font-medium text-[#999] uppercase tracking-wider">Email</th>
                   <th className="text-left py-3 px-3 text-xs font-medium text-[#999] uppercase tracking-wider">Status</th>
                   <th className="w-10"></th>
                 </tr>
@@ -156,6 +163,10 @@ export default function LeadsPage() {
                       className="border-b border-[#F8F8F8] hover:bg-[#FAFAFA] transition-colors cursor-pointer"
                       onClick={() => { if (!isEditing) setEditingId(p.id); }}
                     >
+                      {/* Priority flag */}
+                      <td className="py-2.5 px-1 text-center">
+                        {p.priority_flag && <span className="inline-block size-2 rounded-full bg-amber-400" title="Priority" />}
+                      </td>
                       <td className="py-2.5 px-3">
                         {isEditing ? (
                           <input
@@ -227,6 +238,19 @@ export default function LeadsPage() {
                           <span className={p.rev_estimate ? "text-[#1B1B1B]" : "text-[#CCC]"}>
                             {p.rev_estimate || "---"}
                           </span>
+                        )}
+                      </td>
+                      <td className="py-2.5 px-3">
+                        {p.email ? (
+                          <a
+                            href={`mailto:${p.email}`}
+                            onClick={e => e.stopPropagation()}
+                            className="text-xs text-blue-600 hover:underline truncate block max-w-[180px]"
+                          >
+                            {p.email}
+                          </a>
+                        ) : (
+                          <span className="text-[#CCC] text-xs">---</span>
                         )}
                       </td>
                       <td className="py-2.5 px-3">
