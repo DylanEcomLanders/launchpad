@@ -37,6 +37,16 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-30",
+    date: "10 Apr 2026",
+    version: "0.25.0",
+    title: "Deck Builder",
+    changes: [
+      { type: "added", text: "Deck Builder — generate branded HTML discovery decks with unique shareable URLs. Input brand name, traffic, CVR, AOV, conversion matrix scores, priorities, and pricing. Outputs a dark-themed 8-slide presentation: Cover, Problem, Funnel Analysis, Revenue Gap, 90-Day Roadmap, How We Work, The Offer, Next Steps" },
+      { type: "added", text: "Public deck viewer at /deck/[id] — clients see an animated slide deck with score bars, revenue gap calculations, two-tier pricing, and navigation dots. No login required" },
+    ],
+  },
+  {
     id: "cl-29",
     date: "7 Apr 2026",
     version: "0.24.0",
