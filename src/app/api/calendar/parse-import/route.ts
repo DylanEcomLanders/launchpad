@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { extractText } from "unpdf";
 
 /**
  * POST /api/calendar/parse-import
- * Accepts a text or PDF file upload and splits it into individual post captions.
+ * Accepts a text file upload and splits it into individual post captions.
  * Preferred: [POST] label on its own line before each caption.
  * Also supports: "---" or "###" on its own line, or triple newline.
+ *
+ * PDF parsing is handled client-side via pdfjs-dist CDN.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -13,27 +14,7 @@ export async function POST(req: NextRequest) {
     const file = formData.get("file") as File | null;
     if (!file) return NextResponse.json({ error: "No file" }, { status: 400 });
 
-    let text = "";
-
-    if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
-      const buf = await file.arrayBuffer();
-      try {
-        const result = await extractText(new Uint8Array(buf), { mergePages: true });
-        text = String(result.text ?? "");
-      } catch (e) {
-        console.error("PDF extraction error:", e);
-        return NextResponse.json({
-          error: "Could not extract text from PDF. Try exporting as .txt instead.",
-        }, { status: 400 });
-      }
-      if (!text.trim()) {
-        return NextResponse.json({
-          error: "PDF appears to be empty or image-only. Export as .txt instead.",
-        }, { status: 400 });
-      }
-    } else {
-      text = await file.text();
-    }
+    const text = await file.text();
 
     // Split into posts by delimiter — check formats in priority order
     let posts: string[];
@@ -46,17 +27,14 @@ export async function POST(req: NextRequest) {
     } else if (text.includes("\n###\n") || text.includes("\r\n###\r\n")) {
       posts = text.split(/\r?\n###\r?\n/);
     } else if (text.includes("\n\n\n")) {
-      // Triple newline separator
       posts = text.split(/\n\n\n+/);
     } else {
-      // Fallback: double newline (treat each paragraph as a post)
       posts = text.split(/\n\n+/);
     }
 
-    // Clean up
     const cleaned = posts
       .map(p => p.trim())
-      .filter(p => p.length > 10); // skip tiny fragments
+      .filter(p => p.length > 10);
 
     return NextResponse.json({ posts: cleaned, count: cleaned.length });
   } catch (err) {

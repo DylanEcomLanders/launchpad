@@ -1387,29 +1387,46 @@ export default function CalendarPage() {
     return posts.map(p => p.trim()).filter(p => p.length > 10);
   }
 
+  async function extractPdfText(file: File): Promise<string> {
+    // Load pdfjs-dist from CDN (client-side only — avoids Vercel serverless issues)
+    const PDFJS_CDN = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs";
+    const WORKER_CDN = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs";
+    const pdfjsLib = await import(/* webpackIgnore: true */ PDFJS_CDN);
+    pdfjsLib.GlobalWorkerOptions.workerSrc = WORKER_CDN;
+
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+    const pages: string[] = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const pageText = content.items.map((item: any) => item.str || "").join(" ");
+      pages.push(pageText);
+    }
+    return pages.join("\n");
+  }
+
   async function handleParseTextFile(file: File) {
     setBulkParsing(true);
     setBulkTextFile(file);
     try {
       const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+      let text: string;
       if (isPdf) {
-        // PDFs go through the API route for proper extraction
-        const fd = new FormData();
-        fd.append("file", file);
-        const res = await fetch("/api/calendar/parse-import", { method: "POST", body: fd });
-        const data = await res.json();
-        if (!res.ok) {
-          alert(data.error || "Failed to parse PDF");
+        // Extract PDF text client-side via pdfjs-dist CDN
+        text = await extractPdfText(file);
+        if (!text.trim()) {
+          alert("PDF appears to be empty or image-only. Try exporting as .txt instead.");
           setBulkParsedCaptions([]);
           return;
         }
-        setBulkParsedCaptions(data.posts || []);
       } else {
-        // .txt — parse locally
-        const text = await file.text();
-        setBulkParsedCaptions(parseTextLocally(text));
+        text = await file.text();
       }
-    } catch {
+      setBulkParsedCaptions(parseTextLocally(text));
+    } catch (e) {
+      console.error("Parse error:", e);
       alert("Failed to parse file");
     } finally {
       setBulkParsing(false);

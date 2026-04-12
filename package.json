@@ -29,8 +29,7 @@
     "recharts": "^3.8.0",
     "remark-gfm": "^4.0.1",
     "resend": "^6.9.3",
-    "sharp": "^0.34.5",
-    "unpdf": "^1.4.0"
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
