@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-// Use the inner module to avoid pdf-parse's test-file-loading index.js
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require("pdf-parse/lib/pdf-parse");
+import { extractText } from "unpdf";
 
 /**
  * POST /api/calendar/parse-import
@@ -21,9 +18,10 @@ export async function POST(req: NextRequest) {
     if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
       const buf = await file.arrayBuffer();
       try {
-        const pdf = await pdfParse(Buffer.from(buf));
-        text = pdf.text || "";
-      } catch {
+        const result = await extractText(new Uint8Array(buf), { mergePages: true });
+        text = String(result.text ?? "");
+      } catch (e) {
+        console.error("PDF extraction error:", e);
         return NextResponse.json({
           error: "Could not extract text from PDF. Try exporting as .txt instead.",
         }, { status: 400 });
