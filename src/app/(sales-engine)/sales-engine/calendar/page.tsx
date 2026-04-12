@@ -1375,10 +1375,13 @@ export default function CalendarPage() {
     setBulkParsing(true);
     setBulkTextFile(file);
     try {
-      // Parse locally for .txt — split by delimiter
+      // Parse locally for .txt — split by delimiter (priority order)
       const text = await file.text();
       let posts: string[];
-      if (text.includes("\n---\n") || text.includes("\r\n---\r\n")) {
+      if (/^\[POST\s*\d*\]/im.test(text)) {
+        // Preferred: [POST] or [POST 1] labels
+        posts = text.split(/\r?\n?\[POST\s*\d*\]\r?\n?/i).filter(Boolean);
+      } else if (text.includes("\n---\n") || text.includes("\r\n---\r\n")) {
         posts = text.split(/\r?\n---\r?\n/);
       } else if (text.includes("\n###\n") || text.includes("\r\n###\r\n")) {
         posts = text.split(/\r?\n###\r?\n/);
@@ -2085,7 +2088,7 @@ export default function CalendarPage() {
               {bulkMode === "text" ? (
                 <>
                   <p className="text-[11px] text-[#7A7A7A] leading-relaxed mb-4">
-                    Upload a .txt file with your posts separated by <code className="bg-[#F0F0F0] px-1 rounded text-[10px]">---</code> on its own line. Each post becomes an X caption. You can then open each to add media and generate a LinkedIn version.
+                    Upload a .txt file with each post labelled <code className="bg-[#F0F0F0] px-1 rounded text-[10px]">[POST]</code> on its own line. Each post becomes a draft — add media and mark Ready to Post.
                   </p>
                   <label className="block mb-4">
                     <div className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-[#E0E0E0] rounded-xl cursor-pointer hover:border-[#1B1B1B] hover:bg-[#FAFAFA] transition-colors">
@@ -2100,7 +2103,7 @@ export default function CalendarPage() {
                       ) : (
                         <>
                           <span className="text-xs font-medium text-[#1B1B1B]">Upload .txt file</span>
-                          <span className="text-[10px] text-[#999]">Posts separated by --- on its own line</span>
+                          <span className="text-[10px] text-[#999]">Each post labelled with [POST] on its own line</span>
                         </>
                       )}
                     </div>

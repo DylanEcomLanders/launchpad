@@ -3,7 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 /**
  * POST /api/calendar/parse-import
  * Accepts a text or PDF file upload and splits it into individual post captions.
- * Delimiter: "---" on its own line, or "###" on its own line, or triple newline.
+ * Preferred: [POST] label on its own line before each caption.
+ * Also supports: "---" or "###" on its own line, or triple newline.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -52,10 +53,13 @@ export async function POST(req: NextRequest) {
       text = await file.text();
     }
 
-    // Split into posts by delimiter
+    // Split into posts by delimiter — check formats in priority order
     let posts: string[];
 
-    if (text.includes("\n---\n") || text.includes("\r\n---\r\n")) {
+    // Preferred: [POST] label on its own line (case-insensitive, optional number like [POST 1])
+    if (/^\[POST\s*\d*\]/im.test(text)) {
+      posts = text.split(/\r?\n?\[POST\s*\d*\]\r?\n?/i).filter(Boolean);
+    } else if (text.includes("\n---\n") || text.includes("\r\n---\r\n")) {
       posts = text.split(/\r?\n---\r?\n/);
     } else if (text.includes("\n###\n") || text.includes("\r\n###\r\n")) {
       posts = text.split(/\r?\n###\r?\n/);
