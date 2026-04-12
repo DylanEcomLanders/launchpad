@@ -44,6 +44,8 @@ const seedChangelog: ChangelogEntry[] = [
     changes: [
       { type: "added", text: "Deck Builder — generate branded HTML discovery decks with unique shareable URLs. Input brand name, traffic, CVR, AOV, conversion matrix scores, priorities, and pricing. Outputs a dark-themed 8-slide presentation: Cover, Problem, Funnel Analysis, Revenue Gap, 90-Day Roadmap, How We Work, The Offer, Next Steps" },
       { type: "added", text: "Public deck viewer at /deck/[id] — clients see an animated slide deck with score bars, revenue gap calculations, two-tier pricing, and navigation dots. No login required" },
+      { type: "added", text: "Bulk caption import — upload a .txt file of posts (separated by ---) and Launchpad auto-populates the calendar. 3 posts per day at optimal times, X caption pre-filled, both platforms targeted. Open each to add media and generate LinkedIn version" },
+      { type: "improved", text: "Bulk upload modal now has two modes: Import Captions (text file) and Upload Images. Default set to 3 posts per day for the Grok workflow" },
     ],
   },
   {

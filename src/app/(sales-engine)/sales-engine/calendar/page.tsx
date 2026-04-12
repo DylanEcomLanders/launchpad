@@ -300,9 +300,14 @@ export default function CalendarPage() {
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [bulkFiles, setBulkFiles] = useState<File[]>([]);
   const [bulkStartDate, setBulkStartDate] = useState<string>(toDateStr(new Date()));
-  const [bulkPostsPerDay, setBulkPostsPerDay] = useState<number>(1);
+  const [bulkPostsPerDay, setBulkPostsPerDay] = useState<number>(3);
   const [bulkSkipWeekends, setBulkSkipWeekends] = useState<boolean>(false);
   const [bulkLoading, setBulkLoading] = useState<boolean>(false);
+  // Text import (Grok flow)
+  const [bulkMode, setBulkMode] = useState<"images" | "text">("text");
+  const [bulkTextFile, setBulkTextFile] = useState<File | null>(null);
+  const [bulkParsedCaptions, setBulkParsedCaptions] = useState<string[]>([]);
+  const [bulkParsing, setBulkParsing] = useState(false);
 
   // Persist X automation toggles
   useEffect(() => {
@@ -1362,6 +1367,122 @@ export default function CalendarPage() {
     }
   }
 
+  // ── Bulk text import: parse file then create posts with captions ──
+  async function handleParseTextFile(file: File) {
+    setBulkParsing(true);
+    setBulkTextFile(file);
+    try {
+      // Parse locally for .txt — split by delimiter
+      const text = await file.text();
+      let posts: string[];
+      if (text.includes("\n---\n") || text.includes("\r\n---\r\n")) {
+        posts = text.split(/\r?\n---\r?\n/);
+      } else if (text.includes("\n###\n") || text.includes("\r\n###\r\n")) {
+        posts = text.split(/\r?\n###\r?\n/);
+      } else if (text.includes("\n\n\n")) {
+        posts = text.split(/\n\n\n+/);
+      } else {
+        posts = text.split(/\n\n+/);
+      }
+      const cleaned = posts.map(p => p.trim()).filter(p => p.length > 10);
+      setBulkParsedCaptions(cleaned);
+    } catch {
+      alert("Failed to parse file");
+    } finally {
+      setBulkParsing(false);
+    }
+  }
+
+  async function runBulkTextImport() {
+    if (bulkParsedCaptions.length === 0) return;
+    setBulkLoading(true);
+    try {
+      const contentTypes: ContentType[] = ["educational", "social_proof", "personal", "promotional"];
+      const now = new Date();
+      const start = new Date(bulkStartDate + "T00:00:00");
+      if (start < new Date(now.toDateString())) start.setTime(new Date(now.toDateString()).getTime());
+
+      const posts: ContentPost[] = [];
+      const dayCursor = new Date(start);
+      let postsToday = 0;
+
+      function nextDay() {
+        dayCursor.setDate(dayCursor.getDate() + 1);
+        postsToday = 0;
+      }
+      function isWeekend(d: Date) { return d.getDay() === 0 || d.getDay() === 6; }
+      function pickTimeFor(dateStr: string, slotIdx: number): string {
+        const dow = new Date(dateStr + "T00:00:00").getDay();
+        const best = getBestTimes("x", dow);
+        if (best.length > 0) {
+          const t = best[slotIdx % best.length];
+          return t.time || `${t.hour.toString().padStart(2, "0")}:${(t.minute || 0).toString().padStart(2, "0")}`;
+        }
+        const fallback = ["08:45", "12:30", "17:15"];
+        return fallback[slotIdx % fallback.length];
+      }
+
+      // Pre-count existing posts per date
+      const existingByDate: Record<string, number> = {};
+      for (const ep of allPosts) {
+        if (ep.creator !== creator) continue;
+        existingByDate[ep.scheduled_date] = (existingByDate[ep.scheduled_date] || 0) + 1;
+      }
+
+      const nowIso = new Date().toISOString();
+      for (let i = 0; i < bulkParsedCaptions.length; i++) {
+        while (bulkSkipWeekends && isWeekend(dayCursor)) nextDay();
+        let dateStr = toDateStr(dayCursor);
+        const totalForDay = () => (existingByDate[dateStr] || 0) + postsToday;
+        while (totalForDay() >= bulkPostsPerDay) {
+          nextDay();
+          while (bulkSkipWeekends && isWeekend(dayCursor)) nextDay();
+          dateStr = toDateStr(dayCursor);
+        }
+        if (postsToday >= bulkPostsPerDay) {
+          nextDay();
+          while (bulkSkipWeekends && isWeekend(dayCursor)) nextDay();
+          dateStr = toDateStr(dayCursor);
+        }
+
+        const caption = bulkParsedCaptions[i];
+        const scheduledTime = pickTimeFor(dateStr, postsToday);
+
+        posts.push({
+          id: uuid(),
+          creator: creator,
+          platform: "x",
+          platforms: ["x", "linkedin"],
+          content_type: contentTypes[i % contentTypes.length],
+          post_format: "text",
+          angle: caption.split("\n")[0].slice(0, 80),
+          caption: caption,
+          platform_captions: { x: caption },
+          status: "saved",
+          scheduled_date: dateStr,
+          scheduled_time: scheduledTime,
+          analytics_score: getSlotScore("x", dayCursor.getDay(), parseInt(scheduledTime)),
+          created_at: nowIso,
+          updated_at: nowIso,
+        });
+        postsToday++;
+      }
+
+      const updated = [...allPosts, ...posts];
+      setAllPosts(updated);
+      await savePosts(updated);
+      setBulkParsedCaptions([]);
+      setBulkTextFile(null);
+      setShowBulkModal(false);
+      const days = Math.ceil(bulkParsedCaptions.length / bulkPostsPerDay);
+      alert(`Imported ${posts.length} posts across ${days} days. Open each to add media and generate LinkedIn captions.`);
+    } catch (e: any) {
+      alert(e?.message || "Bulk text import failed");
+    } finally {
+      setBulkLoading(false);
+    }
+  }
+
   function removeImageAt(idx: number) {
     setStudioPost(prev => {
       const list = prev.media_data_list || (prev.media_data ? [prev.media_data] : []);
@@ -1940,28 +2061,95 @@ export default function CalendarPage() {
                 </button>
               </div>
 
-              <p className="text-[11px] text-[#7A7A7A] leading-relaxed mb-4">
-                Drop up to 50 images. We&apos;ll create one draft post per image, spread across days, with content types rotated so you don&apos;t cluster the same kind back-to-back. Captions stay empty so you can fill them in after.
-              </p>
+              {/* Mode toggle */}
+              <div className="flex gap-1 mb-4 bg-[#F3F3F5] p-1 rounded-lg">
+                <button
+                  onClick={() => { setBulkMode("text"); setBulkFiles([]); }}
+                  className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${bulkMode === "text" ? "bg-white text-[#1B1B1B] shadow-sm" : "text-[#7A7A7A]"}`}
+                >
+                  <DocumentTextIcon className="size-3.5 inline mr-1 -mt-0.5" />
+                  Import captions
+                </button>
+                <button
+                  onClick={() => { setBulkMode("images"); setBulkParsedCaptions([]); setBulkTextFile(null); }}
+                  className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${bulkMode === "images" ? "bg-white text-[#1B1B1B] shadow-sm" : "text-[#7A7A7A]"}`}
+                >
+                  <PhotoIcon className="size-3.5 inline mr-1 -mt-0.5" />
+                  Upload images
+                </button>
+              </div>
 
-              {/* Drop zone */}
-              <label className="block mb-4">
-                <div className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-[#E0E0E0] rounded-xl cursor-pointer hover:border-[#1B1B1B] hover:bg-[#FAFAFA] transition-colors">
-                  <PhotoIcon className="size-7 text-[#CCC]" />
-                  <span className="text-xs font-medium text-[#1B1B1B]">{bulkFiles.length > 0 ? `${bulkFiles.length} image${bulkFiles.length === 1 ? "" : "s"} selected` : "Click or drop images"}</span>
-                  <span className="text-[10px] text-[#999]">Up to 50 · Max 5MB each</span>
-                </div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={e => {
-                    const files = Array.from(e.target.files || []).slice(0, 50);
-                    setBulkFiles(files);
-                  }}
-                />
-              </label>
+              {bulkMode === "text" ? (
+                <>
+                  <p className="text-[11px] text-[#7A7A7A] leading-relaxed mb-4">
+                    Upload a .txt file with your posts separated by <code className="bg-[#F0F0F0] px-1 rounded text-[10px]">---</code> on its own line. Each post becomes an X caption. You can then open each to add media and generate a LinkedIn version.
+                  </p>
+                  <label className="block mb-4">
+                    <div className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-[#E0E0E0] rounded-xl cursor-pointer hover:border-[#1B1B1B] hover:bg-[#FAFAFA] transition-colors">
+                      <DocumentTextIcon className="size-7 text-[#CCC]" />
+                      {bulkParsing ? (
+                        <span className="text-xs text-[#999]">Parsing...</span>
+                      ) : bulkParsedCaptions.length > 0 ? (
+                        <>
+                          <span className="text-xs font-medium text-[#1B1B1B]">{bulkParsedCaptions.length} posts found</span>
+                          <span className="text-[10px] text-[#999]">{bulkTextFile?.name}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-xs font-medium text-[#1B1B1B]">Upload .txt file</span>
+                          <span className="text-[10px] text-[#999]">Posts separated by --- on its own line</span>
+                        </>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      accept=".txt,.text,text/plain"
+                      className="hidden"
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (file) handleParseTextFile(file);
+                      }}
+                    />
+                  </label>
+                  {/* Preview first 3 */}
+                  {bulkParsedCaptions.length > 0 && (
+                    <div className="mb-4 space-y-2 max-h-40 overflow-y-auto">
+                      <p className="text-[10px] font-semibold text-[#999] uppercase tracking-wider">Preview</p>
+                      {bulkParsedCaptions.slice(0, 3).map((cap, i) => (
+                        <div key={i} className="px-3 py-2 bg-[#F7F8FA] rounded-lg text-[11px] text-[#444] whitespace-pre-wrap line-clamp-3">
+                          {cap}
+                        </div>
+                      ))}
+                      {bulkParsedCaptions.length > 3 && (
+                        <p className="text-[10px] text-[#999] text-center">+ {bulkParsedCaptions.length - 3} more</p>
+                      )}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <p className="text-[11px] text-[#7A7A7A] leading-relaxed mb-4">
+                    Drop up to 50 images. We&apos;ll create one draft post per image, spread across days. Captions stay empty so you can fill them in after.
+                  </p>
+                  <label className="block mb-4">
+                    <div className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-[#E0E0E0] rounded-xl cursor-pointer hover:border-[#1B1B1B] hover:bg-[#FAFAFA] transition-colors">
+                      <PhotoIcon className="size-7 text-[#CCC]" />
+                      <span className="text-xs font-medium text-[#1B1B1B]">{bulkFiles.length > 0 ? `${bulkFiles.length} image${bulkFiles.length === 1 ? "" : "s"} selected` : "Click or drop images"}</span>
+                      <span className="text-[10px] text-[#999]">Up to 50 · Max 5MB each</span>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={e => {
+                        const files = Array.from(e.target.files || []).slice(0, 50);
+                        setBulkFiles(files);
+                      }}
+                    />
+                  </label>
+                </>
+              )}
 
               {/* Settings */}
               <div className="space-y-3 mb-5">
@@ -2002,11 +2190,11 @@ export default function CalendarPage() {
               </div>
 
               {/* Preview summary */}
-              {bulkFiles.length > 0 && (
+              {(bulkMode === "text" ? bulkParsedCaptions.length > 0 : bulkFiles.length > 0) && (
                 <div className="px-3 py-2.5 bg-[#F7F8FA] rounded-lg mb-4">
                   <p className="text-[11px] text-[#1B1B1B]">
-                    <span className="font-semibold">{bulkFiles.length}</span> draft posts ·{" "}
-                    <span className="font-semibold">{Math.ceil(bulkFiles.length / bulkPostsPerDay)}</span>{" "}
+                    <span className="font-semibold">{bulkMode === "text" ? bulkParsedCaptions.length : bulkFiles.length}</span> posts ·{" "}
+                    <span className="font-semibold">{Math.ceil((bulkMode === "text" ? bulkParsedCaptions.length : bulkFiles.length) / bulkPostsPerDay)}</span>{" "}
                     {bulkSkipWeekends ? "weekdays" : "days"} starting {new Date(bulkStartDate + "T00:00:00").toLocaleDateString()}
                   </p>
                 </div>
@@ -2021,11 +2209,11 @@ export default function CalendarPage() {
                   Cancel
                 </button>
                 <button
-                  onClick={runBulkUpload}
-                  disabled={bulkLoading || bulkFiles.length === 0}
+                  onClick={bulkMode === "text" ? runBulkTextImport : runBulkUpload}
+                  disabled={bulkLoading || (bulkMode === "text" ? bulkParsedCaptions.length === 0 : bulkFiles.length === 0)}
                   className="flex-1 px-4 py-2.5 text-xs font-semibold text-white bg-[#1B1B1B] rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40"
                 >
-                  {bulkLoading ? "Creating..." : `Create ${bulkFiles.length || ""} draft${bulkFiles.length === 1 ? "" : "s"}`}
+                  {bulkLoading ? "Importing..." : `Import ${bulkMode === "text" ? bulkParsedCaptions.length : bulkFiles.length} post${(bulkMode === "text" ? bulkParsedCaptions.length : bulkFiles.length) === 1 ? "" : "s"}`}
                 </button>
               </div>
             </div>
