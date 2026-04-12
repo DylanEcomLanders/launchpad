@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-31",
+    date: "12 Apr 2026",
+    version: "0.25.1",
+    title: "Calendar Ready-to-Post Flow",
+    changes: [
+      { type: "improved", text: "New Ready to Post workflow — bulk import creates grey Draft posts, add media and mark Ready to Post (blue), then schedule only blue posts to Typefully. Scheduled posts show at 50% opacity (green)" },
+      { type: "improved", text: "Studio now has explicit Ready to Post toggle button — posts stay as drafts until you mark them ready. Save Draft keeps current status, Ready to Post turns post blue" },
+      { type: "improved", text: "Schedule button shows count of Ready to Post posts and only picks up blue posts. Drafts and already-scheduled posts are excluded from scheduling" },
+      { type: "improved", text: "Scheduled post cards render at 50% opacity in both month and week calendar views for clear visual hierarchy: Grey (draft) → Blue (ready) → Green 50% (scheduled)" },
+    ],
+  },
+  {
     id: "cl-30",
     date: "10 Apr 2026",
     version: "0.25.0",

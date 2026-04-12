@@ -87,7 +87,7 @@ export const statusColors: Record<PostStatus, string> = {
 
 export const statusLabels: Record<PostStatus, string> = {
   draft: "Draft",
-  saved: "Saved",
+  saved: "Ready to Post",
   scheduled: "Scheduled",
 };
 

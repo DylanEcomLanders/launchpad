@@ -109,14 +109,14 @@ const formatIcons: Record<PostFormat, typeof DocumentTextIcon> = {
   video: VideoCameraIcon,
 };
 
-function cardColors(status: PostStatus): { bg: string; text: string; dot: string } {
+function cardColors(status: PostStatus): { bg: string; text: string; dot: string; opacity: number } {
   switch (status) {
     case "scheduled":
-      return { bg: "#ECFDF5", text: "#059669", dot: "#10B981" }; // green
+      return { bg: "#ECFDF5", text: "#059669", dot: "#10B981", opacity: 0.5 }; // green, 50% opacity
     case "saved":
-      return { bg: "#EFF6FF", text: "#1D4ED8", dot: "#3B82F6" }; // blue
+      return { bg: "#EFF6FF", text: "#1D4ED8", dot: "#3B82F6", opacity: 1 }; // blue = Ready to Post
     default: // draft
-      return { bg: "#F3F3F5", text: "#7A7A7A", dot: "#94A3B8" }; // grey
+      return { bg: "#F3F3F5", text: "#7A7A7A", dot: "#94A3B8", opacity: 1 }; // grey
   }
 }
 
@@ -579,7 +579,9 @@ export default function CalendarPage() {
       // caption, mark as 'saved' (ready to schedule). Empty caption stays draft.
       status: studioPost.status === "scheduled"
         ? "scheduled"
-        : (fallbackCaption.trim() ? "saved" : "draft"),
+        : studioPost.status === "saved"
+          ? "saved"
+          : "draft",
       scheduled_date: studioPost.scheduled_date!,
       scheduled_time: studioPost.scheduled_time || "09:00",
       media_url: studioPost.media_url,
@@ -618,19 +620,20 @@ export default function CalendarPage() {
 
   // ── Typefully: Open platform picker ──
   function openTypefullyScheduler() {
-    const allSchedulable = weekPosts.filter(p => p.caption && p.caption.trim());
-    if (allSchedulable.length === 0) {
-      alert("No posts with captions to schedule. Write your captions first!");
+    // Only "Ready to Post" (saved) posts get scheduled
+    const readyPosts = weekPosts.filter(p => p.status === "saved" && p.caption?.trim());
+    if (readyPosts.length === 0) {
+      alert("No posts marked as Ready to Post. Mark posts as ready first (blue) before scheduling.");
       return;
     }
     // Filter out posts scheduled in the past
     const now = new Date();
-    const future = allSchedulable.filter(p => {
+    const future = readyPosts.filter(p => {
       const postDate = new Date(`${p.scheduled_date}T${p.scheduled_time || "09:00"}:00`);
       return postDate > now;
     });
     if (future.length === 0) {
-      alert("All posts are scheduled in the past. Move them to a future date first.");
+      alert("All Ready to Post posts are in the past. Move them to a future date first.");
       return;
     }
     setShowTypefullyModal(true);
@@ -655,17 +658,17 @@ export default function CalendarPage() {
       return;
     }
 
-    // Get future posts with captions that haven't already been scheduled to Typefully
+    // Only schedule posts marked as "Ready to Post" (status === "saved")
     const now = new Date();
     const schedulable = weekPosts.filter(p => {
       if (!p.caption?.trim()) return false;
-      if (p.status === "scheduled") return false; // already sent — skip
+      if (p.status !== "saved") return false; // only Ready to Post (blue) posts
       const postDate = new Date(`${p.scheduled_date}T${p.scheduled_time || "09:00"}:00`);
       return postDate > now;
     });
 
     if (schedulable.length === 0) {
-      alert("No new posts to schedule. (Posts already sent to Typefully are skipped.)");
+      alert("No Ready to Post posts found. Mark posts as ready (blue) before scheduling.");
       return;
     }
 
@@ -1458,7 +1461,7 @@ export default function CalendarPage() {
           angle: caption.split("\n")[0].slice(0, 80),
           caption: caption,
           platform_captions: { x: caption },
-          status: "saved",
+          status: "draft",
           scheduled_date: dateStr,
           scheduled_time: scheduledTime,
           analytics_score: getSlotScore("x", dayCursor.getDay(), parseInt(scheduledTime)),
@@ -2007,11 +2010,11 @@ export default function CalendarPage() {
           </button>
           <button
             onClick={openTypefullyScheduler}
-            disabled={typefullyLoading || weekPosts.filter(p => p.caption?.trim()).length === 0}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-emerald-200 text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            disabled={typefullyLoading || weekPosts.filter(p => p.status === "saved" && p.caption?.trim()).length === 0}
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <ArrowUpTrayIcon className="size-3.5" />
-            {typefullyLoading ? "Scheduling..." : "Schedule to Typefully"}
+            {typefullyLoading ? "Scheduling..." : `Schedule Ready (${weekPosts.filter(p => p.status === "saved" && p.caption?.trim()).length})`}
           </button>
           <button
             onClick={syncWithTypefully}
@@ -2290,16 +2293,21 @@ export default function CalendarPage() {
                 </div>
               )}
 
-              {/* Post count */}
+              {/* Post count — only Ready to Post (blue) posts */}
               {(() => {
                 const now = new Date();
-                const futureCount = weekPosts.filter(p => {
+                const readyCount = weekPosts.filter(p => {
+                  if (p.status !== "saved") return false;
                   if (!p.caption?.trim()) return false;
                   return new Date(`${p.scheduled_date}T${p.scheduled_time || "09:00"}:00`) > now;
                 }).length;
                 return (
                   <p className="text-xs text-[#999] mb-4">
-                    {futureCount} post{futureCount !== 1 ? "s" : ""} will be scheduled to {typefullyPlatforms.size} platform{typefullyPlatforms.size !== 1 ? "s" : ""}
+                    <span className="inline-flex items-center gap-1">
+                      <span className="size-2 rounded-full bg-blue-500" />
+                      {readyCount} Ready to Post
+                    </span>
+                    {" "}post{readyCount !== 1 ? "s" : ""} will be scheduled to {typefullyPlatforms.size} platform{typefullyPlatforms.size !== 1 ? "s" : ""}
                     {typefullyPlatforms.size > 1 && " — captions auto-adapted per platform"}
                   </p>
                 );
@@ -2483,7 +2491,7 @@ export default function CalendarPage() {
                               className={`w-full text-left flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] transition-all hover:shadow-sm cursor-pointer group/card relative ${
                                 dragPostId === p.id ? "opacity-40 cursor-grabbing" : ""
                               }`}
-                              style={{ backgroundColor: cc.bg, color: cc.text }}
+                              style={{ backgroundColor: cc.bg, color: cc.text, opacity: dragPostId === p.id ? 0.4 : cc.opacity }}
                             >
                               <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: cc.dot }} />
                               <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: platformColors[p.platform] }} />
@@ -2566,7 +2574,7 @@ export default function CalendarPage() {
                           className={`w-full text-left px-2.5 py-1.5 rounded-md mb-1.5 transition-all hover:shadow-sm cursor-pointer group/card relative ${
                             dragPostId === p.id ? "opacity-40 cursor-grabbing" : ""
                           }`}
-                          style={{ backgroundColor: cc.bg, color: cc.text }}
+                          style={{ backgroundColor: cc.bg, color: cc.text, opacity: dragPostId === p.id ? 0.4 : cc.opacity }}
                         >
                           <div className="flex items-center gap-1.5">
                             <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: cc.dot }} />
@@ -2960,23 +2968,64 @@ export default function CalendarPage() {
                 disabled={saving}
                 className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
               >
-                {saving ? "Saving..." : "Save"}
+                {saving ? "Saving..." : "Save Draft"}
               </button>
+              {/* Ready to Post toggle — marks post blue so it gets picked up by scheduler */}
               <button
-                onClick={() => {
-                  setStudioPost(prev => ({ ...prev, status: "scheduled" as PostStatus }));
-                  setShowTypefullyModal(true);
+                onClick={async () => {
+                  const isCurrentlyReady = studioPost.status === "saved";
+                  const newStatus: PostStatus = isCurrentlyReady ? "draft" : "saved";
+                  // Save first with current data, then toggle status
+                  const postPlatforms = studioPost.platforms || (studioPost.platform ? [studioPost.platform] : ["x"]);
+                  const mergedCaptions: Record<string, string> = { ...draftCaptions };
+                  const fallbackCaption = mergedCaptions.x || mergedCaptions.linkedin || studioPost.caption || "";
+                  const now = new Date().toISOString();
+                  const post: ContentPost = {
+                    id: studioPost.id || uuid(),
+                    creator: studioPost.creator || creator,
+                    group_id: studioPost.group_id,
+                    platform: (postPlatforms[0] || "x") as Platform,
+                    platforms: postPlatforms as Platform[],
+                    content_type: studioPost.content_type || "educational",
+                    post_format: studioPost.post_format || "text",
+                    angle: studioPost.angle || "",
+                    caption: fallbackCaption,
+                    platform_captions: mergedCaptions as Record<Platform, string>,
+                    status: newStatus,
+                    scheduled_date: studioPost.scheduled_date!,
+                    scheduled_time: studioPost.scheduled_time || "09:00",
+                    media_url: studioPost.media_url,
+                    media_data: studioPost.media_data,
+                    media_data_list: studioPost.media_data_list,
+                    analytics_score: studioPost.analytics_score || 0,
+                    created_at: studioPost.created_at || now,
+                    updated_at: now,
+                  };
+                  const existing = allPosts.findIndex(p => p.id === post.id);
+                  let updated: ContentPost[];
+                  if (existing >= 0) {
+                    updated = allPosts.map(p => p.id === post.id ? post : p);
+                  } else {
+                    updated = [...allPosts, post];
+                  }
+                  setAllPosts(updated);
+                  await savePosts(updated);
+                  setStudioPost(prev => ({ ...prev, ...post }));
                 }}
-                disabled={!studioPost.caption?.trim()}
-                className="flex items-center gap-1 px-3 py-2.5 text-[10px] font-semibold border border-emerald-200 text-emerald-700 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors disabled:opacity-40"
+                disabled={!studioPost.caption?.trim() || !studioPost.scheduled_date}
+                className={`flex items-center gap-1 px-3 py-2.5 text-[10px] font-semibold rounded-lg transition-colors disabled:opacity-40 ${
+                  studioPost.status === "saved"
+                    ? "bg-blue-500 text-white hover:bg-blue-600 border border-blue-500"
+                    : "border border-blue-200 text-blue-600 bg-blue-50 hover:bg-blue-100"
+                }`}
               >
-                <ArrowUpTrayIcon className="size-3" />
-                Typefully
+                <CheckIcon className="size-3" />
+                {studioPost.status === "saved" ? "Ready ✓" : "Ready to Post"}
               </button>
               {studioPost.id && studioPost.status === "scheduled" && (
                 <button
                   onClick={async () => {
-                    const newStatus: PostStatus = studioPost.caption?.trim() ? "saved" : "draft";
+                    const newStatus: PostStatus = "draft";
                     const updated = allPosts.map(p =>
                       p.id === studioPost.id ? { ...p, status: newStatus } : p
                     );
