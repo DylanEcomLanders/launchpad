@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Use the inner module to avoid pdf-parse's test-file-loading index.js
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const pdfParse = require("pdf-parse/lib/pdf-parse");
+
 /**
  * POST /api/calendar/parse-import
  * Accepts a text or PDF file upload and splits it into individual post captions.
@@ -15,38 +19,18 @@ export async function POST(req: NextRequest) {
     let text = "";
 
     if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
-      // For PDFs, try to extract text. We'll use a simple approach —
-      // read as text and strip binary. For real PDF parsing we'd need a lib,
-      // but most users will use .txt
       const buf = await file.arrayBuffer();
-      // Try to get readable text from PDF streams
-      const raw = new TextDecoder("utf-8", { fatal: false }).decode(buf);
-      // Extract text between BT/ET blocks (basic PDF text extraction)
-      const textBlocks: string[] = [];
-      const btPattern = /BT\s([\s\S]*?)ET/g;
-      let match;
-      while ((match = btPattern.exec(raw)) !== null) {
-        const block = match[1];
-        // Extract Tj and TJ strings
-        const tjPattern = /\(([^)]*)\)\s*Tj/g;
-        let tm;
-        while ((tm = tjPattern.exec(block)) !== null) {
-          textBlocks.push(tm[1]);
-        }
-        // TJ arrays
-        const tjArrayPattern = /\[([^\]]*)\]\s*TJ/g;
-        while ((tm = tjArrayPattern.exec(block)) !== null) {
-          const items = tm[1].match(/\(([^)]*)\)/g);
-          if (items) {
-            textBlocks.push(items.map(s => s.replace(/[()]/g, "")).join(""));
-          }
-        }
+      try {
+        const pdf = await pdfParse(Buffer.from(buf));
+        text = pdf.text || "";
+      } catch {
+        return NextResponse.json({
+          error: "Could not extract text from PDF. Try exporting as .txt instead.",
+        }, { status: 400 });
       }
-      text = textBlocks.join("\n");
-      // If PDF extraction failed, tell user to use .txt
       if (!text.trim()) {
         return NextResponse.json({
-          error: "Could not extract text from PDF. Please export as .txt instead.",
+          error: "PDF appears to be empty or image-only. Export as .txt instead.",
         }, { status: 400 });
       }
     } else {

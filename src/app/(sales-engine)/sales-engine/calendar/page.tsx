@@ -1371,27 +1371,44 @@ export default function CalendarPage() {
   }
 
   // ── Bulk text import: parse file then create posts with captions ──
+  function parseTextLocally(text: string): string[] {
+    let posts: string[];
+    if (/^\[POST\s*\d*\]/im.test(text)) {
+      posts = text.split(/\r?\n?\[POST\s*\d*\]\r?\n?/i).filter(Boolean);
+    } else if (text.includes("\n---\n") || text.includes("\r\n---\r\n")) {
+      posts = text.split(/\r?\n---\r?\n/);
+    } else if (text.includes("\n###\n") || text.includes("\r\n###\r\n")) {
+      posts = text.split(/\r?\n###\r?\n/);
+    } else if (text.includes("\n\n\n")) {
+      posts = text.split(/\n\n\n+/);
+    } else {
+      posts = text.split(/\n\n+/);
+    }
+    return posts.map(p => p.trim()).filter(p => p.length > 10);
+  }
+
   async function handleParseTextFile(file: File) {
     setBulkParsing(true);
     setBulkTextFile(file);
     try {
-      // Parse locally for .txt — split by delimiter (priority order)
-      const text = await file.text();
-      let posts: string[];
-      if (/^\[POST\s*\d*\]/im.test(text)) {
-        // Preferred: [POST] or [POST 1] labels
-        posts = text.split(/\r?\n?\[POST\s*\d*\]\r?\n?/i).filter(Boolean);
-      } else if (text.includes("\n---\n") || text.includes("\r\n---\r\n")) {
-        posts = text.split(/\r?\n---\r?\n/);
-      } else if (text.includes("\n###\n") || text.includes("\r\n###\r\n")) {
-        posts = text.split(/\r?\n###\r?\n/);
-      } else if (text.includes("\n\n\n")) {
-        posts = text.split(/\n\n\n+/);
+      const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+      if (isPdf) {
+        // PDFs go through the API route for proper extraction
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/calendar/parse-import", { method: "POST", body: fd });
+        const data = await res.json();
+        if (!res.ok) {
+          alert(data.error || "Failed to parse PDF");
+          setBulkParsedCaptions([]);
+          return;
+        }
+        setBulkParsedCaptions(data.posts || []);
       } else {
-        posts = text.split(/\n\n+/);
+        // .txt — parse locally
+        const text = await file.text();
+        setBulkParsedCaptions(parseTextLocally(text));
       }
-      const cleaned = posts.map(p => p.trim()).filter(p => p.length > 10);
-      setBulkParsedCaptions(cleaned);
     } catch {
       alert("Failed to parse file");
     } finally {
@@ -2088,7 +2105,7 @@ export default function CalendarPage() {
               {bulkMode === "text" ? (
                 <>
                   <p className="text-[11px] text-[#7A7A7A] leading-relaxed mb-4">
-                    Upload a .txt file with each post labelled <code className="bg-[#F0F0F0] px-1 rounded text-[10px]">[POST]</code> on its own line. Each post becomes a draft — add media and mark Ready to Post.
+                    Upload a .txt or .pdf file with each post labelled <code className="bg-[#F0F0F0] px-1 rounded text-[10px]">[POST]</code> on its own line. Each post becomes a draft — add media and mark Ready to Post.
                   </p>
                   <label className="block mb-4">
                     <div className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-[#E0E0E0] rounded-xl cursor-pointer hover:border-[#1B1B1B] hover:bg-[#FAFAFA] transition-colors">
@@ -2102,14 +2119,14 @@ export default function CalendarPage() {
                         </>
                       ) : (
                         <>
-                          <span className="text-xs font-medium text-[#1B1B1B]">Upload .txt file</span>
+                          <span className="text-xs font-medium text-[#1B1B1B]">Upload .txt or .pdf</span>
                           <span className="text-[10px] text-[#999]">Each post labelled with [POST] on its own line</span>
                         </>
                       )}
                     </div>
                     <input
                       type="file"
-                      accept=".txt,.text,text/plain"
+                      accept=".txt,.text,.pdf,text/plain,application/pdf"
                       className="hidden"
                       onChange={e => {
                         const file = e.target.files?.[0];
