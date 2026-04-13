@@ -24,6 +24,7 @@ import { useRole } from "@/components/auth-gate";
 interface NavItem {
   label: string;
   href: string;
+  external?: boolean;
 }
 
 interface NavSection {
@@ -63,6 +64,7 @@ const navSections: NavSection[] = [
     items: [
       { label: "SOP Library", href: "/tools/sop-library" },
       { label: "Design System", href: "/tools/design-system" },
+      { label: "Design Library", href: "https://www.figma.com/design/QDGh9XLKyvvumKwftUylvi/Ecomlanders-Design-Library?node-id=382-177", external: true },
       { label: "Playbooks", href: "/tools/playbooks" },
       { label: "QA Checklist", href: "/tools/qa-checklist" },
       { label: "Dev Self-Check", href: "/tools/dev-selfcheck" },
@@ -318,7 +320,22 @@ export function Sidebar() {
               {!collapsed && openSections[section.title] && (
                 <div className="ml-7 pl-3 mt-0.5 mb-3 border-l border-[#E5E5EA]">
                   {section.items.map((item) => {
-                    const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+                    const isActive = !item.external && (pathname === item.href || pathname.startsWith(item.href + "/"));
+                    if (item.external) {
+                      return (
+                        <a
+                          key={item.href}
+                          href={item.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setMobileOpen(false)}
+                          className="flex items-center gap-1.5 px-3 py-[6px] text-[13px] rounded-md transition-all duration-150 text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
+                        >
+                          {item.label}
+                          <svg className="size-3 opacity-40 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5zm7.25-.75a.75.75 0 01.75-.75h3.5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0V6.31l-5.47 5.47a.75.75 0 01-1.06-1.06l5.47-5.47H12.25a.75.75 0 01-.75-.75z" clipRule="evenodd" /></svg>
+                        </a>
+                      );
+                    }
                     return (
                       <Link
                         key={item.href}
