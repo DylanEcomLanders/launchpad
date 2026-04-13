@@ -62,6 +62,7 @@ const navSections: NavSection[] = [
     icon: <UserGroupIcon className="size-4" />,
     defaultOpen: true,
     items: [
+      { label: "Operations Wiki", href: "/tools/ops-wiki" },
       { label: "SOP Library", href: "/tools/sop-library" },
       { label: "Design System", href: "/tools/design-system" },
       { label: "Design Library", href: "https://www.figma.com/design/QDGh9XLKyvvumKwftUylvi/Ecomlanders-Design-Library?node-id=382-177", external: true },

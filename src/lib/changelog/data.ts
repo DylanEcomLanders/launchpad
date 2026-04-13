@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-32",
+    date: "14 Apr 2026",
+    version: "0.26.0",
+    title: "Operations Wiki + Login Redesign",
+    changes: [
+      { type: "added", text: "Operations Wiki — searchable wiki with 16 SOPs across Design, Development, CRO, Operations, QA, and Client categories. Same architecture as Retainer Wiki: sidebar nav, full-text search, markdown content, tool links" },
+      { type: "added", text: "Design Library link in sidebar — opens Figma design library in new tab. Sidebar now supports external links with icon indicator" },
+      { type: "improved", text: "Login screen redesign — full-bleed cinematic landscape background with frosted glass card, ECL logo, smooth transitions" },
+      { type: "improved", text: "PDF upload support for bulk caption import — client-side PDF text extraction via pdfjs-dist CDN" },
+    ],
+  },
+  {
     id: "cl-31",
     date: "12 Apr 2026",
     version: "0.25.1",
