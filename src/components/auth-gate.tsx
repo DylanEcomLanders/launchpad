@@ -101,11 +101,8 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
           {/* Logo / Brand */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-xl mb-5 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-white drop-shadow-sm">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/el-logo.svg" alt="Ecom Landers" className="w-8 h-8 brightness-0 invert drop-shadow-sm" />
             </div>
             <h1 className="text-2xl font-semibold text-white tracking-tight drop-shadow-md">Launchpad</h1>
             <p className="text-sm text-white/60 mt-1.5 drop-shadow-sm">Ecom Landers Command Centre</p>
