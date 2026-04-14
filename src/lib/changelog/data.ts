@@ -37,6 +37,20 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-33",
+    date: "13 Apr 2026",
+    version: "0.27.0",
+    title: "Sidebar Cleanup + Floating Notes",
+    changes: [
+      { type: "improved", text: "Sidebar restructured — main nav grouped under 'Delivery' section header. Cleaner hierarchy" },
+      { type: "added", text: "Floating Notes — notes moved from sidebar to a persistent floating icon (top-right). Accessible from any page with Cmd+Shift+N shortcut. Shows action item count badge" },
+      { type: "improved", text: "Training section cleaned up — removed Design System, Playbooks, QA Checklist, Dev Self-Check. Kept Ops Wiki, Retainer Wiki (single link), Design Library, Feedback" },
+      { type: "improved", text: "CRO Lab section now shows WIP badge to indicate work-in-progress status" },
+      { type: "improved", text: "Finance section defaults to collapsed to reduce sidebar noise" },
+      { type: "improved", text: "Retainer Wiki is now a single nav link instead of a dropdown — the wiki itself has internal navigation" },
+    ],
+  },
+  {
     id: "cl-32",
     date: "14 Apr 2026",
     version: "0.26.0",

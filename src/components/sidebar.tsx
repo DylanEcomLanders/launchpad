@@ -32,22 +32,23 @@ interface NavSection {
   icon: React.ReactNode;
   items: NavItem[];
   defaultOpen?: boolean;
-  roles?: ("admin" | "cro")[]; // If set, only these roles see this section
+  roles?: ("admin" | "cro")[];
+  badge?: string;
 }
 
 const teamZones = [
-  { label: "UK", flag: "🇬🇧", tz: "Europe/London" },
-  { label: "UA", flag: "🇺🇦", tz: "Europe/Kyiv" },
-  { label: "IN", flag: "🇮🇳", tz: "Asia/Kolkata" },
-  { label: "PH", flag: "🇵🇭", tz: "Asia/Manila" },
-  { label: "NZ", flag: "🇳🇿", tz: "Pacific/Auckland" },
+  { label: "UK", flag: "\u{1F1EC}\u{1F1E7}", tz: "Europe/London" },
+  { label: "UA", flag: "\u{1F1FA}\u{1F1E6}", tz: "Europe/Kyiv" },
+  { label: "IN", flag: "\u{1F1EE}\u{1F1F3}", tz: "Asia/Kolkata" },
+  { label: "PH", flag: "\u{1F1F5}\u{1F1ED}", tz: "Asia/Manila" },
+  { label: "NZ", flag: "\u{1F1F3}\u{1F1FF}", tz: "Pacific/Auckland" },
 ];
 
 const navSections: NavSection[] = [
   {
     title: "Finance",
     icon: <BanknotesIcon className="size-4" />,
-    defaultOpen: true,
+    defaultOpen: false,
     roles: ["admin"],
     items: [
       { label: "Price Calculator", href: "/tools/price-calculator" },
@@ -63,35 +64,16 @@ const navSections: NavSection[] = [
     defaultOpen: true,
     items: [
       { label: "Operations Wiki", href: "/tools/ops-wiki" },
-      { label: "SOP Library", href: "/tools/sop-library" },
-      { label: "Design System", href: "/tools/design-system" },
+      { label: "Retainer Wiki", href: "/tools/retainer-wiki" },
       { label: "Design Library", href: "https://www.figma.com/design/QDGh9XLKyvvumKwftUylvi/Ecomlanders-Design-Library?node-id=382-177", external: true },
-      { label: "Playbooks", href: "/tools/playbooks" },
-      { label: "QA Checklist", href: "/tools/qa-checklist" },
-      { label: "Dev Self-Check", href: "/tools/dev-selfcheck" },
       { label: "Feedback", href: "/tools/feedback" },
     ],
   },
   {
-    title: "Retainer Wiki",
-    icon: <RocketLaunchIcon className="size-4" />,
-    defaultOpen: true,
-    items: [
-      { label: "Overview & Offers", href: "/tools/retainer-wiki" },
-      { label: "Sales Process", href: "/tools/retainer-wiki?section=01-sales-process" },
-      { label: "Onboarding", href: "/tools/retainer-wiki?section=02-onboarding" },
-      { label: "Delivery", href: "/tools/retainer-wiki?section=03-delivery" },
-      { label: "Conversion Matrix", href: "/tools/retainer-wiki?section=04-conversion-matrix" },
-      { label: "Revenue Projector", href: "/tools/retainer-wiki?section=05-revenue-projector" },
-      { label: "Slide Deck", href: "/tools/retainer-wiki?section=06-slide-deck" },
-      { label: "Positioning", href: "/tools/retainer-wiki?section=07-positioning" },
-      { label: "FAQ", href: "/tools/retainer-wiki?section=08-faq" },
-    ],
-  },
-  {
-    title: "CRO Lab (WIP)",
+    title: "CRO Lab",
     icon: <BeakerIcon className="size-4" />,
     defaultOpen: false,
+    badge: "WIP",
     items: [
       { label: "Funnel Builder", href: "/tools/funnel-builder" },
       { label: "CRO Monitor", href: "/tools/cro-monitor" },
@@ -99,6 +81,22 @@ const navSections: NavSection[] = [
       { label: "Funnel Playbook", href: "/tools/funnel-knowledge" },
     ],
   },
+];
+
+// Delivery section — main nav items grouped
+const deliveryItems = [
+  { label: "Mission Control", href: "/", icon: <HomeIcon className="size-4" /> },
+  { label: "Portals", href: "/tools/client-portal", icon: <FolderIcon className="size-4" /> },
+  {
+    label: "Tickets",
+    href: "/tools/tickets",
+    icon: (
+      <svg className="size-4" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M5.5 3A2.5 2.5 0 003 5.5v2.879a2.5 2.5 0 00.732 1.767l6.5 6.5a2.5 2.5 0 003.536 0l2.878-2.878a2.5 2.5 0 000-3.536l-6.5-6.5A2.5 2.5 0 008.38 3H5.5zM6 7a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+      </svg>
+    ),
+  },
+  { label: "Task Board", href: "/tools/task-board", icon: <ClockIcon className="size-4" /> },
 ];
 
 export function Sidebar() {
@@ -110,7 +108,6 @@ export function Sidebar() {
     () => Object.fromEntries(navSections.map((s) => [s.title, s.defaultOpen !== false]))
   );
 
-  // Filter sections by role
   const visibleSections = navSections.filter((s) => !s.roles || s.roles.includes(role));
   const [now, setNow] = useState(() => new Date());
 
@@ -122,6 +119,11 @@ export function Sidebar() {
     const id = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(id);
   }, []);
+
+  function isActive(href: string) {
+    if (href === "/") return pathname === "/";
+    return pathname === href || pathname.startsWith(href + "/");
+  }
 
   return (
     <>
@@ -190,7 +192,7 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto scrollbar-thin py-2">
-          {/* Hero CTAs */}
+          {/* Hero CTA */}
           {!collapsed && role === "admin" && (
             <div className="px-3 mb-2">
               <Link
@@ -204,55 +206,37 @@ export function Sidebar() {
             </div>
           )}
 
-          {/* Main nav */}
-          <div className="px-3 mb-4">
-            <Link
-              href="/"
-              onClick={() => setMobileOpen(false)}
-              className={`
-                flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-200
-                ${pathname === "/"
-                  ? "bg-white text-[#1B1B1B] font-medium shadow-[var(--shadow-nav-active)]"
-                  : "text-[#7A7A7A] hover:bg-white/60 hover:text-[#1B1B1B]"
-                }
-              `}
-            >
-              <HomeIcon className="size-4" />
-              {!collapsed && <span>Mission Control</span>}
-            </Link>
-            <Link
-              href="/tools/client-portal"
-              onClick={() => setMobileOpen(false)}
-              className={`
-                flex items-center gap-2.5 px-2.5 py-2 mt-1 rounded-lg text-sm transition-all duration-200
-                ${pathname === "/tools/client-portal" || pathname.startsWith("/tools/client-portal/")
-                  ? "bg-white text-[#1B1B1B] font-medium shadow-[var(--shadow-nav-active)]"
-                  : "text-[#7A7A7A] hover:bg-white/60 hover:text-[#1B1B1B]"
-                }
-              `}
-            >
-              <FolderIcon className="size-4" />
-              {!collapsed && <span>Portals</span>}
-            </Link>
-            <Link
-              href="/tools/tickets"
-              onClick={() => setMobileOpen(false)}
-              className={`
-                flex items-center gap-2.5 px-2.5 py-2 mt-1 rounded-lg text-sm transition-all duration-200
-                ${pathname === "/tools/tickets"
-                  ? "bg-white text-[#1B1B1B] font-medium shadow-[var(--shadow-nav-active)]"
-                  : "text-[#7A7A7A] hover:bg-white/60 hover:text-[#1B1B1B]"
-                }
-              `}
-            >
-              <svg className="size-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.5 3A2.5 2.5 0 003 5.5v2.879a2.5 2.5 0 00.732 1.767l6.5 6.5a2.5 2.5 0 003.536 0l2.878-2.878a2.5 2.5 0 000-3.536l-6.5-6.5A2.5 2.5 0 008.38 3H5.5zM6 7a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" /></svg>
-              {!collapsed && <span>Tickets</span>}
-            </Link>
+          {/* Delivery section */}
+          <div className="px-3 mb-1">
+            {!collapsed && (
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#B0B0B0] px-2.5 mb-1.5">
+                Delivery
+              </p>
+            )}
+            {deliveryItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className={`
+                  flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-200 mb-0.5
+                  ${isActive(item.href)
+                    ? "bg-white text-[#1B1B1B] font-medium shadow-[var(--shadow-nav-active)]"
+                    : "text-[#7A7A7A] hover:bg-white/60 hover:text-[#1B1B1B]"
+                  }
+                `}
+              >
+                {item.icon}
+                {!collapsed && <span>{item.label}</span>}
+              </Link>
+            ))}
+
+            {/* Team Hub */}
             <Link
               href="/team"
               onClick={() => setMobileOpen(false)}
               className={`
-                flex items-center gap-2.5 px-2.5 py-2 mt-1 rounded-lg text-sm transition-all duration-200
+                flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-200 mb-0.5
                 ${pathname === "/team"
                   ? "bg-white text-[#1B1B1B] font-medium shadow-[var(--shadow-nav-active)]"
                   : "text-[#7A7A7A] hover:bg-white/60 hover:text-[#1B1B1B]"
@@ -262,37 +246,9 @@ export function Sidebar() {
               <UserGroupIcon className="size-4" />
               {!collapsed && <span>Team Hub</span>}
             </Link>
-            <Link
-              href="/tools/task-board"
-              onClick={() => setMobileOpen(false)}
-              className={`
-                flex items-center gap-2.5 px-2.5 py-2 mt-1 rounded-lg text-sm transition-all duration-200
-                ${pathname === "/tools/task-board"
-                  ? "bg-white text-[#1B1B1B] font-medium shadow-[var(--shadow-nav-active)]"
-                  : "text-[#7A7A7A] hover:bg-white/60 hover:text-[#1B1B1B]"
-                }
-              `}
-            >
-              <ClockIcon className="size-4" />
-              {!collapsed && <span>Task Board</span>}
-            </Link>
-            <Link
-              href="/tools/notes"
-              onClick={() => setMobileOpen(false)}
-              className={`
-                flex items-center gap-2.5 px-2.5 py-2 mt-1 rounded-lg text-sm transition-all duration-200
-                ${pathname === "/tools/notes"
-                  ? "bg-white text-[#1B1B1B] font-medium shadow-[var(--shadow-nav-active)]"
-                  : "text-[#7A7A7A] hover:bg-white/60 hover:text-[#1B1B1B]"
-                }
-              `}
-            >
-              <svg className="size-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5zm12 2a1 1 0 01.894.553l3 6A1 1 0 0117 15h-6a1 1 0 01-.894-1.447l3-6A1 1 0 0114 7z" clipRule="evenodd" /></svg>
-              {!collapsed && <span>Notes</span>}
-            </Link>
           </div>
 
-          {/* Sections */}
+          {/* Collapsible sections */}
           {visibleSections.map((section) => (
             <div key={section.title} className="mb-1">
               {!collapsed ? (
@@ -305,6 +261,11 @@ export function Sidebar() {
                     <span className="text-[12px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
                       {section.title}
                     </span>
+                    {section.badge && (
+                      <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-600">
+                        {section.badge}
+                      </span>
+                    )}
                   </div>
                   <ChevronDownIcon
                     className={`size-3 text-[#C5C5C5] transition-transform duration-200 ${
@@ -321,7 +282,7 @@ export function Sidebar() {
               {!collapsed && openSections[section.title] && (
                 <div className="ml-7 pl-3 mt-0.5 mb-3 border-l border-[#E5E5EA]">
                   {section.items.map((item) => {
-                    const isActive = !item.external && (pathname === item.href || pathname.startsWith(item.href + "/"));
+                    const active = !item.external && isActive(item.href);
                     if (item.external) {
                       return (
                         <a
@@ -344,7 +305,7 @@ export function Sidebar() {
                         onClick={() => setMobileOpen(false)}
                         className={`
                           block px-3 py-[6px] text-[13px] rounded-md transition-all duration-150
-                          ${isActive
+                          ${active
                             ? "text-[#1B1B1B] font-medium bg-white shadow-[var(--shadow-soft)]"
                             : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
                           }

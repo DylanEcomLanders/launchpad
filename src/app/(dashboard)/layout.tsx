@@ -4,6 +4,7 @@ import { Sidebar } from "@/components/sidebar";
 import { AuthGate } from "@/components/auth-gate";
 import { ReportIssueButton } from "@/components/report-issue-button";
 import { PageTransition } from "@/components/page-transition";
+import { FloatingNotes } from "@/components/floating-notes";
 
 export default function DashboardLayout({
   children,
@@ -18,6 +19,7 @@ export default function DashboardLayout({
           <PageTransition>{children}</PageTransition>
         </main>
         <ReportIssueButton />
+        <FloatingNotes />
       </div>
     </AuthGate>
   );
