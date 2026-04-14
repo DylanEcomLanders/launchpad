@@ -64,7 +64,7 @@ const navSections: NavSection[] = [
     defaultOpen: true,
     items: [
       { label: "Operations Wiki", href: "/tools/ops-wiki" },
-      { label: "Retainer Wiki", href: "/tools/retainer-wiki" },
+      { label: "Conversion Partnership", href: "/tools/conversion-partnership" },
       { label: "Design Library", href: "https://www.figma.com/design/QDGh9XLKyvvumKwftUylvi/Ecomlanders-Design-Library?node-id=382-177", external: true },
       { label: "Feedback", href: "/tools/feedback" },
     ],

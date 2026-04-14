@@ -48,7 +48,7 @@ const categoryLabels: Record<string, string> = {
   reference: "REFERENCE",
 };
 
-export default function RetainerWikiClient({ modules }: { modules: WikiModule[] }) {
+export default function ConversionPartnershipClient({ modules }: { modules: WikiModule[] }) {
   const [activeSlug, setActiveSlug] = useState("00-overview");
   const [searchQuery, setSearchQuery] = useState("");
   const [navOpen, setNavOpen] = useState(true);

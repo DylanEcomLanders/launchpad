@@ -1,7 +1,7 @@
-import { getAllWikiModules } from "@/lib/retainer-wiki";
-import RetainerWikiClient from "./client";
+import { getAllWikiModules } from "@/lib/conversion-partnership";
+import ConversionPartnershipClient from "./client";
 
-export default function RetainerWikiPage() {
+export default function ConversionPartnershipPage() {
   const modules = getAllWikiModules();
   const serialized = modules.map((m) => ({
     slug: m.slug,
@@ -12,5 +12,5 @@ export default function RetainerWikiPage() {
     category: m.category,
     toolHref: m.toolHref,
   }));
-  return <RetainerWikiClient modules={serialized} />;
+  return <ConversionPartnershipClient modules={serialized} />;
 }

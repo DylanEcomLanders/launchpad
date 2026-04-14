@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-const contentDir = path.join(process.cwd(), "src/content/retainer-wiki");
+const contentDir = path.join(process.cwd(), "src/content/conversion-partnership");
 
 export interface WikiModule {
   slug: string;
