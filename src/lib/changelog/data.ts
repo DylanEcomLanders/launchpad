@@ -37,8 +37,22 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-34",
+    date: "14 Apr 2026",
+    version: "0.28.0",
+    title: "Retainer Wiki Overhaul — Conversion Partnership Model",
+    changes: [
+      { type: "improved", text: "Full retainer wiki rewrite — all 9 sections rebuilt around the new Conversion Partnership model (£8K+/mo, team-led roadmap, two-stage audit close)" },
+      { type: "improved", text: "Sales Process — two-stage audit approach with proof vs evidence framework. Initial audit (warm-up) → Deep dive (close)" },
+      { type: "improved", text: "Delivery Framework — full scope of work including AOV optimisation, post-purchase flows, 60-90 day visual roadmap on Miro" },
+      { type: "improved", text: "Revenue Projector — partnership economics at scale (5 retainers = £540K/yr), ad spend multiplier, team economics breakdown" },
+      { type: "improved", text: "Positioning — conversion layer concept (ad agency + email agency + conversion agency), premium pricing language, dropshipper-to-brand bridge angle" },
+      { type: "improved", text: "FAQ — expanded with premium pricing objection handling, internal playbook for scope creep and churn prevention" },
+    ],
+  },
+  {
     id: "cl-33",
-    date: "13 Apr 2026",
+    date: "14 Apr 2026",
     version: "0.27.0",
     title: "Sidebar Cleanup + Floating Notes",
     changes: [
