@@ -122,6 +122,15 @@ export interface QAGateItem {
   checked: boolean;
 }
 
+export interface BriefFile {
+  filename: string;
+  originalName: string;
+  url: string;
+  size: number;
+  type: string;
+  uploaded_at: string;
+}
+
 export interface QAGate {
   items: QAGateItem[];
   notes: string;
@@ -129,11 +138,14 @@ export interface QAGate {
   submitted_at?: string;
   status: "pending" | "submitted";
 
+  // Design brief form fields
+  brief_file?: BriefFile;
+
   // Design handoff form fields
   figma_url?: string;
   loom_url?: string;
-  extra_assets?: string; // links or descriptions of assets not in Figma
-  font_files?: string; // font file links or descriptions
+  extra_assets?: string;
+  font_files?: string;
 }
 
 export interface QAGates {

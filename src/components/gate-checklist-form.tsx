@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { CheckIcon } from "@heroicons/react/24/outline";
-import type { QAGate, QAGateItem, PortalProject, GateKey } from "@/lib/portal/types";
+import { useState, useCallback, useRef } from "react";
+import { CheckIcon, DocumentArrowUpIcon, TrashIcon, DocumentTextIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import type { QAGate, PortalProject, GateKey, BriefFile } from "@/lib/portal/types";
 import type { PortalData } from "@/lib/portal/types";
 import {
   CRO_BRIEF_ITEMS, DESIGN_HANDOFF_ITEMS, DEV_HANDOFF_ITEMS,
   createDefaultGate, getGateProgress, isGateComplete, isDesignHandoffComplete,
 } from "@/lib/portal/qa-gates";
 
-/* ── Launch prep items (new gate) ── */
+/* ── Launch prep items ── */
 const LAUNCH_PREP_ITEMS = [
   "Client has approved the staging/preview version (written confirmation)",
   "Go-live date and time confirmed with client",
@@ -22,22 +22,22 @@ const LAUNCH_PREP_ITEMS = [
   "Team available post-launch for immediate fixes",
 ];
 
-/* ── Gate mapping: new gate keys → old qa_gates keys ── */
+/* ── Gate mapping ── */
 const gateMapping: Record<GateKey, {
   qaGateKey: "cro_brief" | "design_handoff" | "dev_handoff" | "launch_prep";
   title: string;
   subtitle: string;
   color: string;
   items: string[];
-  type: "checklist" | "design-handoff" | "launch-prep";
+  type: "design-brief" | "design-handoff" | "checklist" | "launch-prep";
 }> = {
   "design-brief": {
     qaGateKey: "cro_brief",
     title: "Design Brief",
-    subtitle: "Confirm the brief is complete before design starts",
+    subtitle: "Upload the design brief document for this project",
     color: "#DC2626",
     items: CRO_BRIEF_ITEMS,
-    type: "checklist",
+    type: "design-brief",
   },
   "dev-handover": {
     qaGateKey: "design_handoff",
@@ -65,6 +65,18 @@ const gateMapping: Record<GateKey, {
   },
 };
 
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+}
+
+function fileIcon(type: string) {
+  if (type.includes("pdf")) return "PDF";
+  if (type.includes("word") || type.includes("document")) return "DOC";
+  return "TXT";
+}
+
 interface GateChecklistFormProps {
   gateKey: GateKey;
   project: PortalProject;
@@ -76,18 +88,19 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
   const config = gateMapping[gateKey];
   const gates = project.qa_gates || {};
 
-  // Get or create the gate data using the old qa_gates keys
   const [gate, setGateLocal] = useState<QAGate>(() => {
     const existing = gates[config.qaGateKey as keyof typeof gates] as QAGate | undefined;
     if (existing) return existing;
     return createDefaultGate(config.items);
   });
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const progress = getGateProgress(gate);
   const isSubmitted = gate.status === "submitted";
 
-  // Save gate back to project.qa_gates
   const saveGate = useCallback(async (updatedGate: QAGate) => {
     setSaving(true);
     setGateLocal(updatedGate);
@@ -96,31 +109,85 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
     setSaving(false);
   }, [gates, config.qaGateKey, onUpdate]);
 
-  // Toggle a checklist item
   const toggleItem = (idx: number) => {
     if (isSubmitted) return;
     const updated = { ...gate, items: gate.items.map((item, i) => i === idx ? { ...item, checked: !item.checked } : item) };
     setGateLocal(updated);
-    // Auto-save on toggle
     saveGate(updated);
   };
 
-  // Submit the gate
   const handleSubmit = async () => {
     const submitted = { ...gate, status: "submitted" as const, submitted_at: new Date().toISOString(), submitted_by: "team" };
     await saveGate(submitted);
   };
 
-  // Reopen / reset
   const handleReopen = async () => {
     const reopened = { ...gate, status: "pending" as const, submitted_at: undefined, submitted_by: "" };
     await saveGate(reopened);
   };
 
-  // Check if design handoff form is ready (needs figma + loom + all items)
-  const isReady = config.type === "design-handoff"
-    ? isDesignHandoffComplete(gate)
-    : isGateComplete(gate);
+  /* ── File upload for Design Brief ── */
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setUploadError("");
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/design-brief/upload", { method: "POST", body: formData });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setUploadError(data.error || "Upload failed");
+        setUploading(false);
+        return;
+      }
+
+      const briefFile: BriefFile = {
+        filename: data.filename,
+        originalName: data.originalName,
+        url: data.url,
+        size: data.size,
+        type: data.type,
+        uploaded_at: new Date().toISOString(),
+      };
+
+      const updated = { ...gate, brief_file: briefFile };
+      await saveGate(updated);
+    } catch {
+      setUploadError("Upload failed — check connection");
+    }
+
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleFileDelete = async () => {
+    if (!gate.brief_file) return;
+
+    try {
+      await fetch("/api/design-brief/upload", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: gate.brief_file.filename }),
+      });
+    } catch {
+      // File may already be gone — continue
+    }
+
+    const updated = { ...gate, brief_file: undefined };
+    await saveGate(updated);
+  };
+
+  const isReady = config.type === "design-brief"
+    ? !!gate.brief_file
+    : config.type === "design-handoff"
+      ? isDesignHandoffComplete(gate)
+      : isGateComplete(gate);
 
   const fieldClass = "w-full text-sm px-3 py-2.5 border border-[#E8E8E8] rounded-lg focus:outline-none focus:border-[#999] placeholder:text-[#CCC] disabled:opacity-50 disabled:bg-[#FAFAFA]";
 
@@ -135,22 +202,29 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
             <p className="text-xs text-[#777]">{config.subtitle}</p>
           </div>
         </div>
-        <div className="text-right shrink-0">
-          <p className="text-xl font-bold text-[#1A1A1A] tabular-nums">{progress.checked}/{progress.total}</p>
-          {saving && <p className="text-[9px] text-[#CCC]">Saving...</p>}
-        </div>
+        {config.type !== "design-brief" && (
+          <div className="text-right shrink-0">
+            <p className="text-xl font-bold text-[#1A1A1A] tabular-nums">{progress.checked}/{progress.total}</p>
+            {saving && <p className="text-[9px] text-[#CCC]">Saving...</p>}
+          </div>
+        )}
+        {config.type === "design-brief" && saving && (
+          <p className="text-[9px] text-[#CCC]">Saving...</p>
+        )}
       </div>
 
-      {/* Progress bar */}
-      <div className="h-1.5 bg-[#F0F0F0] rounded-full mb-8 overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all duration-300"
-          style={{
-            width: `${(progress.checked / progress.total) * 100}%`,
-            backgroundColor: config.color,
-          }}
-        />
-      </div>
+      {/* Progress bar (not for design-brief) */}
+      {config.type !== "design-brief" && (
+        <div className="h-1.5 bg-[#F0F0F0] rounded-full mb-8 overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-300"
+            style={{
+              width: `${(progress.checked / progress.total) * 100}%`,
+              backgroundColor: config.color,
+            }}
+          />
+        </div>
+      )}
 
       {/* Submitted banner */}
       {isSubmitted && (
@@ -167,7 +241,150 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
         </div>
       )}
 
-      {/* ── Design Handoff form fields (Figma, Loom, Assets, Fonts) ── */}
+      {/* ══════════════════════════════════════════
+          DESIGN BRIEF — File upload + notes
+         ══════════════════════════════════════════ */}
+      {config.type === "design-brief" && (
+        <div className="space-y-6">
+          {/* File upload area */}
+          {!gate.brief_file ? (
+            <div>
+              <label className="text-[11px] font-medium text-[#555] block mb-2">
+                Design Brief Document <span className="text-red-400">*</span>
+              </label>
+              <label
+                className={`flex flex-col items-center justify-center gap-3 py-10 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
+                  uploading
+                    ? "border-[#CCC] bg-[#FAFAFA]"
+                    : isSubmitted
+                      ? "border-[#E8E8E8] bg-[#FAFAFA] cursor-not-allowed"
+                      : "border-[#DDD] hover:border-[#999] hover:bg-[#FAFAFA]"
+                }`}
+              >
+                {uploading ? (
+                  <>
+                    <div className="size-8 border-2 border-[#CCC] border-t-[#1A1A1A] rounded-full animate-spin" />
+                    <p className="text-sm text-[#777]">Uploading...</p>
+                  </>
+                ) : (
+                  <>
+                    <DocumentArrowUpIcon className="size-8 text-[#CCC]" />
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-[#777]">Click to upload brief</p>
+                      <p className="text-[11px] text-[#BBB] mt-1">Word (.doc, .docx), PDF, or text file</p>
+                    </div>
+                  </>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".doc,.docx,.pdf,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+                  onChange={handleFileUpload}
+                  disabled={uploading || isSubmitted}
+                  className="hidden"
+                />
+              </label>
+              {uploadError && (
+                <p className="text-xs text-red-500 mt-2">{uploadError}</p>
+              )}
+            </div>
+          ) : (
+            /* Uploaded file display */
+            <div>
+              <label className="text-[11px] font-medium text-[#555] block mb-2">
+                Design Brief Document
+              </label>
+              <div className="flex items-center gap-3 p-4 bg-[#FAFAFA] border border-[#E8E8E8] rounded-xl">
+                {/* File icon */}
+                <div className="size-10 rounded-lg bg-white border border-[#E8E8E8] flex items-center justify-center shrink-0">
+                  <span className="text-[10px] font-bold text-[#999]">{fileIcon(gate.brief_file.type)}</span>
+                </div>
+                {/* File info */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-[#1A1A1A] truncate">{gate.brief_file.originalName}</p>
+                  <p className="text-[11px] text-[#AAA]">
+                    {formatFileSize(gate.brief_file.size)} — uploaded {new Date(gate.brief_file.uploaded_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                </div>
+                {/* Actions */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <a
+                    href={gate.brief_file.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 text-[#999] hover:text-[#1A1A1A] hover:bg-white rounded-lg transition-colors"
+                    title="Download"
+                  >
+                    <ArrowDownTrayIcon className="size-4" />
+                  </a>
+                  {!isSubmitted && (
+                    <button
+                      onClick={handleFileDelete}
+                      className="p-2 text-[#CCC] hover:text-red-500 hover:bg-white rounded-lg transition-colors"
+                      title="Remove file"
+                    >
+                      <TrashIcon className="size-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+              {/* Replace file */}
+              {!isSubmitted && (
+                <label className="inline-block mt-2 text-xs text-[#999] hover:text-[#1A1A1A] cursor-pointer transition-colors">
+                  Replace file
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".doc,.docx,.pdf,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+                    onChange={async (e) => {
+                      await handleFileDelete();
+                      await handleFileUpload(e);
+                    }}
+                    disabled={uploading || isSubmitted}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </div>
+          )}
+
+          {/* Notes */}
+          <div>
+            <label className="text-[11px] font-medium text-[#555] block mb-1.5">Notes</label>
+            <textarea
+              value={gate.notes}
+              onChange={(e) => {
+                if (isSubmitted) return;
+                setGateLocal({ ...gate, notes: e.target.value });
+              }}
+              onBlur={() => saveGate(gate)}
+              disabled={isSubmitted}
+              placeholder="Any additional context, instructions, or notes for the design team..."
+              className={`${fieldClass} min-h-[100px] resize-y`}
+            />
+          </div>
+
+          {/* Submit */}
+          {!isSubmitted && (
+            <div className="flex items-center justify-between pt-2">
+              <p className="text-[10px] text-[#AAA]">
+                {!gate.brief_file ? "Upload a brief document to submit" : "Ready to submit"}
+              </p>
+              <button
+                onClick={handleSubmit}
+                disabled={!isReady}
+                className="px-5 py-2.5 text-sm font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+              >
+                Submit Brief
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════
+          DESIGN HANDOFF — Figma, Loom, Assets, Fonts + checklist
+         ══════════════════════════════════════════ */}
       {config.type === "design-handoff" && (
         <div className="space-y-5 mb-8">
           <div>
@@ -248,66 +465,72 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
         </div>
       )}
 
-      {/* ── Checklist items ── */}
-      <div className="space-y-2 mb-6">
-        {gate.items.map((item, i) => (
-          <label
-            key={i}
-            className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-              item.checked ? "border-emerald-200 bg-emerald-50/30" : "border-[#E8E8E8] hover:border-[#CCC]"
-            } ${isSubmitted ? "pointer-events-none opacity-60" : ""}`}
-          >
-            <input
-              type="checkbox"
-              checked={item.checked}
+      {/* ══════════════════════════════════════════
+          CHECKLIST items (dev-handoff, dev-qa, launch-prep, design-handoff confirm)
+         ══════════════════════════════════════════ */}
+      {config.type !== "design-brief" && (
+        <>
+          <div className="space-y-2 mb-6">
+            {gate.items.map((item, i) => (
+              <label
+                key={i}
+                className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
+                  item.checked ? "border-emerald-200 bg-emerald-50/30" : "border-[#E8E8E8] hover:border-[#CCC]"
+                } ${isSubmitted ? "pointer-events-none opacity-60" : ""}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={item.checked}
+                  disabled={isSubmitted}
+                  onChange={() => toggleItem(i)}
+                  className="size-4 mt-0.5 rounded border-[#CCC] text-emerald-600 focus:ring-0 focus:ring-offset-0"
+                />
+                <span className={`text-sm ${item.checked ? "text-[#1A1A1A]" : "text-[#777]"}`}>{item.label}</span>
+              </label>
+            ))}
+          </div>
+
+          {/* Notes */}
+          <div className="mb-6">
+            <label className="text-[11px] font-medium text-[#555] block mb-1.5">
+              {config.type === "design-handoff" ? "Notes for the developer" : "Notes / Additional Context"}
+            </label>
+            <textarea
+              value={gate.notes}
+              onChange={(e) => {
+                if (isSubmitted) return;
+                setGateLocal({ ...gate, notes: e.target.value });
+              }}
+              onBlur={() => saveGate(gate)}
               disabled={isSubmitted}
-              onChange={() => toggleItem(i)}
-              className="size-4 mt-0.5 rounded border-[#CCC] text-emerald-600 focus:ring-0 focus:ring-offset-0"
+              placeholder={config.type === "design-handoff" ? "Anything else the dev should know..." : "Add links, context, or notes..."}
+              className={`${fieldClass} min-h-[80px] resize-y`}
             />
-            <span className={`text-sm ${item.checked ? "text-[#1A1A1A]" : "text-[#777]"}`}>{item.label}</span>
-          </label>
-        ))}
-      </div>
+          </div>
 
-      {/* Notes */}
-      <div className="mb-6">
-        <label className="text-[11px] font-medium text-[#555] block mb-1.5">
-          {config.type === "design-handoff" ? "Notes for the developer" : "Notes / Additional Context"}
-        </label>
-        <textarea
-          value={gate.notes}
-          onChange={(e) => {
-            if (isSubmitted) return;
-            setGateLocal({ ...gate, notes: e.target.value });
-          }}
-          onBlur={() => saveGate(gate)}
-          disabled={isSubmitted}
-          placeholder={config.type === "design-handoff" ? "Anything else the dev should know..." : "Add links, context, or notes..."}
-          className={`${fieldClass} min-h-[80px] resize-y`}
-        />
-      </div>
-
-      {/* Submit */}
-      {!isSubmitted && (
-        <div className="flex items-center justify-between">
-          <p className="text-[10px] text-[#AAA]">
-            {isReady
-              ? "All items checked — ready to submit"
-              : config.type === "design-handoff" && !gate.figma_url?.trim()
-                ? "Figma link required"
-                : config.type === "design-handoff" && !gate.loom_url?.trim()
-                  ? "Loom video required"
-                  : `${progress.total - progress.checked} items remaining`
-            }
-          </p>
-          <button
-            onClick={handleSubmit}
-            disabled={!isReady}
-            className="px-5 py-2.5 text-sm font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
-          >
-            Submit
-          </button>
-        </div>
+          {/* Submit */}
+          {!isSubmitted && (
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] text-[#AAA]">
+                {isReady
+                  ? "All items checked — ready to submit"
+                  : config.type === "design-handoff" && !gate.figma_url?.trim()
+                    ? "Figma link required"
+                    : config.type === "design-handoff" && !gate.loom_url?.trim()
+                      ? "Loom video required"
+                      : `${progress.total - progress.checked} items remaining`
+                }
+              </p>
+              <button
+                onClick={handleSubmit}
+                disabled={!isReady}
+                className="px-5 py-2.5 text-sm font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+              >
+                Submit
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
