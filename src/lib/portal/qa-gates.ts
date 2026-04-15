@@ -50,12 +50,13 @@ export function isGateComplete(gate: QAGate): boolean {
   return gate.items.every((i) => i.checked);
 }
 
-/** Design handoff requires form fields + checklist */
+/** Design handoff requires form fields + checklist + font files */
 export function isDesignHandoffComplete(gate: QAGate): boolean {
   return (
     isGateComplete(gate) &&
     !!gate.figma_url?.trim() &&
-    !!gate.loom_url?.trim()
+    !!gate.loom_url?.trim() &&
+    (gate.font_files_uploads?.length ?? 0) > 0
   );
 }
 

@@ -131,6 +131,15 @@ export interface BriefFile {
   uploaded_at: string;
 }
 
+export interface UploadedFile {
+  filename: string;
+  originalName: string;
+  url: string;
+  size: number;
+  type: string;
+  uploaded_at: string;
+}
+
 export interface QAGate {
   items: QAGateItem[];
   notes: string;
@@ -144,6 +153,9 @@ export interface QAGate {
   // Design handoff form fields
   figma_url?: string;
   loom_url?: string;
+  extra_assets_files?: UploadedFile[];
+  font_files_uploads?: UploadedFile[];
+  // Legacy text fields (kept for backward compat)
   extra_assets?: string;
   font_files?: string;
 }

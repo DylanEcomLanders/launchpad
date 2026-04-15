@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { CheckIcon, DocumentArrowUpIcon, TrashIcon, ArrowDownTrayIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
-import type { QAGate, PortalProject, GateKey, BriefFile } from "@/lib/portal/types";
+import { CheckIcon, DocumentArrowUpIcon, TrashIcon, ArrowDownTrayIcon, EyeIcon, EyeSlashIcon, PlusIcon } from "@heroicons/react/24/outline";
+import type { QAGate, PortalProject, GateKey, BriefFile, UploadedFile } from "@/lib/portal/types";
 import type { PortalData } from "@/lib/portal/types";
 import {
   CRO_BRIEF_ITEMS, DESIGN_HANDOFF_ITEMS, DEV_HANDOFF_ITEMS,
@@ -98,7 +98,11 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
   const [uploadError, setUploadError] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const [textContent, setTextContent] = useState<string | null>(null);
+  const [uploadingAssets, setUploadingAssets] = useState(false);
+  const [uploadingFonts, setUploadingFonts] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const assetsInputRef = useRef<HTMLInputElement>(null);
+  const fontsInputRef = useRef<HTMLInputElement>(null);
 
   const progress = getGateProgress(gate);
   const isSubmitted = gate.status === "submitted";
@@ -182,6 +186,58 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
     }
 
     const updated = { ...gate, brief_file: undefined };
+    await saveGate(updated);
+  };
+
+  /* ── Multi-file upload for handover (assets + fonts) ── */
+  const handleHandoverUpload = async (
+    files: FileList | null,
+    field: "extra_assets_files" | "font_files_uploads",
+    setLoading: (v: boolean) => void,
+  ) => {
+    if (!files || files.length === 0) return;
+    setLoading(true);
+
+    const existing = gate[field] || [];
+    const newFiles: UploadedFile[] = [];
+
+    for (const file of Array.from(files)) {
+      const formData = new FormData();
+      formData.append("file", file);
+      try {
+        const res = await fetch("/api/handover-files/upload", { method: "POST", body: formData });
+        const data = await res.json();
+        if (res.ok) {
+          newFiles.push({
+            filename: data.filename,
+            originalName: data.originalName,
+            url: data.url,
+            size: data.size,
+            type: data.type,
+            uploaded_at: new Date().toISOString(),
+          });
+        }
+      } catch { /* skip failed individual files */ }
+    }
+
+    const updated = { ...gate, [field]: [...existing, ...newFiles] };
+    await saveGate(updated);
+    setLoading(false);
+  };
+
+  const handleHandoverFileDelete = async (
+    field: "extra_assets_files" | "font_files_uploads",
+    filename: string,
+  ) => {
+    try {
+      await fetch("/api/handover-files/upload", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename }),
+      });
+    } catch { /* file may already be gone */ }
+
+    const updated = { ...gate, [field]: (gate[field] || []).filter(f => f.filename !== filename) };
     await saveGate(updated);
   };
 
@@ -428,10 +484,11 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
       )}
 
       {/* ══════════════════════════════════════════
-          DESIGN HANDOFF — Figma, Loom, Assets, Fonts + checklist
+          DESIGN HANDOFF — Figma, Loom, Asset uploads, Font uploads + checklist
          ══════════════════════════════════════════ */}
       {config.type === "design-handoff" && (
-        <div className="space-y-5 mb-8">
+        <div className="space-y-6 mb-8">
+          {/* Figma Link */}
           <div>
             <label className="text-[11px] font-medium text-[#555] block mb-1.5">
               Figma Link <span className="text-red-400">*</span>
@@ -441,8 +498,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
               value={gate.figma_url || ""}
               onChange={(e) => {
                 if (isSubmitted) return;
-                const updated = { ...gate, figma_url: e.target.value };
-                setGateLocal(updated);
+                setGateLocal({ ...gate, figma_url: e.target.value });
               }}
               onBlur={() => saveGate(gate)}
               disabled={isSubmitted}
@@ -452,6 +508,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
             <p className="text-[10px] text-[#BBB] mt-1">Link to the final design file</p>
           </div>
 
+          {/* Loom Walkthrough */}
           <div>
             <label className="text-[11px] font-medium text-[#555] block mb-1.5">
               Loom Walkthrough <span className="text-red-400">*</span>
@@ -461,8 +518,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
               value={gate.loom_url || ""}
               onChange={(e) => {
                 if (isSubmitted) return;
-                const updated = { ...gate, loom_url: e.target.value };
-                setGateLocal(updated);
+                setGateLocal({ ...gate, loom_url: e.target.value });
               }}
               onBlur={() => saveGate(gate)}
               disabled={isSubmitted}
@@ -472,36 +528,133 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
             <p className="text-[10px] text-[#BBB] mt-1">Walk the developer through the design</p>
           </div>
 
+          {/* Font Files — REQUIRED */}
           <div>
-            <label className="text-[11px] font-medium text-[#555] block mb-1.5">Extra Assets</label>
-            <textarea
-              value={gate.extra_assets || ""}
-              onChange={(e) => {
-                if (isSubmitted) return;
-                const updated = { ...gate, extra_assets: e.target.value };
-                setGateLocal(updated);
-              }}
-              onBlur={() => saveGate(gate)}
-              disabled={isSubmitted}
-              placeholder="Drop links to any assets that can't be pulled from Figma (videos, images, icons, etc.)"
-              className={`${fieldClass} min-h-[70px] resize-y`}
-            />
+            <label className="text-[11px] font-medium text-[#555] block mb-2">
+              Font Files <span className="text-red-400">*</span>
+            </label>
+            {/* Uploaded font files list */}
+            {(gate.font_files_uploads || []).length > 0 && (
+              <div className="space-y-1.5 mb-3">
+                {(gate.font_files_uploads || []).map((f) => (
+                  <div key={f.filename} className="flex items-center gap-3 px-3 py-2.5 bg-[#FAFAFA] border border-[#E8E8E8] rounded-lg">
+                    <div className="size-8 rounded bg-white border border-[#E8E8E8] flex items-center justify-center shrink-0">
+                      <span className="text-[9px] font-bold text-[#999]">
+                        {f.originalName.split(".").pop()?.toUpperCase() || "FILE"}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-[#1A1A1A] truncate">{f.originalName}</p>
+                      <p className="text-[10px] text-[#BBB]">{formatFileSize(f.size)}</p>
+                    </div>
+                    <a href={f.url} target="_blank" rel="noopener noreferrer" className="p-1.5 text-[#999] hover:text-[#1A1A1A] transition-colors" title="Download">
+                      <ArrowDownTrayIcon className="size-3.5" />
+                    </a>
+                    {!isSubmitted && (
+                      <button onClick={() => handleHandoverFileDelete("font_files_uploads", f.filename)} className="p-1.5 text-[#CCC] hover:text-red-500 transition-colors" title="Remove">
+                        <TrashIcon className="size-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            {/* Upload button */}
+            {!isSubmitted && (
+              <label className={`flex items-center justify-center gap-2 py-3 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
+                uploadingFonts ? "border-[#CCC] bg-[#FAFAFA]" : "border-[#DDD] hover:border-[#999]"
+              }`}>
+                {uploadingFonts ? (
+                  <div className="flex items-center gap-2">
+                    <div className="size-4 border-2 border-[#CCC] border-t-[#1A1A1A] rounded-full animate-spin" />
+                    <span className="text-xs text-[#777]">Uploading...</span>
+                  </div>
+                ) : (
+                  <>
+                    <PlusIcon className="size-4 text-[#999]" />
+                    <span className="text-xs text-[#777]">Upload font files (.ttf, .otf, .woff, .woff2)</span>
+                  </>
+                )}
+                <input
+                  ref={fontsInputRef}
+                  type="file"
+                  multiple
+                  accept=".ttf,.otf,.woff,.woff2,.eot,font/ttf,font/otf,font/woff,font/woff2"
+                  onChange={(e) => {
+                    handleHandoverUpload(e.target.files, "font_files_uploads", setUploadingFonts);
+                    if (fontsInputRef.current) fontsInputRef.current.value = "";
+                  }}
+                  disabled={uploadingFonts || isSubmitted}
+                  className="hidden"
+                />
+              </label>
+            )}
+            {(gate.font_files_uploads || []).length === 0 && !uploadingFonts && (
+              <p className="text-[10px] text-red-400 mt-1.5">At least one font file is required</p>
+            )}
           </div>
 
+          {/* Extra Assets — OPTIONAL */}
           <div>
-            <label className="text-[11px] font-medium text-[#555] block mb-1.5">Font Files</label>
-            <textarea
-              value={gate.font_files || ""}
-              onChange={(e) => {
-                if (isSubmitted) return;
-                const updated = { ...gate, font_files: e.target.value };
-                setGateLocal(updated);
-              }}
-              onBlur={() => saveGate(gate)}
-              disabled={isSubmitted}
-              placeholder="Links to font files or Google Fonts URLs"
-              className={`${fieldClass} min-h-[50px] resize-y`}
-            />
+            <label className="text-[11px] font-medium text-[#555] block mb-2">
+              Extra Assets <span className="text-[10px] text-[#BBB] font-normal">(optional)</span>
+            </label>
+            {/* Uploaded asset files list */}
+            {(gate.extra_assets_files || []).length > 0 && (
+              <div className="space-y-1.5 mb-3">
+                {(gate.extra_assets_files || []).map((f) => (
+                  <div key={f.filename} className="flex items-center gap-3 px-3 py-2.5 bg-[#FAFAFA] border border-[#E8E8E8] rounded-lg">
+                    <div className="size-8 rounded bg-white border border-[#E8E8E8] flex items-center justify-center shrink-0">
+                      <span className="text-[9px] font-bold text-[#999]">
+                        {f.originalName.split(".").pop()?.toUpperCase() || "FILE"}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-[#1A1A1A] truncate">{f.originalName}</p>
+                      <p className="text-[10px] text-[#BBB]">{formatFileSize(f.size)}</p>
+                    </div>
+                    <a href={f.url} target="_blank" rel="noopener noreferrer" className="p-1.5 text-[#999] hover:text-[#1A1A1A] transition-colors" title="Download">
+                      <ArrowDownTrayIcon className="size-3.5" />
+                    </a>
+                    {!isSubmitted && (
+                      <button onClick={() => handleHandoverFileDelete("extra_assets_files", f.filename)} className="p-1.5 text-[#CCC] hover:text-red-500 transition-colors" title="Remove">
+                        <TrashIcon className="size-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            {/* Upload button */}
+            {!isSubmitted && (
+              <label className={`flex items-center justify-center gap-2 py-3 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
+                uploadingAssets ? "border-[#CCC] bg-[#FAFAFA]" : "border-[#DDD] hover:border-[#999]"
+              }`}>
+                {uploadingAssets ? (
+                  <div className="flex items-center gap-2">
+                    <div className="size-4 border-2 border-[#CCC] border-t-[#1A1A1A] rounded-full animate-spin" />
+                    <span className="text-xs text-[#777]">Uploading...</span>
+                  </div>
+                ) : (
+                  <>
+                    <PlusIcon className="size-4 text-[#999]" />
+                    <span className="text-xs text-[#777]">Upload assets (videos, images, icons, etc.)</span>
+                  </>
+                )}
+                <input
+                  ref={assetsInputRef}
+                  type="file"
+                  multiple
+                  onChange={(e) => {
+                    handleHandoverUpload(e.target.files, "extra_assets_files", setUploadingAssets);
+                    if (assetsInputRef.current) assetsInputRef.current.value = "";
+                  }}
+                  disabled={uploadingAssets || isSubmitted}
+                  className="hidden"
+                />
+              </label>
+            )}
+            <p className="text-[10px] text-[#BBB] mt-1.5">Videos, images, icons, or any files the dev can't pull from Figma</p>
           </div>
 
           <div className="border-t border-[#F0F0F0] pt-4">
@@ -563,7 +716,9 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
                     ? "Figma link required"
                     : config.type === "design-handoff" && !gate.loom_url?.trim()
                       ? "Loom video required"
-                      : `${progress.total - progress.checked} items remaining`
+                      : config.type === "design-handoff" && !(gate.font_files_uploads?.length)
+                        ? "Font files required"
+                        : `${progress.total - progress.checked} items remaining`
                 }
               </p>
               <button
