@@ -90,7 +90,16 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
 
   const [gate, setGateLocal] = useState<QAGate>(() => {
     const existing = gates[config.qaGateKey as keyof typeof gates] as QAGate | undefined;
-    if (existing) return existing;
+    if (existing) {
+      // If the checklist items have changed (different count or labels), reset to current definition
+      const definitionLabels = config.items;
+      const existingLabels = existing.items.map(i => i.label);
+      const itemsMatch = definitionLabels.length === existingLabels.length && definitionLabels.every((l, i) => l === existingLabels[i]);
+      if (!itemsMatch) {
+        return { ...existing, items: definitionLabels.map(label => ({ label, checked: false })) };
+      }
+      return existing;
+    }
     return createDefaultGate(config.items);
   });
   const [saving, setSaving] = useState(false);
