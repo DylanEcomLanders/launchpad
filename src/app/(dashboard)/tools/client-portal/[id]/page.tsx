@@ -493,10 +493,9 @@ export default function PortalDetailPage() {
 
   return (
     <div className="min-h-screen">
-      <div className={`mx-auto ${selectedProject ? "max-w-6xl px-6 md:px-10 py-16 md:py-24" : ""}`}>
+      <div className="mx-auto">
 
-        {/* ═══ TOP-LEVEL CLIENT VIEW (sidebar layout) ═══ */}
-        {!selectedProject && (
+        {/* ═══ UNIFIED SIDEBAR LAYOUT ═══ */}
           <div className="flex min-h-screen">
             {/* Left sidebar */}
             <div className="w-52 shrink-0 border-r border-[#E8E8E8] sticky top-0 self-start h-screen flex flex-col">
@@ -511,13 +510,72 @@ export default function PortalDetailPage() {
                 <h2 className="text-sm font-bold text-[#1A1A1A] truncate">{portal.client_name}</h2>
                 <p className="text-[10px] text-[#AAA] mt-0.5">{isRetainerPortal ? "Retainer" : "Project"}</p>
               </div>
-              <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-                {clientTabs.map((tab) => (
+              <nav className="flex-1 px-3 py-4 overflow-y-auto">
+                {/* Projects in sidebar */}
+                <p className="text-[10px] font-semibold text-[#BBB] uppercase tracking-wider px-3 mb-2">Projects</p>
+                {activeProjects.map((proj) => {
+                  const idx = (portal.projects || []).findIndex(p => p.id === proj.id);
+                  const isSelected = selectedProjectIdx === idx;
+                  return (
+                    <div key={proj.id}>
+                      <button
+                        onClick={() => {
+                          if (isSelected) {
+                            setSelectedProjectIdx(-1);
+                            setClientTab("projects");
+                          } else {
+                            setSelectedProjectIdx(idx);
+                            setActiveTab("overview");
+                          }
+                        }}
+                        className={`w-full text-left px-3 py-2 text-[13px] font-medium rounded-lg transition-colors mb-0.5 ${
+                          isSelected
+                            ? "bg-[#1A1A1A] text-white"
+                            : "text-[#777] hover:bg-[#FAFAFA] hover:text-[#1A1A1A]"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className={`size-1.5 rounded-full shrink-0 ${proj.status === "active" ? "bg-emerald-500" : proj.status === "paused" ? "bg-amber-500" : "bg-[#CCC]"}`} />
+                          <span className="truncate">{proj.name}</span>
+                        </div>
+                      </button>
+                      {isSelected && (
+                        <div className="ml-5 pl-3 mb-2 border-l border-[#E5E5EA]">
+                          {dashTabs.map((tab) => (
+                            <button
+                              key={tab.key}
+                              onClick={() => setActiveTab(tab.key)}
+                              className={`w-full text-left px-2.5 py-1.5 text-[12px] rounded-md transition-colors mb-0.5 ${
+                                activeTab === tab.key
+                                  ? "text-[#1A1A1A] font-medium bg-[#F0F0F0]"
+                                  : "text-[#999] hover:text-[#1A1A1A] hover:bg-[#FAFAFA]"
+                              }`}
+                            >
+                              {tab.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                <button
+                  onClick={() => setShowAddProjectModal(true)}
+                  className="w-full text-left px-3 py-1.5 text-[11px] text-[#BBB] hover:text-[#1A1A1A] transition-colors rounded-lg mb-2"
+                >
+                  + Add Project
+                </button>
+
+                {/* Divider */}
+                <div className="border-t border-[#E8E8E8] my-3" />
+
+                {/* Client-level tabs */}
+                {clientTabs.filter(t => t.key !== "projects").map((tab) => (
                   <button
                     key={tab.key}
-                    onClick={() => setClientTab(tab.key)}
-                    className={`w-full text-left px-3 py-2 text-[13px] font-medium rounded-lg transition-colors ${
-                      clientTab === tab.key
+                    onClick={() => { setSelectedProjectIdx(-1); setClientTab(tab.key); }}
+                    className={`w-full text-left px-3 py-2 text-[13px] font-medium rounded-lg transition-colors mb-0.5 ${
+                      !selectedProject && clientTab === tab.key
                         ? "bg-[#1A1A1A] text-white"
                         : "text-[#777] hover:bg-[#FAFAFA] hover:text-[#1A1A1A]"
                     }`}
@@ -598,8 +656,8 @@ export default function PortalDetailPage() {
               {/* Tab content */}
               <div className="max-w-3xl mx-auto px-6 md:px-12 py-10">
 
-        {/* ── Projects tab ── */}
-        {clientTab === "projects" && (<>
+        {/* ── No project selected: show overview / retainer health ── */}
+        {!selectedProject && clientTab === "projects" && (<>
           {/* Retainer Health Summary */}
           {isRetainerPortal && (() => {
             const tests = (portal.results || []).filter(t => !(t as any).deleted_at);
@@ -647,73 +705,59 @@ export default function PortalDetailPage() {
               </div>
             );
           })()}
-        </>)}
 
-        {/* Projects list (inside projects tab) */}
-        {clientTab === "projects" && (
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-semibold text-[#1A1A1A]">Projects</h3>
-              <button
-                onClick={() => setShowAddProjectModal(true)}
-                className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] whitespace-nowrap"
-              >
-                + Add Project
-              </button>
-            </div>
-            <div className="divide-y divide-[#E8E8E8]">
-              {activeProjects.map((proj) => {
-                const idx = (portal.projects || []).findIndex(p => p.id === proj.id);
-                const startDate = proj.created_at ? new Date(proj.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
-                return (
-                  <div key={proj.id} className="flex items-center justify-between px-3.5 py-3.5 hover:bg-[#FAFAFA] transition-colors rounded-lg group/proj">
-                    <button onClick={() => setSelectedProjectIdx(idx)} className="flex-1 text-left min-w-0">
-                      <p className="text-sm font-semibold text-[#1A1A1A]">{proj.name}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <p className="text-[10px] text-[#AAA]">
-                          {proj.type === "retainer" ? "Retainer" : "Page Build"}
-                          {startDate ? ` · Started ${startDate}` : ""}
-                          {proj.current_phase ? ` · ${proj.current_phase}` : ""}
-                        </p>
-                        <GateStatusPills project={proj} />
-                      </div>
-                    </button>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleDeleteProject(proj.id); }}
-                        className={`p-1 transition-colors opacity-0 group-hover/proj:opacity-100 ${confirmDeleteProjectId === proj.id ? "text-red-500" : "text-[#CCC] hover:text-red-400"}`}
-                        title={confirmDeleteProjectId === proj.id ? "Click again to confirm" : "Delete project"}
-                      >
-                        <TrashIcon className="size-3.5" />
-                      </button>
-                      <span className={`size-1.5 rounded-full ${proj.status === "active" ? "bg-emerald-500" : proj.status === "paused" ? "bg-amber-500" : "bg-[#CCC]"}`} />
-                      <svg className="size-4 text-[#DDD]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
-                    </div>
+          {/* Quick project overview cards */}
+          <div className="space-y-3">
+            {activeProjects.map((proj) => {
+              const idx = (portal.projects || []).findIndex(p => p.id === proj.id);
+              const startDate = proj.created_at ? new Date(proj.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
+              return (
+                <button
+                  key={proj.id}
+                  onClick={() => { setSelectedProjectIdx(idx); setActiveTab("overview"); }}
+                  className="w-full text-left border border-[#E8E8E8] rounded-lg p-4 hover:bg-[#FAFAFA] transition-colors group/proj"
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-sm font-semibold text-[#1A1A1A]">{proj.name}</p>
+                    <span className={`size-2 rounded-full ${proj.status === "active" ? "bg-emerald-500" : proj.status === "paused" ? "bg-amber-500" : "bg-[#CCC]"}`} />
                   </div>
-                );
-              })}
-              {activeProjects.length === 0 && (
-                <p className="text-xs text-[#CCC] py-4">No projects yet — add one above</p>
-              )}
-            </div>
-            {trashedProjects.length > 0 && (
-              <div className="mt-3 border border-[#E8E8E8] rounded-lg p-3 bg-[#FAFAFA]">
-                <p className="text-[10px] font-semibold text-[#1A1A1A] mb-2">Trash ({trashedProjects.length})</p>
-                <div className="space-y-1.5">
-                  {trashedProjects.map(proj => (
-                    <div key={proj.id} className="flex items-center justify-between px-3 py-2 bg-white rounded border border-[#E8E8E8]">
-                      <p className="text-xs text-[#777]">{proj.name}</p>
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => handleRestoreProject(proj.id)} className="text-[10px] text-emerald-600 hover:text-emerald-700">Restore</button>
-                        <button onClick={() => handlePermanentDeleteProject(proj.id)} className="text-[10px] text-red-400 hover:text-red-600">Delete Forever</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-[10px] text-[#AAA]">
+                      {proj.type === "retainer" ? "Retainer" : "Page Build"}
+                      {startDate ? ` · Started ${startDate}` : ""}
+                      {proj.current_phase ? ` · ${proj.current_phase}` : ""}
+                    </p>
+                    <GateStatusPills project={proj} />
+                  </div>
+                </button>
+              );
+            })}
+            {activeProjects.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-sm text-[#CCC] mb-1">No projects yet</p>
+                <p className="text-xs text-[#DDD]">Add a project from the sidebar</p>
               </div>
             )}
           </div>
-        )}
+
+          {/* Trash */}
+          {trashedProjects.length > 0 && (
+            <div className="mt-4 border border-[#E8E8E8] rounded-lg p-3 bg-[#FAFAFA]">
+              <p className="text-[10px] font-semibold text-[#1A1A1A] mb-2">Trash ({trashedProjects.length})</p>
+              <div className="space-y-1.5">
+                {trashedProjects.map(proj => (
+                  <div key={proj.id} className="flex items-center justify-between px-3 py-2 bg-white rounded border border-[#E8E8E8]">
+                    <p className="text-xs text-[#777]">{proj.name}</p>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => handleRestoreProject(proj.id)} className="text-[10px] text-emerald-600 hover:text-emerald-700">Restore</button>
+                      <button onClick={() => handlePermanentDeleteProject(proj.id)} className="text-[10px] text-red-400 hover:text-red-600">Delete Forever</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>)}
 
         {/* ── Tickets tab ── */}
         {clientTab === "tickets" && portalTickets.length > 0 && (() => {
@@ -804,51 +848,9 @@ export default function PortalDetailPage() {
           <ClientDetailsPanel portal={portal} team={team} onUpdateField={handleUpdateField} />
         )}
 
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ═══ PROJECT DRILLED-IN VIEW ═══ */}
-        {selectedProject && (
-          <div className="flex gap-8">
-            {/* Left sidebar */}
-            <div className="w-52 shrink-0 sticky top-24 self-start">
-              <button
-                onClick={() => setSelectedProjectIdx(-1)}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors mb-5"
-              >
-                <ArrowLeftIcon className="size-3" />
-                Back
-              </button>
-
-              <p className="text-sm font-bold text-[#1A1A1A] mb-0.5 truncate">{selectedProject.name}</p>
-              <p className="text-[11px] text-[#AAA] mb-5">
-                {selectedProject.type === "retainer" ? "Retainer" : "Page Build"}
-              </p>
-
-              {/* Nav links */}
-              <nav className="space-y-0.5 mb-6">
-                {dashTabs.map((tab) => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setActiveTab(tab.key)}
-                    className={`w-full text-left px-3 py-2 text-[13px] font-medium rounded-lg transition-colors ${
-                      activeTab === tab.key
-                        ? "bg-[#1A1A1A] text-white"
-                        : "text-[#777] hover:bg-[#FAFAFA] hover:text-[#1A1A1A]"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </nav>
-            </div>
-
-            {/* Right content */}
-            <div className="flex-1 min-w-0">
+        {/* ═══ PROJECT CONTENT (selected project) ═══ */}
         {/* ── OVERVIEW: QA gates + overview + context/weekly ── */}
-        {activeTab === "overview" && (
+        {selectedProject && activeTab === "overview" && (
           <div className="space-y-8">
             {/* QA Gate cards at top of overview */}
             {portal && (
@@ -893,7 +895,7 @@ export default function PortalDetailPage() {
 
 
         {/* ── BUILD: Updates + Designs + Development ── */}
-        {activeTab === "build" && portal && (
+        {selectedProject && activeTab === "build" && portal && (
           <div className="space-y-10">
             {/* Updates */}
             <div>
@@ -938,7 +940,7 @@ export default function PortalDetailPage() {
         )}
 
         {/* ── RESULTS: Testing + Funnels + Reports ── */}
-        {activeTab === "results" && portal && (
+        {selectedProject && activeTab === "results" && portal && (
           <div className="space-y-10">
             {/* Testing */}
             <div>
@@ -1015,9 +1017,9 @@ export default function PortalDetailPage() {
           </div>
         )}
 
+              </div>
             </div>
           </div>
-        )}
 
         {/* Blocker flag modal */}
         {showBlockerModal && (
