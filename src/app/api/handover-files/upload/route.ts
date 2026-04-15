@@ -31,10 +31,13 @@ export async function POST(req: NextRequest) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
+    // Font files often have empty or generic MIME types — use a sensible fallback
+    const contentType = file.type || "application/octet-stream";
+
     const { error } = await supabase.storage
       .from(BUCKET)
       .upload(filename, buffer, {
-        contentType: file.type,
+        contentType,
         upsert: false,
       });
 

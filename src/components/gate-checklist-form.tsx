@@ -223,22 +223,32 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
       formData.append("file", file);
       try {
         const res = await fetch("/api/handover-files/upload", { method: "POST", body: formData });
-        const data = await res.json();
-        if (res.ok) {
-          newFiles.push({
-            filename: data.filename,
-            originalName: data.originalName,
-            url: data.url,
-            size: data.size,
-            type: data.type,
-            uploaded_at: new Date().toISOString(),
-          });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          console.error("Upload failed:", err);
+          continue;
         }
-      } catch { /* skip failed individual files */ }
+        const data = await res.json();
+        newFiles.push({
+          filename: data.filename,
+          originalName: data.originalName,
+          url: data.url,
+          size: data.size,
+          type: data.type,
+          uploaded_at: new Date().toISOString(),
+        });
+      } catch (err) {
+        console.error("Upload error:", err);
+      }
     }
 
-    const updated = { ...gateRef.current, [field]: [...existing, ...newFiles] };
-    await saveGate(updated);
+    if (newFiles.length > 0) {
+      // Read the latest gate ref again in case something changed during upload
+      const latestGate = gateRef.current;
+      const latestExisting = latestGate[field] || [];
+      const updated = { ...latestGate, [field]: [...latestExisting, ...newFiles] };
+      await saveGate(updated);
+    }
     setLoading(false);
   };
 
