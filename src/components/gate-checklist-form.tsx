@@ -5,9 +5,11 @@ import { CheckIcon, DocumentArrowUpIcon, TrashIcon, ArrowDownTrayIcon, EyeIcon, 
 import type { QAGate, PortalProject, GateKey, BriefFile, UploadedFile } from "@/lib/portal/types";
 import type { PortalData } from "@/lib/portal/types";
 import {
-  CRO_BRIEF_ITEMS, DESIGN_HANDOFF_ITEMS, DEV_HANDOFF_ITEMS,
+  CRO_BRIEF_ITEMS, DESIGN_HANDOFF_ITEMS, DEV_HANDOFF_ITEMS, DEV_HANDOFF_CATEGORIES,
   createDefaultGate, getGateProgress, isGateComplete, isDesignHandoffComplete,
 } from "@/lib/portal/qa-gates";
+import type { GateCategory } from "@/lib/portal/qa-gates";
+import { ChevronDownIcon } from "@heroicons/react/24/solid";
 
 /* ── Launch prep items ── */
 const LAUNCH_PREP_ITEMS = [
@@ -29,7 +31,8 @@ const gateMapping: Record<GateKey, {
   subtitle: string;
   color: string;
   items: string[];
-  type: "design-brief" | "design-handoff" | "checklist" | "launch-prep";
+  type: "design-brief" | "design-handoff" | "checklist" | "categorised-checklist" | "launch-prep";
+  categories?: GateCategory[];
 }> = {
   "design-brief": {
     qaGateKey: "cro_brief",
@@ -53,7 +56,8 @@ const gateMapping: Record<GateKey, {
     subtitle: "Self-QA before submitting for internal review",
     color: "#059669",
     items: DEV_HANDOFF_ITEMS,
-    type: "checklist",
+    type: "categorised-checklist",
+    categories: DEV_HANDOFF_CATEGORIES,
   },
   "handoff-testing": {
     qaGateKey: "launch_prep",
@@ -109,6 +113,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
   const [textContent, setTextContent] = useState<string | null>(null);
   const [uploadingAssets, setUploadingAssets] = useState(false);
   const [uploadingFonts, setUploadingFonts] = useState(false);
+  const [collapsedCats, setCollapsedCats] = useState<Record<string, boolean>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const assetsInputRef = useRef<HTMLInputElement>(null);
   const fontsInputRef = useRef<HTMLInputElement>(null);
@@ -691,9 +696,106 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
       )}
 
       {/* ══════════════════════════════════════════
-          CHECKLIST items (dev-handoff, dev-qa, launch-prep, design-handoff confirm)
+          CATEGORISED CHECKLIST (dev-qa)
          ══════════════════════════════════════════ */}
-      {config.type !== "design-brief" && (
+      {config.type === "categorised-checklist" && config.categories && (
+        <>
+          <div className="space-y-3 mb-6">
+            {config.categories.map((cat) => {
+              const catItems = gate.items.slice(cat.startIndex, cat.startIndex + cat.count);
+              const catChecked = catItems.filter(i => i.checked).length;
+              const catComplete = catChecked === cat.count;
+              const isCollapsed = collapsedCats[cat.label] ?? catComplete;
+
+              return (
+                <div key={cat.label} className={`border rounded-xl overflow-hidden transition-colors ${catComplete ? "border-emerald-200 bg-emerald-50/20" : "border-[#E8E8E8]"}`}>
+                  {/* Category header */}
+                  <button
+                    onClick={() => setCollapsedCats(prev => ({ ...prev, [cat.label]: !isCollapsed }))}
+                    className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-[#FAFAFA] transition-colors"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <ChevronDownIcon className={`size-3.5 text-[#999] transition-transform duration-200 ${isCollapsed ? "-rotate-90" : ""}`} />
+                      <span className={`text-sm font-medium ${catComplete ? "text-emerald-700" : "text-[#1A1A1A]"}`}>
+                        {cat.label}
+                      </span>
+                      {catComplete && (
+                        <CheckIcon className="size-4 text-emerald-500" />
+                      )}
+                    </div>
+                    <span className={`text-[11px] font-medium tabular-nums ${catComplete ? "text-emerald-600" : "text-[#AAA]"}`}>
+                      {catChecked}/{cat.count}
+                    </span>
+                  </button>
+
+                  {/* Category items */}
+                  {!isCollapsed && (
+                    <div className="px-4 pb-3 space-y-1.5">
+                      {catItems.map((item, localIdx) => {
+                        const globalIdx = cat.startIndex + localIdx;
+                        return (
+                          <label
+                            key={globalIdx}
+                            className={`flex items-start gap-3 p-2.5 rounded-lg transition-colors cursor-pointer ${
+                              item.checked ? "bg-emerald-50/50" : "hover:bg-[#FAFAFA]"
+                            } ${isSubmitted ? "pointer-events-none opacity-60" : ""}`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={item.checked}
+                              disabled={isSubmitted}
+                              onChange={() => toggleItem(globalIdx)}
+                              className="size-4 mt-0.5 rounded border-[#CCC] text-emerald-600 focus:ring-0 focus:ring-offset-0"
+                            />
+                            <span className={`text-sm ${item.checked ? "text-[#999] line-through" : "text-[#555]"}`}>{item.label}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Notes */}
+          <div className="mb-6">
+            <label className="text-[11px] font-medium text-[#555] block mb-1.5">Notes / Additional Context</label>
+            <textarea
+              value={gate.notes}
+              onChange={(e) => {
+                if (isSubmitted) return;
+                setGateLocal({ ...gate, notes: e.target.value });
+              }}
+              onBlur={() => saveGate(gate)}
+              disabled={isSubmitted}
+              placeholder="Add links, context, or notes..."
+              className={`${fieldClass} min-h-[80px] resize-y`}
+            />
+          </div>
+
+          {/* Submit */}
+          {!isSubmitted && (
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] text-[#AAA]">
+                {isReady ? "All items checked — ready to submit" : `${progress.total - progress.checked} items remaining`}
+              </p>
+              <button
+                onClick={handleSubmit}
+                disabled={!isReady}
+                className="px-5 py-2.5 text-sm font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+              >
+                Submit
+              </button>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ══════════════════════════════════════════
+          FLAT CHECKLIST (design-handoff confirm, launch-prep)
+         ══════════════════════════════════════════ */}
+      {(config.type === "checklist" || config.type === "design-handoff" || config.type === "launch-prep") && (
         <>
           <div className="space-y-2 mb-6">
             {gate.items.map((item, i) => (

@@ -19,13 +19,53 @@ export const DESIGN_HANDOFF_ITEMS = [
 ];
 
 export const DEV_HANDOFF_ITEMS = [
-  "Matches Figma pixel-perfect",
-  "Mobile responsive tested",
-  "Cross-browser tested (Chrome, Safari, Firefox)",
-  "Page speed acceptable",
+  // Figma Accuracy
+  "Spacing and padding matches Figma exactly",
+  "Font sizes, weights, and line heights match Figma",
+  "Colours match design system — no wrong shades or textures",
+  "Layout structure matches Figma on desktop (1440px)",
+  "Layout structure matches Figma on mobile (375px)",
+  // Images & Assets
+  "All images are high quality — no blurry or pixelated assets",
+  "Images optimised (WebP, lazy-loaded, correct dimensions)",
+  "Product images are correct and display properly in all sections",
+  "Icons and graphics are SVG where applicable",
+  // Functionality
+  "All carousels and sliders swipe correctly with proper controls",
+  "Bundle selector works — correct quantities, variants, and pricing",
+  "Add to cart works and adds the correct items",
+  "Cart item removal works",
+  "Upsells and cross-sells function correctly",
+  "All dropdowns, tabs, and accordion sections work",
+  "Sticky elements appear and disappear at correct scroll positions",
+  // Responsive & Devices
+  "Tested on a real mobile device (not just Chrome devtools)",
+  "No layout breaks between 320px and 1600px",
+  "No horizontal scroll at any viewport",
+  "Pinch-to-zoom doesn't break the layout",
+  // Performance & Code
+  "Page loads under 3 seconds on mobile (Lighthouse check)",
   "No console errors",
-  "All links/CTAs working",
-  "Staging URL provided",
+  "No broken links or dead CTAs",
+  "Theme changes haven't broken other pages on the site",
+  // Pre-Handover
+  "Staging URL provided and accessible",
+  "Copy matches approved design exactly — no typos or missing text",
+];
+
+export interface GateCategory {
+  label: string;
+  startIndex: number;
+  count: number;
+}
+
+export const DEV_HANDOFF_CATEGORIES: GateCategory[] = [
+  { label: "Figma Accuracy", startIndex: 0, count: 5 },
+  { label: "Images & Assets", startIndex: 5, count: 4 },
+  { label: "Functionality", startIndex: 9, count: 7 },
+  { label: "Responsive & Devices", startIndex: 16, count: 4 },
+  { label: "Performance & Code", startIndex: 20, count: 4 },
+  { label: "Pre-Handover", startIndex: 24, count: 2 },
 ];
 
 /** Create a fresh gate with all items unchecked */
