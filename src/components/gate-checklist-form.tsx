@@ -116,13 +116,17 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
   const progress = getGateProgress(gate);
   const isSubmitted = gate.status === "submitted";
 
+  // Use a ref to always have the latest gates when saving, avoiding stale closures
+  const gatesRef = useRef(gates);
+  gatesRef.current = gates;
+
   const saveGate = useCallback(async (updatedGate: QAGate) => {
     setSaving(true);
     setGateLocal(updatedGate);
-    const newGates = { ...gates, [config.qaGateKey]: updatedGate };
+    const newGates = { ...gatesRef.current, [config.qaGateKey]: updatedGate };
     await onUpdate({ qa_gates: newGates });
     setSaving(false);
-  }, [gates, config.qaGateKey, onUpdate]);
+  }, [config.qaGateKey, onUpdate]);
 
   const toggleItem = (idx: number) => {
     if (isSubmitted) return;
@@ -198,6 +202,10 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
     await saveGate(updated);
   };
 
+  // Keep a ref to the latest gate for async handlers
+  const gateRef = useRef(gate);
+  gateRef.current = gate;
+
   /* ── Multi-file upload for handover (assets + fonts) ── */
   const handleHandoverUpload = async (
     files: FileList | null,
@@ -207,7 +215,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
     if (!files || files.length === 0) return;
     setLoading(true);
 
-    const existing = gate[field] || [];
+    const existing = gateRef.current[field] || [];
     const newFiles: UploadedFile[] = [];
 
     for (const file of Array.from(files)) {
@@ -229,7 +237,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
       } catch { /* skip failed individual files */ }
     }
 
-    const updated = { ...gate, [field]: [...existing, ...newFiles] };
+    const updated = { ...gateRef.current, [field]: [...existing, ...newFiles] };
     await saveGate(updated);
     setLoading(false);
   };
@@ -246,7 +254,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
       });
     } catch { /* file may already be gone */ }
 
-    const updated = { ...gate, [field]: (gate[field] || []).filter(f => f.filename !== filename) };
+    const updated = { ...gateRef.current, [field]: (gateRef.current[field] || []).filter(f => f.filename !== filename) };
     await saveGate(updated);
   };
 
