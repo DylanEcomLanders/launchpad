@@ -58,12 +58,15 @@ import type {
   PortalReport,
   BlockerHistory,
   ContextEntry,
+  GateKey,
+  GateData,
 } from "@/lib/portal/types";
 import { cyclePhaseStatus, canPhaseAdvance } from "@/lib/portal/phase-logic";
 import { syncDeliverableToBoard } from "@/lib/portal/task-sync";
 import { deliverableTypes } from "@/lib/config";
 import { BrandedReport } from "@/components/branded-report";
 import { InternalSection, GateStatusPills } from "@/components/internal-section";
+import { GateChecklistForm } from "@/components/gate-checklist-form";
 import type {
   DesignReview,
   DesignReviewVersion,
@@ -71,6 +74,7 @@ import type {
 } from "@/lib/portal/review-types";
 
 type DashTab = "overview" | "build" | "results" | "design-brief" | "dev-handover" | "dev-qa" | "handoff-testing";
+type GateStatus = "not-started" | "in-progress" | "passed" | "failed";
 type ClientTab = "projects" | "context" | "tickets" | "funnels" | "settings";
 
 export default function PortalDetailPage() {
@@ -140,7 +144,7 @@ export default function PortalDetailPage() {
       }
       // Set default tab based on client type (only on first load)
       if (!defaultTabSet && p) {
-        if (p.client_type === "retainer") setActiveTab("handoff-testing");
+        if (p.client_type === "retainer") setActiveTab("results");
         setDefaultTabSet(true);
       }
       setUpdates(u);
@@ -472,13 +476,19 @@ export default function PortalDetailPage() {
 
   const isRetainerPortal = portal.client_type === "retainer";
 
-  // Gate-based tabs matching the project flow assembly line
-  const dashTabs: { key: DashTab; label: string; gate?: boolean }[] = [
+  // Project content tabs
+  const dashTabs: { key: DashTab; label: string }[] = [
     { key: "overview", label: "Overview" },
-    { key: "design-brief", label: "Design Brief", gate: true },
-    { key: "dev-handover", label: "Dev Handover", gate: true },
-    { key: "dev-qa", label: "Dev QA", gate: true },
-    { key: "handoff-testing", label: "Handoff / Testing", gate: true },
+    { key: "build", label: "Build" },
+    { key: "results", label: "Results" },
+  ];
+
+  // QA gate tabs — checklist forms the team completes at each stage
+  const gateTabs: { key: DashTab; label: string }[] = [
+    { key: "design-brief", label: "Design Brief" },
+    { key: "dev-handover", label: "Dev Handover" },
+    { key: "dev-qa", label: "Dev QA" },
+    { key: "handoff-testing", label: "Handoff / Testing" },
   ];
 
   const allContextEntries = [
@@ -547,16 +557,36 @@ export default function PortalDetailPage() {
                             <button
                               key={tab.key}
                               onClick={() => setActiveTab(tab.key)}
-                              className={`w-full text-left px-2.5 py-1.5 text-[12px] rounded-md transition-colors mb-0.5 flex items-center gap-1.5 ${
+                              className={`w-full text-left px-2.5 py-1.5 text-[12px] rounded-md transition-colors mb-0.5 ${
                                 activeTab === tab.key
                                   ? "text-[#1A1A1A] font-medium bg-[#F0F0F0]"
                                   : "text-[#999] hover:text-[#1A1A1A] hover:bg-[#FAFAFA]"
                               }`}
                             >
-                              {tab.gate && <span className="text-[9px] text-amber-500">●</span>}
                               {tab.label}
                             </button>
                           ))}
+                          {/* QA Gates */}
+                          <p className="text-[9px] font-semibold text-[#CCC] uppercase tracking-wider px-2.5 mt-2 mb-1">Gates</p>
+                          {gateTabs.map((tab) => {
+                            const gateData = proj.gates?.[tab.key as GateKey];
+                            const status: GateStatus = gateData?.status || "not-started";
+                            const dotColor = status === "passed" ? "bg-emerald-500" : status === "in-progress" ? "bg-amber-400" : status === "failed" ? "bg-red-500" : "bg-[#DDD]";
+                            return (
+                              <button
+                                key={tab.key}
+                                onClick={() => setActiveTab(tab.key)}
+                                className={`w-full text-left px-2.5 py-1.5 text-[12px] rounded-md transition-colors mb-0.5 flex items-center gap-1.5 ${
+                                  activeTab === tab.key
+                                    ? "text-[#1A1A1A] font-medium bg-[#F0F0F0]"
+                                    : "text-[#999] hover:text-[#1A1A1A] hover:bg-[#FAFAFA]"
+                                }`}
+                              >
+                                <span className={`size-1.5 rounded-full shrink-0 ${dotColor}`} />
+                                {tab.label}
+                              </button>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
@@ -897,8 +927,8 @@ export default function PortalDetailPage() {
         )}
 
 
-        {/* ── DESIGN BRIEF: Updates + Design Reviews ── */}
-        {selectedProject && activeTab === "design-brief" && portal && (
+        {/* ── BUILD: Updates + Designs + Development ── */}
+        {selectedProject && activeTab === "build" && portal && (
           <div className="space-y-10">
             <div>
               <UpdatesSection
@@ -924,26 +954,6 @@ export default function PortalDetailPage() {
                 onReviewsChange={setReviews}
               />
             </div>
-          </div>
-        )}
-
-        {/* ── DEV HANDOVER: Design-to-Dev Handoff ── */}
-        {selectedProject && activeTab === "dev-handover" && portal && (
-          <div className="space-y-10">
-            <div>
-              <h3 className="text-xs font-semibold text-[#1A1A1A] mb-4">Design & Dev Handover</h3>
-              <DesignsSection
-                portal={portal}
-                reviews={reviews}
-                onReviewsChange={setReviews}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* ── DEV QA: Development + Page Reviews ── */}
-        {selectedProject && activeTab === "dev-qa" && portal && (
-          <div className="space-y-10">
             <div>
               <h3 className="text-xs font-semibold text-[#1A1A1A] mb-4">Development</h3>
               <DevelopmentSection
@@ -957,8 +967,26 @@ export default function PortalDetailPage() {
           </div>
         )}
 
-        {/* ── HANDOFF / TESTING: Testing + Funnels + Reports ── */}
-        {selectedProject && activeTab === "handoff-testing" && portal && (
+        {/* ── QA GATE FORMS ── */}
+        {selectedProject && (activeTab === "design-brief" || activeTab === "dev-handover" || activeTab === "dev-qa" || activeTab === "handoff-testing") && portal && (
+          <GateChecklistForm
+            gateKey={activeTab as GateKey}
+            project={selectedProject}
+            portal={portal}
+            onUpdate={async (gateData: GateData) => {
+              const updatedProjects = portal.projects.map((p) =>
+                p.id === selectedProject.id
+                  ? { ...p, gates: { ...(p.gates || {}), [activeTab]: gateData } }
+                  : p
+              );
+              await updatePortal(portal.id, { projects: updatedProjects } as any);
+              setPortal({ ...portal, projects: updatedProjects });
+            }}
+          />
+        )}
+
+        {/* ── RESULTS: Testing + Funnels + Reports ── */}
+        {selectedProject && activeTab === "results" && portal && (
           <div className="space-y-10">
             <div>
               <TestingSection

@@ -143,6 +143,26 @@ export interface QAGates {
   cro_brief_enabled?: boolean;
 }
 
+/* ── Project Flow Gates (assembly line checkpoints) ── */
+
+export interface GateCheckItem {
+  id: string;
+  label: string;
+  checked: boolean;
+}
+
+export interface GateData {
+  status: "not-started" | "in-progress" | "passed" | "failed";
+  items: GateCheckItem[];
+  notes: string;
+  completed_by?: string;
+  completed_at?: string;
+}
+
+export type GateKey = "design-brief" | "dev-handover" | "dev-qa" | "handoff-testing";
+
+export type ProjectGates = Partial<Record<GateKey, GateData>>;
+
 /* ── Project Context ── */
 
 export interface ContextEntry {
@@ -191,6 +211,7 @@ export interface PortalProject {
 
   // Internal (not client-facing)
   qa_gates?: QAGates;
+  gates?: ProjectGates;
   context_entries?: ContextEntry[];
   weekly_deliverables?: WeeklyDeliverable[];
 }
