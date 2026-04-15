@@ -970,6 +970,7 @@ export default function PortalDetailPage() {
         {/* ── QA GATE FORMS ── */}
         {selectedProject && (activeTab === "design-brief" || activeTab === "dev-handover" || activeTab === "dev-qa" || activeTab === "handoff-testing") && portal && (
           <GateChecklistForm
+            key={`${selectedProject.id}-${activeTab}`}
             gateKey={activeTab as GateKey}
             project={selectedProject}
             portal={portal}
