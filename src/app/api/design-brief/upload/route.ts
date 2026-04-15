@@ -1,15 +1,26 @@
-/* ── Design Brief Upload API ──
- * POST: Upload brief file to Supabase Storage bucket `design-briefs`
- * DELETE: Remove file from Supabase Storage
+/* ── Universal File Upload API ──
+ * POST: Upload file to specified Supabase Storage bucket (via ?bucket= query param)
+ * DELETE: Remove file from specified bucket
+ * Defaults to 'design-briefs' bucket if none specified
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
-const BUCKET = "design-briefs";
+const ALLOWED_BUCKETS = ["design-briefs", "handover-files"];
+const MAX_SIZE = 50 * 1024 * 1024; // 50MB
+
+function getBucket(req: NextRequest): string {
+  return req.nextUrl.searchParams.get("bucket") || "design-briefs";
+}
 
 export async function POST(req: NextRequest) {
   try {
+    const bucket = getBucket(req);
+    if (!ALLOWED_BUCKETS.includes(bucket)) {
+      return NextResponse.json({ error: "Invalid bucket" }, { status: 400 });
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
 
@@ -17,49 +28,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Validate file type — Word docs, PDFs, plain text
-    const allowed = [
-      "application/pdf",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "text/plain",
-    ];
-    if (!allowed.includes(file.type)) {
-      return NextResponse.json(
-        { error: "Invalid file type. Accepts PDF, Word (.doc/.docx), or text files." },
-        { status: 400 }
-      );
+    if (file.size > MAX_SIZE) {
+      return NextResponse.json({ error: "File too large. Maximum 50MB." }, { status: 400 });
     }
 
-    // Generate unique filename preserving original extension
-    const ext = file.name.split(".").pop()?.toLowerCase() || "pdf";
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
     const filename = `${Date.now()}-${safeName}`;
-
     const buffer = Buffer.from(await file.arrayBuffer());
+    const contentType = file.type || "application/octet-stream";
 
     const { error } = await supabase.storage
-      .from(BUCKET)
-      .upload(filename, buffer, {
-        contentType: file.type,
-        upsert: false,
-      });
+      .from(bucket)
+      .upload(filename, buffer, { contentType, upsert: false });
 
     if (error) {
       console.error("Supabase upload error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    const { data: urlData } = supabase.storage
-      .from(BUCKET)
-      .getPublicUrl(filename);
+    const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(filename);
 
     return NextResponse.json({
       filename,
       originalName: file.name,
       url: urlData.publicUrl,
       size: file.size,
-      type: file.type,
+      type: file.type || "application/octet-stream",
     });
   } catch (err) {
     console.error("Upload error:", err);
@@ -69,15 +63,17 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const { filename } = await req.json();
+    const bucket = getBucket(req);
+    if (!ALLOWED_BUCKETS.includes(bucket)) {
+      return NextResponse.json({ error: "Invalid bucket" }, { status: 400 });
+    }
 
+    const { filename } = await req.json();
     if (!filename) {
       return NextResponse.json({ error: "No filename provided" }, { status: 400 });
     }
 
-    const { error } = await supabase.storage
-      .from(BUCKET)
-      .remove([filename]);
+    const { error } = await supabase.storage.from(bucket).remove([filename]);
 
     if (error) {
       console.error("Supabase delete error:", error);

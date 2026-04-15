@@ -222,7 +222,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
       const formData = new FormData();
       formData.append("file", file);
       try {
-        const res = await fetch("/api/handover/upload", { method: "POST", body: formData });
+        const res = await fetch("/api/design-brief/upload?bucket=handover-files", { method: "POST", body: formData });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
           console.error("Upload failed:", err);
@@ -257,7 +257,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
     filename: string,
   ) => {
     try {
-      await fetch("/api/handover/upload", {
+      await fetch("/api/design-brief/upload?bucket=handover-files", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ filename }),
