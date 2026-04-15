@@ -12,9 +12,10 @@ export const CRO_BRIEF_ITEMS = [
 ];
 
 export const DESIGN_HANDOFF_ITEMS = [
-  "Annotations added to Figma for developers",
-  "All content is in Figma — carousel slides, tabs, hidden sections, popups, etc.",
-  "No placeholder copy — all copy is final",
+  "Functionality comments left for all key functions",
+  "All carousel, dropdown and extra off-screen content added",
+  "6-8 optimised product page images included",
+  "Copy finalised and no placeholders left",
 ];
 
 export const DEV_HANDOFF_ITEMS = [
