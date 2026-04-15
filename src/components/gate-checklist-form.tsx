@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { CheckIcon, DocumentArrowUpIcon, TrashIcon, DocumentTextIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { CheckIcon, DocumentArrowUpIcon, TrashIcon, ArrowDownTrayIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import type { QAGate, PortalProject, GateKey, BriefFile } from "@/lib/portal/types";
 import type { PortalData } from "@/lib/portal/types";
 import {
@@ -96,6 +96,8 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [showPreview, setShowPreview] = useState(false);
+  const [textContent, setTextContent] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const progress = getGateProgress(gate);
@@ -308,6 +310,22 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
                 </div>
                 {/* Actions */}
                 <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    onClick={async () => {
+                      if (!showPreview && gate.brief_file?.type === "text/plain" && !textContent) {
+                        try {
+                          const res = await fetch(gate.brief_file.url);
+                          const text = await res.text();
+                          setTextContent(text);
+                        } catch { setTextContent("Failed to load file content."); }
+                      }
+                      setShowPreview(!showPreview);
+                    }}
+                    className="p-2 text-[#999] hover:text-[#1A1A1A] hover:bg-white rounded-lg transition-colors"
+                    title={showPreview ? "Hide preview" : "Preview"}
+                  >
+                    {showPreview ? <EyeSlashIcon className="size-4" /> : <EyeIcon className="size-4" />}
+                  </button>
                   <a
                     href={gate.brief_file.url}
                     target="_blank"
@@ -328,15 +346,42 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
                   )}
                 </div>
               </div>
+
+              {/* Preview panel */}
+              {showPreview && gate.brief_file && (
+                <div className="mt-3 border border-[#E8E8E8] rounded-xl overflow-hidden bg-white">
+                  {gate.brief_file.type === "application/pdf" ? (
+                    <iframe
+                      src={gate.brief_file.url}
+                      className="w-full h-[600px]"
+                      title="Brief preview"
+                    />
+                  ) : gate.brief_file.type === "text/plain" ? (
+                    <pre className="p-4 text-sm text-[#444] whitespace-pre-wrap max-h-[500px] overflow-y-auto font-mono leading-relaxed">
+                      {textContent || "Loading..."}
+                    </pre>
+                  ) : (
+                    /* Word docs — use Google Docs Viewer */
+                    <iframe
+                      src={`https://docs.google.com/gview?url=${encodeURIComponent(gate.brief_file.url)}&embedded=true`}
+                      className="w-full h-[600px]"
+                      title="Brief preview"
+                    />
+                  )}
+                </div>
+              )}
+
               {/* Replace file */}
               {!isSubmitted && (
-                <label className="inline-block mt-2 text-xs text-[#999] hover:text-[#1A1A1A] cursor-pointer transition-colors">
+                <label className={`inline-block mt-2 text-xs text-[#999] hover:text-[#1A1A1A] cursor-pointer transition-colors ${showPreview ? "mt-3" : ""}`}>
                   Replace file
                   <input
                     ref={fileInputRef}
                     type="file"
                     accept=".doc,.docx,.pdf,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
                     onChange={async (e) => {
+                      setShowPreview(false);
+                      setTextContent(null);
                       await handleFileDelete();
                       await handleFileUpload(e);
                     }}
