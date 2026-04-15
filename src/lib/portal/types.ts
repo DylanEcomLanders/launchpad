@@ -158,6 +158,14 @@ export interface QAGate {
   // Legacy text fields (kept for backward compat)
   extra_assets?: string;
   font_files?: string;
+
+  // Handoff / Testing gate fields
+  testing_mode?: "we-test" | "client-test";
+  intelligems_url?: string;
+  staging_url?: string;
+  go_live_date?: string;
+  dev_lead_signoff?: boolean;
+  client_approval_confirmed?: boolean;
 }
 
 export interface QAGates {

@@ -13,15 +13,13 @@ import { ChevronDownIcon } from "@heroicons/react/24/solid";
 
 /* ── Launch prep items ── */
 const LAUNCH_PREP_ITEMS = [
-  "Client has approved the staging/preview version (written confirmation)",
-  "Go-live date and time confirmed with client",
-  "Redirects set up (if replacing an existing page)",
-  "Analytics tracking confirmed (GA4 events, UTMs)",
-  "Meta pixel / tracking pixels verified",
-  "Backup of existing page taken (if replacing)",
-  "Test method confirmed (A/B, before/after, or direct launch)",
-  "Baseline metrics recorded (if testing)",
-  "Team available post-launch for immediate fixes",
+  "All Dev QA feedback addressed — nothing outstanding",
+  "Redirects configured (if replacing an existing page)",
+  "GA4 tracking verified — events firing, UTMs set",
+  "Meta pixel / third-party tracking pixels confirmed working",
+  "Backup of current live page taken (screenshot + theme duplicate)",
+  "Theme changes haven't broken other pages on the site",
+  "Go-live time confirmed — team available for 2 hours post-launch",
 ];
 
 /* ── Gate mapping ── */
@@ -31,7 +29,7 @@ const gateMapping: Record<GateKey, {
   subtitle: string;
   color: string;
   items: string[];
-  type: "design-brief" | "design-handoff" | "checklist" | "categorised-checklist" | "launch-prep";
+  type: "design-brief" | "design-handoff" | "checklist" | "categorised-checklist" | "handoff-testing";
   categories?: GateCategory[];
 }> = {
   "design-brief": {
@@ -62,10 +60,10 @@ const gateMapping: Record<GateKey, {
   "handoff-testing": {
     qaGateKey: "launch_prep",
     title: "Handoff / Testing",
-    subtitle: "Launch method and testing setup must be confirmed before go-live",
+    subtitle: "Final line in the sand before going live",
     color: "#2563EB",
     items: LAUNCH_PREP_ITEMS,
-    type: "launch-prep",
+    type: "handoff-testing",
   },
 };
 
@@ -277,7 +275,9 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
     ? !!gate.brief_file
     : config.type === "design-handoff"
       ? isDesignHandoffComplete(gate)
-      : isGateComplete(gate);
+      : config.type === "handoff-testing"
+        ? isGateComplete(gate) && !!gate.dev_lead_signoff && !!gate.client_approval_confirmed && !!gate.staging_url?.trim() && (gate.testing_mode === "client-test" || !!gate.intelligems_url?.trim())
+        : isGateComplete(gate);
 
   const fieldClass = "w-full text-sm px-3 py-2.5 border border-[#E8E8E8] rounded-lg focus:outline-none focus:border-[#999] placeholder:text-[#CCC] disabled:opacity-50 disabled:bg-[#FAFAFA]";
 
@@ -794,9 +794,233 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
       )}
 
       {/* ══════════════════════════════════════════
-          FLAT CHECKLIST (design-handoff confirm, launch-prep)
+          HANDOFF / TESTING — toggle, Intelligems, sign-offs + checklist
          ══════════════════════════════════════════ */}
-      {(config.type === "checklist" || config.type === "design-handoff" || config.type === "launch-prep") && (
+      {config.type === "handoff-testing" && (
+        <>
+          <div className="space-y-6 mb-8">
+            {/* Testing mode toggle */}
+            <div>
+              <label className="text-[11px] font-medium text-[#555] block mb-2">Who is testing?</label>
+              <div className="flex gap-2">
+                {(["we-test", "client-test"] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => {
+                      if (isSubmitted) return;
+                      const updated = { ...gateRef.current, testing_mode: mode };
+                      setGateLocal(updated);
+                      saveGate(updated);
+                    }}
+                    disabled={isSubmitted}
+                    className={`flex-1 py-2.5 text-sm font-medium rounded-lg border-2 transition-colors ${
+                      gate.testing_mode === mode
+                        ? "border-[#2563EB] bg-[#2563EB]/5 text-[#2563EB]"
+                        : "border-[#E8E8E8] text-[#999] hover:border-[#CCC]"
+                    } ${isSubmitted ? "opacity-60 pointer-events-none" : ""}`}
+                  >
+                    {mode === "we-test" ? "We Test" : "Client Tests"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Staging URL */}
+            <div>
+              <label className="text-[11px] font-medium text-[#555] block mb-1.5">
+                Staging URL <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="url"
+                value={gate.staging_url || ""}
+                onChange={(e) => {
+                  if (isSubmitted) return;
+                  setGateLocal({ ...gateRef.current, staging_url: e.target.value });
+                }}
+                onBlur={() => saveGate(gateRef.current)}
+                disabled={isSubmitted}
+                placeholder="https://store.myshopify.com/..."
+                className={fieldClass}
+              />
+            </div>
+
+            {/* Intelligems URL — only when we test */}
+            {gate.testing_mode === "we-test" && (
+              <div>
+                <label className="text-[11px] font-medium text-[#555] block mb-1.5">
+                  Intelligems Test Link <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="url"
+                  value={gate.intelligems_url || ""}
+                  onChange={(e) => {
+                    if (isSubmitted) return;
+                    setGateLocal({ ...gateRef.current, intelligems_url: e.target.value });
+                  }}
+                  onBlur={() => saveGate(gateRef.current)}
+                  disabled={isSubmitted}
+                  placeholder="https://app.intelligems.io/..."
+                  className={fieldClass}
+                />
+                <p className="text-[10px] text-[#BBB] mt-1">Link to the Intelligems test</p>
+              </div>
+            )}
+
+            {/* Go-live date */}
+            <div>
+              <label className="text-[11px] font-medium text-[#555] block mb-1.5">Go-Live Date</label>
+              <input
+                type="date"
+                value={gate.go_live_date || ""}
+                onChange={(e) => {
+                  if (isSubmitted) return;
+                  const updated = { ...gateRef.current, go_live_date: e.target.value };
+                  setGateLocal(updated);
+                  saveGate(updated);
+                }}
+                disabled={isSubmitted}
+                className={fieldClass}
+              />
+            </div>
+
+            {/* Sign-offs */}
+            <div className="border-t border-[#F0F0F0] pt-5">
+              <p className="text-[11px] font-medium text-[#555] mb-3">Sign-offs</p>
+              <div className="space-y-2">
+                {/* Dev lead sign-off */}
+                <label
+                  className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-colors cursor-pointer ${
+                    gate.dev_lead_signoff
+                      ? "border-emerald-300 bg-emerald-50/30"
+                      : "border-[#E8E8E8] hover:border-[#CCC]"
+                  } ${isSubmitted ? "pointer-events-none opacity-60" : ""}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={gate.dev_lead_signoff || false}
+                    disabled={isSubmitted}
+                    onChange={() => {
+                      const updated = { ...gateRef.current, dev_lead_signoff: !gate.dev_lead_signoff };
+                      setGateLocal(updated);
+                      saveGate(updated);
+                    }}
+                    className="size-5 rounded border-[#CCC] text-emerald-600 focus:ring-0"
+                  />
+                  <div>
+                    <p className={`text-sm font-medium ${gate.dev_lead_signoff ? "text-emerald-700" : "text-[#1A1A1A]"}`}>
+                      Head of Dev Sign-Off
+                    </p>
+                    <p className="text-[11px] text-[#999]">Build reviewed and approved by dev lead</p>
+                  </div>
+                </label>
+
+                {/* Client approval */}
+                <label
+                  className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-colors cursor-pointer ${
+                    gate.client_approval_confirmed
+                      ? "border-emerald-300 bg-emerald-50/30"
+                      : "border-[#E8E8E8] hover:border-[#CCC]"
+                  } ${isSubmitted ? "pointer-events-none opacity-60" : ""}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={gate.client_approval_confirmed || false}
+                    disabled={isSubmitted}
+                    onChange={() => {
+                      const updated = { ...gateRef.current, client_approval_confirmed: !gate.client_approval_confirmed };
+                      setGateLocal(updated);
+                      saveGate(updated);
+                    }}
+                    className="size-5 rounded border-[#CCC] text-emerald-600 focus:ring-0"
+                  />
+                  <div>
+                    <p className={`text-sm font-medium ${gate.client_approval_confirmed ? "text-emerald-700" : "text-[#1A1A1A]"}`}>
+                      Client Approval Confirmed
+                    </p>
+                    <p className="text-[11px] text-[#999]">Written confirmation from client (Slack/email)</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* Pre-launch checklist header */}
+            <div className="border-t border-[#F0F0F0] pt-5">
+              <p className="text-[11px] font-medium text-[#555] mb-3">Pre-Launch Checklist</p>
+            </div>
+          </div>
+
+          {/* Checklist items */}
+          <div className="space-y-2 mb-6">
+            {gate.items.map((item, i) => (
+              <label
+                key={i}
+                className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
+                  item.checked ? "border-emerald-200 bg-emerald-50/30" : "border-[#E8E8E8] hover:border-[#CCC]"
+                } ${isSubmitted ? "pointer-events-none opacity-60" : ""}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={item.checked}
+                  disabled={isSubmitted}
+                  onChange={() => toggleItem(i)}
+                  className="size-4 mt-0.5 rounded border-[#CCC] text-emerald-600 focus:ring-0 focus:ring-offset-0"
+                />
+                <span className={`text-sm ${item.checked ? "text-[#1A1A1A]" : "text-[#777]"}`}>{item.label}</span>
+              </label>
+            ))}
+          </div>
+
+          {/* Notes */}
+          <div className="mb-6">
+            <label className="text-[11px] font-medium text-[#555] block mb-1.5">Notes</label>
+            <textarea
+              value={gate.notes}
+              onChange={(e) => {
+                if (isSubmitted) return;
+                setGateLocal({ ...gateRef.current, notes: e.target.value });
+              }}
+              onBlur={() => saveGate(gateRef.current)}
+              disabled={isSubmitted}
+              placeholder="Anything the tester or PM needs to know..."
+              className={`${fieldClass} min-h-[80px] resize-y`}
+            />
+          </div>
+
+          {/* Submit */}
+          {!isSubmitted && (
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] text-[#AAA]">
+                {isReady
+                  ? "All checks passed — ready to submit"
+                  : !gate.testing_mode
+                    ? "Select testing mode"
+                    : !gate.staging_url?.trim()
+                      ? "Staging URL required"
+                      : gate.testing_mode === "we-test" && !gate.intelligems_url?.trim()
+                        ? "Intelligems test link required"
+                        : !gate.dev_lead_signoff
+                          ? "Head of Dev sign-off required"
+                          : !gate.client_approval_confirmed
+                            ? "Client approval required"
+                            : `${progress.total - progress.checked} checklist items remaining`
+                }
+              </p>
+              <button
+                onClick={handleSubmit}
+                disabled={!isReady}
+                className="px-5 py-2.5 text-sm font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+              >
+                Submit
+              </button>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ══════════════════════════════════════════
+          FLAT CHECKLIST (design-handoff confirm)
+         ══════════════════════════════════════════ */}
+      {(config.type === "checklist" || config.type === "design-handoff") && (
         <>
           <div className="space-y-2 mb-6">
             {gate.items.map((item, i) => (
