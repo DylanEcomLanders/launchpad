@@ -9,7 +9,7 @@ export interface OpsWikiModule {
   shortTitle: string;
   icon: string;
   content: string;
-  category: "flow" | "engine" | "design" | "development" | "cro" | "operations" | "qa" | "client";
+  category: "flow" | "design" | "development" | "cro" | "operations" | "qa" | "client";
   toolHref?: string;
 }
 
@@ -49,60 +49,60 @@ const moduleMap: Record<
     category: "flow",
   },
 
-  // ── Conversion Engine ──
+  // ── Conversion Engine (nested under flow) ──
   "ce-00-overview": {
     title: "The Offer — Pricing & Positioning",
     shortTitle: "The Offer",
     icon: "map",
-    category: "engine",
+    category: "flow",
   },
   "ce-01-sales-process": {
     title: "Sales Process — Two-Stage Audit Close",
     shortTitle: "Sales Process",
     icon: "phone",
-    category: "engine",
+    category: "flow",
   },
   "ce-02-onboarding": {
     title: "Onboarding & System Setup",
     shortTitle: "Onboarding",
     icon: "clipboard",
-    category: "engine",
+    category: "flow",
   },
   "ce-03-delivery": {
     title: "Delivery Framework — Team-Led Roadmap",
     shortTitle: "Delivery",
     icon: "calendar",
-    category: "engine",
+    category: "flow",
   },
   "ce-04-conversion-matrix": {
     title: "Conversion Matrix — The Diagnostic Engine",
     shortTitle: "Conversion Matrix",
     icon: "grid",
-    category: "engine",
+    category: "flow",
   },
   "ce-05-revenue-projector": {
     title: "Revenue Projector — Partnership Economics",
     shortTitle: "Revenue Projector",
     icon: "calculator",
-    category: "engine",
+    category: "flow",
   },
   "ce-06-slide-deck": {
     title: "Slide Decks — Two-Stage Approach",
     shortTitle: "Slide Decks",
     icon: "presentation",
-    category: "engine",
+    category: "flow",
   },
   "ce-07-positioning": {
     title: "Positioning & Language Guide",
     shortTitle: "Positioning",
     icon: "megaphone",
-    category: "engine",
+    category: "flow",
   },
   "ce-08-faq": {
     title: "FAQ — Client & Internal",
     shortTitle: "FAQ",
     icon: "chat",
-    category: "engine",
+    category: "flow",
   },
 
   // ── Design (Layer 2) ──

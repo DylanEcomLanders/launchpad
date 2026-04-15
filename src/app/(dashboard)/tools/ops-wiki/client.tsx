@@ -40,7 +40,7 @@ interface OpsWikiModule {
   shortTitle: string;
   icon: string;
   content: string;
-  category: "flow" | "engine" | "design" | "development" | "cro" | "operations" | "qa" | "client";
+  category: "flow" | "design" | "development" | "cro" | "operations" | "qa" | "client";
   toolHref?: string;
 }
 
@@ -72,7 +72,6 @@ const iconMap: Record<string, React.ReactNode> = {
 
 const categoryLabels: Record<string, string> = {
   flow: "PROJECT FLOWS",
-  engine: "CONVERSION ENGINE",
   design: "DESIGN",
   development: "DEVELOPMENT",
   cro: "CRO",
@@ -83,7 +82,6 @@ const categoryLabels: Record<string, string> = {
 
 const categoryColors: Record<string, string> = {
   flow: "#1B1B1B",
-  engine: "#DC2626",
   design: "#8B5CF6",
   development: "#10B981",
   cro: "#EF4444",
@@ -92,7 +90,7 @@ const categoryColors: Record<string, string> = {
   client: "#EC4899",
 };
 
-const categoryOrder: OpsWikiModule["category"][] = ["flow", "engine", "design", "development", "cro", "operations", "qa", "client"];
+const categoryOrder: OpsWikiModule["category"][] = ["flow", "design", "development", "cro", "operations", "qa", "client"];
 
 export default function OpsWikiClient({ modules }: { modules: OpsWikiModule[] }) {
   const searchParams = useSearchParams();
@@ -107,6 +105,7 @@ export default function OpsWikiClient({ modules }: { modules: OpsWikiModule[] })
 
   const [searchQuery, setSearchQuery] = useState("");
   const [navOpen, setNavOpen] = useState(true);
+  const [ceOpen, setCeOpen] = useState(() => modules[0]?.slug.startsWith("ce-") || false);
 
   const active = modules.find((m) => m.slug === activeSlug) || modules[0];
 
@@ -142,28 +141,79 @@ export default function OpsWikiClient({ modules }: { modules: OpsWikiModule[] })
       {/* Sidebar */}
       {navOpen && (
         <aside className="w-56 shrink-0 border-r border-[#F0F0F0] overflow-y-auto py-4 px-3">
-          {Object.entries(grouped).map(([cat, items]) => (
-            <div key={cat} className="mb-5">
-              <p className="text-[10px] font-semibold uppercase tracking-wider px-2 mb-2" style={{ color: categoryColors[cat] || "#BBB" }}>
-                {categoryLabels[cat] || cat}
-              </p>
-              {items.map((m) => (
-                <button
-                  key={m.slug}
-                  onClick={() => setActiveSlug(m.slug)}
-                  className={`flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-xs transition-colors mb-0.5 ${
-                    activeSlug === m.slug
-                      ? "bg-[#F0F0F0] text-[#1B1B1B] font-medium"
-                      : "text-[#666] hover:bg-[#FAFAFA] hover:text-[#1B1B1B]"
-                  }`}
-                >
-                  <span className="shrink-0 text-[#999]">{iconMap[m.icon] || <ChevronRightIcon className="size-4" />}</span>
-                  <span className="truncate">{m.shortTitle}</span>
-                  {m.toolHref && <WrenchScrewdriverIcon className="size-3 text-[#CCC] ml-auto shrink-0" />}
-                </button>
-              ))}
-            </div>
-          ))}
+          {Object.entries(grouped).map(([cat, items]) => {
+            // Split flow items: regular flows vs ce-* (conversion engine children)
+            const isFlow = cat === "flow";
+            const flowItems = isFlow ? items.filter((m) => !m.slug.startsWith("ce-")) : items;
+            const ceItems = isFlow ? items.filter((m) => m.slug.startsWith("ce-")) : [];
+
+            return (
+              <div key={cat} className="mb-5">
+                <p className="text-[10px] font-semibold uppercase tracking-wider px-2 mb-2" style={{ color: categoryColors[cat] || "#BBB" }}>
+                  {categoryLabels[cat] || cat}
+                </p>
+                {flowItems.map((m) => {
+                  // Render the Conversion Engine flow item as a dropdown trigger
+                  if (m.slug === "flow-04-conversion-engine" && ceItems.length > 0) {
+                    const isCeActive = activeSlug.startsWith("ce-") || activeSlug === m.slug;
+                    return (
+                      <div key={m.slug}>
+                        <button
+                          onClick={() => {
+                            setCeOpen(!ceOpen);
+                            if (!ceOpen) setActiveSlug(m.slug);
+                          }}
+                          className={`flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-xs transition-colors mb-0.5 ${
+                            isCeActive
+                              ? "bg-[#F0F0F0] text-[#1B1B1B] font-medium"
+                              : "text-[#666] hover:bg-[#FAFAFA] hover:text-[#1B1B1B]"
+                          }`}
+                        >
+                          <span className="shrink-0 text-[#999]">{iconMap[m.icon] || <ChevronRightIcon className="size-4" />}</span>
+                          <span className="truncate">{m.shortTitle}</span>
+                          <ChevronRightIcon className={`size-3 text-[#CCC] ml-auto shrink-0 transition-transform duration-200 ${ceOpen ? "rotate-90" : ""}`} />
+                        </button>
+                        {ceOpen && (
+                          <div className="ml-4 pl-2 mb-1 border-l border-[#E8E8E8]">
+                            {ceItems.map((ce) => (
+                              <button
+                                key={ce.slug}
+                                onClick={() => setActiveSlug(ce.slug)}
+                                className={`flex items-center gap-2 w-full px-2 py-1 rounded-lg text-[11px] transition-colors mb-0.5 ${
+                                  activeSlug === ce.slug
+                                    ? "bg-[#F0F0F0] text-[#1B1B1B] font-medium"
+                                    : "text-[#888] hover:bg-[#FAFAFA] hover:text-[#1B1B1B]"
+                                }`}
+                              >
+                                <span className="shrink-0 text-[#BBB]">{iconMap[ce.icon] || <ChevronRightIcon className="size-3" />}</span>
+                                <span className="truncate">{ce.shortTitle}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <button
+                      key={m.slug}
+                      onClick={() => setActiveSlug(m.slug)}
+                      className={`flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-xs transition-colors mb-0.5 ${
+                        activeSlug === m.slug
+                          ? "bg-[#F0F0F0] text-[#1B1B1B] font-medium"
+                          : "text-[#666] hover:bg-[#FAFAFA] hover:text-[#1B1B1B]"
+                      }`}
+                    >
+                      <span className="shrink-0 text-[#999]">{iconMap[m.icon] || <ChevronRightIcon className="size-4" />}</span>
+                      <span className="truncate">{m.shortTitle}</span>
+                      {m.toolHref && <WrenchScrewdriverIcon className="size-3 text-[#CCC] ml-auto shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })}
         </aside>
       )}
 
