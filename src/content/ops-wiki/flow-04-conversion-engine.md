@@ -1,12 +1,12 @@
-# Flow: Conversion Partnership
+# Flow: Conversion Engine
 
 ## When This Flow Applies
 
 This is the full offer — £8K+/mo, team-led roadmap, ongoing conversion system management. It's not a linear project with a start and end. It's a sprint-based loop that compounds every month.
 
-The Conversion Partnership is essentially D&D+CRO running on a repeating sprint cycle, with a strategic roadmap layer on top. Each sprint produces conversion assets. Each asset generates data. Each data point informs the next sprint.
+The Conversion Engine is essentially D&D+CRO running on a repeating sprint cycle, with a strategic roadmap layer on top. Each sprint produces conversion assets. Each asset generates data. Each data point informs the next sprint.
 
-> **Full offer details:** See the [Conversion Partnership Wiki](/tools/conversion-partnership) for pricing, sales process, positioning, and partnership economics.
+> **Full offer details:** See the [Conversion Engine Wiki](/tools/conversion-engine) for pricing, sales process, positioning, and partnership economics.
 
 ---
 
@@ -41,7 +41,7 @@ Month 1 is unique — it's a setup sprint, not a build sprint. The goal is: full
 - AOV opportunity mapping (bundles, upsells, post-purchase)
 - Copy and offer audit
 
-> **Reference:** [CRO Audit Process](/tools/ops-wiki?section=06-audit-process) for audit methodology, [Conversion Partnership Wiki — Onboarding](/tools/conversion-partnership?section=02-onboarding) for the full onboarding checklist.
+> **Reference:** [CRO Audit Process](/tools/ops-wiki?section=06-audit-process) for audit methodology, [Conversion Engine Wiki — Onboarding](/tools/conversion-engine?section=02-onboarding) for the full onboarding checklist.
 
 ### Week 1-2: Roadmap Build
 
@@ -135,7 +135,7 @@ Each sprint can include any combination of these conversion assets:
 | **Testing** | A/B tests on existing pages, multivariate experiments |
 | **Optimisation** | Speed improvements, mobile UX fixes, copy refinement |
 
-> **Reference:** [Conversion Partnership Wiki — Delivery](/tools/conversion-partnership?section=03-delivery) for the full scope of work breakdown.
+> **Reference:** [Conversion Engine Wiki — Delivery](/tools/conversion-engine?section=03-delivery) for the full scope of work breakdown.
 
 ---
 

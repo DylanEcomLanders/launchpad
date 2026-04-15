@@ -26,6 +26,12 @@ import {
   WrenchScrewdriverIcon,
   ArrowTopRightOnSquareIcon,
   InboxStackIcon,
+  MapIcon,
+  PhoneIcon,
+  TableCellsIcon,
+  CalculatorIcon,
+  PresentationChartBarIcon,
+  MegaphoneIcon,
 } from "@heroicons/react/24/outline";
 
 interface OpsWikiModule {
@@ -34,7 +40,7 @@ interface OpsWikiModule {
   shortTitle: string;
   icon: string;
   content: string;
-  category: "flow" | "design" | "development" | "cro" | "operations" | "qa" | "client";
+  category: "flow" | "engine" | "design" | "development" | "cro" | "operations" | "qa" | "client";
   toolHref?: string;
 }
 
@@ -56,10 +62,17 @@ const iconMap: Record<string, React.ReactNode> = {
   bolt: <BoltIcon className="size-4" />,
   chat: <ChatBubbleLeftRightIcon className="size-4" />,
   shield: <ShieldCheckIcon className="size-4" />,
+  map: <MapIcon className="size-4" />,
+  phone: <PhoneIcon className="size-4" />,
+  grid: <TableCellsIcon className="size-4" />,
+  calculator: <CalculatorIcon className="size-4" />,
+  presentation: <PresentationChartBarIcon className="size-4" />,
+  megaphone: <MegaphoneIcon className="size-4" />,
 };
 
 const categoryLabels: Record<string, string> = {
   flow: "PROJECT FLOWS",
+  engine: "CONVERSION ENGINE",
   design: "DESIGN",
   development: "DEVELOPMENT",
   cro: "CRO",
@@ -70,6 +83,7 @@ const categoryLabels: Record<string, string> = {
 
 const categoryColors: Record<string, string> = {
   flow: "#1B1B1B",
+  engine: "#DC2626",
   design: "#8B5CF6",
   development: "#10B981",
   cro: "#EF4444",
@@ -78,7 +92,7 @@ const categoryColors: Record<string, string> = {
   client: "#EC4899",
 };
 
-const categoryOrder: OpsWikiModule["category"][] = ["flow", "design", "development", "cro", "operations", "qa", "client"];
+const categoryOrder: OpsWikiModule["category"][] = ["flow", "engine", "design", "development", "cro", "operations", "qa", "client"];
 
 export default function OpsWikiClient({ modules }: { modules: OpsWikiModule[] }) {
   const searchParams = useSearchParams();

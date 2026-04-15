@@ -9,7 +9,7 @@ export interface OpsWikiModule {
   shortTitle: string;
   icon: string;
   content: string;
-  category: "flow" | "design" | "development" | "cro" | "operations" | "qa" | "client";
+  category: "flow" | "engine" | "design" | "development" | "cro" | "operations" | "qa" | "client";
   toolHref?: string;
 }
 
@@ -42,12 +42,67 @@ const moduleMap: Record<
     icon: "beaker",
     category: "flow",
   },
-  "flow-04-conversion-partnership": {
-    title: "Flow: Conversion Partnership",
-    shortTitle: "Conversion Partnership",
+  "flow-04-conversion-engine": {
+    title: "Flow: Conversion Engine",
+    shortTitle: "Conversion Engine",
     icon: "rocket",
     category: "flow",
-    toolHref: "/tools/conversion-partnership",
+  },
+
+  // ── Conversion Engine ──
+  "ce-00-overview": {
+    title: "The Offer — Pricing & Positioning",
+    shortTitle: "The Offer",
+    icon: "map",
+    category: "engine",
+  },
+  "ce-01-sales-process": {
+    title: "Sales Process — Two-Stage Audit Close",
+    shortTitle: "Sales Process",
+    icon: "phone",
+    category: "engine",
+  },
+  "ce-02-onboarding": {
+    title: "Onboarding & System Setup",
+    shortTitle: "Onboarding",
+    icon: "clipboard",
+    category: "engine",
+  },
+  "ce-03-delivery": {
+    title: "Delivery Framework — Team-Led Roadmap",
+    shortTitle: "Delivery",
+    icon: "calendar",
+    category: "engine",
+  },
+  "ce-04-conversion-matrix": {
+    title: "Conversion Matrix — The Diagnostic Engine",
+    shortTitle: "Conversion Matrix",
+    icon: "grid",
+    category: "engine",
+  },
+  "ce-05-revenue-projector": {
+    title: "Revenue Projector — Partnership Economics",
+    shortTitle: "Revenue Projector",
+    icon: "calculator",
+    category: "engine",
+  },
+  "ce-06-slide-deck": {
+    title: "Slide Decks — Two-Stage Approach",
+    shortTitle: "Slide Decks",
+    icon: "presentation",
+    category: "engine",
+  },
+  "ce-07-positioning": {
+    title: "Positioning & Language Guide",
+    shortTitle: "Positioning",
+    icon: "megaphone",
+    category: "engine",
+  },
+  "ce-08-faq": {
+    title: "FAQ — Client & Internal",
+    shortTitle: "FAQ",
+    icon: "chat",
+    category: "engine",
   },
 
   // ── Design (Layer 2) ──

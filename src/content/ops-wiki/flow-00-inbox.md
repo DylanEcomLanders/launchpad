@@ -56,7 +56,7 @@ Once intake is complete, assign the project to the correct flow:
 | Design deliverable only (no dev) | **Design Only** | Client wants designs/wireframes, no build |
 | Page build (design + dev) | **Design & Development** | Standard page build project |
 | Page build + testing/CRO | **Design, Dev & CRO** | Project includes A/B testing or CRO component |
-| Full conversion partnership | **Conversion Partnership** | £8K+/mo retainer, team-led roadmap |
+| Full conversion partnership | **Conversion Engine** | £8K+/mo retainer, team-led roadmap |
 
 ## What Happens at Assignment
 
