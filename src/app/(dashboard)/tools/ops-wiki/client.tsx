@@ -25,6 +25,7 @@ import {
   ChevronRightIcon,
   WrenchScrewdriverIcon,
   ArrowTopRightOnSquareIcon,
+  InboxStackIcon,
 } from "@heroicons/react/24/outline";
 
 interface OpsWikiModule {
@@ -33,11 +34,12 @@ interface OpsWikiModule {
   shortTitle: string;
   icon: string;
   content: string;
-  category: "design" | "development" | "cro" | "operations" | "qa" | "client";
+  category: "flow" | "design" | "development" | "cro" | "operations" | "qa" | "client";
   toolHref?: string;
 }
 
 const iconMap: Record<string, React.ReactNode> = {
+  inbox: <InboxStackIcon className="size-4" />,
   swatch: <SwatchIcon className="size-4" />,
   squares: <Squares2X2Icon className="size-4" />,
   arrows: <ArrowsRightLeftIcon className="size-4" />,
@@ -57,6 +59,7 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 const categoryLabels: Record<string, string> = {
+  flow: "PROJECT FLOWS",
   design: "DESIGN",
   development: "DEVELOPMENT",
   cro: "CRO",
@@ -66,6 +69,7 @@ const categoryLabels: Record<string, string> = {
 };
 
 const categoryColors: Record<string, string> = {
+  flow: "#1B1B1B",
   design: "#8B5CF6",
   development: "#10B981",
   cro: "#EF4444",
@@ -74,7 +78,7 @@ const categoryColors: Record<string, string> = {
   client: "#EC4899",
 };
 
-const categoryOrder: OpsWikiModule["category"][] = ["design", "development", "cro", "operations", "qa", "client"];
+const categoryOrder: OpsWikiModule["category"][] = ["flow", "design", "development", "cro", "operations", "qa", "client"];
 
 export default function OpsWikiClient({ modules }: { modules: OpsWikiModule[] }) {
   const searchParams = useSearchParams();

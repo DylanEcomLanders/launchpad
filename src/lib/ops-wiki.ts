@@ -9,7 +9,7 @@ export interface OpsWikiModule {
   shortTitle: string;
   icon: string;
   content: string;
-  category: "design" | "development" | "cro" | "operations" | "qa" | "client";
+  category: "flow" | "design" | "development" | "cro" | "operations" | "qa" | "client";
   toolHref?: string;
 }
 
@@ -17,7 +17,40 @@ const moduleMap: Record<
   string,
   { title: string; shortTitle: string; icon: string; category: OpsWikiModule["category"]; toolHref?: string }
 > = {
-  // ── Design ──
+  // ── Project Flows (Layer 1) ──
+  "flow-00-inbox": {
+    title: "Onboarding Inbox — Intake & Triage",
+    shortTitle: "Onboarding Inbox",
+    icon: "inbox",
+    category: "flow",
+  },
+  "flow-01-design-only": {
+    title: "Flow: Design Only",
+    shortTitle: "Design Only",
+    icon: "swatch",
+    category: "flow",
+  },
+  "flow-02-design-dev": {
+    title: "Flow: Design & Development",
+    shortTitle: "Design & Dev",
+    icon: "code",
+    category: "flow",
+  },
+  "flow-03-design-dev-cro": {
+    title: "Flow: Design, Dev & CRO",
+    shortTitle: "D&D + CRO",
+    icon: "beaker",
+    category: "flow",
+  },
+  "flow-04-conversion-partnership": {
+    title: "Flow: Conversion Partnership",
+    shortTitle: "Conversion Partnership",
+    icon: "rocket",
+    category: "flow",
+    toolHref: "/tools/conversion-partnership",
+  },
+
+  // ── Design (Layer 2) ──
   "00-design-process": {
     title: "Design Process & Workflow",
     shortTitle: "Design Process",

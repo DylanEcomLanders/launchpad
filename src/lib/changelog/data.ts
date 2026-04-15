@@ -37,6 +37,19 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-35",
+    date: "15 Apr 2026",
+    version: "0.29.0",
+    title: "Project Flows — Assembly Lines + Onboarding Inbox",
+    changes: [
+      { type: "added", text: "Project Flows (Layer 1) added to Operations Wiki — four assembly-line flows: Design Only, Design & Dev, D&D+CRO, Conversion Partnership. Each is a linear runbook with hard gates" },
+      { type: "added", text: "Onboarding Inbox — global intake and triage process that sits above all flows. Every project starts here before entering a flow" },
+      { type: "added", text: "Three gates enforced across all flows: Design→Dev Handoff, Dev Self-QA, Launch Prep. Each references the specific SOP from Layer 2" },
+      { type: "added", text: "Conversion Partnership flow — sprint-based loop with roadmap layer, monthly cadence, partnership health indicators" },
+      { type: "improved", text: "Wiki sidebar now shows PROJECT FLOWS section above all existing categories with dark label styling" },
+    ],
+  },
+  {
     id: "cl-34",
     date: "14 Apr 2026",
     version: "0.28.0",
