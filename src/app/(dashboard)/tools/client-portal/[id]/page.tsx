@@ -59,7 +59,6 @@ import type {
   BlockerHistory,
   ContextEntry,
   GateKey,
-  GateData,
 } from "@/lib/portal/types";
 import { cyclePhaseStatus, canPhaseAdvance } from "@/lib/portal/phase-logic";
 import { syncDeliverableToBoard } from "@/lib/portal/task-sync";
@@ -74,7 +73,6 @@ import type {
 } from "@/lib/portal/review-types";
 
 type DashTab = "overview" | "build" | "results" | "design-brief" | "dev-handover" | "dev-qa" | "handoff-testing";
-type GateStatus = "not-started" | "in-progress" | "passed" | "failed";
 type ClientTab = "projects" | "context" | "tickets" | "funnels" | "settings";
 
 export default function PortalDetailPage() {
@@ -569,9 +567,11 @@ export default function PortalDetailPage() {
                           {/* QA Gates */}
                           <p className="text-[9px] font-semibold text-[#CCC] uppercase tracking-wider px-2.5 mt-2 mb-1">Gates</p>
                           {gateTabs.map((tab) => {
-                            const gateData = proj.gates?.[tab.key as GateKey];
-                            const status: GateStatus = gateData?.status || "not-started";
-                            const dotColor = status === "passed" ? "bg-emerald-500" : status === "in-progress" ? "bg-amber-400" : status === "failed" ? "bg-red-500" : "bg-[#DDD]";
+                            const qaKeyMap: Record<string, string> = { "design-brief": "cro_brief", "dev-handover": "design_handoff", "dev-qa": "dev_handoff", "handoff-testing": "launch_prep" };
+                            const qaKey = qaKeyMap[tab.key] as keyof typeof proj.qa_gates;
+                            const gateData = proj.qa_gates?.[qaKey] as { status?: string } | undefined;
+                            const gateStatus = gateData?.status === "submitted" ? "passed" : gateData ? "in-progress" : "not-started";
+                            const dotColor = gateStatus === "passed" ? "bg-emerald-500" : gateStatus === "in-progress" ? "bg-amber-400" : "bg-[#DDD]";
                             return (
                               <button
                                 key={tab.key}
@@ -973,11 +973,9 @@ export default function PortalDetailPage() {
             gateKey={activeTab as GateKey}
             project={selectedProject}
             portal={portal}
-            onUpdate={async (gateData: GateData) => {
+            onUpdate={async (patch) => {
               const updatedProjects = portal.projects.map((p) =>
-                p.id === selectedProject.id
-                  ? { ...p, gates: { ...(p.gates || {}), [activeTab]: gateData } }
-                  : p
+                p.id === selectedProject.id ? { ...p, ...patch } : p
               );
               await updatePortal(portal.id, { projects: updatedProjects } as any);
               setPortal({ ...portal, projects: updatedProjects });

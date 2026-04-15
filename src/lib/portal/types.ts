@@ -140,6 +140,7 @@ export interface QAGates {
   cro_brief?: QAGate;
   design_handoff?: QAGate;
   dev_handoff?: QAGate;
+  launch_prep?: QAGate;
   cro_brief_enabled?: boolean;
 }
 
