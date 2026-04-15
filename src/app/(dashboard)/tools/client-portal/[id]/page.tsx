@@ -70,7 +70,7 @@ import type {
   DesignReviewFeedback,
 } from "@/lib/portal/review-types";
 
-type DashTab = "overview" | "build" | "results";
+type DashTab = "overview" | "build" | "results" | "design-brief" | "dev-handover" | "dev-qa" | "handoff-testing";
 type ClientTab = "projects" | "context" | "tickets" | "funnels" | "settings";
 
 export default function PortalDetailPage() {
@@ -140,7 +140,7 @@ export default function PortalDetailPage() {
       }
       // Set default tab based on client type (only on first load)
       if (!defaultTabSet && p) {
-        if (p.client_type === "retainer") setActiveTab("results");
+        if (p.client_type === "retainer") setActiveTab("handoff-testing");
         setDefaultTabSet(true);
       }
       setUpdates(u);
@@ -472,11 +472,13 @@ export default function PortalDetailPage() {
 
   const isRetainerPortal = portal.client_type === "retainer";
 
-  // Simplified tabs — same for retainer and project
-  const dashTabs: { key: DashTab; label: string }[] = [
+  // Gate-based tabs matching the project flow assembly line
+  const dashTabs: { key: DashTab; label: string; gate?: boolean }[] = [
     { key: "overview", label: "Overview" },
-    { key: "build", label: "Build" },
-    { key: "results", label: "Results" },
+    { key: "design-brief", label: "Design Brief", gate: true },
+    { key: "dev-handover", label: "Dev Handover", gate: true },
+    { key: "dev-qa", label: "Dev QA", gate: true },
+    { key: "handoff-testing", label: "Handoff / Testing", gate: true },
   ];
 
   const allContextEntries = [
@@ -545,12 +547,13 @@ export default function PortalDetailPage() {
                             <button
                               key={tab.key}
                               onClick={() => setActiveTab(tab.key)}
-                              className={`w-full text-left px-2.5 py-1.5 text-[12px] rounded-md transition-colors mb-0.5 ${
+                              className={`w-full text-left px-2.5 py-1.5 text-[12px] rounded-md transition-colors mb-0.5 flex items-center gap-1.5 ${
                                 activeTab === tab.key
                                   ? "text-[#1A1A1A] font-medium bg-[#F0F0F0]"
                                   : "text-[#999] hover:text-[#1A1A1A] hover:bg-[#FAFAFA]"
                               }`}
                             >
+                              {tab.gate && <span className="text-[9px] text-amber-500">●</span>}
                               {tab.label}
                             </button>
                           ))}
@@ -894,10 +897,9 @@ export default function PortalDetailPage() {
         )}
 
 
-        {/* ── BUILD: Updates + Designs + Development ── */}
-        {selectedProject && activeTab === "build" && portal && (
+        {/* ── DESIGN BRIEF: Updates + Design Reviews ── */}
+        {selectedProject && activeTab === "design-brief" && portal && (
           <div className="space-y-10">
-            {/* Updates */}
             <div>
               <UpdatesSection
                 updates={updates}
@@ -914,8 +916,6 @@ export default function PortalDetailPage() {
                 saving={saving}
               />
             </div>
-
-            {/* Designs */}
             <div>
               <h3 className="text-xs font-semibold text-[#1A1A1A] mb-4">Design Reviews</h3>
               <DesignsSection
@@ -924,8 +924,26 @@ export default function PortalDetailPage() {
                 onReviewsChange={setReviews}
               />
             </div>
+          </div>
+        )}
 
-            {/* Development */}
+        {/* ── DEV HANDOVER: Design-to-Dev Handoff ── */}
+        {selectedProject && activeTab === "dev-handover" && portal && (
+          <div className="space-y-10">
+            <div>
+              <h3 className="text-xs font-semibold text-[#1A1A1A] mb-4">Design & Dev Handover</h3>
+              <DesignsSection
+                portal={portal}
+                reviews={reviews}
+                onReviewsChange={setReviews}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── DEV QA: Development + Page Reviews ── */}
+        {selectedProject && activeTab === "dev-qa" && portal && (
+          <div className="space-y-10">
             <div>
               <h3 className="text-xs font-semibold text-[#1A1A1A] mb-4">Development</h3>
               <DevelopmentSection
@@ -939,10 +957,9 @@ export default function PortalDetailPage() {
           </div>
         )}
 
-        {/* ── RESULTS: Testing + Funnels + Reports ── */}
-        {selectedProject && activeTab === "results" && portal && (
+        {/* ── HANDOFF / TESTING: Testing + Funnels + Reports ── */}
+        {selectedProject && activeTab === "handoff-testing" && portal && (
           <div className="space-y-10">
-            {/* Testing */}
             <div>
               <TestingSection
                 portal={portal}
@@ -954,8 +971,6 @@ export default function PortalDetailPage() {
                 onUpdateField={handleUpdateField}
               />
             </div>
-
-            {/* Funnels */}
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-xs font-semibold text-[#1A1A1A]">Funnels</h3>
@@ -1002,8 +1017,6 @@ export default function PortalDetailPage() {
                 </div>
               )}
             </div>
-
-            {/* Reports */}
             <div>
               <h3 className="text-xs font-semibold text-[#1A1A1A] mb-4">Reports</h3>
               <ReportsSection
