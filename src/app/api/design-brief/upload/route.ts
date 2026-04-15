@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
-const ALLOWED_BUCKETS = ["design-briefs", "handover-files"];
+const ALLOWED_BUCKETS = ["design-briefs", "Handover-files"];
 const MAX_SIZE = 50 * 1024 * 1024; // 50MB
 
 function getBucket(req: NextRequest): string {
