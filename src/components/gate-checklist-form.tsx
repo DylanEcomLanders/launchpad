@@ -705,7 +705,8 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
               const catItems = gate.items.slice(cat.startIndex, cat.startIndex + cat.count);
               const catChecked = catItems.filter(i => i.checked).length;
               const catComplete = catChecked === cat.count;
-              const isCollapsed = collapsedCats[cat.label] ?? true;
+              const catIdx = config.categories!.indexOf(cat);
+                              const isCollapsed = collapsedCats[cat.label] ?? (catIdx !== 0);
 
               return (
                 <div key={cat.label} className={`border rounded-xl overflow-hidden transition-colors ${catComplete ? "border-emerald-200 bg-emerald-50/20" : "border-[#E8E8E8]"}`}>
