@@ -19,38 +19,45 @@ export const DESIGN_HANDOFF_ITEMS = [
 ];
 
 export const DEV_HANDOFF_ITEMS = [
-  // Figma Accuracy
-  "Spacing and padding matches Figma exactly",
-  "Font sizes, weights, and line heights match Figma",
-  "Colours match design system — no wrong shades or textures",
-  "Layout structure matches Figma on desktop (1440px)",
-  "Layout structure matches Figma on mobile (375px)",
-  // Images & Assets
-  "All images are high quality — no blurry or pixelated assets",
-  "Images optimised (WebP, lazy-loaded, correct dimensions)",
-  "Product images are correct and display properly in all sections",
-  "Icons and graphics are SVG where applicable",
-  // Functionality
-  "All carousels and sliders swipe correctly with proper controls",
-  "Bundle selector works — correct quantities, variants, and pricing",
-  "Add to cart works and adds the correct items",
-  "Cart item removal works",
-  "Upsells and cross-sells function correctly",
-  "All dropdowns, tabs, and accordion sections work",
-  "Sticky elements appear and disappear at correct scroll positions",
-  // Responsive & Devices
-  "Tested on a real mobile device (not just Chrome devtools)",
-  "No layout breaks between 320px and 1600px",
-  "No horizontal scroll at any viewport",
-  "Pinch-to-zoom doesn't break the layout",
-  // Performance & Code
-  "Page loads under 3 seconds on mobile (Lighthouse check)",
-  "No console errors",
-  "No broken links or dead CTAs",
-  "Theme changes haven't broken other pages on the site",
-  // Pre-Handover
-  "Staging URL provided and accessible",
-  "Copy matches approved design exactly — no typos or missing text",
+  // ── COMMON SENSE (Section 0) ──
+  "Opened the page on desktop AND mobile — everything looks finished and polished",
+  "All images are sharp — nothing blurry or pixelated",
+  "Font sizes are consistent and readable across the page",
+  "All animations and transitions are smooth — no jank or glitches",
+  "Product page images scroll/navigate correctly",
+  "Clicked every button — they all work",
+  "Hover states present — cursor changes on all clickable elements",
+  "Full buying flow tested: Add to Cart → Cart → Checkout",
+  "Content the client needs to edit is editable from Theme Editor (not hardcoded)",
+  // ── CODE STANDARDS (Sections 1–5) ──
+  "All files use el- prefix, kebab-case, correct naming",
+  "Section files under 400 lines, snippets under 200",
+  "Schema: clear labels, info text, correct order, defaults, image dimensions",
+  "Schema: settings preview correctly in Theme Editor",
+  "Liquid: snake_case variables, no deprecated tags, early returns",
+  "CSS: BEM naming, scoped to section ID, no broad selectors",
+  "JS: no jQuery, external files, data attributes, event delegation",
+  "Images: one fetchpriority=\"high\", lazy loading, responsive widths, alt text",
+  // ── VISUAL & FUNCTIONAL (Sections 6–17) ──
+  "Every section matches latest Figma (spacing, colours, fonts, icons)",
+  "Correct fonts loaded — no demo/placeholder fonts",
+  "Tested on Desktop, Tablet, Mobile",
+  "Tested in Chrome + Safari",
+  "All links working — no # placeholders",
+  "PDP: variants, pricing, Add to Cart functional",
+  "Cart drawer / cart page working",
+  "Subscriptions tested (if applicable)",
+  "Multi-currency tested (if applicable)",
+  "All forms submit correctly",
+  "PageSpeed / Lighthouse run, scores noted",
+  "Zero console errors",
+  "SEO basics (title, meta, H1, headings, alt text)",
+  "Accessibility basics (semantic HTML, keyboard nav, contrast, ARIA)",
+  "No placeholder copy, lorem ipsum, or TODO text",
+  // ── DEPLOYMENT (Sections 18–19) ──
+  "Working on duplicate theme — not live",
+  "#dev-updates posted today",
+  "Any errors logged in #dev-error-log with solution",
 ];
 
 export interface GateCategory {
@@ -60,12 +67,10 @@ export interface GateCategory {
 }
 
 export const DEV_HANDOFF_CATEGORIES: GateCategory[] = [
-  { label: "Figma Accuracy", startIndex: 0, count: 5 },
-  { label: "Images & Assets", startIndex: 5, count: 4 },
-  { label: "Functionality", startIndex: 9, count: 7 },
-  { label: "Responsive & Devices", startIndex: 16, count: 4 },
-  { label: "Performance & Code", startIndex: 20, count: 4 },
-  { label: "Pre-Handover", startIndex: 24, count: 2 },
+  { label: "Common Sense Checks", startIndex: 0, count: 9 },
+  { label: "Code Standards", startIndex: 9, count: 8 },
+  { label: "Visual & Functional", startIndex: 17, count: 15 },
+  { label: "Deployment", startIndex: 32, count: 3 },
 ];
 
 /** Create a fresh gate with all items unchecked */
