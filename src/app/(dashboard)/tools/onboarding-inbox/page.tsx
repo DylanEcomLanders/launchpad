@@ -21,6 +21,7 @@ const statusConfig: Record<string, { label: string; color: string; bg: string }>
   "in-progress": { label: "In Progress", color: "#3B82F6", bg: "#DBEAFE" },
   approved: { label: "Approved", color: "#10B981", bg: "#D1FAE5" },
   rejected: { label: "Rejected", color: "#EF4444", bg: "#FEE2E2" },
+  archived: { label: "Archived", color: "#999", bg: "#F0F0F0" },
 };
 
 export default function OnboardingInboxPage() {
@@ -32,6 +33,8 @@ export default function OnboardingInboxPage() {
   const [portals, setPortals] = useState<PortalData[]>([]);
   const [selectedPortalId, setSelectedPortalId] = useState("");
   const [showAccessInfo, setShowAccessInfo] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -79,7 +82,24 @@ export default function OnboardingInboxPage() {
     { key: "slack_channel_created", label: "Slack channel created" },
   ];
 
-  const pendingCount = submissions.filter((s) => s.status === "pending" || s.status === "in-progress").length;
+  const activeSubmissions = submissions.filter((s) => !s.deleted_at && (showArchived || s.status !== "archived"));
+  const archivedCount = submissions.filter((s) => !s.deleted_at && s.status === "archived").length;
+  const pendingCount = submissions.filter((s) => !s.deleted_at && (s.status === "pending" || s.status === "in-progress")).length;
+
+  const handleArchive = async (id: string) => {
+    await updateSubmission(id, { status: "archived" });
+    if (selected?.id === id) setSelected(null);
+  };
+
+  const handleDelete = async (id: string) => {
+    await updateSubmission(id, { deleted_at: new Date().toISOString() });
+    setConfirmDelete(null);
+    if (selected?.id === id) setSelected(null);
+  };
+
+  const handleUnarchive = async (id: string) => {
+    await updateSubmission(id, { status: "approved" });
+  };
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -95,7 +115,7 @@ export default function OnboardingInboxPage() {
             <div className="flex items-center justify-center py-10">
               <div className="size-5 border-2 border-[#E8E8E8] border-t-[#1B1B1B] rounded-full animate-spin" />
             </div>
-          ) : submissions.length === 0 ? (
+          ) : activeSubmissions.length === 0 ? (
             <div className="text-center py-10 px-4">
               <p className="text-sm text-[#999]">No submissions yet</p>
               <p className="text-xs text-[#CCC] mt-1">Share the onboarding form with new clients</p>
@@ -104,7 +124,7 @@ export default function OnboardingInboxPage() {
               </Link>
             </div>
           ) : (
-            submissions.map((sub) => {
+            activeSubmissions.map((sub) => {
               const config = statusConfig[sub.status];
               const checklist = sub.pm_checklist;
               const checkCount = checklist ? Object.values(checklist).filter(Boolean).length : 0;
@@ -142,8 +162,16 @@ export default function OnboardingInboxPage() {
           )}
         </div>
 
-        {/* Form link */}
-        <div className="px-5 py-3 border-t border-[#E8E8E8]">
+        {/* Archive toggle + form link */}
+        <div className="px-5 py-3 border-t border-[#E8E8E8] space-y-2">
+          {archivedCount > 0 && (
+            <button
+              onClick={() => setShowArchived(!showArchived)}
+              className="w-full text-[10px] text-[#AAA] hover:text-[#1A1A1A] transition-colors"
+            >
+              {showArchived ? "Hide archived" : `Show archived (${archivedCount})`}
+            </button>
+          )}
           <Link
             href="/onboard"
             target="_blank"
@@ -177,9 +205,44 @@ export default function OnboardingInboxPage() {
                   Submitted {new Date(selected.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                 </p>
               </div>
-              <button onClick={() => setSelected(null)} className="p-1 text-[#CCC] hover:text-[#1A1A1A]">
-                <XMarkIcon className="size-5" />
-              </button>
+              <div className="flex items-center gap-1.5">
+                {selected.status !== "archived" && (
+                  <button
+                    onClick={() => handleArchive(selected.id)}
+                    className="px-2.5 py-1.5 text-[10px] font-medium text-[#999] hover:text-[#1A1A1A] hover:bg-[#F5F5F5] rounded-lg transition-colors"
+                  >
+                    Archive
+                  </button>
+                )}
+                {selected.status === "archived" && (
+                  <button
+                    onClick={() => handleUnarchive(selected.id)}
+                    className="px-2.5 py-1.5 text-[10px] font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  >
+                    Unarchive
+                  </button>
+                )}
+                {confirmDelete === selected.id ? (
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => handleDelete(selected.id)} className="px-2.5 py-1.5 text-[10px] font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+                      Confirm
+                    </button>
+                    <button onClick={() => setConfirmDelete(null)} className="px-2.5 py-1.5 text-[10px] text-[#999] hover:text-[#1A1A1A] transition-colors">
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setConfirmDelete(selected.id)}
+                    className="px-2.5 py-1.5 text-[10px] font-medium text-[#CCC] hover:text-red-500 rounded-lg transition-colors"
+                  >
+                    Delete
+                  </button>
+                )}
+                <button onClick={() => setSelected(null)} className="p-1 text-[#CCC] hover:text-[#1A1A1A]">
+                  <XMarkIcon className="size-5" />
+                </button>
+              </div>
             </div>
 
             {/* PM Checklist */}

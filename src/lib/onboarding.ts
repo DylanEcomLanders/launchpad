@@ -4,9 +4,10 @@ import { createStore } from "@/lib/supabase-store";
 
 export interface OnboardingSubmission {
   id: string;
-  status: "pending" | "in-progress" | "approved" | "rejected";
+  status: "pending" | "in-progress" | "approved" | "rejected" | "archived";
   created_at: string;
   updated_at: string;
+  deleted_at?: string;
 
   // Brand & Business
   company_name: string;
