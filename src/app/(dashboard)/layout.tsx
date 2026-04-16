@@ -5,6 +5,7 @@ import { AuthGate } from "@/components/auth-gate";
 import { ReportIssueButton } from "@/components/report-issue-button";
 import { PageTransition } from "@/components/page-transition";
 import { FloatingNotes } from "@/components/floating-notes";
+import { QuickLinks } from "@/components/quick-links";
 
 export default function DashboardLayout({
   children,
@@ -19,6 +20,7 @@ export default function DashboardLayout({
           <PageTransition>{children}</PageTransition>
         </main>
         <ReportIssueButton />
+        <QuickLinks />
         <FloatingNotes />
       </div>
     </AuthGate>
