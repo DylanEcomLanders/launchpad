@@ -83,7 +83,7 @@ export function QuickLinks() {
       {/* Trigger */}
       <button
         onClick={() => setOpen(!open)}
-        className="fixed top-4 right-14 z-[60] flex items-center gap-1.5 px-2.5 py-2 rounded-lg bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.12)] transition-all duration-200 group"
+        className="fixed bottom-4 right-4 z-[60] flex items-center gap-1.5 px-2.5 py-2 rounded-lg bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.12)] transition-all duration-200 group"
         title="Quick Links"
       >
         {open ? (
@@ -100,14 +100,14 @@ export function QuickLinks() {
       {open && (
         <div
           ref={panelRef}
-          className="fixed top-14 right-14 z-[60] w-[240px] bg-white rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12),0_1px_4px_rgba(0,0,0,0.06)] border border-[#E5E5EA] overflow-hidden"
+          className="fixed bottom-14 right-4 z-[60] w-[240px] bg-white rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12),0_1px_4px_rgba(0,0,0,0.06)] border border-[#E5E5EA] overflow-hidden"
           style={{
             animation: "quickLinksIn 0.15s ease-out",
           }}
         >
           <style>{`
             @keyframes quickLinksIn {
-              from { opacity: 0; transform: translateY(-8px) scale(0.95); }
+              from { opacity: 0; transform: translateY(8px) scale(0.95); }
               to { opacity: 1; transform: translateY(0) scale(1); }
             }
           `}</style>
