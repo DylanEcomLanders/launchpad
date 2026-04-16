@@ -143,9 +143,9 @@ export default function OnboardingFormPage() {
       <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center px-4">
         <div className="max-w-md text-center">
           <CheckCircleIcon className="size-16 text-emerald-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-[#1A1A1A] mb-2">You're all set!</h1>
-          <p className="text-sm text-[#777]">
-            Thanks for completing the onboarding form. Our team will review everything and be in touch within 24 hours to get access sorted and kick things off.
+          <h1 className="text-2xl font-bold text-[#1A1A1A] mb-3">Brief received!</h1>
+          <p className="text-sm text-[#777] leading-relaxed">
+            Your brief is now with the team and we'll be getting started shortly. All project updates will run through your Slack channel — we'll be requesting store access and any remaining details in there.
           </p>
         </div>
       </div>
