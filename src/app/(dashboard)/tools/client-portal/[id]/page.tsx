@@ -12,6 +12,7 @@ import {
   TrashIcon,
   ClockIcon,
   SparklesIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { inputClass, textareaClass, labelClass } from "@/lib/form-styles";
@@ -89,6 +90,7 @@ export default function PortalDetailPage() {
   const [pageReviewFeedback, setPageReviewFeedback] = useState<Record<string, DesignReviewFeedback[]>>({});
   const [funnels, setFunnels] = useState<FunnelData[]>([]);
   const [portalTickets, setPortalTickets] = useState<Ticket[]>([]);
+  const [onboardingBrief, setOnboardingBrief] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [activeTab, setActiveTab] = useState<DashTab>("overview");
@@ -162,6 +164,13 @@ export default function PortalDetailPage() {
         setPageReviewVersions(versionMap);
         setPageReviewFeedback(feedbackMap);
       }
+      // Load onboarding brief assigned to this portal
+      try {
+        const { onboardingStore } = await import("@/lib/onboarding");
+        const allOnboarding = await onboardingStore.getAll();
+        const brief = allOnboarding.find(s => s.assigned_portal_id === portalId && s.status === "approved");
+        setOnboardingBrief(brief || null);
+      } catch {}
     } catch {
       // Silent
     } finally {
@@ -831,7 +840,7 @@ export default function PortalDetailPage() {
         })()}
 
         {/* ── Funnels tab ── */}
-        {clientTab === "funnels" && (
+        {!selectedProject && clientTab === "funnels" && (
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-semibold text-[#1A1A1A]">Funnels</h3>
@@ -865,7 +874,7 @@ export default function PortalDetailPage() {
         )}
 
         {/* ── Context tab ── */}
-        {clientTab === "context" && portal && (
+        {!selectedProject && clientTab === "context" && portal && (
           <ClientContextTab portal={portal} onUpdatePortal={async (patch) => {
             await updatePortal(portal.id, patch as Partial<PortalData>);
             setPortal({ ...portal, ...patch } as PortalData);
@@ -877,7 +886,7 @@ export default function PortalDetailPage() {
         )}
 
         {/* ── Settings tab ── */}
-        {clientTab === "settings" && (
+        {!selectedProject && clientTab === "settings" && (
           <ClientDetailsPanel portal={portal} team={team} onUpdateField={handleUpdateField} />
         )}
 
@@ -902,6 +911,66 @@ export default function PortalDetailPage() {
                 clientName={portal.client_name}
                 portalId={portal.id}
               />
+            )}
+
+            {/* Onboarding Brief */}
+            {onboardingBrief && (
+              <div className="border border-[#E8E8E8] rounded-xl overflow-hidden">
+                <button
+                  onClick={() => {
+                    const el = document.getElementById("onboarding-brief-detail");
+                    if (el) el.classList.toggle("hidden");
+                  }}
+                  className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#FAFAFA] transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="size-8 rounded-lg bg-[#1B1B1B] flex items-center justify-center">
+                      <svg className="size-4 text-white" viewBox="0 0 20 20" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" /><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" /></svg>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-[#1A1A1A]">Onboarding Brief</p>
+                      <p className="text-[10px] text-[#AAA]">Submitted {new Date(onboardingBrief.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
+                    </div>
+                  </div>
+                  <ChevronDownIcon className="size-4 text-[#CCC]" />
+                </button>
+                <div id="onboarding-brief-detail" className="hidden border-t border-[#F0F0F0] px-5 py-4 space-y-4 max-h-[500px] overflow-y-auto">
+                  {[
+                    { title: "Brief", value: onboardingBrief.brief_description },
+                    { title: "Target Customer", value: onboardingBrief.target_customer },
+                    { title: "Competitors", value: onboardingBrief.top_competitors },
+                    { title: "USPs", value: onboardingBrief.usps },
+                    { title: "Main Products", value: onboardingBrief.main_products },
+                    { title: "Metrics to Focus On", value: onboardingBrief.current_metrics },
+                    { title: "Brand Assets", value: onboardingBrief.brand_assets_link },
+                    { title: "Value Props", value: onboardingBrief.core_value_props },
+                    { title: "Tone of Voice", value: onboardingBrief.tone_of_voice },
+                    { title: "Words to Avoid", value: onboardingBrief.words_to_avoid },
+                    { title: "Store URL", value: onboardingBrief.myshopify_url },
+                    { title: "Analytics", value: onboardingBrief.analytics_software },
+                    { title: "Primary Goal", value: onboardingBrief.primary_goal },
+                    { title: "Success Definition", value: onboardingBrief.success_definition },
+                    { title: "Timeline", value: onboardingBrief.timeline_expectations },
+                    { title: "Conversion Challenges", value: onboardingBrief.conversion_challenges },
+                    { title: "Customer Objections", value: onboardingBrief.common_objections },
+                    { title: "Compliance", value: onboardingBrief.compliance_restrictions },
+                    { title: "Primary Contact", value: onboardingBrief.primary_contact },
+                    { title: "Decision Maker", value: onboardingBrief.approval_decision_maker },
+                    { title: "Timezone", value: onboardingBrief.timezone },
+                  ].filter(f => f.value).map((field) => (
+                    <div key={field.title}>
+                      <p className="text-[10px] font-medium text-[#999] mb-0.5">{field.title}</p>
+                      <p className="text-xs text-[#444] whitespace-pre-wrap">{field.value}</p>
+                    </div>
+                  ))}
+                  {onboardingBrief.additional_info && (
+                    <div>
+                      <p className="text-[10px] font-medium text-[#999] mb-0.5">Additional Info</p>
+                      <p className="text-xs text-[#444] whitespace-pre-wrap">{onboardingBrief.additional_info}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
 
             <OverviewSection
