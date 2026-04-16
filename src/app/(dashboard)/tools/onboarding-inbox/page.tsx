@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { onboardingStore, type OnboardingSubmission } from "@/lib/onboarding";
+import { getPortals } from "@/lib/portal/data";
+import type { PortalData } from "@/lib/portal/types";
 import Link from "next/link";
 import {
   CheckCircleIcon,
@@ -10,6 +12,7 @@ import {
   ArrowTopRightOnSquareIcon,
   ChevronRightIcon,
   XMarkIcon,
+  InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
@@ -24,6 +27,9 @@ export default function OnboardingInboxPage() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<OnboardingSubmission | null>(null);
   const [saving, setSaving] = useState(false);
+  const [portals, setPortals] = useState<PortalData[]>([]);
+  const [selectedPortalId, setSelectedPortalId] = useState("");
+  const [showAccessInfo, setShowAccessInfo] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -34,7 +40,10 @@ export default function OnboardingInboxPage() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+    getPortals().then(setPortals).catch(() => {});
+  }, [load]);
 
   const updateSubmission = async (id: string, patch: Partial<OnboardingSubmission>) => {
     setSaving(true);
@@ -60,9 +69,9 @@ export default function OnboardingInboxPage() {
     await updateSubmission(id, { pm_checklist: updated, status: "in-progress" });
   };
 
-  const checklistItems: { key: keyof NonNullable<OnboardingSubmission["pm_checklist"]>; label: string }[] = [
-    { key: "shopify_access_requested", label: "Shopify collaborator access requested" },
-    { key: "shopify_access_confirmed", label: "Shopify access confirmed & working" },
+  const checklistItems: { key: keyof NonNullable<OnboardingSubmission["pm_checklist"]>; label: string; hasInfo?: boolean }[] = [
+    { key: "shopify_access_requested", label: "Shopify collaborator access requested", hasInfo: true },
+    { key: "shopify_access_confirmed", label: "Shopify access confirmed & working", hasInfo: true },
     { key: "info_verified", label: "Client info verified & complete" },
     { key: "brand_assets_received", label: "Brand assets received" },
     { key: "slack_channel_created", label: "Slack channel created" },
@@ -178,19 +187,60 @@ export default function OnboardingInboxPage() {
                 {checklistItems.map((item) => {
                   const checked = selected.pm_checklist?.[item.key] || false;
                   return (
-                    <label key={item.key} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                    <div key={item.key} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
                       checked ? "border-emerald-200 bg-emerald-50/50" : "border-[#E8E8E8] bg-white hover:border-[#CCC]"
                     }`}>
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => toggleChecklist(selected.id, item.key)}
-                        className="size-4 rounded border-[#CCC] text-emerald-600 focus:ring-0"
-                      />
-                      <span className={`text-sm ${checked ? "text-emerald-700" : "text-[#555]"}`}>{item.label}</span>
-                    </label>
+                      <label className="flex items-center gap-3 flex-1 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleChecklist(selected.id, item.key)}
+                          className="size-4 rounded border-[#CCC] text-emerald-600 focus:ring-0"
+                        />
+                        <span className={`text-sm ${checked ? "text-emerald-700" : "text-[#555]"}`}>{item.label}</span>
+                      </label>
+                      {item.hasInfo && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setShowAccessInfo(!showAccessInfo); }}
+                          className="p-1 text-[#CCC] hover:text-[#1A1A1A] transition-colors shrink-0"
+                          title="View access requirements"
+                        >
+                          <InformationCircleIcon className="size-4" />
+                        </button>
+                      )}
+                    </div>
                   );
                 })}
+
+                {/* Access info popup */}
+                {showAccessInfo && (
+                  <div className="mt-2 p-4 bg-blue-50 border border-blue-200 rounded-xl relative">
+                    <button onClick={() => setShowAccessInfo(false)} className="absolute top-2 right-2 text-blue-400 hover:text-blue-600">
+                      <XMarkIcon className="size-4" />
+                    </button>
+                    <p className="text-xs font-semibold text-blue-800 mb-2">Access We Need to Request</p>
+                    <div className="space-y-1.5 text-xs text-blue-700">
+                      <p className="font-medium">Shopify</p>
+                      <ul className="ml-3 space-y-1 list-disc text-blue-600">
+                        <li>Collaborator request sent to their myshopify.com URL</li>
+                        <li>Staff account with <strong>Themes</strong>, <strong>Products</strong>, <strong>Analytics</strong>, and <strong>Online Store</strong> permissions</li>
+                        <li>Confirm which theme is live and whether it's customised</li>
+                      </ul>
+                      <p className="font-medium mt-3">Analytics</p>
+                      <ul className="ml-3 space-y-1 list-disc text-blue-600">
+                        <li>GA4 — Viewer access to team@ecomlanders.com</li>
+                        <li>Microsoft Clarity / Hotjar — invite to team@ecomlanders.com</li>
+                        <li>Intelligems — if they have it, request access</li>
+                      </ul>
+                      <p className="font-medium mt-3">Other</p>
+                      <ul className="ml-3 space-y-1 list-disc text-blue-600">
+                        <li>Meta Business Suite — if running paid social</li>
+                        <li>Google Search Console — if SEO is in scope</li>
+                        <li>Review app access (Judge.me, Loox, etc.) — if reviews are part of the build</li>
+                      </ul>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* PM Notes */}
@@ -206,21 +256,64 @@ export default function OnboardingInboxPage() {
                 />
               </div>
 
-              {/* Approve button */}
+              {/* Portal assignment + approve */}
               {selected.status !== "approved" && (
-                <button
-                  onClick={() => updateSubmission(selected.id, { status: "approved" })}
-                  disabled={saving || !Object.values(selected.pm_checklist || {}).every(Boolean)}
-                  className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  <CheckCircleIcon className="size-4" />
-                  Approve & Assign to Portal
-                </button>
+                <div className="mt-4 space-y-3">
+                  {/* Portal selector */}
+                  <div>
+                    <label className="text-[11px] font-medium text-[#555] block mb-1.5">Assign to Portal</label>
+                    <select
+                      value={selectedPortalId || selected.assigned_portal_id || ""}
+                      onChange={(e) => setSelectedPortalId(e.target.value)}
+                      className="w-full px-3 py-2.5 bg-white border border-[#E8E8E8] rounded-lg text-sm focus:outline-none focus:border-[#1B1B1B] appearance-none"
+                    >
+                      <option value="">Select a portal...</option>
+                      <option value="__new__">+ Create new portal</option>
+                      {portals.map((p) => (
+                        <option key={p.id} value={p.id}>{p.client_name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      const portalId = selectedPortalId || selected.assigned_portal_id;
+                      updateSubmission(selected.id, {
+                        status: "approved",
+                        assigned_portal_id: portalId || undefined,
+                        assigned_at: new Date().toISOString(),
+                        assigned_by: "pm",
+                      });
+                    }}
+                    disabled={saving || !Object.values(selected.pm_checklist || {}).every(Boolean) || !(selectedPortalId || selected.assigned_portal_id)}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <CheckCircleIcon className="size-4" />
+                    Approve & Assign to Portal
+                  </button>
+
+                  {!Object.values(selected.pm_checklist || {}).every(Boolean) && (
+                    <p className="text-[10px] text-[#AAA] text-center">Complete all checklist items to approve</p>
+                  )}
+                  {Object.values(selected.pm_checklist || {}).every(Boolean) && !(selectedPortalId || selected.assigned_portal_id) && (
+                    <p className="text-[10px] text-[#AAA] text-center">Select a portal to assign to</p>
+                  )}
+                </div>
               )}
               {selected.status === "approved" && (
-                <div className="mt-4 flex items-center gap-2 text-emerald-600">
-                  <CheckCircleIcon className="size-5" />
-                  <span className="text-sm font-medium">Approved {selected.assigned_at ? new Date(selected.assigned_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : ""}</span>
+                <div className="mt-4">
+                  <div className="flex items-center gap-2 text-emerald-600 mb-1">
+                    <CheckCircleIcon className="size-5" />
+                    <span className="text-sm font-medium">Approved {selected.assigned_at ? new Date(selected.assigned_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : ""}</span>
+                  </div>
+                  {selected.assigned_portal_id && (
+                    <Link
+                      href={`/tools/client-portal/${selected.assigned_portal_id}`}
+                      className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:underline"
+                    >
+                      View Portal <ArrowTopRightOnSquareIcon className="size-3" />
+                    </Link>
+                  )}
                 </div>
               )}
             </div>
