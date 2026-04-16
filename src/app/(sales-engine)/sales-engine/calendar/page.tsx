@@ -612,6 +612,16 @@ export default function CalendarPage() {
   }
 
   async function handleDeletePost(id: string) {
+    const post = allPosts.find(p => p.id === id);
+    if (!post) return;
+
+    // Only drafts can be deleted freely — scheduled/posted posts are protected
+    if (post.status === "scheduled") {
+      if (!confirm("This post has been scheduled. Are you sure you want to delete it?")) return;
+    } else if (post.status === "saved") {
+      if (!confirm("This post is marked as Ready to Post. Are you sure you want to delete it?")) return;
+    }
+
     const updated = allPosts.filter(p => p.id !== id);
     setAllPosts(updated);
     await savePosts(updated);
