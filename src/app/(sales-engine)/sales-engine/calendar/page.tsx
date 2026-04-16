@@ -2854,6 +2854,7 @@ export default function CalendarPage() {
                 {(["x", "linkedin"] as Platform[]).map(plat => {
                   const variants = platformCaptions[plat] || [];
                   const value = draftCaptions[plat] || "";
+                  const xCaption = draftCaptions["x"] || "";
                   return (
                     <div key={plat} className="mb-4 last:mb-0">
                       <div className="flex items-center justify-between mb-2">
@@ -2861,14 +2862,26 @@ export default function CalendarPage() {
                           <span className="size-2 rounded-full" style={{ backgroundColor: platformColors[plat] }} />
                           <p className="text-[11px] font-semibold text-[#999] uppercase tracking-wider">{platformLabels[plat]} Caption</p>
                         </div>
-                        <button
-                          onClick={() => generateCaptions({ targetPlatform: plat })}
-                          disabled={captionLoading || !studioPost.angle?.trim()}
-                          className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-[#7A7A7A] bg-[#F3F3F5] rounded-md hover:bg-[#EBEBEB] transition-colors disabled:opacity-50"
-                        >
-                          <SparklesIcon className="size-3" />
-                          {captionLoading ? "..." : "Regenerate"}
-                        </button>
+                        <div className="flex items-center gap-1">
+                          {plat === "linkedin" && xCaption.trim() && (
+                            <button
+                              onClick={() => adaptCaptionForPlatform(xCaption, "x", "linkedin")}
+                              disabled={!!adaptingPlatform}
+                              className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors disabled:opacity-50"
+                            >
+                              <SparklesIcon className="size-3" />
+                              {adaptingPlatform === "linkedin" ? "Adapting..." : "Generate from X"}
+                            </button>
+                          )}
+                          <button
+                            onClick={() => generateCaptions({ targetPlatform: plat })}
+                            disabled={captionLoading || !studioPost.angle?.trim()}
+                            className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-[#7A7A7A] bg-[#F3F3F5] rounded-md hover:bg-[#EBEBEB] transition-colors disabled:opacity-50"
+                          >
+                            <SparklesIcon className="size-3" />
+                            {captionLoading ? "..." : "Regenerate"}
+                          </button>
+                        </div>
                       </div>
                       {variants.length > 1 && (
                         <div className="flex gap-1 mb-2">
