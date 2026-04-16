@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { onboardingStore, type OnboardingSubmission } from "@/lib/onboarding";
-import { getPortals } from "@/lib/portal/data";
+import { getPortals, createPortal } from "@/lib/portal/data";
 import type { PortalData } from "@/lib/portal/types";
 import Link from "next/link";
 import {
@@ -23,6 +24,7 @@ const statusConfig: Record<string, { label: string; color: string; bg: string }>
 };
 
 export default function OnboardingInboxPage() {
+  const router = useRouter();
   const [submissions, setSubmissions] = useState<OnboardingSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<OnboardingSubmission | null>(null);
@@ -257,49 +259,102 @@ export default function OnboardingInboxPage() {
               </div>
 
               {/* Portal assignment + approve */}
-              {selected.status !== "approved" && (
-                <div className="mt-4 space-y-3">
-                  {/* Portal selector */}
-                  <div>
-                    <label className="text-[11px] font-medium text-[#555] block mb-1.5">Assign to Portal</label>
-                    <select
-                      value={selectedPortalId || selected.assigned_portal_id || ""}
-                      onChange={(e) => setSelectedPortalId(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-white border border-[#E8E8E8] rounded-lg text-sm focus:outline-none focus:border-[#1B1B1B] appearance-none"
-                    >
-                      <option value="">Select a portal...</option>
-                      <option value="__new__">+ Create new portal</option>
-                      {portals.map((p) => (
-                        <option key={p.id} value={p.id}>{p.client_name}</option>
-                      ))}
-                    </select>
+              {selected.status !== "approved" && (() => {
+                const allChecked = Object.values(selected.pm_checklist || {}).every(Boolean);
+
+                const handleAssignExisting = async () => {
+                  if (!selectedPortalId || selectedPortalId === "__new__") return;
+                  await updateSubmission(selected.id, {
+                    status: "approved",
+                    assigned_portal_id: selectedPortalId,
+                    assigned_at: new Date().toISOString(),
+                    assigned_by: "pm",
+                  });
+                };
+
+                const handleCreateNewPortal = async () => {
+                  setSaving(true);
+                  try {
+                    const portal = await createPortal({
+                      client_name: selected.company_name,
+                      client_email: "",
+                      client_type: "regular",
+                      project_type: "",
+                      current_phase: "Onboarding",
+                      progress: 0,
+                      next_touchpoint: { date: new Date().toISOString().slice(0, 10), description: "Complete project setup" },
+                      phases: [],
+                      scope: [],
+                      deliverables: [],
+                      documents: [],
+                      results: [],
+                      wins: [],
+                      show_results: false,
+                      slack_channel_url: "",
+                      ad_hoc_requests: [],
+                      projects: [],
+                    });
+
+                    await updateSubmission(selected.id, {
+                      status: "approved",
+                      assigned_portal_id: portal.id,
+                      assigned_at: new Date().toISOString(),
+                      assigned_by: "pm",
+                    });
+
+                    router.push(`/tools/client-portal/${portal.id}`);
+                  } catch (err) {
+                    console.error("Failed to create portal:", err);
+                  }
+                  setSaving(false);
+                };
+
+                return (
+                  <div className="mt-5 space-y-3">
+                    {!allChecked && (
+                      <p className="text-[10px] text-amber-600 text-center font-medium">Complete all checklist items to approve</p>
+                    )}
+
+                    {allChecked && (
+                      <>
+                        <p className="text-[11px] font-medium text-[#555] mb-1">Assign to</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {/* Create new portal */}
+                          <button
+                            onClick={handleCreateNewPortal}
+                            disabled={saving}
+                            className="flex flex-col items-center gap-2 p-4 border-2 border-[#1B1B1B] rounded-xl hover:bg-[#1B1B1B] hover:text-white text-[#1B1B1B] transition-all disabled:opacity-50 group"
+                          >
+                            <svg className="size-6" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
+                            <span className="text-xs font-semibold">New Portal</span>
+                          </button>
+                          {/* Assign to existing */}
+                          <div className="border-2 border-[#E8E8E8] rounded-xl p-3 flex flex-col">
+                            <span className="text-[10px] font-medium text-[#999] mb-2">Existing Portal</span>
+                            <select
+                              value={selectedPortalId}
+                              onChange={(e) => setSelectedPortalId(e.target.value)}
+                              className="w-full px-2 py-1.5 bg-white border border-[#E8E8E8] rounded-lg text-xs focus:outline-none focus:border-[#1B1B1B] appearance-none mb-2"
+                            >
+                              <option value="">Select...</option>
+                              {portals.map((p) => (
+                                <option key={p.id} value={p.id}>{p.client_name}</option>
+                              ))}
+                            </select>
+                            <button
+                              onClick={handleAssignExisting}
+                              disabled={saving || !selectedPortalId || selectedPortalId === "__new__"}
+                              className="w-full py-1.5 text-xs font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            >
+                              Assign
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
-
-                  <button
-                    onClick={() => {
-                      const portalId = selectedPortalId || selected.assigned_portal_id;
-                      updateSubmission(selected.id, {
-                        status: "approved",
-                        assigned_portal_id: portalId || undefined,
-                        assigned_at: new Date().toISOString(),
-                        assigned_by: "pm",
-                      });
-                    }}
-                    disabled={saving || !Object.values(selected.pm_checklist || {}).every(Boolean) || !(selectedPortalId || selected.assigned_portal_id)}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                  >
-                    <CheckCircleIcon className="size-4" />
-                    Approve & Assign to Portal
-                  </button>
-
-                  {!Object.values(selected.pm_checklist || {}).every(Boolean) && (
-                    <p className="text-[10px] text-[#AAA] text-center">Complete all checklist items to approve</p>
-                  )}
-                  {Object.values(selected.pm_checklist || {}).every(Boolean) && !(selectedPortalId || selected.assigned_portal_id) && (
-                    <p className="text-[10px] text-[#AAA] text-center">Select a portal to assign to</p>
-                  )}
-                </div>
-              )}
+                );
+              })()}
               {selected.status === "approved" && (
                 <div className="mt-4">
                   <div className="flex items-center gap-2 text-emerald-600 mb-1">

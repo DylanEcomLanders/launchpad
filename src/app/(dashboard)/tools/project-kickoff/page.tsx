@@ -38,7 +38,7 @@ import type { ReactElement } from "react";
 import { inputClass, selectClass, labelClass, textareaClass } from "@/lib/form-styles";
 import { createPortal } from "@/lib/portal/data";
 import type { PortalInsert, PortalPhase as PPhase, PortalDeliverable as PDel, PortalDocument as PDoc } from "@/lib/portal/types";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 /* ── Helpers ── */
 
@@ -79,8 +79,13 @@ const sectionHeadingClass =
 /* ── Main Component ── */
 
 export default function ProjectKickoffPage() {
+  /* ── Pre-fill from query params (from Quick Setup) ── */
+  const searchParams = useSearchParams();
+  const prefillClient = searchParams.get("client") || "";
+  const prefillPortalId = searchParams.get("portalId") || "";
+
   /* ── Form state ── */
-  const [clientName, setClientName] = useState("");
+  const [clientName, setClientName] = useState(prefillClient);
   const [projectType, setProjectType] = useState<GeneratorFormData["projectType"]>("");
   const [projectOverview, setProjectOverview] = useState("");
   const [deliverables, setDeliverables] = useState<Deliverable[]>([
@@ -109,7 +114,7 @@ export default function ProjectKickoffPage() {
   const [creatingPortal, setCreatingPortal] = useState(false);
   const [portalCreated, setPortalCreated] = useState(false);
   const [existingPortals, setExistingPortals] = useState<{ id: string; client_name: string }[]>([]);
-  const [selectedPortalId, setSelectedPortalId] = useState<string>("new"); // "new" or portal ID
+  const [selectedPortalId, setSelectedPortalId] = useState<string>(prefillPortalId || "new"); // "new" or portal ID
 
   /* ── Fetch existing portals for "assign to" ── */
   useEffect(() => {

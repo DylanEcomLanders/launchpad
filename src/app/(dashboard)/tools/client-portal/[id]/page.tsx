@@ -776,8 +776,33 @@ export default function PortalDetailPage() {
             })}
             {activeProjects.length === 0 && (
               <div className="text-center py-12">
-                <p className="text-sm text-[#CCC] mb-1">No projects yet</p>
-                <p className="text-xs text-[#DDD]">Add a project from the sidebar</p>
+                {onboardingBrief ? (
+                  <>
+                    <div className="size-12 rounded-xl bg-[#1B1B1B] flex items-center justify-center mx-auto mb-4">
+                      <svg className="size-6 text-white" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" /></svg>
+                    </div>
+                    <p className="text-sm font-medium text-[#1A1A1A] mb-1">Onboarding brief ready</p>
+                    <p className="text-xs text-[#999] mb-4">Set up deliverables, dates, and team to get this project moving</p>
+                    <Link
+                      href={`/tools/project-kickoff?client=${encodeURIComponent(portal.client_name)}&portalId=${portal.id}`}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1B1B1B] text-white text-sm font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors"
+                    >
+                      <svg className="size-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" /></svg>
+                      Quick Setup
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-[#CCC] mb-1">No projects yet</p>
+                    <p className="text-xs text-[#DDD] mb-4">Add a project from the sidebar or set up via Project Kickoff</p>
+                    <Link
+                      href={`/tools/project-kickoff?client=${encodeURIComponent(portal.client_name)}&portalId=${portal.id}`}
+                      className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-[#777] border border-[#E8E8E8] rounded-lg hover:bg-[#FAFAFA] transition-colors"
+                    >
+                      Quick Setup
+                    </Link>
+                  </>
+                )}
               </div>
             )}
           </div>
