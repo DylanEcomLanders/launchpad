@@ -19,6 +19,14 @@ export interface OnboardingSubmission {
   main_products: string;
   current_metrics: string;
 
+  // Project Specifics
+  product_url?: string;
+  page_type?: string;
+  traffic_source?: string;
+  amazon_asins?: string;
+  specific_direction?: string;
+  meta_page_name?: string;
+
   // Creative & Messaging
   brand_assets_link: string;
   core_value_props: string;

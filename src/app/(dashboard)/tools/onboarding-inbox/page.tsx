@@ -451,6 +451,15 @@ export default function OnboardingInboxPage() {
                 <DetailField label="Current Metrics" value={selected.current_metrics} />
               </DetailSection>
 
+              <DetailSection title="Project Specifics">
+                <DetailField label="Product URL(s)" value={selected.product_url || ""} />
+                <DetailField label="Page Type" value={selected.page_type || ""} />
+                <DetailField label="Traffic Source" value={selected.traffic_source || ""} />
+                <DetailField label="Amazon ASIN(s)" value={selected.amazon_asins || ""} />
+                <DetailField label="Meta Page Name" value={selected.meta_page_name || ""} />
+                <DetailField label="Specific Direction" value={selected.specific_direction || ""} />
+              </DetailSection>
+
               <DetailSection title="Creative & Messaging">
                 <DetailField label="Brand Assets Link" value={selected.brand_assets_link} link />
                 <DetailField label="Core Value Props" value={selected.core_value_props} />

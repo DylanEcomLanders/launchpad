@@ -13,6 +13,13 @@ interface FormData {
   usps: string;
   main_products: string;
   current_metrics: string;
+  // Project Specifics
+  product_url: string;
+  page_type: string;
+  traffic_source: string;
+  amazon_asins: string;
+  specific_direction: string;
+  meta_page_name: string;
   // Creative & Messaging
   brand_assets_link: string;
   core_value_props: string;
@@ -45,6 +52,8 @@ interface FormData {
 const emptyForm: FormData = {
   company_name: "", website_url: "", brief_description: "", target_customer: "",
   top_competitors: "", usps: "", main_products: "", current_metrics: "",
+  product_url: "", page_type: "", traffic_source: "", amazon_asins: "",
+  specific_direction: "", meta_page_name: "",
   brand_assets_link: "", core_value_props: "", reviews_testimonials: "",
   words_to_avoid: "", tone_of_voice: "",
   myshopify_url: "", analytics_software: "", existing_landing_pages: "",
@@ -196,6 +205,49 @@ export default function OnboardingFormPage() {
           </Field>
           <Field label="What are the current metrics you want to focus on?" required>
             <textarea className={textareaClass} value={form.current_metrics} onChange={set("current_metrics")} placeholder="e.g., CVR, AOV, bounce rate, ad ROAS..." />
+          </Field>
+
+          {/* ── Project Specifics ── */}
+          <SectionHeader title="Project Specifics" />
+          <Field label="Product URL(s) — the page(s) being built or rebuilt">
+            <textarea className={textareaClass} value={form.product_url} onChange={set("product_url")} placeholder="e.g., https://store.com/products/your-product" />
+          </Field>
+          <Row>
+            <Field label="Page type">
+              <select className={inputClass + " appearance-none"} value={form.page_type} onChange={set("page_type") as any}>
+                <option value="">Select...</option>
+                <option value="PDP">PDP</option>
+                <option value="Advertorial">Advertorial</option>
+                <option value="Hero Lander">Hero Lander</option>
+                <option value="Listicle">Listicle</option>
+                <option value="Homepage">Homepage</option>
+                <option value="Bundle Builder">Bundle Builder</option>
+                <option value="Collection Page">Collection Page</option>
+                <option value="Cart / Checkout">Cart / Checkout</option>
+                <option value="Other">Other</option>
+              </select>
+            </Field>
+            <Field label="Traffic source">
+              <select className={inputClass + " appearance-none"} value={form.traffic_source} onChange={set("traffic_source") as any}>
+                <option value="">Select...</option>
+                <option value="Meta (cold)">Meta (cold)</option>
+                <option value="Google">Google</option>
+                <option value="Email">Email</option>
+                <option value="Organic">Organic</option>
+                <option value="TikTok">TikTok</option>
+                <option value="Mixed">Mixed</option>
+                <option value="Other">Other</option>
+              </select>
+            </Field>
+          </Row>
+          <Field label="Amazon ASIN(s) — if applicable">
+            <input className={inputClass} value={form.amazon_asins} onChange={set("amazon_asins")} placeholder="e.g., B09XYZ1234" />
+          </Field>
+          <Field label="Meta page name — so we can find running ads">
+            <input className={inputClass} value={form.meta_page_name} onChange={set("meta_page_name")} placeholder="e.g., Your Brand Name on Facebook/Meta" />
+          </Field>
+          <Field label="Specific direction — anything to prioritise or exclude">
+            <textarea className={textareaClass} value={form.specific_direction} onChange={set("specific_direction")} placeholder="e.g., Focus on subscription push, avoid mentioning competitor X..." />
           </Field>
 
           {/* ── Creative & Messaging ── */}
