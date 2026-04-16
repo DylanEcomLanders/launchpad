@@ -112,10 +112,26 @@ export function Sidebar() {
 
   const visibleSections = navSections.filter((s) => !s.roles || s.roles.includes(role));
   const [now, setNow] = useState(() => new Date());
+  const [onboardingCount, setOnboardingCount] = useState(0);
 
   function toggleSection(title: string) {
     setOpenSections((prev) => ({ ...prev, [title]: !prev[title] }));
   }
+
+  // Poll onboarding submissions every 5 minutes
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      try {
+        const { onboardingStore } = await import("@/lib/onboarding");
+        const all = await onboardingStore.getAll();
+        const pending = all.filter(s => !s.deleted_at && (s.status === "pending" || s.status === "in-progress"));
+        setOnboardingCount(pending.length);
+      } catch {}
+    };
+    checkOnboarding();
+    const id = setInterval(checkOnboarding, 5 * 60_000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 60_000);
@@ -215,23 +231,34 @@ export function Sidebar() {
                 Delivery
               </p>
             )}
-            {deliveryItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className={`
-                  flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-200 mb-0.5
-                  ${isActive(item.href)
-                    ? "bg-white text-[#1B1B1B] font-medium shadow-[var(--shadow-nav-active)]"
-                    : "text-[#7A7A7A] hover:bg-white/60 hover:text-[#1B1B1B]"
-                  }
-                `}
-              >
-                {item.icon}
-                {!collapsed && <span>{item.label}</span>}
-              </Link>
-            ))}
+            {deliveryItems.map((item) => {
+              const badge = item.href === "/tools/onboarding-inbox" ? onboardingCount : 0;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`
+                    relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-200 mb-0.5
+                    ${isActive(item.href)
+                      ? "bg-white text-[#1B1B1B] font-medium shadow-[var(--shadow-nav-active)]"
+                      : "text-[#7A7A7A] hover:bg-white/60 hover:text-[#1B1B1B]"
+                    }
+                  `}
+                >
+                  {item.icon}
+                  {!collapsed && <span className="flex-1">{item.label}</span>}
+                  {!collapsed && badge > 0 && (
+                    <span className="size-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shrink-0">
+                      {badge}
+                    </span>
+                  )}
+                  {collapsed && badge > 0 && (
+                    <span className="absolute top-0 right-0 size-2 bg-red-500 rounded-full" />
+                  )}
+                </Link>
+              );
+            })}
 
             {/* Team Hub */}
             <Link
