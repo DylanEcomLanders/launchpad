@@ -11,6 +11,7 @@ import {
   CalculatorIcon,
   RocketLaunchIcon,
   SwatchIcon,
+  ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
 
 interface QuickLink {
@@ -60,6 +61,12 @@ const links: QuickLink[] = [
     color: "#EC4899",
     icon: <SwatchIcon className="size-4" />,
   },
+  {
+    label: "Report Issue",
+    href: "/tools/issues",
+    color: "#EF4444",
+    icon: <ExclamationCircleIcon className="size-4" />,
+  },
 ];
 
 export function QuickLinks() {
@@ -83,15 +90,15 @@ export function QuickLinks() {
       {/* Trigger */}
       <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-4 right-4 z-[60] flex items-center gap-1.5 px-2.5 py-2 rounded-lg bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.12)] transition-all duration-200 group"
+        className="fixed bottom-5 right-5 z-[60] flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#1B1B1B] shadow-[0_4px_20px_rgba(0,0,0,0.25),0_2px_8px_rgba(0,0,0,0.15)] hover:bg-[#2D2D2D] hover:shadow-[0_6px_28px_rgba(0,0,0,0.3)] transition-all duration-200 group"
         title="Quick Links"
       >
         {open ? (
-          <XMarkIcon className="size-4 text-[#1B1B1B]" />
+          <XMarkIcon className="size-4 text-white" />
         ) : (
           <>
-            <Squares2X2Icon className="size-4 text-[#7A7A7A] group-hover:text-[#1B1B1B] transition-colors" />
-            <span className="text-[11px] font-medium text-[#7A7A7A] group-hover:text-[#1B1B1B] transition-colors hidden sm:inline">Quick Links</span>
+            <Squares2X2Icon className="size-4 text-white/70 group-hover:text-white transition-colors" />
+            <span className="text-[11px] font-medium text-white/70 group-hover:text-white transition-colors hidden sm:inline">Quick Links</span>
           </>
         )}
       </button>
@@ -100,7 +107,7 @@ export function QuickLinks() {
       {open && (
         <div
           ref={panelRef}
-          className="fixed bottom-14 right-4 z-[60] w-[240px] bg-white rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12),0_1px_4px_rgba(0,0,0,0.06)] border border-[#E5E5EA] overflow-hidden"
+          className="fixed bottom-16 right-5 z-[60] w-[240px] bg-white rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12),0_1px_4px_rgba(0,0,0,0.06)] border border-[#E5E5EA] overflow-hidden"
           style={{
             animation: "quickLinksIn 0.15s ease-out",
           }}
