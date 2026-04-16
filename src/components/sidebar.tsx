@@ -16,6 +16,7 @@ import {
   RocketLaunchIcon,
   UserGroupIcon,
   BeakerIcon,
+  InboxStackIcon,
 } from "@heroicons/react/24/solid";
 import { Logo, LogoMark } from "@/components/logo";
 import { AppSwitcher } from "@/components/app-switcher";
@@ -86,6 +87,7 @@ const navSections: NavSection[] = [
 // Delivery section — main nav items grouped
 const deliveryItems = [
   { label: "Mission Control", href: "/", icon: <HomeIcon className="size-4" /> },
+  { label: "Onboarding", href: "/tools/onboarding-inbox", icon: <InboxStackIcon className="size-4" /> },
   { label: "Portals", href: "/tools/client-portal", icon: <FolderIcon className="size-4" /> },
   {
     label: "Tickets",
