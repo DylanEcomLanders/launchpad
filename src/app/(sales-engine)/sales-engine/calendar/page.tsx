@@ -1090,8 +1090,10 @@ export default function CalendarPage() {
   }
 
   async function clearAllPosts() {
-    if (!confirm("Delete ALL posts for " + (creator === "ajay" ? "Ajay" : "Dylan") + "?")) return;
-    const updated = allPosts.filter(p => p.creator !== creator);
+    const drafts = allPosts.filter(p => p.creator === creator && p.status === "draft");
+    if (drafts.length === 0) { alert("No drafts to clear."); return; }
+    if (!confirm(`Delete ${drafts.length} draft${drafts.length === 1 ? "" : "s"} for ${creator === "ajay" ? "Ajay" : "Dylan"}? Ready to Post and Scheduled posts will be kept.`)) return;
+    const updated = allPosts.filter(p => p.creator !== creator || p.status !== "draft");
     setAllPosts(updated);
     await savePosts(updated);
   }
@@ -2036,7 +2038,7 @@ export default function CalendarPage() {
               className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-red-200 text-red-400 hover:bg-red-50 transition-colors"
             >
               <TrashIcon className="size-3.5" />
-              Clear All
+              Clear Drafts
             </button>
           )}
           <button
