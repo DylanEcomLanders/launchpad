@@ -316,41 +316,45 @@ export default function OnboardingInboxPage() {
                     )}
 
                     {allChecked && (
-                      <>
-                        <p className="text-[11px] font-medium text-[#555] mb-1">Assign to</p>
-                        <div className="grid grid-cols-2 gap-2">
-                          {/* Create new portal */}
-                          <button
-                            onClick={handleCreateNewPortal}
-                            disabled={saving}
-                            className="flex flex-col items-center gap-2 p-4 border-2 border-[#1B1B1B] rounded-xl hover:bg-[#1B1B1B] hover:text-white text-[#1B1B1B] transition-all disabled:opacity-50 group"
-                          >
-                            <svg className="size-6" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
-                            <span className="text-xs font-semibold">New Portal</span>
-                          </button>
-                          {/* Assign to existing */}
-                          <div className="border-2 border-[#E8E8E8] rounded-xl p-3 flex flex-col">
-                            <span className="text-[10px] font-medium text-[#999] mb-2">Existing Portal</span>
-                            <select
-                              value={selectedPortalId}
-                              onChange={(e) => setSelectedPortalId(e.target.value)}
-                              className="w-full px-2 py-1.5 bg-white border border-[#E8E8E8] rounded-lg text-xs focus:outline-none focus:border-[#1B1B1B] appearance-none mb-2"
-                            >
-                              <option value="">Select...</option>
-                              {portals.map((p) => (
-                                <option key={p.id} value={p.id}>{p.client_name}</option>
-                              ))}
-                            </select>
-                            <button
-                              onClick={handleAssignExisting}
-                              disabled={saving || !selectedPortalId || selectedPortalId === "__new__"}
-                              className="w-full py-1.5 text-xs font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                            >
-                              Assign
-                            </button>
+                      <div className="space-y-2">
+                        <button
+                          onClick={handleCreateNewPortal}
+                          disabled={saving}
+                          className="w-full flex items-center gap-3 px-4 py-3 bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
+                        >
+                          <svg className="size-4 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
+                          <div className="text-left">
+                            <p className="text-sm font-semibold">{saving ? "Creating..." : "Create New Portal"}</p>
+                            <p className="text-[10px] text-white/50">Blank portal with brief attached</p>
                           </div>
+                        </button>
+
+                        <div className="flex items-center gap-3 text-[10px] text-[#CCC]">
+                          <div className="flex-1 h-px bg-[#E8E8E8]" />
+                          <span>or assign to existing</span>
+                          <div className="flex-1 h-px bg-[#E8E8E8]" />
                         </div>
-                      </>
+
+                        <div className="flex gap-2">
+                          <select
+                            value={selectedPortalId}
+                            onChange={(e) => setSelectedPortalId(e.target.value)}
+                            className="flex-1 px-3 py-2.5 bg-white border border-[#E8E8E8] rounded-lg text-xs focus:outline-none focus:border-[#1B1B1B] appearance-none"
+                          >
+                            <option value="">Select portal...</option>
+                            {portals.map((p) => (
+                              <option key={p.id} value={p.id}>{p.client_name}</option>
+                            ))}
+                          </select>
+                          <button
+                            onClick={handleAssignExisting}
+                            disabled={saving || !selectedPortalId}
+                            className="px-4 py-2.5 text-xs font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+                          >
+                            Assign
+                          </button>
+                        </div>
+                      </div>
                     )}
                   </div>
                 );

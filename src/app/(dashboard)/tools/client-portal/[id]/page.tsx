@@ -919,25 +919,6 @@ export default function PortalDetailPage() {
         {/* ── OVERVIEW: QA gates + overview + context/weekly ── */}
         {selectedProject && activeTab === "overview" && (
           <div className="space-y-8">
-            {/* QA Gate cards at top of overview */}
-            {portal && (
-              <InternalSection
-                project={selectedProject}
-                gatesOnly
-                onUpdateProject={async (patch) => {
-                  if (!portal) return;
-                  const updatedProjects = portal.projects.map((p) =>
-                    p.id === selectedProject.id ? { ...p, ...patch } : p
-                  );
-                  await updatePortal(portal.id, { projects: updatedProjects } as any);
-                  setPortal({ ...portal, projects: updatedProjects });
-                }}
-                slackInternalChannelId={portal.slack_internal_channel_id}
-                clientName={portal.client_name}
-                portalId={portal.id}
-              />
-            )}
-
             {/* Onboarding Brief */}
             {onboardingBrief && (
               <div className="border border-[#E8E8E8] rounded-xl overflow-hidden">
@@ -997,6 +978,40 @@ export default function PortalDetailPage() {
                 </div>
               </div>
             )}
+
+            {/* Project Info — documents (roadmap, scope, agreement PDFs) */}
+            {(() => {
+              const docs = selectedProject?.documents || portal.documents || [];
+              if (docs.length === 0) return null;
+              return (
+                <div className="border border-[#E8E8E8] rounded-xl overflow-hidden">
+                  <div className="px-5 py-4">
+                    <p className="text-sm font-medium text-[#1A1A1A]">Project Info</p>
+                    <p className="text-[10px] text-[#AAA] mt-0.5">Documents generated during kickoff</p>
+                  </div>
+                  <div className="border-t border-[#F0F0F0] divide-y divide-[#F0F0F0]">
+                    {docs.map((doc, i) => (
+                      <a
+                        key={i}
+                        href={doc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 px-5 py-3 hover:bg-[#FAFAFA] transition-colors"
+                      >
+                        <div className="size-8 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
+                          <span className="text-[9px] font-bold text-red-500">PDF</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-[#1A1A1A] truncate">{doc.name}</p>
+                          <p className="text-[10px] text-[#BBB]">{doc.type} — {doc.date ? new Date(doc.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : ""}</p>
+                        </div>
+                        <ArrowTopRightOnSquareIcon className="size-3.5 text-[#CCC] shrink-0" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
 
             <OverviewSection
               portal={portal}

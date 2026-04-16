@@ -262,6 +262,14 @@ export default function ProjectKickoffPage() {
   const handleGenerate = async () => {
     if (!isFormValid) return;
     setGenerating(true);
+
+    // If coming from Quick Setup (portal already exists), go straight to portal creation
+    if (prefillPortalId) {
+      await handleCreatePortal();
+      setGenerating(false);
+      return;
+    }
+
     await new Promise((r) => setTimeout(r, 600));
     setShowOutputs(true);
     setGenerating(false);
@@ -911,12 +919,12 @@ ${deliverablesText}${additionalNotes ? `\n\n*Notes:* ${additionalNotes}` : ""}`;
               {generating ? (
                 <>
                   <ArrowPathIcon className="size-4 animate-spin" />
-                  Generating Kickoff Pack...
+                  {prefillPortalId ? "Setting up portal..." : "Generating Kickoff Pack..."}
                 </>
               ) : (
                 <>
                   <RocketLaunchIcon className="size-4" />
-                  Generate Kickoff Pack
+                  {prefillPortalId ? "Set Up Portal" : "Generate Kickoff Pack"}
                 </>
               )}
             </button>
