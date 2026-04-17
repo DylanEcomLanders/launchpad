@@ -17,6 +17,9 @@ export async function POST(request: Request) {
     clientEmail?: string;
     amount: number;
     description?: string;
+    recurring?: boolean;
+    billingPeriod?: number; // days, default 30
+    trialDays?: number;
   };
 
   try {
@@ -25,7 +28,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { clientName, clientEmail, amount, description } = body;
+  const { clientName, clientEmail, amount, description, recurring, billingPeriod, trialDays } = body;
 
   if (!clientName?.trim() || !amount || amount < 0.5) {
     return NextResponse.json(
@@ -37,24 +40,37 @@ export async function POST(request: Request) {
   const client = new Whop({ apiKey });
 
   try {
+    const isRecurring = !!recurring;
+
+    const planConfig: any = {
+      company_id: companyId,
+      initial_price: amount,
+      currency: "gbp",
+      title: `${isRecurring ? "Monthly" : "Payment"} — ${clientName}`.slice(0, 30),
+      description: description || `${isRecurring ? "Monthly retainer" : "Payment"} for ${clientName}`,
+      visibility: "hidden",
+      release_method: "buy_now",
+      override_tax_type: "inclusive",
+    };
+
+    if (isRecurring) {
+      planConfig.plan_type = "renewal";
+      planConfig.renewal_price = amount;
+      planConfig.billing_period = billingPeriod || 30; // days
+      if (trialDays && trialDays > 0) planConfig.trial_period_days = trialDays;
+    } else {
+      planConfig.plan_type = "one_time";
+      planConfig.renewal_price = 0;
+    }
+
     const checkoutConfig = await client.checkoutConfigurations.create({
-      plan: {
-        company_id: companyId,
-        initial_price: amount,
-        renewal_price: 0,
-        plan_type: "one_time",
-        currency: "gbp",
-        title: `Payment — ${clientName}`.slice(0, 30),
-        description: description || `Payment for ${clientName}`,
-        visibility: "hidden",
-        release_method: "buy_now",
-        override_tax_type: "inclusive",
-      },
+      plan: planConfig,
       mode: "payment",
       metadata: {
         client_name: clientName,
         client_email: clientEmail || "",
         source: "payment-link-tool",
+        plan_type: isRecurring ? "recurring" : "one-time",
       },
     });
 
