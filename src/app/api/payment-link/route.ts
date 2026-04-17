@@ -70,7 +70,7 @@ export async function POST(request: Request) {
         client_name: clientName,
         client_email: clientEmail || "",
         source: "payment-link-tool",
-        plan_type: isRecurring ? "recurring" : "one-time",
+        billing_mode: isRecurring ? "recurring" : "one_time",
       },
     });
 

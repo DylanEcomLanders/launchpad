@@ -47,7 +47,7 @@ export default function PaymentLinkPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Failed to create payment link");
+        setError((data.error || "Failed to create payment link") + (data.detail ? ` — ${data.detail}` : ""));
         return;
       }
 
