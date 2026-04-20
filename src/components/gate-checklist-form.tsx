@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { CheckIcon, DocumentArrowUpIcon, TrashIcon, ArrowDownTrayIcon, EyeIcon, EyeSlashIcon, PlusIcon } from "@heroicons/react/24/outline";
 import type { QAGate, PortalProject, GateKey, BriefFile, UploadedFile } from "@/lib/portal/types";
 import type { PortalData } from "@/lib/portal/types";
@@ -123,6 +123,24 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
     await onUpdate({ qa_gates: newGates });
     setSaving(false);
   }, [config.qaGateKey, onUpdate]);
+
+  // Auto-heal: when the stored checklist no longer matches the current definition
+  // (typically because the definition was updated after data was seeded), persist
+  // the reset so both admin + team views read the same data on subsequent loads.
+  const healedRef = useRef(false);
+  useEffect(() => {
+    if (healedRef.current) return;
+    const existing = gatesRef.current[config.qaGateKey as keyof typeof gatesRef.current] as QAGate | undefined;
+    if (!existing) return;
+    const definitionLabels = config.items;
+    const existingLabels = existing.items.map(i => i.label);
+    const itemsMatch = definitionLabels.length === existingLabels.length && definitionLabels.every((l, i) => l === existingLabels[i]);
+    if (!itemsMatch) {
+      healedRef.current = true;
+      saveGate({ ...existing, items: definitionLabels.map(label => ({ label, checked: false })) });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const toggleItem = (idx: number) => {
     if (isSubmitted) return;
