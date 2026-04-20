@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Logo } from "@/components/logo";
 import { IntelligemsClientCards } from "@/components/intelligems-tests";
 import type {
@@ -23,7 +24,32 @@ import { toLoomEmbed } from "@/lib/portal/loom";
 import { toFigmaEmbed } from "@/lib/portal/review-types";
 import { BrandedReport } from "@/components/branded-report";
 import { InternalSection } from "@/components/internal-section";
+import { GateChecklistForm } from "@/components/gate-checklist-form";
 import { createReview, addVersion } from "@/lib/portal/reviews";
+import {
+  GATE_CONFIG,
+  CRO_BRIEF_ITEMS,
+  DESIGN_HANDOFF_ITEMS,
+  DEV_HANDOFF_ITEMS,
+  createDefaultGate,
+  getGateProgress,
+} from "@/lib/portal/qa-gates";
+import type { QAGate, GateKey } from "@/lib/portal/types";
+
+// Map the internal qa_gates key to the GateChecklistForm's GateKey.
+const QA_KEY_TO_GATE_KEY: Record<string, GateKey> = {
+  cro_brief: "design-brief",
+  design_handoff: "dev-handover",
+  dev_handoff: "dev-qa",
+};
+
+// Reverse mapping for Slack notify (expects the qa_gates key).
+const GATE_KEY_TO_QA_KEY: Record<GateKey, string> = {
+  "design-brief": "cro_brief",
+  "dev-handover": "design_handoff",
+  "dev-qa": "dev_handoff",
+  "handoff-testing": "launch_prep",
+};
 
 /* ── Tab type ── */
 type Tab = "overview" | "timeline" | "testing" | "updates" | "scope" | "designs" | "development" | "build" | "results" | "requests" | "funnels" | "reports" | "internal";
@@ -213,6 +239,11 @@ export function PortalView({
   const [showRequestPopup, setShowRequestPopup] = useState(false);
   const [selectedProjectIdx, setSelectedProjectIdx] = useState(-1); // -1 = home/hub view
   const [drillView, setDrillView] = useState<"home" | "project" | "retainer">("home");
+  const [focusedGateKey, setFocusedGateKey] = useState<string | null>(null);
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const hasDesigns = reviews.length > 0;
   const hasPageReviews = pageReviews.length > 0;
@@ -248,6 +279,57 @@ export function PortalView({
     setSelectedProjectIdx(-1);
     setDrillView("home");
     setActiveTab("overview");
+    setFocusedGateKey(null);
+  };
+
+  // Deep-link: ?project=<id>&gate=<key> opens the team view directly on that gate.
+  // Runs once after mount (and whenever portal / viewMode changes).
+  useEffect(() => {
+    if (viewMode !== "team") return;
+    const projectIdParam = searchParams?.get("project");
+    const gateParam = searchParams?.get("gate");
+    if (!gateParam) return;
+
+    const projects = portal.projects || [];
+    let idx = projectIdParam ? projects.findIndex((p) => p.id === projectIdParam) : -1;
+    if (idx < 0) {
+      // Fall back to first project that has this gate enabled
+      idx = projects.findIndex((p) => {
+        if (gateParam === "cro_brief") return !!p.qa_gates?.cro_brief_enabled;
+        return true; // design_handoff / dev_handoff exist on every project
+      });
+    }
+    if (idx < 0) return;
+
+    setSelectedProjectIdx(idx);
+    setDrillView("project");
+    setActiveTab("internal");
+    setFocusedGateKey(gateParam);
+  }, [viewMode, portal, searchParams]);
+
+  // Keep URL in sync when user opens / closes a gate (team view only)
+  const openGate = (gateKey: string) => {
+    setActiveTab("internal");
+    setFocusedGateKey(gateKey);
+    if (viewMode !== "team" || !pathname) return;
+    const params = new URLSearchParams(searchParams?.toString() || "");
+    if (selectedProject?.id) params.set("project", selectedProject.id);
+    params.set("gate", gateKey);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  const handleGateOpenChange = (gateKey: string | null) => {
+    setFocusedGateKey(gateKey);
+    if (viewMode !== "team" || !pathname) return;
+    const params = new URLSearchParams(searchParams?.toString() || "");
+    if (gateKey) {
+      if (selectedProject?.id) params.set("project", selectedProject.id);
+      params.set("gate", gateKey);
+    } else {
+      params.delete("gate");
+    }
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
   };
 
   // Derive phases/scope/documents/deliverables from selected project when available
@@ -266,6 +348,24 @@ export function PortalView({
 
   // Nav items depend on drill view
   const publishedReports = (portal.reports || []).filter((r) => r.published);
+
+  // Gate nav items for team view — one per enabled gate, with progress status dot
+  type GateNavEntry = { key: string; label: string; status: "submitted" | "in-progress" | "not-started" };
+  const teamGateItems: GateNavEntry[] = [];
+  if (viewMode === "team" && selectedProject) {
+    const gates = selectedProject.qa_gates || {};
+    const entries: Array<{ key: string; items: string[] }> = [];
+    if (gates.cro_brief_enabled) entries.push({ key: "cro_brief", items: CRO_BRIEF_ITEMS });
+    entries.push({ key: "design_handoff", items: DESIGN_HANDOFF_ITEMS });
+    entries.push({ key: "dev_handoff", items: DEV_HANDOFF_ITEMS });
+    for (const e of entries) {
+      const gate: QAGate = (gates as Record<string, QAGate | undefined>)[e.key] || createDefaultGate(e.items);
+      const progress = getGateProgress(gate);
+      const status: GateNavEntry["status"] =
+        gate.status === "submitted" ? "submitted" : progress.checked > 0 ? "in-progress" : "not-started";
+      teamGateItems.push({ key: e.key, label: GATE_CONFIG[e.key]?.title ?? e.key, status });
+    }
+  }
 
   const internalTab = viewMode === "team" ? [{ key: "internal" as Tab, label: "Handover" }] : [];
 
@@ -289,7 +389,6 @@ export function PortalView({
         { key: "build" as Tab, label: "Build" },
         ...(funnels.length > 0 ? [{ key: "funnels" as Tab, label: "Funnels" }] : []),
         ...(publishedReports.length > 0 ? [{ key: "reports" as Tab, label: "Reports" }] : []),
-        ...internalTab,
       ];
 
   const firstName = portal.client_name.split(" ")[0].split("[")[0].trim();
@@ -337,9 +436,9 @@ export function PortalView({
           {navItems.map((item) => (
             <button
               key={item.key}
-              onClick={() => { setActiveTab(item.key); setSidebarOpen(false); }}
+              onClick={() => { setActiveTab(item.key); setFocusedGateKey(null); setSidebarOpen(false); }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 text-[13px] font-medium rounded-lg transition-all duration-150 ${
-                activeTab === item.key
+                activeTab === item.key && !focusedGateKey
                   ? "bg-[#1A1A1A] text-white"
                   : "text-[#999] hover:bg-[#F5F5F5] hover:text-[#1A1A1A]"
               }`}
@@ -348,6 +447,33 @@ export function PortalView({
               {item.label}
             </button>
           ))}
+          {/* Team: per-gate nav with progress dots */}
+          {viewMode === "team" && drillView === "project" && teamGateItems.length > 0 && (
+            <div className="pt-4">
+              <p className="px-3 mb-1 text-[9px] font-semibold uppercase tracking-[0.15em] text-[#BBB]">Handover Gates</p>
+              {teamGateItems.map((g) => {
+                const dotColor =
+                  g.status === "submitted" ? "bg-emerald-500"
+                  : g.status === "in-progress" ? "bg-amber-400"
+                  : "bg-[#DDD]";
+                const isActive = activeTab === "internal" && focusedGateKey === g.key;
+                return (
+                  <button
+                    key={g.key}
+                    onClick={() => { openGate(g.key); setSidebarOpen(false); }}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 text-[12.5px] font-medium rounded-lg transition-all duration-150 ${
+                      isActive
+                        ? "bg-[#1A1A1A] text-white"
+                        : "text-[#999] hover:bg-[#F5F5F5] hover:text-[#1A1A1A]"
+                    }`}
+                  >
+                    <span className={`size-1.5 rounded-full shrink-0 ${dotColor}`} />
+                    <span className="truncate">{g.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </nav>
         <div className="px-5 py-4 border-t border-[#E8E8E8] space-y-2">
           <UKTimeBanner />
@@ -720,15 +846,55 @@ export function PortalView({
                 <ReportsTab reports={publishedReports} />
               </>
             )}
-            {activeTab === "internal" && viewMode === "team" && selectedProject && (
+            {activeTab === "internal" && viewMode === "team" && selectedProject && focusedGateKey && QA_KEY_TO_GATE_KEY[focusedGateKey] && (
               <>
-                <PageHeader title="Handover" subtitle="QA gates for each stage of the build" />
+                <PageHeader title={GATE_CONFIG[focusedGateKey]?.title ?? "Handover"} subtitle={`Role: ${GATE_CONFIG[focusedGateKey]?.role ?? "Team"}`} />
+                <GateChecklistForm
+                  gateKey={QA_KEY_TO_GATE_KEY[focusedGateKey]}
+                  project={selectedProject}
+                  portal={portal}
+                  onUpdate={(patch) => onUpdateProject ? onUpdateProject(selectedProject.id, patch) : Promise.resolve()}
+                  onAfterSubmit={async () => {
+                    if (!portal.slack_internal_channel_id) return;
+                    const nextRole =
+                      focusedGateKey === "cro_brief" ? "Designer"
+                      : focusedGateKey === "design_handoff" ? "Developer"
+                      : "Senior Developer";
+                    try {
+                      await fetch("/api/slack/gate-notify", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          channelId: portal.slack_internal_channel_id,
+                          gateTitle: GATE_CONFIG[focusedGateKey]?.title ?? focusedGateKey,
+                          clientName: portal.client_name,
+                          projectName: selectedProject.name,
+                          submittedBy: "Team member",
+                          nextRole,
+                          portalId: portal.id,
+                          portalToken: portal.token,
+                          projectId: selectedProject.id,
+                          gateKey: focusedGateKey,
+                        }),
+                      });
+                    } catch { /* fire-and-forget */ }
+                    onReload?.();
+                  }}
+                />
+              </>
+            )}
+            {activeTab === "internal" && viewMode === "team" && selectedProject && !focusedGateKey && (
+              <>
+                <PageHeader title="Handover" subtitle="Pick a gate from the sidebar to open its checklist" />
                 <TeamInternalView
                   project={selectedProject}
                   onUpdateProject={onUpdateProject ? (patch) => onUpdateProject(selectedProject.id, patch) : undefined}
                   slackInternalChannelId={portal.slack_internal_channel_id}
                   clientName={portal.client_name}
                   portalId={portal.id}
+                  portalToken={portal.token}
+                  focusedGateKey={focusedGateKey}
+                  onGateOpenChange={handleGateOpenChange}
                 />
               </>
             )}
@@ -2646,12 +2812,18 @@ function TeamInternalView({
   slackInternalChannelId,
   clientName,
   portalId,
+  portalToken,
+  focusedGateKey,
+  onGateOpenChange,
 }: {
   project: PortalProject;
   onUpdateProject?: (patch: Partial<PortalProject>) => Promise<void>;
   slackInternalChannelId?: string;
   clientName?: string;
   portalId?: string;
+  portalToken?: string;
+  focusedGateKey?: string | null;
+  onGateOpenChange?: (gateKey: string | null) => void;
 }) {
   return (
     <InternalSection
@@ -2662,6 +2834,9 @@ function TeamInternalView({
       slackInternalChannelId={slackInternalChannelId}
       clientName={clientName}
       portalId={portalId}
+      portalToken={portalToken}
+      initialOpenGate={focusedGateKey}
+      onGateOpenChange={onGateOpenChange}
     />
   );
 }

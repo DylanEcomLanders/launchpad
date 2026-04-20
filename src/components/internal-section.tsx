@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { CheckIcon, PlusIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import type { PortalProject, QAGate, QAGates, ContextEntry, WeeklyDeliverable } from "@/lib/portal/types";
 import {
@@ -22,6 +22,11 @@ interface Props {
   slackInternalChannelId?: string;
   clientName?: string;
   portalId?: string;
+  portalToken?: string;
+  /** When set, open this gate's modal on mount */
+  initialOpenGate?: string | null;
+  /** Fired when the user closes a gate — used to clear the deep-link state */
+  onGateOpenChange?: (gateKey: string | null) => void;
 }
 
 /* ── Gate Status Pill (for overview) ── */
@@ -419,14 +424,24 @@ function GateOverviewCard({
 }
 
 /* ── Main Component ── */
-export function InternalSection({ project, onUpdateProject, readOnly = false, teamRole, gatesOnly = false, hideGates = false, slackInternalChannelId, clientName, portalId }: Props) {
+export function InternalSection({ project, onUpdateProject, readOnly = false, teamRole, gatesOnly = false, hideGates = false, slackInternalChannelId, clientName, portalId, portalToken, initialOpenGate = null, onGateOpenChange }: Props) {
   const [showContextForm, setShowContextForm] = useState(false);
   const [contextSource, setContextSource] = useState("");
   const [contextDate, setContextDate] = useState(new Date().toISOString().split("T")[0]);
   const [rawTranscript, setRawTranscript] = useState("");
   const [cleanVersion, setCleanVersion] = useState("");
   const [cleaning, setCleaning] = useState(false);
-  const [openGateModal, setOpenGateModal] = useState<string | null>(null);
+  const [openGateModal, setOpenGateModalRaw] = useState<string | null>(initialOpenGate);
+
+  // Sync with parent-controlled deep-link prop
+  useEffect(() => {
+    setOpenGateModalRaw(initialOpenGate);
+  }, [initialOpenGate]);
+
+  const setOpenGateModal = useCallback((key: string | null) => {
+    setOpenGateModalRaw(key);
+    onGateOpenChange?.(key);
+  }, [onGateOpenChange]);
 
   const gates = project.qa_gates || {};
   const isRetainer = project.type === "retainer";
@@ -463,6 +478,9 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
           submittedBy: submittedGate.submitted_by || teamRole || "Team member",
           nextRole,
           portalId,
+          portalToken,
+          projectId: project.id,
+          gateKey,
         }),
       }).catch(() => {});
     }

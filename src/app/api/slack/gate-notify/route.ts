@@ -7,11 +7,11 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://ecomlanders.app";
 /**
  * POST /api/slack/gate-notify
  * Sends a Slack message when a QA gate is submitted.
- * Body: { channelId, gateTitle, clientName, projectName, submittedBy, nextRole, portalId }
+ * Body: { channelId, gateTitle, clientName, projectName, submittedBy, nextRole, portalId, portalToken, gateKey }
  */
 export async function POST(req: NextRequest) {
   try {
-    const { channelId, gateTitle, clientName, projectName, submittedBy, nextRole, portalId } = await req.json();
+    const { channelId, gateTitle, clientName, projectName, submittedBy, nextRole, portalId, portalToken, projectId, gateKey } = await req.json();
 
     if (!channelId || !BOT_TOKEN) {
       return NextResponse.json({ ok: false, error: "Missing channel or bot token" }, { status: 400 });
@@ -22,7 +22,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, skipped: true, reason: "disabled" });
     }
 
-    const portalUrl = portalId ? `${APP_URL}/tools/client-portal/${portalId}` : null;
+    // Prefer the team portal view (tokenised, team-focused) over the admin cockpit.
+    // Falls back to the admin URL if a token wasn't passed.
+    const teamQuery = [
+      projectId ? `project=${encodeURIComponent(projectId)}` : null,
+      gateKey ? `gate=${encodeURIComponent(gateKey)}` : null,
+    ].filter(Boolean).join("&");
+    const portalUrl = portalToken
+      ? `${APP_URL}/portal/${portalToken}/team${teamQuery ? `?${teamQuery}` : ""}`
+      : portalId
+      ? `${APP_URL}/tools/client-portal/${portalId}`
+      : null;
 
     const blocks: any[] = [
       {

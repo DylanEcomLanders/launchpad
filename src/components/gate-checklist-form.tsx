@@ -84,9 +84,11 @@ interface GateChecklistFormProps {
   project: PortalProject;
   portal: PortalData;
   onUpdate: (patch: Partial<PortalProject>) => Promise<void>;
+  /** Fires after a successful submit. Use for side-effects like Slack notifications. */
+  onAfterSubmit?: (gate: QAGate) => void | Promise<void>;
 }
 
-export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateChecklistFormProps) {
+export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterSubmit }: GateChecklistFormProps) {
   const config = gateMapping[gateKey];
   const gates = project.qa_gates || {};
 
@@ -141,6 +143,9 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate }: GateCh
   const handleSubmit = async () => {
     const submitted = { ...gate, status: "submitted" as const, submitted_at: new Date().toISOString(), submitted_by: "team" };
     await saveGate(submitted);
+    if (onAfterSubmit) {
+      try { await onAfterSubmit(submitted); } catch { /* fire-and-forget */ }
+    }
   };
 
   const handleReopen = async () => {
