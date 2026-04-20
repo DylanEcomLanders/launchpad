@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 
 /* ── Reveal on scroll ── */
 function useReveal<T extends HTMLElement>() {
@@ -32,8 +31,8 @@ function Reveal({ children, delay = 0, className = "" }: { children: React.React
       className={className}
       style={{
         opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(20px)",
-        transition: `opacity 700ms ease-out ${delay}ms, transform 700ms ease-out ${delay}ms`,
+        transform: visible ? "translateY(0)" : "translateY(12px)",
+        transition: `opacity 600ms ease-out ${delay}ms, transform 600ms ease-out ${delay}ms`,
       }}
     >
       {children}
@@ -43,365 +42,365 @@ function Reveal({ children, delay = 0, className = "" }: { children: React.React
 
 export default function SmileWhiteProposal() {
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-[#1A1A1A]">
-      {/* ───────────── Animated gradient backdrop ───────────── */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-blue-100/40 to-transparent blur-3xl animate-pulse-slow" />
-        <div className="absolute top-1/2 -right-40 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-emerald-100/30 to-transparent blur-3xl animate-pulse-slow" style={{ animationDelay: "2s" }} />
-      </div>
-
-      <style jsx global>{`
-        @keyframes pulse-slow { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
-        .animate-pulse-slow { animation: pulse-slow 8s ease-in-out infinite; }
-        @keyframes gradient-x {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-        }
-        .animate-gradient-x {
-          background-size: 200% 200%;
-          animation: gradient-x 6s ease infinite;
-        }
-      `}</style>
+    <div className="min-h-screen bg-white text-[#1A1A1A]">
+      {/* ═══════════════════ HEADER ═══════════════════ */}
+      <header className="border-b border-[#E8E8E8]">
+        <div className="max-w-3xl mx-auto px-6 md:px-12 py-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src="/el-logo.svg" alt="Ecomlanders" className="w-6 h-6" />
+            <span className="text-xs font-semibold text-[#1A1A1A] tracking-wide">
+              Ecomlanders <span className="text-[#BBB] mx-1">×</span> SmileWhite
+            </span>
+          </div>
+          <p className="text-[10px] text-[#AAA] uppercase tracking-widest">20 April 2026</p>
+        </div>
+      </header>
 
       {/* ═══════════════════ HERO ═══════════════════ */}
-      <section className="relative z-10 px-6 md:px-12 pt-20 md:pt-28 pb-24">
+      <section className="px-6 md:px-12 pt-20 md:pt-24 pb-20 border-b border-[#E8E8E8]">
         <div className="max-w-3xl mx-auto">
           <Reveal>
-            <div className="flex items-center gap-3 mb-8">
-              <img src="/el-logo.svg" alt="Ecom Landers" className="w-7 h-7" />
-              <span className="text-xs font-semibold uppercase tracking-widest text-[#7A7A7A]">Ecom Landers × Smile at the Occidental Suite</span>
-            </div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-6">Conversion Engine Proposal</p>
           </Reveal>
 
           <Reveal delay={100}>
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#AAA] mb-3">Conversion Engine Proposal</p>
-          </Reveal>
-
-          <Reveal delay={200}>
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[0.95] mb-6">
-              The layer <br />
-              <span className="bg-gradient-to-r from-[#1B1B1B] via-blue-600 to-emerald-600 bg-clip-text text-transparent animate-gradient-x">nobody owns.</span>
+            <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-[1] mb-6 text-[#1A1A1A]">
+              Proposed Scope of Work
             </h1>
           </Reveal>
 
-          <Reveal delay={400}>
-            <p className="text-lg md:text-xl text-[#555] leading-relaxed max-w-2xl">
-              Your ads team drives traffic. Your phone team converts calls. Nobody obsesses over the <em className="text-[#1A1A1A] not-italic font-semibold">30 seconds between the click and the form</em> — until now.
+          <Reveal delay={250}>
+            <p className="text-base md:text-lg text-[#555] leading-relaxed max-w-2xl">
+              Following our call, we've prepared this proposal outlining how we'd support SmileWhite in closing the gap between paid traffic and inquiry submissions. The bookings engine downstream is already strong — this work focuses on the conversion layer sitting between your ads and your inquiry form.
             </p>
           </Reveal>
 
-          <Reveal delay={600}>
+          <Reveal delay={400}>
             <div className="flex items-center gap-3 mt-10 text-[11px] text-[#AAA]">
-              <span>Prepared 20 April 2026</span>
-              <span className="size-1 rounded-full bg-[#CCC]" />
+              <span>Prepared for Smile at the Occidental Suite</span>
+              <span className="size-1 rounded-full bg-[#DDD]" />
               <span>Valid for 30 days</span>
             </div>
           </Reveal>
         </div>
       </section>
 
-      {/* ═══════════════════ WHERE YOU ARE ═══════════════════ */}
-      <section className="relative z-10 bg-white border-y border-[#E8E8E8] px-6 md:px-12 py-24">
+      {/* ═══════════════════ 01 — THE OPPORTUNITY ═══════════════════ */}
+      <section className="px-6 md:px-12 py-20 border-b border-[#E8E8E8]">
         <div className="max-w-3xl mx-auto">
           <Reveal>
-            <p className="text-xs font-semibold uppercase tracking-widest text-blue-600 mb-3">Where You Are Right Now</p>
-            <h2 className="text-3xl md:text-4xl font-bold mb-8 leading-tight">
-              You've built an excellent bookings engine. <span className="text-[#999]">The bottleneck is upstream.</span>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">01 — The Opportunity</p>
+            <h2 className="text-2xl md:text-3xl font-bold mb-6 leading-tight text-[#1A1A1A]">
+              Your bookings engine is strong. The inquiry layer needs work.
             </h2>
           </Reveal>
 
           <Reveal delay={100}>
-            <p className="text-base md:text-lg text-[#555] leading-relaxed mb-10">
-              The system <em>downstream</em> of the landing page is dialled. Pickup rate up from 40–50% to 80% over the last three months. Different numbers for different times of day. Mobile over landline. A clear cadence.
+            <p className="text-base text-[#555] leading-relaxed mb-10 max-w-2xl">
+              Over the last three months you've taken pickup rates from 40-50% to 80% and hold a steady 15-20% booking rate once on the phone. That's a well-oiled machine. The bottleneck sits earlier — in the space between ad click and form submission.
             </p>
           </Reveal>
 
           <div className="grid md:grid-cols-3 gap-4 mb-10">
             {[
-              { label: "Pickup rate", value: "80%", color: "#10B981" },
-              { label: "Booking rate", value: "15-20%", color: "#3B82F6" },
-              { label: "Traffic split", value: "50/50", sub: "Google/Meta", color: "#1B1B1B" },
+              { label: "Pickup rate", value: "80%" },
+              { label: "Booking rate", value: "15-20%" },
+              { label: "Traffic split", value: "50/50", sub: "Google / Meta" },
             ].map((stat, i) => (
-              <Reveal key={stat.label} delay={200 + i * 100}>
-                <div className="p-6 bg-[#FAFAFA] border border-[#E8E8E8] rounded-2xl">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-[#AAA] mb-2">{stat.label}</p>
-                  <p className="text-3xl font-bold" style={{ color: stat.color }}>{stat.value}</p>
-                  {stat.sub && <p className="text-xs text-[#999] mt-1">{stat.sub}</p>}
+              <Reveal key={stat.label} delay={150 + i * 80}>
+                <div className="p-5 border border-[#E8E8E8] rounded-xl">
+                  <p className="text-[10px] font-medium uppercase tracking-widest text-[#AAA] mb-2">{stat.label}</p>
+                  <p className="text-2xl font-bold text-[#1A1A1A]">{stat.value}</p>
+                  {stat.sub && <p className="text-[11px] text-[#999] mt-1">{stat.sub}</p>}
                 </div>
               </Reveal>
             ))}
           </div>
 
-          <Reveal delay={500}>
-            <div className="p-6 md:p-8 bg-gradient-to-br from-red-50 to-amber-50 border border-red-100 rounded-2xl">
-              <p className="text-sm font-semibold text-red-700 mb-3 uppercase tracking-wider">The Problem</p>
-              <p className="text-base text-[#444] leading-relaxed">
-                Google and Meta traffic have <strong className="text-[#1A1A1A]">wildly different intent levels</strong> — but they land on the same page. Google traffic is hot and ready to book. Meta traffic is cold and needs warming up. Sending both to the same inquiry form means you're either under-serving Google or over-complicating Meta.
+          <Reveal delay={400}>
+            <div className="p-6 border-l-2 border-[#1A1A1A] bg-[#FAFAFA] rounded-r-xl">
+              <p className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-wider mb-3">Where the leak sits</p>
+              <p className="text-sm text-[#555] leading-relaxed mb-3">
+                Google and Meta traffic arrive at the same inquiry page, despite having very different intent levels. Google visitors are searching actively — ready to book. Meta visitors are in discovery mode — they need more context and reassurance before submitting their details.
               </p>
-              <p className="text-base text-[#444] leading-relaxed mt-4">
-                That's a <strong className="text-[#1A1A1A]">conversion layer problem</strong>. And it's fixable.
+              <p className="text-sm text-[#555] leading-relaxed">
+                A single page can't serve both well. The £65 consultation fee also drops in earlier than ideal for colder traffic, creating friction before desire is built. Resolving these is a matter of segmentation and sequencing, not a full rebuild.
               </p>
             </div>
           </Reveal>
         </div>
       </section>
 
-      {/* ═══════════════════ WHAT WE DO ═══════════════════ */}
-      <section className="relative z-10 px-6 md:px-12 py-24">
+      {/* ═══════════════════ 02 — HOW WE PLUG IN ═══════════════════ */}
+      <section className="px-6 md:px-12 py-20 border-b border-[#E8E8E8]">
         <div className="max-w-3xl mx-auto">
           <Reveal>
-            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-3">What We Do</p>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">
-              We are the Conversion Engine.
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">02 — How We Plug In</p>
+            <h2 className="text-2xl md:text-3xl font-bold mb-6 leading-tight text-[#1A1A1A]">
+              A conversion layer alongside the systems you already have.
             </h2>
           </Reveal>
 
           <Reveal delay={100}>
-            <p className="text-base md:text-lg text-[#555] leading-relaxed mb-10">
-              The layer between traffic and bookings. Full stop. You have an ad team. You have a dialling team. You don't have a conversion team. <strong className="text-[#1A1A1A]">We plug in as that team.</strong>
+            <p className="text-base text-[#555] leading-relaxed mb-10 max-w-2xl">
+              We slot in between your ad team and your bookings team without disrupting either. No replatforming, no changes to your inquiry system, no interference with how your calls are run. Our role is to make every pound of ad spend work harder by the time it hits your form.
             </p>
           </Reveal>
 
-          <div className="grid md:grid-cols-2 gap-3 mb-12">
+          <div className="grid md:grid-cols-2 gap-3 mb-10">
             {[
-              "Full funnel audit — every touchpoint from ad click to inquiry",
-              "Traffic segmentation — Google-specific and Meta-specific pages",
-              "Page redesigns, rebuilds, and A/B testing",
-              "Ad-to-page scent-trail alignment",
-              "Pre-framing content for Meta traffic",
-              "A/B testing + heatmapping + session recording",
-              "60-90 day visual roadmap",
-              "Monthly reporting tied to revenue, not activity",
+              "Funnel audit across every touchpoint from ad click to inquiry",
+              "Traffic segmentation — separate pages for Google and Meta intent levels",
+              "Iterative page redesigns that build on what's already performing",
+              "Ad-to-page alignment so the scent trail stays consistent",
+              "Pre-framing content for Meta traffic to warm prospects before the form",
+              "A/B testing programme with structured hypothesis chains",
+              "Heatmapping and session recording to surface friction points",
+              "Monthly reporting tied to inquiry and booking impact",
             ].map((item, i) => (
-              <Reveal key={i} delay={i * 50}>
-                <div className="flex items-start gap-3 p-4 bg-white border border-[#E8E8E8] rounded-xl hover:border-[#1B1B1B] transition-colors">
-                  <div className="size-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
-                    <svg className="size-3 text-emerald-600" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg>
+              <Reveal key={i} delay={i * 40}>
+                <div className="flex items-start gap-3 p-4 border border-[#E8E8E8] rounded-xl">
+                  <div className="size-4 rounded-full border border-[#1A1A1A] flex items-center justify-center shrink-0 mt-0.5">
+                    <svg className="size-2.5 text-[#1A1A1A]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg>
                   </div>
-                  <p className="text-sm text-[#444]">{item}</p>
+                  <p className="text-sm text-[#444] leading-snug">{item}</p>
                 </div>
               </Reveal>
             ))}
           </div>
 
           <Reveal delay={500}>
-            <div className="p-6 bg-[#1B1B1B] text-white rounded-2xl">
-              <p className="text-xs font-semibold uppercase tracking-widest text-white/60 mb-3">What We Don't Do</p>
-              <p className="text-base leading-relaxed">
-                We don't manage ads. We don't touch your CRM. We don't staff your phones. <span className="text-white/70">Those already work.</span> We make sure every pound your ad team spends converts at the highest possible rate.
-              </p>
-            </div>
+            <p className="text-sm text-[#777] italic max-w-2xl">
+              We don't manage ads, we don't touch your CRM, and we don't staff your phone lines. Those already work. Our remit starts at the click and ends at the submitted form.
+            </p>
           </Reveal>
         </div>
       </section>
 
-      {/* ═══════════════════ PRICING OPTIONS ═══════════════════ */}
-      <section className="relative z-10 bg-white border-y border-[#E8E8E8] px-6 md:px-12 py-24">
-        <div className="max-w-5xl mx-auto">
+      {/* ═══════════════════ 03 — SCOPE & INVESTMENT ═══════════════════ */}
+      <section className="px-6 md:px-12 py-20 border-b border-[#E8E8E8]">
+        <div className="max-w-3xl mx-auto">
           <Reveal>
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#AAA] mb-3">Two Ways Forward</p>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">Pick your starting line.</h2>
-            <p className="text-base text-[#777] max-w-2xl mb-12">
-              Option A is the full Conversion Engine — ongoing, compounding, team-led. Option B is a pilot so you can see the work before committing.
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">03 — Scope & Investment</p>
+            <h2 className="text-2xl md:text-3xl font-bold mb-6 leading-tight text-[#1A1A1A]">
+              Two ways to start.
+            </h2>
+          </Reveal>
+
+          <Reveal delay={100}>
+            <p className="text-base text-[#555] leading-relaxed mb-10 max-w-2xl">
+              The retainer is the full engagement — ongoing, compounding, team-led. The pilot is a scoped project covering the three pages you shared, designed as a standalone piece of work or a stepping stone into the retainer.
             </p>
           </Reveal>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* ── Retainer ── */}
-            <Reveal delay={100}>
-              <div className="relative p-8 bg-[#1B1B1B] text-white rounded-3xl h-full flex flex-col overflow-hidden group">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-500/20 to-emerald-500/20 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2 group-hover:from-blue-500/30 group-hover:to-emerald-500/30 transition-all duration-700" />
-                <div className="relative">
-                  <div className="inline-block px-2.5 py-1 bg-emerald-500 text-white text-[9px] font-bold uppercase tracking-widest rounded-full mb-4">Recommended</div>
-                  <h3 className="text-xl font-semibold mb-2">Conversion Engine</h3>
-                  <p className="text-white/60 text-sm mb-6">Full retainer. Team-led. Compounding.</p>
-                  <div className="mb-6">
-                    <p className="text-5xl font-bold">£20,000<span className="text-lg font-normal text-white/50">/mo</span></p>
-                  </div>
-                  <div className="space-y-2.5 mb-8">
+          {/* Option A — Retainer (horizontal featured) */}
+          <Reveal delay={150}>
+            <div className="mb-6 p-8 md:p-10 bg-[#1A1A1A] text-white rounded-2xl">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8">
+                <div className="md:w-1/2">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/50 mb-3">Option A — Recommended</p>
+                  <h3 className="text-2xl font-bold mb-3">Conversion Engine Retainer</h3>
+                  <p className="text-sm text-white/70 leading-relaxed">
+                    Full conversion team embedded alongside SmileWhite. Deep audit, full roadmap, ongoing builds, tests, and monthly reporting. Ideal for compounding results over a 6-12 month horizon.
+                  </p>
+                </div>
+                <div className="md:w-1/2 md:border-l md:border-white/10 md:pl-8">
+                  <p className="text-4xl md:text-5xl font-bold mb-1">£20,000<span className="text-base font-normal text-white/50">/mo</span></p>
+                  <p className="text-xs text-white/50 mb-5">Billed monthly · Cancel with 30 days' notice</p>
+                  <div className="space-y-2">
                     {[
-                      "Full team: strategist, designer, dev, QA, PM",
+                      "Full team: strategist, designer, developer, QA, PM",
                       "60-90 day visual roadmap",
-                      "Unlimited page builds within roadmap",
-                      "A/B testing software (Intelligems/equivalent)",
-                      "Heatmaps + session recording",
-                      "Weekly Slack updates + monthly strategy call",
-                      "Custom reporting dashboard",
+                      "Ongoing page builds, rebuilds, and testing",
+                      "A/B testing software + heatmapping",
+                      "Regular updates in your preferred channel",
+                      "Monthly strategic review + reporting",
                     ].map((item) => (
-                      <div key={item} className="flex items-start gap-2 text-sm text-white/80">
-                        <div className="size-1 rounded-full bg-emerald-400 mt-2 shrink-0" />
+                      <div key={item} className="flex items-start gap-2 text-xs text-white/80">
+                        <div className="size-1 rounded-full bg-white/40 mt-1.5 shrink-0" />
                         <span>{item}</span>
                       </div>
                     ))}
                   </div>
                 </div>
-                <div className="relative mt-auto">
-                  <a
-                    href="https://wa.me/447XXXXXXXXX?text=Hi%20Dylan%2C%20ready%20to%20move%20forward%20with%20the%20Conversion%20Engine%20retainer."
-                    className="w-full flex items-center justify-center gap-2 py-3.5 bg-white text-[#1B1B1B] text-sm font-bold rounded-xl hover:bg-emerald-50 transition-colors"
-                  >
-                    Start the Engine
-                    <svg className="size-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
-                  </a>
+              </div>
+            </div>
+          </Reveal>
+
+          {/* Option B — Pilot */}
+          <Reveal delay={250}>
+            <div className="p-8 border border-[#E8E8E8] rounded-2xl">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+                <div className="md:w-1/2">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-3">Option B — Phase 1 Pilot</p>
+                  <h3 className="text-xl font-bold mb-3 text-[#1A1A1A]">Three-Page Rebuild</h3>
+                  <p className="text-sm text-[#555] leading-relaxed">
+                    A scoped project covering the three pages you shared. Full redesign and rebuild, with the audit and recommendations feeding into a broader roadmap should you choose to move into the retainer afterwards.
+                  </p>
+                </div>
+                <div className="md:w-1/2 md:border-l md:border-[#E8E8E8] md:pl-8">
+                  <p className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-1">£15,000</p>
+                  <p className="text-xs text-[#999] mb-5">One-time · 30-day delivery</p>
+                  <div className="space-y-2">
+                    {[
+                      "Conversion audit covering the three pages",
+                      "Rebuild of all three pages, segmented by traffic source",
+                      "Pre-framing content strategy for Meta traffic",
+                      "Tracking audit and recommendations",
+                      "Handover report with prioritised next steps",
+                      "Credit toward the retainer if upgraded within 30 days",
+                    ].map((item) => (
+                      <div key={item} className="flex items-start gap-2 text-xs text-[#555]">
+                        <div className="size-1 rounded-full bg-[#1A1A1A] mt-1.5 shrink-0" />
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </Reveal>
-
-            {/* ── Pilot ── */}
-            <Reveal delay={200}>
-              <div className="relative p-8 bg-white border border-[#E8E8E8] rounded-3xl h-full flex flex-col hover:border-[#1B1B1B] transition-colors">
-                <h3 className="text-xl font-semibold mb-2 text-[#1A1A1A]">Phase 1 Pilot</h3>
-                <p className="text-[#777] text-sm mb-6">One-off. 30 days. No commitment.</p>
-                <div className="mb-6">
-                  <p className="text-5xl font-bold text-[#1A1A1A]">£6,500</p>
-                </div>
-                <div className="space-y-2.5 mb-8">
-                  {[
-                    "Full conversion audit",
-                    "Prioritised 30-day roadmap",
-                    "Rebuild of your 2 highest-leverage pages",
-                    "Pre-framing content strategy for Meta",
-                    "Tracking audit + fixes",
-                    "Handover report with next steps",
-                    "Upgrade path into retainer if it lands",
-                  ].map((item) => (
-                    <div key={item} className="flex items-start gap-2 text-sm text-[#555]">
-                      <div className="size-1 rounded-full bg-[#1A1A1A] mt-2 shrink-0" />
-                      <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-auto">
-                  <a
-                    href="https://wa.me/447XXXXXXXXX?text=Hi%20Dylan%2C%20keen%20to%20start%20with%20the%20pilot."
-                    className="w-full flex items-center justify-center gap-2 py-3.5 border-2 border-[#1B1B1B] text-[#1B1B1B] text-sm font-bold rounded-xl hover:bg-[#1B1B1B] hover:text-white transition-colors"
-                  >
-                    Start the Pilot
-                    <svg className="size-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
-                  </a>
-                </div>
-              </div>
-            </Reveal>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════ WHY IT WORKS ═══════════════════ */}
-      <section className="relative z-10 px-6 md:px-12 py-24">
-        <div className="max-w-3xl mx-auto">
-          <Reveal>
-            <p className="text-xs font-semibold uppercase tracking-widest text-blue-600 mb-3">Why It Works</p>
-            <h2 className="text-3xl md:text-4xl font-bold mb-12 leading-tight">Four things that make us different.</h2>
-          </Reveal>
-
-          <div className="space-y-6">
-            {[
-              {
-                title: "We own the roadmap — not your team.",
-                body: "You're already running a practice. You don't need another agency asking 'what do you want built next week?' We own prioritisation. You approve direction. We execute.",
-              },
-              {
-                title: "We obsess over the layer nobody else owns.",
-                body: "Your ad team cares about CPC. Your dialling team cares about pickup. Nobody cares about the 30 seconds between the click and the form. That's our entire job.",
-              },
-              {
-                title: "Custom code, not templates.",
-                body: "No Replo, no page builders, no app bloat. Every page we ship is custom, performant, and lives natively in your existing Framer / Payload / Shopify setup.",
-              },
-              {
-                title: "Results that compound.",
-                body: "Month 1 rebuilds. Month 2 iterates on Month 1's data. Month 3 iterates on Month 2. By Month 6 the system is learning in ways a one-off project never could.",
-              },
-            ].map((item, i) => (
-              <Reveal key={item.title} delay={i * 100}>
-                <div className="flex gap-5 p-6 bg-white border border-[#E8E8E8] rounded-2xl hover:border-[#1B1B1B] transition-colors">
-                  <div className="text-3xl font-bold text-[#E8E8E8] shrink-0">0{i + 1}</div>
-                  <div>
-                    <h3 className="text-base font-semibold text-[#1A1A1A] mb-1.5">{item.title}</h3>
-                    <p className="text-sm text-[#777] leading-relaxed">{item.body}</p>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════ TIMELINE ═══════════════════ */}
-      <section className="relative z-10 bg-white border-y border-[#E8E8E8] px-6 md:px-12 py-24">
-        <div className="max-w-3xl mx-auto">
-          <Reveal>
-            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-3">Timeline</p>
-            <h2 className="text-3xl md:text-4xl font-bold mb-12 leading-tight">How the first 90 days play out.</h2>
-          </Reveal>
-
-          <div className="space-y-4">
-            {[
-              { week: "Week 1", title: "Deep conversion audit", body: "Every funnel stage, every page, every traffic source. Access requested, tracking reviewed, data pulled." },
-              { week: "Week 2", title: "60-90 day roadmap", body: "Full visual roadmap delivered. Priorities locked. Quick wins identified and already shipping." },
-              { week: "Weeks 3–4", title: "First builds go live", body: "Segmented landing pages (Google + Meta specific). Scent trails aligned. Tracking verified." },
-              { week: "Month 2", title: "A/B testing programme", body: "Intelligems live. Pre-framing content in market. First round of data flowing back." },
-              { week: "Month 3", title: "Compounding mode", body: "Roadmap iterating on real data. Monthly report shows revenue impact. Next 90 days planned." },
-            ].map((phase, i) => (
-              <Reveal key={phase.week} delay={i * 80}>
-                <div className="flex gap-6 group">
-                  <div className="shrink-0 w-24">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-[#AAA]">{phase.week}</p>
-                  </div>
-                  <div className="flex-1 pb-4 border-b border-[#F0F0F0] group-last:border-0">
-                    <h4 className="text-base font-semibold text-[#1A1A1A] mb-1">{phase.title}</h4>
-                    <p className="text-sm text-[#777]">{phase.body}</p>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════ FINAL CTA ═══════════════════ */}
-      <section className="relative z-10 px-6 md:px-12 py-32">
-        <div className="max-w-3xl mx-auto text-center">
-          <Reveal>
-            <h2 className="text-4xl md:text-6xl font-bold leading-[0.95] mb-6">
-              Ready to own the layer <br />
-              <span className="bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent animate-gradient-x">nobody else does?</span>
-            </h2>
-          </Reveal>
-
-          <Reveal delay={200}>
-            <p className="text-lg text-[#777] max-w-xl mx-auto mb-10">
-              WhatsApp us with your pick. We'll have a payment link back to you in the hour and a kickoff call booked inside 24 hours.
-            </p>
-          </Reveal>
-
-          <Reveal delay={300}>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <a
-                href="https://wa.me/447XXXXXXXXX?text=Hi%20Dylan%2C%20let's%20do%20this."
-                className="px-8 py-4 bg-[#1B1B1B] text-white text-sm font-bold rounded-xl hover:bg-[#2D2D2D] transition-colors w-full sm:w-auto"
-              >
-                Message Us on WhatsApp
-              </a>
-              <a
-                href="mailto:hello@ecomlanders.com?subject=Proposal — Smile at the Occidental Suite"
-                className="px-8 py-4 border-2 border-[#1B1B1B] text-[#1B1B1B] text-sm font-bold rounded-xl hover:bg-[#1B1B1B] hover:text-white transition-colors w-full sm:w-auto"
-              >
-                Email Instead
-              </a>
             </div>
           </Reveal>
         </div>
       </section>
 
+      {/* ═══════════════════ 04 — HOW WE WORK ═══════════════════ */}
+      <section className="px-6 md:px-12 py-20 border-b border-[#E8E8E8]">
+        <div className="max-w-3xl mx-auto">
+          <Reveal>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">04 — How We Work</p>
+            <h2 className="text-2xl md:text-3xl font-bold mb-10 leading-tight text-[#1A1A1A]">
+              Four principles that shape every engagement.
+            </h2>
+          </Reveal>
+
+          <div className="space-y-0">
+            {[
+              {
+                title: "We lead the roadmap.",
+                body: "You shouldn't need to direct us page by page. We prioritise based on impact, present a clear plan, and execute against it. Your role is to approve the direction and flag anything that doesn't fit.",
+              },
+              {
+                title: "We focus on the layer nobody else owns.",
+                body: "Your ad team cares about CPC. Your team on the phones cares about pickup rate. Nobody else is watching the space between click and form. That becomes our entire focus.",
+              },
+              {
+                title: "We plug into your existing process.",
+                body: "Framer, Payload, Shopify — whatever you're running, we work within it. No platform migrations, no forcing you off tools that already work. We adapt to your stack.",
+              },
+              {
+                title: "Compounding over cosmetic.",
+                body: "Month one is foundational. Month two iterates on month one's data. Month three builds on both. The engagement gets sharper over time because each decision is informed by what's already been tested.",
+              },
+            ].map((item, i) => (
+              <Reveal key={item.title} delay={i * 80}>
+                <div className="flex gap-6 py-6 border-t border-[#E8E8E8] first:border-t-0">
+                  <div className="text-sm font-semibold text-[#AAA] shrink-0 tabular-nums w-6">0{i + 1}</div>
+                  <div>
+                    <h3 className="text-base font-semibold text-[#1A1A1A] mb-1.5">{item.title}</h3>
+                    <p className="text-sm text-[#555] leading-relaxed">{item.body}</p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════ 05 — TIMELINE ═══════════════════ */}
+      <section className="px-6 md:px-12 py-20 border-b border-[#E8E8E8]">
+        <div className="max-w-3xl mx-auto">
+          <Reveal>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">05 — Timeline</p>
+            <h2 className="text-2xl md:text-3xl font-bold mb-10 leading-tight text-[#1A1A1A]">
+              First month, mapped out.
+            </h2>
+          </Reveal>
+
+          <div className="space-y-0">
+            {[
+              { week: "Week 1", title: "Deep-dive audit & roadmap", body: "Full review of the funnel, current pages, tracking, and traffic behaviour. Findings compiled into a prioritised roadmap." },
+              { week: "Week 2", title: "Design & build begins", body: "Highest-priority pages move into design based on the audit. Copy, structure, and visual direction locked in." },
+              { week: "Week 3", title: "Internal review & refinement", body: "Designs go through internal review, client feedback incorporated, and development begins on approved pages." },
+              { week: "Week 4", title: "Pages go live", body: "First pages shipped to production with tracking in place. Baseline metrics captured, testing programme begins." },
+            ].map((phase, i) => (
+              <Reveal key={phase.week} delay={i * 80}>
+                <div className="flex gap-6 py-5 border-t border-[#E8E8E8] first:border-t-0">
+                  <div className="shrink-0 w-20">
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-[#AAA]">{phase.week}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-[#1A1A1A] mb-1">{phase.title}</h4>
+                    <p className="text-sm text-[#555] leading-relaxed">{phase.body}</p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+
+          <Reveal delay={400}>
+            <p className="text-xs text-[#999] mt-10 italic">
+              Ecomlanders is a partner of Intelligems and can provide access to their testing platform if needed during the engagement.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ═══════════════════ 06 — SIGN-OFF ═══════════════════ */}
+      <section className="px-6 md:px-12 py-20">
+        <div className="max-w-3xl mx-auto">
+          <Reveal>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">06 — Sign-Off</p>
+            <h2 className="text-2xl md:text-3xl font-bold mb-8 leading-tight text-[#1A1A1A]">
+              This proposal is valid for 30 days from the date above.
+            </h2>
+          </Reveal>
+
+          <Reveal delay={100}>
+            <div className="p-6 border border-[#E8E8E8] rounded-xl mb-10">
+              <p className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-wider mb-4">Quote Summary</p>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between py-2 border-b border-[#F0F0F0]">
+                  <span className="text-[#555]">Conversion Engine Retainer</span>
+                  <span className="font-semibold text-[#1A1A1A]">£20,000 / month</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-[#555]">Phase 1 Pilot — Three Pages</span>
+                  <span className="font-semibold text-[#1A1A1A]">£15,000 one-time</span>
+                </div>
+              </div>
+              <p className="text-[11px] text-[#999] mt-4">All figures GBP, inclusive of VAT where applicable. Invoices issued monthly in advance for retainer.</p>
+            </div>
+          </Reveal>
+
+          <Reveal delay={200}>
+            <div className="grid md:grid-cols-2 gap-8 mb-12">
+              <div>
+                <p className="text-sm text-[#1A1A1A] font-semibold mb-1">Dylan Evans</p>
+                <p className="text-xs text-[#999]">Founder · Ecomlanders</p>
+              </div>
+              <div>
+                <p className="text-sm text-[#1A1A1A] font-semibold mb-1">Ajay Daniel</p>
+                <p className="text-xs text-[#999]">Founder · Ecomlanders</p>
+              </div>
+            </div>
+          </Reveal>
+
+          <Reveal delay={300}>
+            <p className="text-sm text-[#555] leading-relaxed">
+              To confirm either option, a reply via WhatsApp or email is sufficient to begin. We'll issue the relevant invoice or payment link, and the kickoff call will be scheduled within 24 hours of confirmation.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
       {/* ═══════════════════ FOOTER ═══════════════════ */}
-      <footer className="relative z-10 border-t border-[#E8E8E8] px-6 md:px-12 py-10">
+      <footer className="border-t border-[#E8E8E8] px-6 md:px-12 py-8">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src="/el-logo.svg" alt="Ecom Landers" className="w-5 h-5 opacity-60" />
-            <span className="text-xs text-[#999]">Ecom Landers</span>
+            <img src="/el-logo.svg" alt="Ecomlanders" className="w-4 h-4 opacity-60" />
+            <span className="text-[11px] text-[#999]">Ecomlanders</span>
           </div>
-          <p className="text-[10px] text-[#CCC]">Prepared for Smile at the Occidental Suite · April 2026</p>
+          <p className="text-[10px] text-[#CCC]">Prepared for SmileWhite · April 2026</p>
         </div>
       </footer>
     </div>
