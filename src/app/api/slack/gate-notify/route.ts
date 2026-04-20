@@ -7,11 +7,11 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://ecomlanders.app";
 /**
  * POST /api/slack/gate-notify
  * Sends a Slack message when a QA gate is submitted.
- * Body: { channelId, gateTitle, clientName, projectName, submittedBy, nextRole, portalId, portalToken, gateKey }
+ * Body: { channelId, gateTitle, clientName, projectName, portalId, portalToken, projectId, gateKey }
  */
 export async function POST(req: NextRequest) {
   try {
-    const { channelId, gateTitle, clientName, projectName, submittedBy, nextRole, portalId, portalToken, projectId, gateKey } = await req.json();
+    const { channelId, gateTitle, clientName, projectName, portalId, portalToken, projectId, gateKey } = await req.json();
 
     if (!channelId || !BOT_TOKEN) {
       return NextResponse.json({ ok: false, error: "Missing channel or bot token" }, { status: 400 });
@@ -34,40 +34,23 @@ export async function POST(req: NextRequest) {
       ? `${APP_URL}/tools/client-portal/${portalId}`
       : null;
 
+    const clientLine = projectName ? `${clientName} · ${projectName}` : clientName;
+
     const blocks: any[] = [
       {
         type: "section",
-        text: {
-          type: "mrkdwn",
-          text: `✅ *${gateTitle}* submitted for *${clientName}*${projectName ? ` — ${projectName}` : ""}`,
-        },
+        text: { type: "mrkdwn", text: `✅ *${gateTitle}* submitted` },
       },
       {
-        type: "context",
-        elements: [
-          {
-            type: "mrkdwn",
-            text: `Submitted by *${submittedBy || "Team member"}* · ${new Date().toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`,
-          },
-        ],
+        type: "section",
+        text: { type: "mrkdwn", text: clientLine },
       },
     ];
 
-    if (nextRole) {
+    if (portalUrl) {
       blocks.push({
         type: "section",
-        text: {
-          type: "mrkdwn",
-          text: `👉 *${nextRole}* can now pick this up.${portalUrl ? ` <${portalUrl}|View in Portal →>` : ""}`,
-        },
-      });
-    } else if (portalUrl) {
-      blocks.push({
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: `<${portalUrl}|View in Portal →>`,
-        },
+        text: { type: "mrkdwn", text: `<${portalUrl}|View in Portal →>` },
       });
     }
 
