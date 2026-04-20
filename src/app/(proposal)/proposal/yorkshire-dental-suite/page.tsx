@@ -46,9 +46,9 @@ export default function YorkshireDentalProposal() {
       {/* HEADER */}
       <header className="border-b border-[#E8E8E8]">
         <div className="max-w-3xl mx-auto px-6 md:px-12 py-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/el-logo.svg" alt="Ecomlanders" className="w-6 h-6" />
-            <span className="text-xs font-semibold text-[#1A1A1A] tracking-wide">
+          <div className="flex items-center gap-2.5">
+            <img src="/el-logo.svg" alt="Ecomlanders" className="w-5 h-5 block" />
+            <span className="text-xs font-semibold text-[#1A1A1A] tracking-wide leading-none">
               Ecomlanders <span className="text-[#BBB] mx-1">×</span> Yorkshire Dental Suite
             </span>
           </div>

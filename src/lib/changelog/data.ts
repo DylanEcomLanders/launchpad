@@ -37,6 +37,25 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-36",
+    date: "20 Apr 2026",
+    version: "0.30.0",
+    title: "Branded Proposal Page — Yorkshire Dental Suite",
+    changes: [
+      { type: "added", text: "Sendable branded proposal page at /proposal/yorkshire-dental-suite — bespoke layout bypassing the [token] route, formal SOW format with numbered sections, two-tone headers, even stat boxes, Highest Return badge, signoff order (Ajay first, Dylan second), custom OG tags for Slack/social previews" },
+      { type: "improved", text: "Proposal copy reformatted as formal SOW with numbered sections, all em dashes stripped for cleaner tone" },
+      { type: "fixed", text: "Proposal header logo alignment — shrunk ECL mark to 20px and tightened text line-height so the logo and 'Ecomlanders × Yorkshire Dental Suite' lockup sit on the same centerline" },
+      { type: "fixed", text: "Ajay's surname corrected (Daniel → Jani)" },
+      { type: "added", text: "Payment Link — recurring subscriptions now supported with Conversion Engine preset. Whop errors surface with full detail for debugging" },
+      { type: "added", text: "Generate LinkedIn from X — blue button on the LinkedIn caption block rewrites the X caption for LinkedIn in one click" },
+      { type: "improved", text: "Clear Drafts — only removes drafts, keeps Ready to Post and Scheduled posts intact. Non-draft posts now require confirmation before deletion" },
+      { type: "added", text: "CRO onboarding fields — product URL, page type, traffic source, ASINs, Meta page, strategic direction" },
+      { type: "improved", text: "Quick Links — black floating pill with Report Issue shortcut. Old issue tracker removed" },
+      { type: "improved", text: "Onboarding confirmation copy updated — brief received, Slack updates, access request flow" },
+      { type: "added", text: "Onboarding badge — red count circle in sidebar, polls every 5 minutes so you can see pending briefs at a glance" },
+    ],
+  },
+  {
     id: "cl-35",
     date: "15 Apr 2026",
     version: "0.29.0",
