@@ -1,15 +1,26 @@
-import { Logo } from "@/components/logo";
+"use client";
 
-export const metadata = {
-  title: "Your Proposal — Ecomlanders",
-  description: "Review your custom Ecomlanders service proposal",
-};
+import { usePathname } from "next/navigation";
+import { Logo } from "@/components/logo";
 
 export default function ProposalLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
+  // Custom bespoke proposals manage their own header/footer
+  const isBespoke = /^\/proposal\/[^/]+$/.test(pathname || "") && !pathname?.includes("/[token]") && pathname !== "/proposal";
+  // Check against known bespoke slugs
+  const bespokeSlugs = ["smilewhite"];
+  const slug = pathname?.split("/").pop();
+  const useBespokeLayout = bespokeSlugs.includes(slug || "");
+
+  if (useBespokeLayout) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Minimal branded header */}
