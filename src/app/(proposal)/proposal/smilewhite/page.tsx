@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-/* ── Reveal on scroll ── */
+/* Reveal on scroll */
 function useReveal<T extends HTMLElement>() {
   const ref = useRef<T | null>(null);
   const [visible, setVisible] = useState(false);
@@ -40,23 +40,23 @@ function Reveal({ children, delay = 0, className = "" }: { children: React.React
   );
 }
 
-export default function SmileWhiteProposal() {
+export default function YorkshireDentalProposal() {
   return (
     <div className="min-h-screen bg-white text-[#1A1A1A]">
-      {/* ═══════════════════ HEADER ═══════════════════ */}
+      {/* HEADER */}
       <header className="border-b border-[#E8E8E8]">
         <div className="max-w-3xl mx-auto px-6 md:px-12 py-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/el-logo.svg" alt="Ecomlanders" className="w-6 h-6" />
             <span className="text-xs font-semibold text-[#1A1A1A] tracking-wide">
-              Ecomlanders <span className="text-[#BBB] mx-1">×</span> SmileWhite
+              Ecomlanders <span className="text-[#BBB] mx-1">×</span> Yorkshire Dental Suite
             </span>
           </div>
           <p className="text-[10px] text-[#AAA] uppercase tracking-widest">20 April 2026</p>
         </div>
       </header>
 
-      {/* ═══════════════════ HERO ═══════════════════ */}
+      {/* HERO */}
       <section className="px-6 md:px-12 pt-20 md:pt-24 pb-20 border-b border-[#E8E8E8]">
         <div className="max-w-3xl mx-auto">
           <Reveal>
@@ -71,13 +71,13 @@ export default function SmileWhiteProposal() {
 
           <Reveal delay={250}>
             <p className="text-base md:text-lg text-[#555] leading-relaxed max-w-2xl">
-              Following our call, we've prepared this proposal outlining how we'd support SmileWhite in closing the gap between paid traffic and inquiry submissions. The bookings engine downstream is already strong — this work focuses on the conversion layer sitting between your ads and your inquiry form.
+              Following our call, we've prepared this proposal outlining how we'd support Yorkshire Dental Suite in closing the gap between paid traffic and inquiry submissions. The bookings engine downstream is already strong. This work focuses on the conversion layer sitting between your ads and your inquiry form.
             </p>
           </Reveal>
 
           <Reveal delay={400}>
             <div className="flex items-center gap-3 mt-10 text-[11px] text-[#AAA]">
-              <span>Prepared for Smile at the Occidental Suite</span>
+              <span>Prepared for Yorkshire Dental Suite</span>
               <span className="size-1 rounded-full bg-[#DDD]" />
               <span>Valid for 30 days</span>
             </div>
@@ -85,11 +85,11 @@ export default function SmileWhiteProposal() {
         </div>
       </section>
 
-      {/* ═══════════════════ 01 — THE OPPORTUNITY ═══════════════════ */}
+      {/* 01 THE OPPORTUNITY */}
       <section className="px-6 md:px-12 py-20 border-b border-[#E8E8E8]">
         <div className="max-w-3xl mx-auto">
           <Reveal>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">01 — The Opportunity</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">01. The Opportunity</p>
             <h2 className="text-2xl md:text-3xl font-bold mb-6 leading-tight text-[#1A1A1A]">
               <span className="text-[#AAA]">Your bookings engine is strong.</span> The inquiry layer needs work.
             </h2>
@@ -97,7 +97,7 @@ export default function SmileWhiteProposal() {
 
           <Reveal delay={100}>
             <p className="text-base text-[#555] leading-relaxed mb-10 max-w-2xl">
-              Over the last three months you've taken pickup rates from 40-50% to 80% and hold a steady 15-20% booking rate once on the phone. That's a well-oiled machine. The bottleneck sits earlier — in the space between ad click and form submission.
+              Over the last three months you've taken pickup rates from 40-50% to 80% and hold a steady 15-20% booking rate once on the phone. That's a well-oiled machine. The bottleneck sits earlier, in the space between ad click and form submission.
             </p>
           </Reveal>
 
@@ -121,7 +121,7 @@ export default function SmileWhiteProposal() {
             <div className="p-6 border-l-2 border-[#1A1A1A] bg-[#FAFAFA] rounded-r-xl">
               <p className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-wider mb-3">Where the leak sits</p>
               <p className="text-sm text-[#555] leading-relaxed mb-3">
-                Google and Meta traffic arrive at the same inquiry page, despite having very different intent levels. Google visitors are searching actively — ready to book. Meta visitors are in discovery mode — they need more context and reassurance before submitting their details.
+                Google and Meta traffic arrive at the same inquiry page, despite having very different intent levels. Google visitors are searching actively and ready to book. Meta visitors are in discovery mode. They need more context and reassurance before submitting their details.
               </p>
               <p className="text-sm text-[#555] leading-relaxed">
                 A single page can't serve both well. The £65 consultation fee also drops in earlier than ideal for colder traffic, creating friction before desire is built. Resolving these is a matter of segmentation and sequencing, not a full rebuild.
@@ -131,11 +131,11 @@ export default function SmileWhiteProposal() {
         </div>
       </section>
 
-      {/* ═══════════════════ 02 — HOW WE PLUG IN ═══════════════════ */}
+      {/* 02 HOW WE PLUG IN */}
       <section className="px-6 md:px-12 py-20 border-b border-[#E8E8E8]">
         <div className="max-w-3xl mx-auto">
           <Reveal>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">02 — How We Plug In</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">02. How We Plug In</p>
             <h2 className="text-2xl md:text-3xl font-bold mb-6 leading-tight text-[#1A1A1A]">
               <span className="text-[#AAA]">A conversion layer</span> that works with your existing setup.
             </h2>
@@ -150,7 +150,7 @@ export default function SmileWhiteProposal() {
           <div className="grid md:grid-cols-2 gap-3 mb-10">
             {[
               "Funnel audit across every touchpoint from ad click to inquiry",
-              "Traffic segmentation — separate pages for Google and Meta intent levels",
+              "Traffic segmentation with separate pages for Google and Meta intent levels",
               "Iterative page redesigns that build on what's already performing",
               "Ad-to-page alignment so the scent trail stays consistent",
               "Pre-framing content for Meta traffic to warm prospects before the form",
@@ -177,11 +177,11 @@ export default function SmileWhiteProposal() {
         </div>
       </section>
 
-      {/* ═══════════════════ 03 — SCOPE & INVESTMENT ═══════════════════ */}
+      {/* 03 SCOPE & INVESTMENT */}
       <section className="px-6 md:px-12 py-20 border-b border-[#E8E8E8]">
         <div className="max-w-3xl mx-auto">
           <Reveal>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">03 — Scope & Investment</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">03. Scope & Investment</p>
             <h2 className="text-2xl md:text-3xl font-bold mb-6 leading-tight text-[#1A1A1A]">
               Two ways to start.
             </h2>
@@ -189,11 +189,11 @@ export default function SmileWhiteProposal() {
 
           <Reveal delay={100}>
             <p className="text-base text-[#555] leading-relaxed mb-10 max-w-2xl">
-              The retainer is the full engagement — ongoing, compounding, team-led. The pilot is a scoped project covering the three pages you shared, designed as a standalone piece of work or a stepping stone into the retainer.
+              The retainer is the full engagement. Ongoing, compounding, team-led. The pilot is a scoped project covering the three pages you shared, designed as a standalone piece of work or a stepping stone into the retainer.
             </p>
           </Reveal>
 
-          {/* Option A — Retainer (horizontal featured) */}
+          {/* Option A Retainer */}
           <Reveal delay={150}>
             <div className="mb-6 p-8 md:p-10 bg-[#1A1A1A] text-white rounded-2xl">
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8">
@@ -207,12 +207,12 @@ export default function SmileWhiteProposal() {
                   </div>
                   <h3 className="text-2xl font-bold mb-3">Conversion Engine Retainer</h3>
                   <p className="text-sm text-white/70 leading-relaxed">
-                    Full conversion team embedded alongside SmileWhite. Deep audit, full roadmap, ongoing builds, tests, and monthly reporting. Ideal for compounding results over a 6-12 month horizon.
+                    Full conversion team embedded alongside Yorkshire Dental Suite. Deep audit, full roadmap, ongoing builds, tests, and monthly reporting. Ideal for compounding results over a 6-12 month horizon.
                   </p>
                 </div>
                 <div className="md:w-1/2 md:border-l md:border-white/10 md:pl-8">
                   <p className="text-4xl md:text-5xl font-bold mb-1">£20,000<span className="text-base font-normal text-white/50">/mo</span></p>
-                  <p className="text-xs text-white/50 mb-5">Billed monthly · Cancel with 30 days' notice</p>
+                  <p className="text-xs text-white/50 mb-5">Billed monthly. Cancel with 30 days' notice.</p>
                   <div className="space-y-2">
                     {[
                       "Full team: strategist, designer, developer, QA, PM",
@@ -220,7 +220,7 @@ export default function SmileWhiteProposal() {
                       "Ongoing page builds, rebuilds, and testing",
                       "A/B testing software + heatmapping",
                       "Regular updates in your preferred channel",
-                      "Monthly strategic review + reporting",
+                      "Monthly strategic review and reporting",
                     ].map((item) => (
                       <div key={item} className="flex items-start gap-2 text-xs text-white/80">
                         <div className="size-1 rounded-full bg-white/40 mt-1.5 shrink-0" />
@@ -233,12 +233,12 @@ export default function SmileWhiteProposal() {
             </div>
           </Reveal>
 
-          {/* Option B — Pilot */}
+          {/* Option B Pilot */}
           <Reveal delay={250}>
             <div className="p-8 border border-[#E8E8E8] rounded-2xl">
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
                 <div className="md:w-1/2">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-3">Option B — Phase 1 Pilot</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-3">Option B. Phase 1 Pilot</p>
                   <h3 className="text-xl font-bold mb-3 text-[#1A1A1A]">Three-Page Rebuild</h3>
                   <p className="text-sm text-[#555] leading-relaxed">
                     A scoped project covering the three pages you shared. Full redesign and rebuild, with the audit and recommendations feeding into a broader roadmap should you choose to move into the retainer afterwards.
@@ -246,7 +246,7 @@ export default function SmileWhiteProposal() {
                 </div>
                 <div className="md:w-1/2 md:border-l md:border-[#E8E8E8] md:pl-8">
                   <p className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-1">£15,000</p>
-                  <p className="text-xs text-[#999] mb-5">One-time · 30-day delivery</p>
+                  <p className="text-xs text-[#999] mb-5">One-time. 30-day delivery.</p>
                   <div className="space-y-2">
                     {[
                       "Conversion audit covering the three pages",
@@ -269,11 +269,11 @@ export default function SmileWhiteProposal() {
         </div>
       </section>
 
-      {/* ═══════════════════ 04 — HOW WE WORK ═══════════════════ */}
+      {/* 04 HOW WE WORK */}
       <section className="px-6 md:px-12 py-20 border-b border-[#E8E8E8]">
         <div className="max-w-3xl mx-auto">
           <Reveal>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">04 — How We Work</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">04. How We Work</p>
             <h2 className="text-2xl md:text-3xl font-bold mb-10 leading-tight text-[#1A1A1A]">
               Four principles that shape every engagement.
             </h2>
@@ -291,7 +291,7 @@ export default function SmileWhiteProposal() {
               },
               {
                 title: "We plug into your existing process.",
-                body: "Framer, Payload, Shopify — whatever you're running, we work within it. No platform migrations, no forcing you off tools that already work. We adapt to your stack.",
+                body: "Framer, Payload, Shopify. Whatever you're running, we work within it. No platform migrations, no forcing you off tools that already work. We adapt to your stack.",
               },
               {
                 title: "Compounding over cosmetic.",
@@ -312,11 +312,11 @@ export default function SmileWhiteProposal() {
         </div>
       </section>
 
-      {/* ═══════════════════ 05 — TIMELINE ═══════════════════ */}
+      {/* 05 TIMELINE */}
       <section className="px-6 md:px-12 py-20 border-b border-[#E8E8E8]">
         <div className="max-w-3xl mx-auto">
           <Reveal>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">05 — Timeline</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">05. Timeline</p>
             <h2 className="text-2xl md:text-3xl font-bold mb-10 leading-tight text-[#1A1A1A]">
               First month, mapped out.
             </h2>
@@ -324,9 +324,9 @@ export default function SmileWhiteProposal() {
 
           <div className="space-y-0">
             {[
-              { week: "Week 1", title: "Deep-dive audit & roadmap", body: "Full review of the funnel, current pages, tracking, and traffic behaviour. Findings compiled into a prioritised roadmap." },
-              { week: "Week 2", title: "Design & build begins", body: "Highest-priority pages move into design based on the audit. Copy, structure, and visual direction locked in." },
-              { week: "Week 3", title: "Internal review & refinement", body: "Designs go through internal review, client feedback incorporated, and development begins on approved pages." },
+              { week: "Week 1", title: "Deep-dive audit and roadmap", body: "Full review of the funnel, current pages, tracking, and traffic behaviour. Findings compiled into a prioritised roadmap." },
+              { week: "Week 2", title: "Design and build begins", body: "Highest-priority pages move into design based on the audit. Copy, structure, and visual direction locked in." },
+              { week: "Week 3", title: "Internal review and refinement", body: "Designs go through internal review, client feedback incorporated, and development begins on approved pages." },
               { week: "Week 4", title: "Pages go live", body: "First pages shipped to production with tracking in place. Baseline metrics captured, testing programme begins." },
             ].map((phase, i) => (
               <Reveal key={phase.week} delay={i * 80}>
@@ -351,11 +351,11 @@ export default function SmileWhiteProposal() {
         </div>
       </section>
 
-      {/* ═══════════════════ 06 — SIGN-OFF ═══════════════════ */}
+      {/* 06 SIGN-OFF */}
       <section className="px-6 md:px-12 py-20">
         <div className="max-w-3xl mx-auto">
           <Reveal>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">06 — Sign-Off</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">06. Sign-Off</p>
             <h2 className="text-2xl md:text-3xl font-bold mb-8 leading-tight text-[#1A1A1A]">
               This proposal is valid for 30 days from the date above.
             </h2>
@@ -370,7 +370,7 @@ export default function SmileWhiteProposal() {
                   <span className="font-semibold text-[#1A1A1A]">£20,000 / month</span>
                 </div>
                 <div className="flex justify-between py-2">
-                  <span className="text-[#555]">Phase 1 Pilot — Three Pages</span>
+                  <span className="text-[#555]">Phase 1 Pilot (Three Pages)</span>
                   <span className="font-semibold text-[#1A1A1A]">£15,000 one-time</span>
                 </div>
               </div>
@@ -382,11 +382,11 @@ export default function SmileWhiteProposal() {
             <div className="grid md:grid-cols-2 gap-8 mb-12">
               <div>
                 <p className="text-sm text-[#1A1A1A] font-semibold mb-1">Ajay Daniel</p>
-                <p className="text-xs text-[#999]">Founder · Ecomlanders</p>
+                <p className="text-xs text-[#999]">Founder, Ecomlanders</p>
               </div>
               <div>
                 <p className="text-sm text-[#1A1A1A] font-semibold mb-1">Dylan Evans</p>
-                <p className="text-xs text-[#999]">COO · Ecomlanders</p>
+                <p className="text-xs text-[#999]">COO, Ecomlanders</p>
               </div>
             </div>
           </Reveal>
@@ -399,14 +399,14 @@ export default function SmileWhiteProposal() {
         </div>
       </section>
 
-      {/* ═══════════════════ FOOTER ═══════════════════ */}
+      {/* FOOTER */}
       <footer className="border-t border-[#E8E8E8] px-6 md:px-12 py-8">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <img src="/el-logo.svg" alt="Ecomlanders" className="w-4 h-4 opacity-60" />
             <span className="text-[11px] text-[#999]">Ecomlanders</span>
           </div>
-          <p className="text-[10px] text-[#CCC]">Prepared for SmileWhite · April 2026</p>
+          <p className="text-[10px] text-[#CCC]">Prepared for Yorkshire Dental Suite, April 2026</p>
         </div>
       </footer>
     </div>
