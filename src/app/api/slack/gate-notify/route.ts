@@ -64,6 +64,8 @@ export async function POST(req: NextRequest) {
         channel: channelId,
         text: `✅ ${gateTitle} submitted for ${clientName}${projectName ? ` — ${projectName}` : ""}`,
         blocks,
+        unfurl_links: false,
+        unfurl_media: false,
       }),
     });
 
