@@ -381,7 +381,7 @@ export default function YorkshireDentalProposal() {
           <Reveal delay={200}>
             <div className="grid md:grid-cols-2 gap-8 mb-12">
               <div>
-                <p className="text-sm text-[#1A1A1A] font-semibold mb-1">Ajay Daniel</p>
+                <p className="text-sm text-[#1A1A1A] font-semibold mb-1">Ajay Jani</p>
                 <p className="text-xs text-[#999]">Founder, Ecomlanders</p>
               </div>
               <div>
