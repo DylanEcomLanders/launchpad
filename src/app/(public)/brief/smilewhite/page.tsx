@@ -381,12 +381,12 @@ export default function SmileWhiteProposal() {
           <Reveal delay={200}>
             <div className="grid md:grid-cols-2 gap-8 mb-12">
               <div>
-                <p className="text-sm text-[#1A1A1A] font-semibold mb-1">Dylan Evans</p>
+                <p className="text-sm text-[#1A1A1A] font-semibold mb-1">Ajay Daniel</p>
                 <p className="text-xs text-[#999]">Founder · Ecomlanders</p>
               </div>
               <div>
-                <p className="text-sm text-[#1A1A1A] font-semibold mb-1">Ajay Daniel</p>
-                <p className="text-xs text-[#999]">Founder · Ecomlanders</p>
+                <p className="text-sm text-[#1A1A1A] font-semibold mb-1">Dylan Evans</p>
+                <p className="text-xs text-[#999]">COO · Ecomlanders</p>
               </div>
             </div>
           </Reveal>
