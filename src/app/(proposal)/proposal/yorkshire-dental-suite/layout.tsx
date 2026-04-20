@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Proposal · Yorkshire Dental Suite × Ecomlanders",
     description: "Proposed Scope of Work. Conversion Engine proposal for Yorkshire Dental Suite.",
-    url: "https://ecomlanders.app/proposal/smilewhite",
+    url: "https://ecomlanders.app/proposal/yorkshire-dental-suite",
     siteName: "Ecomlanders",
     type: "website",
   },

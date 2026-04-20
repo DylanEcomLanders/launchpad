@@ -13,7 +13,7 @@ export default function ProposalLayout({
   // Custom bespoke proposals manage their own header/footer
   const isBespoke = /^\/proposal\/[^/]+$/.test(pathname || "") && !pathname?.includes("/[token]") && pathname !== "/proposal";
   // Check against known bespoke slugs
-  const bespokeSlugs = ["smilewhite"];
+  const bespokeSlugs = ["yorkshire-dental-suite"];
   const slug = pathname?.split("/").pop();
   const useBespokeLayout = bespokeSlugs.includes(slug || "");
 
