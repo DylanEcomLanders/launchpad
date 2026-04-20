@@ -61,6 +61,7 @@ const moduleMap: Record<
     shortTitle: "Sales Process",
     icon: "phone",
     category: "flow",
+    toolHref: "/tools/offer-engine",
   },
   "ce-02-onboarding": {
     title: "Onboarding & System Setup",

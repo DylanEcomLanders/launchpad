@@ -118,3 +118,27 @@ Before the Deep Dive call, confirm you have:
 | "We've used agencies before" | "That's exactly the problem. Every time you switch vendors you lose 3 months of momentum. New onboarding, new context, back to zero. Our partnership compounds — Month 3 builds on Month 2, every test informs the next build. That visibility gap from jumping between vendors is what's killing your progress." |
 | "We'll do it in-house" | "A senior CRO hire is £60-80K/year plus tools, training, and 6 months to ramp. You're getting a full team — strategist, designer, developer, QA — with 5,000+ builds behind us. For a fraction of one hire." |
 | "We need to think about it" | "Of course. While you think, your CVR gap costs roughly £X every day. Happy to reconnect next week — but the roadmap we've built is time-sensitive because your competitive landscape moves fast." |
+
+---
+
+## Proposal Delivery — Offer Engine
+
+After the Deep Dive call, the proposal is the artefact that confirms the shape of the engagement. Use the **Offer Engine** tool in Launchpad to draft it instead of writing from scratch — the template is modelled on the Yorkshire Dental Suite format (Conversion Engine retainer + scoped pilot).
+
+### When to use it
+- Immediately after the Deep Dive close call, while the conversation is fresh
+- Any prospect we've committed to sending a formal SOW to
+- Not for the Initial Audit stage — those stay as Looms / one-pagers
+
+### How it works
+1. Open `/tools/offer-engine` (link above).
+2. Paste the call notes or transcript — Claude only pulls stats from what you paste.
+3. Fill the offer inputs — retainer price, pilot scope, pilot price.
+4. Generate. The output lives at `/proposal/[brand-slug]` as a shareable page.
+5. Any number Claude couldn't verify from the notes stays as `[needs input]` so you spot it before sending.
+
+### Before sending
+- Read it end-to-end. The generator is an accelerator, not an autopilot.
+- Verify every stat in Section 01 against the notes or the Conversion Matrix output.
+- Confirm the pilot scope matches what was agreed on the call.
+- If the numbers are wrong, regenerate with tighter notes rather than patching by hand.

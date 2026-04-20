@@ -40,8 +40,9 @@ const seedChangelog: ChangelogEntry[] = [
     id: "cl-36",
     date: "20 Apr 2026",
     version: "0.30.0",
-    title: "Branded Proposal Page — Yorkshire Dental Suite",
+    title: "Offer Engine + Branded Proposal Page",
     changes: [
+      { type: "added", text: "Offer Engine — paste call notes + fill offer inputs, Claude drafts a personalised Conversion Engine proposal and saves it to /proposal/[brand-slug]. Template modelled on the Yorkshire Dental Suite format (retainer + pilot). Numbers Claude can't verify stay as [needs input] so nothing invented slips through. Tool at /tools/offer-engine, linked from the Sales Process wiki entry. Requires offer_proposals Supabase table (SQL in supabase/offer_proposals.sql)" },
       { type: "added", text: "Sendable branded proposal page at /proposal/yorkshire-dental-suite — bespoke layout bypassing the [token] route, formal SOW format with numbered sections, two-tone headers, even stat boxes, Highest Return badge, signoff order (Ajay first, Dylan second), custom OG tags for Slack/social previews" },
       { type: "improved", text: "Proposal copy reformatted as formal SOW with numbered sections, all em dashes stripped for cleaner tone" },
       { type: "fixed", text: "Proposal header logo alignment — shrunk ECL mark to 20px and tightened text line-height so the logo and 'Ecomlanders × Yorkshire Dental Suite' lockup sit on the same centerline" },
