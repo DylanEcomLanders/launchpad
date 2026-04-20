@@ -413,7 +413,7 @@ export function PortalView({
       )}
 
       {/* ── Sidebar (always visible) ── */}
-      <aside className={`fixed md:sticky top-0 left-0 h-screen z-50 md:z-auto w-[220px] bg-white border-r border-[#E8E8E8] flex flex-col transition-transform duration-200 md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+      <aside className={`fixed md:sticky top-0 left-0 md:self-start h-screen md:h-screen md:max-h-screen z-50 md:z-auto w-[220px] bg-white border-r border-[#E8E8E8] flex flex-col transition-transform duration-200 md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="px-5 py-6 border-b border-[#E8E8E8]">
           <Logo height={14} />
         </div>

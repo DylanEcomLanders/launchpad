@@ -24,7 +24,10 @@
 }
 
 html, body {
-  overflow-x: hidden;
+  /* `overflow-x: hidden` forces overflow-y to `auto`, which makes body the
+     scroll container and breaks `position: sticky` on descendants. `clip`
+     prevents horizontal overflow without creating a scroll container. */
+  overflow-x: clip;
 }
 
 * {
