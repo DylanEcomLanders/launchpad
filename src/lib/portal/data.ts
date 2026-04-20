@@ -351,8 +351,11 @@ export async function updatePortal(
         .update({ ...updates, updated_at: new Date().toISOString() })
         .eq("id", id);
       if (error) throw error;
-    } catch {
-      // Supabase failed — localStorage below will handle it
+    } catch (err) {
+      // Surface Supabase errors to the console so failed saves don't look
+      // silently successful (e.g. missing column causes the whole update to
+      // be rejected and silently discarded).
+      console.error("updatePortal Supabase write failed:", err);
     }
   }
   // Always update localStorage to keep it in sync
@@ -525,6 +528,7 @@ function mapPortalRow(row: any): PortalData {
     wins: row.wins || [],
     show_results: row.show_results ?? false,
     slack_channel_url: row.slack_channel_url || "",
+    slack_internal_channel_id: row.slack_internal_channel_id || "",
     ad_hoc_requests: row.ad_hoc_requests || [],
     reports: row.reports || [],
     blocker: row.blocker || null,
