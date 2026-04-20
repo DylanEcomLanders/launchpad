@@ -67,6 +67,17 @@ import { deliverableTypes } from "@/lib/config";
 import { BrandedReport } from "@/components/branded-report";
 import { InternalSection, GateStatusPills } from "@/components/internal-section";
 import { GateChecklistForm } from "@/components/gate-checklist-form";
+import { GATE_CONFIG } from "@/lib/portal/qa-gates";
+
+// Mirror of GATE_KEY_TO_QA_KEY in portal-view.tsx — admin tab keys → qa_gates
+// bucket keys, so Slack notifications for admin submissions carry the same
+// gate key the team view uses.
+const ADMIN_GATE_KEY_TO_QA_KEY: Record<string, string> = {
+  "design-brief": "cro_brief",
+  "dev-handover": "design_handoff",
+  "dev-qa": "dev_handoff",
+  "handoff-testing": "launch_prep",
+};
 import type {
   DesignReview,
   DesignReviewVersion,
@@ -1095,6 +1106,27 @@ export default function PortalDetailPage() {
               );
               await updatePortal(portal.id, { projects: updatedProjects } as any);
               setPortal({ ...portal, projects: updatedProjects });
+            }}
+            onAfterSubmit={async () => {
+              if (!portal.slack_internal_channel_id) return;
+              const qaKey = ADMIN_GATE_KEY_TO_QA_KEY[activeTab];
+              if (!qaKey) return;
+              try {
+                await fetch("/api/slack/gate-notify", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    channelId: portal.slack_internal_channel_id,
+                    gateTitle: GATE_CONFIG[qaKey]?.title ?? qaKey,
+                    clientName: portal.client_name,
+                    projectName: selectedProject.name,
+                    portalId: portal.id,
+                    portalToken: portal.token,
+                    projectId: selectedProject.id,
+                    gateKey: qaKey,
+                  }),
+                });
+              } catch { /* fire-and-forget */ }
             }}
           />
         )}
