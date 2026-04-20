@@ -5,22 +5,13 @@ import { CheckIcon, DocumentArrowUpIcon, TrashIcon, ArrowDownTrayIcon, EyeIcon, 
 import type { QAGate, PortalProject, GateKey, BriefFile, UploadedFile } from "@/lib/portal/types";
 import type { PortalData } from "@/lib/portal/types";
 import {
-  CRO_BRIEF_ITEMS, DESIGN_HANDOFF_ITEMS, DEV_HANDOFF_ITEMS, DEV_HANDOFF_CATEGORIES,
+  CRO_BRIEF_ITEMS, DESIGN_HANDOFF_ITEMS, DEV_HANDOFF_ITEMS, DEV_HANDOFF_CATEGORIES, LAUNCH_PREP_ITEMS,
   createDefaultGate, getGateProgress, isGateComplete, isDesignHandoffComplete,
 } from "@/lib/portal/qa-gates";
 import type { GateCategory } from "@/lib/portal/qa-gates";
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
 
 /* ── Launch prep items ── */
-const LAUNCH_PREP_ITEMS = [
-  "All Dev QA feedback addressed — nothing outstanding",
-  "Redirects configured (if replacing an existing page)",
-  "GA4 tracking verified — events firing, UTMs set",
-  "Meta pixel / third-party tracking pixels confirmed working",
-  "Backup of current live page taken (screenshot + theme duplicate)",
-  "Theme changes haven't broken other pages on the site",
-  "Go-live time confirmed — team available for 2 hours post-launch",
-];
 
 /* ── Gate mapping ── */
 const gateMapping: Record<GateKey, {

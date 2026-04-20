@@ -31,6 +31,7 @@ import {
   CRO_BRIEF_ITEMS,
   DESIGN_HANDOFF_ITEMS,
   DEV_HANDOFF_ITEMS,
+  LAUNCH_PREP_ITEMS,
   createDefaultGate,
   getGateProgress,
 } from "@/lib/portal/qa-gates";
@@ -41,6 +42,7 @@ const QA_KEY_TO_GATE_KEY: Record<string, GateKey> = {
   cro_brief: "design-brief",
   design_handoff: "dev-handover",
   dev_handoff: "dev-qa",
+  launch_prep: "handoff-testing",
 };
 
 // Reverse mapping for Slack notify (expects the qa_gates key).
@@ -358,6 +360,7 @@ export function PortalView({
     if (gates.cro_brief_enabled) entries.push({ key: "cro_brief", items: CRO_BRIEF_ITEMS });
     entries.push({ key: "design_handoff", items: DESIGN_HANDOFF_ITEMS });
     entries.push({ key: "dev_handoff", items: DEV_HANDOFF_ITEMS });
+    entries.push({ key: "launch_prep", items: LAUNCH_PREP_ITEMS });
     for (const e of entries) {
       const gate: QAGate = (gates as Record<string, QAGate | undefined>)[e.key] || createDefaultGate(e.items);
       const progress = getGateProgress(gate);
@@ -859,7 +862,8 @@ export function PortalView({
                     const nextRole =
                       focusedGateKey === "cro_brief" ? "Designer"
                       : focusedGateKey === "design_handoff" ? "Developer"
-                      : "Senior Developer";
+                      : focusedGateKey === "dev_handoff" ? "Senior Developer"
+                      : "Launch owner";
                     try {
                       await fetch("/api/slack/gate-notify", {
                         method: "POST",

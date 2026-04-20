@@ -465,7 +465,8 @@ export function InternalSection({ project, onUpdateProject, readOnly = false, te
       const nextRole =
         gateKey === "cro_brief" ? "Designer"
         : gateKey === "design_handoff" ? "Developer"
-        : "Senior Developer";
+        : gateKey === "dev_handoff" ? "Senior Developer"
+        : "Launch owner";
 
       fetch("/api/slack/gate-notify", {
         method: "POST",

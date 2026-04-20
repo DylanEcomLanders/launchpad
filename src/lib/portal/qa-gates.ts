@@ -312,9 +312,20 @@ export function arePrerequisitesMet(project: PortalProject, gateKey: "cro_brief"
   }
 }
 
+export const LAUNCH_PREP_ITEMS = [
+  "All Dev QA feedback addressed — nothing outstanding",
+  "Redirects configured (if replacing an existing page)",
+  "GA4 tracking verified — events firing, UTMs set",
+  "Meta pixel / third-party tracking pixels confirmed working",
+  "Backup of current live page taken (screenshot + theme duplicate)",
+  "Theme changes haven't broken other pages on the site",
+  "Go-live time confirmed — team available for 2 hours post-launch",
+];
+
 /** Gate display config */
 export const GATE_CONFIG: Record<string, { title: string; color: string; role: string }> = {
   cro_brief: { title: "CRO Design", color: "#DC2626", role: "CRO Strategist" },
   design_handoff: { title: "Design Handoff", color: "#7C3AED", role: "Designer" },
   dev_handoff: { title: "Dev to Senior Dev QA", color: "#059669", role: "Developer" },
+  launch_prep: { title: "Handoff / Testing", color: "#2563EB", role: "Senior Developer" },
 };
