@@ -91,7 +91,7 @@ export default function SmileWhiteProposal() {
           <Reveal>
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">01 — The Opportunity</p>
             <h2 className="text-2xl md:text-3xl font-bold mb-6 leading-tight text-[#1A1A1A]">
-              Your bookings engine is strong. The inquiry layer needs work.
+              <span className="text-[#AAA]">Your bookings engine is strong.</span> The inquiry layer needs work.
             </h2>
           </Reveal>
 
@@ -103,12 +103,12 @@ export default function SmileWhiteProposal() {
 
           <div className="grid md:grid-cols-3 gap-4 mb-10">
             {[
-              { label: "Pickup rate", value: "80%" },
-              { label: "Booking rate", value: "15-20%" },
+              { label: "Pickup rate", value: "80%", sub: "Up from 40-50%" },
+              { label: "Booking rate", value: "15-20%", sub: "Consultation converts" },
               { label: "Traffic split", value: "50/50", sub: "Google / Meta" },
             ].map((stat, i) => (
-              <Reveal key={stat.label} delay={150 + i * 80}>
-                <div className="p-5 border border-[#E8E8E8] rounded-xl">
+              <Reveal key={stat.label} delay={150 + i * 80} className="h-full">
+                <div className="p-5 border border-[#E8E8E8] rounded-xl h-full flex flex-col">
                   <p className="text-[10px] font-medium uppercase tracking-widest text-[#AAA] mb-2">{stat.label}</p>
                   <p className="text-2xl font-bold text-[#1A1A1A]">{stat.value}</p>
                   {stat.sub && <p className="text-[11px] text-[#999] mt-1">{stat.sub}</p>}
@@ -137,7 +137,7 @@ export default function SmileWhiteProposal() {
           <Reveal>
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#999] mb-4">02 — How We Plug In</p>
             <h2 className="text-2xl md:text-3xl font-bold mb-6 leading-tight text-[#1A1A1A]">
-              A conversion layer alongside the systems you already have.
+              <span className="text-[#AAA]">A conversion layer</span> that works with your existing setup.
             </h2>
           </Reveal>
 
@@ -198,7 +198,13 @@ export default function SmileWhiteProposal() {
             <div className="mb-6 p-8 md:p-10 bg-[#1A1A1A] text-white rounded-2xl">
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8">
                 <div className="md:w-1/2">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/50 mb-3">Option A — Recommended</p>
+                  <div className="flex items-center gap-2 mb-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/50">Option A</p>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-amber-400 to-amber-300 text-[#1A1A1A] text-[9px] font-bold uppercase tracking-wider rounded-full">
+                      <svg className="size-2.5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                      Highest Return
+                    </span>
+                  </div>
                   <h3 className="text-2xl font-bold mb-3">Conversion Engine Retainer</h3>
                   <p className="text-sm text-white/70 leading-relaxed">
                     Full conversion team embedded alongside SmileWhite. Deep audit, full roadmap, ongoing builds, tests, and monthly reporting. Ideal for compounding results over a 6-12 month horizon.
