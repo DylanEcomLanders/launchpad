@@ -60,6 +60,7 @@ import type {
   BlockerHistory,
   ContextEntry,
   GateKey,
+  FunnelDocument,
 } from "@/lib/portal/types";
 import { cyclePhaseStatus, canPhaseAdvance } from "@/lib/portal/phase-logic";
 import { syncDeliverableToBoard } from "@/lib/portal/task-sync";
@@ -4248,6 +4249,8 @@ function FunnelsTab({
 }) {
   const [miroDraft, setMiroDraft] = useState(portal.miro_board_url || "");
   const [editing, setEditing] = useState(!portal.miro_board_url);
+  const [uploadingDoc, setUploadingDoc] = useState(false);
+  const docs = portal.funnel_documents || [];
 
   const embedSrc = (url: string): string => {
     // Miro share link: https://miro.com/app/board/uXjVL_abc=/
@@ -4260,6 +4263,39 @@ function FunnelsTab({
   const handleSave = async () => {
     await onUpdatePortal({ miro_board_url: miroDraft.trim() || undefined });
     setEditing(false);
+  };
+
+  const handleDocUpload = async (file: File) => {
+    setUploadingDoc(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/design-brief/upload?bucket=design-briefs", { method: "POST", body: fd });
+      if (!res.ok) throw new Error("Upload failed");
+      const data = await res.json();
+      if (data.url) {
+        const doc: FunnelDocument = {
+          id: crypto.randomUUID(),
+          name: file.name,
+          url: data.url,
+          size: file.size,
+          uploaded_at: new Date().toISOString(),
+        };
+        await onUpdatePortal({ funnel_documents: [...docs, doc] });
+      }
+    } catch { /* silent */ }
+    setUploadingDoc(false);
+  };
+
+  const handleDocDelete = async (id: string) => {
+    await onUpdatePortal({ funnel_documents: docs.filter(d => d.id !== id) });
+  };
+
+  const formatSize = (bytes?: number): string => {
+    if (!bytes) return "";
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   return (
@@ -4311,6 +4347,46 @@ function FunnelsTab({
           </div>
         ) : (
           <p className="text-xs text-[#CCC] py-2">No Miro board linked yet.</p>
+        )}
+      </div>
+
+      {/* Documents */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xs font-semibold text-[#1A1A1A]">Documents</h3>
+          <label className="text-[11px] font-medium text-[#999] hover:text-[#1A1A1A] cursor-pointer">
+            <input type="file" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleDocUpload(f); e.target.value = ""; }} />
+            {uploadingDoc ? "Uploading…" : "+ Upload"}
+          </label>
+        </div>
+        {docs.length > 0 ? (
+          <div className="divide-y divide-[#E8E8E8] border border-[#E8E8E8] rounded-xl bg-white">
+            {docs.map((doc) => (
+              <div key={doc.id} className="flex items-center justify-between px-4 py-3 group">
+                <a href={doc.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 min-w-0 flex-1 hover:text-[#1A1A1A]">
+                  <svg className="size-4 text-[#AAA] shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                  </svg>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-[#1A1A1A] truncate">{doc.name}</p>
+                    <p className="text-[10px] text-[#AAA]">
+                      {new Date(doc.uploaded_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                      {doc.size ? ` · ${formatSize(doc.size)}` : ""}
+                    </p>
+                  </div>
+                </a>
+                <button
+                  onClick={() => handleDocDelete(doc.id)}
+                  className="ml-3 p-1.5 text-[#BBB] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Delete"
+                >
+                  <TrashIcon className="size-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-[#CCC] py-2">No documents uploaded yet.</p>
         )}
       </div>
 

@@ -38,6 +38,14 @@ export interface PortalDocument {
   url?: string; // link to downloadable file
 }
 
+export interface FunnelDocument {
+  id: string;
+  name: string;
+  url: string;
+  size?: number;
+  uploaded_at: string;
+}
+
 export type ScopeItem = string | { description: string; type: string };
 
 export type TestStatus = "ideation" | "scheduled" | "live" | "complete";
@@ -279,6 +287,7 @@ export interface PortalData {
   ad_hoc_requests: AdHocRequest[];
   reports?: PortalReport[];
   miro_board_url?: string;
+  funnel_documents?: FunnelDocument[];
   blocker?: PortalBlocker | null;
   blocker_history?: BlockerHistory[];
   created_at: string;
