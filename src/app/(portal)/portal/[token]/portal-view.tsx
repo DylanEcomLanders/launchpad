@@ -998,7 +998,9 @@ function ClientHub({
         <div className="mb-8 pb-8 border-b border-[#F0F0F0]">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-[#CCC] mb-2">Next Touchpoint</p>
           <div className="flex items-center justify-between">
-            <p className="text-sm text-[#1A1A1A]">{touchpoint.description || "Scheduled call"}</p>
+            {currentPhase?.name ? (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-[#F3F3F5] text-[10px] font-semibold uppercase tracking-wider text-[#777]">{currentPhase.name}</span>
+            ) : <span />}
             <p className="text-sm font-medium text-[#1A1A1A]">{touchpointDate}</p>
           </div>
         </div>
@@ -1268,7 +1270,7 @@ function DashboardView({
               <p className="text-lg font-bold tracking-tight text-white mb-1">
                 {(() => {
                   const d = portal.next_touchpoint?.date;
-                  if (!d) return "\u2014";
+                  if (!d) return "Nothing scheduled";
                   if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
                     const dt = new Date(d + "T00:00:00");
                     return dt.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
@@ -1276,9 +1278,11 @@ function DashboardView({
                   return d;
                 })()}
               </p>
-              <p className="text-sm text-white/60 leading-relaxed">
-                {portal.next_touchpoint?.description || "No touchpoint scheduled"}
-              </p>
+              {portal.next_touchpoint?.date && currentPhase?.name && (
+                <span className="inline-flex items-center px-2 py-0.5 mt-2 rounded-md bg-white/10 text-[10px] font-semibold uppercase tracking-wider text-white/80">
+                  {currentPhase.name}
+                </span>
+              )}
               {portal.next_touchpoint?.date && (
                 <p className="text-[11px] text-white/40 mt-3">All times UK (GMT+1)</p>
               )}
@@ -1328,7 +1332,7 @@ function DashboardView({
               <p className="text-lg font-bold tracking-tight text-white mb-1">
                 {(() => {
                   const d = portal.next_touchpoint?.date;
-                  if (!d) return "\u2014";
+                  if (!d) return "Nothing scheduled";
                   if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
                     const dt = new Date(d + "T00:00:00");
                     return dt.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
@@ -1336,9 +1340,11 @@ function DashboardView({
                   return d;
                 })()}
               </p>
-              <p className="text-sm text-white/60 leading-relaxed">
-                {portal.next_touchpoint?.description || "No touchpoint scheduled"}
-              </p>
+              {portal.next_touchpoint?.date && currentPhase?.name && (
+                <span className="inline-flex items-center px-2 py-0.5 mt-2 rounded-md bg-white/10 text-[10px] font-semibold uppercase tracking-wider text-white/80">
+                  {currentPhase.name}
+                </span>
+              )}
               {portal.next_touchpoint?.date && (
                 <p className="text-[11px] text-white/40 mt-3">All times UK (GMT+1)</p>
               )}
