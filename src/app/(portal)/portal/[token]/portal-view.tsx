@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Logo } from "@/components/logo";
 import { IntelligemsClientCards } from "@/components/intelligems-tests";
@@ -27,6 +27,9 @@ import { InternalSection } from "@/components/internal-section";
 import { GateChecklistForm } from "@/components/gate-checklist-form";
 import { createReview, addVersion } from "@/lib/portal/reviews";
 import { RoadmapList } from "@/components/portal/roadmap-list";
+import { getRoadmapItems, groupByStage } from "@/lib/portal/roadmap";
+import type { RoadmapItem, RoadmapStage, AssetType } from "@/lib/portal/roadmap-types";
+import { ASSET_TYPE_LABELS } from "@/lib/portal/roadmap-types";
 import {
   GATE_CONFIG,
   CRO_BRIEF_ITEMS,
@@ -543,11 +546,17 @@ export function PortalView({
                 <UpdatesTab updates={updates} />
               </>
             )}
-            {activeTab === "scope" && (
+            {activeTab === "scope" && isRetainer && (
+              <>
+                <PageHeader title="Deliverables" subtitle="Every conversion asset we're shipping, live as it moves" />
+                <AssemblyLineKanban portalId={portal.id} />
+              </>
+            )}
+            {activeTab === "scope" && !isRetainer && (
               <>
                 <PageHeader title="Scope & Timeline" subtitle="Deliverables, documents, and project phases" />
                 <ScopeTab scope={[]} deliverables={activeDeliverables} documents={activeDocuments} />
-                {!isRetainer && activePhases.length > 0 && (
+                {activePhases.length > 0 && (
                   <div className="mt-8">
                     <h3 className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">Timeline</h3>
                     <TimelineTab phases={activePhases} blockerHistory={portal.blocker_history} />
@@ -942,6 +951,109 @@ function PageHeader({ title, subtitle }: { title: string; subtitle: string }) {
     <div className="mb-8">
       <h1 className="text-xl font-bold tracking-tight text-[#1A1A1A] mb-1">{title}</h1>
       <p className="text-sm text-[#AAA]">{subtitle}</p>
+    </div>
+  );
+}
+
+/* ── Assembly Line Kanban (retainer Deliverables) — read-only ── */
+function AssemblyLineKanban({ portalId }: { portalId: string }) {
+  const [items, setItems] = useState<RoadmapItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const data = await getRoadmapItems(portalId);
+      if (!cancelled) {
+        setItems(data);
+        setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [portalId]);
+
+  const grouped = useMemo(() => groupByStage(items), [items]);
+
+  const COLUMNS: { stage: RoadmapStage; label: string }[] = [
+    { stage: "backlog", label: "Scoped" },
+    { stage: "next-up", label: "Next Up" },
+    { stage: "in-progress", label: "In Progress" },
+    { stage: "shipped", label: "Live" },
+  ];
+
+  const assetTypePill: Record<AssetType, string> = {
+    test: "bg-[#EEF2FF] text-[#4F5BD5]",
+    page: "bg-[#ECFDF5] text-[#059669]",
+    upsell: "bg-[#FFF7ED] text-[#C2410C]",
+    other: "bg-[#F3F3F5] text-[#555]",
+  };
+
+  if (loading) {
+    return <p className="text-sm text-[#999]">Loading deliverables…</p>;
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="border border-dashed border-[#E8E8E8] rounded-xl p-10 text-center bg-[#FAFAFA]">
+        <p className="text-sm text-[#888]">Nothing in flight yet.</p>
+        <p className="text-[11px] text-[#BBB] mt-1">
+          Tests, pages and upsells we&apos;re working on will show up here as they move through the pipeline.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+      {COLUMNS.map(({ stage, label }) => {
+        const columnItems = grouped[stage] || [];
+        return (
+          <div key={stage} className="bg-[#FAFAFA] border border-[#F0F0F0] rounded-xl p-3 min-h-[200px]">
+            <div className="flex items-center justify-between mb-3 px-1">
+              <h3 className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#888]">{label}</h3>
+              <span className="text-[10px] text-[#BBB]">{columnItems.length}</span>
+            </div>
+            <div className="space-y-2">
+              {columnItems.length === 0 ? (
+                <p className="text-[11px] text-[#CCC] px-1 py-2 italic">Empty</p>
+              ) : (
+                columnItems.map((item) => {
+                  const type = (item.asset_type || "other") as AssetType;
+                  return (
+                    <div
+                      key={item.id}
+                      className="bg-white border border-[#E8E8E8] rounded-lg p-3 hover:border-[#C5C5C5] transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                        <span
+                          className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wider ${assetTypePill[type]}`}
+                        >
+                          {ASSET_TYPE_LABELS[type]}
+                        </span>
+                        {item.shipped_at && (
+                          <span className="text-[10px] text-emerald-600 font-medium shrink-0">
+                            {new Date(item.shipped_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm font-semibold text-[#1A1A1A] leading-snug">{item.title}</p>
+                      {item.outcome && (
+                        <p className="text-[11px] text-emerald-600 font-semibold mt-1.5">{item.outcome}</p>
+                      )}
+                      {!item.outcome && item.impact_hypothesis && (
+                        <p className="text-[11px] text-[#888] italic mt-1.5 line-clamp-2">{item.impact_hypothesis}</p>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

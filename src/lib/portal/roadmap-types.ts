@@ -7,6 +7,15 @@ export type RoadmapStage = "backlog" | "next-up" | "in-progress" | "shipped";
 
 export type RoadmapPriority = "high" | "medium" | "low";
 
+export type AssetType = "test" | "page" | "upsell" | "other";
+
+export const ASSET_TYPE_LABELS: Record<AssetType, string> = {
+  test: "Test",
+  page: "Page",
+  upsell: "Upsell",
+  other: "Other",
+};
+
 export interface RoadmapItem {
   id: string;
   portal_id: string;
@@ -17,6 +26,7 @@ export interface RoadmapItem {
 
   stage: RoadmapStage;
   priority: RoadmapPriority;
+  asset_type?: AssetType;
 
   // Target month (YYYY-MM) — lets the visual roadmap place items across 60-90 days.
   target_month: string;

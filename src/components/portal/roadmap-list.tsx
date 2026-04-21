@@ -18,10 +18,12 @@ import {
   updateRoadmapItem,
 } from "@/lib/portal/roadmap";
 import type {
+  AssetType,
   RoadmapItem,
   RoadmapPriority,
   RoadmapStage,
 } from "@/lib/portal/roadmap-types";
+import { ASSET_TYPE_LABELS } from "@/lib/portal/roadmap-types";
 import { inputClass, labelClass, selectClass, textareaClass } from "@/lib/form-styles";
 
 type Props = {
@@ -295,6 +297,7 @@ function RoadmapForm({
   const [impactHypothesis, setImpactHypothesis] = useState(initial?.impact_hypothesis ?? "");
   const [stage, setStage] = useState<RoadmapStage>(initial?.stage ?? "backlog");
   const [priority, setPriority] = useState<RoadmapPriority>(initial?.priority ?? "medium");
+  const [assetType, setAssetType] = useState<AssetType>(initial?.asset_type ?? "test");
   const [targetMonth, setTargetMonth] = useState(initial?.target_month ?? "");
   const [figmaUrl, setFigmaUrl] = useState(initial?.figma_url ?? "");
   const [stagingUrl, setStagingUrl] = useState(initial?.staging_url ?? "");
@@ -311,6 +314,7 @@ function RoadmapForm({
       impact_hypothesis: impactHypothesis.trim(),
       stage,
       priority,
+      asset_type: assetType,
       target_month: targetMonth,
       sort_index: initial?.sort_index ?? 0,
       figma_url: figmaUrl.trim(),
@@ -354,7 +358,15 @@ function RoadmapForm({
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-4 gap-3">
+        <div>
+          <label className={labelClass}>Type</label>
+          <select className={selectClass} value={assetType} onChange={(e) => setAssetType(e.target.value as AssetType)}>
+            {(Object.keys(ASSET_TYPE_LABELS) as AssetType[]).map((t) => (
+              <option key={t} value={t}>{ASSET_TYPE_LABELS[t]}</option>
+            ))}
+          </select>
+        </div>
         <div>
           <label className={labelClass}>Stage</label>
           <select className={selectClass} value={stage} onChange={(e) => setStage(e.target.value as RoadmapStage)}>
