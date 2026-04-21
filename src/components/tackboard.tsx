@@ -32,6 +32,8 @@ export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
   const [draftContent, setDraftContent] = useState("");
   const boardRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{ id: string; offsetX: number; offsetY: number } | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [newlyCreatedId, setNewlyCreatedId] = useState<string | null>(null);
 
   // Load author + notes
   useEffect(() => {
@@ -69,6 +71,8 @@ export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
       setNotes((n) => [...n, created]);
       setEditingId(created.id);
       setDraftContent("");
+      setNewlyCreatedId(created.id);
+      setTimeout(() => setNewlyCreatedId((cur) => (cur === created.id ? null : cur)), 650);
     }
     void rect;
   }, [author]);
@@ -97,6 +101,7 @@ export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
       offsetX: e.clientX - rect.left,
       offsetY: e.clientY - rect.top,
     };
+    setDraggingId(note.id);
     e.preventDefault();
   };
 
@@ -114,6 +119,7 @@ export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
       if (!dragRef.current) return;
       const id = dragRef.current.id;
       dragRef.current = null;
+      setDraggingId(null);
       // Persist final position
       setNotes((prev) => {
         const note = prev.find((n) => n.id === id);
@@ -201,15 +207,29 @@ export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
                   setEditingId(note.id);
                   setDraftContent(note.content);
                 }}
-                className={`absolute w-52 min-h-[150px] p-4 shadow-[0_8px_20px_rgba(0,0,0,0.4)] ${COLOR_CLASSES[note.color]} ${isEditing ? "cursor-text" : "cursor-grab active:cursor-grabbing"} group transition-shadow hover:shadow-[0_12px_28px_rgba(0,0,0,0.55)]`}
+                className={`tack-sticky absolute w-52 min-h-[150px] p-4 ${COLOR_CLASSES[note.color]} ${
+                  isEditing ? "cursor-text" : "cursor-grab active:cursor-grabbing"
+                } ${draggingId === note.id ? "tack-dragging" : ""} ${
+                  newlyCreatedId === note.id ? "tack-popin" : ""
+                } group`}
                 style={{
                   left: `${note.x}%`,
                   top: `${note.y}%`,
-                  transform: `rotate(${note.rotation}deg)`,
+                  ["--tack-rot" as string]: `${note.rotation}deg`,
                 }}
               >
+                {/* Paper sheen */}
+                <div
+                  aria-hidden
+                  className="absolute inset-0 pointer-events-none opacity-60"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 35%, rgba(0,0,0,0.04) 80%, rgba(0,0,0,0.08) 100%)",
+                  }}
+                />
+
                 {/* Pin */}
-                <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 size-3 rounded-full bg-[#D33] shadow-[0_1px_2px_rgba(0,0,0,0.5)] ring-1 ring-black/20" />
+                <div className="absolute -top-2 left-1/2 -translate-x-1/2 size-3.5 rounded-full bg-gradient-to-br from-[#FF5A5A] to-[#B01F1F] shadow-[0_2px_4px_rgba(0,0,0,0.55),inset_0_1px_1px_rgba(255,255,255,0.5)] ring-1 ring-black/30" />
 
                 {/* Delete button */}
                 <button
@@ -301,6 +321,60 @@ export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
           </div>
         </div>
       )}
+
+      <style>{`
+        .tack-sticky {
+          transform: rotate(var(--tack-rot));
+          transform-origin: 50% 0%;
+          will-change: transform, box-shadow;
+          transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+                      box-shadow 0.28s ease;
+          box-shadow:
+            0 1px 1px rgba(0,0,0,0.18),
+            0 10px 18px rgba(0,0,0,0.42),
+            0 22px 38px rgba(0,0,0,0.22);
+        }
+        .tack-sticky::after {
+          content: "";
+          position: absolute;
+          left: 4%;
+          right: 4%;
+          bottom: -3px;
+          height: 10px;
+          background: radial-gradient(ellipse at center, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0) 70%);
+          filter: blur(4px);
+          z-index: -1;
+          opacity: 0.8;
+          pointer-events: none;
+        }
+        .tack-sticky:hover {
+          transform: rotate(var(--tack-rot)) translateY(-5px) scale(1.035);
+          box-shadow:
+            0 2px 2px rgba(0,0,0,0.18),
+            0 18px 26px rgba(0,0,0,0.48),
+            0 32px 60px rgba(0,0,0,0.28);
+          z-index: 10;
+        }
+        .tack-dragging,
+        .tack-sticky.tack-dragging:hover {
+          transform: rotate(var(--tack-rot)) scale(1.08) !important;
+          box-shadow:
+            0 4px 4px rgba(0,0,0,0.22),
+            0 30px 50px rgba(0,0,0,0.6),
+            0 54px 90px rgba(0,0,0,0.35) !important;
+          z-index: 20;
+          transition: none !important;
+          cursor: grabbing;
+        }
+        .tack-popin {
+          animation: tack-pop-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes tack-pop-in {
+          0%   { transform: rotate(var(--tack-rot)) scale(0.3);  opacity: 0; }
+          60%  { transform: rotate(var(--tack-rot)) scale(1.08); opacity: 1; }
+          100% { transform: rotate(var(--tack-rot)) scale(1);    opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }
