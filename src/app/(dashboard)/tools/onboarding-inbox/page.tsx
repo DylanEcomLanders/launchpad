@@ -338,14 +338,63 @@ export default function OnboardingInboxPage() {
                 const handleCreateNewPortal = async () => {
                   setSaving(true);
                   try {
+                    // Pull as much as we can from the onboarding submission so the portal isn't bare on Day 1.
+                    const pageType = selected.page_type?.trim() || "";
+                    const projectName = pageType ? `${pageType}` : "New Project";
+
+                    // Seed a single project sized to the onboarding's page_type.
+                    const project = {
+                      id: `proj-${Date.now()}`,
+                      name: projectName,
+                      type: "page-build" as const,
+                      status: "active" as const,
+                      created_at: new Date().toISOString(),
+                      phases: [
+                        { id: "ph-onb", name: "Onboarding", status: "complete" as const, date: "", description: "" },
+                        { id: "ph-des", name: "Design", status: "in-progress" as const, date: "", description: "" },
+                        { id: "ph-dev", name: "Development", status: "upcoming" as const, date: "", description: "" },
+                        { id: "ph-qa", name: "QA & Launch", status: "upcoming" as const, date: "", description: "" },
+                      ],
+                      deliverables: pageType
+                        ? [{ id: "del-1", type: pageType.toLowerCase().includes("pdp") ? "pdp" : "landing-page", title: `1x ${pageType}`, status: "in-progress" as const }]
+                        : [],
+                      scope: [],
+                      documents: (selected.uploaded_files || []).map((f, i) => ({
+                        id: `doc-${i}`,
+                        title: f.originalName,
+                        url: f.url,
+                        type: "brief" as const,
+                      })),
+                    };
+
+                    // Seed a context entry with the onboarding brief so the team has it in the portal, not just in ClickUp.
+                    const briefText = [
+                      selected.brief_description && `Brief: ${selected.brief_description}`,
+                      selected.primary_goal && `Primary goal: ${selected.primary_goal}`,
+                      selected.target_customer && `Target customer: ${selected.target_customer}`,
+                      selected.usps && `USPs: ${selected.usps}`,
+                      selected.timeline_expectations && `Timeline: ${selected.timeline_expectations}`,
+                    ].filter(Boolean).join("\n\n");
+
+                    const contextEntries = briefText
+                      ? [{
+                          id: `ctx-${Date.now()}`,
+                          source: "Onboarding Form",
+                          date: new Date().toISOString().slice(0, 10),
+                          content: briefText,
+                          created_at: new Date().toISOString(),
+                        }]
+                      : [];
+
                     const portal = await createPortal({
                       client_name: selected.company_name,
                       client_email: "",
                       client_type: "regular",
-                      project_type: "",
-                      current_phase: "Onboarding",
+                      project_type: pageType,
+                      current_phase: "Design",
                       progress: 0,
-                      next_touchpoint: { date: new Date().toISOString().slice(0, 10), description: "Complete project setup" },
+                      // next_touchpoint deliberately left blank — createPortal auto-fills with next Mon/Wed/Fri
+                      next_touchpoint: { date: "", description: "" },
                       phases: [],
                       scope: [],
                       deliverables: [],
@@ -355,8 +404,9 @@ export default function OnboardingInboxPage() {
                       show_results: false,
                       slack_channel_url: "",
                       ad_hoc_requests: [],
-                      projects: [],
-                    });
+                      context_entries: contextEntries,
+                      projects: [project],
+                    } as any);
 
                     await updateSubmission(selected.id, {
                       status: "approved",

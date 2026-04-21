@@ -1263,7 +1263,7 @@ function DashboardView({
                   if (!d) return "\u2014";
                   if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
                     const dt = new Date(d + "T00:00:00");
-                    return dt.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+                    return dt.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
                   }
                   return d;
                 })()}
@@ -1271,6 +1271,9 @@ function DashboardView({
               <p className="text-sm text-white/60 leading-relaxed">
                 {portal.next_touchpoint?.description || "No touchpoint scheduled"}
               </p>
+              {portal.next_touchpoint?.date && (
+                <p className="text-[11px] text-white/40 mt-3">All times UK (GMT+1)</p>
+              )}
             </div>
           </div>
 
@@ -1320,7 +1323,7 @@ function DashboardView({
                   if (!d) return "\u2014";
                   if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
                     const dt = new Date(d + "T00:00:00");
-                    return dt.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+                    return dt.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
                   }
                   return d;
                 })()}
@@ -1328,6 +1331,9 @@ function DashboardView({
               <p className="text-sm text-white/60 leading-relaxed">
                 {portal.next_touchpoint?.description || "No touchpoint scheduled"}
               </p>
+              {portal.next_touchpoint?.date && (
+                <p className="text-[11px] text-white/40 mt-3">All times UK (GMT+1)</p>
+              )}
             </div>
           </div>
 

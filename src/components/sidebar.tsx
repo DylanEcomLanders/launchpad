@@ -89,15 +89,6 @@ const deliveryItems = [
   { label: "Mission Control", href: "/", icon: <HomeIcon className="size-4" /> },
   { label: "Onboarding", href: "/tools/onboarding-inbox", icon: <InboxStackIcon className="size-4" /> },
   { label: "Portals", href: "/tools/client-portal", icon: <FolderIcon className="size-4" /> },
-  {
-    label: "Tickets",
-    href: "/tools/tickets",
-    icon: (
-      <svg className="size-4" viewBox="0 0 20 20" fill="currentColor">
-        <path fillRule="evenodd" d="M5.5 3A2.5 2.5 0 003 5.5v2.879a2.5 2.5 0 00.732 1.767l6.5 6.5a2.5 2.5 0 003.536 0l2.878-2.878a2.5 2.5 0 000-3.536l-6.5-6.5A2.5 2.5 0 008.38 3H5.5zM6 7a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-      </svg>
-    ),
-  },
   { label: "Task Board", href: "/tools/task-board", icon: <ClockIcon className="size-4" /> },
 ];
 

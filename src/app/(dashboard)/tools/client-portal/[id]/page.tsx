@@ -3231,26 +3231,6 @@ function TestingSection({
   // ── Retainer Testing View (monthly shell with weekly slots) ──
   return (
     <div className="space-y-6">
-      {/* Testing Tier */}
-      <div className="bg-white border border-[#E8E8E8] rounded-lg p-4">
-        <p className="text-xs font-semibold text-[#1A1A1A] mb-3">Testing Tier</p>
-        <div className="flex items-center gap-1.5">
-          {(["T1", "T2", "T3"] as const).map((tier) => (
-            <button
-              key={tier}
-              onClick={() => onUpdateField("testing_tier", portal.testing_tier === tier ? "" : tier)}
-              className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors ${
-                portal.testing_tier === tier
-                  ? "bg-[#1B1B1B] text-white"
-                  : "bg-[#F3F3F5] text-[#7A7A7A] hover:bg-[#E5E5EA]"
-              }`}
-            >
-              {tier} <span className="text-[10px] opacity-60 ml-1">{tierLabels[tier]}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Tests Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-semibold text-[#1A1A1A]">

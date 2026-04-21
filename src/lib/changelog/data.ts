@@ -37,6 +37,20 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-37",
+    date: "21 Apr 2026",
+    version: "0.31.0",
+    title: "Portal Cleanup — Tier Dropped, Auto-Fill from Onboarding",
+    changes: [
+      { type: "removed", text: "Testing Lab + Tickets tabs removed from /tools/client-portal — not being used, cluttered the nav. Ticket type panels on the overview dashboard + Open Tickets summary pill also removed (the underlying /tools/tickets page still exists if you need it)" },
+      { type: "removed", text: "Tickets removed from the main app sidebar (Delivery group)" },
+      { type: "removed", text: "Retainer tier (T1 / T2 / T3) dropped across the admin cockpit — tier picker gone from the retainer testing view, tier badge + health / expected-by-now math removed from the retainer card grid, tier selector removed from the New Portal form. Tier field stays in the DB so historic data isn't lost" },
+      { type: "improved", text: "New portals auto-compute the next touchpoint on creation — uses the team's Mon/Wed/Fri default from settings (getNextTouchpointDate). Brand new portals no longer open with an empty 'No touchpoint scheduled' panel" },
+      { type: "improved", text: "Client touchpoint card now shows the weekday (Mon 21 Apr) and labels the time as UK (GMT+1) so US/overseas clients don't have to guess the timezone" },
+      { type: "improved", text: "Creating a portal from an Onboarding Inbox submission now auto-populates the portal instead of dropping an empty shell — seeds a project with 4 phases (Onboarding \u2713 / Design / Dev / Launch), maps page_type to a deliverable, attaches uploaded brief files as documents, and writes a context entry with the brief, primary goal, target customer, USPs, and timeline pulled from the onboarding form" },
+    ],
+  },
+  {
     id: "cl-36",
     date: "20 Apr 2026",
     version: "0.30.0",

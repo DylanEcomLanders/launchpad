@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { getNextTouchpointDate } from "@/lib/settings";
 import type {
   PortalData,
   PortalInsert,
@@ -304,7 +305,11 @@ export async function createPortal(input: PortalInsert): Promise<PortalData> {
     project_type: input.project_type || "",
     current_phase: input.current_phase || "",
     progress: input.progress || 0,
-    next_touchpoint: input.next_touchpoint || {},
+    // Auto-default to the next touchpoint (Mon/Wed/Fri by default) when not provided.
+    // Lets brand-new portals show something useful instead of "No touchpoint scheduled".
+    next_touchpoint: (input.next_touchpoint && input.next_touchpoint.date)
+      ? input.next_touchpoint
+      : { date: getNextTouchpointDate() || "", description: input.next_touchpoint?.description || "Kick-off" },
     phases: input.phases || [],
     scope: input.scope || [],
     deliverables: input.deliverables || [],

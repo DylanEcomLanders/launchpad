@@ -70,7 +70,6 @@ export default function ClientPortalPage() {
   const [clientEmail, setClientEmail] = useState("");
   const [clientType, setClientType] = useState<"retainer" | "regular" | null>(null);
   const [projectType, setProjectType] = useState("Full Page Build");
-  const [testingTier, setTestingTier] = useState<"T1" | "T2" | "T3">("T1");
   const [igKey, setIgKey] = useState("");
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [overdueCount, setOverdueCount] = useState(0);
@@ -79,7 +78,7 @@ export default function ClientPortalPage() {
   const [igTests, setIgTests] = useState<IntelligemsTest[]>([]);
   const [igLoading, setIgLoading] = useState(false);
   const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [activeTab, setActiveTab] = useState<"overview" | "testing" | "tickets" | "clients" | "retainers">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "clients" | "retainers">("overview");
   const [activeChart, setActiveChart] = useState(0);
 
   const loadPortals = useCallback(async () => {
@@ -124,7 +123,7 @@ export default function ClientPortalPage() {
       deliverables: [] as any[],
       current_phase: "",
       progress: 0,
-      testing_tier: isRetainer ? testingTier : undefined,
+      testing_tier: undefined,
       scope: [] as any[],
       documents: [] as any[],
     };
@@ -141,7 +140,7 @@ export default function ClientPortalPage() {
       deliverables: [],
       documents: [],
       results: [],
-      testing_tier: isRetainer ? testingTier : undefined,
+      testing_tier: undefined,
       intelligems_key: isRetainer ? igKey.trim() || undefined : undefined,
       wins: [],
       show_results: isRetainer,
@@ -153,7 +152,6 @@ export default function ClientPortalPage() {
     setClientEmail("");
     setClientType(null);
     setProjectType("Full Page Build");
-    setTestingTier("T1");
     setIgKey("");
     setShowForm(false);
     loadPortals();
@@ -251,8 +249,6 @@ export default function ClientPortalPage() {
     { key: "overview" as const, label: "Overview" },
     { key: "clients" as const, label: "Client Portals" },
     { key: "retainers" as const, label: "Retainer Portals" },
-    { key: "testing" as const, label: "Testing Lab" },
-    { key: "tickets" as const, label: `Tickets${openTickets.length > 0 ? ` (${openTickets.length})` : ""}` },
   ];
 
   return (
@@ -363,7 +359,6 @@ export default function ClientPortalPage() {
         const summaryData = [
           { label: "Active Clients", value: portals.length, color: "#1A1A1A" },
           { label: "Live Tests", value: liveTests.length, color: "#10B981" },
-          { label: "Open Tickets", value: openTickets.length, color: openTickets.length > 0 ? "#F59E0B" : "#1A1A1A" },
           { label: "Test Winners", value: winners.length, suffix: `/ ${completedTests.length}`, color: "#10B981" },
         ];
 
@@ -373,29 +368,8 @@ export default function ClientPortalPage() {
           .map((p) => ({ client: p.client_name, portalId: p.id, date: p.next_touchpoint!.date, description: p.next_touchpoint!.description || "", daysAway: Math.ceil((new Date(p.next_touchpoint!.date + "T00:00:00").getTime() - Date.now()) / 86400000) }))
           .sort((a, b) => a.daysAway - b.daysAway);
 
-        const designTickets = openTickets.filter(t => t.ticket_type === "design");
-        const devTickets = openTickets.filter(t => t.ticket_type === "dev");
-
         return (
           <div className="space-y-6">
-            {/* ── Ticket Type Panels ── */}
-            <div className="grid grid-cols-2 gap-3">
-              <button onClick={() => setActiveTab("tickets")} className="flex items-center justify-between px-4 py-3 border border-[#E5E5EA] rounded-xl bg-white hover:border-[#C5C5C5] transition-colors">
-                <div className="flex items-center gap-2.5">
-                  <div className="size-2 rounded-full bg-purple-500" />
-                  <span className="text-xs font-medium text-[#1A1A1A]">Design Tickets</span>
-                </div>
-                <span className="text-lg font-bold tabular-nums text-[#1A1A1A]">{designTickets.length}</span>
-              </button>
-              <button onClick={() => setActiveTab("tickets")} className="flex items-center justify-between px-4 py-3 border border-[#E5E5EA] rounded-xl bg-white hover:border-[#C5C5C5] transition-colors">
-                <div className="flex items-center gap-2.5">
-                  <div className="size-2 rounded-full bg-blue-500" />
-                  <span className="text-xs font-medium text-[#1A1A1A]">Dev Tickets</span>
-                </div>
-                <span className="text-lg font-bold tabular-nums text-[#1A1A1A]">{devTickets.length}</span>
-              </button>
-            </div>
-
             {/* ── Blocked Clients ── */}
             <div>
               {blockedPortals.length > 0 ? (
@@ -514,222 +488,6 @@ export default function ClientPortalPage() {
         );
       })()}
 
-      {/* ═══════ TESTING TAB ═══════ */}
-      {!showTrash && activeTab === "testing" && (
-        <>
-          {igLoading && (
-            <div className="flex items-center gap-2 mb-6 text-xs text-[#AAA]">
-              <div className="animate-spin size-3 border border-[#E5E5EA] border-t-[#777] rounded-full" />
-              Loading test data from Intelligems...
-            </div>
-          )}
-
-          {igTests.length === 0 && !igLoading && (
-            <div className="border border-dashed border-[#E5E5EA] rounded-xl p-12 text-center">
-              <BeakerIcon className="size-6 text-[#DDD] mx-auto mb-2" />
-              <p className="text-sm text-[#7A7A7A]">No test data</p>
-              <p className="text-xs text-[#AAA] mt-1">Add an Intelligems API key to a portal to see tests here</p>
-            </div>
-          )}
-
-          {igTests.length > 0 && (() => {
-            const liveTests = igTests.filter((t) => t.status === "started");
-            const completedTests = igTests.filter((t) => t.status === "ended");
-
-            const getRpvLift = (t: IntelligemsTest) => {
-              const a = t.variations[0];
-              const b = t.variations[1];
-              if (!a || !b || a.rpv === 0) return null;
-              return ((b.rpv - a.rpv) / a.rpv) * 100;
-            };
-
-            const winners = completedTests.filter((t) => { const l = getRpvLift(t); return l !== null && l > 5; });
-            const losers = completedTests.filter((t) => { const l = getRpvLift(t); return l !== null && l < -5; });
-
-            const fmtVisitors = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}K` : String(n);
-
-            return (
-              <div className="space-y-8">
-
-                {/* ── Live Tests ── */}
-                {liveTests.length > 0 && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <h3 className="text-sm font-semibold text-[#1A1A1A]">Live ({liveTests.length})</h3>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {liveTests.map((t) => {
-                        const a = t.variations[0];
-                        const b = t.variations[1];
-                        const rpvLift = getRpvLift(t);
-                        const totalVisitors = (a?.visitors || 0) + (b?.visitors || 0);
-                        const needsAttention = totalVisitors > 500 && rpvLift !== null && rpvLift < -10;
-
-                        return (
-                          <Link
-                            key={t.id}
-                            href={`/tools/client-portal/${t.portalId}`}
-                            className={`border rounded-xl bg-white p-5 hover:shadow-sm transition-all ${needsAttention ? "border-red-200" : "border-[#E5E5EA]"}`}
-                          >
-                            <div className="flex items-start justify-between mb-4">
-                              <div className="min-w-0 mr-3">
-                                <p className="text-sm font-semibold text-[#1A1A1A] truncate">{t.name}</p>
-                                <p className="text-[11px] text-[#999] mt-0.5">{t.portalName} · {fmtVisitors(totalVisitors)} visitors</p>
-                              </div>
-                              {rpvLift !== null ? (
-                                <span className={`shrink-0 text-lg font-bold tabular-nums ${rpvLift > 0 ? "text-emerald-600" : rpvLift < -5 ? "text-red-500" : "text-[#AAA]"}`}>
-                                  {rpvLift >= 0 ? "+" : ""}{rpvLift.toFixed(1)}%
-                                </span>
-                              ) : (
-                                <span className="text-sm text-[#DDD]">—</span>
-                              )}
-                            </div>
-                            <div className="grid grid-cols-3 gap-4">
-                              <div>
-                                <p className="text-[10px] font-medium uppercase tracking-wider text-[#BBB] mb-1">CVR</p>
-                                <p className="text-xs tabular-nums text-[#555]">{a ? `${(Number(a.cvr || 0) * 100).toFixed(1)}%` : "—"}</p>
-                                <p className="text-xs tabular-nums text-[#1A1A1A] font-medium">{b ? `${(Number(b.cvr || 0) * 100).toFixed(1)}%` : "—"}</p>
-                              </div>
-                              <div>
-                                <p className="text-[10px] font-medium uppercase tracking-wider text-[#BBB] mb-1">AOV</p>
-                                <p className="text-xs tabular-nums text-[#555]">${Number(a?.aov || 0).toFixed(0)}</p>
-                                <p className="text-xs tabular-nums text-[#1A1A1A] font-medium">${Number(b?.aov || 0).toFixed(0)}</p>
-                              </div>
-                              <div>
-                                <p className="text-[10px] font-medium uppercase tracking-wider text-[#BBB] mb-1">RPV</p>
-                                <p className="text-xs tabular-nums text-[#555]">${Number(a?.rpv || 0).toFixed(2)}</p>
-                                <p className="text-xs tabular-nums text-[#1A1A1A] font-medium">${Number(b?.rpv || 0).toFixed(2)}</p>
-                              </div>
-                            </div>
-                            {needsAttention && (
-                              <div className="mt-3 flex items-center gap-1.5 text-[10px] font-medium text-red-500">
-                                <span className="size-1.5 rounded-full bg-red-500" />
-                                Needs attention — underperforming with {fmtVisitors(totalVisitors)} visitors
-                              </div>
-                            )}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* ── Results Summary ── */}
-                {completedTests.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-semibold text-[#1A1A1A] mb-4">Results</h3>
-                    <div className="grid grid-cols-3 gap-4 mb-6">
-                      <div className="border border-emerald-200 rounded-xl p-5 bg-emerald-50/20">
-                        <p className="text-3xl font-bold tabular-nums text-emerald-600">{winners.length}</p>
-                        <p className="text-xs text-emerald-600/70 mt-1">Winners</p>
-                      </div>
-                      <div className="border border-red-200 rounded-xl p-5 bg-red-50/20">
-                        <p className="text-3xl font-bold tabular-nums text-red-500">{losers.length}</p>
-                        <p className="text-xs text-red-400 mt-1">Underperformed</p>
-                      </div>
-                      <div className="border border-[#E5E5EA] rounded-xl p-5">
-                        <p className="text-3xl font-bold tabular-nums text-[#1A1A1A]">{completedTests.length - winners.length - losers.length}</p>
-                        <p className="text-xs text-[#AAA] mt-1">Inconclusive</p>
-                      </div>
-                    </div>
-
-                    {/* Winner cards */}
-                    {winners.length > 0 && (
-                      <div className="mb-6">
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 mb-3">Winners</p>
-                        <div className="space-y-2">
-                          {winners.map((t) => {
-                            const lift = getRpvLift(t)!;
-                            const totalVisitors = (t.variations[0]?.visitors || 0) + (t.variations[1]?.visitors || 0);
-                            return (
-                              <Link key={t.id} href={`/tools/client-portal/${t.portalId}`} className="flex items-center justify-between border border-[#E5E5EA] rounded-lg px-4 py-3 bg-white hover:bg-[#FAFAFA] transition-colors">
-                                <div className="flex items-center gap-3 min-w-0">
-                                  <span className="text-xs font-medium text-[#1A1A1A] truncate">{t.name}</span>
-                                  <span className="text-[10px] text-[#BBB] shrink-0">{t.portalName}</span>
-                                </div>
-                                <div className="flex items-center gap-4 shrink-0">
-                                  <span className="text-[11px] tabular-nums text-[#999]">{fmtVisitors(totalVisitors)}</span>
-                                  <span className="text-sm font-bold tabular-nums text-emerald-600">+{lift.toFixed(1)}%</span>
-                                </div>
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Underperformed cards */}
-                    {losers.length > 0 && (
-                      <div className="mb-6">
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-red-500 mb-3">Underperformed</p>
-                        <div className="space-y-2">
-                          {losers.map((t) => {
-                            const lift = getRpvLift(t)!;
-                            const totalVisitors = (t.variations[0]?.visitors || 0) + (t.variations[1]?.visitors || 0);
-                            return (
-                              <Link key={t.id} href={`/tools/client-portal/${t.portalId}`} className="flex items-center justify-between border border-[#E5E5EA] rounded-lg px-4 py-3 bg-white hover:bg-[#FAFAFA] transition-colors">
-                                <div className="flex items-center gap-3 min-w-0">
-                                  <span className="text-xs font-medium text-[#1A1A1A] truncate">{t.name}</span>
-                                  <span className="text-[10px] text-[#BBB] shrink-0">{t.portalName}</span>
-                                </div>
-                                <div className="flex items-center gap-4 shrink-0">
-                                  <span className="text-[11px] tabular-nums text-[#999]">{fmtVisitors(totalVisitors)}</span>
-                                  <span className="text-sm font-bold tabular-nums text-red-500">{lift.toFixed(1)}%</span>
-                                </div>
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })()}
-        </>
-      )}
-
-      {/* ═══════ TICKETS TAB ═══════ */}
-      {!showTrash && activeTab === "tickets" && (
-        <div className="space-y-4">
-          {tickets.filter(t => !t.deleted_at).length === 0 ? (
-            <div className="border border-dashed border-[#E5E5EA] rounded-xl p-12 text-center">
-              <p className="text-sm text-[#7A7A7A]">No tickets yet</p>
-              <p className="text-xs text-[#AAA] mt-1">Tickets appear when clients use /ticket in Slack</p>
-            </div>
-          ) : (
-            <div className="border border-[#E5E5EA] rounded-xl bg-white overflow-hidden">
-              <div className="grid grid-cols-[1fr_100px_80px_80px_60px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA]">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Title</span>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Client</span>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Type</span>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Priority</span>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Age</span>
-              </div>
-              {tickets.filter(t => !t.deleted_at).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((t) => {
-                const age = Math.max(0, Math.floor((Date.now() - new Date(t.created_at).getTime()) / 3600000));
-                const ageStr = age >= 24 ? `${Math.floor(age / 24)}d` : `${age}h`;
-                return (
-                  <Link key={t.id} href="/tools/tickets" className="grid grid-cols-[1fr_100px_80px_80px_60px] gap-2 px-4 py-2.5 border-b border-[#F0F0F0] last:border-0 hover:bg-[#FAFAFA] transition-colors items-center">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className={`size-1.5 rounded-full shrink-0 ${t.status === "resolved" ? "bg-emerald-400" : t.status === "in_progress" ? "bg-blue-400" : "bg-[#CCC]"}`} />
-                      <span className="text-xs font-medium text-[#1A1A1A] truncate">{t.title}</span>
-                    </div>
-                    <span className="text-[10px] text-[#777] truncate">{t.client_name}</span>
-                    <span className={`text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded w-fit ${
-                      t.ticket_type === "design" ? "bg-purple-50 text-purple-600" : t.ticket_type === "dev" ? "bg-blue-50 text-blue-600" : "bg-[#F3F3F5] text-[#AAA]"
-                    }`}>{t.ticket_type || "—"}</span>
-                    <span className={`text-[10px] font-medium ${t.priority === "urgent" ? "text-red-500" : t.priority === "high" ? "text-amber-600" : "text-[#999]"}`}>{t.priority}</span>
-                    <span className="text-[10px] text-[#CCC]">{ageStr}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
 
       {/* ═══════ DELIVERY TAB ═══════ */}
       {/* ═══════ RETAINERS TAB ═══════ */}
@@ -761,25 +519,11 @@ export default function ClientPortalPage() {
             {retainerPortals.length > 0 ? (
               <div className="space-y-3">
                 {retainerPortals.map((p) => {
-                  const tier = p.testing_tier || "T1";
-                  const testsPerWeek = tier === "T1" ? 1 : tier === "T2" ? 2 : 4;
-                  const testsPerMonth = testsPerWeek * 4;
-
                   // Count tests by status (all active non-deleted)
                   const allTests = (p.results || []).filter((r: any) => !r.deleted_at);
                   const deliveredCount = allTests.filter(r => r.status === "live" || r.status === "complete").length;
                   const scheduledCount = allTests.filter(r => r.status === "scheduled").length;
                   const ideationCount = allTests.filter(r => r.status === "ideation").length;
-                  const totalFilled = deliveredCount + scheduledCount + ideationCount;
-
-                  // Health: based on delivered vs expected
-                  const expectedByNow = Math.floor(testsPerMonth * (dayOfMonth / daysInMonth));
-                  const health = deliveredCount >= expectedByNow ? "on-track" : deliveredCount >= expectedByNow - 1 ? "warning" : "behind";
-                  const healthColors = { "on-track": "text-emerald-600 bg-emerald-50", "warning": "text-amber-600 bg-amber-50", "behind": "text-red-600 bg-red-50" };
-                  const healthLabels = { "on-track": "On Track", "warning": "Slightly Behind", "behind": "Behind" };
-
-                  // Open tickets
-                  const clientTickets = tickets.filter(t => t.channel_id === p.slack_channel_url && t.status !== "resolved" && !t.deleted_at);
 
                   // Last touchpoint
                   const lastUpdate = p.updated_at ? new Date(p.updated_at) : null;
@@ -789,40 +533,23 @@ export default function ClientPortalPage() {
                     <Link
                       key={p.id}
                       href={`/tools/client-portal/${p.id}`}
-                      className={`block border rounded-xl bg-white p-5 hover:shadow-sm transition-all ${
-                        health === "behind" ? "border-red-200" : health === "warning" ? "border-amber-200" : "border-[#E5E5EA]"
-                      }`}
+                      className="block border border-[#E5E5EA] rounded-xl bg-white p-5 hover:shadow-sm transition-all"
                     >
                       {/* Header */}
                       <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <h4 className="text-sm font-semibold text-[#1A1A1A]">{p.client_name}</h4>
-                          <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600">{tier}</span>
-                          <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${healthColors[health]}`}>
-                            {healthLabels[health]}
-                          </span>
-                        </div>
-                        <span className="text-xs text-[#999]">{testsPerWeek}/week · {testsPerMonth}/month</span>
+                        <h4 className="text-sm font-semibold text-[#1A1A1A]">{p.client_name}</h4>
                       </div>
 
-                      {/* Test Delivery Progress */}
+                      {/* Test Pipeline */}
                       <div className="mb-4">
                         <div className="flex items-center justify-between mb-1.5">
                           <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Pipeline</span>
-                          <span className="text-xs font-semibold text-[#1A1A1A]">{deliveredCount} / {testsPerMonth} delivered</span>
+                          <span className="text-xs font-semibold text-[#1A1A1A]">{deliveredCount} delivered</span>
                         </div>
-                        <div className="relative h-2 bg-[#F0F0F0] rounded-full overflow-hidden">
-                          {totalFilled > 0 && <div className="absolute left-0 top-0 h-full bg-purple-300 rounded-full" style={{ width: `${(totalFilled / testsPerMonth) * 100}%` }} />}
-                          {(deliveredCount + scheduledCount) > 0 && <div className="absolute left-0 top-0 h-full bg-blue-400 rounded-full" style={{ width: `${((deliveredCount + scheduledCount) / testsPerMonth) * 100}%` }} />}
-                          {deliveredCount > 0 && <div className="absolute left-0 top-0 h-full bg-emerald-500 rounded-full" style={{ width: `${(deliveredCount / testsPerMonth) * 100}%` }} />}
-                        </div>
-                        <div className="flex items-center justify-between mt-1.5">
-                          <div className="flex items-center gap-3">
-                            <span className="flex items-center gap-1 text-[9px] text-[#777]"><span className="size-1.5 rounded-full bg-emerald-500" /> {deliveredCount} delivered</span>
-                            <span className="flex items-center gap-1 text-[9px] text-[#777]"><span className="size-1.5 rounded-full bg-blue-400" /> {scheduledCount} scheduled</span>
-                            <span className="flex items-center gap-1 text-[9px] text-[#777]"><span className="size-1.5 rounded-full bg-purple-300" /> {ideationCount} ideation</span>
-                          </div>
-                          <span className="text-[9px] text-[#CCC]">{Math.max(0, testsPerMonth - totalFilled)} empty</span>
+                        <div className="flex items-center gap-3">
+                          <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-1.5 rounded-full bg-emerald-500" /> {deliveredCount} delivered</span>
+                          <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-1.5 rounded-full bg-blue-400" /> {scheduledCount} scheduled</span>
+                          <span className="flex items-center gap-1 text-[10px] text-[#777]"><span className="size-1.5 rounded-full bg-purple-300" /> {ideationCount} ideation</span>
                         </div>
                       </div>
 
@@ -832,11 +559,6 @@ export default function ClientPortalPage() {
                           <span className="flex items-center gap-1.5">
                             <span className="size-1.5 rounded-full bg-emerald-500" />
                             {(p.results || []).filter(r => r.status === "live").length} live
-                          </span>
-                        )}
-                        {clientTickets.length > 0 && (
-                          <span className="flex items-center gap-1.5 text-amber-600">
-                            {clientTickets.length} open ticket{clientTickets.length !== 1 ? "s" : ""}
                           </span>
                         )}
                         {daysSinceUpdate !== null && (
@@ -972,25 +694,6 @@ export default function ClientPortalPage() {
               {/* Retainer-specific fields */}
               {clientType === "retainer" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className={labelClass}>Testing Tier</label>
-                    <div className="flex gap-2">
-                      {(["T1", "T2", "T3"] as const).map((t) => (
-                        <button
-                          key={t}
-                          onClick={() => setTestingTier(t)}
-                          className={`flex-1 py-2.5 text-xs font-semibold rounded-lg border transition-colors ${
-                            testingTier === t ? "bg-[#1B1B1B] text-white border-[#1B1B1B]" : "bg-white text-[#777] border-[#E5E5EA] hover:border-[#999]"
-                          }`}
-                        >
-                          {t}
-                          <span className="block text-[9px] font-normal mt-0.5 opacity-60">
-                            {t === "T1" ? "1/week" : t === "T2" ? "2/week" : "4/week"}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
                   <div>
                     <label className={labelClass}>Intelligems API Key (optional)</label>
                     <input type="text" value={igKey} onChange={(e) => setIgKey(e.target.value)} placeholder="ig_live_..." className={inputClass} />
