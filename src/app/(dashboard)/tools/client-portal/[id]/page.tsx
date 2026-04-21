@@ -1372,8 +1372,19 @@ function OverviewSection({
   const phases = (selectedProject?.phases?.length ? selectedProject.phases : null) ?? portal.phases;
   const scope = (selectedProject?.scope?.length ? selectedProject.scope : null) ?? portal.scope;
   const documents = (selectedProject?.documents?.length ? selectedProject.documents : null) ?? portal.documents;
+  const deliverables = (selectedProject?.deliverables?.length ? selectedProject.deliverables : null) ?? portal.deliverables ?? [];
   const currentPhase = selectedProject?.current_phase || portal.current_phase;
   const isRetainer = selectedProject?.type === "retainer";
+
+  const toggleDeliverableFlag = async (id: string, field: "design_approved" | "dev_live") => {
+    const source = selectedProject?.deliverables?.length ? selectedProject.deliverables : portal.deliverables || [];
+    const updated = source.map((d) => (d.id === id ? { ...d, [field]: !d[field] } : d));
+    if (selectedProject?.deliverables?.length && onUpdateSelectedProject) {
+      await onUpdateSelectedProject({ deliverables: updated });
+    } else {
+      onUpdateField("deliverables", updated);
+    }
+  };
 
   // Build original dates map from first blocker history snapshot
   const totalShiftedDays = (portal.blocker_history || []).reduce((sum, h) => sum + h.shifted_days, 0);
@@ -1598,6 +1609,41 @@ function OverviewSection({
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Deliverables checklist — page-build only */}
+      {!isRetainer && deliverables.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-semibold text-[#1A1A1A]">Deliverables ({deliverables.length})</h3>
+            <p className="text-[10px] text-[#AAA]">Tick Design on approval, Dev when live</p>
+          </div>
+          <div className="space-y-1.5">
+            {deliverables.map((d) => (
+              <div key={d.id} className="flex items-center gap-3 px-3 py-2.5 bg-white border border-[#E8E8E8] rounded-lg hover:border-[#DDD] transition-colors">
+                <p className="text-sm font-medium flex-1 min-w-0 truncate text-[#1A1A1A]">{d.name}</p>
+                <label className="flex items-center gap-1.5 text-[11px] text-[#555] cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={!!d.design_approved}
+                    onChange={() => toggleDeliverableFlag(d.id, "design_approved")}
+                    className="size-3.5 accent-[#1B1B1B] cursor-pointer"
+                  />
+                  Design
+                </label>
+                <label className="flex items-center gap-1.5 text-[11px] text-[#555] cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={!!d.dev_live}
+                    onChange={() => toggleDeliverableFlag(d.id, "dev_live")}
+                    className="size-3.5 accent-[#1B1B1B] cursor-pointer"
+                  />
+                  Dev
+                </label>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

@@ -29,6 +29,8 @@ export interface PortalDeliverable {
   phase: string; // phase name reference
   status: DeliverableStatus;
   assignee: string;
+  design_approved?: boolean;
+  dev_live?: boolean;
 }
 
 export interface PortalDocument {
