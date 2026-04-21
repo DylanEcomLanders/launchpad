@@ -13,7 +13,6 @@ import {
   ClockIcon,
   FolderIcon,
   BanknotesIcon,
-  RocketLaunchIcon,
   UserGroupIcon,
   BeakerIcon,
   InboxStackIcon,
@@ -201,25 +200,11 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto scrollbar-thin py-2">
-          {/* Hero CTA */}
-          {!collapsed && role === "admin" && (
-            <div className="px-3 mb-2">
-              <Link
-                href="/tools/project-kickoff"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center justify-center gap-2 px-3 py-2.5 mb-2 bg-[#1B1B1B] text-white text-[12px] font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors"
-              >
-                <RocketLaunchIcon className="size-3.5" />
-                Project Kickoff
-              </Link>
-            </div>
-          )}
-
-          {/* Delivery section */}
-          <div className="px-3 mb-1">
+          {/* Execution section */}
+          <div className="px-3 mb-1 mt-2">
             {!collapsed && (
               <p className="text-[10px] font-semibold uppercase tracking-wider text-[#B0B0B0] px-2.5 mb-1.5">
-                Delivery
+                Execution
               </p>
             )}
             {deliveryItems.map((item) => {
