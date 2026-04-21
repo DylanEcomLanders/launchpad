@@ -92,6 +92,48 @@ function Row({ children }: { children: React.ReactNode }) {
   return <div className="grid grid-cols-1 md:grid-cols-2 gap-5">{children}</div>;
 }
 
+function ChipMultiSelect({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  options: string[];
+}) {
+  const selected = value
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const toggle = (opt: string) => {
+    const next = selected.includes(opt)
+      ? selected.filter((s) => s !== opt)
+      : [...selected, opt];
+    onChange(next.join(", "));
+  };
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {options.map((opt) => {
+        const on = selected.includes(opt);
+        return (
+          <button
+            key={opt}
+            type="button"
+            onClick={() => toggle(opt)}
+            className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+              on
+                ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
+                : "bg-white text-[#555] border-[#E5E5EA] hover:border-[#999]"
+            }`}
+          >
+            {opt}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function OnboardingFormPage() {
   const [form, setForm] = useState<FormData>(emptyForm);
   const [submitting, setSubmitting] = useState(false);
@@ -213,31 +255,19 @@ export default function OnboardingFormPage() {
             <textarea className={textareaClass} value={form.product_url} onChange={set("product_url")} placeholder="e.g., https://store.com/products/your-product" />
           </Field>
           <Row>
-            <Field label="Page type">
-              <select className={inputClass + " appearance-none"} value={form.page_type} onChange={set("page_type") as any}>
-                <option value="">Select...</option>
-                <option value="PDP">PDP</option>
-                <option value="Advertorial">Advertorial</option>
-                <option value="Hero Lander">Hero Lander</option>
-                <option value="Listicle">Listicle</option>
-                <option value="Homepage">Homepage</option>
-                <option value="Bundle Builder">Bundle Builder</option>
-                <option value="Collection Page">Collection Page</option>
-                <option value="Cart / Checkout">Cart / Checkout</option>
-                <option value="Other">Other</option>
-              </select>
+            <Field label="Page type — select all that apply">
+              <ChipMultiSelect
+                value={form.page_type}
+                onChange={(v) => setForm((f) => ({ ...f, page_type: v }))}
+                options={["PDP", "Advertorial", "Hero Lander", "Listicle", "Homepage", "Bundle Builder", "Collection Page", "Cart / Checkout", "Other"]}
+              />
             </Field>
-            <Field label="Traffic source">
-              <select className={inputClass + " appearance-none"} value={form.traffic_source} onChange={set("traffic_source") as any}>
-                <option value="">Select...</option>
-                <option value="Meta (cold)">Meta (cold)</option>
-                <option value="Google">Google</option>
-                <option value="Email">Email</option>
-                <option value="Organic">Organic</option>
-                <option value="TikTok">TikTok</option>
-                <option value="Mixed">Mixed</option>
-                <option value="Other">Other</option>
-              </select>
+            <Field label="Traffic source — select all that apply">
+              <ChipMultiSelect
+                value={form.traffic_source}
+                onChange={(v) => setForm((f) => ({ ...f, traffic_source: v }))}
+                options={["Meta (cold)", "Google", "Email", "Organic", "TikTok", "Mixed", "Other"]}
+              />
             </Field>
           </Row>
           <Field label="Amazon ASIN(s) — if applicable">
