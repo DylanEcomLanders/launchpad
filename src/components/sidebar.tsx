@@ -46,6 +46,16 @@ const teamZones = [
 
 const navSections: NavSection[] = [
   {
+    title: "Project Delivery",
+    icon: <FolderIcon className="size-4" />,
+    defaultOpen: true,
+    items: [
+      { label: "Onboarding", href: "/tools/onboarding-inbox" },
+      { label: "Portals", href: "/tools/client-portal" },
+      { label: "Task Board", href: "/tools/task-board" },
+    ],
+  },
+  {
     title: "Finance",
     icon: <BanknotesIcon className="size-4" />,
     defaultOpen: false,
@@ -83,12 +93,9 @@ const navSections: NavSection[] = [
   },
 ];
 
-// Delivery section — main nav items grouped
-const deliveryItems = [
+// Top-level items — always visible, not collapsible
+const topItems = [
   { label: "Mission Control", href: "/", icon: <HomeIcon className="size-4" /> },
-  { label: "Onboarding", href: "/tools/onboarding-inbox", icon: <InboxStackIcon className="size-4" /> },
-  { label: "Portals", href: "/tools/client-portal", icon: <FolderIcon className="size-4" /> },
-  { label: "Task Board", href: "/tools/task-board", icon: <ClockIcon className="size-4" /> },
 ];
 
 export function Sidebar() {
@@ -200,15 +207,10 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto scrollbar-thin py-2">
-          {/* Execution section */}
+          {/* Top-level items */}
           <div className="px-3 mb-1 mt-2">
-            {!collapsed && (
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#B0B0B0] px-2.5 mb-1.5">
-                Execution
-              </p>
-            )}
-            {deliveryItems.map((item) => {
-              const badge = item.href === "/tools/onboarding-inbox" ? onboardingCount : 0;
+            {topItems.map((item) => {
+              const badge = 0;
               return (
                 <Link
                   key={item.href}
