@@ -29,7 +29,7 @@ const navItems: NavItem[] = [
   },
   {
     label: "Operations Wiki",
-    href: "/tools/ops-wiki",
+    href: "/team/ops-wiki",
     icon: <BookOpenIcon className="size-4" />,
   },
 ];

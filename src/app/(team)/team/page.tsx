@@ -17,7 +17,7 @@ const primary = [
   {
     title: "Operations Wiki",
     description: "Our internal playbook — process, standards, and the way we deliver.",
-    href: "/tools/ops-wiki",
+    href: "/team/ops-wiki",
     icon: BookOpenIcon,
   },
 ];
