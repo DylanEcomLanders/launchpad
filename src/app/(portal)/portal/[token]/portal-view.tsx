@@ -1496,10 +1496,10 @@ function DashboardView({
         </>
       )}
 
-      {/* Documents */}
-      {documents.length > 0 && (
-        <div className="bg-white border border-[#E8E8E8] rounded-lg p-6">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">Documents</p>
+      {/* Key Documents — always visible so clients know what to expect */}
+      <div className="bg-white border border-[#E8E8E8] rounded-lg p-6">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA] mb-4">Key Documents</p>
+        {documents.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {documents.map((doc, i) => (
               <button
@@ -1526,8 +1526,27 @@ function DashboardView({
               </button>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {["Onboarding Brief", "Scope", "Roadmap", "Agreement"].map((label) => (
+              <div
+                key={label}
+                className="flex items-center gap-3 border border-dashed border-[#E8E8E8] rounded-lg p-3.5 bg-[#FAFAFA]"
+              >
+                <div className="shrink-0 size-9 rounded-lg bg-white border border-[#EEE] flex items-center justify-center text-[#CCC]">
+                  <svg className="size-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-[#BBB] truncate">{label}</p>
+                  <p className="text-[10px] text-[#CCC]">Coming soon</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Document preview modal */}
       {selectedDoc && (
