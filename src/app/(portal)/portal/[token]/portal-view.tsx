@@ -203,6 +203,7 @@ function NavIcon({ type }: { type: Tab }) {
     case "reports": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" /></svg>;
     case "build": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clipRule="evenodd" /><path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z" /></svg>;
     case "internal": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>;
+    case "roadmap": return <svg className={cls} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M12 1.586l-4 4v12.828l4-4V1.586zM3.707 3.293A1 1 0 002 4v10a1 1 0 00.293.707L6 18.414V5.586L3.707 3.293zM17.707 5.293L14 1.586v12.828l2.293 2.293A1 1 0 0018 16V6a1 1 0 00-.293-.707z" clipRule="evenodd" /></svg>;
     default: return null;
   }
 }
@@ -383,7 +384,7 @@ export function PortalView({
     : drillView === "retainer"
     ? [
         { key: "roadmap" as Tab, label: "Roadmap" },
-        { key: "testing" as Tab, label: "Testing" },
+        { key: "testing" as Tab, label: "Test Library" },
         { key: "scope", label: "Deliverables" },
         ...(publishedReports.length > 0 ? [{ key: "reports" as Tab, label: "Reports" }] : []),
         ...internalTab,
@@ -523,13 +524,13 @@ export function PortalView({
             {/* timeline tab kept for backward compat but merged into scope */}
             {activeTab === "roadmap" && isRetainer && (
               <>
-                <PageHeader title="Roadmap" subtitle="What we're shipping, what's next, what's been delivered" />
-                <RoadmapList portalId={portal.id} readOnly />
+                <PageHeader title="Roadmap" subtitle="Our shared strategy board and supporting documents" />
+                <ClientRoadmapBoard portal={portal} />
               </>
             )}
             {activeTab === "testing" && isRetainer && (
               <>
-                <PageHeader title="Weekly Testing" subtitle="Your testing cadence and schedule" />
+                <PageHeader title="Test Library" subtitle="Every test we've scoped, shipped, and learned from" />
                 <WeeklyTestingTab
                   results={portal.results}
                   testingTier={selectedProject?.testing_tier ?? portal.testing_tier}
@@ -941,6 +942,83 @@ function PageHeader({ title, subtitle }: { title: string; subtitle: string }) {
     <div className="mb-8">
       <h1 className="text-xl font-bold tracking-tight text-[#1A1A1A] mb-1">{title}</h1>
       <p className="text-sm text-[#AAA]">{subtitle}</p>
+    </div>
+  );
+}
+
+/* ── Client Roadmap Board (retainer) — Miro embed + documents ── */
+function ClientRoadmapBoard({ portal }: { portal: PortalData }) {
+  const docs = portal.funnel_documents || [];
+
+  const embedSrc = (url: string): string => {
+    if (!url) return "";
+    if (url.includes("/app/live-embed/") || url.includes("/app/embed/")) return url;
+    return url.replace("/app/board/", "/app/live-embed/");
+  };
+
+  const formatSize = (bytes?: number): string => {
+    if (!bytes) return "";
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Miro board */}
+      {portal.miro_board_url ? (
+        <div className="relative aspect-[16/10] rounded-xl overflow-hidden border border-[#E8E8E8] bg-[#FAFAFA]">
+          <iframe
+            src={embedSrc(portal.miro_board_url)}
+            className="absolute inset-0 w-full h-full"
+            frameBorder={0}
+            scrolling="no"
+            allow="fullscreen; clipboard-read; clipboard-write"
+            allowFullScreen
+          />
+        </div>
+      ) : (
+        <div className="border border-dashed border-[#E8E8E8] rounded-xl p-10 text-center bg-[#FAFAFA]">
+          <p className="text-sm text-[#888]">Your strategy board will appear here.</p>
+          <p className="text-[11px] text-[#BBB] mt-1">We&apos;re still putting it together.</p>
+        </div>
+      )}
+
+      {/* Documents */}
+      <div>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#888] mb-3">Documents</p>
+        {docs.length > 0 ? (
+          <div className="divide-y divide-[#E8E8E8] border border-[#E8E8E8] rounded-xl bg-white">
+            {docs.map((doc) => (
+              <a
+                key={doc.id}
+                href={doc.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between px-4 py-3 hover:bg-[#FAFAFA] transition-colors"
+              >
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <svg className="size-4 text-[#AAA] shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                  </svg>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-[#1A1A1A] truncate">{doc.name}</p>
+                    <p className="text-[10px] text-[#AAA]">
+                      {new Date(doc.uploaded_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                      {doc.size ? ` · ${formatSize(doc.size)}` : ""}
+                    </p>
+                  </div>
+                </div>
+                <svg className="size-4 text-[#CCC] shrink-0 ml-3" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                </svg>
+              </a>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-[#CCC] py-2">No documents shared yet.</p>
+        )}
+      </div>
     </div>
   );
 }
