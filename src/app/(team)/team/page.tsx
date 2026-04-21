@@ -8,6 +8,7 @@ import {
   WrenchScrewdriverIcon,
 } from "@heroicons/react/24/solid";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
+import { TeamPortalsSection } from "./team-portals-section";
 
 const modules = [
   {
@@ -107,6 +108,9 @@ export default function TeamToolsPage() {
             );
           })}
         </div>
+
+        {/* Client Portals Section */}
+        <TeamPortalsSection />
 
         {/* Tools Section */}
         <div className="mt-10">

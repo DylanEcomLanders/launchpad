@@ -110,7 +110,6 @@ export default function PortalDetailPage() {
   const [defaultTabSet, setDefaultTabSet] = useState(false);
   const [copied, setCopied] = useState(false);
   const [clientTab, setClientTab] = useState<ClientTab>("projects");
-  const [copiedTeam, setCopiedTeam] = useState(false);
   const [showBlockerModal, setShowBlockerModal] = useState(false);
   const [showResolveBlocker, setShowResolveBlocker] = useState(false);
 
@@ -682,18 +681,6 @@ export default function PortalDetailPage() {
                 >
                   <ClipboardDocumentIcon className="size-3.5" />
                   {copied ? "Copied!" : "Client"}
-                </button>
-                <button
-                  onClick={() => {
-                    const url = `${window.location.origin}/portal/${portal.token}/team`;
-                    navigator.clipboard.writeText(url);
-                    setCopiedTeam(true);
-                    setTimeout(() => setCopiedTeam(false), 2000);
-                  }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
-                >
-                  <ClipboardDocumentIcon className="size-3.5" />
-                  {copiedTeam ? "Copied!" : "Team"}
                 </button>
                 <a
                   href={`/portal/${portal.token}`}
