@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getAllOpsWikiModules } from "@/lib/ops-wiki";
 import OpsWikiClient from "@/app/(dashboard)/tools/ops-wiki/client";
 
@@ -12,5 +13,9 @@ export default function TeamOpsWikiPage() {
     category: m.category,
     toolHref: m.toolHref,
   }));
-  return <OpsWikiClient modules={serialized} />;
+  return (
+    <Suspense fallback={null}>
+      <OpsWikiClient modules={serialized} />
+    </Suspense>
+  );
 }
