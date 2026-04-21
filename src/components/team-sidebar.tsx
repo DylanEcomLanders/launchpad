@@ -11,7 +11,6 @@ import {
   HomeIcon,
   ArrowLeftIcon,
   ClipboardDocumentCheckIcon,
-  WrenchScrewdriverIcon,
 } from "@heroicons/react/24/solid";
 import { Logo } from "@/components/logo";
 
@@ -37,14 +36,9 @@ const navItems: NavItem[] = [
 
 const toolItems: NavItem[] = [
   {
-    label: "QA Checklist",
+    label: "Dev QA Checklist",
     href: "/team/qa",
     icon: <ClipboardDocumentCheckIcon className="size-4" />,
-  },
-  {
-    label: "Dev Self-Check",
-    href: "/team/dev-check",
-    icon: <WrenchScrewdriverIcon className="size-4" />,
   },
 ];
 

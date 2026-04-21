@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   ChevronRightIcon,
   ClipboardDocumentCheckIcon,
-  WrenchScrewdriverIcon,
   FolderIcon,
   BookOpenIcon,
 } from "@heroicons/react/24/solid";
@@ -25,16 +24,10 @@ const primary = [
 
 const tools = [
   {
-    title: "QA Checklist",
+    title: "Dev QA Checklist",
     description: "Evergreen Dev QA checklist — run through before handing anything to a client.",
     href: "/team/qa",
     icon: ClipboardDocumentCheckIcon,
-  },
-  {
-    title: "Dev Self-Check",
-    description: "Pre-QA developer checklist. Run through before handing off to QA.",
-    href: "/team/dev-check",
-    icon: WrenchScrewdriverIcon,
   },
 ];
 
