@@ -278,6 +278,7 @@ export interface PortalData {
   slack_internal_channel_id?: string; // Internal team Slack channel ID
   ad_hoc_requests: AdHocRequest[];
   reports?: PortalReport[];
+  miro_board_url?: string;
   blocker?: PortalBlocker | null;
   blocker_history?: BlockerHistory[];
   created_at: string;

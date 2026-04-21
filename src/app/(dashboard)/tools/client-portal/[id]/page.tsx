@@ -523,7 +523,7 @@ export default function PortalDetailPage() {
       : [{ key: "projects" as ClientTab, label: "Projects" }]),
     { key: "context", label: allContextEntries.length > 0 ? `Context (${allContextEntries.length})` : "Context" },
     ...(portalTickets.length > 0 ? [{ key: "tickets" as ClientTab, label: `Tickets (${portalTickets.filter(t => t.status !== "resolved" && !t.deleted_at).length})` }] : []),
-    ...(funnels.length > 0 ? [{ key: "funnels" as ClientTab, label: "Funnels" }] : []),
+    { key: "funnels", label: "Funnels" },
     { key: "settings", label: "Settings" },
   ];
 
@@ -883,36 +883,14 @@ export default function PortalDetailPage() {
 
         {/* ── Funnels tab ── */}
         {!selectedProject && clientTab === "funnels" && (
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-semibold text-[#1A1A1A]">Funnels</h3>
-              <Link
-                href={`/tools/funnel-builder?clientId=${portal.id}&clientName=${encodeURIComponent(portal.client_name)}`}
-                className="text-[11px] font-medium text-[#999] hover:text-[#1A1A1A]"
-              >
-                + New Funnel
-              </Link>
-            </div>
-            {funnels.length > 0 ? (
-              <div className="divide-y divide-[#E8E8E8]">
-                {funnels.map((funnel) => (
-                  <Link
-                    key={funnel.id}
-                    href={`/tools/funnel-builder?id=${funnel.id}`}
-                    className="flex items-center justify-between py-3 hover:bg-[#FAFAFA] transition-colors rounded-lg px-2"
-                  >
-                    <div>
-                      <p className="text-sm font-medium text-[#1A1A1A]">{funnel.name || "Untitled Funnel"}</p>
-                      <p className="text-[10px] text-[#AAA]">{funnel.nodes.length} nodes</p>
-                    </div>
-                    <svg className="size-4 text-[#DDD]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-[#CCC] py-2">No funnels linked yet</p>
-            )}
-          </div>
+          <FunnelsTab
+            portal={portal}
+            funnels={funnels}
+            onUpdatePortal={async (patch) => {
+              await updatePortal(portal.id, patch as Partial<PortalData>);
+              setPortal({ ...portal, ...patch } as PortalData);
+            }}
+          />
         )}
 
         {/* ── Roadmap tab (retainer / Conversion Engine only) ── */}
@@ -4255,6 +4233,119 @@ function SidebarClientDetails({ portal, team, onUpdateField }: { portal: PortalD
         })()}
       </div>
     </>
+  );
+}
+
+/* ─── Funnels Tab (Miro embed + linked funnels) ─── */
+function FunnelsTab({
+  portal,
+  funnels,
+  onUpdatePortal,
+}: {
+  portal: PortalData;
+  funnels: FunnelData[];
+  onUpdatePortal: (patch: Partial<PortalData>) => Promise<void>;
+}) {
+  const [miroDraft, setMiroDraft] = useState(portal.miro_board_url || "");
+  const [editing, setEditing] = useState(!portal.miro_board_url);
+
+  const embedSrc = (url: string): string => {
+    // Miro share link: https://miro.com/app/board/uXjVL_abc=/
+    // Embed form:      https://miro.com/app/live-embed/uXjVL_abc=/
+    if (!url) return "";
+    if (url.includes("/app/live-embed/") || url.includes("/app/embed/")) return url;
+    return url.replace("/app/board/", "/app/live-embed/");
+  };
+
+  const handleSave = async () => {
+    await onUpdatePortal({ miro_board_url: miroDraft.trim() || undefined });
+    setEditing(false);
+  };
+
+  return (
+    <div className="space-y-8 mb-6">
+      {/* Miro board */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xs font-semibold text-[#1A1A1A]">Miro Board</h3>
+          {portal.miro_board_url && !editing && (
+            <button onClick={() => setEditing(true)} className="text-[11px] font-medium text-[#999] hover:text-[#1A1A1A]">
+              Edit URL
+            </button>
+          )}
+        </div>
+        {editing ? (
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={miroDraft}
+              onChange={(e) => setMiroDraft(e.target.value)}
+              placeholder="Paste a Miro board share link"
+              className={inputClass + " flex-1"}
+            />
+            <button
+              onClick={handleSave}
+              className="px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D]"
+            >
+              Save
+            </button>
+            {portal.miro_board_url && (
+              <button
+                onClick={() => { setMiroDraft(portal.miro_board_url || ""); setEditing(false); }}
+                className="px-3 py-1.5 text-[11px] font-medium text-[#7A7A7A] hover:text-[#1B1B1B]"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        ) : portal.miro_board_url ? (
+          <div className="relative aspect-[16/10] rounded-xl overflow-hidden border border-[#E8E8E8] bg-[#FAFAFA]">
+            <iframe
+              src={embedSrc(portal.miro_board_url)}
+              className="absolute inset-0 w-full h-full"
+              frameBorder={0}
+              scrolling="no"
+              allow="fullscreen; clipboard-read; clipboard-write"
+              allowFullScreen
+            />
+          </div>
+        ) : (
+          <p className="text-xs text-[#CCC] py-2">No Miro board linked yet.</p>
+        )}
+      </div>
+
+      {/* Funnels list */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xs font-semibold text-[#1A1A1A]">Funnels</h3>
+          <Link
+            href={`/tools/funnel-builder?clientId=${portal.id}&clientName=${encodeURIComponent(portal.client_name)}`}
+            className="text-[11px] font-medium text-[#999] hover:text-[#1A1A1A]"
+          >
+            + New Funnel
+          </Link>
+        </div>
+        {funnels.length > 0 ? (
+          <div className="divide-y divide-[#E8E8E8]">
+            {funnels.map((funnel) => (
+              <Link
+                key={funnel.id}
+                href={`/tools/funnel-builder?id=${funnel.id}`}
+                className="flex items-center justify-between py-3 hover:bg-[#FAFAFA] transition-colors rounded-lg px-2"
+              >
+                <div>
+                  <p className="text-sm font-medium text-[#1A1A1A]">{funnel.name || "Untitled Funnel"}</p>
+                  <p className="text-[10px] text-[#AAA]">{funnel.nodes.length} nodes</p>
+                </div>
+                <svg className="size-4 text-[#DDD]" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-[#CCC] py-2">No funnels linked yet</p>
+        )}
+      </div>
+    </div>
   );
 }
 
