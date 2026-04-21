@@ -238,21 +238,6 @@ export function Sidebar() {
               );
             })}
 
-            {/* Team Hub */}
-            <Link
-              href="/team"
-              onClick={() => setMobileOpen(false)}
-              className={`
-                flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-200 mb-0.5
-                ${pathname === "/team"
-                  ? "bg-white text-[#1B1B1B] font-medium shadow-[var(--shadow-nav-active)]"
-                  : "text-[#7A7A7A] hover:bg-white/60 hover:text-[#1B1B1B]"
-                }
-              `}
-            >
-              <UserGroupIcon className="size-4" />
-              {!collapsed && <span>Team Hub</span>}
-            </Link>
           </div>
 
           {/* Collapsible sections */}
@@ -361,6 +346,24 @@ export function Sidebar() {
             </div>
           )}
         </nav>
+
+        {/* Team Hub CTA — sits just above the timezone card */}
+        {!collapsed && (
+          <div className="mx-3 mb-2">
+            <Link
+              href="/team"
+              onClick={() => setMobileOpen(false)}
+              className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[12px] font-semibold transition-all duration-150 border ${
+                pathname === "/team"
+                  ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
+                  : "bg-transparent text-[#1B1B1B] border-[#1B1B1B]/20 hover:border-[#1B1B1B] hover:bg-white"
+              }`}
+            >
+              <UserGroupIcon className="size-3.5" />
+              Team Hub
+            </Link>
+          </div>
+        )}
 
         {/* Team Timezones */}
         {!collapsed && (
