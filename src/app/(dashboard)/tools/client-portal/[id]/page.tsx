@@ -1070,25 +1070,9 @@ export default function PortalDetailPage() {
         )}
 
 
-        {/* ── BUILD: Updates + Designs + Development ── */}
+        {/* ── BUILD: Design Review + Development Review ── */}
         {selectedProject && activeTab === "build" && portal && (
           <div className="space-y-10">
-            <div>
-              <UpdatesSection
-                updates={updates}
-                showForm={showUpdateForm}
-                onShowForm={() => setShowUpdateForm(true)}
-                onHideForm={() => setShowUpdateForm(false)}
-                title={updateTitle}
-                description={updateDescription}
-                loomUrl={updateLoomUrl}
-                onTitleChange={setUpdateTitle}
-                onDescriptionChange={setUpdateDescription}
-                onLoomUrlChange={setUpdateLoomUrl}
-                onSubmit={handleAddUpdate}
-                saving={saving}
-              />
-            </div>
             <DesignsSection
               portal={portal}
               reviews={reviews}
@@ -1142,73 +1126,27 @@ export default function PortalDetailPage() {
           />
         )}
 
-        {/* ── RESULTS: Testing + Funnels + Reports ── */}
+        {/* ── RESULTS: Testing (+ Reports for retainers) ── */}
         {selectedProject && activeTab === "results" && portal && (
           <div className="space-y-10">
-            <div>
-              <TestingSection
-                portal={portal}
-                projectType={selectedProject?.type || "page-build"}
-                onUpdateResults={async (results) => {
-                  await updatePortal(portal.id, { results } as Partial<PortalData>);
-                  setPortal({ ...portal, results } as PortalData);
-                }}
-                onUpdateField={handleUpdateField}
-              />
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-semibold text-[#1A1A1A]">Funnels</h3>
-                <Link
-                  href={`/tools/funnel-builder?clientId=${portal.id}&clientName=${encodeURIComponent(portal.client_name)}`}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
-                >
-                  <PlusIcon className="size-3.5" />
-                  Create Funnel
-                </Link>
-              </div>
-              {funnels.length === 0 ? (
-                <div className="text-center py-10 border border-dashed border-[#E8E8E8] rounded-xl">
-                  <p className="text-sm text-[#7A7A7A] mb-1">No funnels linked yet</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {funnels.map((funnel) => (
-                    <Link
-                      key={funnel.id}
-                      href={`/tools/funnel-builder?id=${funnel.id}`}
-                      className="flex items-center justify-between p-4 border border-[#E8E8E8] rounded-xl hover:border-[#1B1B1B] transition-colors group"
-                    >
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-[#1B1B1B] group-hover:underline truncate">
-                          {funnel.name || "Untitled Funnel"}
-                        </p>
-                        <div className="flex items-center gap-3 mt-1">
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border ${
-                            funnel.mode === "performance"
-                              ? "bg-[#F0F0F0] text-[#555] border-[#E0E0E0]"
-                              : "bg-white text-[#999] border-[#E8E8E8]"
-                          }`}>
-                            {funnel.mode}
-                          </span>
-                          <span className="text-[11px] text-[#A0A0A0]">
-                            {funnel.nodes.length} node{funnel.nodes.length !== 1 ? "s" : ""}
-                          </span>
-                        </div>
-                      </div>
-                      <ArrowTopRightOnSquareIcon className="size-4 text-[#CCC] group-hover:text-[#1B1B1B] transition-colors shrink-0" />
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-            <ReportsSection
-              reports={portal.reports || []}
-              onUpdate={async (reports) => {
-                await updatePortal(portal.id, { reports } as any);
-                setPortal({ ...portal, reports });
+            <TestingSection
+              portal={portal}
+              projectType={selectedProject?.type || "page-build"}
+              onUpdateResults={async (results) => {
+                await updatePortal(portal.id, { results } as Partial<PortalData>);
+                setPortal({ ...portal, results } as PortalData);
               }}
+              onUpdateField={handleUpdateField}
             />
+            {selectedProject?.type === "retainer" && (
+              <ReportsSection
+                reports={portal.reports || []}
+                onUpdate={async (reports) => {
+                  await updatePortal(portal.id, { reports } as any);
+                  setPortal({ ...portal, reports });
+                }}
+              />
+            )}
           </div>
         )}
 
@@ -2441,7 +2379,7 @@ function DesignsSection({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold text-[#1A1A1A]">Design & Dev Handoff</h3>
+        <h3 className="text-xs font-semibold text-[#1A1A1A]">Design Review</h3>
         <button
           onClick={() => setShowCreateForm(!showCreateForm)}
           className="flex items-center gap-1 text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
@@ -3632,7 +3570,7 @@ function DevelopmentSection({
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold text-[#1A1A1A]">Page Reviews</h3>
+        <h3 className="text-xs font-semibold text-[#1A1A1A]">Development Review</h3>
         <button
           onClick={() => setShowForm(!showForm)}
           className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D]"
