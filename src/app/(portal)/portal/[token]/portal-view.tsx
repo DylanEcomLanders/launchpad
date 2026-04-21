@@ -973,7 +973,7 @@ function ClientHub({
     if (!d) return null;
     if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
       const dt = new Date(d + "T00:00:00");
-      return dt.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+      return dt.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
     }
     return d;
   })();
@@ -996,12 +996,17 @@ function ClientHub({
       {/* Next touchpoint */}
       {touchpoint?.date && (
         <div className="mb-8 pb-8 border-b border-[#F0F0F0]">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#CCC] mb-2">Next Touchpoint</p>
-          <div className="flex items-center justify-between">
-            {currentPhase?.name ? (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-[#F3F3F5] text-[10px] font-semibold uppercase tracking-wider text-[#777]">{currentPhase.name}</span>
-            ) : <span />}
-            <p className="text-sm font-medium text-[#1A1A1A]">{touchpointDate}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#888] mb-3">Next Touchpoint</p>
+          <div className="bg-[#1A1A1A] text-white rounded-xl p-5 flex items-end justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-2xl font-bold tracking-tight">{touchpointDate}</p>
+              {currentPhase?.name && (
+                <span className="inline-flex items-center px-2 py-0.5 mt-2 rounded-md bg-white/10 text-[10px] font-semibold uppercase tracking-wider text-white/80">
+                  {currentPhase.name}
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-white/40 shrink-0">All times UK</p>
           </div>
         </div>
       )}
@@ -1009,7 +1014,7 @@ function ClientHub({
       {/* Retainer section */}
       {hasRetainer && (
         <div className="mb-8 pb-8 border-b border-[#F0F0F0]">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#CCC] mb-3">Retainer</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#888] mb-3">Retainer</p>
           {retainerProjects.length > 0 ? retainerProjects.map((proj, _) => {
             const idx = projects.indexOf(proj);
             const tier = proj.testing_tier || portal.testing_tier;
@@ -1068,7 +1073,7 @@ function ClientHub({
       {/* Active projects */}
       {activePageProjects.length > 0 && (
         <div className="mb-8 pb-8 border-b border-[#F0F0F0]">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#CCC] mb-3">Active Projects</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#888] mb-3">Active Projects</p>
           {activePageProjects.map((proj) => {
             const idx = projects.indexOf(proj);
             const phase = (proj.phases?.length ? proj.phases : portal.phases).find(p => p.status === "in-progress");
@@ -1112,7 +1117,7 @@ function ClientHub({
       {/* If no projects array but portal has phases (legacy), show as single project */}
       {projects.length === 0 && portal.phases.length > 0 && (
         <div className="mb-8 pb-8 border-b border-[#F0F0F0]">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#CCC] mb-3">Active Projects</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#888] mb-3">Active Projects</p>
           <div className="py-3">
             <p className="text-sm font-medium text-[#1A1A1A]">{portal.project_type || "Page Build"}</p>
             <p className="text-xs text-[#AAA] mt-0.5">
@@ -1126,7 +1131,7 @@ function ClientHub({
       {/* Completed projects */}
       {completedPageProjects.length > 0 && (
         <div className="mb-8 pb-8 border-b border-[#F0F0F0]">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#CCC] mb-3">Completed</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#888] mb-3">Completed</p>
           {completedPageProjects.map((proj) => {
             const idx = projects.indexOf(proj);
             return (
@@ -1151,7 +1156,7 @@ function ClientHub({
       {/* Open requests */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#CCC]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#888]">
             Open Requests {openRequests.length > 0 && `(${openRequests.length})`}
           </p>
           <button
@@ -1187,7 +1192,7 @@ function ClientHub({
       {/* Recent updates */}
       {updates.length > 0 && (
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#CCC] mb-3">Recent Updates</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#888] mb-3">Recent Updates</p>
           {updates.slice(0, 3).map((u) => (
             <div key={u.id} className="py-2.5 border-b border-[#F5F5F5] last:border-0">
               <p className="text-sm font-medium text-[#1A1A1A]">{u.title}</p>
@@ -1284,7 +1289,7 @@ function DashboardView({
                 </span>
               )}
               {portal.next_touchpoint?.date && (
-                <p className="text-[11px] text-white/40 mt-3">All times UK (GMT+1)</p>
+                <p className="text-[11px] text-white/40 mt-3">All times UK</p>
               )}
             </div>
           </div>
@@ -1346,7 +1351,7 @@ function DashboardView({
                 </span>
               )}
               {portal.next_touchpoint?.date && (
-                <p className="text-[11px] text-white/40 mt-3">All times UK (GMT+1)</p>
+                <p className="text-[11px] text-white/40 mt-3">All times UK</p>
               )}
             </div>
           </div>
