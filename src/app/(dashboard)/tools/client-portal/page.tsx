@@ -258,18 +258,13 @@ export default function ClientPortalPage() {
         <div className="px-5 py-6 border-b border-[#E8E8E8]">
           <h2 className="text-sm font-bold text-[#1A1A1A]">Client Portals</h2>
           <p className="text-[10px] text-[#AAA] mt-0.5">All active projects</p>
-          <button
-            onClick={() => {
-              setShowForm(true);
-              setClientName("");
-              setClientEmail("");
-              setProjectType("Full Page Build");
-            }}
+          <Link
+            href="/tools/client-portal/new"
             className="w-full flex items-center justify-center gap-1.5 mt-4 px-3 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
           >
             <PlusIcon className="size-3.5 shrink-0" />
             New Portal
-          </button>
+          </Link>
         </div>
         {!showTrash && (
           <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
@@ -744,13 +739,13 @@ export default function ClientPortalPage() {
         <div className="border border-dashed border-[#E5E5EA] rounded-lg p-12 text-center">
           <p className="text-sm text-[#7A7A7A] mb-1">No client portals yet</p>
           <p className="text-xs text-[#A0A0A0] mb-4">Create your first portal to start tracking projects</p>
-          <button
-            onClick={() => setShowForm(true)}
+          <Link
+            href="/tools/client-portal/new"
             className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
           >
             <PlusIcon className="size-3.5" />
             New Portal
-          </button>
+          </Link>
         </div>
       )}
 

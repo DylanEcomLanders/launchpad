@@ -68,6 +68,7 @@ import { BrandedReport } from "@/components/branded-report";
 import { InternalSection, GateStatusPills } from "@/components/internal-section";
 import { GateChecklistForm } from "@/components/gate-checklist-form";
 import { GATE_CONFIG } from "@/lib/portal/qa-gates";
+import { RoadmapList } from "@/components/portal/roadmap-list";
 
 // Mirror of GATE_KEY_TO_QA_KEY in portal-view.tsx — admin tab keys → qa_gates
 // bucket keys, so Slack notifications for admin submissions carry the same
@@ -85,7 +86,7 @@ import type {
 } from "@/lib/portal/review-types";
 
 type DashTab = "overview" | "build" | "results" | "design-brief" | "dev-handover" | "dev-qa" | "handoff-testing";
-type ClientTab = "projects" | "context" | "tickets" | "funnels" | "settings";
+type ClientTab = "projects" | "roadmap" | "context" | "tickets" | "funnels" | "settings";
 
 export default function PortalDetailPage() {
   const params = useParams();
@@ -155,7 +156,10 @@ export default function PortalDetailPage() {
       }
       // Set default tab based on client type (only on first load)
       if (!defaultTabSet && p) {
-        if (p.client_type === "retainer") setActiveTab("results");
+        if (p.client_type === "retainer") {
+          setActiveTab("results");
+          setClientTab("roadmap");
+        }
         setDefaultTabSet(true);
       }
       setUpdates(u);
@@ -514,7 +518,9 @@ export default function PortalDetailPage() {
     ...(portal?.projects || []).flatMap(p => (p.context_entries || []).map(e => ({ ...e, _project: p.name }))),
   ];
   const clientTabs: { key: ClientTab; label: string }[] = [
-    { key: "projects", label: "Projects" },
+    ...(isRetainerPortal
+      ? [{ key: "roadmap" as ClientTab, label: "Roadmap" }]
+      : [{ key: "projects" as ClientTab, label: "Projects" }]),
     { key: "context", label: allContextEntries.length > 0 ? `Context (${allContextEntries.length})` : "Context" },
     ...(portalTickets.length > 0 ? [{ key: "tickets" as ClientTab, label: `Tickets (${portalTickets.filter(t => t.status !== "resolved" && !t.deleted_at).length})` }] : []),
     ...(funnels.length > 0 ? [{ key: "funnels" as ClientTab, label: "Funnels" }] : []),
@@ -906,6 +912,17 @@ export default function PortalDetailPage() {
             ) : (
               <p className="text-xs text-[#CCC] py-2">No funnels linked yet</p>
             )}
+          </div>
+        )}
+
+        {/* ── Roadmap tab (retainer / Conversion Engine only) ── */}
+        {!selectedProject && clientTab === "roadmap" && portal && isRetainerPortal && (
+          <div className="max-w-4xl mx-auto px-6 md:px-12 py-10">
+            <div className="mb-6">
+              <h2 className="text-lg font-bold text-[#1A1A1A] mb-1">Conversion Engine Roadmap</h2>
+              <p className="text-sm text-[#777]">Team-led queue. Items flow through stages as we build, test, and ship.</p>
+            </div>
+            <RoadmapList portalId={portal.id} />
           </div>
         )}
 

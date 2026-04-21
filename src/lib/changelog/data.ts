@@ -40,8 +40,10 @@ const seedChangelog: ChangelogEntry[] = [
     id: "cl-37",
     date: "21 Apr 2026",
     version: "0.31.0",
-    title: "Portal Cleanup — Tier Dropped, Auto-Fill from Onboarding",
+    title: "Portal Setup Flow + Conversion Engine Roadmap",
     changes: [
+      { type: "added", text: "Step-by-step New Portal setup at /tools/client-portal/new — pick Page Build or Conversion Engine, then 4 guided steps (Brand / Scope / Timeline / Team). Page Build seeds pages + 4 phases. Conversion Engine seeds 1-3 initial roadmap items so the portal isn't empty on Day 1. Can't click Create until required fields are filled" },
+      { type: "added", text: "Roadmap data model + admin Roadmap tab on Conversion Engine (retainer) portals — clean list view grouped by stage (In Progress / Next Up / Shipped / Backlog). Add, edit, reorder via stage dropdown, attach Figma / Staging / Live URLs, log outcome when shipped. Backed by new offer_roadmap table (SQL in supabase/roadmap_items.sql)" },
       { type: "removed", text: "Testing Lab + Tickets tabs removed from /tools/client-portal — not being used, cluttered the nav. Ticket type panels on the overview dashboard + Open Tickets summary pill also removed (the underlying /tools/tickets page still exists if you need it)" },
       { type: "removed", text: "Tickets removed from the main app sidebar (Delivery group)" },
       { type: "removed", text: "Retainer tier (T1 / T2 / T3) dropped across the admin cockpit — tier picker gone from the retainer testing view, tier badge + health / expected-by-now math removed from the retainer card grid, tier selector removed from the New Portal form. Tier field stays in the DB so historic data isn't lost" },
