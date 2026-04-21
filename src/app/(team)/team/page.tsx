@@ -1,46 +1,32 @@
 import Link from "next/link";
 import {
-  MagnifyingGlassIcon,
-  PencilSquareIcon,
-  CodeBracketIcon,
   ChevronRightIcon,
   ClipboardDocumentCheckIcon,
   WrenchScrewdriverIcon,
+  FolderIcon,
+  BookOpenIcon,
 } from "@heroicons/react/24/solid";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
-import { TeamPortalsSection } from "./team-portals-section";
 
-const modules = [
+const primary = [
   {
-    title: "Research & Intel",
-    description:
-      "AI-powered Voice of Customer analysis. Scrapes Amazon, Reddit, Trustpilot, G2, YouTube, and Quora to extract verbatim customer language for conversion copy.",
-    href: "/team/research",
-    icon: MagnifyingGlassIcon,
-    live: true,
+    title: "Client Portals",
+    description: "Team view of every active portal — gates, checklists, handover context.",
+    href: "/team/portals",
+    icon: FolderIcon,
   },
   {
-    title: "Copy Engine",
-    description:
-      "Generate page copy — PDP descriptions, collection intros, and landing page section copy using brand profiles and VOC data.",
-    href: "/team/copy",
-    icon: PencilSquareIcon,
-    live: true,
-  },
-  {
-    title: "Design & Dev",
-    description:
-      "Section reference gallery and per-page component checklists. Know exactly what to build for every page type.",
-    href: "/team/design",
-    icon: CodeBracketIcon,
-    live: true,
+    title: "Operations Wiki",
+    description: "Our internal playbook — process, standards, and the way we deliver.",
+    href: "/tools/ops-wiki",
+    icon: BookOpenIcon,
   },
 ];
 
 const tools = [
   {
     title: "QA Checklist",
-    description: "Interactive quality assurance checklist for client projects with PDF export.",
+    description: "Evergreen Dev QA checklist — run through before handing anything to a client.",
     href: "/team/qa",
     icon: ClipboardDocumentCheckIcon,
   },
@@ -63,54 +49,34 @@ export default function TeamToolsPage() {
             Team Tools
           </h1>
           <p className="text-sm text-[#7A7A7A]">
-            Research, create, and ship — powered by brand intelligence
+            Everything the team needs to deliver — portals, the playbook, and our QA gates.
           </p>
         </div>
 
-        {/* Module Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {modules.map((mod) => {
-            const Card = mod.live ? Link : "div";
-            return (
-              <Card
-                key={mod.title}
-                href={mod.live ? mod.href : "#"}
-                className={`
-                  bg-white border border-[#E5E5EA] rounded-lg p-5 transition-all
-                  ${
-                    mod.live
-                      ? "hover:border-[#1B1B1B] hover:shadow-sm cursor-pointer group"
-                      : "opacity-60 cursor-default"
-                  }
-                `}
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <mod.icon className="size-5 text-[#7A7A7A]" />
-                  <h2 className="text-sm font-semibold text-[#1B1B1B]">
-                    {mod.title}
-                  </h2>
-                  {!mod.live && (
-                    <span className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-[#EDEDEF] text-[#A0A0A0] rounded">
-                      Coming Soon
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-[#7A7A7A] leading-relaxed mb-3">
-                  {mod.description}
-                </p>
-                {mod.live && (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-[#1B1B1B] group-hover:gap-1.5 transition-all">
-                    Open
-                    <ChevronRightIcon className="size-3" />
-                  </span>
-                )}
-              </Card>
-            );
-          })}
+        {/* Primary cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {primary.map((item) => (
+            <Link
+              key={item.title}
+              href={item.href}
+              className="bg-white border border-[#E5E5EA] rounded-lg p-5 hover:border-[#1B1B1B] hover:shadow-sm cursor-pointer group transition-all"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <item.icon className="size-5 text-[#7A7A7A]" />
+                <h2 className="text-sm font-semibold text-[#1B1B1B]">
+                  {item.title}
+                </h2>
+              </div>
+              <p className="text-xs text-[#7A7A7A] leading-relaxed mb-3">
+                {item.description}
+              </p>
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-[#1B1B1B] group-hover:gap-1.5 transition-all">
+                Open
+                <ChevronRightIcon className="size-3" />
+              </span>
+            </Link>
+          ))}
         </div>
-
-        {/* Client Portals Section */}
-        <TeamPortalsSection />
 
         {/* Tools Section */}
         <div className="mt-10">

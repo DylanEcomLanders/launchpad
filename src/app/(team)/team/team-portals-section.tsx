@@ -6,7 +6,7 @@ import { ChevronRightIcon } from "@heroicons/react/24/solid";
 import { getPortals } from "@/lib/portal/data";
 import type { PortalData } from "@/lib/portal/types";
 
-export function TeamPortalsSection() {
+export function TeamPortalsSection({ hideHeader = false }: { hideHeader?: boolean }) {
   const [portals, setPortals] = useState<PortalData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -25,10 +25,12 @@ export function TeamPortalsSection() {
   }, []);
 
   return (
-    <div className="mt-10">
-      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
-        Client Portals
-      </h2>
+    <div className={hideHeader ? "" : "mt-10"}>
+      {!hideHeader && (
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
+          Client Portals
+        </h2>
+      )}
       {loading ? (
         <p className="text-xs text-[#AAA]">Loading…</p>
       ) : portals.length === 0 ? (

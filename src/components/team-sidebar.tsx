@@ -4,9 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  MagnifyingGlassIcon,
-  PencilSquareIcon,
-  CodeBracketIcon,
+  FolderIcon,
+  BookOpenIcon,
   Bars3Icon,
   XMarkIcon,
   HomeIcon,
@@ -25,19 +24,14 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    label: "Research & Intel",
-    href: "/team/research",
-    icon: <MagnifyingGlassIcon className="size-4" />,
+    label: "Portals",
+    href: "/team/portals",
+    icon: <FolderIcon className="size-4" />,
   },
   {
-    label: "Copy Engine",
-    href: "/team/copy",
-    icon: <PencilSquareIcon className="size-4" />,
-  },
-  {
-    label: "Design & Dev",
-    href: "/team/design",
-    icon: <CodeBracketIcon className="size-4" />,
+    label: "Operations Wiki",
+    href: "/tools/ops-wiki",
+    icon: <BookOpenIcon className="size-4" />,
   },
 ];
 
@@ -133,7 +127,7 @@ export function TeamSidebar() {
           {/* Section header */}
           <div className="px-4 mb-1.5">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
-              Modules
+              Delivery
             </span>
           </div>
 
