@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, createContext, useContext } from "react";
+import { Tackboard } from "@/components/tackboard";
 
 const STORAGE_KEY = "launchpad-auth";
 const ROLE_KEY = "launchpad-role";
@@ -23,7 +24,6 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const [checking, setChecking] = useState(true);
   const [shaking, setShaking] = useState(false);
   const [entering, setEntering] = useState(false);
-  const [imgLoaded, setImgLoaded] = useState(false);
 
   useEffect(() => {
     const stored = sessionStorage.getItem(STORAGE_KEY);
@@ -33,13 +33,6 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       setRole(storedRole);
     }
     setChecking(false);
-  }, []);
-
-  // Preload the background image
-  useEffect(() => {
-    const img = new Image();
-    img.src = "/login-bg.png";
-    img.onload = () => setImgLoaded(true);
   }, []);
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
@@ -78,26 +71,18 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (!authed) {
     return (
-      <div className={`min-h-screen flex items-center justify-center relative overflow-hidden transition-all duration-500 ${entering ? "opacity-0 scale-110" : "opacity-100 scale-100"}`}>
-        {/* ── Full-bleed background image ── */}
-        <div
-          className={`absolute inset-0 transition-opacity duration-1000 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
-          style={{
-            backgroundImage: "url(/login-bg.png)",
-            backgroundSize: "cover",
-            backgroundPosition: "center 40%",
-            backgroundRepeat: "no-repeat",
-          }}
-        />
+      <div className={`min-h-screen relative overflow-hidden transition-all duration-500 ${entering ? "opacity-0 scale-110" : "opacity-100 scale-100"}`}>
+        {/* ── Tackboard as the login backdrop ── */}
+        <div className="absolute inset-0">
+          <Tackboard loginMode />
+        </div>
 
-        {/* Soft dark overlay for contrast */}
-        <div className="absolute inset-0 bg-black/25" />
+        {/* Soft dark overlay behind the login card for contrast */}
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
 
-        {/* Bottom vignette for depth */}
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 40%, transparent 70%, rgba(0,0,0,0.15) 100%)" }} />
-
-        {/* ── Login content ── */}
-        <div className="relative z-10 w-full max-w-sm px-6">
+        {/* ── Login content (centered floating card) ── */}
+        <div className="absolute inset-0 flex items-center justify-center px-6 pointer-events-none">
+          <div className="relative z-20 w-full max-w-sm pointer-events-auto">
           {/* Logo / Brand */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-xl mb-5 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
@@ -157,6 +142,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
           <p className="text-center text-[10px] text-white/30 mt-8 tracking-wider drop-shadow-sm">
             ECOM LANDERS &middot; CONVERSION ENGINE
           </p>
+          </div>
         </div>
       </div>
     );

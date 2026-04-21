@@ -23,7 +23,7 @@ const COLOR_CLASSES: Record<NoteColor, string> = {
 
 const AUTHOR_KEY = "tackboard-author";
 
-export function Tackboard() {
+export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
   const [notes, setNotes] = useState<TackboardNote[]>([]);
   const [loading, setLoading] = useState(true);
   const [author, setAuthor] = useState("");
@@ -141,29 +141,44 @@ export function Tackboard() {
         }}
       />
 
-      {/* Header */}
-      <div className="relative z-10 flex items-start justify-between px-8 pt-8 pb-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">Tackboard</h1>
-          <p className="text-sm text-white/50 mt-1">
-            {author ? (
-              <>
-                Posting as <span className="text-white/80 font-medium">{author}</span> ·{" "}
-                <button onClick={() => setAuthorPrompt(true)} className="underline hover:text-white">change</button>
-              </>
-            ) : (
-              "Drop a goal, a win, a reminder — visible to the whole team."
-            )}
+      {/* Header — tucked small in login mode so it doesn't fight the login card */}
+      {loginMode ? (
+        <div className="relative z-10 flex items-center justify-between px-6 pt-5">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-medium">
+            Team Tackboard
           </p>
+          <button
+            onClick={addNote}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 border border-white/20 text-white text-[11px] font-medium rounded-lg hover:bg-white/20 backdrop-blur-xl transition-colors"
+          >
+            <PlusIcon className="size-3" />
+            Add note
+          </button>
         </div>
-        <button
-          onClick={addNote}
-          className="flex items-center gap-1.5 px-4 py-2 bg-white text-[#1A1A1A] text-xs font-semibold rounded-lg hover:bg-white/90 transition-colors"
-        >
-          <PlusIcon className="size-3.5" />
-          New note
-        </button>
-      </div>
+      ) : (
+        <div className="relative z-10 flex items-start justify-between px-8 pt-8 pb-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">Tackboard</h1>
+            <p className="text-sm text-white/50 mt-1">
+              {author ? (
+                <>
+                  Posting as <span className="text-white/80 font-medium">{author}</span> ·{" "}
+                  <button onClick={() => setAuthorPrompt(true)} className="underline hover:text-white">change</button>
+                </>
+              ) : (
+                "Drop a goal, a win, a reminder — visible to the whole team."
+              )}
+            </p>
+          </div>
+          <button
+            onClick={addNote}
+            className="flex items-center gap-1.5 px-4 py-2 bg-white text-[#1A1A1A] text-xs font-semibold rounded-lg hover:bg-white/90 transition-colors"
+          >
+            <PlusIcon className="size-3.5" />
+            New note
+          </button>
+        </div>
+      )}
 
       {/* Board */}
       <div ref={boardRef} className="relative z-10 h-[calc(100vh-100px)] select-none">
