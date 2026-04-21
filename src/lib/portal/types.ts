@@ -48,7 +48,9 @@ export interface FunnelDocument {
   uploaded_at: string;
 }
 
-export type ScopeItem = string | { description: string; type: string };
+export type ScopeItem =
+  | string
+  | { description: string; type: string; design_approved?: boolean; dev_live?: boolean };
 
 export type TestStatus = "ideation" | "scheduled" | "live" | "complete";
 export type TestResult = "winner" | "loser" | "inconclusive";
