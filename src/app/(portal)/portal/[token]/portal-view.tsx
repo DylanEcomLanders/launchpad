@@ -945,6 +945,77 @@ function PageHeader({ title, subtitle }: { title: string; subtitle: string }) {
   );
 }
 
+/* ── Checkpoint stepper — 7-stage project flow ── */
+const CHECKPOINT_STAGES = [
+  "Onboarding",
+  "Research",
+  "Design",
+  "Design Review",
+  "Development",
+  "Development Review",
+  "Launch",
+] as const;
+
+function inferCheckpointIndex(phaseName: string): number {
+  const s = phaseName.toLowerCase();
+  if (!s) return 0;
+  if (s.includes("launch") || s.includes("go-live") || s.includes("live") || s.includes("support")) return 6;
+  if (s.includes("dev") && (s.includes("review") || s.includes("qa"))) return 5;
+  if (s.includes("dev") || s.includes("build")) return 4;
+  if (s.includes("design") && (s.includes("review") || s.includes("revision") || s.includes("handoff"))) return 3;
+  if (s.includes("design")) return 2;
+  if (s.includes("research") || s.includes("discovery") || s.includes("audit")) return 1;
+  if (s.includes("onboard") || s.includes("kickoff") || s.includes("kick-off") || s.includes("brief")) return 0;
+  return 0;
+}
+
+function CheckpointStepper({ currentPhaseName }: { currentPhaseName: string }) {
+  const activeIdx = inferCheckpointIndex(currentPhaseName);
+  return (
+    <div className="flex items-start justify-between gap-1 overflow-x-auto">
+      {CHECKPOINT_STAGES.map((stage, i) => {
+        const done = i < activeIdx;
+        const active = i === activeIdx;
+        return (
+          <div key={stage} className="flex items-start flex-1 min-w-0">
+            <div className="flex flex-col items-center flex-1 min-w-0">
+              <div
+                className={`size-7 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                  done
+                    ? "bg-[#1A1A1A] text-white"
+                    : active
+                    ? "bg-[#1A1A1A] text-white ring-4 ring-[#1A1A1A]/10"
+                    : "bg-[#F3F3F5] text-[#BBB]"
+                }`}
+              >
+                {done ? (
+                  <svg className="size-3.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                  </svg>
+                ) : (
+                  <span className="text-[10px] font-semibold">{i + 1}</span>
+                )}
+              </div>
+              <p
+                className={`text-[10px] font-medium text-center mt-2 leading-tight ${
+                  active ? "text-[#1A1A1A]" : done ? "text-[#777]" : "text-[#BBB]"
+                }`}
+              >
+                {stage}
+              </p>
+            </div>
+            {i < CHECKPOINT_STAGES.length - 1 && (
+              <div
+                className={`h-px flex-1 mt-3.5 mx-1 ${done ? "bg-[#1A1A1A]" : "bg-[#ECECEC]"}`}
+              />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /* ── Client Hub (Home) ── */
 function ClientHub({
   portal,
@@ -981,10 +1052,19 @@ function ClientHub({
   // Current phase for fallback display
   const currentPhase = portal.phases.find(p => p.status === "in-progress");
 
+  // Resolve the active project's in-progress phase (falls back to portal-level)
+  const primaryProject = activePageProjects[0] || (projects[0] ?? null);
+  const primaryPhase =
+    (primaryProject?.phases?.length
+      ? primaryProject.phases.find((p) => p.status === "in-progress")
+      : null) ?? currentPhase ?? null;
+  const checkpointHint =
+    (primaryPhase?.name || primaryProject?.current_phase || portal.current_phase || "").toLowerCase();
+
   return (
     <div>
       {/* Welcome */}
-      <div className="mb-10">
+      <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight text-[#1A1A1A]">
           Welcome, {firstName}
         </h1>
@@ -992,6 +1072,14 @@ function ClientHub({
           Here&apos;s an overview of everything we&apos;re working on together.
         </p>
       </div>
+
+      {/* Checkpoint stepper — gives clients the flow at a glance */}
+      {activePageProjects.length > 0 && (
+        <div className="mb-10 pb-8 border-b border-[#F0F0F0]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#888] mb-4">Project Flow</p>
+          <CheckpointStepper currentPhaseName={checkpointHint} />
+        </div>
+      )}
 
       {/* Next touchpoint */}
       {touchpoint?.date && (
