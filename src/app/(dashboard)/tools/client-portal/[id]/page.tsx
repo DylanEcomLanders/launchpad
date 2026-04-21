@@ -2720,6 +2720,9 @@ function TestingSection({
   const [rpvA, setRpvA] = useState("");
   const [rpvB, setRpvB] = useState("");
   const [figmaUrl, setFigmaUrl] = useState("");
+  const [screenshotUrl, setScreenshotUrl] = useState("");
+  const [uploadingScreenshot, setUploadingScreenshot] = useState(false);
+  const [notes, setNotes] = useState("");
   const [igTestId, setIgTestId] = useState("");
   const [igFetching, setIgFetching] = useState(false);
   const [startDate, setStartDate] = useState("");
@@ -2803,8 +2806,22 @@ function TestingSection({
     setName(""); setMetric(""); setStatus("scheduled"); setResult("winner");
     setCvrA(""); setCvrB(""); setAovA(""); setAovB("");
     setRpvA(""); setRpvB(""); setWeek("");
-    setFigmaUrl(""); setIgTestId(""); setStartDate(""); setEndDate("");
+    setFigmaUrl(""); setScreenshotUrl(""); setNotes("");
+    setIgTestId(""); setStartDate(""); setEndDate("");
     setEditId(null); setShowForm(false);
+  };
+
+  const handleScreenshotUpload = async (file: File) => {
+    setUploadingScreenshot(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/design-brief/upload?bucket=design-briefs", { method: "POST", body: fd });
+      if (!res.ok) throw new Error("Upload failed");
+      const data = await res.json();
+      if (data.url) setScreenshotUrl(data.url);
+    } catch { /* silent */ }
+    setUploadingScreenshot(false);
   };
 
   // Fetch metrics from Intelligems by test ID
@@ -2842,6 +2859,8 @@ function TestingSection({
     setRpvA(test.rpv?.a || ""); setRpvB(test.rpv?.b || "");
     setWeek(test.week || "");
     setFigmaUrl(test.figma_url || "");
+    setScreenshotUrl(test.screenshot_url || "");
+    setNotes(test.notes || "");
     setIgTestId(test.intelligems_test_id || "");
     setStartDate(test.startDate);
     setEndDate(test.endDate || "");
@@ -2865,6 +2884,8 @@ function TestingSection({
       aov: buildSnapshot(aovA, aovB),
       rpv: buildSnapshot(rpvA, rpvB),
       figma_url: figmaUrl.trim() || undefined,
+      screenshot_url: screenshotUrl.trim() || undefined,
+      notes: notes.trim() || undefined,
       intelligems_test_id: igTestId.trim() || undefined,
       week: week.trim(),
       startDate: startDate.trim(),
@@ -3066,6 +3087,27 @@ function TestingSection({
                 <input type="text" value={startDate} onChange={(e) => setStartDate(e.target.value)} placeholder="e.g., 5 Mar" className={inputClass} />
               </div>
             </div>
+            <div>
+              <label className={labelClass}>Notes</label>
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="What changed, what to look at, any context…" className={inputClass + " min-h-[72px] resize-y"} />
+            </div>
+            <div>
+              <label className={labelClass}>Screenshot</label>
+              {screenshotUrl ? (
+                <div className="relative inline-block">
+                  <img src={screenshotUrl} alt="Test screenshot" className="max-h-48 rounded-lg border border-[#E8E8E8]" />
+                  <button onClick={() => setScreenshotUrl("")} className="absolute top-1 right-1 p-1 bg-white/90 hover:bg-white rounded-md shadow-sm" title="Remove">
+                    <XMarkIcon className="size-3.5 text-[#555]" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center gap-1 py-6 border border-dashed border-[#E8E8E8] rounded-lg cursor-pointer hover:border-[#C5C5C5] transition-colors bg-white">
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleScreenshotUpload(f); }} />
+                  <span className="text-[11px] font-medium text-[#7A7A7A]">{uploadingScreenshot ? "Uploading…" : "Click to upload screenshot"}</span>
+                  <span className="text-[10px] text-[#B5B5B5]">PNG, JPG, up to 50MB</span>
+                </label>
+              )}
+            </div>
             <button onClick={() => { if (!name.trim() || !metric.trim()) return; handleSave(); }} disabled={!name.trim() || !metric.trim()} className="flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg disabled:opacity-40">
               <CheckIcon className="size-3.5" /> {editId ? "Update" : "Add Test"}
             </button>
@@ -3132,6 +3174,18 @@ function TestingSection({
                         </div>
                       );
                     })}
+                  </div>
+                )}
+                {test.notes && (
+                  <div className="border-t border-[#F0F0F0] px-4 py-2.5">
+                    <p className="text-[11px] text-[#666] leading-relaxed whitespace-pre-wrap">{test.notes}</p>
+                  </div>
+                )}
+                {test.screenshot_url && (
+                  <div className="border-t border-[#F0F0F0] px-4 py-3">
+                    <a href={test.screenshot_url} target="_blank" rel="noopener noreferrer">
+                      <img src={test.screenshot_url} alt={test.name} className="max-h-64 rounded-md border border-[#E8E8E8] hover:border-[#C5C5C5] transition-colors" />
+                    </a>
                   </div>
                 )}
                 {test.figma_url && (

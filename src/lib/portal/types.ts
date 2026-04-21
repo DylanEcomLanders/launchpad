@@ -59,6 +59,8 @@ export interface PortalTestResult {
   aov?: MetricSnapshot;
   rpv?: MetricSnapshot;
   figma_url?: string;
+  screenshot_url?: string;
+  notes?: string;
   intelligems_test_id?: string; // Links to a specific Intelligems test for auto-metrics
   week: string; // e.g. "W12 — 18 Mar"
   startDate: string;
