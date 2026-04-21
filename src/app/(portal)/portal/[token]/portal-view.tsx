@@ -972,43 +972,47 @@ function inferCheckpointIndex(phaseName: string): number {
 function CheckpointStepper({ currentPhaseName }: { currentPhaseName: string }) {
   const activeIdx = inferCheckpointIndex(currentPhaseName);
   return (
-    <div className="flex items-start justify-between gap-1 overflow-x-auto">
+    <div className="grid grid-cols-7 gap-0">
       {CHECKPOINT_STAGES.map((stage, i) => {
         const done = i < activeIdx;
         const active = i === activeIdx;
+        const prevDone = i - 1 < activeIdx;
         return (
-          <div key={stage} className="flex items-start flex-1 min-w-0">
-            <div className="flex flex-col items-center flex-1 min-w-0">
+          <div key={stage} className="flex flex-col items-center relative">
+            {/* Connector from previous dot to this dot */}
+            {i > 0 && (
               <div
-                className={`size-7 rounded-full flex items-center justify-center shrink-0 transition-colors ${
-                  done
-                    ? "bg-[#1A1A1A] text-white"
-                    : active
-                    ? "bg-[#1A1A1A] text-white ring-4 ring-[#1A1A1A]/10"
-                    : "bg-[#F3F3F5] text-[#BBB]"
+                className={`absolute top-3.5 right-1/2 w-full h-px ${
+                  prevDone ? "bg-[#1A1A1A]" : "bg-[#ECECEC]"
                 }`}
-              >
-                {done ? (
-                  <svg className="size-3.5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
-                  </svg>
-                ) : (
-                  <span className="text-[10px] font-semibold">{i + 1}</span>
-                )}
-              </div>
-              <p
-                className={`text-[10px] font-medium text-center mt-2 leading-tight ${
-                  active ? "text-[#1A1A1A]" : done ? "text-[#777]" : "text-[#BBB]"
-                }`}
-              >
-                {stage}
-              </p>
-            </div>
-            {i < CHECKPOINT_STAGES.length - 1 && (
-              <div
-                className={`h-px flex-1 mt-3.5 mx-1 ${done ? "bg-[#1A1A1A]" : "bg-[#ECECEC]"}`}
               />
             )}
+            {/* Dot */}
+            <div
+              className={`relative size-7 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                done
+                  ? "bg-[#1A1A1A] text-white"
+                  : active
+                  ? "bg-[#1A1A1A] text-white ring-4 ring-[#1A1A1A]/10"
+                  : "bg-[#F3F3F5] text-[#BBB]"
+              }`}
+            >
+              {done ? (
+                <svg className="size-3.5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                </svg>
+              ) : (
+                <span className="text-[10px] font-semibold">{i + 1}</span>
+              )}
+            </div>
+            {/* Label */}
+            <p
+              className={`text-[10px] font-medium text-center mt-2 leading-tight px-1 ${
+                active ? "text-[#1A1A1A]" : done ? "text-[#777]" : "text-[#BBB]"
+              }`}
+            >
+              {stage}
+            </p>
           </div>
         );
       })}
@@ -1162,43 +1166,58 @@ function ClientHub({
       {activePageProjects.length > 0 && (
         <div className="mb-8 pb-8 border-b border-[#F0F0F0]">
           <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#888] mb-3">Active Projects</p>
-          {activePageProjects.map((proj) => {
-            const idx = projects.indexOf(proj);
-            const phase = (proj.phases?.length ? proj.phases : portal.phases).find(p => p.status === "in-progress");
-            const progress = proj.progress || portal.progress || 0;
-            return (
-              <div
-                key={proj.id}
-                className="border border-[#E8E8E8] rounded-xl p-4 mb-2 hover:border-[#C5C5C5] transition-colors"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    {proj.status === "active" && <span className="size-2 rounded-full bg-emerald-500 shrink-0" />}
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-[#1A1A1A]">{proj.name}</p>
-                      <p className="text-xs text-[#AAA] mt-0.5">
-                        {proj.created_at && <span className="mr-2">Started {new Date(proj.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} ·</span>}
-                        {phase ? phase.name : proj.current_phase || portal.current_phase || "In progress"}
-                        {progress > 0 && <span className="ml-3">{progress}%</span>}
-                      </p>
+          <div className="space-y-2">
+            {activePageProjects.map((proj) => {
+              const idx = projects.indexOf(proj);
+              const phase = (proj.phases?.length ? proj.phases : portal.phases).find((p) => p.status === "in-progress");
+              const progress = proj.progress || portal.progress || 0;
+              const projScope = (proj.scope?.length ? proj.scope : portal.scope) || [];
+              const deliverablesTotal = projScope.length;
+              const deliverablesShipped = projScope.filter(
+                (s) => typeof s === "object" && s !== null && !!(s as { dev_live?: boolean }).dev_live
+              ).length;
+              const phaseName = phase?.name || proj.current_phase || portal.current_phase || "In progress";
+              return (
+                <button
+                  key={proj.id}
+                  onClick={() => onOpenProject(idx)}
+                  className="w-full text-left block border border-[#E8E8E8] rounded-xl p-5 bg-white hover:border-[#1A1A1A] hover:shadow-sm transition-all group"
+                >
+                  <div className="flex items-start justify-between gap-4 mb-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        {proj.status === "active" && <span className="size-2 rounded-full bg-emerald-500 shrink-0" />}
+                        <p className="text-base font-bold tracking-tight text-[#1A1A1A] truncate">{proj.name}</p>
+                      </div>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-[#F3F3F5] text-[10px] font-semibold uppercase tracking-wider text-[#555]">
+                        {phaseName}
+                      </span>
                     </div>
+                    <span className="flex items-center gap-1.5 text-[11px] font-medium text-[#777] group-hover:text-[#1A1A1A] transition-colors shrink-0">
+                      View
+                      <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+                    </span>
                   </div>
-                  <button
-                    onClick={() => onOpenProject(idx)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium border border-[#E5E5EA] rounded-lg text-[#777] hover:text-[#1A1A1A] hover:border-[#999] transition-colors shrink-0"
-                  >
-                    View
-                    <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
-                  </button>
-                </div>
-                {progress > 0 && (
-                  <div className="mt-3 h-1 bg-[#F0F0F0] rounded-full overflow-hidden">
-                    <div className="h-full bg-[#1A1A1A] rounded-full" style={{ width: `${progress}%` }} />
+
+                  <div className="flex items-center justify-between text-[11px] text-[#888] mb-2">
+                    <span>
+                      {proj.created_at && (
+                        <>Started {new Date(proj.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</>
+                      )}
+                      {deliverablesTotal > 0 && (
+                        <> · {deliverablesShipped} of {deliverablesTotal} deliverables live</>
+                      )}
+                    </span>
+                    {progress > 0 && <span className="font-semibold text-[#1A1A1A]">{progress}%</span>}
                   </div>
-                )}
-              </div>
-            );
-          })}
+
+                  <div className="h-1.5 bg-[#F0F0F0] rounded-full overflow-hidden">
+                    <div className="h-full bg-[#1A1A1A] rounded-full transition-all" style={{ width: `${progress}%` }} />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 
