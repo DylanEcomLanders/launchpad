@@ -26,6 +26,7 @@ import { BrandedReport } from "@/components/branded-report";
 import { InternalSection } from "@/components/internal-section";
 import { GateChecklistForm } from "@/components/gate-checklist-form";
 import { createReview, addVersion } from "@/lib/portal/reviews";
+import { RoadmapList } from "@/components/portal/roadmap-list";
 import {
   GATE_CONFIG,
   CRO_BRIEF_ITEMS,
@@ -54,7 +55,7 @@ const GATE_KEY_TO_QA_KEY: Record<GateKey, string> = {
 };
 
 /* ── Tab type ── */
-type Tab = "overview" | "timeline" | "testing" | "updates" | "scope" | "designs" | "development" | "build" | "results" | "requests" | "funnels" | "reports" | "internal";
+type Tab = "overview" | "timeline" | "testing" | "updates" | "scope" | "designs" | "development" | "build" | "results" | "requests" | "funnels" | "reports" | "internal" | "roadmap";
 
 /* ── SVG Progress Ring ── */
 function ProgressRing({
@@ -270,7 +271,7 @@ export function PortalView({
     const isRet = proj?.type === "retainer" || (idx === -1 && portal.client_type === "retainer");
     if (isRet) {
       setDrillView("retainer");
-      setActiveTab("testing");
+      setActiveTab("roadmap");
     } else {
       setDrillView("project");
       setActiveTab("scope");
@@ -381,6 +382,7 @@ export function PortalView({
       ]
     : drillView === "retainer"
     ? [
+        { key: "roadmap" as Tab, label: "Roadmap" },
         { key: "testing" as Tab, label: "Testing" },
         { key: "scope", label: "Deliverables" },
         ...(publishedReports.length > 0 ? [{ key: "reports" as Tab, label: "Reports" }] : []),
@@ -519,6 +521,12 @@ export function PortalView({
               />
             )}
             {/* timeline tab kept for backward compat but merged into scope */}
+            {activeTab === "roadmap" && isRetainer && (
+              <>
+                <PageHeader title="Roadmap" subtitle="What we're shipping, what's next, what's been delivered" />
+                <RoadmapList portalId={portal.id} readOnly />
+              </>
+            )}
             {activeTab === "testing" && isRetainer && (
               <>
                 <PageHeader title="Weekly Testing" subtitle="Your testing cadence and schedule" />

@@ -1089,24 +1089,18 @@ export default function PortalDetailPage() {
                 saving={saving}
               />
             </div>
-            <div>
-              <h3 className="text-xs font-semibold text-[#1A1A1A] mb-4">Design Reviews</h3>
-              <DesignsSection
-                portal={portal}
-                reviews={reviews}
-                onReviewsChange={setReviews}
-              />
-            </div>
-            <div>
-              <h3 className="text-xs font-semibold text-[#1A1A1A] mb-4">Development</h3>
-              <DevelopmentSection
-                portal={portal}
-                pageReviews={pageReviews}
-                pageReviewVersions={pageReviewVersions}
-                pageReviewFeedback={pageReviewFeedback}
-                onReload={load}
-              />
-            </div>
+            <DesignsSection
+              portal={portal}
+              reviews={reviews}
+              onReviewsChange={setReviews}
+            />
+            <DevelopmentSection
+              portal={portal}
+              pageReviews={pageReviews}
+              pageReviewVersions={pageReviewVersions}
+              pageReviewFeedback={pageReviewFeedback}
+              onReload={load}
+            />
           </div>
         )}
 
@@ -1208,16 +1202,13 @@ export default function PortalDetailPage() {
                 </div>
               )}
             </div>
-            <div>
-              <h3 className="text-xs font-semibold text-[#1A1A1A] mb-4">Reports</h3>
-              <ReportsSection
-                reports={portal.reports || []}
-                onUpdate={async (reports) => {
-                  await updatePortal(portal.id, { reports } as any);
-                  setPortal({ ...portal, reports });
-                }}
-              />
-            </div>
+            <ReportsSection
+              reports={portal.reports || []}
+              onUpdate={async (reports) => {
+                await updatePortal(portal.id, { reports } as any);
+                setPortal({ ...portal, reports });
+              }}
+            />
           </div>
         )}
 
@@ -3641,7 +3632,7 @@ function DevelopmentSection({
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-[#1B1B1B]">Page Reviews</h3>
+        <h3 className="text-xs font-semibold text-[#1A1A1A]">Page Reviews</h3>
         <button
           onClick={() => setShowForm(!showForm)}
           className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D]"
@@ -4377,8 +4368,8 @@ function ReportsSection({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-lg font-semibold tracking-tight">Reports</h2>
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-semibold text-[#1A1A1A]">Reports</h3>
         <button
           onClick={() => setShowUpload(!showUpload)}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors"
