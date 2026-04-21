@@ -1089,16 +1089,16 @@ function ClientHub({
       {touchpoint?.date && (
         <div className="mb-8 pb-8 border-b border-[#F0F0F0]">
           <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#888] mb-3">Next Touchpoint</p>
-          <div className="bg-[#1A1A1A] text-white rounded-xl p-5 flex items-end justify-between gap-4">
-            <div className="min-w-0">
-              <p className="text-2xl font-bold tracking-tight">{touchpointDate}</p>
+          <div className="border border-[#E8E8E8] rounded-xl p-4 bg-white flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <p className="text-base font-semibold tracking-tight text-[#1A1A1A]">{touchpointDate}</p>
               {currentPhase?.name && (
-                <span className="inline-flex items-center px-2 py-0.5 mt-2 rounded-md bg-white/10 text-[10px] font-semibold uppercase tracking-wider text-white/80">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-[#F3F3F5] text-[10px] font-semibold uppercase tracking-wider text-[#555]">
                   {currentPhase.name}
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-white/40 shrink-0">All times UK</p>
+            <p className="text-[11px] text-[#AAA] shrink-0">All times UK</p>
           </div>
         </div>
       )}
