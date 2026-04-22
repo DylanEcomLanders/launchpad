@@ -354,37 +354,42 @@ function MarkdownSlide({ content }: { content: string }) {
 
 // ─────────── Slide 2: Leak nobody owns ───────────
 function LeakDiagramSlide() {
-  const roles = [
-    { icon: MegaphoneIcon, label: "Ads", desc: "Getting traffic in" },
-    { icon: EnvelopeIcon, label: "Email / SMS", desc: "Working the list" },
-    { icon: PaintBrushIcon, label: "Design", desc: "Shipping one-off pages" },
-  ];
   return (
     <div className="slide-leak">
-      <h2>The leak nobody owns</h2>
+      <h2>Your ads are working. Your conversion isn&rsquo;t.</h2>
 
-      <p className="slide-kicker">You already have the right people in place.</p>
-      <div className="role-row">
-        {roles.map((r) => (
-          <div key={r.label} className="role-card">
-            <r.icon className="role-icon" />
-            <p className="role-label">{r.label}</p>
-            <p className="role-desc">{r.desc}</p>
-          </div>
-        ))}
-      </div>
+      <div className="flow-diagram">
+        <div className="flow-node">
+          <MegaphoneIcon className="flow-icon" />
+          <span className="flow-label">Ads</span>
+          <p className="flow-desc">Traffic in</p>
+        </div>
 
-      <p className="slide-kicker">What you don&rsquo;t.</p>
-      <div className="gap-card">
-        <span className="gap-dot" aria-hidden />
-        <div>
-          <p className="gap-label">Conversion layer</p>
-          <p className="gap-desc">Unowned. Unmeasured. Bleeding revenue daily.</p>
+        <div className="flow-pipe flow-pipe-in" aria-hidden>
+          <span className="flow-pipe-label">100K sessions / mo</span>
+        </div>
+
+        <div className="flow-node flow-node-us">
+          <span className="flow-node-badge">Us</span>
+          <SparklesIcon className="flow-icon" />
+          <span className="flow-label">Conversion Engine</span>
+          <p className="flow-desc">The layer between click and buy</p>
+          <span className="flow-warn">1.8% CVR — leaking 98% of ad spend</span>
+        </div>
+
+        <div className="flow-pipe flow-pipe-out" aria-hidden>
+          <span className="flow-pipe-label">~1,800 buyers</span>
+        </div>
+
+        <div className="flow-node">
+          <EnvelopeIcon className="flow-icon" />
+          <span className="flow-label">Email / SMS</span>
+          <p className="flow-desc">Retain + LTV</p>
         </div>
       </div>
 
       <p className="slide-foot">
-        Traffic walks in. Half walks back out. Nobody&rsquo;s KPI is to fix it.
+        The reason your ROAS has stalled isn&rsquo;t the ad team. It&rsquo;s the layer in the middle — the one nobody owns. <strong>That&rsquo;s the layer we own.</strong>
       </p>
     </div>
   );
@@ -1182,59 +1187,105 @@ export function SalesDeckPresentation({
           color: rgba(255,255,255,0.5);
         }
 
-        /* ─────────── Slide 2: Leak ─────────── */
-        .role-row {
+        /* ─────────── Slide 2: Leak flow ─────────── */
+        .slide-leak h2 { max-width: 44rem; margin-bottom: 3rem; }
+        .flow-diagram {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 2.5rem;
-          margin-bottom: 3rem;
-          padding-bottom: 2rem;
-          border-bottom: 1px solid rgba(255,255,255,0.08);
-        }
-        .role-card {
-          background: transparent;
-          border: none;
-          padding: 0;
-        }
-        .role-icon {
-          width: 20px;
-          height: 20px;
-          color: rgba(255,255,255,0.5);
+          grid-template-columns: auto 1fr auto 1fr auto;
+          align-items: center;
+          gap: 0;
           margin-bottom: 1rem;
         }
-        .role-label {
-          font-size: 1.15rem !important;
-          font-weight: 600 !important;
-          color: white !important;
-          margin: 0 0 0.25rem 0 !important;
-          letter-spacing: -0.01em;
-        }
-        .role-desc {
-          font-size: 0.95rem !important;
-          color: rgba(255,255,255,0.5) !important;
-          margin: 0 !important;
-        }
-
-        .gap-card {
-          display: flex;
-          align-items: baseline;
-          gap: 1.25rem;
-          padding: 0;
-          border: none;
+        .flow-node {
+          position: relative;
+          padding: 1.5rem 1.25rem 1.5rem;
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 14px;
+          min-width: 160px;
           background: transparent;
         }
-        .gap-dot { display: none; }
-        .gap-label {
-          font-size: 2rem !important;
-          font-weight: 700 !important;
-          color: white !important;
-          margin: 0 !important;
-          letter-spacing: -0.025em;
+        .flow-node-us {
+          padding: 2rem 1.75rem 2rem;
+          border: 1px solid rgba(255,255,255,0.85);
+          background: rgba(255,255,255,0.03);
+          min-width: 220px;
+          box-shadow: 0 0 0 4px rgba(255,255,255,0.04);
         }
-        .gap-desc {
-          font-size: 1rem !important;
+        .flow-node-badge {
+          position: absolute;
+          top: -10px;
+          left: 1.5rem;
+          background: white;
+          color: #0A0A0A;
+          font-size: 0.65rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.22em;
+          padding: 0.2rem 0.55rem;
+          border-radius: 3px;
+        }
+        .flow-icon {
+          width: 20px;
+          height: 20px;
+          color: rgba(255,255,255,0.55);
+          margin-bottom: 0.75rem;
+        }
+        .flow-node-us .flow-icon { color: white; }
+        .flow-label {
+          display: block;
+          font-size: 1.05rem !important;
+          font-weight: 600 !important;
+          color: white !important;
+          margin: 0 0 0.2rem 0 !important;
+          letter-spacing: -0.01em;
+        }
+        .flow-node-us .flow-label { font-size: 1.25rem !important; }
+        .flow-desc {
+          font-size: 0.85rem !important;
           color: rgba(255,255,255,0.5) !important;
           margin: 0 !important;
+          line-height: 1.4;
+        }
+        .flow-warn {
+          display: inline-block;
+          margin-top: 0.85rem;
+          font-size: 0.72rem;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.9);
+          padding: 0.3rem 0.55rem;
+          border-top: 1px solid rgba(255,255,255,0.15);
+          padding-top: 0.75rem;
+          padding-left: 0;
+          font-weight: 500;
+        }
+
+        /* Flow pipes — the visual leak */
+        .flow-pipe {
+          position: relative;
+          background: white;
+          align-self: center;
+        }
+        .flow-pipe-in {
+          height: 44px;
+          opacity: 0.85;
+        }
+        .flow-pipe-out {
+          height: 6px;
+          opacity: 0.55;
+        }
+        .flow-pipe-label {
+          position: absolute;
+          top: calc(100% + 10px);
+          left: 50%;
+          transform: translateX(-50%);
+          font-size: 0.72rem;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.55);
+          white-space: nowrap;
+          font-weight: 500;
+          font-variant-numeric: tabular-nums;
         }
 
         /* ─────────── Slide 4: Page build vs CE ─────────── */
