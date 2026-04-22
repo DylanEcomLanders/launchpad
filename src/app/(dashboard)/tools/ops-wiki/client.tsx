@@ -40,8 +40,9 @@ interface OpsWikiModule {
   shortTitle: string;
   icon: string;
   content: string;
-  category: "flow" | "sales" | "design" | "development" | "cro" | "operations" | "qa" | "client";
+  category: "flow" | "design" | "development" | "cro" | "operations" | "qa" | "client";
   toolHref?: string;
+  subGroup?: string;
 }
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -72,7 +73,6 @@ const iconMap: Record<string, React.ReactNode> = {
 
 const categoryLabels: Record<string, string> = {
   flow: "PROJECT FLOWS",
-  sales: "SALES MATERIAL",
   design: "DESIGN",
   development: "DEVELOPMENT",
   cro: "CRO",
@@ -83,7 +83,6 @@ const categoryLabels: Record<string, string> = {
 
 const categoryColors: Record<string, string> = {
   flow: "#1B1B1B",
-  sales: "#F59E0B",
   design: "#8B5CF6",
   development: "#10B981",
   cro: "#EF4444",
@@ -92,7 +91,7 @@ const categoryColors: Record<string, string> = {
   client: "#EC4899",
 };
 
-const categoryOrder: OpsWikiModule["category"][] = ["flow", "sales", "design", "development", "cro", "operations", "qa", "client"];
+const categoryOrder: OpsWikiModule["category"][] = ["flow", "design", "development", "cro", "operations", "qa", "client"];
 
 export default function OpsWikiClient({ modules }: { modules: OpsWikiModule[] }) {
   const searchParams = useSearchParams();
@@ -177,20 +176,30 @@ export default function OpsWikiClient({ modules }: { modules: OpsWikiModule[] })
                         </button>
                         {ceOpen && (
                           <div className="ml-4 pl-2 mb-1 border-l border-[#E8E8E8]">
-                            {ceItems.map((ce) => (
-                              <button
-                                key={ce.slug}
-                                onClick={() => setActiveSlug(ce.slug)}
-                                className={`flex items-center gap-2 w-full px-2 py-1 rounded-lg text-[11px] transition-colors mb-0.5 ${
-                                  activeSlug === ce.slug
-                                    ? "bg-[#F0F0F0] text-[#1B1B1B] font-medium"
-                                    : "text-[#888] hover:bg-[#FAFAFA] hover:text-[#1B1B1B]"
-                                }`}
-                              >
-                                <span className="shrink-0 text-[#BBB]">{iconMap[ce.icon] || <ChevronRightIcon className="size-3" />}</span>
-                                <span className="truncate">{ce.shortTitle}</span>
-                              </button>
-                            ))}
+                            {ceItems.map((ce, i) => {
+                              const prevGroup = i > 0 ? ceItems[i - 1].subGroup : undefined;
+                              const showGroupHeader = ce.subGroup && ce.subGroup !== prevGroup;
+                              return (
+                                <div key={ce.slug}>
+                                  {showGroupHeader && (
+                                    <p className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA] px-2 mt-3 mb-1">
+                                      {ce.subGroup}
+                                    </p>
+                                  )}
+                                  <button
+                                    onClick={() => setActiveSlug(ce.slug)}
+                                    className={`flex items-center gap-2 w-full px-2 py-1 rounded-lg text-[11px] transition-colors mb-0.5 ${
+                                      activeSlug === ce.slug
+                                        ? "bg-[#F0F0F0] text-[#1B1B1B] font-medium"
+                                        : "text-[#888] hover:bg-[#FAFAFA] hover:text-[#1B1B1B]"
+                                    }`}
+                                  >
+                                    <span className="shrink-0 text-[#BBB]">{iconMap[ce.icon] || <ChevronRightIcon className="size-3" />}</span>
+                                    <span className="truncate">{ce.shortTitle}</span>
+                                  </button>
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
                       </div>

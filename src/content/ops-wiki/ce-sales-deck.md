@@ -1,6 +1,8 @@
 # Sales Deck — Conversion Partnership Pitch
 
-Ten-slide deck for the deep-dive audit meeting. Copy slide-by-slide into Google Slides / Canva when you need a branded version. Content is the source of truth — update here, re-export only when visuals change.
+Ten-slide deck for the deep-dive audit meeting. Content is the source of truth — update below, the presentation view auto-updates.
+
+> **🎥 [Open fullscreen presentation →](/sales-deck)** · screen-share friendly · arrow keys navigate slides
 
 ---
 

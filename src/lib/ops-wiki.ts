@@ -9,15 +9,17 @@ export interface OpsWikiModule {
   shortTitle: string;
   icon: string;
   content: string;
-  category: "flow" | "sales" | "design" | "development" | "cro" | "operations" | "qa" | "client";
+  category: "flow" | "design" | "development" | "cro" | "operations" | "qa" | "client";
   toolHref?: string;
   /** Hide from the /team/ops-wiki view — commercial / sales / finance content the team doesn't need to see. */
   adminOnly?: boolean;
+  /** Optional sub-group label rendered as a divider before this item inside the CE dropdown. */
+  subGroup?: string;
 }
 
 const moduleMap: Record<
   string,
-  { title: string; shortTitle: string; icon: string; category: OpsWikiModule["category"]; toolHref?: string; adminOnly?: boolean }
+  { title: string; shortTitle: string; icon: string; category: OpsWikiModule["category"]; toolHref?: string; adminOnly?: boolean; subGroup?: string }
 > = {
   // ── Project Flows (Layer 1) ──
   "flow-00-inbox": {
@@ -115,27 +117,30 @@ const moduleMap: Record<
     adminOnly: true,
   },
 
-  // ── Sales Material (admin-only, live-editable pitch resources) ──
-  "sales-deck": {
+  // ── Sales Material (admin-only, live-editable pitch resources, nested inside the CE dropdown) ──
+  "ce-sales-deck": {
     title: "Sales Deck — Conversion Partnership Pitch",
     shortTitle: "Sales Deck",
     icon: "presentation",
-    category: "sales",
+    category: "flow",
     adminOnly: true,
+    subGroup: "Sales Material",
   },
-  "sales-cheat-sheet": {
+  "ce-sales-cheat-sheet": {
     title: "Sales Cheat Sheet — One-page Internal Reference",
     shortTitle: "Cheat Sheet",
     icon: "clipboard",
-    category: "sales",
+    category: "flow",
     adminOnly: true,
+    subGroup: "Sales Material",
   },
-  "sales-objections": {
+  "ce-sales-objections": {
     title: "Objection Bank — Position & Proof",
     shortTitle: "Objection Bank",
     icon: "megaphone",
-    category: "sales",
+    category: "flow",
     adminOnly: true,
+    subGroup: "Sales Material",
   },
 
   // ── Design (Layer 2) ──

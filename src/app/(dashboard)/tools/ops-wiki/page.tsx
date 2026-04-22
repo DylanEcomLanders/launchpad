@@ -11,6 +11,7 @@ export default function OpsWikiPage() {
     content: m.content,
     category: m.category,
     toolHref: m.toolHref,
+    subGroup: m.subGroup,
   }));
   return <OpsWikiClient modules={serialized} />;
 }
