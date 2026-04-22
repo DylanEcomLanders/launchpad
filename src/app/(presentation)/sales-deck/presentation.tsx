@@ -225,7 +225,7 @@ function RevenueCalculatorSlide({
           </div>
           <div className="calc-out-block calc-out-block-big">
             <p className="calc-out-label">Annual opportunity</p>
-            <p className="calc-out-value calc-out-accent">{formatGBP(annual)}</p>
+            <p className="calc-out-value">{formatGBP(annual)}</p>
           </div>
         </div>
       </div>
@@ -374,7 +374,7 @@ function LeakDiagramSlide() {
         ))}
       </div>
 
-      <p className="slide-kicker slide-kicker-red">What you don&rsquo;t.</p>
+      <p className="slide-kicker">What you don&rsquo;t.</p>
       <div className="gap-card">
         <span className="gap-dot" aria-hidden />
         <div>
@@ -592,6 +592,7 @@ function NextStepSlide() {
           </p>
           <span className="next-cta">30 min · Google Meet</span>
         </div>
+        <div className="next-divider" aria-hidden />
         <div className="next-card next-card-accent">
           <ClipboardDocumentListIcon className="next-icon" />
           <p className="next-title">Deep-dive audit</p>
@@ -782,19 +783,19 @@ export function SalesDeckPresentation({
 
       <style>{`
         .deck-slide h1 {
-          font-size: 3rem;
+          font-size: 4.5rem;
           font-weight: 800;
-          letter-spacing: -0.02em;
+          letter-spacing: -0.028em;
           margin-bottom: 1.5rem;
-          line-height: 1.1;
+          line-height: 1.02;
           color: white;
         }
         .deck-slide h2 {
-          font-size: 2.25rem;
+          font-size: 3.5rem;
           font-weight: 700;
-          letter-spacing: -0.02em;
-          margin-bottom: 1.5rem;
-          line-height: 1.15;
+          letter-spacing: -0.028em;
+          margin-bottom: 2.25rem;
+          line-height: 1.04;
           color: white;
         }
         .deck-slide h3 {
@@ -929,11 +930,10 @@ export function SalesDeckPresentation({
           to   { transform: translateY(0); }
         }
 
-        /* Enter-engine transition (cover exit) */
+        /* Enter-engine transition (cover exit).
+           Mark uses a keyframe animation so it can blow up to 22× for drama
+           while the opacity curve forces it invisible before it gets past ~5×. */
         .deck-slide .ce-logo-mark {
-          transition:
-            transform 340ms cubic-bezier(0.55, 0, 0.25, 1),
-            opacity 140ms ease-out;
           will-change: transform, opacity;
           transform-origin: 50% 50%;
         }
@@ -950,8 +950,14 @@ export function SalesDeckPresentation({
           will-change: opacity;
         }
         .is-entering-engine .ce-logo-mark {
-          transform: scale3d(8, 8, 1);
-          opacity: 0;
+          animation: mark-exit 520ms cubic-bezier(0.4, 0, 0.6, 1) forwards;
+        }
+        @keyframes mark-exit {
+          0%   { transform: scale3d(1, 1, 1);     opacity: 1; }
+          25%  { transform: scale3d(4, 4, 1);     opacity: 0.85; }
+          50%  { transform: scale3d(9, 9, 1);     opacity: 0.25; }
+          65%  { transform: scale3d(14, 14, 1);   opacity: 0; }
+          100% { transform: scale3d(22, 22, 1);   opacity: 0; }
         }
         .is-entering-engine .ce-logo-wordmark { opacity: 0; }
         .is-entering-engine .deck-slide-cover p { opacity: 0; }
@@ -973,29 +979,49 @@ export function SalesDeckPresentation({
           to   { opacity: 1;    transform: translate3d(0, 0, 0); }
         }
 
+        /* ─────────── Shared slide bits ─────────── */
+        .slide-kicker {
+          font-size: 0.72rem !important;
+          text-transform: uppercase;
+          letter-spacing: 0.22em;
+          color: rgba(255,255,255,0.45) !important;
+          font-weight: 500;
+          margin: 0 0 1.25rem 0 !important;
+        }
+        .slide-foot {
+          margin-top: 3rem !important;
+          font-size: 1rem !important;
+          color: rgba(255,255,255,0.55) !important;
+          max-width: 48rem;
+        }
+        .slide-foot-emphasis {
+          color: white !important;
+          font-weight: 600;
+          font-size: 1.1rem !important;
+        }
+
         /* ─────────── Slide 3: revenue calculator ─────────── */
-        .slide-calc h2 { margin-bottom: 2rem; }
         .slide-calc-body {
           display: grid;
           grid-template-columns: 1.1fr 1fr;
-          gap: 3rem;
+          gap: 4rem;
           align-items: center;
         }
         .slide-calc-sliders {
           display: flex;
           flex-direction: column;
-          gap: 1.5rem;
+          gap: 1.75rem;
         }
         .slider-row-head {
           display: flex;
           justify-content: space-between;
           align-items: baseline;
-          margin-bottom: 0.5rem;
+          margin-bottom: 0.6rem;
         }
         .slider-label {
-          font-size: 0.75rem;
+          font-size: 0.72rem;
           text-transform: uppercase;
-          letter-spacing: 0.12em;
+          letter-spacing: 0.18em;
           color: rgba(255,255,255,0.45);
           font-weight: 500;
         }
@@ -1009,8 +1035,8 @@ export function SalesDeckPresentation({
           -webkit-appearance: none;
           appearance: none;
           width: 100%;
-          height: 4px;
-          background: rgba(255,255,255,0.12);
+          height: 2px;
+          background: rgba(255,255,255,0.14);
           border-radius: 999px;
           outline: none;
           cursor: pointer;
@@ -1018,102 +1044,92 @@ export function SalesDeckPresentation({
         .deck-slider::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
-          width: 16px;
-          height: 16px;
+          width: 14px;
+          height: 14px;
           background: white;
           border-radius: 50%;
           cursor: pointer;
-          box-shadow: 0 0 0 4px rgba(255,255,255,0.08);
-          transition: box-shadow 150ms ease;
-        }
-        .deck-slider::-webkit-slider-thumb:hover {
-          box-shadow: 0 0 0 6px rgba(255,255,255,0.14);
         }
         .deck-slider::-moz-range-thumb {
-          width: 16px;
-          height: 16px;
+          width: 14px;
+          height: 14px;
           background: white;
           border-radius: 50%;
           cursor: pointer;
           border: none;
-          box-shadow: 0 0 0 4px rgba(255,255,255,0.08);
         }
         .slide-calc-output {
           display: flex;
           flex-direction: column;
-          gap: 1.25rem;
-          border-left: 1px solid rgba(255,255,255,0.08);
-          padding-left: 2rem;
+          gap: 2rem;
         }
         .calc-out-block p { margin: 0; }
         .calc-out-label {
           font-size: 0.7rem;
           text-transform: uppercase;
-          letter-spacing: 0.18em;
+          letter-spacing: 0.22em;
           color: rgba(255,255,255,0.4);
-          margin-bottom: 0.4rem !important;
+          margin-bottom: 0.6rem !important;
         }
         .calc-out-value {
-          font-size: 2.4rem;
+          font-size: 3.25rem;
           font-weight: 700;
-          letter-spacing: -0.02em;
+          letter-spacing: -0.03em;
           color: white;
           font-variant-numeric: tabular-nums;
-          line-height: 1.1;
+          line-height: 0.95;
         }
         .calc-out-block-big .calc-out-value {
-          font-size: 3.4rem;
+          font-size: 5.5rem;
         }
-        .calc-out-accent { color: #34D399; }
         .slide-calc-foot {
-          margin-top: 2.25rem;
-          font-size: 0.95rem;
+          margin-top: 3rem;
+          font-size: 1rem;
           color: rgba(255,255,255,0.5);
         }
 
         /* ─────────── Slide 9: investment ROI ─────────── */
-        .slide-roi h2 { margin-bottom: 2rem; }
         .roi-bars {
           display: flex;
           flex-direction: column;
-          gap: 1.25rem;
-          margin-bottom: 2.5rem;
+          gap: 1.5rem;
+          margin-bottom: 3rem;
         }
         .roi-row {
           display: grid;
-          grid-template-columns: 120px 1fr;
-          gap: 1.25rem;
+          grid-template-columns: 140px 1fr;
+          gap: 1.5rem;
           align-items: center;
         }
         .roi-tag {
-          font-size: 0.7rem;
+          font-size: 0.72rem;
           text-transform: uppercase;
-          letter-spacing: 0.18em;
+          letter-spacing: 0.22em;
           color: rgba(255,255,255,0.45);
           font-weight: 500;
         }
         .roi-bar-track {
           width: 100%;
-          height: 44px;
-          background: rgba(255,255,255,0.04);
-          border-radius: 6px;
-          overflow: hidden;
+          height: 56px;
+          background: transparent;
           position: relative;
         }
         .roi-bar {
           height: 100%;
           display: flex;
           align-items: center;
-          padding: 0 0.9rem;
-          border-radius: 6px;
+          padding: 0 1.1rem;
           transition: width 450ms cubic-bezier(0.22, 1, 0.36, 1);
         }
-        .roi-bar-invest { background: rgba(255,255,255,0.18); min-width: 90px; }
+        .roi-bar-invest {
+          background: rgba(255,255,255,0.14);
+          min-width: 110px;
+        }
         .roi-bar-recover {
-          background: linear-gradient(90deg, #10B981 0%, #34D399 100%);
+          background: white;
         }
         .roi-bar-label {
-          font-size: 0.9rem;
+          font-size: 1rem;
           font-weight: 600;
           color: white;
           font-variant-numeric: tabular-nums;
@@ -1123,9 +1139,9 @@ export function SalesDeckPresentation({
         .roi-summary {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 1rem;
-          margin-bottom: 2rem;
-          padding: 1.5rem 0;
+          gap: 2rem;
+          margin-bottom: 2.5rem;
+          padding: 2rem 0;
           border-top: 1px solid rgba(255,255,255,0.08);
           border-bottom: 1px solid rgba(255,255,255,0.08);
         }
@@ -1133,248 +1149,187 @@ export function SalesDeckPresentation({
         .roi-summary-label {
           font-size: 0.7rem;
           text-transform: uppercase;
-          letter-spacing: 0.18em;
+          letter-spacing: 0.22em;
           color: rgba(255,255,255,0.4);
-          margin-bottom: 0.4rem !important;
+          margin-bottom: 0.7rem !important;
         }
         .roi-summary-value {
-          font-size: 1.8rem;
+          font-size: 2.75rem;
           font-weight: 700;
-          letter-spacing: -0.02em;
+          letter-spacing: -0.025em;
           color: white;
           font-variant-numeric: tabular-nums;
-          line-height: 1.1;
+          line-height: 0.95;
         }
         .roi-terms {
           list-style: none !important;
           padding: 0 !important;
-          margin: 0 0 1.5rem 0 !important;
+          margin: 0 0 2rem 0 !important;
           display: grid;
           grid-template-columns: repeat(2, 1fr);
-          gap: 0.5rem 2rem;
+          gap: 0.65rem 2.5rem;
         }
         .roi-terms li {
           padding-left: 0 !important;
           font-size: 0.95rem !important;
-          color: rgba(255,255,255,0.72) !important;
+          color: rgba(255,255,255,0.7) !important;
           margin-bottom: 0 !important;
         }
         .roi-terms li::before { display: none !important; }
         .roi-terms li strong { color: white; }
         .slide-roi-foot {
-          font-size: 0.95rem;
+          font-size: 1rem;
           color: rgba(255,255,255,0.5);
-          margin-bottom: 1.5rem;
         }
 
-        /* ─────────── Shared slide bits ─────────── */
-        .slide-kicker {
-          font-size: 0.7rem !important;
-          text-transform: uppercase;
-          letter-spacing: 0.18em;
-          color: rgba(255,255,255,0.45) !important;
-          font-weight: 500;
-          margin: 0 0 1rem 0 !important;
-        }
-        .slide-kicker-red { color: rgba(248, 113, 113, 0.8) !important; }
-        .slide-foot {
-          margin-top: 2rem !important;
-          font-size: 0.95rem !important;
-          color: rgba(255,255,255,0.5) !important;
-        }
-        .slide-foot-emphasis {
-          color: white !important;
-          font-weight: 600;
-          font-size: 1.05rem !important;
-        }
-
-        /* ─────────── Slide 2: Leak diagram ─────────── */
-        .slide-leak h2 { margin-bottom: 1.5rem; }
+        /* ─────────── Slide 2: Leak ─────────── */
         .role-row {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 1rem;
-          margin-bottom: 2rem;
+          gap: 2.5rem;
+          margin-bottom: 3rem;
+          padding-bottom: 2rem;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
         }
         .role-card {
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 12px;
-          padding: 1.25rem;
+          background: transparent;
+          border: none;
+          padding: 0;
         }
         .role-icon {
-          width: 22px;
-          height: 22px;
-          color: rgba(255,255,255,0.75);
-          margin-bottom: 0.75rem;
+          width: 20px;
+          height: 20px;
+          color: rgba(255,255,255,0.5);
+          margin-bottom: 1rem;
         }
         .role-label {
-          font-size: 1rem !important;
+          font-size: 1.15rem !important;
           font-weight: 600 !important;
           color: white !important;
           margin: 0 0 0.25rem 0 !important;
+          letter-spacing: -0.01em;
         }
         .role-desc {
-          font-size: 0.85rem !important;
-          color: rgba(255,255,255,0.55) !important;
+          font-size: 0.95rem !important;
+          color: rgba(255,255,255,0.5) !important;
           margin: 0 !important;
         }
 
         .gap-card {
           display: flex;
-          align-items: center;
-          gap: 1rem;
-          padding: 1.25rem 1.5rem;
-          border: 1px dashed rgba(248, 113, 113, 0.5);
-          border-radius: 12px;
-          background: rgba(248, 113, 113, 0.04);
+          align-items: baseline;
+          gap: 1.25rem;
+          padding: 0;
+          border: none;
+          background: transparent;
         }
-        .gap-dot {
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          background: #F87171;
-          box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.15);
-          flex-shrink: 0;
-          animation: gap-pulse 2.4s ease-in-out infinite;
-        }
-        @keyframes gap-pulse {
-          0%, 100% { box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.12); }
-          50% { box-shadow: 0 0 0 8px rgba(248, 113, 113, 0.22); }
-        }
+        .gap-dot { display: none; }
         .gap-label {
-          font-size: 1.1rem !important;
-          font-weight: 600 !important;
+          font-size: 2rem !important;
+          font-weight: 700 !important;
           color: white !important;
-          margin: 0 0 0.1rem 0 !important;
+          margin: 0 !important;
+          letter-spacing: -0.025em;
         }
         .gap-desc {
-          font-size: 0.9rem !important;
-          color: rgba(255,255,255,0.55) !important;
+          font-size: 1rem !important;
+          color: rgba(255,255,255,0.5) !important;
           margin: 0 !important;
         }
 
         /* ─────────── Slide 4: Page build vs CE ─────────── */
-        .slide-compare h2 { margin-bottom: 2rem; }
         .compare-row {
           display: grid;
-          grid-template-columns: 1fr auto 1fr;
-          gap: 1rem;
+          grid-template-columns: 1fr 1px 1fr;
+          gap: 3rem;
           align-items: stretch;
           margin-bottom: 1.5rem;
         }
         .compare-card {
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 14px;
-          padding: 1.75rem;
+          background: transparent;
+          border: none;
+          padding: 0;
           display: flex;
           flex-direction: column;
         }
-        .compare-card-accent {
-          border: 1px solid rgba(52, 211, 153, 0.35);
-          background: linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.02) 100%);
-        }
+        .compare-card-accent { background: transparent; border: none; }
         .compare-tag {
           display: inline-block;
           font-size: 0.7rem;
           text-transform: uppercase;
-          letter-spacing: 0.16em;
+          letter-spacing: 0.22em;
           color: rgba(255,255,255,0.45);
-          font-weight: 600;
-          padding: 0.25rem 0.6rem;
-          border: 1px solid rgba(255,255,255,0.12);
-          border-radius: 999px;
-          margin-bottom: 0.9rem;
+          font-weight: 500;
+          padding: 0;
+          border: none;
+          margin-bottom: 1.25rem;
           align-self: flex-start;
         }
         .compare-tag-accent {
-          color: #34D399;
-          border-color: rgba(52, 211, 153, 0.4);
-          background: rgba(16, 185, 129, 0.08);
+          color: white;
+          border: none;
+          background: none;
         }
         .compare-title {
-          font-size: 1.35rem !important;
+          font-size: 2rem !important;
           font-weight: 700 !important;
           color: white !important;
-          margin: 0 0 0.35rem 0 !important;
+          margin: 0 0 0.5rem 0 !important;
+          letter-spacing: -0.025em;
+          line-height: 1.08;
         }
         .compare-sub {
-          font-size: 0.95rem !important;
-          color: rgba(255,255,255,0.55) !important;
-          margin: 0 0 1rem 0 !important;
+          font-size: 1rem !important;
+          color: rgba(255,255,255,0.5) !important;
+          margin: 0 0 1.75rem 0 !important;
         }
-        .compare-list {
-          list-style: none !important;
-          padding: 0 !important;
-          margin: 0 !important;
-        }
+        .compare-list { list-style: none !important; padding: 0 !important; margin: 0 !important; }
         .compare-list li {
-          padding-left: 1.25rem !important;
-          margin-bottom: 0.5rem !important;
-          font-size: 0.95rem !important;
-          color: rgba(255,255,255,0.78) !important;
+          padding-left: 0 !important;
+          margin-bottom: 0.75rem !important;
+          font-size: 1rem !important;
+          color: rgba(255,255,255,0.75) !important;
           position: relative;
+          border-top: 1px solid rgba(255,255,255,0.06);
+          padding-top: 0.75rem !important;
         }
-        .compare-list li::before {
-          content: "" !important;
-          position: absolute;
-          left: 0;
-          top: 0.65em;
-          width: 5px;
-          height: 5px;
-          border-radius: 50%;
-          background: rgba(255,255,255,0.35);
-        }
-        .compare-card-accent .compare-list li::before { background: #34D399; }
+        .compare-list li:first-child { border-top: none; padding-top: 0 !important; }
+        .compare-list li::before { display: none !important; }
+        .compare-card-accent .compare-list li::before { display: none !important; }
 
         .compare-arrow {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 0 0.5rem;
+          width: 1px;
+          background: rgba(255,255,255,0.08);
+          padding: 0;
         }
-        .compare-arrow-label {
-          font-size: 0.65rem;
-          text-transform: uppercase;
-          letter-spacing: 0.2em;
-          color: rgba(255,255,255,0.35);
-          margin-bottom: 0.5rem;
-        }
-        .compare-arrow-icon {
-          width: 32px;
-          height: 32px;
-          color: rgba(255,255,255,0.3);
-        }
+        .compare-arrow-label, .compare-arrow-icon { display: none; }
 
         /* ─────────── Slide 5: Partner diagram ─────────── */
-        .slide-partner h2 { margin-bottom: 1.5rem; }
         .partner-diagram {
           display: flex;
           flex-direction: column;
           align-items: center;
-          margin-bottom: 2rem;
+          margin-bottom: 2.5rem;
         }
         .partner-brand {
-          padding: 0.8rem 1.75rem;
-          border: 1px solid rgba(255,255,255,0.2);
+          padding: 0.8rem 2rem;
+          border: 1px solid rgba(255,255,255,0.18);
           border-radius: 999px;
-          background: rgba(255,255,255,0.05);
+          background: transparent;
         }
         .partner-brand-label {
           margin: 0 !important;
-          font-size: 0.75rem !important;
+          font-size: 0.72rem !important;
           text-transform: uppercase;
-          letter-spacing: 0.2em;
-          color: rgba(255,255,255,0.85) !important;
+          letter-spacing: 0.22em;
+          color: white !important;
           font-weight: 600;
         }
         .partner-lines {
           position: relative;
           width: 60%;
-          max-width: 520px;
-          height: 40px;
+          max-width: 560px;
+          height: 48px;
           margin: 0 auto;
         }
         .partner-lines span {
@@ -1392,29 +1347,29 @@ export function SalesDeckPresentation({
           grid-template-columns: repeat(3, 1fr);
           gap: 1rem;
           width: 60%;
-          max-width: 520px;
+          max-width: 560px;
         }
         .partner-node {
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.08);
+          background: transparent;
+          border: 1px solid rgba(255,255,255,0.1);
           border-radius: 10px;
-          padding: 0.9rem;
+          padding: 1rem;
           text-align: center;
         }
         .partner-node-accent {
-          border-color: rgba(52, 211, 153, 0.4);
-          background: rgba(16, 185, 129, 0.06);
+          border-color: rgba(255,255,255,0.35);
+          background: transparent;
         }
         .partner-node-icon {
           width: 18px;
           height: 18px;
-          color: rgba(255,255,255,0.7);
-          margin: 0 auto 0.35rem;
+          color: rgba(255,255,255,0.6);
+          margin: 0 auto 0.4rem;
         }
-        .partner-node-accent .partner-node-icon { color: #34D399; }
+        .partner-node-accent .partner-node-icon { color: white; }
         .partner-node-label {
           margin: 0 !important;
-          font-size: 0.8rem !important;
+          font-size: 0.82rem !important;
           font-weight: 600 !important;
           color: white !important;
         }
@@ -1422,95 +1377,85 @@ export function SalesDeckPresentation({
         .partner-bullets {
           list-style: none !important;
           padding: 0 !important;
-          margin: 0 0 0.5rem 0 !important;
+          margin: 0 !important;
         }
         .partner-bullets li {
-          padding-left: 1.25rem !important;
-          margin-bottom: 0.6rem !important;
-          font-size: 1rem !important;
-          color: rgba(255,255,255,0.8) !important;
-          position: relative;
+          padding-left: 0 !important;
+          margin-bottom: 0 !important;
+          padding-top: 1rem !important;
+          padding-bottom: 1rem !important;
+          font-size: 1.05rem !important;
+          color: rgba(255,255,255,0.78) !important;
+          border-top: 1px solid rgba(255,255,255,0.06);
         }
-        .partner-bullets li::before {
-          content: "" !important;
-          position: absolute;
-          left: 0;
-          top: 0.65em;
-          width: 5px;
-          height: 5px;
-          border-radius: 50%;
-          background: #34D399;
-        }
+        .partner-bullets li::before { display: none !important; }
         .partner-bullets li strong { color: white; }
 
-        /* ─────────── Slide 6: Scope grid ─────────── */
-        .slide-scope h2 { margin-bottom: 2rem; }
+        /* ─────────── Slide 6: Scope ─────────── */
         .scope-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 1rem;
-          margin-bottom: 1.5rem;
+          gap: 2.5rem 3rem;
+          margin-bottom: 2rem;
         }
         .scope-card {
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 12px;
-          padding: 1.25rem;
+          background: transparent;
+          border: none;
+          padding: 0;
         }
         .scope-icon {
           width: 22px;
           height: 22px;
-          color: #34D399;
-          margin-bottom: 0.75rem;
+          color: rgba(255,255,255,0.55);
+          margin-bottom: 1rem;
         }
         .scope-title {
-          margin: 0 0 0.3rem 0 !important;
-          font-size: 1rem !important;
+          margin: 0 0 0.4rem 0 !important;
+          font-size: 1.15rem !important;
           font-weight: 600 !important;
           color: white !important;
+          letter-spacing: -0.01em;
         }
         .scope-desc {
           margin: 0 !important;
-          font-size: 0.85rem !important;
-          color: rgba(255,255,255,0.55) !important;
+          font-size: 0.95rem !important;
+          color: rgba(255,255,255,0.5) !important;
+          line-height: 1.45;
         }
 
-        /* ─────────── Slide 7: Rhythm timeline ─────────── */
-        .slide-rhythm h2 { margin-bottom: 2.5rem; }
+        /* ─────────── Slide 7: Rhythm ─────────── */
         .rhythm-track {
           position: relative;
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 1rem;
+          gap: 2rem;
           padding-top: 1.5rem;
-          margin-bottom: 2rem;
+          margin-bottom: 2.5rem;
         }
         .rhythm-line {
           position: absolute;
-          top: 24px;
-          left: 10%;
-          right: 10%;
+          top: 16px;
+          left: 12%;
+          right: 12%;
           height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.4), transparent);
+          background: rgba(255,255,255,0.16);
           z-index: 0;
         }
         .rhythm-step {
           position: relative;
-          text-align: center;
-          padding-top: 1rem;
+          padding-top: 1.25rem;
           z-index: 1;
         }
         .rhythm-dot {
           position: absolute;
-          top: -24px;
-          left: 50%;
-          transform: translateX(-50%);
+          top: -16px;
+          left: 0;
           width: 32px;
           height: 32px;
           border-radius: 50%;
           background: #0A0A0A;
-          border: 1px solid rgba(52, 211, 153, 0.5);
-          color: #34D399;
+          border: 1px solid rgba(255,255,255,0.4);
+          color: white;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1519,128 +1464,130 @@ export function SalesDeckPresentation({
         }
         .rhythm-week {
           display: block;
-          font-size: 0.7rem !important;
+          font-size: 0.72rem !important;
           text-transform: uppercase;
-          letter-spacing: 0.18em;
-          color: #34D399 !important;
-          margin-bottom: 0.3rem;
+          letter-spacing: 0.22em;
+          color: rgba(255,255,255,0.5) !important;
+          margin-bottom: 0.5rem;
           margin-top: 1.5rem;
         }
         .rhythm-title {
-          margin: 0 0 0.3rem 0 !important;
-          font-size: 1.15rem !important;
+          margin: 0 0 0.4rem 0 !important;
+          font-size: 1.35rem !important;
           font-weight: 600 !important;
           color: white !important;
+          letter-spacing: -0.02em;
         }
         .rhythm-desc {
           margin: 0 !important;
-          font-size: 0.9rem !important;
-          color: rgba(255,255,255,0.55) !important;
+          font-size: 0.95rem !important;
+          color: rgba(255,255,255,0.5) !important;
         }
 
-        /* ─────────── Slide 8: Proof stats ─────────── */
+        /* ─────────── Slide 8: Proof ─────────── */
         .slide-proof h2 { margin-bottom: 0.75rem; }
         .proof-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 1rem;
-          margin-bottom: 1.5rem;
+          gap: 3rem;
+          margin-bottom: 2rem;
+          padding-top: 1rem;
         }
         .proof-card {
-          background: linear-gradient(180deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.02) 100%);
-          border: 1px solid rgba(52, 211, 153, 0.25);
-          border-radius: 14px;
-          padding: 1.5rem 1.5rem 1.75rem;
+          background: transparent;
+          border: none;
+          border-top: 1px solid rgba(255,255,255,0.14);
+          border-radius: 0;
+          padding: 1.75rem 0 0;
           position: relative;
         }
-        .proof-arrow {
-          width: 22px;
-          height: 22px;
-          color: #34D399;
-          margin-bottom: 0.25rem;
-        }
+        .proof-arrow { display: none; }
         .proof-metric {
-          margin: 0 0 0.5rem 0 !important;
-          font-size: 2.8rem !important;
+          margin: 0 0 1.25rem 0 !important;
+          font-size: 6rem !important;
           font-weight: 800 !important;
-          letter-spacing: -0.02em;
-          color: #34D399 !important;
-          line-height: 1;
+          letter-spacing: -0.04em;
+          color: white !important;
+          line-height: 0.9;
         }
         .proof-brand {
-          margin: 0 0 0.3rem 0 !important;
-          font-size: 0.95rem !important;
+          margin: 0 0 0.35rem 0 !important;
+          font-size: 1rem !important;
           font-weight: 600 !important;
           color: white !important;
         }
         .proof-detail {
           margin: 0 !important;
-          font-size: 0.85rem !important;
-          color: rgba(255,255,255,0.6) !important;
-          line-height: 1.4;
+          font-size: 0.95rem !important;
+          color: rgba(255,255,255,0.55) !important;
+          line-height: 1.45;
         }
 
-        /* ─────────── Slide 10: Next step ─────────── */
+        /* ─────────── Slide 10: Next ─────────── */
         .slide-next h2 { margin-bottom: 0.75rem; }
         .next-row {
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 1.25rem;
-          margin-bottom: 1.5rem;
+          grid-template-columns: 1fr 1px 1fr;
+          gap: 3rem;
+          margin-bottom: 2.5rem;
         }
         .next-card {
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 14px;
-          padding: 1.75rem;
+          background: transparent;
+          border: none;
+          padding: 0;
           display: flex;
           flex-direction: column;
-          gap: 0.4rem;
+          gap: 0.5rem;
         }
-        .next-card-accent {
-          border-color: rgba(52, 211, 153, 0.4);
-          background: linear-gradient(180deg, rgba(16, 185, 129, 0.06) 0%, rgba(16, 185, 129, 0.02) 100%);
-        }
+        .next-card-accent { background: transparent; border: none; }
         .next-icon {
-          width: 24px;
-          height: 24px;
-          color: #34D399;
-          margin-bottom: 0.5rem;
+          width: 22px;
+          height: 22px;
+          color: rgba(255,255,255,0.55);
+          margin-bottom: 1rem;
         }
+        .next-card-accent .next-icon { color: white; }
         .next-title {
           margin: 0 !important;
-          font-size: 1.25rem !important;
+          font-size: 2rem !important;
           font-weight: 700 !important;
           color: white !important;
+          letter-spacing: -0.025em;
+          line-height: 1.1;
         }
         .next-desc {
-          margin: 0 0 0.5rem 0 !important;
-          font-size: 0.95rem !important;
-          color: rgba(255,255,255,0.65) !important;
+          margin: 0 0 0.75rem 0 !important;
+          font-size: 1rem !important;
+          color: rgba(255,255,255,0.6) !important;
         }
         .next-cta {
-          font-size: 0.78rem;
+          font-size: 0.7rem;
           color: rgba(255,255,255,0.4);
           text-transform: uppercase;
-          letter-spacing: 0.14em;
+          letter-spacing: 0.22em;
           font-weight: 500;
         }
+        .next-divider {
+          width: 1px;
+          background: rgba(255,255,255,0.08);
+        }
         .next-book {
-          margin-top: 0.75rem !important;
+          margin-top: 1.5rem !important;
           text-align: left !important;
         }
         .next-book a {
           display: inline-block;
-          padding: 0.7rem 1.3rem;
-          background: #34D399;
+          padding: 0.85rem 1.5rem;
+          background: white;
           color: #0A0A0A !important;
           font-weight: 600;
-          font-size: 0.95rem;
+          font-size: 1rem;
           text-decoration: none !important;
-          border-radius: 8px;
+          border-radius: 0;
           transition: background 150ms ease;
+          letter-spacing: -0.01em;
         }
-        .next-book a:hover { background: #10B981; }
+        .next-book a:hover { background: rgba(255,255,255,0.85); }
 
         @media (prefers-reduced-motion: reduce) {
           .marquee-col,
@@ -1648,8 +1595,7 @@ export function SalesDeckPresentation({
           .deck-slide .ce-logo-wordmark,
           .deck-slide-cover p,
           .cover-backdrop,
-          .roi-bar,
-          .gap-dot { transition: none !important; animation: none !important; }
+          .roi-bar { transition: none !important; animation: none !important; }
           .deck-slide-enter { animation: none !important; }
         }
       `}</style>
