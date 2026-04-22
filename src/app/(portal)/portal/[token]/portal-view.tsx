@@ -362,7 +362,7 @@ export function PortalView({
   if (viewMode === "team" && selectedProject) {
     const gates = selectedProject.qa_gates || {};
     const entries: Array<{ key: string; items: string[] }> = [];
-    if (gates.cro_brief_enabled) entries.push({ key: "cro_brief", items: CRO_BRIEF_ITEMS });
+    entries.push({ key: "cro_brief", items: CRO_BRIEF_ITEMS });
     entries.push({ key: "design_handoff", items: DESIGN_HANDOFF_ITEMS });
     entries.push({ key: "dev_handoff", items: DEV_HANDOFF_ITEMS });
     entries.push({ key: "launch_prep", items: LAUNCH_PREP_ITEMS });
