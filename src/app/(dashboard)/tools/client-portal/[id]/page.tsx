@@ -552,8 +552,9 @@ export default function PortalDetailPage() {
                 {activeProjects.map((proj) => {
                   const idx = (portal.projects || []).findIndex(p => p.id === proj.id);
                   const isSelected = selectedProjectIdx === idx;
+                  const isPendingDelete = confirmDeleteProjectId === proj.id;
                   return (
-                    <div key={proj.id}>
+                    <div key={proj.id} className="group relative">
                       <button
                         onClick={() => {
                           if (isSelected) {
@@ -570,10 +571,22 @@ export default function PortalDetailPage() {
                             : "text-[#777] hover:bg-[#FAFAFA] hover:text-[#1A1A1A]"
                         }`}
                       >
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 pr-6">
                           <span className={`size-1.5 rounded-full shrink-0 ${proj.status === "active" ? "bg-emerald-500" : proj.status === "paused" ? "bg-amber-500" : "bg-[#CCC]"}`} />
                           <span className="truncate">{proj.name}</span>
                         </div>
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDeleteProject(proj.id); }}
+                        onBlur={() => setConfirmDeleteProjectId(null)}
+                        title={isPendingDelete ? "Click again to confirm" : "Archive project"}
+                        className={`absolute right-1.5 top-1.5 p-1 rounded transition-all ${
+                          isPendingDelete
+                            ? "opacity-100 text-red-500 bg-red-50"
+                            : `opacity-0 group-hover:opacity-100 ${isSelected ? "text-white/50 hover:text-white hover:bg-white/10" : "text-[#BBB] hover:text-red-500 hover:bg-red-50"}`
+                        }`}
+                      >
+                        <TrashIcon className="size-3" />
                       </button>
                       {isSelected && (
                         <div className="ml-5 pl-3 mb-2 border-l border-[#E5E5EA]">
