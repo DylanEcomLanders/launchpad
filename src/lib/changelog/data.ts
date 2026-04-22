@@ -37,6 +37,15 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-38",
+    date: "22 Apr 2026",
+    version: "0.31.1",
+    title: "Sales Deck — Cover Slide Polish",
+    changes: [
+      { type: "improved", text: "Sales deck cover slide cleaned up — \"Slide 1 — Cover\" heading removed so the logo + tagline stand on their own. Conversion Engine logo now splits into a spinning mark (8s linear, reduced-motion respected) with the static \"conversion engine\" wordmark below. Added /conversion-engine-mark.svg + /conversion-engine-wordmark.svg; presentation view renders the split via a custom ReactMarkdown img override when the original /conversion-engine-logo.svg is referenced" },
+    ],
+  },
+  {
     id: "cl-37",
     date: "21 Apr 2026",
     version: "0.31.0",

@@ -6,8 +6,6 @@ Ten-slide deck for the deep-dive audit meeting. Content is the source of truth â
 
 ---
 
-## Slide 1 â€” Cover
-
 ![Conversion Engine](/conversion-engine-logo.svg)
 
 _The team your competitors already have_

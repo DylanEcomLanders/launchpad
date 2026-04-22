@@ -64,7 +64,34 @@ export function SalesDeckPresentation({ markdown }: { markdown: string }) {
       <div className="relative z-10 min-h-screen flex items-center justify-center px-10 md:px-24 py-16">
         <div className="max-w-4xl w-full">
           <article className="deck-slide">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{current}</ReactMarkdown>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                img: ({ src, alt }) => {
+                  if (src === "/conversion-engine-logo.svg") {
+                    return (
+                      <span className="ce-logo">
+                        <img
+                          src="/conversion-engine-mark.svg"
+                          alt=""
+                          aria-hidden="true"
+                          className="ce-logo-mark"
+                        />
+                        <img
+                          src="/conversion-engine-wordmark.svg"
+                          alt={alt || "Conversion Engine"}
+                          className="ce-logo-wordmark"
+                        />
+                      </span>
+                    );
+                  }
+                  // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
+                  return <img src={src} alt={alt} />;
+                },
+              }}
+            >
+              {current}
+            </ReactMarkdown>
           </article>
         </div>
       </div>
@@ -172,6 +199,32 @@ export function SalesDeckPresentation({ markdown }: { markdown: string }) {
           height: auto;
           margin: 0 auto 2rem;
           display: block;
+        }
+        .deck-slide .ce-logo {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 1.75rem;
+          margin: 0 auto 2.5rem;
+        }
+        .deck-slide .ce-logo-mark {
+          width: 96px;
+          height: 96px;
+          margin: 0;
+          animation: ce-logo-spin 8s linear infinite;
+          transform-origin: 50% 50%;
+        }
+        .deck-slide .ce-logo-wordmark {
+          width: 260px;
+          max-width: 60vw;
+          height: auto;
+          margin: 0;
+        }
+        @keyframes ce-logo-spin {
+          to { transform: rotate(360deg); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .deck-slide .ce-logo-mark { animation: none; }
         }
       `}</style>
     </div>
