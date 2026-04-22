@@ -711,6 +711,77 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
          ══════════════════════════════════════════ */}
       {config.type === "categorised-checklist" && config.categories && (
         <>
+          {/* Preview URLs — one or more titled preview links to submit with QA */}
+          <div className="mb-6 border border-[#E8E8E8] rounded-xl bg-white p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-sm font-semibold text-[#1A1A1A]">Preview URLs</p>
+                <p className="text-[11px] text-[#777] mt-0.5">Add every page you're submitting for QA. These land in the internal Slack message on submit.</p>
+              </div>
+              {!isSubmitted && (
+                <button
+                  onClick={() => {
+                    const next = [...(gate.dev_qa_previews || []), { id: crypto.randomUUID(), title: "", url: "" }];
+                    setGateLocal({ ...gate, dev_qa_previews: next });
+                  }}
+                  className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-[#777] hover:text-[#1A1A1A] border border-[#E8E8E8] rounded-lg hover:border-[#999] transition-colors"
+                >
+                  <PlusIcon className="size-3" />
+                  Add URL
+                </button>
+              )}
+            </div>
+            {(gate.dev_qa_previews && gate.dev_qa_previews.length > 0) ? (
+              <div className="space-y-2">
+                {gate.dev_qa_previews.map((p, i) => (
+                  <div key={p.id} className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={p.title}
+                      disabled={isSubmitted}
+                      onChange={(e) => {
+                        const next = [...(gate.dev_qa_previews || [])];
+                        next[i] = { ...p, title: e.target.value };
+                        setGateLocal({ ...gate, dev_qa_previews: next });
+                      }}
+                      onBlur={() => saveGate(gate)}
+                      placeholder="Page name (e.g. PDP)"
+                      className={`${fieldClass} flex-1 max-w-[180px]`}
+                    />
+                    <input
+                      type="url"
+                      value={p.url}
+                      disabled={isSubmitted}
+                      onChange={(e) => {
+                        const next = [...(gate.dev_qa_previews || [])];
+                        next[i] = { ...p, url: e.target.value };
+                        setGateLocal({ ...gate, dev_qa_previews: next });
+                      }}
+                      onBlur={() => saveGate(gate)}
+                      placeholder="https://preview.example.com/..."
+                      className={`${fieldClass} flex-1`}
+                    />
+                    {!isSubmitted && (
+                      <button
+                        onClick={() => {
+                          const next = (gate.dev_qa_previews || []).filter((_, idx) => idx !== i);
+                          setGateLocal({ ...gate, dev_qa_previews: next });
+                          saveGate({ ...gate, dev_qa_previews: next });
+                        }}
+                        className="p-1.5 text-[#BBB] hover:text-red-500 transition-colors"
+                        title="Remove"
+                      >
+                        <TrashIcon className="size-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-[#AAA] italic">No preview URLs added yet. Click <span className="font-medium">Add URL</span> above.</p>
+            )}
+          </div>
+
           <div className="space-y-3 mb-6">
             {config.categories.map((cat) => {
               const catItems = gate.items.slice(cat.startIndex, cat.startIndex + cat.count);

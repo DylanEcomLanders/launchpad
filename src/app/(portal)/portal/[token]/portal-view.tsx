@@ -1024,13 +1024,16 @@ export function PortalView({
                   project={selectedProject}
                   portal={portal}
                   onUpdate={(patch) => onUpdateProject ? onUpdateProject(selectedProject.id, patch) : Promise.resolve()}
-                  onAfterSubmit={async () => {
+                  onAfterSubmit={async (submittedGate) => {
                     if (!portal.slack_internal_channel_id) return;
                     const nextRole =
                       focusedGateKey === "cro_brief" ? "Designer"
                       : focusedGateKey === "design_handoff" ? "Developer"
                       : focusedGateKey === "dev_handoff" ? "Senior Developer"
                       : "Launch owner";
+                    const previews = (submittedGate?.dev_qa_previews || [])
+                      .filter((p) => p.title.trim() && p.url.trim())
+                      .map((p) => ({ title: p.title.trim(), url: p.url.trim() }));
                     try {
                       await fetch("/api/slack/gate-notify", {
                         method: "POST",
@@ -1046,6 +1049,7 @@ export function PortalView({
                           portalToken: portal.token,
                           projectId: selectedProject.id,
                           gateKey: focusedGateKey,
+                          previews,
                         }),
                       });
                     } catch { /* fire-and-forget */ }

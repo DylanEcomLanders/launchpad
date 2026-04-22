@@ -180,6 +180,9 @@ export interface QAGate {
   go_live_date?: string;
   dev_lead_signoff?: boolean;
   client_approval_confirmed?: boolean;
+
+  // Dev QA preview links (per-page titled URLs the dev submits for QA)
+  dev_qa_previews?: Array<{ id: string; title: string; url: string }>;
 }
 
 export interface QAGates {

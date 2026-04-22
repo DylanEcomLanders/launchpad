@@ -11,7 +11,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://ecomlanders.app";
  */
 export async function POST(req: NextRequest) {
   try {
-    const { channelId, gateTitle, clientName, projectName, portalId, portalToken, projectId, gateKey } = await req.json();
+    const { channelId, gateTitle, clientName, projectName, portalId, portalToken, projectId, gateKey, previews } = await req.json();
 
     if (!channelId || !BOT_TOKEN) {
       return NextResponse.json({ ok: false, error: "Missing channel or bot token" }, { status: 400 });
@@ -46,6 +46,19 @@ export async function POST(req: NextRequest) {
         text: { type: "mrkdwn", text: clientLine },
       },
     ];
+
+    if (Array.isArray(previews) && previews.length > 0) {
+      const previewLines = previews
+        .filter((p: { title?: string; url?: string }) => p && p.title && p.url)
+        .map((p: { title: string; url: string }) => `• *${p.title}* — <${p.url}|Open preview>`)
+        .join("\n");
+      if (previewLines) {
+        blocks.push({
+          type: "section",
+          text: { type: "mrkdwn", text: `*Preview URLs*\n${previewLines}` },
+        });
+      }
+    }
 
     if (portalUrl) {
       blocks.push({
