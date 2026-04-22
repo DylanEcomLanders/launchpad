@@ -3,6 +3,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import {
+  MegaphoneIcon,
+  EnvelopeIcon,
+  PaintBrushIcon,
+  MapIcon,
+  DocumentTextIcon,
+  BeakerIcon,
+  ShoppingCartIcon,
+  ChartBarIcon,
+  CalendarDaysIcon,
+  ArrowTrendingUpIcon,
+  PhoneIcon,
+  ClipboardDocumentListIcon,
+  ArrowLongRightIcon,
+  SparklesIcon,
+} from "@heroicons/react/24/outline";
 
 /**
  * Splits the deck markdown on horizontal-rule separators (`---`) so each
@@ -336,6 +352,268 @@ function MarkdownSlide({ content }: { content: string }) {
   );
 }
 
+// ─────────── Slide 2: Leak nobody owns ───────────
+function LeakDiagramSlide() {
+  const roles = [
+    { icon: MegaphoneIcon, label: "Ads", desc: "Getting traffic in" },
+    { icon: EnvelopeIcon, label: "Email / SMS", desc: "Working the list" },
+    { icon: PaintBrushIcon, label: "Design", desc: "Shipping one-off pages" },
+  ];
+  return (
+    <div className="slide-leak">
+      <h2>The leak nobody owns</h2>
+
+      <p className="slide-kicker">You already have the right people in place.</p>
+      <div className="role-row">
+        {roles.map((r) => (
+          <div key={r.label} className="role-card">
+            <r.icon className="role-icon" />
+            <p className="role-label">{r.label}</p>
+            <p className="role-desc">{r.desc}</p>
+          </div>
+        ))}
+      </div>
+
+      <p className="slide-kicker slide-kicker-red">What you don&rsquo;t.</p>
+      <div className="gap-card">
+        <span className="gap-dot" aria-hidden />
+        <div>
+          <p className="gap-label">Conversion layer</p>
+          <p className="gap-desc">Unowned. Unmeasured. Bleeding revenue daily.</p>
+        </div>
+      </div>
+
+      <p className="slide-foot">
+        Traffic walks in. Half walks back out. Nobody&rsquo;s KPI is to fix it.
+      </p>
+    </div>
+  );
+}
+
+// ─────────── Slide 4: Page build vs Conversion Engine ───────────
+function PageBuildVsCESlide() {
+  return (
+    <div className="slide-compare">
+      <h2>Where this fits next to a page build</h2>
+
+      <div className="compare-row">
+        <div className="compare-card">
+          <span className="compare-tag">Page build</span>
+          <p className="compare-title">A precision tool</p>
+          <p className="compare-sub">When you know exactly what you need</p>
+          <ul className="compare-list">
+            <li>Scoped brief → polished asset → live</li>
+            <li>You own the strategy</li>
+            <li>One-off engagement</li>
+          </ul>
+        </div>
+
+        <div className="compare-arrow" aria-hidden>
+          <span className="compare-arrow-label">Graduates to</span>
+          <ArrowLongRightIcon className="compare-arrow-icon" />
+        </div>
+
+        <div className="compare-card compare-card-accent">
+          <span className="compare-tag compare-tag-accent">Conversion Engine</span>
+          <p className="compare-title">The whole system</p>
+          <p className="compare-sub">When you want CVR to keep climbing</p>
+          <ul className="compare-list">
+            <li>We own the roadmap</li>
+            <li>Continuous builds + tests</li>
+            <li>Compounding monthly</li>
+          </ul>
+        </div>
+      </div>
+
+      <p className="slide-foot">
+        Most of our strongest partnerships start with a page build. When a brand outgrows the one-off brief model, this is where they land next.
+      </p>
+    </div>
+  );
+}
+
+// ─────────── Slide 5: Partner, not vendor ───────────
+function PartnerDiagramSlide() {
+  return (
+    <div className="slide-partner">
+      <h2>Conversion partner, not vendor</h2>
+
+      <div className="partner-diagram">
+        <div className="partner-brand">
+          <p className="partner-brand-label">Your brand</p>
+        </div>
+        <div className="partner-lines" aria-hidden>
+          <span /> <span /> <span />
+        </div>
+        <div className="partner-row">
+          <div className="partner-node">
+            <MegaphoneIcon className="partner-node-icon" />
+            <p className="partner-node-label">Ads team</p>
+          </div>
+          <div className="partner-node">
+            <EnvelopeIcon className="partner-node-icon" />
+            <p className="partner-node-label">Email team</p>
+          </div>
+          <div className="partner-node partner-node-accent">
+            <SparklesIcon className="partner-node-icon" />
+            <p className="partner-node-label">Conversion Engine</p>
+          </div>
+        </div>
+      </div>
+
+      <ul className="partner-bullets">
+        <li><strong>We own the roadmap.</strong> 60–90 days mapped, you sign off, we ship.</li>
+        <li><strong>We test continuously.</strong> Brief → Figma → live → learning, in weeks.</li>
+        <li><strong>We sit alongside your ads and email teams</strong> — not underneath them.</li>
+      </ul>
+
+      <p className="slide-foot">
+        One owner for the post-click experience. One throat to choke when conversion stalls.
+      </p>
+    </div>
+  );
+}
+
+// ─────────── Slide 6: Monthly scope ───────────
+function ScopeGridSlide() {
+  const items = [
+    { icon: MapIcon, title: "Rolling roadmap", desc: "Live in Miro, updated weekly" },
+    { icon: DocumentTextIcon, title: "Page builds", desc: "PDPs, landers, advertorials, post-purchase" },
+    { icon: BeakerIcon, title: "A/B testing", desc: "Cadence tiered to your traffic" },
+    { icon: ShoppingCartIcon, title: "AOV + LTV", desc: "Bundles, upsells, post-purchase flows" },
+    { icon: ChartBarIcon, title: "Monthly readout", desc: "What shipped, what moved, what's next" },
+  ];
+  return (
+    <div className="slide-scope">
+      <h2>What&rsquo;s in the monthly scope</h2>
+
+      <div className="scope-grid">
+        {items.map((it) => (
+          <div key={it.title} className="scope-card">
+            <it.icon className="scope-icon" />
+            <p className="scope-title">{it.title}</p>
+            <p className="scope-desc">{it.desc}</p>
+          </div>
+        ))}
+      </div>
+
+      <p className="slide-foot">
+        No à la carte pricing. No per-page upcharges. Everything post-click, under one roof.
+      </p>
+    </div>
+  );
+}
+
+// ─────────── Slide 7: The rhythm ───────────
+function RhythmTimelineSlide() {
+  const weeks = [
+    { label: "Week 1", title: "Strategy", desc: "Roadmap update, priority review" },
+    { label: "Weeks 2–3", title: "Design + build", desc: "Figma → dev → staging" },
+    { label: "Week 4", title: "Live, test, learn", desc: "Ship, measure, feed next cycle" },
+  ];
+  return (
+    <div className="slide-rhythm">
+      <h2>The rhythm</h2>
+
+      <div className="rhythm-track">
+        <div className="rhythm-line" aria-hidden />
+        {weeks.map((w, i) => (
+          <div key={w.label} className="rhythm-step">
+            <span className="rhythm-dot" aria-hidden>{i + 1}</span>
+            <span className="rhythm-week">{w.label}</span>
+            <p className="rhythm-title">{w.title}</p>
+            <p className="rhythm-desc">{w.desc}</p>
+          </div>
+        ))}
+      </div>
+
+      <p className="slide-foot slide-foot-emphasis">
+        Every week you see progress. Every month you see numbers.
+      </p>
+    </div>
+  );
+}
+
+// ─────────── Slide 8: Proof ───────────
+function ProofStatsSlide() {
+  const wins = [
+    {
+      metric: "+22%",
+      brand: "Anglo Spirit",
+      detail: "Cold-traffic CVR on a rebuilt hero lander",
+    },
+    {
+      metric: "+14%",
+      brand: "Client Y",
+      detail: "AOV via a cart-level bundle",
+    },
+    {
+      metric: "+7%",
+      brand: "Client Z",
+      detail: "Mobile PDP CVR with sticky ATC",
+    },
+  ];
+  return (
+    <div className="slide-proof">
+      <h2>Proof</h2>
+      <p className="slide-kicker">Three recent brands. Three different levers.</p>
+
+      <div className="proof-grid">
+        {wins.map((w) => (
+          <div key={w.brand} className="proof-card">
+            <ArrowTrendingUpIcon className="proof-arrow" />
+            <p className="proof-metric">{w.metric}</p>
+            <p className="proof-brand">{w.brand}</p>
+            <p className="proof-detail">{w.detail}</p>
+          </div>
+        ))}
+      </div>
+
+      <p className="slide-foot">
+        Real brands. Real lifts. Compounding monthly.
+      </p>
+    </div>
+  );
+}
+
+// ─────────── Slide 10: Next step ───────────
+function NextStepSlide() {
+  return (
+    <div className="slide-next">
+      <h2>Next step</h2>
+      <p className="slide-kicker">Pick the path that fits.</p>
+
+      <div className="next-row">
+        <div className="next-card">
+          <PhoneIcon className="next-icon" />
+          <p className="next-title">Strategy call</p>
+          <p className="next-desc">
+            Align on the first 90 days. No deck, no pitch — just the plan.
+          </p>
+          <span className="next-cta">30 min · Google Meet</span>
+        </div>
+        <div className="next-card next-card-accent">
+          <ClipboardDocumentListIcon className="next-icon" />
+          <p className="next-title">Deep-dive audit</p>
+          <p className="next-desc">
+            A custom revenue model built from your actual analytics.
+          </p>
+          <span className="next-cta">60 min · includes roadmap draft</span>
+        </div>
+      </div>
+
+      <p className="slide-foot">
+        Both end with a concrete 90-day roadmap — yours to keep, partnership or not.
+      </p>
+      <p className="next-book">
+        <a href="https://cal.com/ecomlanders" target="_blank" rel="noopener noreferrer">
+          Book a slot →
+        </a>
+      </p>
+    </div>
+  );
+}
+
 function SlideBody({
   content,
   calcInputs,
@@ -351,6 +629,13 @@ function SlideBody({
   if (content.includes("::investment-roi::")) {
     return <InvestmentRoiSlide inputs={calcInputs} />;
   }
+  if (content.includes("::leak-diagram::")) return <LeakDiagramSlide />;
+  if (content.includes("::page-build-vs-ce::")) return <PageBuildVsCESlide />;
+  if (content.includes("::partner-diagram::")) return <PartnerDiagramSlide />;
+  if (content.includes("::scope-grid::")) return <ScopeGridSlide />;
+  if (content.includes("::rhythm-timeline::")) return <RhythmTimelineSlide />;
+  if (content.includes("::proof-stats::")) return <ProofStatsSlide />;
+  if (content.includes("::next-step::")) return <NextStepSlide />;
   return <MarkdownSlide content={content} />;
 }
 
@@ -882,13 +1167,489 @@ export function SalesDeckPresentation({
           margin-bottom: 1.5rem;
         }
 
+        /* ─────────── Shared slide bits ─────────── */
+        .slide-kicker {
+          font-size: 0.7rem !important;
+          text-transform: uppercase;
+          letter-spacing: 0.18em;
+          color: rgba(255,255,255,0.45) !important;
+          font-weight: 500;
+          margin: 0 0 1rem 0 !important;
+        }
+        .slide-kicker-red { color: rgba(248, 113, 113, 0.8) !important; }
+        .slide-foot {
+          margin-top: 2rem !important;
+          font-size: 0.95rem !important;
+          color: rgba(255,255,255,0.5) !important;
+        }
+        .slide-foot-emphasis {
+          color: white !important;
+          font-weight: 600;
+          font-size: 1.05rem !important;
+        }
+
+        /* ─────────── Slide 2: Leak diagram ─────────── */
+        .slide-leak h2 { margin-bottom: 1.5rem; }
+        .role-row {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1rem;
+          margin-bottom: 2rem;
+        }
+        .role-card {
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 12px;
+          padding: 1.25rem;
+        }
+        .role-icon {
+          width: 22px;
+          height: 22px;
+          color: rgba(255,255,255,0.75);
+          margin-bottom: 0.75rem;
+        }
+        .role-label {
+          font-size: 1rem !important;
+          font-weight: 600 !important;
+          color: white !important;
+          margin: 0 0 0.25rem 0 !important;
+        }
+        .role-desc {
+          font-size: 0.85rem !important;
+          color: rgba(255,255,255,0.55) !important;
+          margin: 0 !important;
+        }
+
+        .gap-card {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          padding: 1.25rem 1.5rem;
+          border: 1px dashed rgba(248, 113, 113, 0.5);
+          border-radius: 12px;
+          background: rgba(248, 113, 113, 0.04);
+        }
+        .gap-dot {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background: #F87171;
+          box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.15);
+          flex-shrink: 0;
+          animation: gap-pulse 2.4s ease-in-out infinite;
+        }
+        @keyframes gap-pulse {
+          0%, 100% { box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.12); }
+          50% { box-shadow: 0 0 0 8px rgba(248, 113, 113, 0.22); }
+        }
+        .gap-label {
+          font-size: 1.1rem !important;
+          font-weight: 600 !important;
+          color: white !important;
+          margin: 0 0 0.1rem 0 !important;
+        }
+        .gap-desc {
+          font-size: 0.9rem !important;
+          color: rgba(255,255,255,0.55) !important;
+          margin: 0 !important;
+        }
+
+        /* ─────────── Slide 4: Page build vs CE ─────────── */
+        .slide-compare h2 { margin-bottom: 2rem; }
+        .compare-row {
+          display: grid;
+          grid-template-columns: 1fr auto 1fr;
+          gap: 1rem;
+          align-items: stretch;
+          margin-bottom: 1.5rem;
+        }
+        .compare-card {
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 14px;
+          padding: 1.75rem;
+          display: flex;
+          flex-direction: column;
+        }
+        .compare-card-accent {
+          border: 1px solid rgba(52, 211, 153, 0.35);
+          background: linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.02) 100%);
+        }
+        .compare-tag {
+          display: inline-block;
+          font-size: 0.7rem;
+          text-transform: uppercase;
+          letter-spacing: 0.16em;
+          color: rgba(255,255,255,0.45);
+          font-weight: 600;
+          padding: 0.25rem 0.6rem;
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 999px;
+          margin-bottom: 0.9rem;
+          align-self: flex-start;
+        }
+        .compare-tag-accent {
+          color: #34D399;
+          border-color: rgba(52, 211, 153, 0.4);
+          background: rgba(16, 185, 129, 0.08);
+        }
+        .compare-title {
+          font-size: 1.35rem !important;
+          font-weight: 700 !important;
+          color: white !important;
+          margin: 0 0 0.35rem 0 !important;
+        }
+        .compare-sub {
+          font-size: 0.95rem !important;
+          color: rgba(255,255,255,0.55) !important;
+          margin: 0 0 1rem 0 !important;
+        }
+        .compare-list {
+          list-style: none !important;
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+        .compare-list li {
+          padding-left: 1.25rem !important;
+          margin-bottom: 0.5rem !important;
+          font-size: 0.95rem !important;
+          color: rgba(255,255,255,0.78) !important;
+          position: relative;
+        }
+        .compare-list li::before {
+          content: "" !important;
+          position: absolute;
+          left: 0;
+          top: 0.65em;
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.35);
+        }
+        .compare-card-accent .compare-list li::before { background: #34D399; }
+
+        .compare-arrow {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 0 0.5rem;
+        }
+        .compare-arrow-label {
+          font-size: 0.65rem;
+          text-transform: uppercase;
+          letter-spacing: 0.2em;
+          color: rgba(255,255,255,0.35);
+          margin-bottom: 0.5rem;
+        }
+        .compare-arrow-icon {
+          width: 32px;
+          height: 32px;
+          color: rgba(255,255,255,0.3);
+        }
+
+        /* ─────────── Slide 5: Partner diagram ─────────── */
+        .slide-partner h2 { margin-bottom: 1.5rem; }
+        .partner-diagram {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          margin-bottom: 2rem;
+        }
+        .partner-brand {
+          padding: 0.8rem 1.75rem;
+          border: 1px solid rgba(255,255,255,0.2);
+          border-radius: 999px;
+          background: rgba(255,255,255,0.05);
+        }
+        .partner-brand-label {
+          margin: 0 !important;
+          font-size: 0.75rem !important;
+          text-transform: uppercase;
+          letter-spacing: 0.2em;
+          color: rgba(255,255,255,0.85) !important;
+          font-weight: 600;
+        }
+        .partner-lines {
+          position: relative;
+          width: 60%;
+          max-width: 520px;
+          height: 40px;
+          margin: 0 auto;
+        }
+        .partner-lines span {
+          position: absolute;
+          top: 0;
+          width: 1px;
+          height: 100%;
+          background: rgba(255,255,255,0.12);
+        }
+        .partner-lines span:nth-child(1) { left: 16.67%; }
+        .partner-lines span:nth-child(2) { left: 50%; }
+        .partner-lines span:nth-child(3) { left: 83.33%; }
+        .partner-row {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1rem;
+          width: 60%;
+          max-width: 520px;
+        }
+        .partner-node {
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 10px;
+          padding: 0.9rem;
+          text-align: center;
+        }
+        .partner-node-accent {
+          border-color: rgba(52, 211, 153, 0.4);
+          background: rgba(16, 185, 129, 0.06);
+        }
+        .partner-node-icon {
+          width: 18px;
+          height: 18px;
+          color: rgba(255,255,255,0.7);
+          margin: 0 auto 0.35rem;
+        }
+        .partner-node-accent .partner-node-icon { color: #34D399; }
+        .partner-node-label {
+          margin: 0 !important;
+          font-size: 0.8rem !important;
+          font-weight: 600 !important;
+          color: white !important;
+        }
+
+        .partner-bullets {
+          list-style: none !important;
+          padding: 0 !important;
+          margin: 0 0 0.5rem 0 !important;
+        }
+        .partner-bullets li {
+          padding-left: 1.25rem !important;
+          margin-bottom: 0.6rem !important;
+          font-size: 1rem !important;
+          color: rgba(255,255,255,0.8) !important;
+          position: relative;
+        }
+        .partner-bullets li::before {
+          content: "" !important;
+          position: absolute;
+          left: 0;
+          top: 0.65em;
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background: #34D399;
+        }
+        .partner-bullets li strong { color: white; }
+
+        /* ─────────── Slide 6: Scope grid ─────────── */
+        .slide-scope h2 { margin-bottom: 2rem; }
+        .scope-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+        }
+        .scope-card {
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 12px;
+          padding: 1.25rem;
+        }
+        .scope-icon {
+          width: 22px;
+          height: 22px;
+          color: #34D399;
+          margin-bottom: 0.75rem;
+        }
+        .scope-title {
+          margin: 0 0 0.3rem 0 !important;
+          font-size: 1rem !important;
+          font-weight: 600 !important;
+          color: white !important;
+        }
+        .scope-desc {
+          margin: 0 !important;
+          font-size: 0.85rem !important;
+          color: rgba(255,255,255,0.55) !important;
+        }
+
+        /* ─────────── Slide 7: Rhythm timeline ─────────── */
+        .slide-rhythm h2 { margin-bottom: 2.5rem; }
+        .rhythm-track {
+          position: relative;
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1rem;
+          padding-top: 1.5rem;
+          margin-bottom: 2rem;
+        }
+        .rhythm-line {
+          position: absolute;
+          top: 24px;
+          left: 10%;
+          right: 10%;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.4), transparent);
+          z-index: 0;
+        }
+        .rhythm-step {
+          position: relative;
+          text-align: center;
+          padding-top: 1rem;
+          z-index: 1;
+        }
+        .rhythm-dot {
+          position: absolute;
+          top: -24px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: #0A0A0A;
+          border: 1px solid rgba(52, 211, 153, 0.5);
+          color: #34D399;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.85rem;
+          font-weight: 700;
+        }
+        .rhythm-week {
+          display: block;
+          font-size: 0.7rem !important;
+          text-transform: uppercase;
+          letter-spacing: 0.18em;
+          color: #34D399 !important;
+          margin-bottom: 0.3rem;
+          margin-top: 1.5rem;
+        }
+        .rhythm-title {
+          margin: 0 0 0.3rem 0 !important;
+          font-size: 1.15rem !important;
+          font-weight: 600 !important;
+          color: white !important;
+        }
+        .rhythm-desc {
+          margin: 0 !important;
+          font-size: 0.9rem !important;
+          color: rgba(255,255,255,0.55) !important;
+        }
+
+        /* ─────────── Slide 8: Proof stats ─────────── */
+        .slide-proof h2 { margin-bottom: 0.75rem; }
+        .proof-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+        }
+        .proof-card {
+          background: linear-gradient(180deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.02) 100%);
+          border: 1px solid rgba(52, 211, 153, 0.25);
+          border-radius: 14px;
+          padding: 1.5rem 1.5rem 1.75rem;
+          position: relative;
+        }
+        .proof-arrow {
+          width: 22px;
+          height: 22px;
+          color: #34D399;
+          margin-bottom: 0.25rem;
+        }
+        .proof-metric {
+          margin: 0 0 0.5rem 0 !important;
+          font-size: 2.8rem !important;
+          font-weight: 800 !important;
+          letter-spacing: -0.02em;
+          color: #34D399 !important;
+          line-height: 1;
+        }
+        .proof-brand {
+          margin: 0 0 0.3rem 0 !important;
+          font-size: 0.95rem !important;
+          font-weight: 600 !important;
+          color: white !important;
+        }
+        .proof-detail {
+          margin: 0 !important;
+          font-size: 0.85rem !important;
+          color: rgba(255,255,255,0.6) !important;
+          line-height: 1.4;
+        }
+
+        /* ─────────── Slide 10: Next step ─────────── */
+        .slide-next h2 { margin-bottom: 0.75rem; }
+        .next-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1.25rem;
+          margin-bottom: 1.5rem;
+        }
+        .next-card {
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 14px;
+          padding: 1.75rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.4rem;
+        }
+        .next-card-accent {
+          border-color: rgba(52, 211, 153, 0.4);
+          background: linear-gradient(180deg, rgba(16, 185, 129, 0.06) 0%, rgba(16, 185, 129, 0.02) 100%);
+        }
+        .next-icon {
+          width: 24px;
+          height: 24px;
+          color: #34D399;
+          margin-bottom: 0.5rem;
+        }
+        .next-title {
+          margin: 0 !important;
+          font-size: 1.25rem !important;
+          font-weight: 700 !important;
+          color: white !important;
+        }
+        .next-desc {
+          margin: 0 0 0.5rem 0 !important;
+          font-size: 0.95rem !important;
+          color: rgba(255,255,255,0.65) !important;
+        }
+        .next-cta {
+          font-size: 0.78rem;
+          color: rgba(255,255,255,0.4);
+          text-transform: uppercase;
+          letter-spacing: 0.14em;
+          font-weight: 500;
+        }
+        .next-book {
+          margin-top: 0.75rem !important;
+          text-align: left !important;
+        }
+        .next-book a {
+          display: inline-block;
+          padding: 0.7rem 1.3rem;
+          background: #34D399;
+          color: #0A0A0A !important;
+          font-weight: 600;
+          font-size: 0.95rem;
+          text-decoration: none !important;
+          border-radius: 8px;
+          transition: background 150ms ease;
+        }
+        .next-book a:hover { background: #10B981; }
+
         @media (prefers-reduced-motion: reduce) {
           .marquee-col,
           .deck-slide .ce-logo-mark,
           .deck-slide .ce-logo-wordmark,
           .deck-slide-cover p,
           .cover-backdrop,
-          .roi-bar { transition: none !important; animation: none !important; }
+          .roi-bar,
+          .gap-dot { transition: none !important; animation: none !important; }
           .deck-slide-enter { animation: none !important; }
         }
       `}</style>

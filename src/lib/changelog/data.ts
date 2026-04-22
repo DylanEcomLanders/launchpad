@@ -55,6 +55,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Sales deck Slide 4 reframed from \"why conversion agencies are a bad fit\" (felt defensive) to \"where this fits next to a page build\" — positions page builds as a precision tool and Conversion Engine as the whole system, with language that makes this the graduation from a page-build relationship, not a replacement" },
       { type: "improved", text: "Sales deck Slides 2, 5, 6, 7, 8, 10 rewritten for more punch and premium positioning — tighter bullets, sharper one-liners (\"One throat to choke when conversion stalls\"), real results framing on proof slide" },
       { type: "improved", text: "Sales deck presenter view: \"Slide N — \" prefix stripped from rendered h2 (editor source still reads nicely, on-screen title is clean). Designer notes chunk filtered out of slide list — counter now reads N / 10 instead of N / 11" },
+      { type: "added", text: "Sales deck: visual anchors for every slide (no more text-only walls). S2 has role cards + a dashed \"unowned conversion layer\" gap card with a pulsing red dot. S4 is side-by-side Page Build vs Conversion Engine comparison with \"Graduates to\" arrow between. S5 is an org diagram (Your Brand → peer nodes: Ads / Email / Conversion Engine). S6 is a 5-card scope grid with heroicons. S7 is a numbered 3-step timeline on a gradient line. S8 is 3 hero stat cards (+22% / +14% / +7%). S10 is 2 large CTA cards (Strategy call / Deep-dive audit) with a green book-a-slot button" },
     ],
   },
   {
