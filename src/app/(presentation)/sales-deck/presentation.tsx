@@ -166,6 +166,13 @@ export function SalesDeckPresentation({ markdown }: { markdown: string }) {
         }
         .deck-slide hr { display: none; }
         .deck-slide a { color: #60A5FA; text-decoration: underline; }
+        .deck-slide img {
+          max-width: 520px;
+          width: 100%;
+          height: auto;
+          margin: 0 auto 2rem;
+          display: block;
+        }
       `}</style>
     </div>
   );

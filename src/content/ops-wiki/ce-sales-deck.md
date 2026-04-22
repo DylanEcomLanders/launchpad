@@ -8,9 +8,9 @@ Ten-slide deck for the deep-dive audit meeting. Content is the source of truth �
 
 ## Slide 1 — Cover
 
-**Ecom Landers — Conversion Partner for [Brand]**
+![Conversion Engine](/conversion-engine-logo.svg)
 
-_Sub: the team your competitors already have_
+_The team your competitors already have_
 
 ---
 
