@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -87,22 +87,51 @@ export function SalesDeckPresentation({
 }) {
   const slides = useMemo(() => splitSlides(markdown), [markdown]);
   const [index, setIndex] = useState(0);
+  const [entering, setEntering] = useState(false);
+  const enterTimer = useRef<number | null>(null);
+
+  const goNext = useCallback(() => {
+    if (entering) return;
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (index === 0 && slides.length > 1 && !reduce) {
+      setEntering(true);
+      enterTimer.current = window.setTimeout(() => {
+        setIndex(1);
+        setEntering(false);
+      }, 750);
+      return;
+    }
+    setIndex((i) => Math.min(i + 1, slides.length - 1));
+  }, [index, slides.length, entering]);
+
+  const goPrev = useCallback(() => {
+    if (entering) return;
+    setIndex((i) => Math.max(i - 1, 0));
+  }, [entering]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
-        setIndex((i) => Math.min(i + 1, slides.length - 1));
+        goNext();
       } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
-        setIndex((i) => Math.max(i - 1, 0));
+        goPrev();
       } else if (e.key === "Home") {
-        setIndex(0);
+        if (!entering) setIndex(0);
       } else if (e.key === "End") {
-        setIndex(slides.length - 1);
+        if (!entering) setIndex(slides.length - 1);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [slides.length]);
+  }, [goNext, goPrev, entering, slides.length]);
+
+  useEffect(() => {
+    return () => {
+      if (enterTimer.current) window.clearTimeout(enterTimer.current);
+    };
+  }, []);
 
   if (slides.length === 0) {
     return (
@@ -116,9 +145,13 @@ export function SalesDeckPresentation({
   const isCover = current.includes("/conversion-engine-logo.svg");
 
   return (
-    <div className="relative min-h-screen bg-[#0A0A0A] text-white overflow-hidden">
+    <div
+      className={`relative min-h-screen bg-[#0A0A0A] text-white overflow-hidden ${
+        entering ? "is-entering-engine" : ""
+      }`}
+    >
       {/* Cover backdrop — vertical page marquees on the outskirts */}
-      {isCover && <CoverBackdrop images={coverImages} />}
+      {(isCover || entering) && <CoverBackdrop images={coverImages} />}
 
       {/* Subtle dot pattern (hidden on cover so the backdrop breathes) */}
       {!isCover && (
@@ -136,7 +169,10 @@ export function SalesDeckPresentation({
       {/* Slide */}
       <div className="relative z-10 min-h-screen flex items-center justify-center px-10 md:px-24 py-16">
         <div className="max-w-4xl w-full">
-          <article className={`deck-slide ${isCover ? "deck-slide-cover" : ""}`}>
+          <article
+            key={index}
+            className={`deck-slide ${isCover ? "deck-slide-cover" : "deck-slide-enter"}`}
+          >
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
@@ -177,8 +213,8 @@ export function SalesDeckPresentation({
       {/* Nav arrows */}
       <div className="fixed bottom-6 right-6 z-20 flex items-center gap-2">
         <button
-          onClick={() => setIndex((i) => Math.max(i - 1, 0))}
-          disabled={index === 0}
+          onClick={goPrev}
+          disabled={index === 0 || entering}
           className="size-9 rounded-full border border-white/20 bg-white/5 flex items-center justify-center hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           aria-label="Previous slide"
         >
@@ -187,8 +223,8 @@ export function SalesDeckPresentation({
           </svg>
         </button>
         <button
-          onClick={() => setIndex((i) => Math.min(i + 1, slides.length - 1))}
-          disabled={index === slides.length - 1}
+          onClick={goNext}
+          disabled={index === slides.length - 1 || entering}
           className="size-9 rounded-full border border-white/20 bg-white/5 flex items-center justify-center hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           aria-label="Next slide"
         >
@@ -361,6 +397,96 @@ export function SalesDeckPresentation({
 
         @media (prefers-reduced-motion: reduce) {
           .marquee-col { animation: none !important; }
+        }
+
+        /* Entering-engine transition — cover exit */
+        .deck-slide .ce-logo-mark {
+          transition:
+            transform 750ms cubic-bezier(0.55, 0, 0.25, 1),
+            opacity 520ms ease-out 220ms,
+            filter 600ms ease-out;
+          will-change: transform, opacity;
+        }
+        .deck-slide .ce-logo-wordmark {
+          transition:
+            opacity 280ms ease-out,
+            transform 420ms cubic-bezier(0.55, 0, 0.25, 1),
+            filter 300ms ease-out;
+          will-change: transform, opacity;
+        }
+        .deck-slide-cover p {
+          transition:
+            opacity 260ms ease-out,
+            transform 420ms cubic-bezier(0.55, 0, 0.25, 1);
+          will-change: transform, opacity;
+        }
+        .backdrop-col-group {
+          transition:
+            transform 650ms cubic-bezier(0.55, 0, 0.25, 1),
+            opacity 520ms ease-out;
+          will-change: transform, opacity;
+        }
+        .cover-backdrop::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(ellipse at center, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 60%, rgba(10,10,10,0) 100%);
+          opacity: 0;
+          transition: opacity 500ms ease-out, background 500ms ease-out;
+          pointer-events: none;
+        }
+
+        .is-entering-engine .ce-logo-mark {
+          transform: scale(22);
+          opacity: 0;
+          filter: blur(8px);
+        }
+        .is-entering-engine .ce-logo-wordmark {
+          opacity: 0;
+          transform: scale(1.08);
+          filter: blur(3px);
+        }
+        .is-entering-engine .deck-slide-cover p {
+          opacity: 0;
+          transform: translateY(6px) scale(1.04);
+        }
+        .is-entering-engine .backdrop-left {
+          transform: translateX(-22%);
+          opacity: 0;
+        }
+        .is-entering-engine .backdrop-right {
+          transform: translateX(22%);
+          opacity: 0;
+        }
+        .is-entering-engine .cover-backdrop::after {
+          opacity: 1;
+          background: radial-gradient(ellipse at center, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 55%, rgba(10,10,10,0) 100%);
+        }
+
+        /* Slide enter — fresh slide fades + rises in */
+        .deck-slide-enter {
+          animation: deck-slide-enter 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        @keyframes deck-slide-enter {
+          from {
+            opacity: 0;
+            transform: translateY(14px) scale(0.985);
+            filter: blur(4px);
+          }
+          to {
+            opacity: 1;
+            transform: none;
+            filter: blur(0);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .deck-slide .ce-logo-mark,
+          .deck-slide .ce-logo-wordmark,
+          .deck-slide-cover p,
+          .backdrop-col-group { transition: none !important; }
+          .deck-slide-enter { animation: none !important; }
+          .cover-backdrop::after { transition: none !important; }
         }
       `}</style>
     </div>

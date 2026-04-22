@@ -45,6 +45,8 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Sales deck cover slide cleaned up — \"Slide 1 — Cover\" heading removed so the logo + tagline stand on their own. Conversion Engine logo split into /conversion-engine-mark.svg + /conversion-engine-wordmark.svg; presentation view renders the split via a custom ReactMarkdown img override when /conversion-engine-logo.svg is referenced" },
       { type: "improved", text: "Sales deck drops the editor-facing intro chunk (title + fullscreen link) so slide 1 is the actual cover — counter now reads 1 / 11 instead of 2 / 12 on the first real slide" },
       { type: "added", text: "Cover slide gets vertical portfolio marquees on both edges — 4 columns (2 per side) scrolling up/down at 95-125s, feeding from portfolio-v2 desktop + mobile slices, ~22% opacity, grayscaled, top/bottom fade masks. Non-cover slides keep the existing dot pattern. Adding more projects to portfolio-v2 auto-populates the backdrop. Respects prefers-reduced-motion" },
+      { type: "improved", text: "Cover tagline changed to \"Covering everything you need post click\"" },
+      { type: "added", text: "\"Entering the engine\" transition when advancing from the cover — 750ms sequence where the mark zooms 22× + fades + blurs, wordmark and tagline fade with a subtle zoom, left/right marquee columns peel outward, a soft radial white flash blooms at center. Slide 2 rises in (520ms, fade + 14px translate + blur→sharp). Reverse nav is instant. Nav disabled during the transition to prevent double-trigger. Reduced-motion skips the animation" },
     ],
   },
   {
