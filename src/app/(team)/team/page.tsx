@@ -19,6 +19,7 @@ const primary = [
     description: "Our internal playbook — process, standards, and the way we deliver.",
     href: "/team/ops-wiki",
     icon: BookOpenIcon,
+    badge: "WIP",
   },
 ];
 
@@ -59,6 +60,11 @@ export default function TeamToolsPage() {
                 <h2 className="text-sm font-semibold text-[#1B1B1B]">
                   {item.title}
                 </h2>
+                {"badge" in item && item.badge && (
+                  <span className="px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-amber-100 text-amber-700 rounded">
+                    {item.badge}
+                  </span>
+                )}
               </div>
               <p className="text-xs text-[#7A7A7A] leading-relaxed mb-3">
                 {item.description}

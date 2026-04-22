@@ -19,6 +19,7 @@ interface NavItem {
   href: string;
   icon: React.ReactNode;
   comingSoon?: boolean;
+  badge?: string;
 }
 
 const navItems: NavItem[] = [
@@ -31,6 +32,7 @@ const navItems: NavItem[] = [
     label: "Operations Wiki",
     href: "/team/ops-wiki",
     icon: <BookOpenIcon className="size-4" />,
+    badge: "WIP",
   },
 ];
 
@@ -153,6 +155,11 @@ export function TeamSidebar() {
                   {item.comingSoon && (
                     <span className="px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-[#EDEDEF] text-[#A0A0A0] rounded">
                       Soon
+                    </span>
+                  )}
+                  {item.badge && !item.comingSoon && (
+                    <span className="px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-amber-100 text-amber-700 rounded">
+                      {item.badge}
                     </span>
                   )}
                 </span>
