@@ -6,8 +6,6 @@ The client is buying design deliverables only — no development, no CRO. They e
 
 **Examples:** Wireframes for a homepage, high-fidelity PDP design, landing page mockups for their dev team to build.
 
-**Typical value:** £1,500–£4,000 per project
-
 ---
 
 ## The Assembly Line

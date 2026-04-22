@@ -6,8 +6,6 @@ Same as Design & Development, plus a CRO component — the page is being built t
 
 **Examples:** Landing page A/B test, PDP redesign with conversion hypothesis, checkout optimisation with measurement, funnel rebuild with before/after tracking.
 
-**Typical value:** £4,000–£10,000 per project
-
 ---
 
 ## The Assembly Line

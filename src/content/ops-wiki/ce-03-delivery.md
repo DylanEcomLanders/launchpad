@@ -6,7 +6,7 @@
 
 This is not a vendor relationship where the client briefs pages and we execute. We own the conversion roadmap. We decide what gets built, when, and why — based on data, not client preference. The client approves direction, not deliverables.
 
-This is what justifies £8K+/mo. They're not buying pages. They're buying a team that obsesses over their conversion system every single month and compounds results over time.
+This is what makes the retainer worth it. They're not buying pages. They're buying a team that obsesses over their conversion system every single month and compounds results over time.
 
 ---
 

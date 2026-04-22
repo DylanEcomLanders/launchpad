@@ -2,7 +2,7 @@
 
 ## The First 7 Days
 
-Once the partnership starts, onboarding moves fast. The client needs to feel momentum immediately — they just committed to £8K+/mo and the clock is ticking. No slow ramp-ups.
+Once the partnership starts, onboarding moves fast. The client needs to feel momentum immediately — they've just committed to a retainer and the clock is ticking. No slow ramp-ups.
 
 ### Day 1-2: Access & Data Collection
 

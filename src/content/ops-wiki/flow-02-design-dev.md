@@ -6,8 +6,6 @@ The most common project type. Client is buying a full page build — we design i
 
 **Examples:** Landing page build, homepage redesign, PDP template redesign, collection page build.
 
-**Typical value:** £2,500–£8,000 per project
-
 ---
 
 ## The Assembly Line

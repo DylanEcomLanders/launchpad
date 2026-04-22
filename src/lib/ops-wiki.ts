@@ -84,6 +84,7 @@ const moduleMap: Record<
     shortTitle: "Conversion Matrix",
     icon: "grid",
     category: "flow",
+    adminOnly: true,
   },
   "ce-05-revenue-projector": {
     title: "Revenue Projector — Partnership Economics",

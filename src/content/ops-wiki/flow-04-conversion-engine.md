@@ -2,11 +2,11 @@
 
 ## When This Flow Applies
 
-This is the full offer — £8K+/mo, team-led roadmap, ongoing conversion system management. It's not a linear project with a start and end. It's a sprint-based loop that compounds every month.
+This is the full offer — team-led roadmap, ongoing conversion system management. It's not a linear project with a start and end. It's a sprint-based loop that compounds every month.
 
 The Conversion Engine is essentially D&D+CRO running on a repeating sprint cycle, with a strategic roadmap layer on top. Each sprint produces conversion assets. Each asset generates data. Each data point informs the next sprint.
 
-> **Full offer details:** See the [Conversion Engine Wiki](/tools/conversion-engine) for pricing, sales process, positioning, and partnership economics.
+> **Full offer details** (pricing, sales process, positioning, partnership economics) live in the admin wiki.
 
 ---
 
