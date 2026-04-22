@@ -7,13 +7,19 @@ const STORAGE_KEY = "launchpad-auth";
 const ROLE_KEY = "launchpad-role";
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "ecomlanders2025";
 const CRO_PASSWORD = process.env.NEXT_PUBLIC_CRO_PASSWORD || "cro2025";
+const TEAM_PASSWORD = process.env.NEXT_PUBLIC_TEAM_PASSWORD || "team2026";
 
-export type UserRole = "admin" | "cro";
+export type UserRole = "admin" | "cro" | "team";
 
 const RoleContext = createContext<UserRole>("admin");
 
 export function useRole() {
   return useContext(RoleContext);
+}
+
+/** Team role can only see /team/* and /portal/* — everything else kicks them back to /team. */
+function isTeamAllowedPath(pathname: string): boolean {
+  return pathname === "/team" || pathname.startsWith("/team/") || pathname.startsWith("/portal/");
 }
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
@@ -35,6 +41,15 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     setChecking(false);
   }, []);
 
+  // Guard: if role=team is on an admin route, kick them back to /team.
+  useEffect(() => {
+    if (!authed || role !== "team") return;
+    if (typeof window === "undefined") return;
+    if (!isTeamAllowedPath(window.location.pathname)) {
+      window.location.replace("/team");
+    }
+  }, [authed, role]);
+
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (input === ADMIN_PASSWORD) {
@@ -52,6 +67,19 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       setTimeout(() => {
         setAuthed(true);
         setRole("cro");
+      }, 600);
+    } else if (input === TEAM_PASSWORD) {
+      sessionStorage.setItem(STORAGE_KEY, "true");
+      sessionStorage.setItem(ROLE_KEY, "team");
+      setEntering(true);
+      setTimeout(() => {
+        // Team lands on /team no matter where they typed the password
+        if (typeof window !== "undefined" && !isTeamAllowedPath(window.location.pathname)) {
+          window.location.replace("/team");
+          return;
+        }
+        setAuthed(true);
+        setRole("team");
       }, 600);
     } else {
       setError(true);

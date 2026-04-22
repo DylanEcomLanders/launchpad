@@ -107,7 +107,7 @@ export function Sidebar() {
     () => Object.fromEntries(navSections.map((s) => [s.title, s.defaultOpen !== false]))
   );
 
-  const visibleSections = navSections.filter((s) => !s.roles || s.roles.includes(role));
+  const visibleSections = navSections.filter((s) => !s.roles || (role !== "team" && s.roles.includes(role)));
   const [now, setNow] = useState(() => new Date());
   const [onboardingCount, setOnboardingCount] = useState(0);
 
