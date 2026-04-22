@@ -424,6 +424,19 @@ export function PortalView({
           <Logo height={14} />
         </div>
 
+        {/* Team-mode: back to Team Tools */}
+        {viewMode === "team" && (
+          <div className="px-3 pt-3">
+            <a
+              href="/team"
+              className="flex items-center gap-1.5 text-[11px] font-medium text-[#777] hover:text-[#1A1A1A] transition-colors"
+            >
+              <svg className="size-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" /></svg>
+              Back to Team Tools
+            </a>
+          </div>
+        )}
+
         {/* Back button when drilled in */}
         {drillView !== "home" && (
           <div className="px-3 pt-4 pb-2">
@@ -868,9 +881,10 @@ export function PortalView({
               </>
             )}
             {activeTab === "internal" && viewMode === "team" && selectedProject && focusedGateKey && QA_KEY_TO_GATE_KEY[focusedGateKey] && (
-              <>
+              <div className="max-w-2xl mx-auto">
                 <PageHeader title={GATE_CONFIG[focusedGateKey]?.title ?? "Handover"} subtitle={`Role: ${GATE_CONFIG[focusedGateKey]?.role ?? "Team"}`} />
                 <GateChecklistForm
+                  key={`${selectedProject.id}-${focusedGateKey}`}
                   gateKey={QA_KEY_TO_GATE_KEY[focusedGateKey]}
                   project={selectedProject}
                   portal={portal}
@@ -903,7 +917,7 @@ export function PortalView({
                     onReload?.();
                   }}
                 />
-              </>
+              </div>
             )}
             {activeTab === "internal" && viewMode === "team" && selectedProject && !focusedGateKey && (
               <>

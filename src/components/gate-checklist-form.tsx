@@ -299,12 +299,9 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
     <div className="max-w-2xl mx-auto">
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <span className="size-3 rounded-full shrink-0" style={{ backgroundColor: config.color }} />
-          <div>
-            <h2 className="text-lg font-bold text-[#1A1A1A]">{config.title}</h2>
-            <p className="text-xs text-[#777]">{config.subtitle}</p>
-          </div>
+        <div>
+          <h2 className="text-lg font-bold text-[#1A1A1A]">{config.title}</h2>
+          <p className="text-xs text-[#777]">{config.subtitle}</p>
         </div>
         {config.type !== "design-brief" && (
           <div className="text-right shrink-0">
