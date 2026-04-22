@@ -55,7 +55,7 @@ function MarqueeColumn({
   );
 }
 
-function CoverBackdrop({ images }: { images: string[] }) {
+function CoverBackdrop({ images, visible }: { images: string[]; visible: boolean }) {
   if (images.length === 0) return null;
 
   // Shuffle-ish split across 4 columns
@@ -65,7 +65,10 @@ function CoverBackdrop({ images }: { images: string[] }) {
   const safe = columns.map((c) => (c.length ? c : images));
 
   return (
-    <div className="cover-backdrop" aria-hidden="true">
+    <div
+      className={`cover-backdrop ${visible ? "is-visible" : "is-hidden"}`}
+      aria-hidden="true"
+    >
       <div className="backdrop-col-group backdrop-left">
         <MarqueeColumn images={safe[0]} direction="up" duration={95} offset={0} />
         <MarqueeColumn images={safe[1]} direction="down" duration={115} offset={20} />
@@ -100,7 +103,7 @@ export function SalesDeckPresentation({
       enterTimer.current = window.setTimeout(() => {
         setIndex(1);
         setEntering(false);
-      }, 750);
+      }, 340);
       return;
     }
     setIndex((i) => Math.min(i + 1, slides.length - 1));
@@ -150,21 +153,21 @@ export function SalesDeckPresentation({
         entering ? "is-entering-engine" : ""
       }`}
     >
-      {/* Cover backdrop — vertical page marquees on the outskirts */}
-      {(isCover || entering) && <CoverBackdrop images={coverImages} />}
+      {/* Cover backdrop — always mounted, opacity toggled so it fades out cleanly after the transition */}
+      <CoverBackdrop images={coverImages} visible={isCover || entering} />
 
-      {/* Subtle dot pattern (hidden on cover so the backdrop breathes) */}
-      {!isCover && (
-        <div
-          aria-hidden
-          className="absolute inset-0 opacity-30 pointer-events-none"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px)",
-            backgroundSize: "18px 18px",
-          }}
-        />
-      )}
+      {/* Subtle dot pattern — always mounted, fades in on non-cover slides */}
+      <div
+        aria-hidden
+        className={`absolute inset-0 pointer-events-none dot-pattern ${
+          isCover || entering ? "dot-pattern-hidden" : "dot-pattern-visible"
+        }`}
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px)",
+          backgroundSize: "18px 18px",
+        }}
+      />
 
       {/* Slide */}
       <div className="relative z-10 min-h-screen flex items-center justify-center px-10 md:px-24 py-16">
@@ -399,84 +402,63 @@ export function SalesDeckPresentation({
           .marquee-col { animation: none !important; }
         }
 
-        /* Entering-engine transition — cover exit */
+        /* Entering-engine transition — cover exit.
+           Opacity fades fast (140ms) so the white mark is invisible before it gets large.
+           Transform keeps going invisibly for another 200ms to carry the "forward motion" feel. */
         .deck-slide .ce-logo-mark {
           transition:
-            transform 750ms cubic-bezier(0.55, 0, 0.25, 1),
-            opacity 520ms ease-out 220ms,
-            filter 600ms ease-out;
+            transform 340ms cubic-bezier(0.55, 0, 0.25, 1),
+            opacity 140ms ease-out;
           will-change: transform, opacity;
+          transform-origin: 50% 50%;
         }
         .deck-slide .ce-logo-wordmark {
-          transition:
-            opacity 280ms ease-out,
-            transform 420ms cubic-bezier(0.55, 0, 0.25, 1),
-            filter 300ms ease-out;
-          will-change: transform, opacity;
+          transition: opacity 200ms ease-out;
+          will-change: opacity;
         }
         .deck-slide-cover p {
-          transition:
-            opacity 260ms ease-out,
-            transform 420ms cubic-bezier(0.55, 0, 0.25, 1);
-          will-change: transform, opacity;
+          transition: opacity 200ms ease-out;
+          will-change: opacity;
         }
-        .backdrop-col-group {
-          transition:
-            transform 650ms cubic-bezier(0.55, 0, 0.25, 1),
-            opacity 520ms ease-out;
-          will-change: transform, opacity;
+        .cover-backdrop {
+          transition: opacity 380ms ease-out;
+          will-change: opacity;
         }
-        .cover-backdrop::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: radial-gradient(ellipse at center, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 60%, rgba(10,10,10,0) 100%);
-          opacity: 0;
-          transition: opacity 500ms ease-out, background 500ms ease-out;
-          pointer-events: none;
-        }
-
         .is-entering-engine .ce-logo-mark {
-          transform: scale(22);
+          transform: scale3d(8, 8, 1);
           opacity: 0;
-          filter: blur(8px);
         }
         .is-entering-engine .ce-logo-wordmark {
           opacity: 0;
-          transform: scale(1.08);
-          filter: blur(3px);
         }
         .is-entering-engine .deck-slide-cover p {
           opacity: 0;
-          transform: translateY(6px) scale(1.04);
-        }
-        .is-entering-engine .backdrop-left {
-          transform: translateX(-22%);
-          opacity: 0;
-        }
-        .is-entering-engine .backdrop-right {
-          transform: translateX(22%);
-          opacity: 0;
-        }
-        .is-entering-engine .cover-backdrop::after {
-          opacity: 1;
-          background: radial-gradient(ellipse at center, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 55%, rgba(10,10,10,0) 100%);
         }
 
-        /* Slide enter — fresh slide fades + rises in */
+        /* Backdrop fade in/out */
+        .cover-backdrop.is-visible { opacity: 1; }
+        .cover-backdrop.is-hidden { opacity: 0; }
+
+        /* Dot pattern fade in/out */
+        .dot-pattern {
+          transition: opacity 380ms ease-out;
+        }
+        .dot-pattern-visible { opacity: 0.3; }
+        .dot-pattern-hidden { opacity: 0; }
+
+        /* Slide enter — starts partially visible so there's no dead air after the cover exits */
         .deck-slide-enter {
-          animation: deck-slide-enter 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+          animation: deck-slide-enter 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+          will-change: transform, opacity;
         }
         @keyframes deck-slide-enter {
           from {
-            opacity: 0;
-            transform: translateY(14px) scale(0.985);
-            filter: blur(4px);
+            opacity: 0.35;
+            transform: translate3d(0, 6px, 0);
           }
           to {
             opacity: 1;
-            transform: none;
-            filter: blur(0);
+            transform: translate3d(0, 0, 0);
           }
         }
 
