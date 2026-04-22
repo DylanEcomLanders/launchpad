@@ -42,7 +42,9 @@ const seedChangelog: ChangelogEntry[] = [
     version: "0.31.1",
     title: "Sales Deck — Cover Slide Polish",
     changes: [
-      { type: "improved", text: "Sales deck cover slide cleaned up — \"Slide 1 — Cover\" heading removed so the logo + tagline stand on their own. Conversion Engine logo now splits into a spinning mark (8s linear, reduced-motion respected) with the static \"conversion engine\" wordmark below. Added /conversion-engine-mark.svg + /conversion-engine-wordmark.svg; presentation view renders the split via a custom ReactMarkdown img override when the original /conversion-engine-logo.svg is referenced" },
+      { type: "improved", text: "Sales deck cover slide cleaned up — \"Slide 1 — Cover\" heading removed so the logo + tagline stand on their own. Conversion Engine logo split into /conversion-engine-mark.svg + /conversion-engine-wordmark.svg; presentation view renders the split via a custom ReactMarkdown img override when /conversion-engine-logo.svg is referenced" },
+      { type: "improved", text: "Sales deck drops the editor-facing intro chunk (title + fullscreen link) so slide 1 is the actual cover — counter now reads 1 / 11 instead of 2 / 12 on the first real slide" },
+      { type: "added", text: "Cover slide gets vertical portfolio marquees on both edges — 4 columns (2 per side) scrolling up/down at 95-125s, feeding from portfolio-v2 desktop + mobile slices, ~22% opacity, grayscaled, top/bottom fade masks. Non-cover slides keep the existing dot pattern. Adding more projects to portfolio-v2 auto-populates the backdrop. Respects prefers-reduced-motion" },
     ],
   },
   {

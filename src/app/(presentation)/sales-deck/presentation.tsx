@@ -8,17 +8,83 @@ import remarkGfm from "remark-gfm";
  * Splits the deck markdown on horizontal-rule separators (`---`) so each
  * "Slide N — Title" block renders as its own full-viewport slide.
  *
- * The first chunk above the first `---` is treated as the intro/cover context
- * and dropped (the cover slide itself sits after the first `---`).
+ * The first chunk above the first `---` is the editor-facing intro (title,
+ * description, fullscreen link) — drop it so slide 1 = the real cover.
  */
 function splitSlides(markdown: string): string[] {
-  return markdown
+  const parts = markdown
     .split(/\n---+\n/)
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
+  return parts.slice(1);
 }
 
-export function SalesDeckPresentation({ markdown }: { markdown: string }) {
+function MarqueeColumn({
+  images,
+  direction,
+  duration,
+  offset,
+}: {
+  images: string[];
+  direction: "up" | "down";
+  duration: number;
+  offset: number;
+}) {
+  // Duplicate so the loop is seamless
+  const list = [...images, ...images];
+  return (
+    <div
+      className="marquee-col"
+      style={{
+        animation: `marquee-${direction} ${duration}s linear infinite`,
+        animationDelay: `-${offset}s`,
+      }}
+    >
+      {list.map((url, i) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={i}
+          src={url}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          className="marquee-tile"
+        />
+      ))}
+    </div>
+  );
+}
+
+function CoverBackdrop({ images }: { images: string[] }) {
+  if (images.length === 0) return null;
+
+  // Shuffle-ish split across 4 columns
+  const columns: string[][] = [[], [], [], []];
+  images.forEach((url, i) => columns[i % 4].push(url));
+  // Fall back so no column is empty
+  const safe = columns.map((c) => (c.length ? c : images));
+
+  return (
+    <div className="cover-backdrop" aria-hidden="true">
+      <div className="backdrop-col-group backdrop-left">
+        <MarqueeColumn images={safe[0]} direction="up" duration={95} offset={0} />
+        <MarqueeColumn images={safe[1]} direction="down" duration={115} offset={20} />
+      </div>
+      <div className="backdrop-col-group backdrop-right">
+        <MarqueeColumn images={safe[2]} direction="down" duration={105} offset={10} />
+        <MarqueeColumn images={safe[3]} direction="up" duration={125} offset={30} />
+      </div>
+    </div>
+  );
+}
+
+export function SalesDeckPresentation({
+  markdown,
+  coverImages = [],
+}: {
+  markdown: string;
+  coverImages?: string[];
+}) {
   const slides = useMemo(() => splitSlides(markdown), [markdown]);
   const [index, setIndex] = useState(0);
 
@@ -47,23 +113,30 @@ export function SalesDeckPresentation({ markdown }: { markdown: string }) {
   }
 
   const current = slides[index];
+  const isCover = current.includes("/conversion-engine-logo.svg");
 
   return (
     <div className="relative min-h-screen bg-[#0A0A0A] text-white overflow-hidden">
-      {/* Subtle dot pattern */}
-      <div
-        aria-hidden
-        className="absolute inset-0 opacity-30 pointer-events-none"
-        style={{
-          backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px)",
-          backgroundSize: "18px 18px",
-        }}
-      />
+      {/* Cover backdrop — vertical page marquees on the outskirts */}
+      {isCover && <CoverBackdrop images={coverImages} />}
+
+      {/* Subtle dot pattern (hidden on cover so the backdrop breathes) */}
+      {!isCover && (
+        <div
+          aria-hidden
+          className="absolute inset-0 opacity-30 pointer-events-none"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px)",
+            backgroundSize: "18px 18px",
+          }}
+        />
+      )}
 
       {/* Slide */}
       <div className="relative z-10 min-h-screen flex items-center justify-center px-10 md:px-24 py-16">
         <div className="max-w-4xl w-full">
-          <article className="deck-slide">
+          <article className={`deck-slide ${isCover ? "deck-slide-cover" : ""}`}>
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
@@ -125,7 +198,7 @@ export function SalesDeckPresentation({ markdown }: { markdown: string }) {
         </button>
       </div>
 
-      {/* Help hint (fades out after a few seconds via CSS) */}
+      {/* Help hint */}
       <div className="fixed top-6 right-6 z-20 text-[10px] text-white/30 font-medium tracking-wider uppercase">
         ← → arrow keys to navigate
       </div>
@@ -200,31 +273,94 @@ export function SalesDeckPresentation({ markdown }: { markdown: string }) {
           margin: 0 auto 2rem;
           display: block;
         }
+
+        /* Cover slide — centered logo + tagline */
+        .deck-slide-cover {
+          text-align: center;
+        }
+        .deck-slide-cover p {
+          text-align: center;
+          font-size: 1rem;
+          color: rgba(255,255,255,0.55);
+          letter-spacing: 0.01em;
+        }
+        .deck-slide-cover em {
+          font-style: normal;
+          color: rgba(255,255,255,0.55);
+        }
+
         .deck-slide .ce-logo {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 1.75rem;
-          margin: 0 auto 2.5rem;
+          gap: 1.5rem;
+          margin: 0 auto 1.5rem;
         }
         .deck-slide .ce-logo-mark {
-          width: 96px;
-          height: 96px;
+          width: 88px;
+          height: 88px;
           margin: 0;
-          animation: ce-logo-spin 8s linear infinite;
-          transform-origin: 50% 50%;
+          display: block;
         }
         .deck-slide .ce-logo-wordmark {
-          width: 260px;
+          width: 240px;
           max-width: 60vw;
           height: auto;
           margin: 0;
+          display: block;
         }
-        @keyframes ce-logo-spin {
-          to { transform: rotate(360deg); }
+
+        /* Cover backdrop — vertical marquees on both edges */
+        .cover-backdrop {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 0;
         }
+        .backdrop-col-group {
+          position: absolute;
+          top: -6vh;
+          bottom: -6vh;
+          width: 24vw;
+          display: flex;
+          gap: 14px;
+          padding: 0 16px;
+        }
+        .backdrop-left { left: 0; }
+        .backdrop-right { right: 0; }
+
+        .marquee-col {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          will-change: transform;
+          -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%);
+                  mask-image: linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%);
+        }
+        .marquee-tile {
+          width: 100%;
+          height: auto;
+          display: block;
+          margin: 0;
+          max-width: none;
+          border-radius: 6px;
+          opacity: 0.22;
+          filter: grayscale(1) brightness(0.95) contrast(1.05);
+        }
+
+        @keyframes marquee-up {
+          from { transform: translateY(0); }
+          to   { transform: translateY(-50%); }
+        }
+        @keyframes marquee-down {
+          from { transform: translateY(-50%); }
+          to   { transform: translateY(0); }
+        }
+
         @media (prefers-reduced-motion: reduce) {
-          .deck-slide .ce-logo-mark { animation: none; }
+          .marquee-col { animation: none !important; }
         }
       `}</style>
     </div>
