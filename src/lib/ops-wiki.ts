@@ -11,11 +11,13 @@ export interface OpsWikiModule {
   content: string;
   category: "flow" | "design" | "development" | "cro" | "operations" | "qa" | "client";
   toolHref?: string;
+  /** Hide from the /team/ops-wiki view — commercial / sales / finance content the team doesn't need to see. */
+  adminOnly?: boolean;
 }
 
 const moduleMap: Record<
   string,
-  { title: string; shortTitle: string; icon: string; category: OpsWikiModule["category"]; toolHref?: string }
+  { title: string; shortTitle: string; icon: string; category: OpsWikiModule["category"]; toolHref?: string; adminOnly?: boolean }
 > = {
   // ── Project Flows (Layer 1) ──
   "flow-00-inbox": {
@@ -55,6 +57,7 @@ const moduleMap: Record<
     shortTitle: "The Offer",
     icon: "map",
     category: "flow",
+    adminOnly: true,
   },
   "ce-01-sales-process": {
     title: "Sales Process — Two-Stage Audit Close",
@@ -62,6 +65,7 @@ const moduleMap: Record<
     icon: "phone",
     category: "flow",
     toolHref: "/tools/offer-engine",
+    adminOnly: true,
   },
   "ce-02-onboarding": {
     title: "Onboarding & System Setup",
@@ -86,24 +90,28 @@ const moduleMap: Record<
     shortTitle: "Revenue Projector",
     icon: "calculator",
     category: "flow",
+    adminOnly: true,
   },
   "ce-06-slide-deck": {
     title: "Slide Decks — Two-Stage Approach",
     shortTitle: "Slide Decks",
     icon: "presentation",
     category: "flow",
+    adminOnly: true,
   },
   "ce-07-positioning": {
     title: "Positioning & Language Guide",
     shortTitle: "Positioning",
     icon: "megaphone",
     category: "flow",
+    adminOnly: true,
   },
   "ce-08-faq": {
     title: "FAQ — Client & Internal",
     shortTitle: "FAQ",
     icon: "chat",
     category: "flow",
+    adminOnly: true,
   },
 
   // ── Design (Layer 2) ──
@@ -188,6 +196,7 @@ const moduleMap: Record<
     icon: "banknotes",
     category: "operations",
     toolHref: "/tools/invoice-generator",
+    adminOnly: true,
   },
 
   // ── QA ──

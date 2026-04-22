@@ -3,7 +3,10 @@ import { getAllOpsWikiModules } from "@/lib/ops-wiki";
 import OpsWikiClient from "@/app/(dashboard)/tools/ops-wiki/client";
 
 export default function TeamOpsWikiPage() {
-  const modules = getAllOpsWikiModules();
+  // Hide admin-only modules (pricing, sales process, revenue projector, slide decks,
+  // positioning, FAQ, invoicing) from the team view — commercial content the team
+  // doesn't need to see.
+  const modules = getAllOpsWikiModules().filter((m) => !m.adminOnly);
   const serialized = modules.map((m) => ({
     slug: m.slug,
     title: m.title,
