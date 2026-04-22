@@ -15,6 +15,7 @@ export default function TeamOpsWikiPage() {
     content: m.content,
     category: m.category,
     toolHref: m.toolHref,
+    adminOnly: m.adminOnly,
   }));
   return (
     <Suspense fallback={null}>

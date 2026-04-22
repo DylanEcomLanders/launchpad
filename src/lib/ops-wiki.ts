@@ -9,7 +9,7 @@ export interface OpsWikiModule {
   shortTitle: string;
   icon: string;
   content: string;
-  category: "flow" | "design" | "development" | "cro" | "operations" | "qa" | "client";
+  category: "flow" | "sales" | "design" | "development" | "cro" | "operations" | "qa" | "client";
   toolHref?: string;
   /** Hide from the /team/ops-wiki view — commercial / sales / finance content the team doesn't need to see. */
   adminOnly?: boolean;
@@ -112,6 +112,29 @@ const moduleMap: Record<
     shortTitle: "FAQ",
     icon: "chat",
     category: "flow",
+    adminOnly: true,
+  },
+
+  // ── Sales Material (admin-only, live-editable pitch resources) ──
+  "sales-deck": {
+    title: "Sales Deck — Conversion Partnership Pitch",
+    shortTitle: "Sales Deck",
+    icon: "presentation",
+    category: "sales",
+    adminOnly: true,
+  },
+  "sales-cheat-sheet": {
+    title: "Sales Cheat Sheet — One-page Internal Reference",
+    shortTitle: "Cheat Sheet",
+    icon: "clipboard",
+    category: "sales",
+    adminOnly: true,
+  },
+  "sales-objections": {
+    title: "Objection Bank — Position & Proof",
+    shortTitle: "Objection Bank",
+    icon: "megaphone",
+    category: "sales",
     adminOnly: true,
   },
 

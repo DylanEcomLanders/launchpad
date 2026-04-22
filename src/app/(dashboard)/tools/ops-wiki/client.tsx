@@ -40,7 +40,7 @@ interface OpsWikiModule {
   shortTitle: string;
   icon: string;
   content: string;
-  category: "flow" | "design" | "development" | "cro" | "operations" | "qa" | "client";
+  category: "flow" | "sales" | "design" | "development" | "cro" | "operations" | "qa" | "client";
   toolHref?: string;
 }
 
@@ -72,6 +72,7 @@ const iconMap: Record<string, React.ReactNode> = {
 
 const categoryLabels: Record<string, string> = {
   flow: "PROJECT FLOWS",
+  sales: "SALES MATERIAL",
   design: "DESIGN",
   development: "DEVELOPMENT",
   cro: "CRO",
@@ -82,6 +83,7 @@ const categoryLabels: Record<string, string> = {
 
 const categoryColors: Record<string, string> = {
   flow: "#1B1B1B",
+  sales: "#F59E0B",
   design: "#8B5CF6",
   development: "#10B981",
   cro: "#EF4444",
@@ -90,7 +92,7 @@ const categoryColors: Record<string, string> = {
   client: "#EC4899",
 };
 
-const categoryOrder: OpsWikiModule["category"][] = ["flow", "design", "development", "cro", "operations", "qa", "client"];
+const categoryOrder: OpsWikiModule["category"][] = ["flow", "sales", "design", "development", "cro", "operations", "qa", "client"];
 
 export default function OpsWikiClient({ modules }: { modules: OpsWikiModule[] }) {
   const searchParams = useSearchParams();
