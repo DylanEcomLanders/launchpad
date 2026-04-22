@@ -33,7 +33,7 @@ const gateMapping: Record<GateKey, {
   },
   "dev-handover": {
     qaGateKey: "design_handoff",
-    title: "Dev Handover",
+    title: "Design Handoff",
     subtitle: "Everything the developer needs to build without asking questions",
     color: "#7C3AED",
     items: DESIGN_HANDOFF_ITEMS,
@@ -296,23 +296,17 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
   const fieldClass = "w-full text-sm px-3 py-2.5 border border-[#E8E8E8] rounded-lg focus:outline-none focus:border-[#999] placeholder:text-[#CCC] disabled:opacity-50 disabled:bg-[#FAFAFA]";
 
   return (
-    <div className="max-w-2xl mx-auto">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <h2 className="text-lg font-bold text-[#1A1A1A]">{config.title}</h2>
-          <p className="text-xs text-[#777]">{config.subtitle}</p>
+    <div>
+      {/* Progress counter — lives next to the progress bar since PageHeader owns the title */}
+      {config.type !== "design-brief" && (
+        <div className="flex items-center justify-end mb-2">
+          <p className="text-xl font-bold text-[#1A1A1A] tabular-nums">{progress.checked}/{progress.total}</p>
+          {saving && <p className="text-[9px] text-[#CCC] ml-2">Saving...</p>}
         </div>
-        {config.type !== "design-brief" && (
-          <div className="text-right shrink-0">
-            <p className="text-xl font-bold text-[#1A1A1A] tabular-nums">{progress.checked}/{progress.total}</p>
-            {saving && <p className="text-[9px] text-[#CCC]">Saving...</p>}
-          </div>
-        )}
-        {config.type === "design-brief" && saving && (
-          <p className="text-[9px] text-[#CCC]">Saving...</p>
-        )}
-      </div>
+      )}
+      {config.type === "design-brief" && saving && (
+        <p className="text-[9px] text-[#CCC] text-right mb-2">Saving...</p>
+      )}
 
       {/* Progress bar (not for design-brief) */}
       {config.type !== "design-brief" && (

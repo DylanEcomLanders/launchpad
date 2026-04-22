@@ -1016,7 +1016,7 @@ export function PortalView({
               </>
             )}
             {activeTab === "internal" && viewMode === "team" && selectedProject && focusedGateKey && QA_KEY_TO_GATE_KEY[focusedGateKey] && (
-              <div className="max-w-2xl mx-auto">
+              <>
                 <PageHeader title={GATE_CONFIG[focusedGateKey]?.title ?? "Handover"} subtitle={`Role: ${GATE_CONFIG[focusedGateKey]?.role ?? "Team"}`} />
                 <GateChecklistForm
                   key={`${selectedProject.id}-${focusedGateKey}`}
@@ -1056,7 +1056,7 @@ export function PortalView({
                     onReload?.();
                   }}
                 />
-              </div>
+              </>
             )}
             {activeTab === "internal" && viewMode === "team" && selectedProject && !focusedGateKey && (
               <>
