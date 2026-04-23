@@ -56,7 +56,7 @@ const TaskEditorRow = memo(function TaskEditorRow({
   const meta = phaseMeta(task.phase);
 
   return (
-    <div className="grid grid-cols-[1fr_100px_110px_150px_95px_95px_32px] gap-2 px-4 py-2.5 border-b border-[#EDEDEF] last:border-0 items-center">
+    <div className="grid grid-cols-[1.3fr_140px_140px_180px_120px_120px_32px] gap-2 px-4 py-2.5 border-b border-[#EDEDEF] last:border-0 items-center">
       <input
         type="text"
         value={title}
@@ -229,7 +229,7 @@ export default function TaskBoardAdminPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto py-10 px-4">
+    <div className="max-w-6xl mx-auto py-10 px-4">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Task Board</h1>
@@ -283,7 +283,7 @@ export default function TaskBoardAdminPage() {
           </button>
         </div>
         <div className="border border-[#E5E5EA] rounded-xl bg-white overflow-hidden">
-          <div className="grid grid-cols-[1fr_100px_110px_150px_95px_95px_32px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA]">
+          <div className="grid grid-cols-[1.3fr_140px_140px_180px_120px_120px_32px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA]">
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Task</span>
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Client</span>
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Assignee</span>
@@ -320,7 +320,7 @@ export default function TaskBoardAdminPage() {
           </button>
         </div>
         <div className="border border-[#E5E5EA] rounded-xl bg-white overflow-hidden">
-          <div className="grid grid-cols-[1fr_100px_110px_150px_95px_95px_32px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA]">
+          <div className="grid grid-cols-[1.3fr_140px_140px_180px_120px_120px_32px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA]">
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Task</span>
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Client</span>
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Assignee</span>

@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { Logo } from "@/components/logo";
 import {
+  PHASE_OPTIONS,
+  appendPhaseTransition,
   currentPhaseEnteredAt,
   formatTimeInPhase,
   phaseMeta,
@@ -77,6 +79,25 @@ export default function TaskBoardPage() {
   const activeTasks = (tasks: Task[]) => sortByDate(tasks.filter((t) => t.status !== "done"));
   const doneTasks = (tasks: Task[]) => tasks.filter((t) => t.status === "done");
 
+  const changePhase = async (taskId: string, nextPhase: string) => {
+    // Optimistic update: append to phaseHistory locally so "just now in phase" shows immediately
+    setBoard((prev) => ({
+      designTasks: prev.designTasks.map((t) => (t.id === taskId ? appendPhaseTransition(t, nextPhase) : t)),
+      devTasks: prev.devTasks.map((t) => (t.id === taskId ? appendPhaseTransition(t, nextPhase) : t)),
+    }));
+    try {
+      const res = await fetch("/api/task-board", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ taskId, phase: nextPhase }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    } catch (err) {
+      // On failure, refetch to revert
+      fetch("/api/task-board").then((r) => r.json()).then(setBoard);
+    }
+  };
+
   function TaskRow({ task }: { task: Task }) {
     const s = statusLabel[task.status] || statusLabel.todo;
     const overdue = task.status !== "done" && isOverdue(task.dueDate);
@@ -94,24 +115,38 @@ export default function TaskBoardPage() {
           </div>
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          {pMeta && (
-            <div className="flex flex-col items-end gap-0.5">
-              <span
-                className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-full"
-                style={{ background: pMeta.bg, color: pMeta.color }}
+          <div className="flex flex-col items-end gap-0.5">
+            <div className="relative">
+              <select
+                value={task.phase || ""}
+                onChange={(e) => changePhase(task.id, e.target.value)}
+                className="appearance-none text-[10px] font-semibold uppercase tracking-wider pl-2.5 pr-6 py-1 rounded-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1A1A1A]/10 border-0"
+                style={pMeta ? { background: pMeta.bg, color: pMeta.color } : { background: "#F3F3F5", color: "#AAA" }}
+                title="Change phase"
               >
-                {pMeta.label}
-              </span>
-              {timeInPhase && (
-                <span
-                  className="text-[9px] text-[#AAA]"
-                  title={enteredAt ? `Entered ${new Date(enteredAt).toLocaleString()}` : ""}
-                >
-                  {timeInPhase} in phase
-                </span>
-              )}
+                <option value="">Set phase…</option>
+                {PHASE_OPTIONS.map((p) => (
+                  <option key={p.value} value={p.value}>{p.label}</option>
+                ))}
+              </select>
+              <svg
+                className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 size-2.5 opacity-60"
+                style={pMeta ? { color: pMeta.color } : { color: "#AAA" }}
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+              </svg>
             </div>
-          )}
+            {timeInPhase && pMeta && (
+              <span
+                className="text-[9px] text-[#AAA]"
+                title={enteredAt ? `Entered ${new Date(enteredAt).toLocaleString()}` : ""}
+              >
+                {timeInPhase} in phase
+              </span>
+            )}
+          </div>
           {task.dueDate && (
             <span className={`text-[11px] font-medium ${overdue ? "text-red-500" : "text-[#AAA]"}`}>
               {formatDate(task.dueDate)}

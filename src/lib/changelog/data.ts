@@ -46,6 +46,9 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Every phase change is timestamped — each task carries a phaseHistory log so External Design Review → Design Revision → External Design Review loops record a fresh timer per round. Lets us measure how long designers take to action client amends" },
       { type: "added", text: "\"X in phase\" duration hint on every task row (just now / 5m / 2h 15m / 3d 4h) on both the admin board and the team-facing /tasks view. Hover shows the exact entered-at timestamp" },
       { type: "improved", text: "Team /tasks view now shows a coloured phase pill next to the status pill so anyone scanning the board can see stage at a glance" },
+      { type: "improved", text: "Admin Task Board widened from max-w-4xl → max-w-6xl and columns rebalanced (task 1.3fr, client/assignee 140px, phase 180px, due/status 120px) so long task titles and phase labels like \"External Design Review\" stop getting squashed" },
+      { type: "added", text: "Team members can now change phase directly from /tasks — phase pill is an inline dropdown that saves via a new PATCH /api/task-board endpoint. Updates optimistically for instant feedback and falls back to a refetch on error. No more funnelling every stage update through Alister" },
+      { type: "added", text: "PATCH /api/task-board endpoint does a read-mutate-write on just the target task's phase field (instead of upserting the whole board blob) — narrows the race window when multiple team members edit at once. Logs the transition to phaseHistory server-side so local clock drift doesn't skew timers" },
     ],
   },
   {
