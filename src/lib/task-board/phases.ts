@@ -100,30 +100,40 @@ export function groupTasksByPhase<T extends { phase?: string }>(tasks: T[]): Pha
   return groups;
 }
 
-// Classifies each phase as design-side or dev-side so we can pick the right deadline
-// to check against on a given task. "not-started" falls through to the task's lane.
-const DEV_SIDE_PHASES = new Set<Phase>([
-  "development",
-  "development-qa",
-  "external-dev-review",
-  "dev-revision",
-  "launch",
-]);
+// Maps each phase to the deadline field that applies to it. "not-started" and
+// design-side phases check designDueDate; dev-side phases check devDueDate;
+// launch checks launchDueDate.
+export type DeadlineField = "designDueDate" | "devDueDate" | "launchDueDate";
 
-export function isDevSidePhase(phase: string | undefined): boolean {
-  return !!phase && DEV_SIDE_PHASES.has(phase as Phase);
+const PHASE_TO_DEADLINE: Record<Phase, DeadlineField> = {
+  "onboarding": "designDueDate",
+  "research": "designDueDate",
+  "design": "designDueDate",
+  "internal-design-qa": "designDueDate",
+  "external-design-review": "designDueDate",
+  "design-revision": "designDueDate",
+  "development": "devDueDate",
+  "development-qa": "devDueDate",
+  "external-dev-review": "devDueDate",
+  "dev-revision": "devDueDate",
+  "launch": "launchDueDate",
+};
+
+export function deadlineFieldForPhase(phase: string | undefined): DeadlineField {
+  if (!phase || !PHASE_TO_DEADLINE[phase as Phase]) return "designDueDate";
+  return PHASE_TO_DEADLINE[phase as Phase];
 }
 
 export interface TaskWithDeadlines {
   phase?: string;
   designDueDate?: string;
   devDueDate?: string;
+  launchDueDate?: string;
 }
 
-// Returns the deadline that applies to the task's current phase. If the task is
-// not started yet or in a design-side phase, returns designDueDate. Dev-side → devDueDate.
-export function relevantDeadline(task: TaskWithDeadlines): { field: "designDueDate" | "devDueDate"; value: string | undefined } {
-  const field = isDevSidePhase(task.phase) ? "devDueDate" : "designDueDate";
+// Returns the deadline that applies to the task's current phase.
+export function relevantDeadline(task: TaskWithDeadlines): { field: DeadlineField; value: string | undefined } {
+  const field = deadlineFieldForPhase(task.phase);
   return { field, value: task[field] };
 }
 

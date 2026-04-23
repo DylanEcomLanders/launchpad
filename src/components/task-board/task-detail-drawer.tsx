@@ -20,6 +20,7 @@ export interface TaskDetailTask {
   phaseHistory?: PhaseEntry[];
   designDueDate?: string;
   devDueDate?: string;
+  launchDueDate?: string;
 }
 
 const URGENCY_STYLES: Record<NonNullable<ReturnType<typeof computeUrgency>>, { color: string; bg: string }> = {
@@ -37,7 +38,7 @@ export function TaskDetailDrawer({
   task: TaskDetailTask | null;
   onClose: () => void;
   editable?: boolean;
-  onUpdate?: (field: "designDueDate" | "devDueDate", value: string) => void;
+  onUpdate?: (field: "designDueDate" | "devDueDate" | "launchDueDate", value: string) => void;
 }) {
   // Close on Escape
   useEffect(() => {
@@ -55,6 +56,7 @@ export function TaskDetailDrawer({
   const currentMeta = phaseMeta(task.phase);
   const designUrgency = computeUrgency(task.designDueDate);
   const devUrgency = computeUrgency(task.devDueDate);
+  const launchUrgency = computeUrgency(task.launchDueDate);
 
   return (
     <div className="fixed inset-0 z-50 flex">
@@ -114,11 +116,18 @@ export function TaskDetailDrawer({
             onChange={editable && onUpdate ? (v) => onUpdate("designDueDate", v) : undefined}
           />
           <DeadlineRow
-            label="Dev / Go-live"
+            label="Dev"
             value={task.devDueDate}
             urgency={devUrgency}
             editable={editable}
             onChange={editable && onUpdate ? (v) => onUpdate("devDueDate", v) : undefined}
+          />
+          <DeadlineRow
+            label="Launch"
+            value={task.launchDueDate}
+            urgency={launchUrgency}
+            editable={editable}
+            onChange={editable && onUpdate ? (v) => onUpdate("launchDueDate", v) : undefined}
           />
         </section>
 

@@ -27,6 +27,7 @@ interface Task {
   phaseHistory?: PhaseEntry[];
   designDueDate?: string;
   devDueDate?: string;
+  launchDueDate?: string;
 }
 
 interface BoardData {
@@ -60,7 +61,7 @@ const TaskEditorRow = memo(function TaskEditorRow({
   const enteredAt = currentPhaseEnteredAt(task.phaseHistory);
   const timeInPhase = enteredAt ? formatTimeInPhase(enteredAt) : null;
   const meta = phaseMeta(task.phase);
-  const hasDeadline = !!(task.designDueDate || task.devDueDate);
+  const hasDeadline = !!(task.designDueDate || task.devDueDate || task.launchDueDate);
 
   return (
     <div className="grid grid-cols-[1.3fr_140px_140px_180px_120px_32px_32px] gap-2 px-4 py-2.5 border-b border-[#EDEDEF] last:border-0 items-center">

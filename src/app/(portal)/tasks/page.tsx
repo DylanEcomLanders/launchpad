@@ -27,6 +27,7 @@ interface Task {
   phaseHistory?: PhaseEntry[];
   designDueDate?: string;
   devDueDate?: string;
+  launchDueDate?: string;
 }
 
 interface BoardData {
