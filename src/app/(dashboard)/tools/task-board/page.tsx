@@ -6,6 +6,7 @@ import { loadSettings, type TeamMember } from "@/lib/settings";
 import {
   PHASE_OPTIONS,
   appendPhaseTransition,
+  categoryForPhase,
   computeAssignee,
   currentPhaseEnteredAt,
   formatTimeInPhase,
@@ -48,11 +49,13 @@ const TaskEditorRow = memo(function TaskEditorRow({
   onUpdate,
   onRemove,
   onOpenDetail,
+  indented,
 }: {
   task: Task;
   onUpdate: (field: string, value: string) => void;
   onRemove: () => void;
   onOpenDetail: () => void;
+  indented?: boolean;
 }) {
   const [title, setTitle] = useState(task.title);
   const [client, setClient] = useState(task.client || "");
@@ -68,7 +71,7 @@ const TaskEditorRow = memo(function TaskEditorRow({
   const assignee = computeAssignee(task);
 
   return (
-    <div className="grid grid-cols-[1.3fr_140px_140px_180px_120px_32px_32px] gap-2 px-4 py-2.5 border-b border-[#EDEDEF] last:border-0 items-center">
+    <div className={`grid grid-cols-[1.3fr_140px_140px_180px_120px_32px_32px] gap-2 ${indented ? "pl-8 pr-4" : "px-4"} py-2.5 border-b border-[#EDEDEF] last:border-0 items-center`}>
       <input
         type="text"
         value={title}
@@ -151,6 +154,7 @@ export default function TaskBoardAdminPage() {
   const [filterAssignee, setFilterAssignee] = useState("");
   const [filterDate, setFilterDate] = useState<"all" | "overdue" | "today" | "this-week">("all");
   const [tabFilter, setTabFilter] = useState<"all" | PhaseCategory>("all");
+  const [phaseFilter, setPhaseFilter] = useState("");
   const boardRef = useRef(board);
   boardRef.current = board;
 
@@ -244,9 +248,10 @@ export default function TaskBoardAdminPage() {
     dev: allTasks.filter((t) => matchesCategoryFilter(t, "dev", t._lane)).length,
   };
 
-  // Apply tab + assignee + date filters
+  // Apply tab + phase + assignee + date filters
   const filteredTasks = allTasks.filter((t) => {
     if (!matchesCategoryFilter(t, tabFilter, t._lane)) return false;
+    if (phaseFilter && t.phase !== phaseFilter) return false;
     if (filterAssignee && computeAssignee(t) !== filterAssignee) return false;
     if (filterDate !== "all") {
       const dueDates = [t.designDueDate, t.devDueDate, t.launchDueDate].filter(Boolean) as string[];
@@ -314,6 +319,21 @@ export default function TaskBoardAdminPage() {
       {/* Filters */}
       <div className="flex items-center gap-3 mb-6 flex-wrap">
         <select
+          value={phaseFilter}
+          onChange={(e) => {
+            const next = e.target.value;
+            setPhaseFilter(next);
+            if (next) {
+              const cat = categoryForPhase(next);
+              if (cat) setTabFilter(cat);
+            }
+          }}
+          className="text-xs px-3 py-1.5 border border-[#E5E5EA] rounded-lg bg-white focus:outline-none"
+        >
+          <option value="">All phases</option>
+          {PHASE_OPTIONS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+        </select>
+        <select
           value={filterAssignee}
           onChange={(e) => setFilterAssignee(e.target.value)}
           className="text-xs px-3 py-1.5 border border-[#E5E5EA] rounded-lg bg-white focus:outline-none"
@@ -334,8 +354,8 @@ export default function TaskBoardAdminPage() {
             </button>
           ))}
         </div>
-        {(filterAssignee || filterDate !== "all") && (
-          <button onClick={() => { setFilterAssignee(""); setFilterDate("all"); }} className="text-[11px] text-[#AAA] hover:text-[#1A1A1A]">Clear</button>
+        {(filterAssignee || filterDate !== "all" || phaseFilter) && (
+          <button onClick={() => { setFilterAssignee(""); setFilterDate("all"); setPhaseFilter(""); }} className="text-[11px] text-[#AAA] hover:text-[#1A1A1A]">Clear</button>
         )}
       </div>
 
@@ -358,14 +378,23 @@ export default function TaskBoardAdminPage() {
           <p className="text-xs text-[#CCC] text-center py-10">No tasks match current filters</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="border border-[#E5E5EA] rounded-xl bg-white overflow-hidden">
+          <div className="grid grid-cols-[1.3fr_140px_140px_180px_120px_32px_32px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA]">
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Task</span>
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Client</span>
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Assignee</span>
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Phase</span>
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Status</span>
+            <span />
+            <span />
+          </div>
           {groupTasksByClient(filteredTasks).map((group) => (
-            <div key={group.key} className="border border-[#E5E5EA] rounded-xl bg-white overflow-hidden">
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-[#EDEDEF] bg-[#FAFAFA]">
-                <h3 className={`text-sm font-semibold flex-1 ${group.key === "__unassigned__" ? "text-[#AAA] italic" : "text-[#1A1A1A]"}`}>
+            <div key={group.key}>
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-[#FAFAFA] border-y border-[#EDEDEF]">
+                <h3 className={`text-xs font-semibold uppercase tracking-wider flex-1 ${group.key === "__unassigned__" ? "text-[#AAA] italic" : "text-[#1A1A1A]"}`}>
                   {group.label}
                 </h3>
-                <span className="text-[11px] font-medium text-[#AAA]">
+                <span className="text-[10px] font-medium text-[#AAA]">
                   {group.tasks.length} {group.tasks.length === 1 ? "deliverable" : "deliverables"}
                 </span>
                 <button
@@ -376,15 +405,6 @@ export default function TaskBoardAdminPage() {
                   <PlusIcon className="size-3" /> Add
                 </button>
               </div>
-              <div className="grid grid-cols-[1.3fr_140px_140px_180px_120px_32px_32px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA]">
-                <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Task</span>
-                <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Client</span>
-                <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Assignee</span>
-                <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Phase</span>
-                <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Status</span>
-                <span />
-                <span />
-              </div>
               {group.tasks.map((t) => (
                 <TaskEditorRow
                   key={t.id}
@@ -392,6 +412,7 @@ export default function TaskBoardAdminPage() {
                   onUpdate={(field, value) => updateTask(laneForTask(t.id), t.id, field, value)}
                   onRemove={() => removeTask(laneForTask(t.id), t.id)}
                   onOpenDetail={() => setOpenTaskId(t.id)}
+                  indented
                 />
               ))}
             </div>

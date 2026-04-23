@@ -5,6 +5,7 @@ import { Logo } from "@/components/logo";
 import {
   PHASE_OPTIONS,
   appendPhaseTransition,
+  categoryForPhase,
   computeAssignee,
   computeUrgency,
   currentPhaseEnteredAt,
@@ -57,6 +58,7 @@ export default function TaskBoardPage() {
   const [lastUpdated, setLastUpdated] = useState("");
   const [tabFilter, setTabFilter] = useState<TabFilter>("all");
   const [assigneeFilter, setAssigneeFilter] = useState("");
+  const [phaseFilter, setPhaseFilter] = useState("");
 
   useEffect(() => {
     const fetchBoard = () =>
@@ -114,8 +116,10 @@ export default function TaskBoardPage() {
 
   const applyAssigneeFilter = (tasks: AnnotatedTask[]) =>
     assigneeFilter ? tasks.filter((t) => computeAssignee(t) === assigneeFilter) : tasks;
+  const applyPhaseFilter = (tasks: AnnotatedTask[]) =>
+    phaseFilter ? tasks.filter((t) => t.phase === phaseFilter) : tasks;
 
-  const visibleTasks = applyAssigneeFilter(tabFiltered);
+  const visibleTasks = applyPhaseFilter(applyAssigneeFilter(tabFiltered));
   const active = sortByDate(visibleTasks.filter((t) => t.status !== "done"));
   const done = visibleTasks.filter((t) => t.status === "done");
   const activeGroups = groupTasksByClient(active);
@@ -140,7 +144,7 @@ export default function TaskBoardPage() {
     }
   };
 
-  function TaskRow({ task }: { task: Task }) {
+  function TaskRow({ task, indented }: { task: Task; indented?: boolean }) {
     const pMeta = phaseMeta(task.phase);
     const enteredAt = currentPhaseEnteredAt(task.phaseHistory);
     const timeInPhase = enteredAt ? formatTimeInPhase(enteredAt) : null;
@@ -150,7 +154,7 @@ export default function TaskBoardPage() {
 
     return (
       <div
-        className={`grid ${GRID} gap-4 items-center px-5 py-3.5 border-b border-[#F0F0F0] last:border-0 hover:bg-[#FAFAFA] cursor-pointer transition-colors`}
+        className={`grid ${GRID} gap-4 items-center ${indented ? "pl-9 pr-5" : "px-5"} py-3.5 border-b border-[#F0F0F0] last:border-0 hover:bg-[#FAFAFA] cursor-pointer transition-colors`}
         onClick={(e) => {
           const target = e.target as HTMLElement;
           if (target.closest("select")) return;
@@ -302,6 +306,23 @@ export default function TaskBoardPage() {
 
           <div className="flex items-center gap-2">
             <select
+              value={phaseFilter}
+              onChange={(e) => {
+                const next = e.target.value;
+                setPhaseFilter(next);
+                if (next) {
+                  const cat = categoryForPhase(next);
+                  if (cat) setTabFilter(cat);
+                }
+              }}
+              className="text-xs px-3 py-1.5 border border-[#E5E5EA] rounded-lg bg-white focus:outline-none focus:border-[#999]"
+            >
+              <option value="">All phases</option>
+              {PHASE_OPTIONS.map((p) => (
+                <option key={p.value} value={p.value}>{p.label}</option>
+              ))}
+            </select>
+            <select
               value={assigneeFilter}
               onChange={(e) => setAssigneeFilter(e.target.value)}
               className="text-xs px-3 py-1.5 border border-[#E5E5EA] rounded-lg bg-white focus:outline-none focus:border-[#999]"
@@ -313,8 +334,11 @@ export default function TaskBoardPage() {
                 </option>
               ))}
             </select>
-            {assigneeFilter && (
-              <button onClick={() => setAssigneeFilter("")} className="text-[11px] text-[#AAA] hover:text-[#1A1A1A]">
+            {(assigneeFilter || phaseFilter) && (
+              <button
+                onClick={() => { setAssigneeFilter(""); setPhaseFilter(""); }}
+                className="text-[11px] text-[#AAA] hover:text-[#1A1A1A]"
+              >
                 Clear
               </button>
             )}
@@ -330,7 +354,7 @@ export default function TaskBoardPage() {
           </h2>
         </div>
 
-        {/* Client sections (non-collapsible so project context stays visible) */}
+        {/* One continuous list, grouped by client via in-table header rows */}
         {active.length === 0 ? (
           <div className="bg-white border border-[#E5E5EA] rounded-xl">
             <p className="text-xs text-[#CCC] text-center py-10">
@@ -338,19 +362,19 @@ export default function TaskBoardPage() {
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="bg-white border border-[#E5E5EA] rounded-xl overflow-hidden">
+            <ColumnHeader />
             {activeGroups.map((group) => (
-              <div key={group.key} className="bg-white border border-[#E5E5EA] rounded-xl overflow-hidden">
-                <div className="flex items-center gap-2 px-5 py-3 border-b border-[#EDEDEF] bg-[#FAFAFA]">
-                  <h3 className={`text-sm font-semibold ${group.key === "__unassigned__" ? "text-[#AAA] italic" : "text-[#1A1A1A]"}`}>
+              <div key={group.key}>
+                <div className="flex items-center gap-2 px-5 py-2.5 bg-[#FAFAFA] border-y border-[#EDEDEF]">
+                  <h3 className={`text-xs font-semibold uppercase tracking-wider ${group.key === "__unassigned__" ? "text-[#AAA] italic" : "text-[#1A1A1A]"}`}>
                     {group.label}
                   </h3>
-                  <span className="text-[11px] font-medium text-[#AAA]">
+                  <span className="text-[10px] font-medium text-[#AAA]">
                     {group.tasks.length} {group.tasks.length === 1 ? "deliverable" : "deliverables"}
                   </span>
                 </div>
-                <ColumnHeader />
-                {group.tasks.map((t) => <TaskRow key={t.id} task={t} />)}
+                {group.tasks.map((t) => <TaskRow key={t.id} task={t} indented />)}
               </div>
             ))}
           </div>
