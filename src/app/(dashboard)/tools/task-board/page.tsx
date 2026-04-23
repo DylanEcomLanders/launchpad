@@ -64,10 +64,30 @@ const TaskEditorRow = memo(function TaskEditorRow({
 }) {
   const [title, setTitle] = useState(task.title);
   const [client, setClient] = useState(task.client || "");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const confirmTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Sync from parent if task changes externally
   useEffect(() => { setTitle(task.title); }, [task.title]);
   useEffect(() => { setClient(task.client || ""); }, [task.client]);
+
+  // Clear any pending confirm timeout on unmount
+  useEffect(() => () => {
+    if (confirmTimeoutRef.current) clearTimeout(confirmTimeoutRef.current);
+  }, []);
+
+  // Two-click delete: first click primes the button in red,
+  // second click within 3 seconds actually removes the task.
+  const handleDeleteClick = () => {
+    if (confirmDelete) {
+      if (confirmTimeoutRef.current) clearTimeout(confirmTimeoutRef.current);
+      setConfirmDelete(false);
+      onRemove();
+      return;
+    }
+    setConfirmDelete(true);
+    confirmTimeoutRef.current = setTimeout(() => setConfirmDelete(false), 3000);
+  };
 
   const enteredAt = currentPhaseEnteredAt(task.phaseHistory);
   const timeInPhase = enteredAt ? formatTimeInPhase(enteredAt) : null;
@@ -157,7 +177,15 @@ const TaskEditorRow = memo(function TaskEditorRow({
       >
         <CalendarIcon className="size-3.5" />
       </button>
-      <button onClick={onRemove} className="p-1 text-[#CCC] hover:text-red-400">
+      <button
+        onClick={handleDeleteClick}
+        title={confirmDelete ? "Click again to confirm delete" : "Delete task"}
+        className={`p-1 rounded transition-colors ${
+          confirmDelete
+            ? "bg-red-50 text-red-600 ring-1 ring-red-400"
+            : "text-[#CCC] hover:text-red-400"
+        }`}
+      >
         <TrashIcon className="size-3.5" />
       </button>
     </div>

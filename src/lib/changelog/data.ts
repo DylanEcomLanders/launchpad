@@ -79,6 +79,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Hairline grey divider back between client sections only — deliverables within a client flow without internal row borders, matching the reference layout. Keeps project boundaries readable without over-segmenting the list" },
       { type: "fixed", text: "Task Board client divider was too faint to see on white (#EDEDEF) — bumped to #E5E5EA so the line actually registers. Same colour as other borders in the codebase" },
       { type: "improved", text: "Deadline change-history now renders inline by default in the drawer instead of being hidden behind an info-icon click. If a deadline has ever been moved, the prior versions + reasons show directly below the row. Info icon removed — context is always visible, no extra click" },
+      { type: "added", text: "Two-click delete guard on admin task rows. First click on the trash icon primes it into a red \"Click again to confirm delete\" state; only the second click within 3 seconds actually removes the task. Protects against accidental misclicks on a row of tight icons. No modal, no popup — just visual feedback on the same button" },
     ],
   },
   {
