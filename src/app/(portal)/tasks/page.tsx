@@ -6,12 +6,15 @@ import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import {
   PHASE_OPTIONS,
   appendPhaseTransition,
+  computeUrgency,
   currentPhaseEnteredAt,
   formatTimeInPhase,
   groupTasksByPhase,
   phaseMeta,
+  relevantDeadline,
   type PhaseEntry,
 } from "@/lib/task-board/phases";
+import { TaskDetailDrawer } from "@/components/task-board/task-detail-drawer";
 
 interface Task {
   id: string;
@@ -22,6 +25,8 @@ interface Task {
   client?: string;
   phase?: string;
   phaseHistory?: PhaseEntry[];
+  designDueDate?: string;
+  devDueDate?: string;
 }
 
 interface BoardData {
@@ -89,6 +94,11 @@ export default function TaskBoardPage() {
     return next;
   });
 
+  const [openTaskId, setOpenTaskId] = useState<string | null>(null);
+  const openTask = openTaskId
+    ? [...board.designTasks, ...board.devTasks].find((t) => t.id === openTaskId) ?? null
+    : null;
+
   const changePhase = async (taskId: string, nextPhase: string) => {
     setBoard((prev) => ({
       designTasks: prev.designTasks.map((t) => (t.id === taskId ? appendPhaseTransition(t, nextPhase) : t)),
@@ -110,12 +120,30 @@ export default function TaskBoardPage() {
     const pMeta = phaseMeta(task.phase);
     const enteredAt = currentPhaseEnteredAt(task.phaseHistory);
     const timeInPhase = enteredAt ? formatTimeInPhase(enteredAt) : null;
+    const { value: relevantDue } = relevantDeadline(task);
+    const urgency = computeUrgency(relevantDue);
 
     return (
-      <div className={`grid ${GRID} gap-4 items-center px-5 py-3.5 border-b border-[#F0F0F0] last:border-0`}>
+      <div className={`grid ${GRID} gap-4 items-center px-5 py-3.5 border-b border-[#F0F0F0] last:border-0 hover:bg-[#FAFAFA] cursor-pointer transition-colors`}
+        onClick={(e) => {
+          // Ignore clicks on interactive children (phase select)
+          const target = e.target as HTMLElement;
+          if (target.closest("select")) return;
+          setOpenTaskId(task.id);
+        }}
+      >
         {/* Task */}
         <div className="min-w-0">
-          <p className="text-sm font-medium text-[#1A1A1A] truncate">{task.title}</p>
+          <div className="flex items-center gap-1.5">
+            {urgency && (
+              <span
+                className="size-1.5 rounded-full shrink-0"
+                style={{ background: urgency === "overdue" ? "#DC2626" : urgency === "due-soon" ? "#D97706" : "#D4D4D8" }}
+                title={urgency === "overdue" ? "Overdue" : urgency === "due-soon" ? "Due soon" : "On track"}
+              />
+            )}
+            <p className="text-sm font-medium text-[#1A1A1A] truncate">{task.title}</p>
+          </div>
           {task.client && <p className="text-[10px] text-[#AAA] mt-0.5 truncate">{task.client}</p>}
         </div>
 
@@ -323,6 +351,8 @@ export default function TaskBoardPage() {
       <div className="text-center py-6">
         <p className="text-[10px] text-[#CCC]">Auto-refreshes every 30 seconds</p>
       </div>
+
+      <TaskDetailDrawer task={openTask} onClose={() => setOpenTaskId(null)} />
     </div>
   );
 }

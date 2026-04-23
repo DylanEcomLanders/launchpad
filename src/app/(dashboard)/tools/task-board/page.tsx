@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, memo } from "react";
-import { PlusIcon, TrashIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, TrashIcon, ChevronDownIcon, CalendarIcon } from "@heroicons/react/24/outline";
 import { loadSettings, type TeamMember } from "@/lib/settings";
 import {
   PHASE_OPTIONS,
@@ -12,6 +12,7 @@ import {
   phaseMeta,
   type PhaseEntry,
 } from "@/lib/task-board/phases";
+import { TaskDetailDrawer } from "@/components/task-board/task-detail-drawer";
 
 interface Task {
   id: string;
@@ -24,6 +25,8 @@ interface Task {
   deliverableId?: string;
   phase?: string;
   phaseHistory?: PhaseEntry[];
+  designDueDate?: string;
+  devDueDate?: string;
 }
 
 interface BoardData {
@@ -39,11 +42,13 @@ const TaskEditorRow = memo(function TaskEditorRow({
   assignees,
   onUpdate,
   onRemove,
+  onOpenDetail,
 }: {
   task: Task;
   assignees: TeamMember[];
   onUpdate: (field: string, value: string) => void;
   onRemove: () => void;
+  onOpenDetail: () => void;
 }) {
   const [title, setTitle] = useState(task.title);
   const [client, setClient] = useState(task.client || "");
@@ -55,9 +60,10 @@ const TaskEditorRow = memo(function TaskEditorRow({
   const enteredAt = currentPhaseEnteredAt(task.phaseHistory);
   const timeInPhase = enteredAt ? formatTimeInPhase(enteredAt) : null;
   const meta = phaseMeta(task.phase);
+  const hasDeadline = !!(task.designDueDate || task.devDueDate);
 
   return (
-    <div className="grid grid-cols-[1.3fr_140px_140px_180px_120px_120px_32px] gap-2 px-4 py-2.5 border-b border-[#EDEDEF] last:border-0 items-center">
+    <div className="grid grid-cols-[1.3fr_140px_140px_180px_120px_32px_32px] gap-2 px-4 py-2.5 border-b border-[#EDEDEF] last:border-0 items-center">
       <input
         type="text"
         value={title}
@@ -109,12 +115,6 @@ const TaskEditorRow = memo(function TaskEditorRow({
           </span>
         )}
       </div>
-      <input
-        type="date"
-        value={task.dueDate}
-        onChange={(e) => onUpdate("dueDate", e.target.value)}
-        className="text-xs px-1 py-1 border border-transparent hover:border-[#E5E5EA] focus:border-[#999] rounded focus:outline-none"
-      />
       <select
         value={task.status}
         onChange={(e) => onUpdate("status", e.target.value)}
@@ -124,6 +124,13 @@ const TaskEditorRow = memo(function TaskEditorRow({
         <option value="in-progress">In Progress</option>
         <option value="done">Done</option>
       </select>
+      <button
+        onClick={onOpenDetail}
+        title={hasDeadline ? "View deadlines & timeline" : "Set deadlines & view timeline"}
+        className={`p-1 rounded hover:bg-[#F3F3F5] ${hasDeadline ? "text-[#777]" : "text-[#CCC]"} hover:text-[#1A1A1A]`}
+      >
+        <CalendarIcon className="size-3.5" />
+      </button>
       <button onClick={onRemove} className="p-1 text-[#CCC] hover:text-red-400">
         <TrashIcon className="size-3.5" />
       </button>
@@ -185,6 +192,16 @@ export default function TaskBoardAdminPage() {
     if (next.has(key)) next.delete(key); else next.add(key);
     return next;
   });
+
+  const [openTaskId, setOpenTaskId] = useState<string | null>(null);
+  const openTask = openTaskId
+    ? [...board.designTasks, ...board.devTasks].find((t) => t.id === openTaskId) ?? null
+    : null;
+  const openTaskLane: "design" | "dev" | null = openTaskId
+    ? board.designTasks.some((t) => t.id === openTaskId)
+      ? "design"
+      : "dev"
+    : null;
 
   const updateTask = useCallback((type: "design" | "dev", id: string, field: string, value: string) => {
     setBoard((prev) => {
@@ -362,13 +379,13 @@ export default function TaskBoardAdminPage() {
                 </div>
                 {!isCollapsed && (
                   <>
-                    <div className="grid grid-cols-[1.3fr_140px_140px_180px_120px_120px_32px] gap-2 px-4 py-2 bg-[#FAFAFA] border-y border-[#E5E5EA]">
+                    <div className="grid grid-cols-[1.3fr_140px_140px_180px_120px_32px_32px] gap-2 px-4 py-2 bg-[#FAFAFA] border-y border-[#E5E5EA]">
                       <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Task</span>
                       <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Client</span>
                       <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Assignee</span>
                       <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Phase</span>
-                      <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Due</span>
                       <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Status</span>
+                      <span />
                       <span />
                     </div>
                     {group.tasks.map((t) => (
@@ -378,6 +395,7 @@ export default function TaskBoardAdminPage() {
                         assignees={laneAssignees}
                         onUpdate={(field, value) => updateTask(lane, t.id, field, value)}
                         onRemove={() => removeTask(lane, t.id)}
+                        onOpenDetail={() => setOpenTaskId(t.id)}
                       />
                     ))}
                   </>
@@ -387,6 +405,16 @@ export default function TaskBoardAdminPage() {
           })}
         </div>
       )}
+
+      <TaskDetailDrawer
+        task={openTask}
+        onClose={() => setOpenTaskId(null)}
+        editable
+        onUpdate={(field, value) => {
+          if (!openTaskId || !openTaskLane) return;
+          updateTask(openTaskLane, openTaskId, field, value);
+        }}
+      />
     </div>
   );
 }

@@ -100,6 +100,88 @@ export function groupTasksByPhase<T extends { phase?: string }>(tasks: T[]): Pha
   return groups;
 }
 
+// Classifies each phase as design-side or dev-side so we can pick the right deadline
+// to check against on a given task. "not-started" falls through to the task's lane.
+const DEV_SIDE_PHASES = new Set<Phase>([
+  "development",
+  "development-qa",
+  "external-dev-review",
+  "dev-revision",
+  "launch",
+]);
+
+export function isDevSidePhase(phase: string | undefined): boolean {
+  return !!phase && DEV_SIDE_PHASES.has(phase as Phase);
+}
+
+export interface TaskWithDeadlines {
+  phase?: string;
+  designDueDate?: string;
+  devDueDate?: string;
+}
+
+// Returns the deadline that applies to the task's current phase. If the task is
+// not started yet or in a design-side phase, returns designDueDate. Dev-side → devDueDate.
+export function relevantDeadline(task: TaskWithDeadlines): { field: "designDueDate" | "devDueDate"; value: string | undefined } {
+  const field = isDevSidePhase(task.phase) ? "devDueDate" : "designDueDate";
+  return { field, value: task[field] };
+}
+
+export type Urgency = "overdue" | "due-soon" | "ok";
+
+export function computeUrgency(deadline: string | undefined, now: Date = new Date()): Urgency | null {
+  if (!deadline) return null;
+  const d = new Date(deadline + "T23:59:59");
+  const diffMs = d.getTime() - now.getTime();
+  const diffDays = diffMs / 86_400_000;
+  if (diffDays < 0) return "overdue";
+  if (diffDays < 3) return "due-soon";
+  return "ok";
+}
+
+export function formatDeadline(deadline: string | undefined, now: Date = new Date()): string {
+  if (!deadline) return "—";
+  const d = new Date(deadline + "T23:59:59");
+  const diffDays = Math.ceil((d.getTime() - now.getTime()) / 86_400_000);
+  const date = new Date(deadline + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  if (diffDays < 0) return `${date} · ${Math.abs(diffDays)}d overdue`;
+  if (diffDays === 0) return `${date} · today`;
+  if (diffDays === 1) return `${date} · tomorrow`;
+  return `${date} · ${diffDays}d`;
+}
+
+export interface PhaseSpan extends PhaseEntry {
+  exitedAt: string | null;
+  durationMs: number;
+  isCurrent: boolean;
+}
+
+// Turns a phaseHistory array into chronological spans with computed durations.
+// The final entry is the current phase (exitedAt=null, duration from entered → now).
+export function computePhaseSpans(history: PhaseEntry[] | undefined, now: Date = new Date()): PhaseSpan[] {
+  if (!history || history.length === 0) return [];
+  return history.map((entry, i) => {
+    const exitedAt = i < history.length - 1 ? history[i + 1].enteredAt : null;
+    const end = exitedAt ? new Date(exitedAt).getTime() : now.getTime();
+    const durationMs = Math.max(0, end - new Date(entry.enteredAt).getTime());
+    return { ...entry, exitedAt, durationMs, isCurrent: exitedAt === null };
+  });
+}
+
+export function formatDurationMs(ms: number): string {
+  if (ms < 60_000) return "just now";
+  const mins = Math.floor(ms / 60_000);
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) {
+    const rem = mins % 60;
+    return rem ? `${hrs}h ${rem}m` : `${hrs}h`;
+  }
+  const days = Math.floor(hrs / 24);
+  const remHrs = hrs % 24;
+  return remHrs ? `${days}d ${remHrs}h` : `${days}d`;
+}
+
 export function appendPhaseTransition<T extends { phase?: string; phaseHistory?: PhaseEntry[] }>(
   task: T,
   nextPhase: string,
