@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { XMarkIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import {
   computeAssignee,
   computePhaseSpans,
@@ -68,15 +68,6 @@ export function TaskDetailDrawer({
     | null
   >(null);
   const [reasonDraft, setReasonDraft] = useState("");
-  const [expandedHistory, setExpandedHistory] = useState<Set<DeadlineField>>(new Set());
-
-  const toggleHistory = (field: DeadlineField) =>
-    setExpandedHistory((prev) => {
-      const next = new Set(prev);
-      if (next.has(field)) next.delete(field);
-      else next.add(field);
-      return next;
-    });
 
   const attemptDeadlineChange = (field: DeadlineField, prev: string | undefined, next: string) => {
     if (!onUpdateDeadline) return;
@@ -251,8 +242,6 @@ export function TaskDetailDrawer({
             urgency={designUrgency}
             editable={editable}
             history={(task.deadlineHistory || []).filter((h) => h.field === "designDueDate")}
-            expanded={expandedHistory.has("designDueDate")}
-            onToggleHistory={() => toggleHistory("designDueDate")}
             onChange={editable && onUpdateDeadline ? (v) => attemptDeadlineChange("designDueDate", task.designDueDate, v) : undefined}
           />
           <DeadlineRow
@@ -262,8 +251,6 @@ export function TaskDetailDrawer({
             urgency={devUrgency}
             editable={editable}
             history={(task.deadlineHistory || []).filter((h) => h.field === "devDueDate")}
-            expanded={expandedHistory.has("devDueDate")}
-            onToggleHistory={() => toggleHistory("devDueDate")}
             onChange={editable && onUpdateDeadline ? (v) => attemptDeadlineChange("devDueDate", task.devDueDate, v) : undefined}
           />
           <DeadlineRow
@@ -273,8 +260,6 @@ export function TaskDetailDrawer({
             urgency={launchUrgency}
             editable={editable}
             history={(task.deadlineHistory || []).filter((h) => h.field === "launchDueDate")}
-            expanded={expandedHistory.has("launchDueDate")}
-            onToggleHistory={() => toggleHistory("launchDueDate")}
             onChange={editable && onUpdateDeadline ? (v) => attemptDeadlineChange("launchDueDate", task.launchDueDate, v) : undefined}
           />
         </section>
@@ -379,8 +364,6 @@ function DeadlineRow({
   urgency,
   editable,
   history,
-  expanded,
-  onToggleHistory,
   onChange,
 }: {
   label: string;
@@ -389,8 +372,6 @@ function DeadlineRow({
   urgency: ReturnType<typeof computeUrgency>;
   editable?: boolean;
   history?: DeadlineChangeEntry[];
-  expanded?: boolean;
-  onToggleHistory?: () => void;
   onChange?: (v: string) => void;
 }) {
   const urgencyStyle = urgency ? URGENCY_STYLES[urgency] : null;
@@ -407,17 +388,6 @@ function DeadlineRow({
             />
           )}
           <span className="text-sm font-medium text-[#1A1A1A]">{label}</span>
-          {hasHistory && onToggleHistory && (
-            <button
-              type="button"
-              onClick={onToggleHistory}
-              className={`p-0.5 rounded ${expanded ? "text-[#1A1A1A]" : "text-[#999]"} hover:text-[#1A1A1A] hover:bg-[#F3F3F5]`}
-              title={`${history?.length} previous ${history?.length === 1 ? "version" : "versions"}`}
-              aria-label="View deadline change history"
-            >
-              <InformationCircleIcon className="size-3.5" />
-            </button>
-          )}
         </div>
         {editable && onChange ? (
           <input
@@ -435,7 +405,7 @@ function DeadlineRow({
           </span>
         )}
       </div>
-      {hasHistory && expanded && (
+      {hasHistory && (
         <ul className="mt-2 ml-4 pl-3 border-l border-[#EDEDEF] space-y-1.5">
           {(history ?? []).slice().reverse().map((h, i) => (
             <li key={i} className="text-[11px]">

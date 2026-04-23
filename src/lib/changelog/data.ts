@@ -78,6 +78,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Launch-phase tasks are auto-hidden per group to stop finished work from clogging the board. Each group (client in By Client mode, Launch group in By Phase mode) gets a \"Show N launched\" toggle that reveals them; click again to hide. Non-Launch tasks always show, so active work stays front-and-centre" },
       { type: "improved", text: "Hairline grey divider back between client sections only — deliverables within a client flow without internal row borders, matching the reference layout. Keeps project boundaries readable without over-segmenting the list" },
       { type: "fixed", text: "Task Board client divider was too faint to see on white (#EDEDEF) — bumped to #E5E5EA so the line actually registers. Same colour as other borders in the codebase" },
+      { type: "improved", text: "Deadline change-history now renders inline by default in the drawer instead of being hidden behind an info-icon click. If a deadline has ever been moved, the prior versions + reasons show directly below the row. Info icon removed — context is always visible, no extra click" },
     ],
   },
   {
