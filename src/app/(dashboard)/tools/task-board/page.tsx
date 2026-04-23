@@ -96,7 +96,14 @@ const TaskEditorRow = memo(function TaskEditorRow({
           ))}
         </select>
         {timeInPhase && task.phase && (
-          <span className="text-[9px] text-[#AAA] px-1 leading-none" title={enteredAt ? new Date(enteredAt).toLocaleString() : ""}>
+          <span
+            className="inline-flex items-center gap-1 text-[11px] font-semibold px-1 leading-none tabular-nums"
+            style={meta ? { color: meta.color } : undefined}
+            title={enteredAt ? new Date(enteredAt).toLocaleString() : ""}
+          >
+            <svg viewBox="0 0 20 20" fill="currentColor" className="size-3">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .2.08.39.22.53l3 3a.75.75 0 101.06-1.06L10.75 9.69V5z" clipRule="evenodd" />
+            </svg>
             {timeInPhase} in phase
           </span>
         )}
