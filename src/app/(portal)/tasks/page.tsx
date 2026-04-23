@@ -170,7 +170,7 @@ export default function TaskBoardPage() {
 
     return (
       <div
-        className={`grid ${GRID} gap-4 items-center ${indented ? "pl-9 pr-5" : "px-5"} py-3.5 border-b border-[#F0F0F0] last:border-0 hover:bg-[#FAFAFA] cursor-pointer transition-colors`}
+        className={`grid ${GRID} gap-4 items-center ${indented ? "pl-9 pr-5" : "px-5"} py-3.5 hover:bg-[#FAFAFA] cursor-pointer transition-colors`}
         onClick={(e) => {
           const target = e.target as HTMLElement;
           if (target.closest("select")) return;
@@ -412,7 +412,7 @@ export default function TaskBoardPage() {
 
               return (
                 <div key={group.key}>
-                  <div className={`flex items-center gap-2 px-5 pb-2 ${i === 0 ? "pt-4" : "pt-10"}`}>
+                  <div className={`flex items-center gap-2 px-5 pb-2 ${i === 0 ? "pt-4" : "pt-10 border-t border-[#EDEDEF] mt-4"}`}>
                     {group.mode === "phase" && group.color && (
                       <span
                         className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"

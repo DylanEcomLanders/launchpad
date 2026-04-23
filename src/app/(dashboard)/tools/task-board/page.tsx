@@ -81,7 +81,7 @@ const TaskEditorRow = memo(function TaskEditorRow({
     deadlineField === "designDueDate" ? "Design" : deadlineField === "devDueDate" ? "Dev" : "Launch";
 
   return (
-    <div className={`grid grid-cols-[1.3fr_130px_130px_170px_120px_110px_32px_32px] gap-2 ${indented ? "pl-8 pr-4" : "px-4"} py-2.5 border-b border-[#EDEDEF] last:border-0 items-center`}>
+    <div className={`grid grid-cols-[1.3fr_130px_130px_170px_120px_110px_32px_32px] gap-2 ${indented ? "pl-8 pr-4" : "px-4"} py-2.5 items-center`}>
       <input
         type="text"
         value={title}
@@ -467,7 +467,7 @@ export default function TaskBoardAdminPage() {
 
             return (
               <div key={group.key}>
-                <div className={`flex items-center gap-2 px-4 pb-2 ${i === 0 ? "pt-4" : "pt-10"}`}>
+                <div className={`flex items-center gap-2 px-4 pb-2 ${i === 0 ? "pt-4" : "pt-10 border-t border-[#EDEDEF] mt-4"}`}>
                   {group.mode === "phase" && group.color ? (
                     <span
                       className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
