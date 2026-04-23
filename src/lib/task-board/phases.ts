@@ -192,6 +192,66 @@ export function formatDurationMs(ms: number): string {
   return remHrs ? `${days}d ${remHrs}h` : `${days}d`;
 }
 
+// ── Assignee auto-computation ────────────────────────────────────────────────
+// Assignee is derived from the current phase, not stored on the task. When the
+// phase changes, the person on the hook updates automatically.
+
+export const RESEARCH_ASSIGNEE = "Dan";
+
+export type PhaseCategory = "research" | "design" | "dev";
+
+// Canonical mapping of phase → who owns it (category-level).
+const PHASE_TO_CATEGORY: Record<Phase, PhaseCategory> = {
+  "onboarding": "design",
+  "research": "research",
+  "design": "design",
+  "internal-design-qa": "design",
+  "external-design-review": "design",
+  "design-revision": "design",
+  "development": "dev",
+  "development-qa": "dev",
+  "external-dev-review": "dev",
+  "dev-revision": "dev",
+  "launch": "dev",
+};
+
+// Returns the category for a phase, or null if unknown/unset.
+export function categoryForPhase(phase: string | undefined): PhaseCategory | null {
+  if (!phase) return null;
+  return PHASE_TO_CATEGORY[phase as Phase] ?? null;
+}
+
+export interface TaskWithAssignees {
+  phase?: string;
+  designer?: string;
+  developer?: string;
+}
+
+// Returns the name currently on the hook for this task based on its phase.
+// Research always goes to Dan regardless of task assignments.
+export function computeAssignee(task: TaskWithAssignees): string {
+  const cat = categoryForPhase(task.phase);
+  if (cat === "research") return RESEARCH_ASSIGNEE;
+  if (cat === "dev") return task.developer ?? "";
+  // "design" or null (no phase yet) — default to designer
+  return task.designer ?? "";
+}
+
+// Tests whether a task matches a top-level filter tab. Tasks without a phase
+// fall back to their lane so a fresh design-lane task appears under Design.
+export function matchesCategoryFilter(
+  task: TaskWithAssignees,
+  filter: "all" | PhaseCategory,
+  lane: "design" | "dev",
+): boolean {
+  if (filter === "all") return true;
+  const cat = categoryForPhase(task.phase);
+  if (cat) return cat === filter;
+  // No phase yet — use lane as fallback (designTasks → "design", devTasks → "dev")
+  if (filter === "research") return false; // Research requires explicit phase
+  return (lane === "design" && filter === "design") || (lane === "dev" && filter === "dev");
+}
+
 export function appendPhaseTransition<T extends { phase?: string; phaseHistory?: PhaseEntry[] }>(
   task: T,
   nextPhase: string,

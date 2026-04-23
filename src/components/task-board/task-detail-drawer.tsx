@@ -3,11 +3,13 @@
 import { useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import {
+  computeAssignee,
   computePhaseSpans,
   computeUrgency,
   formatDeadline,
   formatDurationMs,
   phaseMeta,
+  RESEARCH_ASSIGNEE,
   type PhaseEntry,
 } from "@/lib/task-board/phases";
 
@@ -16,12 +18,21 @@ export interface TaskDetailTask {
   title: string;
   client?: string;
   assignee?: string;
+  designer?: string;
+  developer?: string;
   phase?: string;
   phaseHistory?: PhaseEntry[];
   designDueDate?: string;
   devDueDate?: string;
   launchDueDate?: string;
 }
+
+export type DrawerField =
+  | "designDueDate"
+  | "devDueDate"
+  | "launchDueDate"
+  | "designer"
+  | "developer";
 
 const URGENCY_STYLES: Record<NonNullable<ReturnType<typeof computeUrgency>>, { color: string; bg: string }> = {
   "overdue": { color: "#DC2626", bg: "#FEF2F2" },
@@ -34,11 +45,15 @@ export function TaskDetailDrawer({
   onClose,
   editable,
   onUpdate,
+  designers,
+  developers,
 }: {
   task: TaskDetailTask | null;
   onClose: () => void;
   editable?: boolean;
-  onUpdate?: (field: "designDueDate" | "devDueDate" | "launchDueDate", value: string) => void;
+  onUpdate?: (field: DrawerField, value: string) => void;
+  designers?: { id: string; name: string }[];
+  developers?: { id: string; name: string }[];
 }) {
   // Close on Escape
   useEffect(() => {
@@ -57,6 +72,7 @@ export function TaskDetailDrawer({
   const designUrgency = computeUrgency(task.designDueDate);
   const devUrgency = computeUrgency(task.devDueDate);
   const launchUrgency = computeUrgency(task.launchDueDate);
+  const computedAssignee = computeAssignee(task);
 
   return (
     <div className="fixed inset-0 z-50 flex">
@@ -71,7 +87,7 @@ export function TaskDetailDrawer({
             <h2 className="text-base font-semibold text-[#1A1A1A] break-words">{task.title || "Untitled task"}</h2>
             <p className="text-xs text-[#AAA] mt-1">
               {task.client || "—"}
-              {task.assignee && <> · {task.assignee}</>}
+              {computedAssignee && <> · {computedAssignee}</>}
             </p>
           </div>
           <button
@@ -103,6 +119,35 @@ export function TaskDetailDrawer({
           ) : (
             <p className="text-xs text-[#AAA]">Not started</p>
           )}
+        </section>
+
+        {/* Team */}
+        <section className="px-6 py-5 border-b border-[#EDEDEF]">
+          <h3 className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA] mb-3">Team</h3>
+          <TeamRow
+            label="Designer"
+            value={task.designer}
+            options={designers || []}
+            editable={editable}
+            active={!!computedAssignee && computedAssignee === task.designer}
+            onChange={editable && onUpdate ? (v) => onUpdate("designer", v) : undefined}
+          />
+          <TeamRow
+            label="Developer"
+            value={task.developer}
+            options={developers || []}
+            editable={editable}
+            active={!!computedAssignee && computedAssignee === task.developer}
+            onChange={editable && onUpdate ? (v) => onUpdate("developer", v) : undefined}
+          />
+          <TeamRow
+            label="Research"
+            value={RESEARCH_ASSIGNEE}
+            options={[]}
+            editable={false}
+            active={computedAssignee === RESEARCH_ASSIGNEE}
+            locked
+          />
         </section>
 
         {/* Deadlines */}
@@ -172,6 +217,54 @@ export function TaskDetailDrawer({
           )}
         </section>
       </div>
+    </div>
+  );
+}
+
+function TeamRow({
+  label,
+  value,
+  options,
+  editable,
+  active,
+  locked,
+  onChange,
+}: {
+  label: string;
+  value: string | undefined;
+  options: { id: string; name: string }[];
+  editable?: boolean;
+  active?: boolean;
+  locked?: boolean;
+  onChange?: (v: string) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 py-2">
+      <div className="flex items-center gap-2">
+        <span
+          className="size-2 rounded-full"
+          style={{ background: active ? "#1A1A1A" : "#D4D4D8" }}
+          title={active ? "Currently on this task" : ""}
+        />
+        <span className="text-sm font-medium text-[#1A1A1A]">{label}</span>
+        {locked && <span className="text-[9px] text-[#BBB] uppercase tracking-wider">auto</span>}
+      </div>
+      {editable && onChange ? (
+        <select
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
+          className="text-xs px-2 py-1 border border-[#E5E5EA] rounded focus:outline-none focus:border-[#999] min-w-[140px]"
+        >
+          <option value="">Unassigned</option>
+          {options.map((m) => (
+            <option key={m.id} value={m.name}>{m.name}</option>
+          ))}
+        </select>
+      ) : (
+        <span className={`text-xs ${value ? "text-[#1A1A1A]" : "text-[#BBB]"}`}>
+          {value || "Unassigned"}
+        </span>
+      )}
     </div>
   );
 }

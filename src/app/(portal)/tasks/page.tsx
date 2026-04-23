@@ -6,12 +6,15 @@ import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import {
   PHASE_OPTIONS,
   appendPhaseTransition,
+  computeAssignee,
   computeUrgency,
   currentPhaseEnteredAt,
   formatTimeInPhase,
   groupTasksByPhase,
+  matchesCategoryFilter,
   phaseMeta,
   relevantDeadline,
+  type PhaseCategory,
   type PhaseEntry,
 } from "@/lib/task-board/phases";
 import { TaskDetailDrawer } from "@/components/task-board/task-detail-drawer";
@@ -28,6 +31,8 @@ interface Task {
   designDueDate?: string;
   devDueDate?: string;
   launchDueDate?: string;
+  designer?: string;
+  developer?: string;
 }
 
 interface BoardData {
@@ -35,15 +40,23 @@ interface BoardData {
   devTasks: Task[];
 }
 
-type Lane = "design" | "dev";
+type TabFilter = "all" | PhaseCategory;
+type AnnotatedTask = Task & { _lane: "design" | "dev" };
 
 const GRID = "grid-cols-[minmax(0,1fr)_160px_200px_150px]";
+
+const TAB_META: { value: TabFilter; label: string; color: string }[] = [
+  { value: "all", label: "All", color: "#1A1A1A" },
+  { value: "research", label: "Research", color: "#0891B2" },
+  { value: "design", label: "Design", color: "#7C3AED" },
+  { value: "dev", label: "Development", color: "#059669" },
+];
 
 export default function TaskBoardPage() {
   const [board, setBoard] = useState<BoardData>({ designTasks: [], devTasks: [] });
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState("");
-  const [lane, setLane] = useState<Lane>("design");
+  const [tabFilter, setTabFilter] = useState<TabFilter>("all");
   const [assigneeFilter, setAssigneeFilter] = useState("");
 
   useEffect(() => {
@@ -60,19 +73,39 @@ export default function TaskBoardPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const laneTasks = lane === "design" ? board.designTasks : board.devTasks;
-
-  const assignees = useMemo(
-    () => [...new Set(laneTasks.map((t) => t.assignee).filter(Boolean))].sort(),
-    [laneTasks],
+  // Merge both lists with lane annotation
+  const allTasks = useMemo<AnnotatedTask[]>(
+    () => [
+      ...board.designTasks.map((t) => ({ ...t, _lane: "design" as const })),
+      ...board.devTasks.map((t) => ({ ...t, _lane: "dev" as const })),
+    ],
+    [board],
   );
 
-  // Reset assignee filter if it no longer matches anyone in the current lane
+  // Per-tab active counts (non-done) for the tab pills
+  const tabCounts = useMemo(() => {
+    const active = allTasks.filter((t) => t.status !== "done");
+    return {
+      all: active.length,
+      research: active.filter((t) => matchesCategoryFilter(t, "research", t._lane)).length,
+      design: active.filter((t) => matchesCategoryFilter(t, "design", t._lane)).length,
+      dev: active.filter((t) => matchesCategoryFilter(t, "dev", t._lane)).length,
+    };
+  }, [allTasks]);
+
+  const tabFiltered = allTasks.filter((t) => matchesCategoryFilter(t, tabFilter, t._lane));
+
+  const assignees = useMemo(
+    () => [...new Set(tabFiltered.map((t) => computeAssignee(t)).filter(Boolean))].sort(),
+    [tabFiltered],
+  );
+
+  // Reset assignee filter if it no longer matches anyone in the current tab
   useEffect(() => {
     if (assigneeFilter && !assignees.includes(assigneeFilter)) setAssigneeFilter("");
   }, [assignees, assigneeFilter]);
 
-  const sortByDate = (tasks: Task[]) =>
+  const sortByDate = (tasks: AnnotatedTask[]) =>
     [...tasks].sort((a, b) => {
       if (!a.dueDate && !b.dueDate) return 0;
       if (!a.dueDate) return 1;
@@ -80,25 +113,25 @@ export default function TaskBoardPage() {
       return a.dueDate.localeCompare(b.dueDate);
     });
 
-  const applyAssigneeFilter = (tasks: Task[]) =>
-    assigneeFilter ? tasks.filter((t) => t.assignee === assigneeFilter) : tasks;
+  const applyAssigneeFilter = (tasks: AnnotatedTask[]) =>
+    assigneeFilter ? tasks.filter((t) => computeAssignee(t) === assigneeFilter) : tasks;
 
-  const visibleTasks = applyAssigneeFilter(laneTasks);
+  const visibleTasks = applyAssigneeFilter(tabFiltered);
   const active = sortByDate(visibleTasks.filter((t) => t.status !== "done"));
   const done = visibleTasks.filter((t) => t.status === "done");
   const activeGroups = groupTasksByPhase(active);
 
   const [collapsedPhases, setCollapsedPhases] = useState<Set<string>>(new Set());
-  const togglePhase = (key: string) => setCollapsedPhases((prev) => {
-    const next = new Set(prev);
-    if (next.has(key)) next.delete(key); else next.add(key);
-    return next;
-  });
+  const togglePhase = (key: string) =>
+    setCollapsedPhases((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
 
   const [openTaskId, setOpenTaskId] = useState<string | null>(null);
-  const openTask = openTaskId
-    ? [...board.designTasks, ...board.devTasks].find((t) => t.id === openTaskId) ?? null
-    : null;
+  const openTask = openTaskId ? allTasks.find((t) => t.id === openTaskId) ?? null : null;
 
   const changePhase = async (taskId: string, nextPhase: string) => {
     setBoard((prev) => ({
@@ -123,11 +156,12 @@ export default function TaskBoardPage() {
     const timeInPhase = enteredAt ? formatTimeInPhase(enteredAt) : null;
     const { value: relevantDue } = relevantDeadline(task);
     const urgency = computeUrgency(relevantDue);
+    const assignee = computeAssignee(task);
 
     return (
-      <div className={`grid ${GRID} gap-4 items-center px-5 py-3.5 border-b border-[#F0F0F0] last:border-0 hover:bg-[#FAFAFA] cursor-pointer transition-colors`}
+      <div
+        className={`grid ${GRID} gap-4 items-center px-5 py-3.5 border-b border-[#F0F0F0] last:border-0 hover:bg-[#FAFAFA] cursor-pointer transition-colors`}
         onClick={(e) => {
-          // Ignore clicks on interactive children (phase select)
           const target = e.target as HTMLElement;
           if (target.closest("select")) return;
           setOpenTaskId(task.id);
@@ -148,10 +182,10 @@ export default function TaskBoardPage() {
           {task.client && <p className="text-[10px] text-[#AAA] mt-0.5 truncate">{task.client}</p>}
         </div>
 
-        {/* Assignee */}
+        {/* Assignee (computed) */}
         <div className="min-w-0">
-          {task.assignee ? (
-            <span className="text-xs text-[#1A1A1A] truncate block">{task.assignee}</span>
+          {assignee ? (
+            <span className="text-xs text-[#1A1A1A] truncate block">{assignee}</span>
           ) : (
             <span className="text-xs text-[#CCC]">Unassigned</span>
           )}
@@ -168,7 +202,9 @@ export default function TaskBoardPage() {
           >
             <option value="">Set phase…</option>
             {PHASE_OPTIONS.map((p) => (
-              <option key={p.value} value={p.value}>{p.label}</option>
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
             ))}
           </select>
           <svg
@@ -177,7 +213,11 @@ export default function TaskBoardPage() {
             viewBox="0 0 20 20"
             fill="currentColor"
           >
-            <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+            <path
+              fillRule="evenodd"
+              d="M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"
+              clipRule="evenodd"
+            />
           </svg>
         </div>
 
@@ -190,7 +230,11 @@ export default function TaskBoardPage() {
               title={enteredAt ? `Entered ${new Date(enteredAt).toLocaleString()}` : ""}
             >
               <svg viewBox="0 0 20 20" fill="currentColor" className="size-3.5">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .2.08.39.22.53l3 3a.75.75 0 101.06-1.06L10.75 9.69V5z" clipRule="evenodd" />
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .2.08.39.22.53l3 3a.75.75 0 101.06-1.06L10.75 9.69V5z"
+                  clipRule="evenodd"
+                />
               </svg>
               {timeInPhase}
             </span>
@@ -221,7 +265,15 @@ export default function TaskBoardPage() {
     );
   }
 
-  const laneDotColor = lane === "design" ? "#7C3AED" : "#059669";
+  const currentTabMeta = TAB_META.find((t) => t.value === tabFilter)!;
+  const assigneeFilterLabel =
+    tabFilter === "research"
+      ? "All assignees"
+      : tabFilter === "design"
+      ? "All designers"
+      : tabFilter === "dev"
+      ? "All developers"
+      : "All assignees";
 
   return (
     <div className="min-h-screen bg-[#F7F8FA]">
@@ -238,30 +290,24 @@ export default function TaskBoardPage() {
       </div>
 
       <div className="max-w-5xl mx-auto px-6 py-8">
-        {/* Controls: Design/Dev toggle + assignee filter */}
+        {/* Tab + assignee filter */}
         <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
           <div className="inline-flex items-center p-1 bg-[#EFEFF1] rounded-lg">
-            {(["design", "dev"] as const).map((l) => {
-              const count = (l === "design" ? board.designTasks : board.devTasks).filter((t) => t.status !== "done").length;
-              return (
-                <button
-                  key={l}
-                  onClick={() => setLane(l)}
-                  className={`px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-md transition-colors flex items-center gap-2 ${
-                    lane === l ? "bg-white text-[#1A1A1A] shadow-sm" : "text-[#777] hover:text-[#1A1A1A]"
-                  }`}
-                >
-                  <span
-                    className="size-1.5 rounded-full"
-                    style={{ background: l === "design" ? "#7C3AED" : "#059669" }}
-                  />
-                  {l === "design" ? "Design" : "Development"}
-                  <span className={`text-[10px] font-medium ${lane === l ? "text-[#AAA]" : "text-[#BBB]"}`}>
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
+            {TAB_META.map((t) => (
+              <button
+                key={t.value}
+                onClick={() => setTabFilter(t.value)}
+                className={`px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-md transition-colors flex items-center gap-2 ${
+                  tabFilter === t.value ? "bg-white text-[#1A1A1A] shadow-sm" : "text-[#777] hover:text-[#1A1A1A]"
+                }`}
+              >
+                {t.value !== "all" && <span className="size-1.5 rounded-full" style={{ background: t.color }} />}
+                {t.label}
+                <span className={`text-[10px] font-medium ${tabFilter === t.value ? "text-[#AAA]" : "text-[#BBB]"}`}>
+                  {tabCounts[t.value]}
+                </span>
+              </button>
+            ))}
           </div>
 
           <div className="flex items-center gap-2">
@@ -270,27 +316,26 @@ export default function TaskBoardPage() {
               onChange={(e) => setAssigneeFilter(e.target.value)}
               className="text-xs px-3 py-1.5 border border-[#E5E5EA] rounded-lg bg-white focus:outline-none focus:border-[#999]"
             >
-              <option value="">All {lane === "design" ? "designers" : "developers"}</option>
+              <option value="">{assigneeFilterLabel}</option>
               {assignees.map((a) => (
-                <option key={a} value={a}>{a}</option>
+                <option key={a} value={a}>
+                  {a}
+                </option>
               ))}
             </select>
             {assigneeFilter && (
-              <button
-                onClick={() => setAssigneeFilter("")}
-                className="text-[11px] text-[#AAA] hover:text-[#1A1A1A]"
-              >
+              <button onClick={() => setAssigneeFilter("")} className="text-[11px] text-[#AAA] hover:text-[#1A1A1A]">
                 Clear
               </button>
             )}
           </div>
         </div>
 
-        {/* Lane summary */}
+        {/* Summary */}
         <div className="flex items-center gap-2 mb-4">
-          <div className="size-2 rounded-full" style={{ background: laneDotColor }} />
+          {tabFilter !== "all" && <div className="size-2 rounded-full" style={{ background: currentTabMeta.color }} />}
           <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
-            {lane === "design" ? "Design" : "Development"} ({active.length} active)
+            {currentTabMeta.label} ({active.length} active)
             {assigneeFilter && <span className="text-[#BBB] normal-case font-normal"> · {assigneeFilter}</span>}
           </h2>
         </div>
@@ -299,7 +344,7 @@ export default function TaskBoardPage() {
         {active.length === 0 ? (
           <div className="bg-white border border-[#E5E5EA] rounded-xl">
             <p className="text-xs text-[#CCC] text-center py-10">
-              No active {lane === "design" ? "design" : "dev"} tasks{assigneeFilter ? ` for ${assigneeFilter}` : ""}
+              No active tasks{assigneeFilter ? ` for ${assigneeFilter}` : ""}
             </p>
           </div>
         ) : (

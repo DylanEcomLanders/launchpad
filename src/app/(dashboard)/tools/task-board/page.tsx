@@ -6,10 +6,14 @@ import { loadSettings, type TeamMember } from "@/lib/settings";
 import {
   PHASE_OPTIONS,
   appendPhaseTransition,
+  categoryForPhase,
+  computeAssignee,
   currentPhaseEnteredAt,
   formatTimeInPhase,
   groupTasksByPhase,
+  matchesCategoryFilter,
   phaseMeta,
+  type PhaseCategory,
   type PhaseEntry,
 } from "@/lib/task-board/phases";
 import { TaskDetailDrawer } from "@/components/task-board/task-detail-drawer";
@@ -28,6 +32,8 @@ interface Task {
   designDueDate?: string;
   devDueDate?: string;
   launchDueDate?: string;
+  designer?: string;
+  developer?: string;
 }
 
 interface BoardData {
@@ -40,13 +46,11 @@ const ADMIN_KEY = typeof window !== "undefined" ? "ecomlanders2025" : "";
 /* ── Stable row component (won't re-mount on parent state change) ── */
 const TaskEditorRow = memo(function TaskEditorRow({
   task,
-  assignees,
   onUpdate,
   onRemove,
   onOpenDetail,
 }: {
   task: Task;
-  assignees: TeamMember[];
   onUpdate: (field: string, value: string) => void;
   onRemove: () => void;
   onOpenDetail: () => void;
@@ -62,6 +66,7 @@ const TaskEditorRow = memo(function TaskEditorRow({
   const timeInPhase = enteredAt ? formatTimeInPhase(enteredAt) : null;
   const meta = phaseMeta(task.phase);
   const hasDeadline = !!(task.designDueDate || task.devDueDate || task.launchDueDate);
+  const assignee = computeAssignee(task);
 
   return (
     <div className="grid grid-cols-[1.3fr_140px_140px_180px_120px_32px_32px] gap-2 px-4 py-2.5 border-b border-[#EDEDEF] last:border-0 items-center">
@@ -81,16 +86,14 @@ const TaskEditorRow = memo(function TaskEditorRow({
         placeholder="Client"
         className="text-xs px-2 py-1 border border-transparent hover:border-[#E5E5EA] focus:border-[#999] rounded focus:outline-none"
       />
-      <select
-        value={task.assignee}
-        onChange={(e) => onUpdate("assignee", e.target.value)}
-        className="text-xs px-1 py-1 border border-transparent hover:border-[#E5E5EA] focus:border-[#999] rounded focus:outline-none"
+      <button
+        type="button"
+        onClick={onOpenDetail}
+        title="Set designer / developer in drawer"
+        className={`text-xs px-2 py-1 rounded text-left truncate hover:bg-[#F3F3F5] ${assignee ? "text-[#1A1A1A]" : "text-[#BBB]"}`}
       >
-        <option value="">Unassigned</option>
-        {assignees.map((m) => (
-          <option key={m.id} value={m.name}>{m.name}</option>
-        ))}
-      </select>
+        {assignee || "Unassigned"}
+      </button>
       <div className="flex flex-col gap-0.5 min-w-0">
         <select
           value={task.phase || ""}
@@ -148,7 +151,7 @@ export default function TaskBoardAdminPage() {
   const [previewUrl, setPreviewUrl] = useState("");
   const [filterAssignee, setFilterAssignee] = useState("");
   const [filterDate, setFilterDate] = useState<"all" | "overdue" | "today" | "this-week">("all");
-  const [lane, setLane] = useState<"design" | "dev">("design");
+  const [tabFilter, setTabFilter] = useState<"all" | PhaseCategory>("all");
   const boardRef = useRef(board);
   boardRef.current = board;
 
@@ -178,6 +181,13 @@ export default function TaskBoardAdminPage() {
     setTimeout(() => setSaved(false), 2000);
   };
 
+  // Figures out which JSONB list a new task lives in based on phase category.
+  // Research + design-side phases go in designTasks; dev-side in devTasks.
+  const laneForPhase = (phase?: string): "design" | "dev" => {
+    const cat = categoryForPhase(phase);
+    return cat === "dev" ? "dev" : "design";
+  };
+
   const addTask = (type: "design" | "dev", initialPhase?: string) => {
     const base: Task = { id: crypto.randomUUID(), title: "", assignee: "", dueDate: "", status: "todo", client: "" };
     const task = initialPhase ? appendPhaseTransition(base, initialPhase) : base;
@@ -186,6 +196,12 @@ export default function TaskBoardAdminPage() {
       return { ...prev, [key]: [...prev[key], task] };
     });
   };
+
+  // Resolves which list (designTasks or devTasks) a task currently lives in.
+  const laneForTask = useCallback(
+    (id: string): "design" | "dev" => (boardRef.current.designTasks.some((t) => t.id === id) ? "design" : "dev"),
+    [],
+  );
 
   const [collapsedPhases, setCollapsedPhases] = useState<Set<string>>(new Set());
   const togglePhase = (key: string) => setCollapsedPhases((prev) => {
@@ -228,35 +244,40 @@ export default function TaskBoardAdminPage() {
   const designers = team.filter((m) => m.role.toLowerCase().includes("design"));
   const developers = team.filter((m) => m.role.toLowerCase().includes("develop") || m.role.toLowerCase().includes("head of dev"));
 
-  // Filter tasks
-  const filterTasks = useCallback((tasks: Task[]) => {
-    let filtered = tasks;
-    if (filterAssignee) {
-      filtered = filtered.filter((t) => t.assignee === filterAssignee);
-    }
+  // Annotate each task with its lane, then merge into one list
+  type AnnotatedTask = Task & { _lane: "design" | "dev" };
+  const allTasks: AnnotatedTask[] = [
+    ...board.designTasks.map((t) => ({ ...t, _lane: "design" as const })),
+    ...board.devTasks.map((t) => ({ ...t, _lane: "dev" as const })),
+  ];
+
+  // Counts per top tab, from the unfiltered merged list
+  const tabCounts = {
+    all: allTasks.length,
+    research: allTasks.filter((t) => matchesCategoryFilter(t, "research", t._lane)).length,
+    design: allTasks.filter((t) => matchesCategoryFilter(t, "design", t._lane)).length,
+    dev: allTasks.filter((t) => matchesCategoryFilter(t, "dev", t._lane)).length,
+  };
+
+  // Apply tab + assignee + date filters
+  const filteredTasks = allTasks.filter((t) => {
+    if (!matchesCategoryFilter(t, tabFilter, t._lane)) return false;
+    if (filterAssignee && computeAssignee(t) !== filterAssignee) return false;
     if (filterDate !== "all") {
+      const dueDates = [t.designDueDate, t.devDueDate, t.launchDueDate].filter(Boolean) as string[];
+      if (dueDates.length === 0) return false;
       const today = new Date().toISOString().split("T")[0];
       const weekEnd = new Date();
       weekEnd.setDate(weekEnd.getDate() + (7 - weekEnd.getDay()));
       const weekEndStr = weekEnd.toISOString().split("T")[0];
-
-      filtered = filtered.filter((t) => {
-        if (!t.dueDate) return false;
-        if (filterDate === "overdue") return t.dueDate < today && t.status !== "done";
-        if (filterDate === "today") return t.dueDate === today;
-        if (filterDate === "this-week") return t.dueDate >= today && t.dueDate <= weekEndStr;
-        return true;
-      });
+      if (filterDate === "overdue") return dueDates.some((d) => d < today && t.status !== "done");
+      if (filterDate === "today") return dueDates.some((d) => d === today);
+      if (filterDate === "this-week") return dueDates.some((d) => d >= today && d <= weekEndStr);
     }
-    return filtered;
-  }, [filterAssignee, filterDate]);
+    return true;
+  });
 
-  const filteredDesign = filterTasks(board.designTasks);
-  const filteredDev = filterTasks(board.devTasks);
-  const laneTasks = lane === "design" ? filteredDesign : filteredDev;
-  const laneAssignees = lane === "design" ? designers : developers;
-  const laneCount = (lane === "design" ? board.designTasks : board.devTasks).length;
-  const allAssignees = [...new Set((lane === "design" ? board.designTasks : board.devTasks).map((t) => t.assignee).filter(Boolean))].sort();
+  const visibleAssignees = [...new Set(filteredTasks.map((t) => computeAssignee(t)).filter(Boolean))].sort();
 
   if (loading) {
     return (
@@ -281,24 +302,28 @@ export default function TaskBoardAdminPage() {
         </button>
       </div>
 
-      {/* Lane toggle */}
+      {/* Tab filter — All / Research / Design / Development */}
       <div className="inline-flex items-center p-1 bg-[#EFEFF1] rounded-lg mb-4">
-        {(["design", "dev"] as const).map((l) => {
-          const count = (l === "design" ? board.designTasks : board.devTasks).length;
-          return (
-            <button
-              key={l}
-              onClick={() => { setLane(l); setFilterAssignee(""); }}
-              className={`px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-md transition-colors flex items-center gap-2 ${
-                lane === l ? "bg-white text-[#1A1A1A] shadow-sm" : "text-[#777] hover:text-[#1A1A1A]"
-              }`}
-            >
-              <span className="size-1.5 rounded-full" style={{ background: l === "design" ? "#7C3AED" : "#059669" }} />
-              {l === "design" ? "Design" : "Development"}
-              <span className={`text-[10px] font-medium ${lane === l ? "text-[#AAA]" : "text-[#BBB]"}`}>{count}</span>
-            </button>
-          );
-        })}
+        {([
+          { value: "all", label: "All", color: "#1A1A1A" },
+          { value: "research", label: "Research", color: "#0891B2" },
+          { value: "design", label: "Design", color: "#7C3AED" },
+          { value: "dev", label: "Development", color: "#059669" },
+        ] as const).map((t) => (
+          <button
+            key={t.value}
+            onClick={() => { setTabFilter(t.value); setFilterAssignee(""); }}
+            className={`px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-md transition-colors flex items-center gap-2 ${
+              tabFilter === t.value ? "bg-white text-[#1A1A1A] shadow-sm" : "text-[#777] hover:text-[#1A1A1A]"
+            }`}
+          >
+            {t.value !== "all" && <span className="size-1.5 rounded-full" style={{ background: t.color }} />}
+            {t.label}
+            <span className={`text-[10px] font-medium ${tabFilter === t.value ? "text-[#AAA]" : "text-[#BBB]"}`}>
+              {tabCounts[t.value]}
+            </span>
+          </button>
+        ))}
       </div>
 
       {/* Filters */}
@@ -309,7 +334,7 @@ export default function TaskBoardAdminPage() {
           className="text-xs px-3 py-1.5 border border-[#E5E5EA] rounded-lg bg-white focus:outline-none"
         >
           <option value="">All Assignees</option>
-          {allAssignees.map((a) => <option key={a} value={a}>{a}</option>)}
+          {visibleAssignees.map((a) => <option key={a} value={a}>{a}</option>)}
         </select>
         <div className="flex items-center gap-1">
           {(["all", "overdue", "today", "this-week"] as const).map((f) => (
@@ -329,28 +354,27 @@ export default function TaskBoardAdminPage() {
         )}
       </div>
 
-      {/* Active lane summary */}
+      {/* Summary + add */}
       <div className="flex items-center gap-2 mb-4">
-        <div className="size-2 rounded-full" style={{ background: lane === "design" ? "#7C3AED" : "#059669" }} />
         <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
-          {lane === "design" ? "Design Tasks" : "Dev Tasks"}
+          {tabFilter === "all" ? "All tasks" : tabFilter === "research" ? "Research" : tabFilter === "design" ? "Design" : "Development"}
         </h2>
-        <span className="text-[10px] text-[#BBB]">{laneTasks.length} of {laneCount}</span>
+        <span className="text-[10px] text-[#BBB]">{filteredTasks.length} of {tabCounts[tabFilter]}</span>
         <button
-          onClick={() => addTask(lane)}
+          onClick={() => addTask(tabFilter === "dev" ? "dev" : "design")}
           className="ml-auto flex items-center gap-1 text-[11px] text-[#777] hover:text-[#1A1A1A]"
         >
           <PlusIcon className="size-3" /> Add task
         </button>
       </div>
 
-      {laneTasks.length === 0 ? (
+      {filteredTasks.length === 0 ? (
         <div className="border border-[#E5E5EA] rounded-xl bg-white">
-          <p className="text-xs text-[#CCC] text-center py-10">No {lane === "design" ? "design" : "dev"} tasks match current filters</p>
+          <p className="text-xs text-[#CCC] text-center py-10">No tasks match current filters</p>
         </div>
       ) : (
         <div className="space-y-3">
-          {groupTasksByPhase(laneTasks).map((group) => {
+          {groupTasksByPhase(filteredTasks).map((group) => {
             const isCollapsed = collapsedPhases.has(group.key);
             return (
               <div key={group.key} className="border border-[#E5E5EA] rounded-xl bg-white overflow-hidden">
@@ -372,7 +396,7 @@ export default function TaskBoardAdminPage() {
                     <span className="text-[11px] font-medium text-[#AAA]">{group.tasks.length}</span>
                   </button>
                   <button
-                    onClick={() => addTask(lane, group.key === "not-started" ? "" : group.key)}
+                    onClick={() => addTask(laneForPhase(group.key === "not-started" ? undefined : group.key), group.key === "not-started" ? "" : group.key)}
                     className="flex items-center gap-1 text-[11px] text-[#777] hover:text-[#1A1A1A]"
                   >
                     <PlusIcon className="size-3" /> Add
@@ -393,9 +417,8 @@ export default function TaskBoardAdminPage() {
                       <TaskEditorRow
                         key={t.id}
                         task={t}
-                        assignees={laneAssignees}
-                        onUpdate={(field, value) => updateTask(lane, t.id, field, value)}
-                        onRemove={() => removeTask(lane, t.id)}
+                        onUpdate={(field, value) => updateTask(laneForTask(t.id), t.id, field, value)}
+                        onRemove={() => removeTask(laneForTask(t.id), t.id)}
                         onOpenDetail={() => setOpenTaskId(t.id)}
                       />
                     ))}
@@ -411,6 +434,8 @@ export default function TaskBoardAdminPage() {
         task={openTask}
         onClose={() => setOpenTaskId(null)}
         editable
+        designers={designers.map((m) => ({ id: m.id, name: m.name }))}
+        developers={developers.map((m) => ({ id: m.id, name: m.name }))}
         onUpdate={(field, value) => {
           if (!openTaskId || !openTaskLane) return;
           updateTask(openTaskLane, openTaskId, field, value);
