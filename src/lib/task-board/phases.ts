@@ -62,6 +62,44 @@ export function currentPhaseEnteredAt(history: PhaseEntry[] | undefined): string
   return history[history.length - 1].enteredAt;
 }
 
+export interface PhaseGroup<T> {
+  key: string; // "not-started" or a Phase value
+  label: string;
+  color: string;
+  bg: string;
+  tasks: T[];
+}
+
+// Groups tasks by phase in canonical order. Tasks with no phase get a
+// "Not started" bucket pinned to the top. Empty phase buckets are omitted.
+export function groupTasksByPhase<T extends { phase?: string }>(tasks: T[]): PhaseGroup<T>[] {
+  const buckets = new Map<string, T[]>();
+  for (const t of tasks) {
+    const key = t.phase && PHASE_META.has(t.phase as Phase) ? t.phase : "not-started";
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key)!.push(t);
+  }
+
+  const groups: PhaseGroup<T>[] = [];
+  const notStarted = buckets.get("not-started");
+  if (notStarted && notStarted.length) {
+    groups.push({
+      key: "not-started",
+      label: "Not started",
+      color: "#777",
+      bg: "#F3F3F5",
+      tasks: notStarted,
+    });
+  }
+  for (const p of PHASE_OPTIONS) {
+    const b = buckets.get(p.value);
+    if (b && b.length) {
+      groups.push({ key: p.value, label: p.label, color: p.color, bg: p.bg, tasks: b });
+    }
+  }
+  return groups;
+}
+
 export function appendPhaseTransition<T extends { phase?: string; phaseHistory?: PhaseEntry[] }>(
   task: T,
   nextPhase: string,

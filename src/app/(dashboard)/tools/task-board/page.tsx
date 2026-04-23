@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, memo } from "react";
-import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, TrashIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import { loadSettings, type TeamMember } from "@/lib/settings";
 import {
   PHASE_OPTIONS,
   appendPhaseTransition,
   currentPhaseEnteredAt,
   formatTimeInPhase,
+  groupTasksByPhase,
   phaseMeta,
   type PhaseEntry,
 } from "@/lib/task-board/phases";
@@ -169,13 +170,21 @@ export default function TaskBoardAdminPage() {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const addTask = (type: "design" | "dev") => {
-    const task: Task = { id: crypto.randomUUID(), title: "", assignee: "", dueDate: "", status: "todo", client: "" };
+  const addTask = (type: "design" | "dev", initialPhase?: string) => {
+    const base: Task = { id: crypto.randomUUID(), title: "", assignee: "", dueDate: "", status: "todo", client: "" };
+    const task = initialPhase ? appendPhaseTransition(base, initialPhase) : base;
     setBoard((prev) => {
       const key = type === "design" ? "designTasks" : "devTasks";
       return { ...prev, [key]: [...prev[key], task] };
     });
   };
+
+  const [collapsedPhases, setCollapsedPhases] = useState<Set<string>>(new Set());
+  const togglePhase = (key: string) => setCollapsedPhases((prev) => {
+    const next = new Set(prev);
+    if (next.has(key)) next.delete(key); else next.add(key);
+    return next;
+  });
 
   const updateTask = useCallback((type: "design" | "dev", id: string, field: string, value: string) => {
     setBoard((prev) => {
@@ -302,45 +311,82 @@ export default function TaskBoardAdminPage() {
         )}
       </div>
 
-      {/* Active lane */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <div className="size-2 rounded-full" style={{ background: lane === "design" ? "#7C3AED" : "#059669" }} />
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
-              {lane === "design" ? "Design Tasks" : "Dev Tasks"}
-            </h2>
-            <span className="text-[10px] text-[#BBB]">{laneTasks.length} of {laneCount}</span>
-          </div>
-          <button onClick={() => addTask(lane)} className="flex items-center gap-1 text-[11px] text-[#777] hover:text-[#1A1A1A]">
-            <PlusIcon className="size-3" /> Add
-          </button>
-        </div>
-        <div className="border border-[#E5E5EA] rounded-xl bg-white overflow-hidden">
-          <div className="grid grid-cols-[1.3fr_140px_140px_180px_120px_120px_32px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA]">
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Task</span>
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Client</span>
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Assignee</span>
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Phase</span>
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Due</span>
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Status</span>
-            <span />
-          </div>
-          {laneTasks.length === 0 ? (
-            <p className="text-xs text-[#CCC] text-center py-6">No {lane === "design" ? "design" : "dev"} tasks</p>
-          ) : (
-            laneTasks.map((t) => (
-              <TaskEditorRow
-                key={t.id}
-                task={t}
-                assignees={laneAssignees}
-                onUpdate={(field, value) => updateTask(lane, t.id, field, value)}
-                onRemove={() => removeTask(lane, t.id)}
-              />
-            ))
-          )}
-        </div>
+      {/* Active lane summary */}
+      <div className="flex items-center gap-2 mb-4">
+        <div className="size-2 rounded-full" style={{ background: lane === "design" ? "#7C3AED" : "#059669" }} />
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
+          {lane === "design" ? "Design Tasks" : "Dev Tasks"}
+        </h2>
+        <span className="text-[10px] text-[#BBB]">{laneTasks.length} of {laneCount}</span>
+        <button
+          onClick={() => addTask(lane)}
+          className="ml-auto flex items-center gap-1 text-[11px] text-[#777] hover:text-[#1A1A1A]"
+        >
+          <PlusIcon className="size-3" /> Add task
+        </button>
       </div>
+
+      {laneTasks.length === 0 ? (
+        <div className="border border-[#E5E5EA] rounded-xl bg-white">
+          <p className="text-xs text-[#CCC] text-center py-10">No {lane === "design" ? "design" : "dev"} tasks match current filters</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {groupTasksByPhase(laneTasks).map((group) => {
+            const isCollapsed = collapsedPhases.has(group.key);
+            return (
+              <div key={group.key} className="border border-[#E5E5EA] rounded-xl bg-white overflow-hidden">
+                <div className="flex items-center gap-2 px-4 py-3 hover:bg-[#FAFAFA] transition-colors">
+                  <button
+                    type="button"
+                    onClick={() => togglePhase(group.key)}
+                    className="flex items-center gap-2 flex-1 text-left"
+                  >
+                    <ChevronDownIcon
+                      className={`size-3.5 text-[#AAA] transition-transform ${isCollapsed ? "-rotate-90" : ""}`}
+                    />
+                    <span
+                      className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                      style={{ background: group.bg, color: group.color }}
+                    >
+                      {group.label}
+                    </span>
+                    <span className="text-[11px] font-medium text-[#AAA]">{group.tasks.length}</span>
+                  </button>
+                  <button
+                    onClick={() => addTask(lane, group.key === "not-started" ? "" : group.key)}
+                    className="flex items-center gap-1 text-[11px] text-[#777] hover:text-[#1A1A1A]"
+                  >
+                    <PlusIcon className="size-3" /> Add
+                  </button>
+                </div>
+                {!isCollapsed && (
+                  <>
+                    <div className="grid grid-cols-[1.3fr_140px_140px_180px_120px_120px_32px] gap-2 px-4 py-2 bg-[#FAFAFA] border-y border-[#E5E5EA]">
+                      <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Task</span>
+                      <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Client</span>
+                      <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Assignee</span>
+                      <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Phase</span>
+                      <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Due</span>
+                      <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Status</span>
+                      <span />
+                    </div>
+                    {group.tasks.map((t) => (
+                      <TaskEditorRow
+                        key={t.id}
+                        task={t}
+                        assignees={laneAssignees}
+                        onUpdate={(field, value) => updateTask(lane, t.id, field, value)}
+                        onRemove={() => removeTask(lane, t.id)}
+                      />
+                    ))}
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

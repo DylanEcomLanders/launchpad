@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Logo } from "@/components/logo";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import {
   PHASE_OPTIONS,
   appendPhaseTransition,
   currentPhaseEnteredAt,
   formatTimeInPhase,
+  groupTasksByPhase,
   phaseMeta,
   type PhaseEntry,
 } from "@/lib/task-board/phases";
@@ -95,6 +97,14 @@ export default function TaskBoardPage() {
   const visibleTasks = applyAssigneeFilter(laneTasks);
   const active = sortByDate(visibleTasks.filter((t) => t.status !== "done"));
   const done = visibleTasks.filter((t) => t.status === "done");
+  const activeGroups = groupTasksByPhase(active);
+
+  const [collapsedPhases, setCollapsedPhases] = useState<Set<string>>(new Set());
+  const togglePhase = (key: string) => setCollapsedPhases((prev) => {
+    const next = new Set(prev);
+    if (next.has(key)) next.delete(key); else next.add(key);
+    return next;
+  });
 
   const changePhase = async (taskId: string, nextPhase: string) => {
     setBoard((prev) => ({
@@ -279,31 +289,62 @@ export default function TaskBoardPage() {
           </div>
         </div>
 
-        {/* Active list */}
-        <div className="flex items-center gap-2 mb-3">
+        {/* Lane summary */}
+        <div className="flex items-center gap-2 mb-4">
           <div className="size-2 rounded-full" style={{ background: laneDotColor }} />
           <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
             {lane === "design" ? "Design" : "Development"} ({active.length} active)
             {assigneeFilter && <span className="text-[#BBB] normal-case font-normal"> · {assigneeFilter}</span>}
           </h2>
         </div>
-        <div className="bg-white border border-[#E5E5EA] rounded-xl overflow-hidden">
-          {active.length > 0 && <ColumnHeader />}
-          {active.length === 0 ? (
-            <p className="text-xs text-[#CCC] text-center py-8">
+
+        {/* Phase sections */}
+        {active.length === 0 ? (
+          <div className="bg-white border border-[#E5E5EA] rounded-xl">
+            <p className="text-xs text-[#CCC] text-center py-10">
               No active {lane === "design" ? "design" : "dev"} tasks{assigneeFilter ? ` for ${assigneeFilter}` : ""}
             </p>
-          ) : (
-            active.map((t) => <TaskRow key={t.id} task={t} />)
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {activeGroups.map((group) => {
+              const isCollapsed = collapsedPhases.has(group.key);
+              return (
+                <div key={group.key} className="bg-white border border-[#E5E5EA] rounded-xl overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => togglePhase(group.key)}
+                    className="w-full flex items-center gap-2 px-5 py-3 hover:bg-[#FAFAFA] transition-colors"
+                  >
+                    <ChevronDownIcon
+                      className={`size-3.5 text-[#AAA] transition-transform ${isCollapsed ? "-rotate-90" : ""}`}
+                    />
+                    <span
+                      className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                      style={{ background: group.bg, color: group.color }}
+                    >
+                      {group.label}
+                    </span>
+                    <span className="text-[11px] font-medium text-[#AAA]">{group.tasks.length}</span>
+                  </button>
+                  {!isCollapsed && (
+                    <>
+                      <ColumnHeader />
+                      {group.tasks.map((t) => <TaskRow key={t.id} task={t} />)}
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {done.length > 0 && (
-          <details className="mt-3">
+          <details className="mt-4">
             <summary className="text-[10px] text-[#CCC] cursor-pointer hover:text-[#999]">
               {done.length} completed
             </summary>
-            <div className="bg-white border border-[#E5E5EA] rounded-xl overflow-hidden mt-1 opacity-60">
+            <div className="bg-white border border-[#E5E5EA] rounded-xl overflow-hidden mt-2 opacity-60">
               <ColumnHeader />
               {done.map((t) => <TaskRow key={t.id} task={t} />)}
             </div>
