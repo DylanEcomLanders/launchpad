@@ -16,6 +16,7 @@ import {
   matchesCategoryFilter,
   phaseMeta,
   relevantDeadline,
+  type DeadlineChangeEntry,
   type PhaseCategory,
   type PhaseEntry,
 } from "@/lib/task-board/phases";
@@ -37,6 +38,7 @@ interface Task {
   launchDueDate?: string;
   designer?: string;
   developer?: string;
+  deadlineHistory?: DeadlineChangeEntry[];
 }
 
 interface BoardData {
@@ -241,6 +243,39 @@ export default function TaskBoardAdminPage() {
     });
   }, []);
 
+  // Deadline updates route through here so we can append a DeadlineChangeEntry
+  // when the user moves an existing deadline and provides a reason.
+  const updateDeadline = useCallback((
+    type: "design" | "dev",
+    id: string,
+    field: "designDueDate" | "devDueDate" | "launchDueDate",
+    value: string,
+    reason?: string,
+  ) => {
+    setBoard((prev) => {
+      const key = type === "design" ? "designTasks" : "devTasks";
+      return {
+        ...prev,
+        [key]: prev[key].map((t) => {
+          if (t.id !== id) return t;
+          const prevValue = t[field];
+          const updated = { ...t, [field]: value };
+          if (reason && prevValue && prevValue !== value) {
+            const entry: DeadlineChangeEntry = {
+              field,
+              previousValue: prevValue,
+              newValue: value,
+              reason,
+              changedAt: new Date().toISOString(),
+            };
+            updated.deadlineHistory = [...(t.deadlineHistory || []), entry];
+          }
+          return updated;
+        }),
+      };
+    });
+  }, []);
+
   const removeTask = useCallback((type: "design" | "dev", id: string) => {
     setBoard((prev) => {
       const key = type === "design" ? "designTasks" : "devTasks";
@@ -407,9 +442,9 @@ export default function TaskBoardAdminPage() {
             <span />
             <span />
           </div>
-          {groupTasksByClient(filteredTasks).map((group) => (
+          {groupTasksByClient(filteredTasks).map((group, i) => (
             <div key={group.key}>
-              <div className="flex items-center gap-2 px-4 py-2.5 bg-[#FAFAFA] border-y border-[#EDEDEF]">
+              <div className={`flex items-center gap-2 px-4 pb-1.5 ${i === 0 ? "pt-4" : "pt-6"} border-t ${i === 0 ? "border-transparent" : "border-[#F0F0F0]"}`}>
                 <h3 className={`text-xs font-semibold uppercase tracking-wider flex-1 ${group.key === "__unassigned__" ? "text-[#AAA] italic" : "text-[#1A1A1A]"}`}>
                   {group.label}
                 </h3>
@@ -448,6 +483,10 @@ export default function TaskBoardAdminPage() {
         onUpdate={(field, value) => {
           if (!openTaskId || !openTaskLane) return;
           updateTask(openTaskLane, openTaskId, field, value);
+        }}
+        onUpdateDeadline={(field, value, reason) => {
+          if (!openTaskId || !openTaskLane) return;
+          updateDeadline(openTaskLane, openTaskId, field, value, reason);
         }}
       />
     </div>

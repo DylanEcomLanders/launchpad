@@ -15,6 +15,7 @@ import {
   matchesCategoryFilter,
   phaseMeta,
   relevantDeadline,
+  type DeadlineChangeEntry,
   type PhaseCategory,
   type PhaseEntry,
 } from "@/lib/task-board/phases";
@@ -34,6 +35,7 @@ interface Task {
   launchDueDate?: string;
   designer?: string;
   developer?: string;
+  deadlineHistory?: DeadlineChangeEntry[];
 }
 
 interface BoardData {
@@ -386,9 +388,9 @@ export default function TaskBoardPage() {
         ) : (
           <div className="bg-white border border-[#E5E5EA] rounded-xl overflow-hidden">
             <ColumnHeader />
-            {activeGroups.map((group) => (
+            {activeGroups.map((group, i) => (
               <div key={group.key}>
-                <div className="flex items-center gap-2 px-5 py-2.5 bg-[#FAFAFA] border-y border-[#EDEDEF]">
+                <div className={`flex items-center gap-2 px-5 pb-1.5 ${i === 0 ? "pt-4" : "pt-6"} border-t ${i === 0 ? "border-transparent" : "border-[#F0F0F0]"}`}>
                   <h3 className={`text-xs font-semibold uppercase tracking-wider ${group.key === "__unassigned__" ? "text-[#AAA] italic" : "text-[#1A1A1A]"}`}>
                     {group.label}
                   </h3>

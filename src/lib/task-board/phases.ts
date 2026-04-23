@@ -131,6 +131,16 @@ export interface TaskWithDeadlines {
   launchDueDate?: string;
 }
 
+// Audit trail entry for a deadline change. Captured whenever an existing
+// deadline is moved so the team can see why the commitment shifted later.
+export interface DeadlineChangeEntry {
+  field: DeadlineField;
+  previousValue: string;
+  newValue: string;
+  reason: string;
+  changedAt: string; // ISO timestamp
+}
+
 // Returns the deadline that applies to the task's current phase.
 export function relevantDeadline(task: TaskWithDeadlines): { field: DeadlineField; value: string | undefined } {
   const field = deadlineFieldForPhase(task.phase);
