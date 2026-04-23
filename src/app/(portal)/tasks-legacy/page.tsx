@@ -6,6 +6,8 @@
 // (hidden from the new /tasks view) remain visible at a glance.
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { Logo } from "@/components/logo";
 
 interface Task {
@@ -112,6 +114,14 @@ export default function LegacyTaskBoardPage() {
       <div className="bg-white border-b border-[#E5E5EA] px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
+            <Link
+              href="/team"
+              className="flex items-center gap-1.5 text-[11px] font-medium text-[#7A7A7A] hover:text-[#1A1A1A] transition-colors"
+            >
+              <ArrowLeftIcon className="size-3" />
+              Team Tools
+            </Link>
+            <div className="h-4 w-px bg-[#E5E5EA]" />
             <Logo height={16} className="text-[#1A1A1A]" />
             <div className="h-4 w-px bg-[#E5E5EA]" />
             <h1 className="text-sm font-semibold text-[#1A1A1A]">Task Board · Legacy view</h1>
