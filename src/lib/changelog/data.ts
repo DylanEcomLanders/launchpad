@@ -73,6 +73,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Client header rows on the task board lose the grey fill — just clean uppercase label + deliverable count with a hairline divider between projects. Less visual noise, project names still read as group headers, tasks flow as one continuous list" },
       { type: "added", text: "Deadline change audit trail — when Alister (or anyone on admin) moves an existing Design/Dev/Launch deadline, a modal pops up asking \"Why is it changing?\" and won't save until a reason is typed in. The change is appended to a new deadlineHistory array on the task" },
       { type: "added", text: "Info icon next to any deadline that has been moved — click to expand an inline history showing each prior version (strikethrough → new date · change date) with the reason note underneath. Gives instant context for why a commitment shifted, instead of losing the reason to chat history" },
+      { type: "improved", text: "Task Board project headers now use whitespace to separate groups instead of a hairline divider — bolder uppercase labels with generous top padding between projects. Matches the minimal reference layout the project names were modelled on. Row separators inside each project stay so 10+ deliverable lists still read cleanly" },
     ],
   },
   {
