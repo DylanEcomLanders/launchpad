@@ -3,6 +3,14 @@
 import { useState, useEffect, useCallback, useRef, memo } from "react";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { loadSettings, type TeamMember } from "@/lib/settings";
+import {
+  PHASE_OPTIONS,
+  appendPhaseTransition,
+  currentPhaseEnteredAt,
+  formatTimeInPhase,
+  phaseMeta,
+  type PhaseEntry,
+} from "@/lib/task-board/phases";
 
 interface Task {
   id: string;
@@ -13,6 +21,8 @@ interface Task {
   client?: string;
   portalId?: string;
   deliverableId?: string;
+  phase?: string;
+  phaseHistory?: PhaseEntry[];
 }
 
 interface BoardData {
@@ -41,8 +51,12 @@ const TaskEditorRow = memo(function TaskEditorRow({
   useEffect(() => { setTitle(task.title); }, [task.title]);
   useEffect(() => { setClient(task.client || ""); }, [task.client]);
 
+  const enteredAt = currentPhaseEnteredAt(task.phaseHistory);
+  const timeInPhase = enteredAt ? formatTimeInPhase(enteredAt) : null;
+  const meta = phaseMeta(task.phase);
+
   return (
-    <div className="grid grid-cols-[1fr_120px_120px_100px_100px_32px] gap-2 px-4 py-2.5 border-b border-[#EDEDEF] last:border-0 items-center">
+    <div className="grid grid-cols-[1fr_100px_110px_150px_95px_95px_32px] gap-2 px-4 py-2.5 border-b border-[#EDEDEF] last:border-0 items-center">
       <input
         type="text"
         value={title}
@@ -69,6 +83,24 @@ const TaskEditorRow = memo(function TaskEditorRow({
           <option key={m.id} value={m.name}>{m.name}</option>
         ))}
       </select>
+      <div className="flex flex-col gap-0.5 min-w-0">
+        <select
+          value={task.phase || ""}
+          onChange={(e) => onUpdate("phase", e.target.value)}
+          className="text-xs px-1 py-1 border border-transparent hover:border-[#E5E5EA] focus:border-[#999] rounded focus:outline-none truncate"
+          style={meta ? { color: meta.color } : undefined}
+        >
+          <option value="">—</option>
+          {PHASE_OPTIONS.map((p) => (
+            <option key={p.value} value={p.value}>{p.label}</option>
+          ))}
+        </select>
+        {timeInPhase && task.phase && (
+          <span className="text-[9px] text-[#AAA] px-1 leading-none" title={enteredAt ? new Date(enteredAt).toLocaleString() : ""}>
+            {timeInPhase} in phase
+          </span>
+        )}
+      </div>
       <input
         type="date"
         value={task.dueDate}
@@ -140,7 +172,14 @@ export default function TaskBoardAdminPage() {
   const updateTask = useCallback((type: "design" | "dev", id: string, field: string, value: string) => {
     setBoard((prev) => {
       const key = type === "design" ? "designTasks" : "devTasks";
-      return { ...prev, [key]: prev[key].map((t) => (t.id === id ? { ...t, [field]: value } : t)) };
+      return {
+        ...prev,
+        [key]: prev[key].map((t) => {
+          if (t.id !== id) return t;
+          if (field === "phase") return appendPhaseTransition(t, value);
+          return { ...t, [field]: value };
+        }),
+      };
     });
   }, []);
 
@@ -244,10 +283,11 @@ export default function TaskBoardAdminPage() {
           </button>
         </div>
         <div className="border border-[#E5E5EA] rounded-xl bg-white overflow-hidden">
-          <div className="grid grid-cols-[1fr_120px_120px_100px_100px_32px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA]">
+          <div className="grid grid-cols-[1fr_100px_110px_150px_95px_95px_32px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA]">
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Task</span>
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Client</span>
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Assignee</span>
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Phase</span>
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Due</span>
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Status</span>
             <span />
@@ -280,10 +320,11 @@ export default function TaskBoardAdminPage() {
           </button>
         </div>
         <div className="border border-[#E5E5EA] rounded-xl bg-white overflow-hidden">
-          <div className="grid grid-cols-[1fr_120px_120px_100px_100px_32px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA]">
+          <div className="grid grid-cols-[1fr_100px_110px_150px_95px_95px_32px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA]">
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Task</span>
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Client</span>
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Assignee</span>
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Phase</span>
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Due</span>
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Status</span>
             <span />

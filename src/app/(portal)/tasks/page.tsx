@@ -2,6 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { Logo } from "@/components/logo";
+import {
+  currentPhaseEnteredAt,
+  formatTimeInPhase,
+  phaseMeta,
+  type PhaseEntry,
+} from "@/lib/task-board/phases";
 
 interface Task {
   id: string;
@@ -10,6 +16,8 @@ interface Task {
   dueDate: string;
   status: "todo" | "in-progress" | "done";
   client?: string;
+  phase?: string;
+  phaseHistory?: PhaseEntry[];
 }
 
 interface BoardData {
@@ -72,6 +80,9 @@ export default function TaskBoardPage() {
   function TaskRow({ task }: { task: Task }) {
     const s = statusLabel[task.status] || statusLabel.todo;
     const overdue = task.status !== "done" && isOverdue(task.dueDate);
+    const pMeta = phaseMeta(task.phase);
+    const enteredAt = currentPhaseEnteredAt(task.phaseHistory);
+    const timeInPhase = enteredAt ? formatTimeInPhase(enteredAt) : null;
     return (
       <div className={`flex items-center gap-4 px-5 py-3.5 border-b border-[#F0F0F0] last:border-0 ${overdue ? "bg-red-50/30" : ""}`}>
         <div className="flex-1 min-w-0">
@@ -83,6 +94,24 @@ export default function TaskBoardPage() {
           </div>
         </div>
         <div className="flex items-center gap-3 shrink-0">
+          {pMeta && (
+            <div className="flex flex-col items-end gap-0.5">
+              <span
+                className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-full"
+                style={{ background: pMeta.bg, color: pMeta.color }}
+              >
+                {pMeta.label}
+              </span>
+              {timeInPhase && (
+                <span
+                  className="text-[9px] text-[#AAA]"
+                  title={enteredAt ? `Entered ${new Date(enteredAt).toLocaleString()}` : ""}
+                >
+                  {timeInPhase} in phase
+                </span>
+              )}
+            </div>
+          )}
           {task.dueDate && (
             <span className={`text-[11px] font-medium ${overdue ? "text-red-500" : "text-[#AAA]"}`}>
               {formatDate(task.dueDate)}

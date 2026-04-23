@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-39",
+    date: "23 Apr 2026",
+    version: "0.32.0",
+    title: "Task Board — Phase Tracking",
+    changes: [
+      { type: "added", text: "Task Board now has a Phase column with 11 stages: Onboarding, Research, Design, Internal Design QA, External Design Review, Design Revision, Development, Development QA, External Dev Review, Dev Revision, Launch. Existing tasks left blank on rollout" },
+      { type: "added", text: "Every phase change is timestamped — each task carries a phaseHistory log so External Design Review → Design Revision → External Design Review loops record a fresh timer per round. Lets us measure how long designers take to action client amends" },
+      { type: "added", text: "\"X in phase\" duration hint on every task row (just now / 5m / 2h 15m / 3d 4h) on both the admin board and the team-facing /tasks view. Hover shows the exact entered-at timestamp" },
+      { type: "improved", text: "Team /tasks view now shows a coloured phase pill next to the status pill so anyone scanning the board can see stage at a glance" },
+    ],
+  },
+  {
     id: "cl-38",
     date: "22 Apr 2026",
     version: "0.31.1",
