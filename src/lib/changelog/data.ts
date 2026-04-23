@@ -64,6 +64,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Task Board deadlines split into three: Design, Dev, and Launch. Each phase now checks the right one for urgency (design-side phases → Design deadline, dev-side phases → Dev deadline, Launch phase → Launch deadline). Lets you track handoff commitments separately from the actual go-live date" },
       { type: "added", text: "Task-level Designer + Developer assignment instead of a single mutable assignee field. Set both in the drawer (Team section) and the actual assignee auto-derives from the current phase — design-side phases show the Designer, dev-side + Launch show the Developer. Research is hardcoded to Dan. Means phase changes automatically hand the task off to the right person; no manual reassigning" },
       { type: "added", text: "Top-level filter tabs on both admin and /tasks expanded from Design / Development (2) to All / Research / Design / Development (4). Tabs now filter by phase category across a unified merged list (was two separate lane lists). Tasks without a phase fall back to their original lane so fresh work doesn't disappear from view. Counts on each tab reflect active-only for /tasks, total for admin" },
+      { type: "added", text: "Legacy task view at /tasks-legacy — renders the original Title / Assignee / Due / Status layout using the pre-phase dueDate values that are still stored on each task but hidden from the new /tasks view. Handy for checking historic deadlines at a glance without scrolling through individual task drawers" },
     ],
   },
   {
