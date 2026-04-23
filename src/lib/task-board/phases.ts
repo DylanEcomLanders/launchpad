@@ -252,6 +252,38 @@ export function matchesCategoryFilter(
   return (lane === "design" && filter === "design") || (lane === "dev" && filter === "dev");
 }
 
+// ── Client/project grouping ──────────────────────────────────────────────────
+
+export interface ClientGroup<T> {
+  key: string; // client name, or "__unassigned__"
+  label: string;
+  tasks: T[];
+}
+
+// Groups deliverables by their parent client so the project context is always
+// visible. Tasks with no client bucket into "No client" at the top; remaining
+// clients come back in alphabetical order.
+export function groupTasksByClient<T extends { client?: string }>(tasks: T[]): ClientGroup<T>[] {
+  const buckets = new Map<string, T[]>();
+  for (const t of tasks) {
+    const key = t.client?.trim() || "__unassigned__";
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key)!.push(t);
+  }
+  const groups: ClientGroup<T>[] = [];
+  const unassigned = buckets.get("__unassigned__");
+  if (unassigned?.length) {
+    groups.push({ key: "__unassigned__", label: "No client", tasks: unassigned });
+  }
+  const sortedNames = [...buckets.keys()]
+    .filter((k) => k !== "__unassigned__")
+    .sort((a, b) => a.localeCompare(b));
+  for (const name of sortedNames) {
+    groups.push({ key: name, label: name, tasks: buckets.get(name)! });
+  }
+  return groups;
+}
+
 export function appendPhaseTransition<T extends { phase?: string; phaseHistory?: PhaseEntry[] }>(
   task: T,
   nextPhase: string,

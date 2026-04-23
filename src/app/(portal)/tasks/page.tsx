@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Logo } from "@/components/logo";
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import {
   PHASE_OPTIONS,
   appendPhaseTransition,
@@ -10,7 +9,7 @@ import {
   computeUrgency,
   currentPhaseEnteredAt,
   formatTimeInPhase,
-  groupTasksByPhase,
+  groupTasksByClient,
   matchesCategoryFilter,
   phaseMeta,
   relevantDeadline,
@@ -119,16 +118,7 @@ export default function TaskBoardPage() {
   const visibleTasks = applyAssigneeFilter(tabFiltered);
   const active = sortByDate(visibleTasks.filter((t) => t.status !== "done"));
   const done = visibleTasks.filter((t) => t.status === "done");
-  const activeGroups = groupTasksByPhase(active);
-
-  const [collapsedPhases, setCollapsedPhases] = useState<Set<string>>(new Set());
-  const togglePhase = (key: string) =>
-    setCollapsedPhases((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
+  const activeGroups = groupTasksByClient(active);
 
   const [openTaskId, setOpenTaskId] = useState<string | null>(null);
   const openTask = openTaskId ? allTasks.find((t) => t.id === openTaskId) ?? null : null;
@@ -340,7 +330,7 @@ export default function TaskBoardPage() {
           </h2>
         </div>
 
-        {/* Phase sections */}
+        {/* Client sections (non-collapsible so project context stays visible) */}
         {active.length === 0 ? (
           <div className="bg-white border border-[#E5E5EA] rounded-xl">
             <p className="text-xs text-[#CCC] text-center py-10">
@@ -348,36 +338,21 @@ export default function TaskBoardPage() {
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {activeGroups.map((group) => {
-              const isCollapsed = collapsedPhases.has(group.key);
-              return (
-                <div key={group.key} className="bg-white border border-[#E5E5EA] rounded-xl overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => togglePhase(group.key)}
-                    className="w-full flex items-center gap-2 px-5 py-3 hover:bg-[#FAFAFA] transition-colors"
-                  >
-                    <ChevronDownIcon
-                      className={`size-3.5 text-[#AAA] transition-transform ${isCollapsed ? "-rotate-90" : ""}`}
-                    />
-                    <span
-                      className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                      style={{ background: group.bg, color: group.color }}
-                    >
-                      {group.label}
-                    </span>
-                    <span className="text-[11px] font-medium text-[#AAA]">{group.tasks.length}</span>
-                  </button>
-                  {!isCollapsed && (
-                    <>
-                      <ColumnHeader />
-                      {group.tasks.map((t) => <TaskRow key={t.id} task={t} />)}
-                    </>
-                  )}
+          <div className="space-y-4">
+            {activeGroups.map((group) => (
+              <div key={group.key} className="bg-white border border-[#E5E5EA] rounded-xl overflow-hidden">
+                <div className="flex items-center gap-2 px-5 py-3 border-b border-[#EDEDEF] bg-[#FAFAFA]">
+                  <h3 className={`text-sm font-semibold ${group.key === "__unassigned__" ? "text-[#AAA] italic" : "text-[#1A1A1A]"}`}>
+                    {group.label}
+                  </h3>
+                  <span className="text-[11px] font-medium text-[#AAA]">
+                    {group.tasks.length} {group.tasks.length === 1 ? "deliverable" : "deliverables"}
+                  </span>
                 </div>
-              );
-            })}
+                <ColumnHeader />
+                {group.tasks.map((t) => <TaskRow key={t.id} task={t} />)}
+              </div>
+            ))}
           </div>
         )}
 

@@ -1,16 +1,15 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, memo } from "react";
-import { PlusIcon, TrashIcon, ChevronDownIcon, CalendarIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, TrashIcon, CalendarIcon } from "@heroicons/react/24/outline";
 import { loadSettings, type TeamMember } from "@/lib/settings";
 import {
   PHASE_OPTIONS,
   appendPhaseTransition,
-  categoryForPhase,
   computeAssignee,
   currentPhaseEnteredAt,
   formatTimeInPhase,
-  groupTasksByPhase,
+  groupTasksByClient,
   matchesCategoryFilter,
   phaseMeta,
   type PhaseCategory,
@@ -181,15 +180,8 @@ export default function TaskBoardAdminPage() {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  // Figures out which JSONB list a new task lives in based on phase category.
-  // Research + design-side phases go in designTasks; dev-side in devTasks.
-  const laneForPhase = (phase?: string): "design" | "dev" => {
-    const cat = categoryForPhase(phase);
-    return cat === "dev" ? "dev" : "design";
-  };
-
-  const addTask = (type: "design" | "dev", initialPhase?: string) => {
-    const base: Task = { id: crypto.randomUUID(), title: "", assignee: "", dueDate: "", status: "todo", client: "" };
+  const addTask = (type: "design" | "dev", initialPhase?: string, initialClient?: string) => {
+    const base: Task = { id: crypto.randomUUID(), title: "", assignee: "", dueDate: "", status: "todo", client: initialClient || "" };
     const task = initialPhase ? appendPhaseTransition(base, initialPhase) : base;
     setBoard((prev) => {
       const key = type === "design" ? "designTasks" : "devTasks";
@@ -202,13 +194,6 @@ export default function TaskBoardAdminPage() {
     (id: string): "design" | "dev" => (boardRef.current.designTasks.some((t) => t.id === id) ? "design" : "dev"),
     [],
   );
-
-  const [collapsedPhases, setCollapsedPhases] = useState<Set<string>>(new Set());
-  const togglePhase = (key: string) => setCollapsedPhases((prev) => {
-    const next = new Set(prev);
-    if (next.has(key)) next.delete(key); else next.add(key);
-    return next;
-  });
 
   const [openTaskId, setOpenTaskId] = useState<string | null>(null);
   const openTask = openTaskId
@@ -373,60 +358,44 @@ export default function TaskBoardAdminPage() {
           <p className="text-xs text-[#CCC] text-center py-10">No tasks match current filters</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {groupTasksByPhase(filteredTasks).map((group) => {
-            const isCollapsed = collapsedPhases.has(group.key);
-            return (
-              <div key={group.key} className="border border-[#E5E5EA] rounded-xl bg-white overflow-hidden">
-                <div className="flex items-center gap-2 px-4 py-3 hover:bg-[#FAFAFA] transition-colors">
-                  <button
-                    type="button"
-                    onClick={() => togglePhase(group.key)}
-                    className="flex items-center gap-2 flex-1 text-left"
-                  >
-                    <ChevronDownIcon
-                      className={`size-3.5 text-[#AAA] transition-transform ${isCollapsed ? "-rotate-90" : ""}`}
-                    />
-                    <span
-                      className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                      style={{ background: group.bg, color: group.color }}
-                    >
-                      {group.label}
-                    </span>
-                    <span className="text-[11px] font-medium text-[#AAA]">{group.tasks.length}</span>
-                  </button>
-                  <button
-                    onClick={() => addTask(laneForPhase(group.key === "not-started" ? undefined : group.key), group.key === "not-started" ? "" : group.key)}
-                    className="flex items-center gap-1 text-[11px] text-[#777] hover:text-[#1A1A1A]"
-                  >
-                    <PlusIcon className="size-3" /> Add
-                  </button>
-                </div>
-                {!isCollapsed && (
-                  <>
-                    <div className="grid grid-cols-[1.3fr_140px_140px_180px_120px_32px_32px] gap-2 px-4 py-2 bg-[#FAFAFA] border-y border-[#E5E5EA]">
-                      <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Task</span>
-                      <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Client</span>
-                      <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Assignee</span>
-                      <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Phase</span>
-                      <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Status</span>
-                      <span />
-                      <span />
-                    </div>
-                    {group.tasks.map((t) => (
-                      <TaskEditorRow
-                        key={t.id}
-                        task={t}
-                        onUpdate={(field, value) => updateTask(laneForTask(t.id), t.id, field, value)}
-                        onRemove={() => removeTask(laneForTask(t.id), t.id)}
-                        onOpenDetail={() => setOpenTaskId(t.id)}
-                      />
-                    ))}
-                  </>
-                )}
+        <div className="space-y-4">
+          {groupTasksByClient(filteredTasks).map((group) => (
+            <div key={group.key} className="border border-[#E5E5EA] rounded-xl bg-white overflow-hidden">
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-[#EDEDEF] bg-[#FAFAFA]">
+                <h3 className={`text-sm font-semibold flex-1 ${group.key === "__unassigned__" ? "text-[#AAA] italic" : "text-[#1A1A1A]"}`}>
+                  {group.label}
+                </h3>
+                <span className="text-[11px] font-medium text-[#AAA]">
+                  {group.tasks.length} {group.tasks.length === 1 ? "deliverable" : "deliverables"}
+                </span>
+                <button
+                  onClick={() => addTask(tabFilter === "dev" ? "dev" : "design", undefined, group.key === "__unassigned__" ? "" : group.label)}
+                  className="flex items-center gap-1 text-[11px] text-[#777] hover:text-[#1A1A1A] ml-2"
+                  title={group.key === "__unassigned__" ? "Add task" : `Add deliverable for ${group.label}`}
+                >
+                  <PlusIcon className="size-3" /> Add
+                </button>
               </div>
-            );
-          })}
+              <div className="grid grid-cols-[1.3fr_140px_140px_180px_120px_32px_32px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA]">
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Task</span>
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Client</span>
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Assignee</span>
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Phase</span>
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Status</span>
+                <span />
+                <span />
+              </div>
+              {group.tasks.map((t) => (
+                <TaskEditorRow
+                  key={t.id}
+                  task={t}
+                  onUpdate={(field, value) => updateTask(laneForTask(t.id), t.id, field, value)}
+                  onRemove={() => removeTask(laneForTask(t.id), t.id)}
+                  onOpenDetail={() => setOpenTaskId(t.id)}
+                />
+              ))}
+            </div>
+          ))}
         </div>
       )}
 
