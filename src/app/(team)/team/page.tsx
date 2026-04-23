@@ -2,12 +2,19 @@ import Link from "next/link";
 import {
   ChevronRightIcon,
   ClipboardDocumentCheckIcon,
+  ClipboardDocumentListIcon,
   FolderIcon,
   BookOpenIcon,
 } from "@heroicons/react/24/solid";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 
 const primary = [
+  {
+    title: "Task Board",
+    description: "Live deliverables grouped by project — phases, deadlines, who's on what. Auto-refreshes every 30s.",
+    href: "/tasks",
+    icon: ClipboardDocumentListIcon,
+  },
   {
     title: "Client Portals",
     description: "Team view of every active portal — gates, checklists, handover context.",
@@ -48,7 +55,7 @@ export default function TeamToolsPage() {
         </div>
 
         {/* Primary cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {primary.map((item) => (
             <Link
               key={item.title}

@@ -80,6 +80,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "fixed", text: "Task Board client divider was too faint to see on white (#EDEDEF) — bumped to #E5E5EA so the line actually registers. Same colour as other borders in the codebase" },
       { type: "improved", text: "Deadline change-history now renders inline by default in the drawer instead of being hidden behind an info-icon click. If a deadline has ever been moved, the prior versions + reasons show directly below the row. Info icon removed — context is always visible, no extra click" },
       { type: "added", text: "Two-click delete guard on admin task rows. First click on the trash icon primes it into a red \"Click again to confirm delete\" state; only the second click within 3 seconds actually removes the task. Protects against accidental misclicks on a row of tight icons. No modal, no popup — just visual feedback on the same button" },
+      { type: "added", text: "Task Board now lives in the Team Tools hub — primary card at /team (top of the grid) and first nav item in the team sidebar's Delivery section. Links through to the existing /tasks URL (kept as-is so the auto-refresh kiosk view still works on a shared screen)" },
     ],
   },
   {

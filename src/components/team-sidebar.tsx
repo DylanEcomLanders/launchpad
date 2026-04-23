@@ -11,6 +11,7 @@ import {
   HomeIcon,
   ArrowLeftIcon,
   ClipboardDocumentCheckIcon,
+  ClipboardDocumentListIcon,
 } from "@heroicons/react/24/solid";
 import { Logo } from "@/components/logo";
 
@@ -23,6 +24,11 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
+  {
+    label: "Task Board",
+    href: "/tasks",
+    icon: <ClipboardDocumentListIcon className="size-4" />,
+  },
   {
     label: "Portals",
     href: "/team/portals",
