@@ -49,6 +49,9 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Admin Task Board widened from max-w-4xl → max-w-6xl and columns rebalanced (task 1.3fr, client/assignee 140px, phase 180px, due/status 120px) so long task titles and phase labels like \"External Design Review\" stop getting squashed" },
       { type: "added", text: "Team members can now change phase directly from /tasks — phase pill is an inline dropdown that saves via a new PATCH /api/task-board endpoint. Updates optimistically for instant feedback and falls back to a refetch on error. No more funnelling every stage update through Alister" },
       { type: "added", text: "PATCH /api/task-board endpoint does a read-mutate-write on just the target task's phase field (instead of upserting the whole board blob) — narrows the race window when multiple team members edit at once. Logs the transition to phaseHistory server-side so local clock drift doesn't skew timers" },
+      { type: "improved", text: "Team /tasks view restructured into proper table layout — columns (Task / Phase / Due / Status) now have fixed widths and a header row, so phase dropdowns and dates line up cleanly across every row instead of jumping around with title length" },
+      { type: "added", text: "Design/Development segmented toggle at the top of /tasks (with active counts next to each) — one lane visible at a time instead of both stacked. Defaults to Design on load" },
+      { type: "added", text: "Assignee filter on /tasks — dropdown populates from the currently-visible lane (designers when Design is selected, developers when Development is). Shows the selected name as a subtitle in the active count header, with a Clear button to reset. Filter auto-resets when switching lanes if the selected name doesn't exist in the new lane" },
     ],
   },
   {
