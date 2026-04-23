@@ -31,24 +31,7 @@ interface BoardData {
 
 type Lane = "design" | "dev";
 
-const statusLabel: Record<string, { text: string; color: string; bg: string }> = {
-  todo: { text: "To Do", color: "#777", bg: "#F3F3F5" },
-  "in-progress": { text: "In Progress", color: "#2563EB", bg: "#EFF6FF" },
-  done: { text: "Done", color: "#059669", bg: "#ECFDF5" },
-};
-
-const GRID = "grid-cols-[minmax(0,1fr)_200px_110px_110px]";
-
-function formatDate(d: string) {
-  if (!d) return "";
-  const dt = new Date(d + "T00:00:00");
-  return dt.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-}
-
-function isOverdue(d: string) {
-  if (!d) return false;
-  return new Date(d + "T23:59:59") < new Date();
-}
+const GRID = "grid-cols-[minmax(0,1fr)_160px_200px_150px]";
 
 export default function TaskBoardPage() {
   const [board, setBoard] = useState<BoardData>({ designTasks: [], devTasks: [] });
@@ -124,82 +107,67 @@ export default function TaskBoardPage() {
   };
 
   function TaskRow({ task }: { task: Task }) {
-    const s = statusLabel[task.status] || statusLabel.todo;
-    const overdue = task.status !== "done" && isOverdue(task.dueDate);
     const pMeta = phaseMeta(task.phase);
     const enteredAt = currentPhaseEnteredAt(task.phaseHistory);
     const timeInPhase = enteredAt ? formatTimeInPhase(enteredAt) : null;
 
     return (
-      <div className={`grid ${GRID} gap-4 items-center px-5 py-3.5 border-b border-[#F0F0F0] last:border-0 ${overdue ? "bg-red-50/30" : ""}`}>
-        {/* Task + meta */}
+      <div className={`grid ${GRID} gap-4 items-center px-5 py-3.5 border-b border-[#F0F0F0] last:border-0`}>
+        {/* Task */}
         <div className="min-w-0">
           <p className="text-sm font-medium text-[#1A1A1A] truncate">{task.title}</p>
-          <div className="flex items-center gap-2 mt-0.5">
-            {task.client && <span className="text-[10px] text-[#AAA]">{task.client}</span>}
-            {task.client && task.assignee && <span className="text-[10px] text-[#DDD]">/</span>}
-            {task.assignee && <span className="text-[10px] text-[#777]">{task.assignee}</span>}
-          </div>
+          {task.client && <p className="text-[10px] text-[#AAA] mt-0.5 truncate">{task.client}</p>}
         </div>
 
-        {/* Phase */}
-        <div className="flex flex-col items-start gap-0.5">
-          <div className="relative w-full">
-            <select
-              value={task.phase || ""}
-              onChange={(e) => changePhase(task.id, e.target.value)}
-              className="w-full appearance-none text-[10px] font-semibold uppercase tracking-wider pl-2.5 pr-6 py-1 rounded-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1A1A1A]/10 border-0"
-              style={pMeta ? { background: pMeta.bg, color: pMeta.color } : { background: "#F3F3F5", color: "#AAA" }}
-              title="Change phase"
-            >
-              <option value="">Set phase…</option>
-              {PHASE_OPTIONS.map((p) => (
-                <option key={p.value} value={p.value}>{p.label}</option>
-              ))}
-            </select>
-            <svg
-              className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 size-2.5 opacity-60"
-              style={pMeta ? { color: pMeta.color } : { color: "#AAA" }}
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd" />
-            </svg>
-          </div>
-          {timeInPhase && pMeta && (
-            <span
-              className="inline-flex items-center gap-1 text-[11px] font-semibold pl-2.5 tabular-nums"
-              style={{ color: pMeta.color }}
-              title={enteredAt ? `Entered ${new Date(enteredAt).toLocaleString()}` : ""}
-            >
-              <svg viewBox="0 0 20 20" fill="currentColor" className="size-3">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .2.08.39.22.53l3 3a.75.75 0 101.06-1.06L10.75 9.69V5z" clipRule="evenodd" />
-              </svg>
-              {timeInPhase} in phase
-            </span>
+        {/* Assignee */}
+        <div className="min-w-0">
+          {task.assignee ? (
+            <span className="text-xs text-[#1A1A1A] truncate block">{task.assignee}</span>
+          ) : (
+            <span className="text-xs text-[#CCC]">Unassigned</span>
           )}
         </div>
 
-        {/* Due */}
-        <div className="text-right">
-          {task.dueDate ? (
-            <span className={`text-[11px] font-medium ${overdue ? "text-red-500" : "text-[#AAA]"}`}>
-              {formatDate(task.dueDate)}
-              {overdue && " (overdue)"}
+        {/* Phase */}
+        <div className="relative">
+          <select
+            value={task.phase || ""}
+            onChange={(e) => changePhase(task.id, e.target.value)}
+            className="w-full appearance-none text-[10px] font-semibold uppercase tracking-wider pl-2.5 pr-6 py-1 rounded-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1A1A1A]/10 border-0"
+            style={pMeta ? { background: pMeta.bg, color: pMeta.color } : { background: "#F3F3F5", color: "#AAA" }}
+            title="Change phase"
+          >
+            <option value="">Set phase…</option>
+            {PHASE_OPTIONS.map((p) => (
+              <option key={p.value} value={p.value}>{p.label}</option>
+            ))}
+          </select>
+          <svg
+            className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 size-2.5 opacity-60"
+            style={pMeta ? { color: pMeta.color } : { color: "#AAA" }}
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+          </svg>
+        </div>
+
+        {/* Time in phase */}
+        <div className="flex justify-end">
+          {timeInPhase && pMeta ? (
+            <span
+              className="inline-flex items-center gap-1.5 text-[11px] font-semibold tabular-nums"
+              style={{ color: pMeta.color }}
+              title={enteredAt ? `Entered ${new Date(enteredAt).toLocaleString()}` : ""}
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" className="size-3.5">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .2.08.39.22.53l3 3a.75.75 0 101.06-1.06L10.75 9.69V5z" clipRule="evenodd" />
+              </svg>
+              {timeInPhase}
             </span>
           ) : (
             <span className="text-[11px] text-[#DDD]">—</span>
           )}
-        </div>
-
-        {/* Status */}
-        <div className="flex justify-end">
-          <span
-            className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-full whitespace-nowrap"
-            style={{ background: s.bg, color: s.color }}
-          >
-            {s.text}
-          </span>
         </div>
       </div>
     );
@@ -209,9 +177,9 @@ export default function TaskBoardPage() {
     return (
       <div className={`grid ${GRID} gap-4 px-5 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA]`}>
         <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Task</span>
+        <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Assignee</span>
         <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Phase</span>
-        <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA] text-right">Due</span>
-        <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA] text-right">Status</span>
+        <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA] text-right">Time in phase</span>
       </div>
     );
   }
