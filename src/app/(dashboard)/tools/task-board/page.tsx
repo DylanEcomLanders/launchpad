@@ -139,6 +139,7 @@ export default function TaskBoardAdminPage() {
   const [previewUrl, setPreviewUrl] = useState("");
   const [filterAssignee, setFilterAssignee] = useState("");
   const [filterDate, setFilterDate] = useState<"all" | "overdue" | "today" | "this-week">("all");
+  const [lane, setLane] = useState<"design" | "dev">("design");
   const boardRef = useRef(board);
   boardRef.current = board;
 
@@ -225,7 +226,10 @@ export default function TaskBoardAdminPage() {
 
   const filteredDesign = filterTasks(board.designTasks);
   const filteredDev = filterTasks(board.devTasks);
-  const allAssignees = [...new Set([...board.designTasks, ...board.devTasks].map((t) => t.assignee).filter(Boolean))].sort();
+  const laneTasks = lane === "design" ? filteredDesign : filteredDev;
+  const laneAssignees = lane === "design" ? designers : developers;
+  const laneCount = (lane === "design" ? board.designTasks : board.devTasks).length;
+  const allAssignees = [...new Set((lane === "design" ? board.designTasks : board.devTasks).map((t) => t.assignee).filter(Boolean))].sort();
 
   if (loading) {
     return (
@@ -248,6 +252,26 @@ export default function TaskBoardAdminPage() {
         <button onClick={save} disabled={saving} className="px-5 py-2.5 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] disabled:opacity-50">
           {saved ? "Saved" : saving ? "Saving..." : "Save & Publish"}
         </button>
+      </div>
+
+      {/* Lane toggle */}
+      <div className="inline-flex items-center p-1 bg-[#EFEFF1] rounded-lg mb-4">
+        {(["design", "dev"] as const).map((l) => {
+          const count = (l === "design" ? board.designTasks : board.devTasks).length;
+          return (
+            <button
+              key={l}
+              onClick={() => { setLane(l); setFilterAssignee(""); }}
+              className={`px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-md transition-colors flex items-center gap-2 ${
+                lane === l ? "bg-white text-[#1A1A1A] shadow-sm" : "text-[#777] hover:text-[#1A1A1A]"
+              }`}
+            >
+              <span className="size-1.5 rounded-full" style={{ background: l === "design" ? "#7C3AED" : "#059669" }} />
+              {l === "design" ? "Design" : "Development"}
+              <span className={`text-[10px] font-medium ${lane === l ? "text-[#AAA]" : "text-[#BBB]"}`}>{count}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Filters */}
@@ -278,51 +302,17 @@ export default function TaskBoardAdminPage() {
         )}
       </div>
 
-      {/* Design Tasks */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <div className="size-2 rounded-full bg-[#7C3AED]" />
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">Design Tasks</h2>
-          </div>
-          <button onClick={() => addTask("design")} className="flex items-center gap-1 text-[11px] text-[#777] hover:text-[#1A1A1A]">
-            <PlusIcon className="size-3" /> Add
-          </button>
-        </div>
-        <div className="border border-[#E5E5EA] rounded-xl bg-white overflow-hidden">
-          <div className="grid grid-cols-[1.3fr_140px_140px_180px_120px_120px_32px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA]">
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Task</span>
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Client</span>
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Assignee</span>
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Phase</span>
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Due</span>
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Status</span>
-            <span />
-          </div>
-          {filteredDesign.length === 0 ? (
-            <p className="text-xs text-[#CCC] text-center py-6">No design tasks</p>
-          ) : (
-            filteredDesign.map((t) => (
-              <TaskEditorRow
-                key={t.id}
-                task={t}
-                assignees={designers}
-                onUpdate={(field, value) => updateTask("design", t.id, field, value)}
-                onRemove={() => removeTask("design", t.id)}
-              />
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Dev Tasks */}
+      {/* Active lane */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className="size-2 rounded-full bg-[#059669]" />
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">Dev Tasks</h2>
+            <div className="size-2 rounded-full" style={{ background: lane === "design" ? "#7C3AED" : "#059669" }} />
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
+              {lane === "design" ? "Design Tasks" : "Dev Tasks"}
+            </h2>
+            <span className="text-[10px] text-[#BBB]">{laneTasks.length} of {laneCount}</span>
           </div>
-          <button onClick={() => addTask("dev")} className="flex items-center gap-1 text-[11px] text-[#777] hover:text-[#1A1A1A]">
+          <button onClick={() => addTask(lane)} className="flex items-center gap-1 text-[11px] text-[#777] hover:text-[#1A1A1A]">
             <PlusIcon className="size-3" /> Add
           </button>
         </div>
@@ -336,16 +326,16 @@ export default function TaskBoardAdminPage() {
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Status</span>
             <span />
           </div>
-          {filteredDev.length === 0 ? (
-            <p className="text-xs text-[#CCC] text-center py-6">No dev tasks</p>
+          {laneTasks.length === 0 ? (
+            <p className="text-xs text-[#CCC] text-center py-6">No {lane === "design" ? "design" : "dev"} tasks</p>
           ) : (
-            filteredDev.map((t) => (
+            laneTasks.map((t) => (
               <TaskEditorRow
                 key={t.id}
                 task={t}
-                assignees={developers}
-                onUpdate={(field, value) => updateTask("dev", t.id, field, value)}
-                onRemove={() => removeTask("dev", t.id)}
+                assignees={laneAssignees}
+                onUpdate={(field, value) => updateTask(lane, t.id, field, value)}
+                onRemove={() => removeTask(lane, t.id)}
               />
             ))
           )}

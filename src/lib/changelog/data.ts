@@ -53,6 +53,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Design/Development segmented toggle at the top of /tasks (with active counts next to each) — one lane visible at a time instead of both stacked. Defaults to Design on load" },
       { type: "added", text: "Assignee filter on /tasks — dropdown populates from the currently-visible lane (designers when Design is selected, developers when Development is). Shows the selected name as a subtitle in the active count header, with a Clear button to reset. Filter auto-resets when switching lanes if the selected name doesn't exist in the new lane" },
       { type: "improved", text: "\"X in phase\" time-in-phase caption bumped up — 11px semibold with a clock icon, tinted to the phase colour so it reads at a glance instead of sitting as 9px grey microcopy underneath. Applied consistently to both the team /tasks view and the admin task board" },
+      { type: "added", text: "Admin task board now has the same Design/Development segmented toggle as /tasks — one lane visible at a time with lane counts on each pill, instead of the two stacked sections. Assignee filter auto-clears when switching lanes. Keeps the internal editor view and the team view behaving consistently" },
     ],
   },
   {
