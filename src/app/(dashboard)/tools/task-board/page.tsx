@@ -6,13 +6,13 @@ import { loadSettings, type TeamMember } from "@/lib/settings";
 import {
   PHASE_OPTIONS,
   appendPhaseTransition,
-  categoryForPhase,
   computeAssignee,
   computeUrgency,
   currentPhaseEnteredAt,
   formatDeadline,
   formatTimeInPhase,
   groupTasksByClient,
+  groupTasksByPhase,
   matchesCategoryFilter,
   phaseMeta,
   relevantDeadline,
@@ -174,7 +174,15 @@ export default function TaskBoardAdminPage() {
   const [filterAssignee, setFilterAssignee] = useState("");
   const [filterDate, setFilterDate] = useState<"all" | "overdue" | "today" | "this-week">("all");
   const [tabFilter, setTabFilter] = useState<"all" | PhaseCategory>("all");
-  const [phaseFilter, setPhaseFilter] = useState("");
+  const [groupBy, setGroupBy] = useState<"client" | "phase">("client");
+  const [revealedLaunches, setRevealedLaunches] = useState<Set<string>>(new Set());
+  const toggleReveal = (key: string) =>
+    setRevealedLaunches((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
   const boardRef = useRef(board);
   boardRef.current = board;
 
@@ -301,10 +309,9 @@ export default function TaskBoardAdminPage() {
     dev: allTasks.filter((t) => matchesCategoryFilter(t, "dev", t._lane)).length,
   };
 
-  // Apply tab + phase + assignee + date filters
+  // Apply tab + assignee + date filters
   const filteredTasks = allTasks.filter((t) => {
     if (!matchesCategoryFilter(t, tabFilter, t._lane)) return false;
-    if (phaseFilter && t.phase !== phaseFilter) return false;
     if (filterAssignee && computeAssignee(t) !== filterAssignee) return false;
     if (filterDate !== "all") {
       const dueDates = [t.designDueDate, t.devDueDate, t.launchDueDate].filter(Boolean) as string[];
@@ -371,21 +378,19 @@ export default function TaskBoardAdminPage() {
 
       {/* Filters */}
       <div className="flex items-center gap-3 mb-6 flex-wrap">
-        <select
-          value={phaseFilter}
-          onChange={(e) => {
-            const next = e.target.value;
-            setPhaseFilter(next);
-            if (next) {
-              const cat = categoryForPhase(next);
-              if (cat) setTabFilter(cat);
-            }
-          }}
-          className="text-xs px-3 py-1.5 border border-[#E5E5EA] rounded-lg bg-white focus:outline-none"
-        >
-          <option value="">All phases</option>
-          {PHASE_OPTIONS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
-        </select>
+        <div className="inline-flex items-center p-0.5 bg-[#EFEFF1] rounded-lg">
+          {(["client", "phase"] as const).map((g) => (
+            <button
+              key={g}
+              onClick={() => setGroupBy(g)}
+              className={`px-3 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-md transition-colors ${
+                groupBy === g ? "bg-white text-[#1A1A1A] shadow-sm" : "text-[#777] hover:text-[#1A1A1A]"
+              }`}
+            >
+              By {g}
+            </button>
+          ))}
+        </div>
         <select
           value={filterAssignee}
           onChange={(e) => setFilterAssignee(e.target.value)}
@@ -407,8 +412,8 @@ export default function TaskBoardAdminPage() {
             </button>
           ))}
         </div>
-        {(filterAssignee || filterDate !== "all" || phaseFilter) && (
-          <button onClick={() => { setFilterAssignee(""); setFilterDate("all"); setPhaseFilter(""); }} className="text-[11px] text-[#AAA] hover:text-[#1A1A1A]">Clear</button>
+        {(filterAssignee || filterDate !== "all") && (
+          <button onClick={() => { setFilterAssignee(""); setFilterDate("all"); }} className="text-[11px] text-[#AAA] hover:text-[#1A1A1A]">Clear</button>
         )}
       </div>
 
@@ -442,35 +447,73 @@ export default function TaskBoardAdminPage() {
             <span />
             <span />
           </div>
-          {groupTasksByClient(filteredTasks).map((group, i) => (
-            <div key={group.key}>
-              <div className={`flex items-center gap-2 px-4 pb-2 ${i === 0 ? "pt-4" : "pt-10"}`}>
-                <h3 className={`text-sm font-bold tracking-wide flex-1 ${group.key === "__unassigned__" ? "text-[#AAA] italic" : "text-[#1A1A1A]"}`}>
-                  {group.label.toUpperCase()}
-                </h3>
-                <span className="text-[10px] font-medium text-[#AAA]">
-                  {group.tasks.length} {group.tasks.length === 1 ? "deliverable" : "deliverables"}
-                </span>
-                <button
-                  onClick={() => addTask(tabFilter === "dev" ? "dev" : "design", undefined, group.key === "__unassigned__" ? "" : group.label)}
-                  className="flex items-center gap-1 text-[11px] text-[#777] hover:text-[#1A1A1A] ml-2"
-                  title={group.key === "__unassigned__" ? "Add task" : `Add deliverable for ${group.label}`}
-                >
-                  <PlusIcon className="size-3" /> Add
-                </button>
+          {(groupBy === "phase"
+            ? groupTasksByPhase(filteredTasks).map((g) => ({ key: g.key, label: g.label, color: g.color as string | undefined, bg: g.bg as string | undefined, tasks: g.tasks, mode: "phase" as const }))
+            : groupTasksByClient(filteredTasks).map((g) => ({ key: g.key, label: g.label, color: undefined as string | undefined, bg: undefined as string | undefined, tasks: g.tasks, mode: "client" as const }))
+          ).map((group, i) => {
+            const isLaunchPhaseGroup = group.mode === "phase" && group.key === "launch";
+            const launchedInClient = group.mode === "client" ? group.tasks.filter((t) => t.phase === "launch") : [];
+            const revealed = revealedLaunches.has(group.key);
+            const visibleTasks = isLaunchPhaseGroup
+              ? (revealed ? group.tasks : [])
+              : group.mode === "client" && !revealed
+              ? group.tasks.filter((t) => t.phase !== "launch")
+              : group.tasks;
+            const hiddenLaunchCount = isLaunchPhaseGroup
+              ? (revealed ? 0 : group.tasks.length)
+              : launchedInClient.length > 0 && !revealed
+              ? launchedInClient.length
+              : 0;
+
+            return (
+              <div key={group.key}>
+                <div className={`flex items-center gap-2 px-4 pb-2 ${i === 0 ? "pt-4" : "pt-10"}`}>
+                  {group.mode === "phase" && group.color ? (
+                    <span
+                      className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                      style={{ background: group.bg, color: group.color }}
+                    >
+                      {group.label}
+                    </span>
+                  ) : (
+                    <h3 className={`text-sm font-bold tracking-wide ${group.key === "__unassigned__" ? "text-[#AAA] italic" : "text-[#1A1A1A]"}`}>
+                      {group.label.toUpperCase()}
+                    </h3>
+                  )}
+                  <span className="text-[10px] font-medium text-[#AAA]">
+                    {group.tasks.length} {group.tasks.length === 1 ? "deliverable" : "deliverables"}
+                  </span>
+                  {(isLaunchPhaseGroup || launchedInClient.length > 0) && (
+                    <button
+                      onClick={() => toggleReveal(group.key)}
+                      className="text-[10px] font-medium text-[#777] hover:text-[#1A1A1A] uppercase tracking-wider"
+                    >
+                      {revealed ? "Hide launched" : `Show ${hiddenLaunchCount} launched`}
+                    </button>
+                  )}
+                  {group.mode === "client" && (
+                    <button
+                      onClick={() => addTask(tabFilter === "dev" ? "dev" : "design", undefined, group.key === "__unassigned__" ? "" : group.label)}
+                      className="flex items-center gap-1 text-[11px] text-[#777] hover:text-[#1A1A1A] ml-auto"
+                      title={group.key === "__unassigned__" ? "Add task" : `Add deliverable for ${group.label}`}
+                    >
+                      <PlusIcon className="size-3" /> Add
+                    </button>
+                  )}
+                </div>
+                {visibleTasks.map((t) => (
+                  <TaskEditorRow
+                    key={t.id}
+                    task={t}
+                    onUpdate={(field, value) => updateTask(laneForTask(t.id), t.id, field, value)}
+                    onRemove={() => removeTask(laneForTask(t.id), t.id)}
+                    onOpenDetail={() => setOpenTaskId(t.id)}
+                    indented
+                  />
+                ))}
               </div>
-              {group.tasks.map((t) => (
-                <TaskEditorRow
-                  key={t.id}
-                  task={t}
-                  onUpdate={(field, value) => updateTask(laneForTask(t.id), t.id, field, value)}
-                  onRemove={() => removeTask(laneForTask(t.id), t.id)}
-                  onOpenDetail={() => setOpenTaskId(t.id)}
-                  indented
-                />
-              ))}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

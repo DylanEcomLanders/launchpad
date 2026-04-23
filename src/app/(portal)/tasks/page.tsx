@@ -5,13 +5,13 @@ import { Logo } from "@/components/logo";
 import {
   PHASE_OPTIONS,
   appendPhaseTransition,
-  categoryForPhase,
   computeAssignee,
   computeUrgency,
   currentPhaseEnteredAt,
   formatDeadline,
   formatTimeInPhase,
   groupTasksByClient,
+  groupTasksByPhase,
   matchesCategoryFilter,
   phaseMeta,
   relevantDeadline,
@@ -61,7 +61,15 @@ export default function TaskBoardPage() {
   const [lastUpdated, setLastUpdated] = useState("");
   const [tabFilter, setTabFilter] = useState<TabFilter>("all");
   const [assigneeFilter, setAssigneeFilter] = useState("");
-  const [phaseFilter, setPhaseFilter] = useState("");
+  const [groupBy, setGroupBy] = useState<"client" | "phase">("client");
+  const [revealedLaunches, setRevealedLaunches] = useState<Set<string>>(new Set());
+  const toggleReveal = (key: string) =>
+    setRevealedLaunches((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
 
   useEffect(() => {
     const fetchBoard = () =>
@@ -119,13 +127,15 @@ export default function TaskBoardPage() {
 
   const applyAssigneeFilter = (tasks: AnnotatedTask[]) =>
     assigneeFilter ? tasks.filter((t) => computeAssignee(t) === assigneeFilter) : tasks;
-  const applyPhaseFilter = (tasks: AnnotatedTask[]) =>
-    phaseFilter ? tasks.filter((t) => t.phase === phaseFilter) : tasks;
 
-  const visibleTasks = applyPhaseFilter(applyAssigneeFilter(tabFiltered));
+  const visibleTasks = applyAssigneeFilter(tabFiltered);
   const active = sortByDate(visibleTasks.filter((t) => t.status !== "done"));
   const done = visibleTasks.filter((t) => t.status === "done");
-  const activeGroups = groupTasksByClient(active);
+
+  const activeGroups =
+    groupBy === "phase"
+      ? groupTasksByPhase(active).map((g) => ({ key: g.key, label: g.label, color: g.color, bg: g.bg, tasks: g.tasks, mode: "phase" as const }))
+      : groupTasksByClient(active).map((g) => ({ key: g.key, label: g.label, color: undefined, bg: undefined, tasks: g.tasks, mode: "client" as const }));
 
   const [openTaskId, setOpenTaskId] = useState<string | null>(null);
   const openTask = openTaskId ? allTasks.find((t) => t.id === openTaskId) ?? null : null;
@@ -329,23 +339,19 @@ export default function TaskBoardPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <select
-              value={phaseFilter}
-              onChange={(e) => {
-                const next = e.target.value;
-                setPhaseFilter(next);
-                if (next) {
-                  const cat = categoryForPhase(next);
-                  if (cat) setTabFilter(cat);
-                }
-              }}
-              className="text-xs px-3 py-1.5 border border-[#E5E5EA] rounded-lg bg-white focus:outline-none focus:border-[#999]"
-            >
-              <option value="">All phases</option>
-              {PHASE_OPTIONS.map((p) => (
-                <option key={p.value} value={p.value}>{p.label}</option>
+            <div className="inline-flex items-center p-0.5 bg-[#EFEFF1] rounded-lg">
+              {(["client", "phase"] as const).map((g) => (
+                <button
+                  key={g}
+                  onClick={() => setGroupBy(g)}
+                  className={`px-3 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-md transition-colors ${
+                    groupBy === g ? "bg-white text-[#1A1A1A] shadow-sm" : "text-[#777] hover:text-[#1A1A1A]"
+                  }`}
+                >
+                  By {g}
+                </button>
               ))}
-            </select>
+            </div>
             <select
               value={assigneeFilter}
               onChange={(e) => setAssigneeFilter(e.target.value)}
@@ -358,11 +364,8 @@ export default function TaskBoardPage() {
                 </option>
               ))}
             </select>
-            {(assigneeFilter || phaseFilter) && (
-              <button
-                onClick={() => { setAssigneeFilter(""); setPhaseFilter(""); }}
-                className="text-[11px] text-[#AAA] hover:text-[#1A1A1A]"
-              >
+            {assigneeFilter && (
+              <button onClick={() => setAssigneeFilter("")} className="text-[11px] text-[#AAA] hover:text-[#1A1A1A]">
                 Clear
               </button>
             )}
@@ -388,19 +391,59 @@ export default function TaskBoardPage() {
         ) : (
           <div className="bg-white border border-[#E5E5EA] rounded-xl overflow-hidden">
             <ColumnHeader />
-            {activeGroups.map((group, i) => (
-              <div key={group.key}>
-                <div className={`flex items-center gap-2 px-5 pb-2 ${i === 0 ? "pt-4" : "pt-10"}`}>
-                  <h3 className={`text-sm font-bold tracking-wide ${group.key === "__unassigned__" ? "text-[#AAA] italic" : "text-[#1A1A1A]"}`}>
-                    {group.label.toUpperCase()}
-                  </h3>
-                  <span className="text-[10px] font-medium text-[#AAA]">
-                    {group.tasks.length} {group.tasks.length === 1 ? "deliverable" : "deliverables"}
-                  </span>
+            {activeGroups.map((group, i) => {
+              const isLaunchPhaseGroup = group.mode === "phase" && group.key === "launch";
+              const launchedInClient = group.mode === "client" ? group.tasks.filter((t) => t.phase === "launch") : [];
+              const revealed = revealedLaunches.has(group.key);
+
+              // In phase mode: the whole Launch group collapses by default.
+              // In client mode: launch-phase tasks inside a client collapse by default.
+              const visibleTasks = isLaunchPhaseGroup
+                ? (revealed ? group.tasks : [])
+                : group.mode === "client" && !revealed
+                ? group.tasks.filter((t) => t.phase !== "launch")
+                : group.tasks;
+
+              const hiddenLaunchCount = isLaunchPhaseGroup
+                ? (revealed ? 0 : group.tasks.length)
+                : launchedInClient.length > 0 && !revealed
+                ? launchedInClient.length
+                : 0;
+
+              return (
+                <div key={group.key}>
+                  <div className={`flex items-center gap-2 px-5 pb-2 ${i === 0 ? "pt-4" : "pt-10"}`}>
+                    {group.mode === "phase" && group.color && (
+                      <span
+                        className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                        style={{ background: group.bg, color: group.color }}
+                      >
+                        {group.label}
+                      </span>
+                    )}
+                    {group.mode === "client" && (
+                      <h3 className={`text-sm font-bold tracking-wide ${group.key === "__unassigned__" ? "text-[#AAA] italic" : "text-[#1A1A1A]"}`}>
+                        {group.label.toUpperCase()}
+                      </h3>
+                    )}
+                    <span className="text-[10px] font-medium text-[#AAA]">
+                      {group.tasks.length} {group.tasks.length === 1 ? "deliverable" : "deliverables"}
+                    </span>
+                    {(isLaunchPhaseGroup || launchedInClient.length > 0) && (
+                      <button
+                        onClick={() => toggleReveal(group.key)}
+                        className="ml-auto text-[10px] font-medium text-[#777] hover:text-[#1A1A1A] uppercase tracking-wider"
+                      >
+                        {revealed
+                          ? "Hide launched"
+                          : `Show ${hiddenLaunchCount} launched`}
+                      </button>
+                    )}
+                  </div>
+                  {visibleTasks.map((t) => <TaskRow key={t.id} task={t} indented />)}
                 </div>
-                {group.tasks.map((t) => <TaskRow key={t.id} task={t} indented />)}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

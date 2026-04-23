@@ -74,6 +74,8 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Deadline change audit trail — when Alister (or anyone on admin) moves an existing Design/Dev/Launch deadline, a modal pops up asking \"Why is it changing?\" and won't save until a reason is typed in. The change is appended to a new deadlineHistory array on the task" },
       { type: "added", text: "Info icon next to any deadline that has been moved — click to expand an inline history showing each prior version (strikethrough → new date · change date) with the reason note underneath. Gives instant context for why a commitment shifted, instead of losing the reason to chat history" },
       { type: "improved", text: "Task Board project headers now use whitespace to separate groups instead of a hairline divider — bolder uppercase labels with generous top padding between projects. Matches the minimal reference layout the project names were modelled on. Row separators inside each project stay so 10+ deliverable lists still read cleanly" },
+      { type: "added", text: "\"By Client\" / \"By Phase\" grouping toggle on both admin and /tasks — replaces the previous phase filter dropdown. Switching to By Phase restores coloured phase pills as section headers so you can see everything currently in External Design Review, Design Revision, etc. at a glance. By Client stays the default" },
+      { type: "added", text: "Launch-phase tasks are auto-hidden per group to stop finished work from clogging the board. Each group (client in By Client mode, Launch group in By Phase mode) gets a \"Show N launched\" toggle that reveals them; click again to hide. Non-Launch tasks always show, so active work stays front-and-centre" },
     ],
   },
   {
