@@ -69,6 +69,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Admin per-client \"+ Add\" button pre-fills the client name when creating a new deliverable — faster than typing it out for every row when adding multiple tasks to the same project" },
       { type: "improved", text: "Task Board layout flattened to one continuous list instead of separate client cards. Each client appears as an in-table header row with its deliverables indented beneath, giving a single scannable view of every project's work without the visual walls between them. Applied to both admin and /tasks" },
       { type: "added", text: "Phase filter dropdown on both admin and /tasks — lets you narrow to a specific phase (e.g. \"External Design Review\") across all clients. Picking a phase auto-switches the top tab to its category so counts stay coherent. Clear button wipes phase + assignee filters in one go" },
+      { type: "added", text: "\"Associated deadline\" column on both admin and /tasks. Each row shows the deadline that applies to the task's current phase (design-side phases → Design deadline, dev-side → Dev, Launch → Launch) formatted as \"24 Apr · 2d\" with urgency colour (red overdue / amber <3d / green on track). Subtitle underneath labels which deadline is being shown. No more opening the drawer just to check whether something's running hot" },
     ],
   },
   {

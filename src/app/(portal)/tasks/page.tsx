@@ -9,6 +9,7 @@ import {
   computeAssignee,
   computeUrgency,
   currentPhaseEnteredAt,
+  formatDeadline,
   formatTimeInPhase,
   groupTasksByClient,
   matchesCategoryFilter,
@@ -43,7 +44,7 @@ interface BoardData {
 type TabFilter = "all" | PhaseCategory;
 type AnnotatedTask = Task & { _lane: "design" | "dev" };
 
-const GRID = "grid-cols-[minmax(0,1fr)_160px_200px_150px]";
+const GRID = "grid-cols-[minmax(0,1fr)_140px_170px_130px_130px]";
 
 const TAB_META: { value: TabFilter; label: string; color: string }[] = [
   { value: "all", label: "All", color: "#1A1A1A" },
@@ -148,8 +149,11 @@ export default function TaskBoardPage() {
     const pMeta = phaseMeta(task.phase);
     const enteredAt = currentPhaseEnteredAt(task.phaseHistory);
     const timeInPhase = enteredAt ? formatTimeInPhase(enteredAt) : null;
-    const { value: relevantDue } = relevantDeadline(task);
+    const { field: deadlineField, value: relevantDue } = relevantDeadline(task);
     const urgency = computeUrgency(relevantDue);
+    const urgencyColor = urgency === "overdue" ? "#DC2626" : urgency === "due-soon" ? "#D97706" : urgency === "ok" ? "#059669" : "#AAA";
+    const deadlineLabel =
+      deadlineField === "designDueDate" ? "Design" : deadlineField === "devDueDate" ? "Dev" : "Launch";
     const assignee = computeAssignee(task);
 
     return (
@@ -215,6 +219,23 @@ export default function TaskBoardPage() {
           </svg>
         </div>
 
+        {/* Associated deadline (auto-picks based on current phase) */}
+        <div className="flex flex-col items-start gap-0.5 min-w-0">
+          {relevantDue ? (
+            <>
+              <span className="text-[11px] font-semibold tabular-nums truncate" style={{ color: urgencyColor }}>
+                {formatDeadline(relevantDue)}
+              </span>
+              <span className="text-[9px] uppercase tracking-wider text-[#AAA]">{deadlineLabel} deadline</span>
+            </>
+          ) : (
+            <>
+              <span className="text-[11px] text-[#DDD]">—</span>
+              <span className="text-[9px] uppercase tracking-wider text-[#CCC]">{deadlineLabel} deadline</span>
+            </>
+          )}
+        </div>
+
         {/* Time in phase */}
         <div className="flex justify-end">
           {timeInPhase && pMeta ? (
@@ -246,6 +267,7 @@ export default function TaskBoardPage() {
         <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Task</span>
         <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Assignee</span>
         <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Phase</span>
+        <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Deadline</span>
         <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA] text-right">Time in phase</span>
       </div>
     );

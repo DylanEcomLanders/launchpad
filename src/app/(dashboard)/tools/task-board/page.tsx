@@ -8,11 +8,14 @@ import {
   appendPhaseTransition,
   categoryForPhase,
   computeAssignee,
+  computeUrgency,
   currentPhaseEnteredAt,
+  formatDeadline,
   formatTimeInPhase,
   groupTasksByClient,
   matchesCategoryFilter,
   phaseMeta,
+  relevantDeadline,
   type PhaseCategory,
   type PhaseEntry,
 } from "@/lib/task-board/phases";
@@ -69,9 +72,14 @@ const TaskEditorRow = memo(function TaskEditorRow({
   const meta = phaseMeta(task.phase);
   const hasDeadline = !!(task.designDueDate || task.devDueDate || task.launchDueDate);
   const assignee = computeAssignee(task);
+  const { field: deadlineField, value: relevantDue } = relevantDeadline(task);
+  const urgency = computeUrgency(relevantDue);
+  const urgencyColor = urgency === "overdue" ? "#DC2626" : urgency === "due-soon" ? "#D97706" : urgency === "ok" ? "#059669" : "#AAA";
+  const deadlineShortLabel =
+    deadlineField === "designDueDate" ? "Design" : deadlineField === "devDueDate" ? "Dev" : "Launch";
 
   return (
-    <div className={`grid grid-cols-[1.3fr_140px_140px_180px_120px_32px_32px] gap-2 ${indented ? "pl-8 pr-4" : "px-4"} py-2.5 border-b border-[#EDEDEF] last:border-0 items-center`}>
+    <div className={`grid grid-cols-[1.3fr_130px_130px_170px_120px_110px_32px_32px] gap-2 ${indented ? "pl-8 pr-4" : "px-4"} py-2.5 border-b border-[#EDEDEF] last:border-0 items-center`}>
       <input
         type="text"
         value={title}
@@ -120,6 +128,16 @@ const TaskEditorRow = memo(function TaskEditorRow({
             {timeInPhase} in phase
           </span>
         )}
+      </div>
+      <div className="flex flex-col gap-0.5 min-w-0">
+        {relevantDue ? (
+          <span className="text-[11px] font-semibold tabular-nums truncate" style={{ color: urgencyColor }}>
+            {formatDeadline(relevantDue)}
+          </span>
+        ) : (
+          <span className="text-[11px] text-[#DDD]">—</span>
+        )}
+        <span className="text-[9px] uppercase tracking-wider text-[#BBB] leading-none">{deadlineShortLabel}</span>
       </div>
       <select
         value={task.status}
@@ -379,11 +397,12 @@ export default function TaskBoardAdminPage() {
         </div>
       ) : (
         <div className="border border-[#E5E5EA] rounded-xl bg-white overflow-hidden">
-          <div className="grid grid-cols-[1.3fr_140px_140px_180px_120px_32px_32px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA]">
+          <div className="grid grid-cols-[1.3fr_130px_130px_170px_120px_110px_32px_32px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA]">
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Task</span>
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Client</span>
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Assignee</span>
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Phase</span>
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Deadline</span>
             <span className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA]">Status</span>
             <span />
             <span />
