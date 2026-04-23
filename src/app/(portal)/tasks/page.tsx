@@ -390,9 +390,9 @@ export default function TaskBoardPage() {
             <ColumnHeader />
             {activeGroups.map((group, i) => (
               <div key={group.key}>
-                <div className={`flex items-center gap-2 px-5 pb-1.5 ${i === 0 ? "pt-4" : "pt-6"} border-t ${i === 0 ? "border-transparent" : "border-[#F0F0F0]"}`}>
-                  <h3 className={`text-xs font-semibold uppercase tracking-wider ${group.key === "__unassigned__" ? "text-[#AAA] italic" : "text-[#1A1A1A]"}`}>
-                    {group.label}
+                <div className={`flex items-center gap-2 px-5 pb-2 ${i === 0 ? "pt-4" : "pt-10"}`}>
+                  <h3 className={`text-sm font-bold tracking-wide ${group.key === "__unassigned__" ? "text-[#AAA] italic" : "text-[#1A1A1A]"}`}>
+                    {group.label.toUpperCase()}
                   </h3>
                   <span className="text-[10px] font-medium text-[#AAA]">
                     {group.tasks.length} {group.tasks.length === 1 ? "deliverable" : "deliverables"}
