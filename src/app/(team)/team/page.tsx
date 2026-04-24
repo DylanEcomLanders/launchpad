@@ -5,6 +5,7 @@ import {
   ClipboardDocumentListIcon,
   FolderIcon,
   BookOpenIcon,
+  PhotoIcon,
 } from "@heroicons/react/24/solid";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 
@@ -31,6 +32,12 @@ const primary = [
 ];
 
 const tools = [
+  {
+    title: "Swipe File",
+    description: "Reference library of great pages — drop a URL, we cache mobile + desktop.",
+    href: "/team/swipe-file",
+    icon: PhotoIcon,
+  },
   {
     title: "Dev QA Checklist",
     description: "Evergreen Dev QA checklist — run through before handing anything to a client.",

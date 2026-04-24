@@ -82,6 +82,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Two-click delete guard on admin task rows. First click on the trash icon primes it into a red \"Click again to confirm delete\" state; only the second click within 3 seconds actually removes the task. Protects against accidental misclicks on a row of tight icons. No modal, no popup — just visual feedback on the same button" },
       { type: "added", text: "Task Board now lives in the Team Tools hub — primary card at /team (top of the grid) and first nav item in the team sidebar's Delivery section. Links through to the existing /tasks URL (kept as-is so the auto-refresh kiosk view still works on a shared screen)" },
       { type: "added", text: "\"← Team Tools\" back link in the /tasks header (and /tasks-legacy) so team members can get back to /team after navigating through. Sits left of the ecomlanders logo with a subtle divider between them" },
+      { type: "added", text: "Swipe File at /team/swipe-file — drop a URL, server captures mobile + desktop screenshots via Firecrawl, both stored in Supabase Storage. Grid view of cards with desktop thumbnails; click into a card for a full-size view with Mobile/Desktop toggle, editable title/tags/notes, and delete with two-click confirm. Tag filter chips at the top once you've tagged a few entries. Surfaced as a Tools card on /team plus a sidebar nav item. Requires a one-time SQL run (supabase/swipe_file.sql) to create the table + storage bucket" },
     ],
   },
   {

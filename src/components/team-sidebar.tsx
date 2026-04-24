@@ -12,6 +12,7 @@ import {
   ArrowLeftIcon,
   ClipboardDocumentCheckIcon,
   ClipboardDocumentListIcon,
+  PhotoIcon,
 } from "@heroicons/react/24/solid";
 import { Logo } from "@/components/logo";
 
@@ -43,6 +44,11 @@ const navItems: NavItem[] = [
 ];
 
 const toolItems: NavItem[] = [
+  {
+    label: "Swipe File",
+    href: "/team/swipe-file",
+    icon: <PhotoIcon className="size-4" />,
+  },
   {
     label: "Dev QA Checklist",
     href: "/team/qa",
