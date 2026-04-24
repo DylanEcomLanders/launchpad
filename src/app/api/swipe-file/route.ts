@@ -41,6 +41,28 @@ export async function POST(req: NextRequest) {
   let desktopBase64 = "";
   let mobileBase64 = "";
   try {
+    // Flatten sticky/fixed elements so they don't tile across the full-page
+    // screenshot (e.g. sticky add-to-cart bars repeating down the page).
+    // Runs in the page context immediately before the capture.
+    const flattenStickyJs = `(() => {
+      const flatten = () => {
+        document.querySelectorAll('*').forEach((el) => {
+          const cs = getComputedStyle(el);
+          if (cs.position === 'sticky' || cs.position === 'fixed') {
+            el.style.setProperty('position', 'static', 'important');
+            el.style.setProperty('top', 'auto', 'important');
+            el.style.setProperty('bottom', 'auto', 'important');
+            el.style.setProperty('left', 'auto', 'important');
+            el.style.setProperty('right', 'auto', 'important');
+          }
+        });
+      };
+      flatten();
+      // Catch late-arriving sticky elements (e.g. lazy-mounted ATC bars) by
+      // re-running once after a short delay
+      setTimeout(flatten, 200);
+    })();`;
+
     const callFirecrawl = async (mobile: boolean) => {
       const res = await fetch(FIRECRAWL_URL, {
         method: "POST",
@@ -48,8 +70,13 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           url,
           mobile,
-          actions: [{ type: "screenshot", fullPage: true }],
-          timeout: 30_000,
+          actions: [
+            { type: "wait", milliseconds: 800 }, // let lazy content render
+            { type: "executeJavascript", script: flattenStickyJs },
+            { type: "wait", milliseconds: 400 }, // give the late-flatten pass time to run
+            { type: "screenshot", fullPage: true },
+          ],
+          timeout: 45_000,
         }),
       });
       const json = await res.json();
