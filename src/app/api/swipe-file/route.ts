@@ -41,26 +41,25 @@ export async function POST(req: NextRequest) {
   let desktopBase64 = "";
   let mobileBase64 = "";
   try {
-    // Flatten sticky/fixed elements so they don't tile across the full-page
-    // screenshot (e.g. sticky add-to-cart bars repeating down the page).
-    // Runs in the page context immediately before the capture.
-    const flattenStickyJs = `(() => {
-      const flatten = () => {
+    // Hide sticky/fixed elements before the screenshot. Two reasons:
+    //   1. They tile across full-page captures (the bar appears at every
+    //      scroll position when Firecrawl stitches viewport snapshots).
+    //   2. They're typically duplicates of inline content (sticky ATC, sticky
+    //      nav, sticky cookie banner) — hiding gives a clean shot of the
+    //      natural page composition without phantom bars at random positions.
+    const hideStickyJs = `(() => {
+      const hide = () => {
         document.querySelectorAll('*').forEach((el) => {
           const cs = getComputedStyle(el);
           if (cs.position === 'sticky' || cs.position === 'fixed') {
-            el.style.setProperty('position', 'static', 'important');
-            el.style.setProperty('top', 'auto', 'important');
-            el.style.setProperty('bottom', 'auto', 'important');
-            el.style.setProperty('left', 'auto', 'important');
-            el.style.setProperty('right', 'auto', 'important');
+            el.style.setProperty('display', 'none', 'important');
           }
         });
       };
-      flatten();
-      // Catch late-arriving sticky elements (e.g. lazy-mounted ATC bars) by
-      // re-running once after a short delay
-      setTimeout(flatten, 200);
+      hide();
+      // Catch late-arriving sticky elements (lazy-mounted ATC bars,
+      // delayed cookie banners) by re-running once after a short delay
+      setTimeout(hide, 200);
     })();`;
 
     const callFirecrawl = async (mobile: boolean) => {
@@ -72,8 +71,8 @@ export async function POST(req: NextRequest) {
           mobile,
           actions: [
             { type: "wait", milliseconds: 800 }, // let lazy content render
-            { type: "executeJavascript", script: flattenStickyJs },
-            { type: "wait", milliseconds: 400 }, // give the late-flatten pass time to run
+            { type: "executeJavascript", script: hideStickyJs },
+            { type: "wait", milliseconds: 400 }, // give the late-hide pass time to run
             { type: "screenshot", fullPage: true },
           ],
           timeout: 45_000,
