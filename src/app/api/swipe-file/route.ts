@@ -41,25 +41,72 @@ export async function POST(req: NextRequest) {
   let desktopBase64 = "";
   let mobileBase64 = "";
   try {
-    // Hide sticky/fixed elements before the screenshot. Two reasons:
-    //   1. They tile across full-page captures (the bar appears at every
-    //      scroll position when Firecrawl stitches viewport snapshots).
-    //   2. They're typically duplicates of inline content (sticky ATC, sticky
-    //      nav, sticky cookie banner) — hiding gives a clean shot of the
-    //      natural page composition without phantom bars at random positions.
-    const hideStickyJs = `(() => {
+    // Hide sticky/fixed elements + popups/modals before the screenshot.
+    //   - Sticky/fixed elements tile or duplicate inline content
+    //   - Popups (newsletter / region selector / age gate) cover the page
+    //     and are nearly always rendered via role="dialog" or similar
+    // Runs every 250ms via a setInterval so late-mounting popups also get
+    // caught — Firecrawl will stop executing once it moves to screenshot.
+    const hideOverlaysJs = `(() => {
+      const POPUP_SELECTORS = [
+        '[role="dialog"]',
+        '[role="alertdialog"]',
+        'dialog',
+        '[aria-modal="true"]',
+        '[class*="modal" i]',
+        '[class*="popup" i]',
+        '[class*="overlay" i]',
+        '[class*="newsletter" i]',
+        '[class*="lightbox" i]',
+        '[id*="modal" i]',
+        '[id*="popup" i]',
+      ];
+
       const hide = () => {
+        // Hide anything sticky or fixed
         document.querySelectorAll('*').forEach((el) => {
           const cs = getComputedStyle(el);
           if (cs.position === 'sticky' || cs.position === 'fixed') {
             el.style.setProperty('display', 'none', 'important');
           }
         });
+        // Hide common popup patterns regardless of position
+        POPUP_SELECTORS.forEach((sel) => {
+          try {
+            document.querySelectorAll(sel).forEach((el) => {
+              el.style.setProperty('display', 'none', 'important');
+            });
+          } catch (_) { /* invalid selector — ignore */ }
+        });
       };
+
       hide();
-      // Catch late-arriving sticky elements (lazy-mounted ATC bars,
-      // delayed cookie banners) by re-running once after a short delay
-      setTimeout(hide, 200);
+      // Re-run several times to catch delayed popups (newsletter triggers
+      // commonly mount 2-5s after page load)
+      const interval = setInterval(hide, 250);
+      setTimeout(() => clearInterval(interval), 6000);
+    })();`;
+
+    // Force-load lazy content by scrolling through the entire page in JS.
+    // Most lazy loaders use IntersectionObserver — scrolling step-by-step
+    // gives those handlers time to fire before we capture.
+    const scrollPageJs = `(async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+      const total = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight,
+      );
+      let y = 0;
+      const step = window.innerHeight * 0.8;
+      while (y < total) {
+        window.scrollTo(0, y);
+        await sleep(150);
+        y += step;
+      }
+      window.scrollTo(0, total);
+      await sleep(300);
+      window.scrollTo(0, 0);
+      await sleep(200);
     })();`;
 
     const callFirecrawl = async (mobile: boolean) => {
@@ -70,12 +117,14 @@ export async function POST(req: NextRequest) {
           url,
           mobile,
           actions: [
-            { type: "wait", milliseconds: 800 }, // let lazy content render
-            { type: "executeJavascript", script: hideStickyJs },
-            { type: "wait", milliseconds: 400 }, // give the late-hide pass time to run
+            { type: "wait", milliseconds: 1200 },              // initial paint
+            { type: "executeJavascript", script: scrollPageJs },// trigger lazy loads
+            { type: "wait", milliseconds: 1500 },              // let lazy images settle
+            { type: "executeJavascript", script: hideOverlaysJs },// hide popups/sticky (with re-run interval)
+            { type: "wait", milliseconds: 600 },               // give first hide pass time
             { type: "screenshot", fullPage: true },
           ],
-          timeout: 45_000,
+          timeout: 60_000,
         }),
       });
       const json = await res.json();
