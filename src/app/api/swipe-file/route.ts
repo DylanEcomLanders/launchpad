@@ -41,25 +41,23 @@ export async function POST(req: NextRequest) {
   let desktopBase64 = "";
   let mobileBase64 = "";
   try {
-    // Hide sticky/fixed elements + popups/modals before the screenshot.
-    //   - Sticky/fixed elements tile or duplicate inline content
-    //   - Popups (newsletter / region selector / age gate) cover the page
-    //     and are nearly always rendered via role="dialog" or similar
-    // Runs every 250ms via a setInterval so late-mounting popups also get
-    // caught — Firecrawl will stop executing once it moves to screenshot.
+    // Hide overlays before the screenshot. Conservative selectors so we don't
+    // false-positive legitimate page content that happens to use words like
+    // "overlay" / "modal" / "lightbox" in its class names.
+    //
+    //   - Sticky/fixed elements: tile or duplicate inline content
+    //   - ARIA dialog patterns ([role="dialog"], <dialog>, [aria-modal]):
+    //     semantic markers that explicitly identify popups
+    //
+    // Class/id substring matching is intentionally NOT used — class names
+    // like "flavor-modal-trigger" or "image-overlay" appear all over real
+    // ecom pages on legitimate content, and broad matching hid hero sections.
     const hideOverlaysJs = `(() => {
-      const POPUP_SELECTORS = [
+      const DIALOG_SELECTORS = [
         '[role="dialog"]',
         '[role="alertdialog"]',
-        'dialog',
+        'dialog[open]',
         '[aria-modal="true"]',
-        '[class*="modal" i]',
-        '[class*="popup" i]',
-        '[class*="overlay" i]',
-        '[class*="newsletter" i]',
-        '[class*="lightbox" i]',
-        '[id*="modal" i]',
-        '[id*="popup" i]',
       ];
 
       const hide = () => {
@@ -70,8 +68,8 @@ export async function POST(req: NextRequest) {
             el.style.setProperty('display', 'none', 'important');
           }
         });
-        // Hide common popup patterns regardless of position
-        POPUP_SELECTORS.forEach((sel) => {
+        // Hide explicit dialog/modal markers
+        DIALOG_SELECTORS.forEach((sel) => {
           try {
             document.querySelectorAll(sel).forEach((el) => {
               el.style.setProperty('display', 'none', 'important');
@@ -81,8 +79,8 @@ export async function POST(req: NextRequest) {
       };
 
       hide();
-      // Re-run several times to catch delayed popups (newsletter triggers
-      // commonly mount 2-5s after page load)
+      // Re-run for late-mounting popups (newsletter triggers commonly mount
+      // 2-5s after page load)
       const interval = setInterval(hide, 250);
       setTimeout(() => clearInterval(interval), 6000);
     })();`;
