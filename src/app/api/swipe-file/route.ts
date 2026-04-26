@@ -41,17 +41,15 @@ export async function POST(req: NextRequest) {
   let desktopBase64 = "";
   let mobileBase64 = "";
   try {
-    // Hide overlays before the screenshot. Conservative selectors so we don't
-    // false-positive legitimate page content that happens to use words like
-    // "overlay" / "modal" / "lightbox" in its class names.
+    // Hide overlays before the screenshot. Conservative — only:
+    //   - position: fixed elements (popups, fixed banners, fixed nav)
+    //   - ARIA dialog markers ([role="dialog"], <dialog open>, [aria-modal])
     //
-    //   - Sticky/fixed elements: tile or duplicate inline content
-    //   - ARIA dialog patterns ([role="dialog"], <dialog>, [aria-modal]):
-    //     semantic markers that explicitly identify popups
-    //
-    // Class/id substring matching is intentionally NOT used — class names
-    // like "flavor-modal-trigger" or "image-overlay" appear all over real
-    // ecom pages on legitimate content, and broad matching hid hero sections.
+    // We deliberately do NOT hide position: sticky. Sticky is widely used for
+    // legitimate content like product image galleries that lock as you scroll
+    // through the description; hiding them removes the hero on many ecom PDPs.
+    // We also don't run a setInterval — discrete one-shot hide passes only,
+    // so nothing's hiding elements while Firecrawl scrolls to capture.
     const hideOverlaysJs = `(() => {
       const DIALOG_SELECTORS = [
         '[role="dialog"]',
@@ -60,29 +58,19 @@ export async function POST(req: NextRequest) {
         '[aria-modal="true"]',
       ];
 
-      const hide = () => {
-        // Hide anything sticky or fixed
-        document.querySelectorAll('*').forEach((el) => {
-          const cs = getComputedStyle(el);
-          if (cs.position === 'sticky' || cs.position === 'fixed') {
+      document.querySelectorAll('*').forEach((el) => {
+        const cs = getComputedStyle(el);
+        if (cs.position === 'fixed') {
+          el.style.setProperty('display', 'none', 'important');
+        }
+      });
+      DIALOG_SELECTORS.forEach((sel) => {
+        try {
+          document.querySelectorAll(sel).forEach((el) => {
             el.style.setProperty('display', 'none', 'important');
-          }
-        });
-        // Hide explicit dialog/modal markers
-        DIALOG_SELECTORS.forEach((sel) => {
-          try {
-            document.querySelectorAll(sel).forEach((el) => {
-              el.style.setProperty('display', 'none', 'important');
-            });
-          } catch (_) { /* invalid selector — ignore */ }
-        });
-      };
-
-      hide();
-      // Re-run for late-mounting popups (newsletter triggers commonly mount
-      // 2-5s after page load)
-      const interval = setInterval(hide, 250);
-      setTimeout(() => clearInterval(interval), 6000);
+          });
+        } catch (_) { /* invalid selector — ignore */ }
+      });
     })();`;
 
     // Force-load lazy content by scrolling through the entire page in JS.
@@ -118,8 +106,10 @@ export async function POST(req: NextRequest) {
             { type: "wait", milliseconds: 1200 },              // initial paint
             { type: "executeJavascript", script: scrollPageJs },// trigger lazy loads
             { type: "wait", milliseconds: 1500 },              // let lazy images settle
-            { type: "executeJavascript", script: hideOverlaysJs },// hide popups/sticky (with re-run interval)
-            { type: "wait", milliseconds: 600 },               // give first hide pass time
+            { type: "executeJavascript", script: hideOverlaysJs },// first hide pass
+            { type: "wait", milliseconds: 800 },               // give popups time to mount
+            { type: "executeJavascript", script: hideOverlaysJs },// catch late popups
+            { type: "wait", milliseconds: 400 },
             { type: "screenshot", fullPage: true },
           ],
           timeout: 60_000,
