@@ -374,8 +374,29 @@ function DeadlineRow({
   history?: DeadlineChangeEntry[];
   onChange?: (v: string) => void;
 }) {
+  void field;
   const urgencyStyle = urgency ? URGENCY_STYLES[urgency] : null;
   const hasHistory = (history?.length ?? 0) > 0;
+  // Hold a local draft so chevron-clicks / month nav inside the native date
+  // picker don't immediately fire the parent's onChange (which pops the
+  // "why is it changing?" modal). Only commit on blur, when the user has
+  // actually finalised a date — and only when it differs from the original.
+  // If the parent rejects the change, the draft resets to the prop value.
+  const [draft, setDraft] = useState(value || "");
+  useEffect(() => {
+    setDraft(value || "");
+  }, [value]);
+
+  const commit = () => {
+    const next = draft;
+    const original = value || "";
+    if (onChange && next && next !== original) {
+      onChange(next);
+    }
+    // Always snap back to the prop value — the parent will re-sync via
+    // useEffect once (and if) the change is accepted.
+    setDraft(original);
+  };
   return (
     <div className="py-2">
       <div className="flex items-center justify-between gap-3">
@@ -392,8 +413,17 @@ function DeadlineRow({
         {editable && onChange ? (
           <input
             type="date"
-            value={value || ""}
-            onChange={(e) => onChange(e.target.value)}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                (e.target as HTMLInputElement).blur();
+              } else if (e.key === "Escape") {
+                setDraft(value || "");
+                (e.target as HTMLInputElement).blur();
+              }
+            }}
             className="text-xs px-2 py-1 border border-[#E5E5EA] rounded focus:outline-none focus:border-[#999]"
           />
         ) : (

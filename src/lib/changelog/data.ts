@@ -37,6 +37,15 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-40",
+    date: "27 Apr 2026",
+    version: "0.32.1",
+    title: "Task Board — Deadline Picker Fix",
+    changes: [
+      { type: "fixed", text: "Deadline date picker no longer pops the \"why is it changing?\" reason modal when you click the next/previous month chevron in the native date picker. Some browsers auto-commit the same day-of-month in the new month while you're just navigating — the modal now only appears when you actually finalise a new date and the input loses focus. Enter commits, Escape resets and exits cleanly" },
+    ],
+  },
+  {
     id: "cl-39",
     date: "23 Apr 2026",
     version: "0.32.0",
