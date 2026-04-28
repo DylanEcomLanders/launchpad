@@ -37,6 +37,17 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-43",
+    date: "28 Apr 2026",
+    version: "0.33.2",
+    title: "Font Library — Weight switcher + Download all",
+    changes: [
+      { type: "added", text: "Each font card now has a strip of weight chips under the preview — click 100 / 300 / 400 / 700 / 700i to swap which uploaded weight + style the preview text renders in. Italic variants are marked with a small \"i\" suffix. Defaults to whichever weight is closest to 400 in the normal style" },
+      { type: "improved", text: "Card download button now grabs every weight in the family at once. Single-file fonts download direct; multi-file fonts get zipped client-side via JSZip into <font-name>.zip with a \"Zipping…\" indicator while it bundles" },
+      { type: "improved", text: "Card meta now shows total file count + combined size (e.g. \"4 weights · 312 KB total\") instead of just the latest file's stats" },
+    ],
+  },
+  {
     id: "cl-42",
     date: "28 Apr 2026",
     version: "0.33.1",

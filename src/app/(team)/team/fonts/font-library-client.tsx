@@ -20,7 +20,6 @@ import {
   FONT_FILE_FORMATS,
   FONT_FILE_EXT_RE,
   FORMAT_FONTFACE_TOKEN,
-  pickPreviewFile,
   formatBytes,
   parseFontFilename,
   inferFamilyFromBatch,
@@ -374,6 +373,43 @@ function EmptyState({ onAdd, hasFonts }: { onAdd: () => void; hasFonts: boolean 
   );
 }
 
+// ── Zip + download all files in a font family ──────────────────────────────
+async function downloadFontAsZip(font: FontEntry) {
+  if (font.files.length === 0) return;
+
+  // Single-file shortcut — just pull the file directly
+  if (font.files.length === 1) {
+    const f = font.files[0];
+    const a = document.createElement("a");
+    a.href = f.publicUrl;
+    a.download = f.fileName;
+    a.click();
+    return;
+  }
+
+  const zip = new JSZip();
+  await Promise.all(
+    font.files.map(async (file) => {
+      try {
+        const res = await fetch(file.publicUrl);
+        if (!res.ok) throw new Error(`Failed: ${file.fileName}`);
+        const blob = await res.blob();
+        zip.file(file.fileName, blob);
+      } catch (err) {
+        console.error(err);
+      }
+    }),
+  );
+  const blob = await zip.generateAsync({ type: "blob" });
+  const slug = font.name.replace(/[^a-zA-Z0-9._-]+/g, "-").toLowerCase() || "font";
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${slug}.zip`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 // ── Font card ──────────────────────────────────────────────────────────────
 function FontCard({
   font,
@@ -386,8 +422,49 @@ function FontCard({
   previewSize: number;
   onEdit: () => void;
 }) {
-  const previewFile = pickPreviewFile(font.files);
   const hasFiles = font.files.length > 0;
+
+  // Sort files by (weight asc, normal before italic) and de-dupe by (weight, style)
+  const variants = useMemo(() => {
+    const seen = new Set<string>();
+    return font.files
+      .slice()
+      .sort((a, b) => a.weight - b.weight || a.style.localeCompare(b.style))
+      .filter((f) => {
+        const k = `${f.weight}-${f.style}`;
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      });
+  }, [font.files]);
+
+  // Preview state — default to closest-to-400 normal weight
+  const defaultIdx = useMemo(() => {
+    if (!variants.length) return 0;
+    const normals = variants
+      .map((v, i) => ({ i, dist: Math.abs(v.weight - 400), italic: v.style === "italic" }))
+      .filter((v) => !v.italic);
+    if (normals.length) {
+      normals.sort((a, b) => a.dist - b.dist);
+      return normals[0].i;
+    }
+    return 0;
+  }, [variants]);
+  const [activeIdx, setActiveIdx] = useState(defaultIdx);
+  // Re-sync when files change (after upload/delete)
+  useEffect(() => setActiveIdx(defaultIdx), [defaultIdx]);
+
+  const active = variants[activeIdx];
+  const [downloading, setDownloading] = useState(false);
+
+  const onDownloadAll = async () => {
+    setDownloading(true);
+    try {
+      await downloadFontAsZip(font);
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
     <article className="bg-white border border-[#E5E5EA] rounded-xl overflow-hidden hover:border-[#1B1B1B] transition-colors group">
@@ -397,6 +474,8 @@ function FontCard({
         style={{
           fontFamily: hasFiles ? `"${font.family}", system-ui, sans-serif` : "system-ui, sans-serif",
           fontSize: `${previewSize}px`,
+          fontWeight: active?.weight || 400,
+          fontStyle: active?.style || "normal",
           lineHeight: 1.05,
           color: "#1B1B1B",
           letterSpacing: "-0.02em",
@@ -406,6 +485,30 @@ function FontCard({
           {hasFiles ? previewText : "Add files to preview"}
         </span>
       </div>
+
+      {/* Weight switcher */}
+      {variants.length > 1 && (
+        <div className="px-5 md:px-6 py-2.5 border-b border-[#EDEDEF] flex flex-wrap gap-1.5 bg-[#FAFAFB]">
+          {variants.map((v, i) => {
+            const isActive = i === activeIdx;
+            return (
+              <button
+                key={`${v.weight}-${v.style}`}
+                onClick={() => setActiveIdx(i)}
+                className={`text-[10px] font-medium px-2 py-0.5 rounded-full border tabular-nums transition-colors ${
+                  isActive
+                    ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
+                    : "bg-white text-[#7A7A7A] border-[#E5E5EA] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"
+                }`}
+                title={`${v.weight} ${v.style}`}
+              >
+                {v.weight}
+                {v.style === "italic" && <em className="ml-0.5 not-italic">i</em>}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Meta */}
       <div className="px-5 md:px-6 py-4">
@@ -443,19 +546,27 @@ function FontCard({
           </div>
         )}
 
-        {hasFiles && previewFile && (
+        {hasFiles && (
           <div className="flex items-center justify-between gap-3 mt-3 pt-3 border-t border-[#EDEDEF]">
             <span className="text-[11px] text-[#7A7A7A]">
-              {previewFile.weight} {previewFile.style === "italic" ? "italic " : ""}·{" "}
-              {previewFile.format} · {formatBytes(previewFile.fileSizeBytes)}
+              {font.files.length === 1
+                ? `${font.files[0].format.toUpperCase()} · ${formatBytes(font.files[0].fileSizeBytes)}`
+                : `${font.files.length} weights · ${formatBytes(
+                    font.files.reduce((sum, f) => sum + f.fileSizeBytes, 0),
+                  )} total`}
             </span>
-            <a
-              href={previewFile.publicUrl}
-              download={previewFile.fileName}
-              className="text-[11px] font-medium text-[#1B1B1B] hover:underline inline-flex items-center gap-1"
+            <button
+              onClick={onDownloadAll}
+              disabled={downloading}
+              className="text-[11px] font-medium text-[#1B1B1B] hover:underline inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-wait"
             >
-              <ArrowDownTrayIcon className="size-3" /> Download
-            </a>
+              <ArrowDownTrayIcon className="size-3" />
+              {downloading
+                ? "Zipping…"
+                : font.files.length === 1
+                  ? "Download"
+                  : "Download all"}
+            </button>
           </div>
         )}
       </div>
