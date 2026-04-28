@@ -152,3 +152,99 @@ export function formatBytes(b: number): string {
   if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`;
   return `${(b / (1024 * 1024)).toFixed(1)} MB`;
 }
+
+// ── Parse a Google-Fonts-style filename ────────────────────────────────────
+// Examples:
+//   "Inter-Regular.ttf"                  → { family: "Inter",       weight: 400, style: "normal" }
+//   "Inter-Bold.ttf"                     → { family: "Inter",       weight: 700, style: "normal" }
+//   "Inter-BoldItalic.ttf"               → { family: "Inter",       weight: 700, style: "italic" }
+//   "Inter-Italic.ttf"                   → { family: "Inter",       weight: 400, style: "italic" }
+//   "Inter-VariableFont_wght.ttf"        → { family: "Inter",       weight: 400, style: "normal" }
+//   "Inter-Italic-VariableFont_wght.ttf" → { family: "Inter",       weight: 400, style: "italic" }
+//   "OpenSans-Bold.ttf"                  → { family: "Open Sans",   weight: 700, style: "normal" }
+//   "PlayfairDisplay-MediumItalic.ttf"   → { family: "Playfair Display", weight: 500, style: "italic" }
+
+export function prettifyFamily(raw: string): string {
+  return raw
+    .replace(/[-_]+/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2") // split CamelCase: "OpenSans" → "Open Sans"
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+const WEIGHT_NAME_MAP: Record<string, number> = {
+  thin: 100,
+  hairline: 100,
+  extralight: 200,
+  ultralight: 200,
+  light: 300,
+  regular: 400,
+  normal: 400,
+  book: 400,
+  medium: 500,
+  semibold: 600,
+  demibold: 600,
+  bold: 700,
+  extrabold: 800,
+  ultrabold: 800,
+  black: 900,
+  heavy: 900,
+};
+
+export interface ParsedFontName {
+  family: string;
+  weight: number;
+  style: "normal" | "italic";
+}
+
+export function parseFontFilename(filename: string): ParsedFontName {
+  const base = filename.replace(/\.(woff2|woff|ttf|otf)$/i, "");
+
+  // Variable fonts: "Family-VariableFont_wght" or "Family-Italic-VariableFont_wght"
+  const varMatch = base.match(/^(.+?)-(?:([A-Za-z]+)-)?VariableFont/i);
+  if (varMatch) {
+    const family = prettifyFamily(varMatch[1]);
+    const styleSpec = (varMatch[2] || "").toLowerCase();
+    return {
+      family,
+      weight: 400,
+      style: styleSpec.includes("italic") ? "italic" : "normal",
+    };
+  }
+
+  // "Family-WeightItalic" / "Family-Weight" / "Family-Italic" / "Family"
+  const m = base.match(/^(.+?)-([A-Za-z]+)$/);
+  if (m) {
+    const family = prettifyFamily(m[1]);
+    const styleSpec = m[2].toLowerCase();
+    const isItalic = styleSpec.endsWith("italic");
+    const weightName = isItalic ? styleSpec.replace(/italic$/, "") : styleSpec;
+    if (!weightName) {
+      // "Family-Italic"
+      return { family, weight: 400, style: "italic" };
+    }
+    const weight = WEIGHT_NAME_MAP[weightName] ?? 400;
+    return { family, weight, style: isItalic ? "italic" : "normal" };
+  }
+
+  // Fallback: bare filename
+  return { family: prettifyFamily(base), weight: 400, style: "normal" };
+}
+
+// Pick the most likely shared family name across a batch of files. Falls back
+// to whatever individual files report if there's no consistent prefix.
+export function inferFamilyFromBatch(files: { name: string }[]): string {
+  if (!files.length) return "";
+  const parsed = files.map((f) => parseFontFilename(f.name));
+  const counts = new Map<string, number>();
+  parsed.forEach((p) => counts.set(p.family, (counts.get(p.family) || 0) + 1));
+  let best = parsed[0].family;
+  let max = 0;
+  counts.forEach((c, fam) => {
+    if (c > max) {
+      max = c;
+      best = fam;
+    }
+  });
+  return best;
+}

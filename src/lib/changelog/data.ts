@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-42",
+    date: "28 Apr 2026",
+    version: "0.33.1",
+    title: "Font Library — Drop-and-go upload",
+    changes: [
+      { type: "improved", text: "Adding a font is now one step instead of two. Drop the whole Google Fonts folder (or pick the .ttf files) and the library auto-detects the family name from the common filename prefix and the weight + style from each filename suffix. Inter-Regular.ttf → 400 normal, Inter-BoldItalic.ttf → 700 italic, *-VariableFont_wght.ttf handled too. Folder drag-and-drop reads sub-directories recursively so you can also drop the unzipped Google Fonts download as-is" },
+      { type: "removed", text: "Dropped the \"CSS family name\" and \"Google Fonts URL\" fields from the create form — both were over-engineered. Family is just the font name now; if you need a source URL it lives in the notes" },
+      { type: "improved", text: "Detected files preview as a list with editable weight + style dropdowns per row before submit, so you can fix any auto-detection misses without re-uploading" },
+      { type: "improved", text: "Submit now creates the font row + uploads every file in one click with a \"Uploading X / Y\" progress indicator, then drops you straight into the manage drawer" },
+    ],
+  },
+  {
     id: "cl-41",
     date: "28 Apr 2026",
     version: "0.33.0",

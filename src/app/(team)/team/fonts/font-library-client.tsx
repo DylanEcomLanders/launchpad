@@ -7,8 +7,8 @@ import {
   TrashIcon,
   ArrowDownTrayIcon,
   ArrowUpOnSquareIcon,
-  ArrowTopRightOnSquareIcon,
   PencilIcon,
+  CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 import {
   FONT_CATEGORIES,
@@ -16,13 +16,18 @@ import {
   FONT_USAGE_OPTIONS,
   FONT_USAGE_LABELS,
   FONT_NICHES,
+  FONT_FILE_FORMATS,
+  FONT_FILE_EXT_RE,
   FORMAT_FONTFACE_TOKEN,
   pickPreviewFile,
   formatBytes,
+  parseFontFilename,
+  inferFamilyFromBatch,
   type FontEntry,
   type FontCategory,
   type FontUsage,
   type FontFile,
+  type FontFileFormat,
 } from "@/lib/font-library";
 
 const DEFAULT_PREVIEW = "The quick brown fox jumps over the lazy dog";
@@ -83,7 +88,7 @@ export function FontLibraryClient() {
     style.textContent = css;
   }, [fonts]);
 
-  // ── Aggregate niche options (preset + everything actually in use) ─────────
+  // ── Aggregate niche options ───────────────────────────────────────────────
   const allNiches = useMemo(() => {
     const used = new Set<string>();
     fonts.forEach((f) => f.niches.forEach((n) => used.add(n)));
@@ -103,33 +108,24 @@ export function FontLibraryClient() {
     });
   }, [fonts, search, activeCategory, activeUsage, activeNiche]);
 
-  // ── Mutations ─────────────────────────────────────────────────────────────
   const refresh = async () => {
     const res = await fetch("/api/font-library");
     const data = await res.json();
     if (Array.isArray(data)) setFonts(data);
   };
 
-  const onCreateOrUpdate = async (
-    payload: Partial<FontEntry> & { id?: string },
-  ): Promise<FontEntry | null> => {
-    const isUpdate = !!payload.id;
-    const url = isUpdate ? `/api/font-library/${payload.id}` : "/api/font-library";
-    const method = isUpdate ? "PATCH" : "POST";
-    const res = await fetch(url, {
-      method,
+  const onPatch = async (id: string, payload: Partial<FontEntry>) => {
+    const res = await fetch(`/api/font-library/${id}`, {
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
     const data = await res.json();
     if (!res.ok) {
-      setError(data?.error || `${method} failed`);
+      setError(data?.error || "Update failed");
       return null;
     }
-    setFonts((prev) => {
-      if (isUpdate) return prev.map((f) => (f.id === data.id ? data : f));
-      return [...prev, data].sort((a, b) => a.name.localeCompare(b.name));
-    });
+    setFonts((prev) => prev.map((f) => (f.id === data.id ? data : f)));
     return data as FontEntry;
   };
 
@@ -154,7 +150,7 @@ export function FontLibraryClient() {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">Font Library</h1>
           <p className="text-sm text-[#7A7A7A]">
-            Approved fonts only. Browse, preview, download — and tag what fits which niche.
+            Approved fonts only. Drop a Google Fonts download, the library handles the rest.
           </p>
         </div>
         <button
@@ -284,33 +280,25 @@ export function FontLibraryClient() {
         </div>
       )}
 
-      {/* Add modal */}
       {creatingNew && (
-        <FontFormModal
-          mode="create"
+        <AddFontModal
           onClose={() => setCreatingNew(false)}
-          onSave={async (payload) => {
-            const created = await onCreateOrUpdate(payload);
-            if (created) {
-              setCreatingNew(false);
-              setEditingFontId(created.id);
-            }
+          onCreated={async (id) => {
+            setCreatingNew(false);
+            await refresh();
+            setEditingFontId(id);
           }}
+          onError={(msg) => setError(msg)}
         />
       )}
 
-      {/* Edit / files modal */}
       {editingFont && (
         <FontDetailModal
           font={editingFont}
           onClose={() => setEditingFontId(null)}
-          onSave={async (payload) => {
-            await onCreateOrUpdate({ ...payload, id: editingFont.id });
-          }}
+          onPatch={(payload) => onPatch(editingFont.id, payload)}
           onDelete={() => onDelete(editingFont.id)}
-          onFilesChanged={async () => {
-            await refresh();
-          }}
+          onFilesChanged={refresh}
         />
       )}
     </>
@@ -371,7 +359,7 @@ function EmptyState({ onAdd, hasFonts }: { onAdd: () => void; hasFonts: boolean 
       <p className="text-sm text-[#7A7A7A] mb-4">
         {hasFonts
           ? "Try clearing some filters."
-          : "Upload your first approved font to start the library."}
+          : "Drop a Google Fonts download to start the library."}
       </p>
       {!hasFonts && (
         <button
@@ -457,7 +445,7 @@ function FontCard({
         {hasFiles && previewFile && (
           <div className="flex items-center justify-between gap-3 mt-3 pt-3 border-t border-[#EDEDEF]">
             <span className="text-[11px] text-[#7A7A7A]">
-              Latest: {previewFile.weight} {previewFile.style === "italic" ? "italic " : ""}·{" "}
+              {previewFile.weight} {previewFile.style === "italic" ? "italic " : ""}·{" "}
               {previewFile.format} · {formatBytes(previewFile.fileSizeBytes)}
             </span>
             <a
@@ -469,43 +457,122 @@ function FontCard({
             </a>
           </div>
         )}
-
-        {font.googleFontsUrl && (
-          <a
-            href={font.googleFontsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[11px] text-[#7A7A7A] hover:text-[#1B1B1B] inline-flex items-center gap-1 mt-2"
-          >
-            Source <ArrowTopRightOnSquareIcon className="size-3" />
-          </a>
-        )}
       </div>
     </article>
   );
 }
 
-// ── Create modal: just the metadata form ──────────────────────────────────
-function FontFormModal({
-  mode,
-  initial,
+// ── Add font modal: drop zone → auto-detect → minimal metadata → submit ───
+interface PendingFile {
+  file: File;
+  weight: number;
+  style: "normal" | "italic";
+  format: FontFileFormat;
+}
+
+function AddFontModal({
   onClose,
-  onSave,
+  onCreated,
+  onError,
 }: {
-  mode: "create" | "edit";
-  initial?: Partial<FontEntry>;
   onClose: () => void;
-  onSave: (payload: Partial<FontEntry>) => void | Promise<void>;
+  onCreated: (id: string) => void;
+  onError: (msg: string) => void;
 }) {
-  const [name, setName] = useState(initial?.name || "");
-  const [family, setFamily] = useState(initial?.family || "");
-  const [category, setCategory] = useState<FontCategory>(initial?.category || "sans");
-  const [usage, setUsage] = useState<FontUsage[]>(initial?.usage || []);
-  const [niches, setNiches] = useState<string[]>(initial?.niches || []);
+  const [pending, setPending] = useState<PendingFile[]>([]);
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState<FontCategory>("sans");
+  const [usage, setUsage] = useState<FontUsage[]>([]);
+  const [niches, setNiches] = useState<string[]>([]);
   const [niche, setNiche] = useState("");
-  const [notes, setNotes] = useState(initial?.notes || "");
-  const [googleFontsUrl, setGoogleFontsUrl] = useState(initial?.googleFontsUrl || "");
-  const [saving, setSaving] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [dragOver, setDragOver] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [progress, setProgress] = useState({ done: 0, total: 0 });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Walk a dropped DataTransferItemList recursively to handle folders
+  const collectFilesFromItems = async (items: DataTransferItemList): Promise<File[]> => {
+    const files: File[] = [];
+    const walk = async (entry: FileSystemEntry): Promise<void> => {
+      if (entry.isFile) {
+        const fileEntry = entry as FileSystemFileEntry;
+        await new Promise<void>((resolve) => {
+          fileEntry.file((f) => {
+            files.push(f);
+            resolve();
+          });
+        });
+      } else if (entry.isDirectory) {
+        const dir = entry as FileSystemDirectoryEntry;
+        const reader = dir.createReader();
+        await new Promise<void>((resolve) => {
+          const readBatch = () => {
+            reader.readEntries(async (entries) => {
+              if (!entries.length) return resolve();
+              for (const e of entries) await walk(e);
+              readBatch();
+            });
+          };
+          readBatch();
+        });
+      }
+    };
+    const entries: FileSystemEntry[] = [];
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const entry = item.webkitGetAsEntry?.();
+      if (entry) entries.push(entry);
+    }
+    for (const entry of entries) await walk(entry);
+    return files;
+  };
+
+  const ingestFiles = (files: File[]) => {
+    const fonts = files.filter((f) => FONT_FILE_EXT_RE.test(f.name));
+    if (!fonts.length) {
+      onError("No font files found. Accepts .woff2, .woff, .ttf, .otf");
+      return;
+    }
+    const next: PendingFile[] = fonts.map((f) => {
+      const parsed = parseFontFilename(f.name);
+      const ext = (f.name.match(FONT_FILE_EXT_RE)?.[1] || "ttf").toLowerCase() as FontFileFormat;
+      const format = (FONT_FILE_FORMATS as readonly string[]).includes(ext)
+        ? (ext as FontFileFormat)
+        : "ttf";
+      return {
+        file: f,
+        weight: parsed.weight,
+        style: parsed.style,
+        format,
+      };
+    });
+    setPending((prev) => [...prev, ...next]);
+    if (!name) setName(inferFamilyFromBatch(fonts));
+  };
+
+  const onDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    if (e.dataTransfer.items?.length) {
+      const files = await collectFilesFromItems(e.dataTransfer.items);
+      ingestFiles(files);
+    } else if (e.dataTransfer.files?.length) {
+      ingestFiles(Array.from(e.dataTransfer.files));
+    }
+  };
+
+  const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    ingestFiles(files);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removePending = (idx: number) =>
+    setPending((prev) => prev.filter((_, i) => i !== idx));
+
+  const updatePending = (idx: number, patch: Partial<PendingFile>) =>
+    setPending((prev) => prev.map((p, i) => (i === idx ? { ...p, ...patch } : p)));
 
   const toggleUsage = (u: FontUsage) =>
     setUsage((prev) => (prev.includes(u) ? prev.filter((x) => x !== u) : [...prev, u]));
@@ -518,142 +585,244 @@ function FontFormModal({
   };
 
   const submit = async () => {
-    if (!name.trim()) return;
-    setSaving(true);
+    if (!name.trim() || !pending.length || submitting) return;
+    setSubmitting(true);
     try {
-      await onSave({
-        name: name.trim(),
-        family: family.trim() || name.trim(),
-        category,
-        usage,
-        niches,
-        notes,
-        googleFontsUrl,
+      // 1. Create the font row
+      const createRes = await fetch("/api/font-library", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          family: name.trim(),
+          category,
+          usage,
+          niches,
+          notes,
+        }),
       });
+      const created = await createRes.json();
+      if (!createRes.ok) {
+        onError(created?.error || "Create failed");
+        setSubmitting(false);
+        return;
+      }
+      // 2. Upload all files
+      setProgress({ done: 0, total: pending.length });
+      let done = 0;
+      for (const p of pending) {
+        const fd = new FormData();
+        fd.append("file", p.file);
+        fd.append("weight", String(p.weight));
+        fd.append("style", p.style);
+        const r = await fetch(`/api/font-library/${created.id}/files`, {
+          method: "POST",
+          body: fd,
+        });
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          onError(`Upload of ${p.file.name} failed: ${err?.error || r.status}`);
+        }
+        done += 1;
+        setProgress({ done, total: pending.length });
+      }
+      onCreated(created.id);
     } finally {
-      setSaving(false);
+      setSubmitting(false);
     }
   };
 
+  const empty = pending.length === 0;
+
   return (
-    <ModalShell title={mode === "create" ? "Add a font" : "Edit font details"} onClose={onClose}>
-      <div className="space-y-4">
-        <Field label="Name" required>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Inter"
-            className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]"
-          />
-        </Field>
-        <Field label="CSS family name" hint="Defaults to the name above. Set this if your font files declare a different family.">
-          <input
-            type="text"
-            value={family}
-            onChange={(e) => setFamily(e.target.value)}
-            placeholder={name || "e.g. Inter"}
-            className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]"
-          />
-        </Field>
-        <Field label="Category">
-          <div className="flex flex-wrap gap-1.5">
-            {FONT_CATEGORIES.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setCategory(c)}
-                className={`text-xs px-3 py-1 rounded-full border ${
-                  category === c
-                    ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
-                    : "bg-white text-[#1B1B1B] border-[#E5E5EA] hover:border-[#1B1B1B]"
-                }`}
-              >
-                {FONT_CATEGORY_LABELS[c]}
-              </button>
-            ))}
-          </div>
-        </Field>
-        <Field label="Use for">
-          <div className="flex flex-wrap gap-1.5">
-            {FONT_USAGE_OPTIONS.map((u) => (
-              <button
-                key={u}
-                type="button"
-                onClick={() => toggleUsage(u)}
-                className={`text-xs px-3 py-1 rounded-full border ${
-                  usage.includes(u)
-                    ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
-                    : "bg-white text-[#1B1B1B] border-[#E5E5EA] hover:border-[#1B1B1B]"
-                }`}
-              >
-                {FONT_USAGE_LABELS[u]}
-              </button>
-            ))}
-          </div>
-        </Field>
-        <Field label="Niches" hint="Type a niche and press Enter. Add as many as you like.">
-          <div className="flex flex-wrap items-center gap-1.5 px-2 py-1.5 border border-[#E5E5EA] rounded-lg focus-within:border-[#1B1B1B]">
-            {niches.map((n) => (
-              <span
-                key={n}
-                className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-0.5 bg-[#F3F3F5] text-[#1B1B1B] rounded-full"
-              >
-                {n}
-                <button
-                  type="button"
-                  onClick={() => setNiches(niches.filter((x) => x !== n))}
-                  className="text-[#A0A0A0] hover:text-[#1B1B1B]"
-                >
-                  <XMarkIcon className="size-3" />
-                </button>
-              </span>
-            ))}
-            <input
-              type="text"
-              value={niche}
-              onChange={(e) => setNiche(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === ",") {
-                  e.preventDefault();
-                  addNiche(niche);
-                }
-                if (e.key === "Backspace" && !niche && niches.length > 0) {
-                  setNiches(niches.slice(0, -1));
-                }
-              }}
-              list="font-niche-options"
-              placeholder={niches.length === 0 ? "beauty, premium, minimal…" : ""}
-              className="flex-1 min-w-[120px] text-xs px-1 py-0.5 outline-none bg-transparent"
-            />
-            <datalist id="font-niche-options">
-              {FONT_NICHES.map((n) => (
-                <option key={n} value={n} />
-              ))}
-            </datalist>
-          </div>
-        </Field>
-        <Field label="Google Fonts URL" hint="Optional — link back to source for license / weights.">
-          <input
-            type="url"
-            value={googleFontsUrl}
-            onChange={(e) => setGoogleFontsUrl(e.target.value)}
-            placeholder="https://fonts.google.com/specimen/Inter"
-            className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]"
-          />
-        </Field>
-        <Field label="Notes">
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={3}
-            placeholder="Pairing tips, usage notes, license caveats…"
-            className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B] resize-none"
-          />
-        </Field>
+    <ModalShell title="Add a font" onClose={onClose}>
+      {/* Drop zone */}
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={onDrop}
+        className={`relative rounded-xl border-2 border-dashed transition-colors ${
+          dragOver
+            ? "border-[#1B1B1B] bg-[#F3F3F5]"
+            : empty
+              ? "border-[#E5E5EA] bg-[#FAFAFB]"
+              : "border-[#EDEDEF] bg-white"
+        } px-5 py-8 text-center`}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          // @ts-expect-error - webkitdirectory exists at runtime, not in React's typings
+          webkitdirectory=""
+          accept=".woff2,.woff,.ttf,.otf"
+          onChange={onPick}
+          className="hidden"
+          id="font-folder-input"
+        />
+        <input
+          ref={(el) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (window as any).__fontMultiInput = el;
+          }}
+          type="file"
+          multiple
+          accept=".woff2,.woff,.ttf,.otf"
+          onChange={onPick}
+          className="hidden"
+          id="font-files-input"
+        />
+        <ArrowUpOnSquareIcon className="size-7 mx-auto text-[#7A7A7A] mb-2" />
+        <p className="text-sm font-medium text-[#1B1B1B]">
+          Drop the Google Fonts folder here
+        </p>
+        <p className="text-xs text-[#7A7A7A] mt-1">
+          Or pick the{" "}
+          <label htmlFor="font-folder-input" className="font-medium text-[#1B1B1B] underline cursor-pointer">
+            whole folder
+          </label>{" "}
+          /{" "}
+          <label htmlFor="font-files-input" className="font-medium text-[#1B1B1B] underline cursor-pointer">
+            individual files
+          </label>
+          {" "}— .woff2, .woff, .ttf, .otf
+        </p>
+        <p className="text-[10px] text-[#A0A0A0] mt-2">
+          Weight + style auto-detected from filenames
+        </p>
       </div>
 
-      <div className="flex items-center justify-end gap-2 mt-6">
+      {/* Detected files */}
+      {!empty && (
+        <div className="mt-5">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+              {pending.length} file{pending.length === 1 ? "" : "s"} detected
+            </span>
+            <button
+              onClick={() => setPending([])}
+              className="text-[11px] text-[#7A7A7A] hover:text-[#1B1B1B] underline"
+            >
+              Clear
+            </button>
+          </div>
+          <ul className="rounded-lg border border-[#EDEDEF] divide-y divide-[#EDEDEF] max-h-[220px] overflow-y-auto">
+            {pending.map((p, i) => (
+              <li key={i} className="flex items-center gap-2 px-3 py-2 text-xs">
+                <CheckCircleIcon className="size-4 text-emerald-500 shrink-0" />
+                <span className="flex-1 truncate text-[#1B1B1B]">{p.file.name}</span>
+                <select
+                  value={p.weight}
+                  onChange={(e) => updatePending(i, { weight: parseInt(e.target.value, 10) })}
+                  className="text-[11px] px-1.5 py-1 border border-[#E5E5EA] rounded"
+                >
+                  {[100, 200, 300, 400, 500, 600, 700, 800, 900].map((w) => (
+                    <option key={w} value={w}>
+                      {w}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={p.style}
+                  onChange={(e) =>
+                    updatePending(i, { style: e.target.value as "normal" | "italic" })
+                  }
+                  className="text-[11px] px-1.5 py-1 border border-[#E5E5EA] rounded"
+                >
+                  <option value="normal">Normal</option>
+                  <option value="italic">Italic</option>
+                </select>
+                <button
+                  onClick={() => removePending(i)}
+                  className="text-[#A0A0A0] hover:text-red-600"
+                >
+                  <XMarkIcon className="size-4" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Metadata — only shown once files are picked */}
+      {!empty && (
+        <div className="mt-5 space-y-4">
+          <Field label="Font name" required>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Auto-detected from filenames"
+              className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]"
+            />
+          </Field>
+          <Field label="Category">
+            <div className="flex flex-wrap gap-1.5">
+              {FONT_CATEGORIES.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setCategory(c)}
+                  className={`text-xs px-3 py-1 rounded-full border ${
+                    category === c
+                      ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
+                      : "bg-white text-[#1B1B1B] border-[#E5E5EA] hover:border-[#1B1B1B]"
+                  }`}
+                >
+                  {FONT_CATEGORY_LABELS[c]}
+                </button>
+              ))}
+            </div>
+          </Field>
+          <Field label="Use for">
+            <div className="flex flex-wrap gap-1.5">
+              {FONT_USAGE_OPTIONS.map((u) => (
+                <button
+                  key={u}
+                  type="button"
+                  onClick={() => toggleUsage(u)}
+                  className={`text-xs px-3 py-1 rounded-full border ${
+                    usage.includes(u)
+                      ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
+                      : "bg-white text-[#1B1B1B] border-[#E5E5EA] hover:border-[#1B1B1B]"
+                  }`}
+                >
+                  {FONT_USAGE_LABELS[u]}
+                </button>
+              ))}
+            </div>
+          </Field>
+          <Field label="Niches" hint="Optional. Type and press Enter.">
+            <NicheInput
+              niches={niches}
+              setNiches={setNiches}
+              niche={niche}
+              setNiche={setNiche}
+              addNiche={addNiche}
+            />
+          </Field>
+          <Field label="Notes" hint="Optional.">
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={2}
+              placeholder="Pairing tips, license caveats…"
+              className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B] resize-none"
+            />
+          </Field>
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="flex items-center justify-end gap-3 mt-6">
+        {submitting && progress.total > 0 && (
+          <span className="text-xs text-[#7A7A7A] mr-auto">
+            Uploading {progress.done} / {progress.total}…
+          </span>
+        )}
         <button
           onClick={onClose}
           className="px-3 py-1.5 text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B]"
@@ -662,13 +831,70 @@ function FontFormModal({
         </button>
         <button
           onClick={submit}
-          disabled={!name.trim() || saving}
+          disabled={!name.trim() || !pending.length || submitting}
           className="px-4 py-1.5 text-xs font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] disabled:opacity-40"
         >
-          {saving ? "Saving…" : mode === "create" ? "Create & add files" : "Save"}
+          {submitting ? "Uploading…" : `Add to library`}
         </button>
       </div>
     </ModalShell>
+  );
+}
+
+// ── Niche chip-input shared by Add + Edit modals ──────────────────────────
+function NicheInput({
+  niches,
+  setNiches,
+  niche,
+  setNiche,
+  addNiche,
+}: {
+  niches: string[];
+  setNiches: (v: string[]) => void;
+  niche: string;
+  setNiche: (v: string) => void;
+  addNiche: (n: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 px-2 py-1.5 border border-[#E5E5EA] rounded-lg focus-within:border-[#1B1B1B]">
+      {niches.map((n) => (
+        <span
+          key={n}
+          className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-0.5 bg-[#F3F3F5] text-[#1B1B1B] rounded-full"
+        >
+          {n}
+          <button
+            type="button"
+            onClick={() => setNiches(niches.filter((x) => x !== n))}
+            className="text-[#A0A0A0] hover:text-[#1B1B1B]"
+          >
+            <XMarkIcon className="size-3" />
+          </button>
+        </span>
+      ))}
+      <input
+        type="text"
+        value={niche}
+        onChange={(e) => setNiche(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === ",") {
+            e.preventDefault();
+            addNiche(niche);
+          }
+          if (e.key === "Backspace" && !niche && niches.length > 0) {
+            setNiches(niches.slice(0, -1));
+          }
+        }}
+        list="font-niche-options"
+        placeholder={niches.length === 0 ? "beauty, premium, minimal…" : ""}
+        className="flex-1 min-w-[120px] text-xs px-1 py-0.5 outline-none bg-transparent"
+      />
+      <datalist id="font-niche-options">
+        {FONT_NICHES.map((n) => (
+          <option key={n} value={n} />
+        ))}
+      </datalist>
+    </div>
   );
 }
 
@@ -676,21 +902,54 @@ function FontFormModal({
 function FontDetailModal({
   font,
   onClose,
-  onSave,
+  onPatch,
   onDelete,
   onFilesChanged,
 }: {
   font: FontEntry;
   onClose: () => void;
-  onSave: (payload: Partial<FontEntry>) => void | Promise<void>;
+  onPatch: (payload: Partial<FontEntry>) => Promise<FontEntry | null>;
   onDelete: () => void | Promise<void>;
   onFilesChanged: () => void | Promise<void>;
 }) {
-  const [editingMeta, setEditingMeta] = useState(false);
+  const [name, setName] = useState(font.name);
+  const [category, setCategory] = useState<FontCategory>(font.category);
+  const [usage, setUsage] = useState<FontUsage[]>(font.usage);
+  const [niches, setNiches] = useState<string[]>(font.niches);
+  const [niche, setNiche] = useState("");
+  const [notes, setNotes] = useState(font.notes);
+  const [savingMeta, setSavingMeta] = useState(false);
+
   const [uploading, setUploading] = useState(false);
   const [pendingWeight, setPendingWeight] = useState(400);
   const [pendingStyle, setPendingStyle] = useState<"normal" | "italic">("normal");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const dirty =
+    name !== font.name ||
+    category !== font.category ||
+    JSON.stringify(usage) !== JSON.stringify(font.usage) ||
+    JSON.stringify(niches) !== JSON.stringify(font.niches) ||
+    notes !== font.notes;
+
+  const toggleUsage = (u: FontUsage) =>
+    setUsage((prev) => (prev.includes(u) ? prev.filter((x) => x !== u) : [...prev, u]));
+
+  const addNiche = (n: string) => {
+    const v = n.trim().toLowerCase();
+    if (!v || niches.includes(v)) return;
+    setNiches([...niches, v]);
+    setNiche("");
+  };
+
+  const saveMeta = async () => {
+    setSavingMeta(true);
+    try {
+      await onPatch({ name: name.trim(), family: name.trim(), category, usage, niches, notes });
+    } finally {
+      setSavingMeta(false);
+    }
+  };
 
   const onUpload = async (file: File) => {
     setUploading(true);
@@ -725,56 +984,87 @@ function FontDetailModal({
     await onFilesChanged();
   };
 
-  if (editingMeta) {
-    return (
-      <FontFormModal
-        mode="edit"
-        initial={font}
-        onClose={() => setEditingMeta(false)}
-        onSave={async (payload) => {
-          await onSave(payload);
-          setEditingMeta(false);
-        }}
-      />
-    );
-  }
-
   return (
     <ModalShell title={font.name} onClose={onClose}>
       <div className="space-y-5">
-        {/* Metadata summary */}
-        <div className="text-xs text-[#7A7A7A] leading-relaxed">
-          <p>
-            <strong className="text-[#1B1B1B]">Family:</strong> {font.family}
-          </p>
-          <p>
-            <strong className="text-[#1B1B1B]">Category:</strong>{" "}
-            {FONT_CATEGORY_LABELS[font.category]}
-          </p>
-          {font.usage.length > 0 && (
-            <p>
-              <strong className="text-[#1B1B1B]">Use for:</strong>{" "}
-              {font.usage.map((u) => FONT_USAGE_LABELS[u]).join(", ")}
-            </p>
+        {/* Metadata */}
+        <div className="space-y-3">
+          <Field label="Name">
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]"
+            />
+          </Field>
+          <Field label="Category">
+            <div className="flex flex-wrap gap-1.5">
+              {FONT_CATEGORIES.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setCategory(c)}
+                  className={`text-xs px-3 py-1 rounded-full border ${
+                    category === c
+                      ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
+                      : "bg-white text-[#1B1B1B] border-[#E5E5EA] hover:border-[#1B1B1B]"
+                  }`}
+                >
+                  {FONT_CATEGORY_LABELS[c]}
+                </button>
+              ))}
+            </div>
+          </Field>
+          <Field label="Use for">
+            <div className="flex flex-wrap gap-1.5">
+              {FONT_USAGE_OPTIONS.map((u) => (
+                <button
+                  key={u}
+                  type="button"
+                  onClick={() => toggleUsage(u)}
+                  className={`text-xs px-3 py-1 rounded-full border ${
+                    usage.includes(u)
+                      ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
+                      : "bg-white text-[#1B1B1B] border-[#E5E5EA] hover:border-[#1B1B1B]"
+                  }`}
+                >
+                  {FONT_USAGE_LABELS[u]}
+                </button>
+              ))}
+            </div>
+          </Field>
+          <Field label="Niches">
+            <NicheInput
+              niches={niches}
+              setNiches={setNiches}
+              niche={niche}
+              setNiche={setNiche}
+              addNiche={addNiche}
+            />
+          </Field>
+          <Field label="Notes">
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={2}
+              className="w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B] resize-none"
+            />
+          </Field>
+          {dirty && (
+            <button
+              onClick={saveMeta}
+              disabled={savingMeta || !name.trim()}
+              className="text-xs font-medium px-3 py-1.5 bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] disabled:opacity-40"
+            >
+              {savingMeta ? "Saving…" : "Save changes"}
+            </button>
           )}
-          {font.niches.length > 0 && (
-            <p>
-              <strong className="text-[#1B1B1B]">Niches:</strong> {font.niches.join(", ")}
-            </p>
-          )}
-          {font.notes && <p className="mt-2 italic">{font.notes}</p>}
-          <button
-            onClick={() => setEditingMeta(true)}
-            className="mt-3 text-[#1B1B1B] hover:underline text-xs font-medium inline-flex items-center gap-1"
-          >
-            <PencilIcon className="size-3" /> Edit details
-          </button>
         </div>
 
-        {/* Upload section */}
+        {/* Add another file */}
         <div className="border-t border-[#EDEDEF] pt-5">
           <h4 className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
-            Upload font file
+            Add another file
           </h4>
           <div className="flex items-end gap-3 flex-wrap">
             <Field label="Weight">
@@ -785,7 +1075,7 @@ function FontDetailModal({
               >
                 {[100, 200, 300, 400, 500, 600, 700, 800, 900].map((w) => (
                   <option key={w} value={w}>
-                    {w} {weightLabel(w)}
+                    {w}
                   </option>
                 ))}
               </select>
@@ -800,34 +1090,29 @@ function FontDetailModal({
                 <option value="italic">Italic</option>
               </select>
             </Field>
-            <div className="flex-1 min-w-[200px]">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".woff2,.woff,.ttf,.otf"
-                disabled={uploading}
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) onUpload(f);
-                }}
-                className="hidden"
-                id="font-upload-input"
-              />
-              <label
-                htmlFor="font-upload-input"
-                className={`inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg cursor-pointer ${
-                  uploading
-                    ? "bg-[#EDEDEF] text-[#7A7A7A] cursor-wait"
-                    : "bg-[#1B1B1B] text-white hover:bg-[#2D2D2D]"
-                }`}
-              >
-                <ArrowUpOnSquareIcon className="size-4" />
-                {uploading ? "Uploading…" : "Pick a file"}
-              </label>
-              <p className="text-[10px] text-[#A0A0A0] mt-1.5">
-                .woff2, .woff, .ttf, or .otf
-              </p>
-            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".woff2,.woff,.ttf,.otf"
+              disabled={uploading}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) onUpload(f);
+              }}
+              className="hidden"
+              id="font-extra-file"
+            />
+            <label
+              htmlFor="font-extra-file"
+              className={`inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg cursor-pointer ${
+                uploading
+                  ? "bg-[#EDEDEF] text-[#7A7A7A] cursor-wait"
+                  : "bg-[#1B1B1B] text-white hover:bg-[#2D2D2D]"
+              }`}
+            >
+              <ArrowUpOnSquareIcon className="size-4" />
+              {uploading ? "Uploading…" : "Pick file"}
+            </label>
           </div>
         </div>
 
@@ -842,13 +1127,13 @@ function FontDetailModal({
             <ul className="divide-y divide-[#EDEDEF]">
               {font.files
                 .slice()
-                .sort((a, b) => a.weight - b.weight)
+                .sort((a, b) => a.weight - b.weight || a.style.localeCompare(b.style))
                 .map((file) => (
                   <li key={file.id} className="flex items-center justify-between gap-3 py-2.5">
                     <div className="min-w-0">
                       <p className="text-xs font-medium text-[#1B1B1B] truncate">{file.fileName}</p>
                       <p className="text-[10px] text-[#7A7A7A] mt-0.5">
-                        {file.weight} {weightLabel(file.weight)} · {file.style} · {file.format} ·{" "}
+                        {file.weight} · {file.style} · {file.format} ·{" "}
                         {formatBytes(file.fileSizeBytes)}
                       </p>
                     </div>
@@ -887,22 +1172,6 @@ function FontDetailModal({
   );
 }
 
-function weightLabel(w: number): string {
-  return (
-    {
-      100: "Thin",
-      200: "Extra Light",
-      300: "Light",
-      400: "Regular",
-      500: "Medium",
-      600: "Semibold",
-      700: "Bold",
-      800: "Extra Bold",
-      900: "Black",
-    } as Record<number, string>
-  )[w] || "";
-}
-
 // ── Modal shell ────────────────────────────────────────────────────────────
 function ModalShell({
   title,
@@ -913,7 +1182,6 @@ function ModalShell({
   onClose: () => void;
   children: React.ReactNode;
 }) {
-  // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
