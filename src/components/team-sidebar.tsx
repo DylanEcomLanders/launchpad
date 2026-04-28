@@ -13,6 +13,7 @@ import {
   ClipboardDocumentCheckIcon,
   ClipboardDocumentListIcon,
   PhotoIcon,
+  Squares2X2Icon,
 } from "@heroicons/react/24/solid";
 import { Logo } from "@/components/logo";
 
@@ -48,6 +49,11 @@ const toolItems: NavItem[] = [
     label: "Swipe File",
     href: "/team/swipe-file",
     icon: <PhotoIcon className="size-4" />,
+  },
+  {
+    label: "Font Library",
+    href: "/team/fonts",
+    icon: <Squares2X2Icon className="size-4" />,
   },
   {
     label: "Dev QA Checklist",

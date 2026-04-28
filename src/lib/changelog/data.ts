@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-41",
+    date: "28 Apr 2026",
+    version: "0.33.0",
+    title: "Team Tools — Font Library",
+    changes: [
+      { type: "added", text: "New Font Library at /team/fonts — Google-Fonts-style browse for the team's approved typefaces. Type any sample text and the size slider re-renders every card live. Filter by category (Sans / Serif / Display / Script / Mono), use case (Heading or Body), and niche tag (beauty, premium, minimal, etc.)" },
+      { type: "added", text: "Admin upload flow — \"Add font\" creates a font row with metadata (name, CSS family, category, usage tags, niche chips with autocomplete + free-text, Google Fonts source URL, notes), then opens the detail drawer where the team can upload .woff2 / .woff / .ttf / .otf files per weight + style. Files are stored in a public Supabase Storage bucket and registered as @font-face declarations so previews render in the actual font" },
+      { type: "added", text: "Per-file download buttons on every card and inside the detail modal so designers can grab the binary they need without hunting through email or Drive. Delete-file and delete-font controls available with confirms" },
+      { type: "added", text: "Font Library entry added to the Team sidebar (Tools section) and to the Team Tools landing page" },
+    ],
+  },
+  {
     id: "cl-40",
     date: "27 Apr 2026",
     version: "0.32.1",

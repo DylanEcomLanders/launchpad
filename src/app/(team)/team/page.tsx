@@ -6,6 +6,7 @@ import {
   FolderIcon,
   BookOpenIcon,
   PhotoIcon,
+  Squares2X2Icon,
 } from "@heroicons/react/24/solid";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 
@@ -37,6 +38,12 @@ const tools = [
     description: "Reference library of great pages — drop a URL, we cache mobile + desktop.",
     href: "/team/swipe-file",
     icon: PhotoIcon,
+  },
+  {
+    title: "Font Library",
+    description: "Approved fonts only. Browse, preview, download — filter by niche or use case.",
+    href: "/team/fonts",
+    icon: Squares2X2Icon,
   },
   {
     title: "Dev QA Checklist",
