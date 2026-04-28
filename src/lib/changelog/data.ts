@@ -37,6 +37,17 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-44",
+    date: "28 Apr 2026",
+    version: "0.33.3",
+    title: "Font Library — Bulk upload by family",
+    changes: [
+      { type: "added", text: "Drop multiple Google Fonts downloads at once and the upload modal now groups files by detected family — 7 zips in, 7 separate font rows out, instead of all files being merged into one. Each detected family renders as its own collapsible card with editable name, file list (per-row weight + style), category, use-for chips, niche chips, and notes — so different fonts can have different metadata in a single submit" },
+      { type: "improved", text: "Submit button reflects the batch size — \"Add to library\" for one font, \"Add 7 fonts to library\" for many. Progress indicator shows which font is currently being created plus running file count (12/34 files). After bulk imports the modal closes back to the grid; single-font adds still drop you into the manage drawer for that font" },
+      { type: "improved", text: "Files within each group still get parallel uploads, but the per-group create + upload runs sequentially so the server doesn't get a thundering-herd of 100+ uploads at once on a big batch" },
+    ],
+  },
+  {
     id: "cl-43",
     date: "28 Apr 2026",
     version: "0.33.2",
