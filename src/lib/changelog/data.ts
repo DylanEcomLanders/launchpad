@@ -42,7 +42,8 @@ const seedChangelog: ChangelogEntry[] = [
     version: "0.33.1",
     title: "Font Library — Drop-and-go upload",
     changes: [
-      { type: "improved", text: "Adding a font is now one step instead of two. Drop the whole Google Fonts folder (or pick the .ttf files) and the library auto-detects the family name from the common filename prefix and the weight + style from each filename suffix. Inter-Regular.ttf → 400 normal, Inter-BoldItalic.ttf → 700 italic, *-VariableFont_wght.ttf handled too. Folder drag-and-drop reads sub-directories recursively so you can also drop the unzipped Google Fonts download as-is" },
+      { type: "improved", text: "Adding a font is now one step instead of two. Drop the .zip Google Fonts ships you (or the unzipped folder, or individual files) — the library auto-detects the family name from the common filename prefix and the weight + style from each filename suffix. Inter-Regular.ttf → 400 normal, Inter-BoldItalic.ttf → 700 italic, *-VariableFont_wght.ttf handled too" },
+      { type: "added", text: "Zip files are unpacked client-side via JSZip — no need to extract before uploading. Folder drag-and-drop also reads sub-directories recursively, so dropping either the .zip or the extracted folder works" },
       { type: "removed", text: "Dropped the \"CSS family name\" and \"Google Fonts URL\" fields from the create form — both were over-engineered. Family is just the font name now; if you need a source URL it lives in the notes" },
       { type: "improved", text: "Detected files preview as a list with editable weight + style dropdowns per row before submit, so you can fix any auto-detection misses without re-uploading" },
       { type: "improved", text: "Submit now creates the font row + uploads every file in one click with a \"Uploading X / Y\" progress indicator, then drops you straight into the manage drawer" },

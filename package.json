@@ -21,6 +21,7 @@
     "commander": "^14.0.3",
     "dotenv": "^17.3.1",
     "html-to-image": "^1.11.13",
+    "jszip": "^3.10.1",
     "mammoth": "^1.12.0",
     "next": "16.1.6",
     "react": "19.2.3",

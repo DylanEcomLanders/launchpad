@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import JSZip from "jszip";
 import {
   PlusIcon,
   XMarkIcon,
@@ -528,10 +529,38 @@ function AddFontModal({
     return files;
   };
 
-  const ingestFiles = (files: File[]) => {
+  // Expand any .zip files in the dropped/picked list into their contained
+  // fonts so the user can drop the Google Fonts download directly.
+  const expandZips = async (files: File[]): Promise<File[]> => {
+    const out: File[] = [];
+    for (const f of files) {
+      if (/\.zip$/i.test(f.name)) {
+        try {
+          const zip = await JSZip.loadAsync(await f.arrayBuffer());
+          const entries = Object.values(zip.files).filter(
+            (e) => !e.dir && FONT_FILE_EXT_RE.test(e.name),
+          );
+          for (const e of entries) {
+            const blob = await e.async("blob");
+            // Strip any path prefix Google Fonts adds inside the zip
+            const baseName = e.name.split("/").pop() || e.name;
+            out.push(new File([blob], baseName, { type: blob.type || "font/ttf" }));
+          }
+        } catch (err) {
+          onError(`Couldn't read zip ${f.name}: ${err instanceof Error ? err.message : "unknown error"}`);
+        }
+      } else {
+        out.push(f);
+      }
+    }
+    return out;
+  };
+
+  const ingestFiles = async (rawFiles: File[]) => {
+    const files = await expandZips(rawFiles);
     const fonts = files.filter((f) => FONT_FILE_EXT_RE.test(f.name));
     if (!fonts.length) {
-      onError("No font files found. Accepts .woff2, .woff, .ttf, .otf");
+      onError("No font files found. Drop a .zip or .woff2/.woff/.ttf/.otf");
       return;
     }
     const next: PendingFile[] = fonts.map((f) => {
@@ -556,15 +585,15 @@ function AddFontModal({
     setDragOver(false);
     if (e.dataTransfer.items?.length) {
       const files = await collectFilesFromItems(e.dataTransfer.items);
-      ingestFiles(files);
+      await ingestFiles(files);
     } else if (e.dataTransfer.files?.length) {
-      ingestFiles(Array.from(e.dataTransfer.files));
+      await ingestFiles(Array.from(e.dataTransfer.files));
     }
   };
 
-  const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
-    ingestFiles(files);
+    await ingestFiles(files);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -656,42 +685,26 @@ function AddFontModal({
           ref={fileInputRef}
           type="file"
           multiple
-          // @ts-expect-error - webkitdirectory exists at runtime, not in React's typings
-          webkitdirectory=""
-          accept=".woff2,.woff,.ttf,.otf"
-          onChange={onPick}
-          className="hidden"
-          id="font-folder-input"
-        />
-        <input
-          ref={(el) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (window as any).__fontMultiInput = el;
-          }}
-          type="file"
-          multiple
-          accept=".woff2,.woff,.ttf,.otf"
+          accept=".zip,.woff2,.woff,.ttf,.otf"
           onChange={onPick}
           className="hidden"
           id="font-files-input"
         />
         <ArrowUpOnSquareIcon className="size-7 mx-auto text-[#7A7A7A] mb-2" />
         <p className="text-sm font-medium text-[#1B1B1B]">
-          Drop the Google Fonts folder here
+          Drop the Google Fonts download here
         </p>
         <p className="text-xs text-[#7A7A7A] mt-1">
-          Or pick the{" "}
-          <label htmlFor="font-folder-input" className="font-medium text-[#1B1B1B] underline cursor-pointer">
-            whole folder
-          </label>{" "}
-          /{" "}
-          <label htmlFor="font-files-input" className="font-medium text-[#1B1B1B] underline cursor-pointer">
-            individual files
+          .zip, .woff2, .woff, .ttf, or .otf — or{" "}
+          <label
+            htmlFor="font-files-input"
+            className="font-medium text-[#1B1B1B] underline cursor-pointer"
+          >
+            pick a file
           </label>
-          {" "}— .woff2, .woff, .ttf, .otf
         </p>
         <p className="text-[10px] text-[#A0A0A0] mt-2">
-          Weight + style auto-detected from filenames
+          Zips are unpacked client-side. Weight + style auto-detected from filenames.
         </p>
       </div>
 
