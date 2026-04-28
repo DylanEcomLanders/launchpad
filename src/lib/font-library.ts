@@ -166,6 +166,10 @@ export function formatBytes(b: number): string {
 
 export function prettifyFamily(raw: string): string {
   return raw
+    // Strip optical-size suffixes like "_18pt", "_24pt", "_36pt" — these are
+    // different sizes of the same family (DM Sans, Roboto Flex, etc.), not
+    // separate fonts, so they should all collapse to one group.
+    .replace(/_\d+pt\b/gi, "")
     .replace(/[-_]+/g, " ")
     .replace(/([a-z])([A-Z])/g, "$1 $2") // split CamelCase: "OpenSans" → "Open Sans"
     .replace(/\s+/g, " ")

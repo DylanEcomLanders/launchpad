@@ -37,6 +37,15 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-45",
+    date: "28 Apr 2026",
+    version: "0.33.4",
+    title: "Font Library — Optical-size grouping",
+    changes: [
+      { type: "fixed", text: "Fonts that ship with multiple optical sizes (DM Sans, Roboto Flex, Inter Tight, Newsreader, etc.) were splitting into one group per size — \"DM Sans 18pt\", \"DM Sans 24pt\", \"DM Sans 36pt\" — instead of all collapsing into a single \"DM Sans\" entry. The filename parser now strips \"_<N>pt\" suffixes from the parsed family name so every optical size lands in the same group" },
+    ],
+  },
+  {
     id: "cl-44",
     date: "28 Apr 2026",
     version: "0.33.3",
