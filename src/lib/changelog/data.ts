@@ -37,6 +37,15 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-46",
+    date: "28 Apr 2026",
+    version: "0.33.5",
+    title: "Font Library — Race fix on multi-file upload",
+    changes: [
+      { type: "fixed", text: "Multi-weight fonts (Montserrat, Inter, etc.) were ending up with only 1 file in the row even though the modal showed all 18 uploading. Cause: each file POST did a read-modify-write on the row's files JSONB, and Promise.all firing all uploads in parallel meant the first 17 writes got clobbered by the last one. Uploads within a single font are now serialized so every file lands in the final array. Cross-font uploads stay sequential as before. Re-upload any fonts that lost weights" },
+    ],
+  },
+  {
     id: "cl-45",
     date: "28 Apr 2026",
     version: "0.33.4",

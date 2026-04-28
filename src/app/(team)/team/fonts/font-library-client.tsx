@@ -808,25 +808,27 @@ function AddFontModal({
         }
         createdIds.push(created.id);
 
-        // Upload this group's files in parallel
-        await Promise.all(
-          g.files.map(async (p) => {
-            const fd = new FormData();
-            fd.append("file", p.file);
-            fd.append("weight", String(p.weight));
-            fd.append("style", p.style);
-            const r = await fetch(`/api/font-library/${created.id}/files`, {
-              method: "POST",
-              body: fd,
-            });
-            if (!r.ok) {
-              const err = await r.json().catch(() => ({}));
-              onError(`Upload of ${p.file.name} failed: ${err?.error || r.status}`);
-            }
-            fileDone += 1;
-            setProgress((prev) => ({ ...prev, fileDone }));
-          }),
-        );
+        // Upload this group's files sequentially. The /[id]/files endpoint
+        // does a read-modify-write on the row's files JSONB array, so parallel
+        // requests to the same font row race and clobber each other — only
+        // the last write survives. Serializing here keeps every file in the
+        // final array. Cross-group is still parallel-safe (different rows).
+        for (const p of g.files) {
+          const fd = new FormData();
+          fd.append("file", p.file);
+          fd.append("weight", String(p.weight));
+          fd.append("style", p.style);
+          const r = await fetch(`/api/font-library/${created.id}/files`, {
+            method: "POST",
+            body: fd,
+          });
+          if (!r.ok) {
+            const err = await r.json().catch(() => ({}));
+            onError(`Upload of ${p.file.name} failed: ${err?.error || r.status}`);
+          }
+          fileDone += 1;
+          setProgress((prev) => ({ ...prev, fileDone }));
+        }
 
         setProgress((p) => ({ ...p, groupDone: gi + 1 }));
       }
