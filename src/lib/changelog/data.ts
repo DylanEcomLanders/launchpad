@@ -42,6 +42,7 @@ const seedChangelog: ChangelogEntry[] = [
     version: "0.33.0",
     title: "Team Tools — Font Library",
     changes: [
+      { type: "fixed", text: "Quiz Funnel build was failing on Vercel — `field` on QuizQuestion was typed as `keyof typeof FIELD_BY_STEP` (resolves to numeric step keys 1–5) instead of the string field names like \"vertical\". Switched the type to the indexed-value form so production builds compile again" },
       { type: "added", text: "New Font Library at /team/fonts — Google-Fonts-style browse for the team's approved typefaces. Type any sample text and the size slider re-renders every card live. Filter by category (Sans / Serif / Display / Script / Mono), use case (Heading or Body), and niche tag (beauty, premium, minimal, etc.)" },
       { type: "added", text: "Admin upload flow — \"Add font\" creates a font row with metadata (name, CSS family, category, usage tags, niche chips with autocomplete + free-text, Google Fonts source URL, notes), then opens the detail drawer where the team can upload .woff2 / .woff / .ttf / .otf files per weight + style. Files are stored in a public Supabase Storage bucket and registered as @font-face declarations so previews render in the actual font" },
       { type: "added", text: "Per-file download buttons on every card and inside the detail modal so designers can grab the binary they need without hunting through email or Drive. Delete-file and delete-font controls available with confirms" },

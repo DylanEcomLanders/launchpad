@@ -16,7 +16,7 @@ export interface QuizOption<T extends string> {
 
 export interface QuizQuestion<T extends string> {
   step: number;
-  field: keyof typeof FIELD_BY_STEP;
+  field: (typeof FIELD_BY_STEP)[keyof typeof FIELD_BY_STEP];
   question: string;
   options: QuizOption<T>[];
 }
