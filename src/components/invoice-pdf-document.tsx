@@ -3,6 +3,7 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import { PdfLogo, formatDate, shared as s } from "@/lib/pdf-shared";
 import { formatGBP } from "@/lib/formatters";
+import { businessProfile } from "@/lib/business-profile";
 import type { InvoiceData } from "@/app/(dashboard)/tools/invoice-generator/page";
 
 const inv = StyleSheet.create({
@@ -59,6 +60,45 @@ const inv = StyleSheet.create({
     color: "#0A0A0A",
     marginBottom: 10,
     lineHeight: 1.5,
+  },
+  /* Invoice info strip — horizontal row of 4 small fields above the From/Bill To row */
+  infoStrip: {
+    flexDirection: "row",
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    backgroundColor: "#FAFAFA",
+    borderRadius: 4,
+    marginBottom: 24,
+  },
+  infoCell: {
+    flex: 1,
+    paddingHorizontal: 4,
+  },
+  infoLabel: {
+    fontSize: 7,
+    fontWeight: 700,
+    color: "#6B6B6B",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    marginBottom: 3,
+  },
+  infoValue: {
+    fontSize: 10,
+    fontWeight: 600,
+    color: "#0A0A0A",
+  },
+  /* Address line — tight line-height, no bottom margin */
+  addressLine: {
+    fontSize: 10,
+    fontWeight: 400,
+    color: "#0A0A0A",
+    lineHeight: 1.45,
+  },
+  metaTinyMuted: {
+    fontSize: 8.5,
+    fontWeight: 400,
+    color: "#6B6B6B",
+    marginTop: 6,
   },
   sectionLabel: {
     fontSize: 8,
@@ -215,24 +255,43 @@ export function InvoicePdfDocument({ data }: { data: InvoiceData }) {
           <Text style={inv.invoiceTitle}>INVOICE</Text>
         </View>
 
-        {/* Meta: Invoice details + Client */}
+        {/* Invoice info strip — number, dates, terms */}
+        <View style={inv.infoStrip}>
+          <View style={inv.infoCell}>
+            <Text style={inv.infoLabel}>Invoice Number</Text>
+            <Text style={inv.infoValue}>{data.invoiceNumber}</Text>
+          </View>
+          <View style={inv.infoCell}>
+            <Text style={inv.infoLabel}>Issued</Text>
+            <Text style={inv.infoValue}>{formatDate(data.invoiceDate)}</Text>
+          </View>
+          <View style={inv.infoCell}>
+            <Text style={inv.infoLabel}>Due</Text>
+            <Text style={inv.infoValue}>{formatDate(data.dueDate)}</Text>
+          </View>
+          {data.paymentTerm ? (
+            <View style={[inv.infoCell, { flex: 1.6 }]}>
+              <Text style={inv.infoLabel}>Payment Terms</Text>
+              <Text style={inv.infoValue}>{data.paymentTerm}</Text>
+            </View>
+          ) : null}
+        </View>
+
+        {/* From / Bill To */}
         <View style={inv.metaRow}>
-          {/* Left column — invoice info */}
+          {/* Left column — From (sender) */}
           <View style={inv.metaCol}>
-            <Text style={inv.metaLabel}>Invoice Number</Text>
-            <Text style={inv.metaValueBold}>{data.invoiceNumber}</Text>
-
-            <Text style={inv.metaLabel}>Invoice Date</Text>
-            <Text style={inv.metaValue}>{formatDate(data.invoiceDate)}</Text>
-
-            <Text style={inv.metaLabel}>Due Date</Text>
-            <Text style={inv.metaValue}>{formatDate(data.dueDate)}</Text>
-
-            {data.paymentTerm ? (
-              <>
-                <Text style={inv.metaLabel}>Payment Terms</Text>
-                <Text style={inv.metaValue}>{data.paymentTerm}</Text>
-              </>
+            <Text style={inv.metaLabel}>From</Text>
+            <Text style={inv.metaValueBold}>{businessProfile.legalName}</Text>
+            {businessProfile.addressLines.map((line, i) => (
+              <Text key={i} style={inv.addressLine}>{line}</Text>
+            ))}
+            <Text style={inv.metaTinyMuted}>
+              Company No. {businessProfile.companyNumber}
+              {businessProfile.vatNumber ? ` · VAT ${businessProfile.vatNumber}` : ""}
+            </Text>
+            {businessProfile.email ? (
+              <Text style={inv.addressLine}>{businessProfile.email}</Text>
             ) : null}
           </View>
 
@@ -241,13 +300,13 @@ export function InvoicePdfDocument({ data }: { data: InvoiceData }) {
             <Text style={inv.metaLabel}>Bill To</Text>
             <Text style={inv.metaValueBold}>{data.clientName}</Text>
             {data.contactName ? (
-              <Text style={inv.metaValue}>{data.contactName}</Text>
+              <Text style={inv.addressLine}>{data.contactName}</Text>
             ) : null}
             {data.clientEmail ? (
-              <Text style={inv.metaValue}>{data.clientEmail}</Text>
+              <Text style={inv.addressLine}>{data.clientEmail}</Text>
             ) : null}
             {data.clientAddress ? (
-              <Text style={inv.metaValue}>{data.clientAddress}</Text>
+              <Text style={inv.addressLine}>{data.clientAddress}</Text>
             ) : null}
           </View>
         </View>
@@ -344,7 +403,9 @@ export function InvoicePdfDocument({ data }: { data: InvoiceData }) {
 
         {/* Footer */}
         <View style={inv.footer} fixed>
-          <Text style={inv.footerText}>Ecomlanders Ltd</Text>
+          <Text style={inv.footerText}>
+            {businessProfile.legalName} · {businessProfile.addressLines.join(", ")} · Company No. {businessProfile.companyNumber}
+          </Text>
         </View>
       </Page>
     </Document>

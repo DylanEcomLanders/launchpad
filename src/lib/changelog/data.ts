@@ -37,6 +37,46 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-49",
+    date: "1 May 2026",
+    version: "0.34.2",
+    title: "Invoice Generator — registered business address on every invoice",
+    changes: [
+      { type: "added", text: "Every generated invoice now shows a proper From block: Ecomlanders Ltd, 4 Station Court, Cannock, England, WS11 0EJ, plus Company No. 16308589. Bill To column moves alongside it on the right" },
+      { type: "added", text: "New invoice info strip above the From/Bill To row groups Invoice Number · Issued · Due · Payment Terms into a single horizontal grey bar — tidier hierarchy, easier for clients to scan" },
+      { type: "improved", text: "PDF footer now includes the registered address and company number on every page (was just \"Ecomlanders Ltd\"). Required for UK Ltd invoice compliance" },
+      { type: "added", text: "Business profile now lives in src/lib/business-profile.ts — single source of truth for legal name, address, company number, and (when registered) VAT number. Future PDFs can import the same constants" },
+    ],
+  },
+  {
+    id: "cl-48",
+    date: "29 Apr 2026",
+    version: "0.34.1",
+    title: "Agent Mission Control — Unique characters + idle/working animations",
+    changes: [
+      { type: "added", text: "Each agent now has TWO pixel sprites — an idle pose with their role prop at rest, and a working pose with the prop in active use. Felix carries a clipboard, Wren a magnifier, Juno a pen + notepad, Theo a tablet, Pip a stack of envelopes, Otis a laptop, Mira a chart placard with rising bars, Reuben a planner. Sprite swap is automatic based on agent.status" },
+      { type: "added", text: "Always-on idle bob: NPCs bob gently every 2.6s while idle. Per-agent animation-delay is hashed from the agent id so the eight characters on the index page bob out of sync — gives the \"milling around the town square\" feel. WORKING agents get a faster, more pronounced 0.9s bob; BLOCKED and OFFLINE stay still" },
+      { type: "added", text: "/api/agents/[id]/run now flips agent.status to WORKING for the duration of the simulated run, then back to IDLE on completion. Chat tab triggers a mid-run reload so you actually see the sprite swap during the 1.5s wait. Skipped for OFFLINE agents — they stay offline until you bring them online manually" },
+      { type: "improved", text: "Renamed all 8 agents to feel like distinct NPCs rather than a generic roster: Sam → Felix, Iris → Wren, Maya → Juno, James → Theo, Nora → Pip, Leo → Otis, Echo → Mira, Archie's Assistant → Reuben (role changed from \"Founder Ops\" to \"Personal Aide\" — Archie is dev lead, not founder)" },
+      { type: "improved", text: "seedAgentsIfEmpty now prunes any agent whose id isn't in NAMED_AGENTS — so the rename above sweeps the old sam/iris/etc records out of localStorage and Supabase on next page load, no manual cleanup needed" },
+      { type: "improved", text: "PixelPortrait now takes an `agent` prop (preferred) instead of raw `src` — that's what wires up the sprite swap and ambient bob. `static` flag suppresses animation for the small 32px avatars in the activity feed and chat bubbles where 10 bobbing NPCs would be visual noise" },
+    ],
+  },
+  {
+    id: "cl-47",
+    date: "29 Apr 2026",
+    version: "0.34.0",
+    title: "Agent Mission Control v0.5",
+    changes: [
+      { type: "added", text: "New /agents page renders the Ecom Landers AI workforce as pixel-art NPCs in a town-square grid. Eight named agents seeded out of the box: Sam (PM), Iris (Research), Maya (Copy), James (Design QA), Nora (Inbox), Leo (Dev), Echo (Analytics), and Archie's Assistant. Each card shows status, role, and a subtle bob-on-hover idle animation" },
+      { type: "added", text: "Agent detail page (/agents/[id]) with four tabs: Chat (briefs an agent — currently stubs a 1.5s mocked response so we can ship the UI before wiring real Anthropic calls), Tasks (filterable history with expandable rows), Config (editable system prompt + model selector, admin-only), Performance (placeholder until real runs land)" },
+      { type: "added", text: "Stubbed API routes: GET /api/agents, GET/PATCH /api/agents/[id], POST /api/agents/[id]/run, GET /api/agents/[id]/tasks. The /run endpoint is the seam we'll replace with Anthropic SDK calls in v1 — request shape and AgentTask record stay the same so the UI doesn't need to change" },
+      { type: "added", text: "Supabase migration 005 creates `agents` and `agent_tasks` tables with anon RLS policies and a JSONB index on agent_tasks.data->>'agentId'. Both follow the existing {id, data, created_at} pattern so the createStore<T> helper reads/writes them with no special casing" },
+      { type: "added", text: "Placeholder pixel-art portraits live at /public/agents/*.svg with a README documenting the replacement workflow. Each NPC uses a shared 16×16 silhouette template with a unique palette so they feel distinct without waiting on real character art" },
+      { type: "added", text: "Sidebar gains a top-level \"Agents\" link next to Mission Control" },
+    ],
+  },
+  {
     id: "cl-46",
     date: "28 Apr 2026",
     version: "0.33.5",
