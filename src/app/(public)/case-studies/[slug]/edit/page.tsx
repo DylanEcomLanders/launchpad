@@ -37,6 +37,7 @@ import { HeadlineStatCard } from "@/components/case-studies/editor/headline-stat
 import { SolutionCardEditor } from "@/components/case-studies/editor/solution-card-editor";
 import { ComparisonRowEditor } from "@/components/case-studies/editor/comparison-row-editor";
 import { PageSlicesEditor } from "@/components/case-studies/editor/page-slices-editor";
+import { FigmaSyncForm } from "@/components/case-studies/editor/figma-sync-form";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
@@ -756,9 +757,16 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                 />
               </div>
 
+              <FigmaSyncForm
+                slug={study.slug}
+                desktopCount={study.designs.desktopSlices.length}
+                mobileCount={study.designs.mobileSlices.length}
+                onSynced={(synced) => setStudy(synced)}
+              />
+
               <PageSlicesEditor
                 label="Desktop full-page slices"
-                helper="Add 1+ tall full-page screenshots. Visitors click → opens scrollable modal."
+                helper="Auto-populated by Figma sync above. Or upload tall full-page screenshots manually."
                 slug={study.slug}
                 slices={study.designs.desktopSlices}
                 onChange={(next) =>

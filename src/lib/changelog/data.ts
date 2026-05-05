@@ -50,6 +50,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Bootstrap helper at /api/case-studies/seed creates a fully-populated SuppsX example so the layout can be pressure-tested end-to-end after the DB table + storage bucket are provisioned" },
       { type: "fixed", text: "Hotfix the upload route Buffer typing — Next 16 strict prod build flagged Buffer<ArrayBuffer> can't receive sharp.toBuffer's wider Buffer<ArrayBufferLike>. Widened the local binding so reassignment after webp compression type-checks. Vercel deploy unblocked" },
       { type: "added", text: "Live page render in The Design section — upload full-page desktop and mobile screenshot slices, visitors get a browser-chrome thumbnail with a \"View full page →\" affordance. Click opens a full-screen scrollable modal with desktop/mobile toggle (only shown when both are populated), ESC + click-outside to close, body-scroll lock while open. Mirrors the portfolio-v2 viewer pattern but as a modal instead of inline scroll" },
+      { type: "added", text: "Figma sync for case study design renders — paste a desktop frame URL (+ optional mobile), hit Sync from Figma, slices auto-generate via the same pipeline as portfolio-v2 (sharp slicing into AVIF chunks at 1500px max height, q60). Re-syncing replaces previous slices and cleans up orphaned storage objects. Removes the manual screenshot step — case studies now have feature parity with portfolio-v2's Figma-driven workflow" },
     ],
   },
   {
