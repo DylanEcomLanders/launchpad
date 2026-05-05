@@ -402,7 +402,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
           </EditorSection>
 
           {/* ── Hero ──────────────────────────── */}
-          <EditorSection title="Hero" description="Headline, body and screenshot collage">
+          <EditorSection title="Hero" description="Headline, body and hero image">
             <div className="space-y-4">
               <div>
                 <label className={labelClass}>Headline</label>
@@ -452,6 +452,42 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                   }
                 />
               </div>
+            </div>
+          </EditorSection>
+
+          {/* ── Screenshot row ────────────────── */}
+          <EditorSection
+            title="Screenshot row"
+            description="3 screenshots that sit under the meta row (Brand · Niche · Engagement · Services)"
+            badge={
+              study.results.screenshots.length > 0
+                ? `${study.results.screenshots.length}/3`
+                : undefined
+            }
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <ImageUpload
+                  key={i}
+                  slug={study.slug}
+                  aspect="auto"
+                  value={study.results.screenshots[i]}
+                  onChange={(next) =>
+                    updateStudy((prev) => {
+                      const screenshots = [...prev.results.screenshots];
+                      if (next) {
+                        screenshots[i] = next;
+                      } else {
+                        screenshots.splice(i, 1);
+                      }
+                      return {
+                        ...prev,
+                        results: { ...prev.results, screenshots },
+                      };
+                    })
+                  }
+                />
+              ))}
             </div>
           </EditorSection>
 
