@@ -42,7 +42,9 @@ export async function POST(req: NextRequest) {
     const rand = Math.random().toString(36).slice(2, 8);
     const stamp = Date.now();
 
-    let buffer = Buffer.from(await file.arrayBuffer());
+    // Typed as ArrayBufferLike so sharp's toBuffer (which returns the wider
+     // Buffer<ArrayBufferLike>) is assignable on reassignment below.
+    let buffer: Buffer<ArrayBufferLike> = Buffer.from(await file.arrayBuffer());
     let contentType = file.type;
     let ext = file.name.split(".").pop()?.toLowerCase() || "bin";
     let width: number | undefined;
