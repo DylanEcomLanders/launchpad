@@ -2,16 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import {
-  BookOpenIcon,
-  FolderIcon,
-  BanknotesIcon,
-  FlagIcon,
-  ArrowTrendingUpIcon,
-  ChevronRightIcon,
-  ClipboardDocumentListIcon,
-  TicketIcon,
-} from "@heroicons/react/24/solid";
+import { TicketIcon } from "@heroicons/react/24/solid";
 import {
   PhotoIcon,
   TrophyIcon,
@@ -34,57 +25,6 @@ import {
   type Ticket,
 } from "@/lib/tickets/types";
 import { loadTickets } from "@/lib/tickets/data";
-
-interface QuickLink {
-  title: string;
-  description: string;
-  href: string;
-  icon: typeof BookOpenIcon;
-  iconColor?: string;
-  adminOnly?: boolean;
-}
-
-const quickLinks: QuickLink[] = [
-  {
-    title: "Operations",
-    description: "Wiki, funnel playbook, funnel builder. How we work.",
-    href: "/tools/ops-wiki",
-    icon: BookOpenIcon,
-  },
-  {
-    title: "Source of Truth",
-    description: "Cheat sheet + Conversion Engine reference. Leadership rules.",
-    href: "/internal/cheatsheet",
-    icon: FlagIcon,
-    iconColor: "#16A34A",
-    adminOnly: true,
-  },
-  {
-    title: "Execution",
-    description: "Onboarding, portals, pods, task board. Active client work.",
-    href: "/tools/task-board",
-    icon: FolderIcon,
-  },
-  {
-    title: "Finance",
-    description: "Pricing, invoices, dev hours, expenses.",
-    href: "/internal/pricing",
-    icon: BanknotesIcon,
-    adminOnly: true,
-  },
-  {
-    title: "Growth",
-    description: "Feedback loop. How we get better as an agency.",
-    href: "/tools/feedback",
-    icon: ArrowTrendingUpIcon,
-  },
-  {
-    title: "Tasks",
-    description: "Live deliverables, deadlines, who's on what.",
-    href: "/tasks",
-    icon: ClipboardDocumentListIcon,
-  },
-];
 
 /* ── Toolkit ──
  * Centralised quick-access hub for client-facing assets and internal
@@ -194,39 +134,6 @@ export default function MissionControl() {
           Mission Control
         </h1>
       </header>
-
-      {/* ── Quick links ──────────────────────── */}
-      <div className="mb-10">
-        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
-          Jump to
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {quickLinks.map((link) => (
-            <Link
-              key={link.title}
-              href={link.href}
-              className="group bg-white border border-[#E5E5EA] rounded-xl p-4 hover:border-[#1B1B1B] hover:shadow-sm transition-all"
-            >
-              <div className="flex items-center gap-2 mb-1.5">
-                <link.icon
-                  className="size-4"
-                  style={{ color: link.iconColor || "#7A7A7A" }}
-                />
-                <h3 className="text-sm font-semibold text-[#1B1B1B]">
-                  {link.title}
-                </h3>
-              </div>
-              <p className="text-xs leading-snug text-[#7A7A7A] mb-3">
-                {link.description}
-              </p>
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#1B1B1B] group-hover:gap-1.5 transition-all">
-                Open
-                <ChevronRightIcon className="size-3" />
-              </span>
-            </Link>
-          ))}
-        </div>
-      </div>
 
       {/* ── Toolkit ──────────────────────────── */}
       <div className="mb-10">
