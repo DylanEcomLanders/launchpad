@@ -22,6 +22,7 @@ import {
   type PhaseEntry,
 } from "@/lib/task-board/phases";
 import { TaskDetailDrawer } from "@/components/task-board/task-detail-drawer";
+import { TicketsPanel } from "@/components/task-board/tickets-panel";
 
 interface Task {
   id: string;
@@ -327,7 +328,21 @@ export default function TaskBoardPage() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-6 py-8 flex gap-4">
+        {/* ── Tickets rail — same panel the leadership board uses, minus
+         * Promote (team raises, leadership decides if it becomes a task) ── */}
+        <aside className="w-[320px] flex-shrink-0">
+          <TicketsPanel
+            currentUser="Team"
+            clients={[
+              ...new Set(
+                allTasks.map((t) => t.client).filter((c): c is string => !!c),
+              ),
+            ].sort()}
+          />
+        </aside>
+
+        <div className="flex-1 min-w-0">
         {/* Tab + assignee filter */}
         <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
           <div className="inline-flex items-center p-1 bg-[#EFEFF1] rounded-lg">
@@ -468,6 +483,7 @@ export default function TaskBoardPage() {
             </div>
           </details>
         )}
+        </div>
       </div>
 
       <div className="text-center py-6">

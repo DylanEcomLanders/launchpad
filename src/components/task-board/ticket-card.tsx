@@ -21,7 +21,9 @@ interface Props {
   onStart: () => void;
   onDone: () => void;
   onKill: (reason: string) => void;
-  onPromote: () => void;
+  /** Optional — if omitted, the Promote button is hidden (used on
+   * team-facing surfaces where only leadership promotes). */
+  onPromote?: () => void;
 }
 
 /* Ticket card with age-based visual escalation. The left border colour
@@ -141,15 +143,17 @@ export function TicketCard({
             <XMarkIcon className="size-3" />
             Kill
           </button>
-          <button
-            type="button"
-            onClick={onPromote}
-            className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold rounded border border-[#E5E5EA] text-[#1A1A1A] hover:bg-[#F3F3F5] ml-auto"
-            title="Promote to a full task"
-          >
-            <ArrowUpRightIcon className="size-3" />
-            Promote
-          </button>
+          {onPromote && (
+            <button
+              type="button"
+              onClick={onPromote}
+              className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold rounded border border-[#E5E5EA] text-[#1A1A1A] hover:bg-[#F3F3F5] ml-auto"
+              title="Promote to a full task"
+            >
+              <ArrowUpRightIcon className="size-3" />
+              Promote
+            </button>
+          )}
         </div>
       )}
 

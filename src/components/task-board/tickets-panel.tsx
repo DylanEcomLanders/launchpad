@@ -20,10 +20,10 @@ interface Props {
   currentUser: string;
   /** List of client names for the composer datalist. */
   clients: string[];
-  /** Called when "Promote to task" fires. Receives the ticket; the host
-   * page should create a task and return its id so the ticket can store
-   * a back-link. Return null if creation was cancelled. */
-  onPromoteToTask: (ticket: Ticket) => Promise<string | null>;
+  /** Called when "Promote to task" fires. Optional — when omitted, the
+   * Promote button is hidden. Use the omission on team-facing surfaces
+   * where only leadership should be able to promote a ticket to a task. */
+  onPromoteToTask?: (ticket: Ticket) => Promise<string | null>;
 }
 
 /* Persistent panel that sits on the task board. Owns the entire ticket
@@ -121,6 +121,7 @@ export function TicketsPanel({ currentUser, clients, onPromoteToTask }: Props) {
   };
 
   const handlePromote = async (id: string) => {
+    if (!onPromoteToTask) return;
     const t = tickets.find((x) => x.id === id);
     if (!t) return;
     const taskId = await onPromoteToTask(t);
@@ -267,7 +268,7 @@ export function TicketsPanel({ currentUser, clients, onPromoteToTask }: Props) {
                 onStart={() => handleStart(t.id)}
                 onDone={() => handleDone(t.id)}
                 onKill={(reason) => handleKill(t.id, reason)}
-                onPromote={() => handlePromote(t.id)}
+                onPromote={onPromoteToTask ? () => handlePromote(t.id) : undefined}
               />
             ))
           )}

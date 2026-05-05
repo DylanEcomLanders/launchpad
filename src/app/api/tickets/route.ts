@@ -28,15 +28,13 @@ export async function GET() {
   }
 }
 
+/* Open POST — tickets are exposed on the public /tasks team view so
+ * anyone on the team can raise without an admin password. Mirrors the
+ * existing /api/task-board PATCH which is also unauthed for team phase
+ * updates. Trade-off accepted: anonymous writes are possible, audited
+ * by raised_by + raised_at on each ticket. */
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const auth = req.headers.get("x-admin-key");
-  if (
-    auth !==
-    (process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "ecomlanders2025")
-  ) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   if (!isSupabaseConfigured()) {
     return NextResponse.json({ error: "No DB" }, { status: 500 });

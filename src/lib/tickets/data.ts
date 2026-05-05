@@ -2,14 +2,13 @@
  * Loads from /api/tickets on mount, persists every mutation immediately.
  * Tickets auto-save (no manual save button) — speed of capture is the
  * whole point of the system.
+ *
+ * The API is unauthed (mirrors /api/task-board PATCH) because tickets
+ * are exposed on the public /tasks team view — team raises directly,
+ * no admin password required.
  */
 
 import type { Ticket, TicketsData } from "./types";
-
-const ADMIN_KEY =
-  typeof window !== "undefined"
-    ? process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "ecomlanders2025"
-    : "";
 
 export async function loadTickets(): Promise<Ticket[]> {
   try {
@@ -25,10 +24,7 @@ export async function loadTickets(): Promise<Ticket[]> {
 export async function saveTickets(tickets: Ticket[]): Promise<void> {
   await fetch("/api/tickets", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-admin-key": ADMIN_KEY,
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ tickets }),
   });
 }
