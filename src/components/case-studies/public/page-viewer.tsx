@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import { ModalPortal } from "@/components/modal-portal";
 import type { CaseStudyImage } from "@/lib/case-studies/types";
 
 interface Props {
@@ -12,7 +13,7 @@ interface Props {
 
 /* Click-to-open scrollable modal showing the full live page render for one
  * device. Render two side-by-side (one desktop, one mobile) for the full
- * The Design module. */
+ * The Design module — same modal pattern as portfolio-v2. */
 export function PageViewer({ slices, device, brandName }: Props) {
   const [open, setOpen] = useState(false);
 
@@ -87,61 +88,73 @@ export function PageViewer({ slices, device, brandName }: Props) {
         </div>
       </button>
 
-      {/* Modal */}
+      {/* Full-screen scrollable modal — matches portfolio-v2 pattern */}
       {open && (
-        <div
-          className="fixed inset-0 z-50 flex flex-col bg-[#0A0A0B]/85 backdrop-blur-sm"
-          onClick={() => setOpen(false)}
-        >
+        <ModalPortal>
           <div
-            className="flex items-center justify-between gap-4 px-6 py-3 border-b border-white/10"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="text-[11px] uppercase tracking-[0.18em] text-white/60 font-semibold">
-              {brandName} · {deviceLabel}
-            </div>
-            <button
-              onClick={() => setOpen(false)}
-              className="size-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
-              aria-label="Close"
-            >
-              <XMarkIcon className="size-4" />
-            </button>
-          </div>
-
-          <div
-            className="flex-1 overflow-y-auto py-8 px-4"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col"
+            onClick={() => setOpen(false)}
           >
             <div
-              className={`mx-auto bg-white rounded-md overflow-hidden shadow-[0_30px_120px_rgba(0,0,0,0.5)] ${
-                device === "mobile" ? "max-w-[420px]" : "max-w-5xl"
-              }`}
+              className="shrink-0 flex items-center justify-between px-5 py-4 border-b border-white/10"
+              onClick={(e) => e.stopPropagation()}
             >
-              {slices.map((slice, i) => (
-                <div
-                  key={slice.filename || i}
-                  className="relative w-full"
-                  style={
-                    slice.width && slice.height
-                      ? { aspectRatio: `${slice.width} / ${slice.height}` }
-                      : undefined
-                  }
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={slice.url}
-                    alt=""
-                    loading={i < 2 ? "eager" : "lazy"}
-                    decoding="async"
-                    className="block w-full h-full"
-                  />
-                </div>
-              ))}
+              <div className="flex items-center gap-3 min-w-0">
+                <h2 className="text-white font-semibold text-sm md:text-base truncate">
+                  {brandName}
+                </h2>
+                <span className="text-[10px] uppercase tracking-wider text-white/50 hidden md:inline">
+                  {deviceLabel}
+                </span>
+              </div>
+              <button
+                onClick={() => setOpen(false)}
+                className="p-1.5 rounded-full text-white/70 hover:text-white hover:bg-white/10"
+                aria-label="Close"
+              >
+                <XMarkIcon className="size-5" />
+              </button>
+            </div>
+
+            <div
+              className="flex-1 overflow-y-auto overscroll-contain"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div
+                className={`mx-auto py-6 px-4 ${
+                  device === "mobile" ? "max-w-[420px]" : "max-w-5xl"
+                }`}
+              >
+                {slices.map((slice, i) => (
+                  <ModalSlice key={slice.filename || i} slice={slice} eager={i < 2} />
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </>
+  );
+}
+
+function ModalSlice({ slice, eager }: { slice: CaseStudyImage; eager: boolean }) {
+  return (
+    <div
+      className="relative w-full overflow-hidden bg-white/5"
+      style={
+        slice.width && slice.height
+          ? { aspectRatio: `${slice.width} / ${slice.height}` }
+          : undefined
+      }
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={slice.url}
+        alt=""
+        loading={eager ? "eager" : "lazy"}
+        decoding="async"
+        className="block w-full h-full object-cover"
+      />
+    </div>
   );
 }
