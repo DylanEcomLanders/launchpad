@@ -62,7 +62,7 @@ const quickLinks: QuickLink[] = [
     adminOnly: true,
   },
   {
-    title: "Improve",
+    title: "Growth",
     description: "Feedback loop. How we get better as an agency.",
     href: "/tools/feedback",
     icon: ArrowTrendingUpIcon,

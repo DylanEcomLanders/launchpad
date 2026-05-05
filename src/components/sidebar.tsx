@@ -37,6 +37,9 @@ interface NavSection {
   defaultOpen?: boolean;
   roles?: ("admin" | "cro")[];
   badge?: string;
+  /* Visual grouping — sections with the same group render together,
+   * separated by a hairline divider from the next group. */
+  group: "main" | "reference" | "extras";
 }
 
 const teamZones = [
@@ -52,6 +55,7 @@ const navSections: NavSection[] = [
     title: "Operations",
     icon: <BookOpenIcon className="size-4" />,
     defaultOpen: true,
+    group: "main",
     items: [
       { label: "Operations Wiki", href: "/tools/ops-wiki" },
       { label: "Funnel Playbook", href: "/tools/funnel-knowledge" },
@@ -59,19 +63,10 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: "Source of Truth",
-    icon: <FlagIcon className="size-4 text-[#16A34A]" />,
-    defaultOpen: false,
-    roles: ["admin"],
-    items: [
-      { label: "Ecomlanders Cheat Sheet", href: "/internal/cheatsheet" },
-      { label: "Conversion Engine Sheet", href: "/internal/cheatsheet/conversion-engine" },
-    ],
-  },
-  {
     title: "Execution",
     icon: <FolderIcon className="size-4" />,
     defaultOpen: false,
+    group: "main",
     items: [
       { label: "Onboarding", href: "/tools/onboarding-inbox" },
       { label: "Portals", href: "/tools/client-portal" },
@@ -84,6 +79,7 @@ const navSections: NavSection[] = [
     icon: <BanknotesIcon className="size-4" />,
     defaultOpen: false,
     roles: ["admin"],
+    group: "main",
     items: [
       { label: "Price List", href: "/internal/pricing" },
       { label: "Price Calculator", href: "/tools/price-calculator" },
@@ -95,20 +91,37 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: "Improve",
+    title: "Source of Truth",
+    icon: <FlagIcon className="size-4 text-[#16A34A]" />,
+    defaultOpen: false,
+    roles: ["admin"],
+    group: "reference",
+    items: [
+      { label: "Ecomlanders Cheat Sheet", href: "/internal/cheatsheet" },
+      { label: "Conversion Engine Sheet", href: "/internal/cheatsheet/conversion-engine" },
+    ],
+  },
+  {
+    title: "Growth",
     icon: <ArrowTrendingUpIcon className="size-4" />,
     defaultOpen: false,
+    group: "extras",
     items: [
       { label: "Feedback", href: "/tools/feedback" },
     ],
   },
 ];
 
-// Top-level items — always visible, not collapsible
-const topItems = [
-  { label: "Mission Control", href: "/", icon: <HomeIcon className="size-4" /> },
-  { label: "Agents", href: "/agents", icon: <SparklesIcon className="size-4" /> },
-];
+const homeItem = {
+  label: "Mission Control",
+  href: "/",
+  icon: <HomeIcon className="size-4" />,
+};
+const agentsItem = {
+  label: "Agents",
+  href: "/agents",
+  icon: <SparklesIcon className="size-4" />,
+};
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -170,6 +183,121 @@ export function Sidebar() {
   function isActive(href: string) {
     if (href === "/") return pathname === "/";
     return pathname === href || pathname.startsWith(href + "/");
+  }
+
+  /* Top-level link (Mission Control, Agents). Pinned, not collapsible. */
+  function renderTopLink(item: { label: string; href: string; icon: React.ReactNode }) {
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        onClick={() => setMobileOpen(false)}
+        className={`
+          relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-200 mb-0.5
+          ${
+            isActive(item.href)
+              ? "bg-white text-[#1B1B1B] font-medium shadow-[var(--shadow-nav-active)]"
+              : "text-[#7A7A7A] hover:bg-white/60 hover:text-[#1B1B1B]"
+          }
+        `}
+      >
+        {item.icon}
+        {!collapsed && <span className="flex-1">{item.label}</span>}
+      </Link>
+    );
+  }
+
+  /* Collapsible section with header + accordion items. */
+  function renderSection(section: NavSection) {
+    return (
+      <div key={section.title} className="mb-1">
+        {!collapsed ? (
+          <button
+            onClick={() => toggleSection(section.title)}
+            className="flex items-center justify-between w-full px-5 py-1.5 group"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-[#7A7A7A]">{section.icon}</span>
+              <span className="text-[12px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+                {section.title}
+              </span>
+              {section.badge && (
+                <span
+                  className={`text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                    section.badge === "ADMIN"
+                      ? "bg-[#FFEFE0] text-[#D97746]"
+                      : "bg-amber-100 text-amber-600"
+                  }`}
+                >
+                  {section.badge}
+                </span>
+              )}
+            </div>
+            <ChevronDownIcon
+              className={`size-3 text-[#C5C5C5] transition-transform duration-200 ${
+                openSections[section.title] ? "" : "-rotate-90"
+              }`}
+            />
+          </button>
+        ) : (
+          <div className="flex justify-center py-2">
+            <span className="text-[#7A7A7A]" title={section.title}>
+              {section.icon}
+            </span>
+          </div>
+        )}
+
+        {!collapsed && openSections[section.title] && (
+          <div className="ml-7 pl-3 mt-0.5 mb-3 border-l border-[#E5E5EA]">
+            {section.items.map((item) => {
+              const active = !item.external && isActive(item.href);
+              if (item.external) {
+                return (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-1.5 px-3 py-[6px] text-[13px] rounded-md transition-all duration-150 text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
+                  >
+                    {item.label}
+                    <svg
+                      className="size-3 opacity-40 shrink-0"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5zm7.25-.75a.75.75 0 01.75-.75h3.5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0V6.31l-5.47 5.47a.75.75 0 01-1.06-1.06l5.47-5.47H12.25a.75.75 0 01-.75-.75z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </a>
+                );
+              }
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`
+                    block px-3 py-[6px] text-[13px] rounded-md transition-all duration-150
+                    ${
+                      active
+                        ? "text-[#1B1B1B] font-medium bg-white shadow-[var(--shadow-soft)]"
+                        : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
+                    }
+                  `}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
   }
 
   return (
@@ -239,116 +367,28 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto scrollbar-thin py-2">
-          {/* Top-level items */}
+          {/* Mission Control — pinned top, always visible */}
           <div className="px-3 mb-1 mt-2">
-            {topItems.map((item) => {
-              const badge = 0;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMobileOpen(false)}
-                  className={`
-                    relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-200 mb-0.5
-                    ${isActive(item.href)
-                      ? "bg-white text-[#1B1B1B] font-medium shadow-[var(--shadow-nav-active)]"
-                      : "text-[#7A7A7A] hover:bg-white/60 hover:text-[#1B1B1B]"
-                    }
-                  `}
-                >
-                  {item.icon}
-                  {!collapsed && <span className="flex-1">{item.label}</span>}
-                  {!collapsed && badge > 0 && (
-                    <span className="size-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shrink-0">
-                      {badge}
-                    </span>
-                  )}
-                  {collapsed && badge > 0 && (
-                    <span className="absolute top-0 right-0 size-2 bg-red-500 rounded-full" />
-                  )}
-                </Link>
-              );
-            })}
-
+            {renderTopLink(homeItem)}
           </div>
 
-          {/* Collapsible sections */}
-          {visibleSections.map((section) => (
-            <div key={section.title} className="mb-1">
-              {!collapsed ? (
-                <button
-                  onClick={() => toggleSection(section.title)}
-                  className="flex items-center justify-between w-full px-5 py-1.5 group"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-[#7A7A7A]">{section.icon}</span>
-                    <span className="text-[12px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
-                      {section.title}
-                    </span>
-                    {section.badge && (
-                      <span
-                        className={`text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${
-                          section.badge === "ADMIN"
-                            ? "bg-[#FFEFE0] text-[#D97746]"
-                            : "bg-amber-100 text-amber-600"
-                        }`}
-                      >
-                        {section.badge}
-                      </span>
-                    )}
-                  </div>
-                  <ChevronDownIcon
-                    className={`size-3 text-[#C5C5C5] transition-transform duration-200 ${
-                      openSections[section.title] ? "" : "-rotate-90"
-                    }`}
-                  />
-                </button>
-              ) : (
-                <div className="flex justify-center py-2">
-                  <span className="text-[#7A7A7A]" title={section.title}>{section.icon}</span>
-                </div>
-              )}
+          {/* Main group: Operations, Execution, Finance */}
+          {visibleSections.filter((s) => s.group === "main").map((section) => renderSection(section))}
 
-              {!collapsed && openSections[section.title] && (
-                <div className="ml-7 pl-3 mt-0.5 mb-3 border-l border-[#E5E5EA]">
-                  {section.items.map((item) => {
-                    const active = !item.external && isActive(item.href);
-                    if (item.external) {
-                      return (
-                        <a
-                          key={item.href}
-                          href={item.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() => setMobileOpen(false)}
-                          className="flex items-center gap-1.5 px-3 py-[6px] text-[13px] rounded-md transition-all duration-150 text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
-                        >
-                          {item.label}
-                          <svg className="size-3 opacity-40 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5zm7.25-.75a.75.75 0 01.75-.75h3.5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0V6.31l-5.47 5.47a.75.75 0 01-1.06-1.06l5.47-5.47H12.25a.75.75 0 01-.75-.75z" clipRule="evenodd" /></svg>
-                        </a>
-                      );
-                    }
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setMobileOpen(false)}
-                        className={`
-                          block px-3 py-[6px] text-[13px] rounded-md transition-all duration-150
-                          ${active
-                            ? "text-[#1B1B1B] font-medium bg-white shadow-[var(--shadow-soft)]"
-                            : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
-                          }
-                        `}
-                      >
-                        {item.label}
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          ))}
+          {/* Divider 1 — separates main work from reference + agents */}
+          {!collapsed && <div className="mx-5 my-3 border-t border-[#EDEDEF]" />}
+          {collapsed && <div className="mx-3 my-2 border-t border-[#EDEDEF]" />}
+
+          {/* Agents + Source of Truth */}
+          <div className="px-3 mb-1">{renderTopLink(agentsItem)}</div>
+          {visibleSections.filter((s) => s.group === "reference").map((section) => renderSection(section))}
+
+          {/* Divider 2 — extras at the bottom */}
+          {!collapsed && <div className="mx-5 my-3 border-t border-[#EDEDEF]" />}
+          {collapsed && <div className="mx-3 my-2 border-t border-[#EDEDEF]" />}
+
+          {/* Extras: Growth */}
+          {visibleSections.filter((s) => s.group === "extras").map((section) => renderSection(section))}
 
           {/* Standalone links */}
           {!collapsed && (
