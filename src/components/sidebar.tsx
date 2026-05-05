@@ -14,10 +14,11 @@ import {
   FolderIcon,
   BanknotesIcon,
   UserGroupIcon,
-  BeakerIcon,
   InboxStackIcon,
   SparklesIcon,
   FlagIcon,
+  BookOpenIcon,
+  ArrowTrendingUpIcon,
 } from "@heroicons/react/24/solid";
 import { Logo, LogoMark } from "@/components/logo";
 import { AppSwitcher } from "@/components/app-switcher";
@@ -48,9 +49,19 @@ const teamZones = [
 
 const navSections: NavSection[] = [
   {
+    title: "Operations",
+    icon: <BookOpenIcon className="size-4" />,
+    defaultOpen: true,
+    items: [
+      { label: "Operations Wiki", href: "/tools/ops-wiki" },
+      { label: "Funnel Playbook", href: "/tools/funnel-knowledge" },
+      { label: "Funnels", href: "/tools/funnel-builder" },
+    ],
+  },
+  {
     title: "Source of Truth",
     icon: <FlagIcon className="size-4 text-[#16A34A]" />,
-    defaultOpen: true,
+    defaultOpen: false,
     roles: ["admin"],
     items: [
       { label: "Ecomlanders Cheat Sheet", href: "/internal/cheatsheet" },
@@ -58,9 +69,9 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: "Project Delivery",
+    title: "Execution",
     icon: <FolderIcon className="size-4" />,
-    defaultOpen: true,
+    defaultOpen: false,
     items: [
       { label: "Onboarding", href: "/tools/onboarding-inbox" },
       { label: "Portals", href: "/tools/client-portal" },
@@ -84,26 +95,11 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: "Training",
-    icon: <UserGroupIcon className="size-4" />,
-    defaultOpen: true,
-    items: [
-      { label: "Operations Wiki", href: "/tools/ops-wiki" },
-      { label: "Conversion Engine", href: "/tools/ops-wiki?section=ce-00-overview" },
-      { label: "Design Library", href: "https://www.figma.com/design/QDGh9XLKyvvumKwftUylvi/Ecomlanders-Design-Library?node-id=382-177", external: true },
-      { label: "Feedback", href: "/tools/feedback" },
-    ],
-  },
-  {
-    title: "CRO Lab",
-    icon: <BeakerIcon className="size-4" />,
+    title: "Improve",
+    icon: <ArrowTrendingUpIcon className="size-4" />,
     defaultOpen: false,
-    badge: "WIP",
     items: [
-      { label: "Funnels", href: "/tools/funnel-builder" },
-      { label: "CRO Monitor", href: "/tools/cro-monitor" },
-      { label: "CRO Audit", href: "/tools/cro-audit" },
-      { label: "Funnel Playbook", href: "/tools/funnel-knowledge" },
+      { label: "Feedback", href: "/tools/feedback" },
     ],
   },
 ];

@@ -7,6 +7,7 @@ import {
   BookOpenIcon,
   PhotoIcon,
   Squares2X2Icon,
+  SwatchIcon,
 } from "@heroicons/react/24/solid";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 
@@ -32,7 +33,22 @@ const primary = [
   },
 ];
 
-const tools = [
+interface ToolDef {
+  title: string;
+  description: string;
+  href: string;
+  icon: typeof PhotoIcon;
+  external?: boolean;
+}
+
+const tools: ToolDef[] = [
+  {
+    title: "Design Library",
+    description: "The Figma master file — components, tokens, patterns. Pull from here, don't reinvent.",
+    href: "https://www.figma.com/design/QDGh9XLKyvvumKwftUylvi/Ecomlanders-Design-Library?node-id=382-177",
+    icon: SwatchIcon,
+    external: true,
+  },
   {
     title: "Swipe File",
     description: "Reference library of great pages — drop a URL, we cache mobile + desktop.",
@@ -104,27 +120,38 @@ export default function TeamToolsPage() {
             Tools
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {tools.map((tool) => (
-              <Link
-                key={tool.title}
-                href={tool.href}
-                className="bg-white border border-[#E5E5EA] rounded-lg p-5 hover:border-[#1B1B1B] hover:shadow-sm cursor-pointer group transition-all"
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <tool.icon className="size-5 text-[#7A7A7A]" />
-                  <h2 className="text-sm font-semibold text-[#1B1B1B]">
-                    {tool.title}
-                  </h2>
-                </div>
-                <p className="text-xs text-[#7A7A7A] leading-relaxed mb-3">
-                  {tool.description}
-                </p>
-                <span className="inline-flex items-center gap-1 text-xs font-medium text-[#1B1B1B] group-hover:gap-1.5 transition-all">
-                  Open
-                  <ChevronRightIcon className="size-3" />
-                </span>
-              </Link>
-            ))}
+            {tools.map((tool) => {
+              const linkProps = tool.external
+                ? { target: "_blank", rel: "noopener noreferrer" as const }
+                : {};
+              return (
+                <Link
+                  key={tool.title}
+                  href={tool.href}
+                  {...linkProps}
+                  className="bg-white border border-[#E5E5EA] rounded-lg p-5 hover:border-[#1B1B1B] hover:shadow-sm cursor-pointer group transition-all"
+                >
+                  <div className="flex items-center gap-2 mb-3">
+                    <tool.icon className="size-5 text-[#7A7A7A]" />
+                    <h2 className="text-sm font-semibold text-[#1B1B1B]">
+                      {tool.title}
+                    </h2>
+                    {tool.external && (
+                      <span className="text-[9px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+                        ↗
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-[#7A7A7A] leading-relaxed mb-3">
+                    {tool.description}
+                  </p>
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-[#1B1B1B] group-hover:gap-1.5 transition-all">
+                    Open
+                    <ChevronRightIcon className="size-3" />
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </div>

@@ -1,441 +1,244 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useEffect, useState } from "react";
 import {
-  ArrowPathIcon,
-  ExclamationTriangleIcon,
-} from "@heroicons/react/24/outline";
+  BookOpenIcon,
+  FolderIcon,
+  BanknotesIcon,
+  FlagIcon,
+  ArrowTrendingUpIcon,
+  ChevronRightIcon,
+  ClipboardDocumentListIcon,
+  TicketIcon,
+} from "@heroicons/react/24/solid";
 import {
-  type PulseFeedItem,
-  type PulseFeedResponse,
-  type FeedItemType,
-} from "@/lib/pulse/types";
-import { getPortals } from "@/lib/portal/data";
-import { getIssues } from "@/lib/issues/data";
-import type { OpsRadarData, OpsTask } from "@/lib/clickup/types";
+  ageLabel,
+  ageLevel,
+  isStale,
+  sortOpenTickets,
+  AGE_COLORS,
+  TICKET_TYPE_COLORS,
+  TICKET_TYPE_LABELS,
+  type Ticket,
+} from "@/lib/tickets/types";
+import { loadTickets } from "@/lib/tickets/data";
 
-// ── Helpers ─────────────────────────────────────────────────────
-
-function sameDay(a: Date, b: Date): boolean {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+interface QuickLink {
+  title: string;
+  description: string;
+  href: string;
+  icon: typeof BookOpenIcon;
+  iconColor?: string;
+  adminOnly?: boolean;
 }
 
-function getWeekStart(): Date {
-  const now = new Date();
-  const day = now.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  const mon = new Date(now);
-  mon.setHours(0, 0, 0, 0);
-  mon.setDate(mon.getDate() + diff);
-  return mon;
-}
-
-const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-// ── Feed Config ─────────────────────────────────────────────────
-
-const feedTypeConfig: Record<FeedItemType, { border: string; badge: string; label: string }> = {
-  client: { border: "border-l-blue-500", badge: "bg-blue-50 text-blue-600", label: "Client" },
-  internal: { border: "border-l-[#1B1B1B]", badge: "bg-gray-100 text-gray-600", label: "Internal" },
-  status: { border: "border-l-emerald-500", badge: "bg-emerald-50 text-emerald-600", label: "Status" },
-  chase: { border: "border-l-amber-500", badge: "bg-amber-50 text-amber-600", label: "Chase" },
-  blocker: { border: "border-l-red-500", badge: "bg-red-50 text-red-600", label: "Blocker" },
-  request: { border: "border-l-violet-500", badge: "bg-violet-50 text-violet-600", label: "Request" },
-};
-
-const ALL_FEED_TYPES: FeedItemType[] = ["client", "internal", "status", "chase", "blocker", "request"];
-
-// ── Page Component ──────────────────────────────────────────────
+const quickLinks: QuickLink[] = [
+  {
+    title: "Operations",
+    description: "Wiki, funnel playbook, funnel builder. How we work.",
+    href: "/tools/ops-wiki",
+    icon: BookOpenIcon,
+  },
+  {
+    title: "Source of Truth",
+    description: "Cheat sheet + Conversion Engine reference. Leadership rules.",
+    href: "/internal/cheatsheet",
+    icon: FlagIcon,
+    iconColor: "#16A34A",
+    adminOnly: true,
+  },
+  {
+    title: "Execution",
+    description: "Onboarding, portals, pods, task board. Active client work.",
+    href: "/tools/task-board",
+    icon: FolderIcon,
+  },
+  {
+    title: "Finance",
+    description: "Pricing, invoices, dev hours, expenses.",
+    href: "/internal/pricing",
+    icon: BanknotesIcon,
+    adminOnly: true,
+  },
+  {
+    title: "Improve",
+    description: "Feedback loop. How we get better as an agency.",
+    href: "/tools/feedback",
+    icon: ArrowTrendingUpIcon,
+  },
+  {
+    title: "Tasks",
+    description: "Live deliverables, deadlines, who's on what.",
+    href: "/tasks",
+    icon: ClipboardDocumentListIcon,
+  },
+];
 
 export default function MissionControl() {
-  // Feed state
-  const [feedItems, setFeedItems] = useState<PulseFeedItem[]>([]);
-  const [feedLoading, setFeedLoading] = useState(true);
-  const [feedError, setFeedError] = useState<string | null>(null);
-  const [feedHours, setFeedHours] = useState(48);
-  const [hasMore, setHasMore] = useState(false);
-  const [feedTotal, setFeedTotal] = useState(0);
-  const [feedTypeFilter, setFeedTypeFilter] = useState<FeedItemType | "all">("blocker");
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [hydrated, setHydrated] = useState(false);
 
-  // Stats state
-  const [stats, setStats] = useState({ portals: 0, overdue: 0, issues: 0, adHoc: 0 });
-
-  // Ops radar state
-  const [opsData, setOpsData] = useState<OpsRadarData | null>(null);
-
-  // Load stats + ops radar
   useEffect(() => {
-    async function loadStats() {
-      try {
-        const [portals, issues, clickupRes] = await Promise.all([
-          getPortals(),
-          getIssues(),
-          fetch("/api/clickup/tasks").then((r) => r.ok ? r.json() : null).catch(() => null),
-        ]);
-
-        if (clickupRes) setOpsData(clickupRes);
-
-        const openIssues = issues.filter((i) => i.status === "open" || i.status === "noted");
-        const allAdHoc = portals.flatMap((p) =>
-          (p.ad_hoc_requests || [])
-            .filter((r: { status: string }) => r.status === "open")
-            .map((r: { title: string; status: string }) => ({ title: r.title, client: p.client_name || "Unknown", status: r.status }))
-        );
-        const overdueCount = clickupRes?.summary?.overdue ?? 0;
-
-        setStats({
-          portals: portals.length,
-          overdue: overdueCount,
-          issues: openIssues.length,
-          adHoc: allAdHoc.length,
-        });
-      } catch {
-        // Stats are best-effort
-      }
-    }
-    loadStats();
+    loadTickets().then((t) => {
+      setTickets(t);
+      setHydrated(true);
+    });
   }, []);
 
-  // Derived ops radar data — split into design and dev deadlines per day
-  const weekData = useMemo(() => {
-    if (!opsData) return null;
-
-    const weekStart = getWeekStart();
-    const today = new Date();
-
-    const days: {
-      date: Date;
-      designTasks: { name: string; client: string; assignees: string[] }[];
-      devTasks: { name: string; client: string; assignees: string[] }[];
-    }[] = [];
-
-    for (let i = 0; i < 7; i++) {
-      const day = new Date(weekStart);
-      day.setDate(day.getDate() + i);
-
-      const designTasks: { name: string; client: string; assignees: string[] }[] = [];
-      const devTasks: { name: string; client: string; assignees: string[] }[] = [];
-
-      for (const t of opsData.tasks) {
-        if (t.designDeadline && sameDay(new Date(t.designDeadline), day)) {
-          designTasks.push({ name: t.name, client: t.client, assignees: t.assignees });
-        }
-        if (t.devDeadline && sameDay(new Date(t.devDeadline), day)) {
-          devTasks.push({ name: t.name, client: t.client, assignees: t.assignees });
-        }
-      }
-
-      days.push({ date: day, designTasks, devTasks });
-    }
-
-    return { days, today };
-  }, [opsData]);
-
-  // Load feed
-  const loadFeed = useCallback(async (hours?: number) => {
-    setFeedLoading(true);
-    setFeedError(null);
-    try {
-      const h = hours ?? feedHours;
-      const res = await fetch(`/api/pulse-feed?hours=${h}&limit=50`);
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Failed to load feed");
-      }
-      const data: PulseFeedResponse = await res.json();
-      setFeedItems(data.items);
-      setHasMore(data.has_more);
-      setFeedTotal(data.total);
-    } catch (err) {
-      setFeedError(err instanceof Error ? err.message : "Failed to load feed");
-    } finally {
-      setFeedLoading(false);
-    }
-  }, [feedHours]);
-
-  useEffect(() => {
-    loadFeed();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const handleHoursChange = (h: number) => {
-    setFeedHours(h);
-    loadFeed(h);
-  };
-
-  const filteredFeed = useMemo(() => {
-    if (feedTypeFilter === "all") return feedItems;
-    return feedItems.filter((item) => item.channel_type === feedTypeFilter);
-  }, [feedItems, feedTypeFilter]);
+  const openTickets = sortOpenTickets(
+    tickets.filter((t) => t.status === "open" || t.status === "in_progress"),
+  );
+  const staleCount = openTickets.filter((t) => isStale(t.raised_at)).length;
 
   const today = new Date();
   const dateStr = today.toLocaleDateString("en-GB", {
-    weekday: "short",
+    weekday: "long",
     day: "numeric",
-    month: "short",
-    year: "numeric",
+    month: "long",
   });
 
   return (
-    <div className="min-h-screen p-5 md:p-6">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4 animate-fadeInUp">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Mission Control</h1>
-          <p className="text-sm text-[#7A7A7A]">{dateStr}</p>
+    <div className="px-6 py-8 max-w-[1200px] mx-auto">
+      {/* ── Header ──────────────────────────── */}
+      <header className="mb-8">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+          {dateStr}
+        </p>
+        <h1 className="mt-1 text-[28px] font-semibold tracking-tight text-[#1B1B1B]">
+          Mission Control
+        </h1>
+      </header>
+
+      {/* ── Quick links ──────────────────────── */}
+      <div className="mb-10">
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
+          Jump to
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {quickLinks.map((link) => (
+            <Link
+              key={link.title}
+              href={link.href}
+              className="group bg-white border border-[#E5E5EA] rounded-xl p-4 hover:border-[#1B1B1B] hover:shadow-sm transition-all"
+            >
+              <div className="flex items-center gap-2 mb-1.5">
+                <link.icon
+                  className="size-4"
+                  style={{ color: link.iconColor || "#7A7A7A" }}
+                />
+                <h3 className="text-sm font-semibold text-[#1B1B1B]">
+                  {link.title}
+                </h3>
+              </div>
+              <p className="text-xs leading-snug text-[#7A7A7A] mb-3">
+                {link.description}
+              </p>
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#1B1B1B] group-hover:gap-1.5 transition-all">
+                Open
+                <ChevronRightIcon className="size-3" />
+              </span>
+            </Link>
+          ))}
         </div>
       </div>
 
-      {/* ── Weekly Rhythm ── */}
-      <div className="animate-fadeInUp-d1"><WeeklyRhythm /></div>
-
-      {/* ── Blocker Feed ── */}
-      <div className="border border-[#E5E5EA] rounded-lg overflow-hidden flex flex-col lg:max-h-[280px] animate-fadeInUp-d2">
-        {/* Feed toolbar — inside container */}
-        <div className="flex items-center justify-between px-4 py-2 border-b border-[#EDEDEF] shrink-0">
-          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
-            {[{ key: "all" as const, label: "All" }, ...ALL_FEED_TYPES.map((t) => ({ key: t, label: feedTypeConfig[t].label }))].map(({ key, label }) => {
-              const count = key === "all" ? feedTotal : feedItems.filter((i) => i.channel_type === key).length;
-              if (key !== "all" && count === 0) return null;
-              return (
-                <button
-                  key={key}
-                  onClick={() => setFeedTypeFilter(key)}
-                  className={`px-2.5 py-1 text-[11px] rounded-md transition-colors whitespace-nowrap ${
-                    feedTypeFilter === key
-                      ? "font-medium text-[#1B1B1B] bg-[#F3F3F5]"
-                      : "text-[#A0A0A0] hover:text-[#7A7A7A]"
-                  }`}
-                >
-                  {label}
-                </button>
-              );
-            })}
+      {/* ── Today's tickets ──────────────────── */}
+      <div>
+        <div className="flex items-baseline justify-between gap-2 mb-3">
+          <div className="flex items-baseline gap-2">
+            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+              Tickets
+            </h2>
+            <span className="text-[11px] tabular-nums text-[#A0A0A0]">
+              {openTickets.length} open
+            </span>
+            {staleCount > 0 && (
+              <span className="text-[11px] font-bold tabular-nums text-[#DC2626]">
+                · {staleCount} stale
+              </span>
+            )}
           </div>
-          <div className="flex items-center gap-1.5 shrink-0 ml-2">
-            <select
-              value={feedHours}
-              onChange={(e) => handleHoursChange(Number(e.target.value))}
-              className="px-1.5 py-1 text-[11px] text-[#A0A0A0] bg-transparent border-0 outline-none cursor-pointer"
-            >
-              <option value={24}>24h</option>
-              <option value={48}>48h</option>
-              <option value={168}>7d</option>
-            </select>
-            <button
-              onClick={() => loadFeed()}
-              disabled={feedLoading}
-              className="p-1 text-[#C5C5C5] hover:text-[#7A7A7A] transition-colors disabled:opacity-40"
-              title="Refresh"
-            >
-              <ArrowPathIcon className={`size-3 ${feedLoading ? "animate-spin" : ""}`} />
-            </button>
-          </div>
-        </div>
-
-        {/* Feed items */}
-        <div className="flex-1 overflow-y-auto scrollbar-thin">
-          {feedLoading && feedItems.length === 0 && (
-            <div className="p-4 space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="h-3 bg-[#EDEDEF] rounded w-1/4 mb-2" />
-                  <div className="h-3 bg-[#EDEDEF] rounded w-3/4" />
-                </div>
-              ))}
-            </div>
-          )}
-
-          {feedError && (
-            <div className="flex items-start gap-2 p-4">
-              <ExclamationTriangleIcon className="size-4 text-red-400 mt-0.5 shrink-0" />
-              <div>
-                <p className="text-xs text-red-800 font-medium">Failed to load feed</p>
-                <button onClick={() => loadFeed()} className="text-[11px] text-red-600 hover:text-red-800 mt-1 underline">Try again</button>
-              </div>
-            </div>
-          )}
-
-          {!feedLoading && !feedError && filteredFeed.length === 0 && (
-            <div className="p-8 text-center">
-              <p className="text-xs text-[#A0A0A0]">
-                {feedTypeFilter !== "all" ? `No ${feedTypeConfig[feedTypeFilter].label.toLowerCase()} messages` : "No activity"} in the last {feedHours}h
-              </p>
-            </div>
-          )}
-
-          {filteredFeed.map((item, idx) => {
-            const cfg = feedTypeConfig[item.channel_type];
-            return (
-              <div key={item.id} className={`px-4 py-3 hover:bg-[#FAFAFA] transition-colors ${idx > 0 ? "border-t border-[#F3F3F5]" : ""}`}>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[12px] font-medium text-[#1B1B1B]">{item.author}</span>
-                  <span className={`text-[9px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded ${cfg.badge}`}>{cfg.label}</span>
-                  <span className="text-[10px] text-[#C5C5C5] ml-auto tabular-nums">{relativeTime(item.timestamp)}</span>
-                </div>
-                <p className="text-[13px] text-[#5A5A5A] leading-relaxed">{item.message}</p>
-              </div>
-            );
-          })}
-        </div>
-
-        {hasMore && !feedLoading && (
-          <button
-            onClick={() => handleHoursChange(Math.min(feedHours * 2, 168))}
-            className="w-full py-2 text-[11px] text-[#A0A0A0] hover:text-[#7A7A7A] border-t border-[#EDEDEF] hover:bg-[#FAFAFA] transition-colors"
+          <Link
+            href="/tools/task-board"
+            className="text-[11px] font-semibold text-[#7A7A7A] hover:text-[#1B1B1B] flex items-center gap-1"
           >
-            Load more
-          </button>
+            <TicketIcon className="size-3" />
+            Open triage
+          </Link>
+        </div>
+
+        <div className="rounded-xl border border-[#E5E5EA] bg-white overflow-hidden">
+          {!hydrated ? (
+            <p className="text-[11px] text-[#BBB] text-center py-8">
+              Loading tickets…
+            </p>
+          ) : openTickets.length === 0 ? (
+            <p className="text-[12px] text-[#A0A0A0] text-center py-8">
+              No open tickets. Inbox zero.
+            </p>
+          ) : (
+            <ul>
+              {openTickets.slice(0, 8).map((t, i) => (
+                <li
+                  key={t.id}
+                  className={`px-4 py-3 ${i > 0 ? "border-t border-[#F3F3F5]" : ""}`}
+                >
+                  <TicketRow ticket={t} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {openTickets.length > 8 && (
+          <p className="text-[11px] text-[#A0A0A0] text-center mt-2">
+            + {openTickets.length - 8} more in the task board panel
+          </p>
         )}
       </div>
     </div>
   );
 }
 
-// ── Sub-components ───────────────────────────────────────────────
-
-function StatCard({ label, value, warn, href }: { label: string; value: number; warn?: boolean; href: string }) {
+function TicketRow({ ticket }: { ticket: Ticket }) {
+  const colours = AGE_COLORS[ageLevel(ticket.raised_at)];
   return (
-    <Link href={href} className="border border-[#E5E5EA] rounded-lg px-3 py-2.5 hover:border-[#A0A0A0] transition-colors">
-      <div className="flex items-baseline gap-1.5">
-        <span className="text-lg font-semibold tabular-nums">{value}</span>
-        {warn && <span className="size-1.5 rounded-full bg-red-500" />}
-      </div>
-      <p className="text-[11px] text-[#A0A0A0] mt-0.5">{label}</p>
-    </Link>
-  );
-}
-
-function SectionHeader({ title, count }: { title: string; count?: number }) {
-  return (
-    <div className="flex items-center gap-2 mb-2">
-      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">{title}</h2>
-      {count !== undefined && (
-        <span className="text-[11px] text-[#A0A0A0] tabular-nums">{count}</span>
-      )}
-    </div>
-  );
-}
-
-// ── Helpers ─────────────────────────────────────────────────────
-
-function relativeTime(iso: string): string {
-  const now = Date.now();
-  const then = new Date(iso).getTime();
-  const diffMs = now - then;
-  const mins = Math.floor(diffMs / 60_000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
-}
-
-// ── Weekly Rhythm ──────────────────────────────────────────────
-
-interface RhythmItem {
-  label: string;
-  time?: string;
-  owner?: string;
-  type: "call" | "delivery" | "touchpoint" | "internal" | "report";
-}
-
-const RHYTHM: Record<string, RhythmItem[]> = {
-  Mon: [
-    { label: "Ops Call (Leadership)", time: "10:00", type: "call" },
-    { label: "Send retainer briefs & mission statements", type: "delivery" },
-    { label: "Client touchpoints", type: "touchpoint" },
-    { label: "Plan week deliverables", type: "internal" },
-  ],
-  Tue: [
-    { label: "Design Call (All Designers)", time: "TBC", type: "call" },
-    { label: "3pm Design Review", time: "15:00", owner: "Dylan + Design Lead", type: "call" },
-    { label: "Internal execution day — no client chasing", type: "internal" },
-    { label: "PM: ensure team on track", owner: "PM", type: "internal" },
-    { label: "Prep Wednesday client touchpoints", type: "internal" },
-  ],
-  Wed: [
-    { label: "Client touchpoints", type: "touchpoint" },
-    { label: "3pm Design Review", time: "15:00", type: "call" },
-    { label: "Mid-week progress check", type: "internal" },
-  ],
-  Thu: [
-    { label: "Dev Call (All Developers)", time: "TBC", type: "call" },
-    { label: "3pm Design Review", time: "15:00", type: "call" },
-    { label: "Prep Friday client reports", type: "report" },
-    { label: "Internal execution day", type: "internal" },
-  ],
-  Fri: [
-    { label: "Client touchpoints", type: "touchpoint" },
-    { label: "Send retainer weekly reports", type: "report" },
-    { label: "Send project client weekly updates", type: "report" },
-    { label: "3pm Design Review", time: "15:00", type: "call" },
-    { label: "Week wrap — what shipped, what rolls over", type: "internal" },
-    { label: "Bi-weekly full team call (every other Fri)", time: "TBC", type: "call" },
-  ],
-};
-
-const rhythmTypeStyles: Record<string, { dot: string; text: string }> = {
-  call: { dot: "bg-blue-500", text: "text-blue-600" },
-  delivery: { dot: "bg-emerald-500", text: "text-emerald-600" },
-  touchpoint: { dot: "bg-amber-500", text: "text-amber-600" },
-  internal: { dot: "bg-[#999]", text: "text-[#777]" },
-  report: { dot: "bg-violet-500", text: "text-violet-600" },
-};
-
-function WeeklyRhythm() {
-  const todayIdx = new Date().getDay(); // 0=Sun, 1=Mon...
-  const dayKeys = ["Mon", "Tue", "Wed", "Thu", "Fri"];
-
-  return (
-    <div className="mb-4">
-      <SectionHeader title="Weekly Rhythm" />
-      <div className="grid grid-cols-5 gap-0 border border-[#E5E5EA] rounded-lg overflow-hidden">
-        {dayKeys.map((day, i) => {
-          const items = RHYTHM[day] || [];
-          const isToday = todayIdx === i + 1; // Mon=1, Tue=2, etc
-          const isPast = todayIdx > i + 1;
-
-          return (
-            <div
-              key={day}
-              className={`${i > 0 ? "border-l border-[#E5E5EA]" : ""} ${isToday ? "bg-[#FAFAFA]" : ""} ${isPast ? "opacity-50" : ""}`}
-            >
-              {/* Day header */}
-              <div className={`px-3 py-2 text-center border-b border-[#EDEDEF] ${isToday ? "bg-[#1B1B1B]" : "bg-[#F7F8FA]"}`}>
-                <span className={`text-[11px] font-bold uppercase tracking-wider ${isToday ? "text-white" : "text-[#777]"}`}>
-                  {day}
-                </span>
-                {isToday && <span className="ml-1.5 text-[9px] text-white/50">Today</span>}
-              </div>
-
-              {/* Items */}
-              <div className="p-2 space-y-1.5 min-h-[120px]">
-                {items.map((item, j) => {
-                  const style = rhythmTypeStyles[item.type] || rhythmTypeStyles.internal;
-                  return (
-                    <div key={j} className="flex items-start gap-1.5">
-                      <span className={`size-1.5 rounded-full ${style.dot} mt-1.5 shrink-0`} />
-                      <div className="min-w-0">
-                        <p className={`text-[10px] leading-tight ${style.text}`}>{item.label}</p>
-                        {item.time && <p className="text-[9px] text-[#CCC]">{item.time}</p>}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      <div className="flex items-center gap-4 mt-2">
-        {Object.entries(rhythmTypeStyles).map(([type, style]) => (
-          <div key={type} className="flex items-center gap-1">
-            <span className={`size-1.5 rounded-full ${style.dot}`} />
-            <span className="text-[9px] text-[#AAA] capitalize">{type}</span>
-          </div>
-        ))}
+    <div className="flex items-start gap-3">
+      <span
+        className="mt-1 size-1.5 rounded-full shrink-0"
+        style={{ backgroundColor: colours.border }}
+      />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2 mb-0.5">
+          <span
+            className="text-[9px] font-semibold uppercase tracking-wider"
+            style={{ color: TICKET_TYPE_COLORS[ticket.type] }}
+          >
+            {TICKET_TYPE_LABELS[ticket.type]}
+          </span>
+          {ticket.status === "in_progress" && (
+            <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">
+              In progress
+            </span>
+          )}
+          <span
+            className="ml-auto text-[10px] font-semibold tabular-nums"
+            style={{ color: colours.badge }}
+          >
+            {ageLabel(ticket.raised_at)}
+          </span>
+        </div>
+        <p className="text-[13px] leading-snug text-[#1A1A1A]">
+          {ticket.title}
+        </p>
+        {(ticket.client_id || ticket.assigned_to) && (
+          <p className="mt-0.5 text-[11px] text-[#7A7A7A]">
+            {ticket.client_id && <span>{ticket.client_id}</span>}
+            {ticket.client_id && ticket.assigned_to && <span> · </span>}
+            {ticket.assigned_to && <span>→ {ticket.assigned_to}</span>}
+          </p>
+        )}
       </div>
     </div>
   );
