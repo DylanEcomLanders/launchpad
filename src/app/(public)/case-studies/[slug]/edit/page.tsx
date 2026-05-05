@@ -39,7 +39,7 @@ import { FigmaSyncForm } from "@/components/case-studies/editor/figma-sync-form"
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
-const PUBLIC_BASE = "ecomlanders.com/work";
+const PUBLIC_BASE = "ecomlanders.app/case-studies";
 
 export default function CaseStudyEditorPage({
   params,
