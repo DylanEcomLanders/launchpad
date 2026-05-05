@@ -16,6 +16,8 @@ import {
   UserGroupIcon,
   BeakerIcon,
   InboxStackIcon,
+  SparklesIcon,
+  FlagIcon,
 } from "@heroicons/react/24/solid";
 import { Logo, LogoMark } from "@/components/logo";
 import { AppSwitcher } from "@/components/app-switcher";
@@ -46,12 +48,23 @@ const teamZones = [
 
 const navSections: NavSection[] = [
   {
+    title: "Source of Truth",
+    icon: <FlagIcon className="size-4 text-[#16A34A]" />,
+    defaultOpen: true,
+    roles: ["admin"],
+    items: [
+      { label: "Ecomlanders Cheat Sheet", href: "/internal/cheatsheet" },
+      { label: "Conversion Engine Sheet", href: "/internal/cheatsheet/conversion-engine" },
+    ],
+  },
+  {
     title: "Project Delivery",
     icon: <FolderIcon className="size-4" />,
     defaultOpen: true,
     items: [
       { label: "Onboarding", href: "/tools/onboarding-inbox" },
       { label: "Portals", href: "/tools/client-portal" },
+      { label: "Pods", href: "/pods" },
       { label: "Task Board", href: "/tools/task-board" },
     ],
   },
@@ -61,7 +74,9 @@ const navSections: NavSection[] = [
     defaultOpen: false,
     roles: ["admin"],
     items: [
+      { label: "Price List", href: "/internal/pricing" },
       { label: "Price Calculator", href: "/tools/price-calculator" },
+      { label: "Turnaround Times", href: "/internal/turnarounds" },
       { label: "Invoice Generator", href: "/tools/invoice-generator" },
       { label: "Payment Link", href: "/tools/payment-link" },
       { label: "Dev Hours Log", href: "/tools/dev-hours" },
@@ -96,6 +111,7 @@ const navSections: NavSection[] = [
 // Top-level items — always visible, not collapsible
 const topItems = [
   { label: "Mission Control", href: "/", icon: <HomeIcon className="size-4" /> },
+  { label: "Agents", href: "/agents", icon: <SparklesIcon className="size-4" /> },
 ];
 
 export function Sidebar() {
@@ -254,7 +270,13 @@ export function Sidebar() {
                       {section.title}
                     </span>
                     {section.badge && (
-                      <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-600">
+                      <span
+                        className={`text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                          section.badge === "ADMIN"
+                            ? "bg-[#FFEFE0] text-[#D97746]"
+                            : "bg-amber-100 text-amber-600"
+                        }`}
+                      >
                         {section.badge}
                       </span>
                     )}
