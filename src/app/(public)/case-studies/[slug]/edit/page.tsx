@@ -36,7 +36,6 @@ import { FigmaFrameCard } from "@/components/case-studies/editor/figma-frame-car
 import { HeadlineStatCard } from "@/components/case-studies/editor/headline-stat-card";
 import { SolutionCardEditor } from "@/components/case-studies/editor/solution-card-editor";
 import { ComparisonRowEditor } from "@/components/case-studies/editor/comparison-row-editor";
-import { PageSlicesEditor } from "@/components/case-studies/editor/page-slices-editor";
 import { FigmaSyncForm } from "@/components/case-studies/editor/figma-sync-form";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
@@ -762,32 +761,6 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                 desktopCount={study.designs.desktopSlices.length}
                 mobileCount={study.designs.mobileSlices.length}
                 onSynced={(synced) => setStudy(synced)}
-              />
-
-              <PageSlicesEditor
-                label="Desktop full-page slices"
-                helper="Auto-populated by Figma sync above. Or upload tall full-page screenshots manually."
-                slug={study.slug}
-                slices={study.designs.desktopSlices}
-                onChange={(next) =>
-                  updateStudy((prev) => ({
-                    ...prev,
-                    designs: { ...prev.designs, desktopSlices: next },
-                  }))
-                }
-              />
-
-              <PageSlicesEditor
-                label="Mobile full-page slices"
-                helper="Optional. If both desktop + mobile are added, the modal shows a toggle."
-                slug={study.slug}
-                slices={study.designs.mobileSlices}
-                onChange={(next) =>
-                  updateStudy((prev) => ({
-                    ...prev,
-                    designs: { ...prev.designs, mobileSlices: next },
-                  }))
-                }
               />
 
               <div>
