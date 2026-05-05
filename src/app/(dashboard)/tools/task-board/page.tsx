@@ -21,6 +21,9 @@ import {
   type PhaseEntry,
 } from "@/lib/task-board/phases";
 import { TaskDetailDrawer } from "@/components/task-board/task-detail-drawer";
+import { TicketsPanel } from "@/components/task-board/tickets-panel";
+import { useRole } from "@/components/auth-gate";
+import type { Ticket } from "@/lib/tickets/types";
 
 interface Task {
   id: string;
@@ -193,6 +196,8 @@ const TaskEditorRow = memo(function TaskEditorRow({
 });
 
 export default function TaskBoardAdminPage() {
+  const role = useRole();
+  const currentUser = role === "admin" ? "Admin" : role === "cro" ? "CRO" : "Team";
   const [board, setBoard] = useState<BoardData>({ designTasks: [], devTasks: [] });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -319,6 +324,35 @@ export default function TaskBoardAdminPage() {
     });
   }, []);
 
+  /* Promote a ticket → task. Inserts a new design task with the ticket's
+   * title pre-filled and saves the board immediately so the ticket can
+   * store the linked_task_id before its own auto-save fires. */
+  const promoteTicketToTask = useCallback(async (ticket: Ticket): Promise<string | null> => {
+    const newTask: Task = {
+      id: crypto.randomUUID(),
+      title: ticket.title,
+      assignee: "",
+      dueDate: "",
+      status: "todo",
+      client: ticket.client_id || "",
+    };
+    const nextBoard: BoardData = {
+      ...boardRef.current,
+      designTasks: [...boardRef.current.designTasks, newTask],
+    };
+    setBoard(nextBoard);
+    try {
+      await fetch("/api/task-board", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
+        body: JSON.stringify(nextBoard),
+      });
+      return newTask.id;
+    } catch {
+      return null;
+    }
+  }, []);
+
   const designers = team.filter((m) => m.role.toLowerCase().includes("design"));
   const developers = team.filter((m) => m.role.toLowerCase().includes("develop") || m.role.toLowerCase().includes("head of dev"));
 
@@ -357,6 +391,15 @@ export default function TaskBoardAdminPage() {
 
   const visibleAssignees = [...new Set(filteredTasks.map((t) => computeAssignee(t)).filter(Boolean))].sort();
 
+  // Build clients list from existing tasks (for ticket composer datalist)
+  const clientList = [
+    ...new Set(
+      [...board.designTasks, ...board.devTasks]
+        .map((t) => t.client)
+        .filter((c): c is string => !!c),
+    ),
+  ].sort();
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -366,7 +409,18 @@ export default function TaskBoardAdminPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto py-10 px-4">
+    <div className="flex gap-4 px-4 py-6">
+      {/* ── Tickets rail — persistent left panel ──────────── */}
+      <aside className="w-[340px] flex-shrink-0">
+        <TicketsPanel
+          currentUser={currentUser}
+          clients={clientList}
+          onPromoteToTask={promoteTicketToTask}
+        />
+      </aside>
+
+      {/* ── Existing taskboard ─────────────────────────────── */}
+      <div className="flex-1 min-w-0 max-w-[1100px]">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Task Board</h1>
@@ -560,6 +614,7 @@ export default function TaskBoardAdminPage() {
           updateDeadline(openTaskLane, openTaskId, field, value, reason);
         }}
       />
+      </div>
     </div>
   );
 }
