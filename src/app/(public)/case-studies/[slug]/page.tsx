@@ -526,36 +526,16 @@ function ComparisonCard({ row }: { row: ResultComparison }) {
 }
 
 function HeroCollage({ images }: { images: { url: string; alt?: string; filename?: string }[] }) {
-  if (images.length === 0) {
+  const img = images[0];
+  if (!img) {
     return (
       <div className="aspect-[4/3] rounded-xl border border-dashed border-[#E5E5EA] bg-white" />
     );
   }
-  // Up to 4 images in a tilted overlapping stack
-  const tilts = [-6, 4, -3, 5];
-  const offsets = [0, 8, -4, 12];
-  const visible = images.slice(0, 4);
   return (
-    <div className="relative h-[280px] md:h-[360px]">
-      {visible.map((img, i) => {
-        const tilt = tilts[i] || 0;
-        const offset = offsets[i] || 0;
-        const left = `${(i / Math.max(visible.length, 1)) * 60}%`;
-        return (
-          <div
-            key={img.filename || i}
-            className="absolute top-1/2 -translate-y-1/2 w-[42%] aspect-[3/4] rounded-xl overflow-hidden border border-[#EDEDEF] bg-white shadow-[var(--shadow-elevated)]"
-            style={{
-              left,
-              transform: `translateY(calc(-50% + ${offset}px)) rotate(${tilt}deg)`,
-              zIndex: i + 1,
-            }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={img.url} alt={img.alt || ""} className="w-full h-full object-cover" />
-          </div>
-        );
-      })}
+    <div className="rounded-xl overflow-hidden bg-white">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={img.url} alt={img.alt || ""} className="w-full h-auto block" />
     </div>
   );
 }

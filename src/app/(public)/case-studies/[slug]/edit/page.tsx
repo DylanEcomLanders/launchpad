@@ -436,45 +436,21 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
               </div>
 
               <div>
-                <label className={labelClass}>Hero collage (1–4 images, tilted on the right of the hero)</label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {(study.hero.collageImages || []).map((img, i) => (
-                    <ImageUpload
-                      key={img.filename || i}
-                      slug={study.slug}
-                      aspect="auto"
-                      value={img}
-                      onChange={(next) =>
-                        updateStudy((prev) => ({
-                          ...prev,
-                          hero: {
-                            ...prev.hero,
-                            collageImages: next
-                              ? (prev.hero.collageImages || []).map((x, idx) => (idx === i ? next : x))
-                              : (prev.hero.collageImages || []).filter((_, idx) => idx !== i),
-                          },
-                        }))
-                      }
-                    />
-                  ))}
-                  {(study.hero.collageImages || []).length < 4 && (
-                    <ImageUpload
-                      slug={study.slug}
-                      aspect="auto"
-                      value={undefined}
-                      onChange={(img) => {
-                        if (!img) return;
-                        updateStudy((prev) => ({
-                          ...prev,
-                          hero: {
-                            ...prev.hero,
-                            collageImages: [...(prev.hero.collageImages || []), img],
-                          },
-                        }));
-                      }}
-                    />
-                  )}
-                </div>
+                <label className={labelClass}>Hero image (single PNG, designed in Figma — sits on the right of the hero)</label>
+                <ImageUpload
+                  slug={study.slug}
+                  aspect="auto"
+                  value={study.hero.collageImages?.[0]}
+                  onChange={(next) =>
+                    updateStudy((prev) => ({
+                      ...prev,
+                      hero: {
+                        ...prev.hero,
+                        collageImages: next ? [next] : [],
+                      },
+                    }))
+                  }
+                />
               </div>
             </div>
           </EditorSection>
