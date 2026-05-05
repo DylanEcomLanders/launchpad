@@ -1,870 +1,704 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import { toPng } from "html-to-image";
 import {
   PlusIcon,
   TrashIcon,
-  ArrowDownTrayIcon,
   ArrowLeftIcon,
-  DocumentDuplicateIcon,
+  ArrowDownTrayIcon,
+  LinkIcon,
+  ArrowTopRightOnSquareIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
-import { DecorativeBlocks } from "@/components/decorative-blocks";
-import FunnelCanvas, { type FunnelCanvasHandle } from "@/components/funnel-builder/FunnelCanvas";
-import { inputClass, selectClass, labelClass } from "@/lib/form-styles";
+import { inputClass, labelClass } from "@/lib/form-styles";
 import {
-  getFunnels,
-  createFunnel,
-  updateFunnel,
-  deleteFunnel,
-} from "@/lib/funnel-builder/data";
-import type { FunnelData } from "@/lib/funnel-builder/types";
-import { funnelTemplates } from "@/lib/funnel-builder/templates";
-import {
-  trafficSources,
-  pageNodeTypes,
   trafficSourceConfigs,
   pageNodeConfigs,
-  statusColors,
+  leadMagnetConfig,
+  emailSequenceConfig,
+  trafficSources as TRAFFIC_LIST,
+  pageNodeTypes as PAGE_LIST,
 } from "@/lib/funnel-builder/constants";
+import {
+  ROADMAP_STATUS_LABELS,
+  countByStatus,
+  defaultStageForPage,
+  newRoadmapId,
+  newShareToken,
+  newStepId,
+  totalStepCount,
+  type RoadmapData,
+  type RoadmapStep,
+  type RoadmapStepStatus,
+  type TrafficStep,
+  type PageStep,
+  type LeadMagnetStep,
+  type EmailSequenceStep,
+} from "@/lib/funnel-builder/roadmap-types";
+import {
+  getRoadmaps,
+  getRoadmapById,
+  saveRoadmap,
+  deleteRoadmap,
+} from "@/lib/funnel-builder/roadmap-data";
+import { RoadmapSVG } from "@/components/funnel-builder/RoadmapSVG";
 import type {
-  FunnelNodeData,
-  FunnelMode,
-  FunnelNodeStatus,
-  TrafficWarmth,
   TrafficSource,
   PageNodeType,
-  SerializedNode,
-  SerializedEdge,
-  ContentSlot,
+  LeadMagnetFormat,
 } from "@/lib/funnel-builder/types";
-import { leadMagnetConfig, emailSequenceConfig, cvrBenchmarks } from "@/lib/funnel-builder/constants";
-import type { Node, Edge } from "@xyflow/react";
 
-/* ── Helper ── */
-function genId() {
-  return `node_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
-}
-
-/** Calculate funnel health score (0-100) */
-function calcHealthScore(nodes: SerializedNode[]): number {
-  if (nodes.length === 0) return 0;
-
-  // 1. Live status (40%)
-  const liveCount = nodes.filter((n) => n.data.status === "live").length;
-  const liveScore = (liveCount / nodes.length) * 100;
-
-  // 2. CVR vs benchmarks (40%) — only for nodes with CVR data
-  const nodesWithCvr = nodes.filter((n) => n.data.metrics?.cvr != null);
-  let cvrScore = 50; // default if no CVR data
-  if (nodesWithCvr.length > 0) {
-    const scores = nodesWithCvr.map((n) => {
-      const benchmark = cvrBenchmarks[n.data.subType as string] || 3;
-      const actual = n.data.metrics!.cvr!;
-      return Math.min(100, (actual / benchmark) * 100);
-    });
-    cvrScore = scores.reduce((a, b) => a + b, 0) / scores.length;
-  }
-
-  // 3. Content completion (20%)
-  const nodesWithSlots = nodes.filter((n) => n.data.contentSlots);
-  let contentScore = 50; // default if no content slots
-  if (nodesWithSlots.length > 0) {
-    const completions = nodesWithSlots.map((n) => {
-      const slots = Object.values(n.data.contentSlots!);
-      return (slots.filter(Boolean).length / slots.length) * 100;
-    });
-    contentScore = completions.reduce((a, b) => a + b, 0) / completions.length;
-  }
-
-  return Math.round(liveScore * 0.4 + cvrScore * 0.4 + contentScore * 0.2);
-}
-
-function healthColor(score: number): string {
-  if (score >= 70) return "text-emerald-600";
-  if (score >= 40) return "text-amber-600";
-  return "text-red-500";
-}
-
-function healthBg(score: number): string {
-  if (score >= 70) return "bg-emerald-500";
-  if (score >= 40) return "bg-amber-500";
-  return "bg-red-500";
-}
-
-function templateToNodes(
-  tmpl: (typeof funnelTemplates)[number]
-): { nodes: SerializedNode[]; edges: SerializedEdge[] } {
-  const nodes: SerializedNode[] = tmpl.nodes.map((n, i) => ({
-    ...n,
-    id: `t${i}_${genId()}`,
-  }));
-  const edges: SerializedEdge[] = tmpl.edges.map((e, i) => ({
-    id: `e${i}_${Date.now().toString(36)}`,
-    source: nodes[e.source].id,
-    target: nodes[e.target].id,
-    type: "funnelEdge",
-  }));
-  return { nodes, edges };
-}
+const STATUS_OPTIONS: RoadmapStepStatus[] = [
+  "planned",
+  "in-build",
+  "live",
+  "optimising",
+];
 
 export default function FunnelBuilderPage() {
-  const [funnels, setFunnels] = useState<FunnelData[]>([]);
-  const [activeFunnel, setActiveFunnel] = useState<FunnelData | null>(null);
-  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  const canvasRef = useRef<HTMLDivElement>(null);
-  const canvasHandle = useRef<FunnelCanvasHandle>(null);
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [list, setList] = useState<RoadmapData[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [active, setActive] = useState<RoadmapData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const exportRef = useRef<HTMLDivElement | null>(null);
 
-  // Current canvas state refs (updated on change)
-  const nodesRef = useRef<Node[]>([]);
-  const edgesRef = useRef<Edge[]>([]);
-
+  // Initial load
   useEffect(() => {
-    getFunnels().then(setFunnels);
+    getRoadmaps().then((rs) => {
+      setList(rs);
+      setLoading(false);
+    });
   }, []);
 
-  const reloadFunnels = () => getFunnels().then(setFunnels);
+  // When activeId changes, fetch full record
+  useEffect(() => {
+    if (!activeId) {
+      setActive(null);
+      setSelectedStepId(null);
+      return;
+    }
+    getRoadmapById(activeId).then((r) => setActive(r));
+  }, [activeId]);
 
-  /* ── CRUD ── */
-
-  const handleCreate = async (templateId?: string) => {
-    const tmpl = templateId
-      ? funnelTemplates.find((t) => t.id === templateId)
-      : null;
-    const initial = tmpl
-      ? templateToNodes(tmpl)
-      : { nodes: [], edges: [] };
-
-    const funnel = await createFunnel({
-      name: tmpl ? `${tmpl.name} Funnel` : "New Funnel",
-      clientName: "",
-      mode: "strategy",
-      nodes: initial.nodes,
-      edges: initial.edges,
+  /* ── Mutations (auto-save on every change) ───────────────────── */
+  const persist = useCallback(async (next: RoadmapData) => {
+    setActive(next);
+    setList((prev) => {
+      const idx = prev.findIndex((r) => r.id === next.id);
+      if (idx >= 0) {
+        const copy = [...prev];
+        copy[idx] = next;
+        return copy;
+      }
+      return [next, ...prev];
     });
-    await reloadFunnels();
-    setActiveFunnel(funnel);
-    setSelectedNode(null);
+    await saveRoadmap(next);
+  }, []);
+
+  const createNew = async () => {
+    const now = new Date().toISOString();
+    const r: RoadmapData = {
+      id: newRoadmapId(),
+      shareToken: newShareToken(),
+      name: "New roadmap",
+      clientName: "",
+      trafficSources: [],
+      pages: [],
+      created_at: now,
+      updated_at: now,
+    };
+    await persist(r);
+    setActiveId(r.id);
   };
 
   const handleDelete = async (id: string) => {
-    if (deleteConfirm !== id) {
-      setDeleteConfirm(id);
+    if (!confirm("Delete this roadmap?")) return;
+    await deleteRoadmap(id);
+    setList((prev) => prev.filter((r) => r.id !== id));
+    if (activeId === id) setActiveId(null);
+  };
+
+  /* ── Add steps ───────────────────────────────────────────────── */
+  const addTraffic = (source: TrafficSource) => {
+    if (!active) return;
+    const step: TrafficStep = {
+      id: newStepId(),
+      kind: "traffic",
+      source,
+      status: "planned",
+    };
+    persist({ ...active, trafficSources: [...active.trafficSources, step] });
+    setSelectedStepId(step.id);
+  };
+
+  const addPage = (pageType: PageNodeType) => {
+    if (!active) return;
+    const step: PageStep = {
+      id: newStepId(),
+      kind: "page",
+      pageType,
+      stage: defaultStageForPage(pageType),
+      status: "planned",
+    };
+    persist({ ...active, pages: [...active.pages, step] });
+    setSelectedStepId(step.id);
+  };
+
+  const addLeadGen = () => {
+    if (!active || active.leadGen) return;
+    const magnet: LeadMagnetStep = {
+      id: newStepId(),
+      kind: "lead-magnet",
+      format: "pdf",
+      status: "planned",
+    };
+    const sequence: EmailSequenceStep = {
+      id: newStepId(),
+      kind: "email-sequence",
+      emailCount: 5,
+      status: "planned",
+    };
+    persist({ ...active, leadGen: { magnet, sequence } });
+    setSelectedStepId(magnet.id);
+  };
+
+  const removeLeadGen = () => {
+    if (!active?.leadGen) return;
+    persist({ ...active, leadGen: undefined });
+    setSelectedStepId(null);
+  };
+
+  /* ── Update / move / remove step ─────────────────────────────── */
+  const updateStep = (stepId: string, patch: Partial<RoadmapStep>) => {
+    if (!active) return;
+    const trafficSources = active.trafficSources.map((s) =>
+      s.id === stepId ? ({ ...s, ...patch } as TrafficStep) : s,
+    );
+    const pages = active.pages.map((s) =>
+      s.id === stepId ? ({ ...s, ...patch } as PageStep) : s,
+    );
+    let leadGen = active.leadGen;
+    if (leadGen?.magnet.id === stepId) {
+      leadGen = { ...leadGen, magnet: { ...leadGen.magnet, ...patch } as LeadMagnetStep };
+    }
+    if (leadGen?.sequence.id === stepId) {
+      leadGen = { ...leadGen, sequence: { ...leadGen.sequence, ...patch } as EmailSequenceStep };
+    }
+    persist({ ...active, trafficSources, pages, leadGen });
+  };
+
+  const removeStep = (stepId: string) => {
+    if (!active) return;
+    const trafficSources = active.trafficSources.filter((s) => s.id !== stepId);
+    const pages = active.pages.filter((s) => s.id !== stepId);
+    let leadGen = active.leadGen;
+    if (leadGen && (leadGen.magnet.id === stepId || leadGen.sequence.id === stepId)) {
+      leadGen = undefined;
+    }
+    persist({ ...active, trafficSources, pages, leadGen });
+    if (selectedStepId === stepId) setSelectedStepId(null);
+  };
+
+  const moveStep = (stepId: string, direction: -1 | 1) => {
+    if (!active) return;
+    const moveIn = (arr: TrafficStep[] | PageStep[], list: "traffic" | "pages") => {
+      const idx = arr.findIndex((s: { id: string }) => s.id === stepId);
+      if (idx === -1) return null;
+      const j = idx + direction;
+      if (j < 0 || j >= arr.length) return arr;
+      const copy = [...arr];
+      [copy[idx], copy[j]] = [copy[j], copy[idx]];
+      return copy;
+    };
+    const t = moveIn(active.trafficSources, "traffic") as TrafficStep[] | null;
+    if (t) {
+      persist({ ...active, trafficSources: t });
       return;
     }
-    await deleteFunnel(id);
-    await reloadFunnels();
-    if (activeFunnel?.id === id) {
-      setActiveFunnel(null);
-      setSelectedNode(null);
+    const p = moveIn(active.pages, "pages") as PageStep[] | null;
+    if (p) {
+      persist({ ...active, pages: p });
     }
-    setDeleteConfirm(null);
   };
 
-  const handleBack = async () => {
-    if (activeFunnel) {
-      await updateFunnel(activeFunnel.id, {
-        nodes: nodesRef.current as unknown as SerializedNode[],
-        edges: edgesRef.current as unknown as SerializedEdge[],
-      });
-    }
-    setActiveFunnel(null);
-    setSelectedNode(null);
-    await reloadFunnels();
-  };
-
-  /* ── Auto-save ── */
-  const debouncedSave = useCallback(() => {
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => {
-      if (activeFunnel) {
-        updateFunnel(activeFunnel.id, {
-          nodes: nodesRef.current as unknown as SerializedNode[],
-          edges: edgesRef.current as unknown as SerializedEdge[],
-        });
-      }
-    }, 1000);
-  }, [activeFunnel]);
-
-  const handleNodesChange = useCallback(
-    (nodes: Node[]) => {
-      nodesRef.current = nodes;
-      debouncedSave();
-    },
-    [debouncedSave]
-  );
-
-  const handleEdgesChange = useCallback(
-    (edges: Edge[]) => {
-      edgesRef.current = edges;
-      debouncedSave();
-    },
-    [debouncedSave]
-  );
-
-  /* ── Mode / Name / Client ── */
-  const updateField = (field: string, value: string) => {
-    if (!activeFunnel) return;
-    setActiveFunnel({ ...activeFunnel, [field]: value });
-    updateFunnel(activeFunnel.id, { [field]: value });
-  };
-
-  /* ── Selected node editing ── */
-  const updateNodeData = (field: string, value: string | number) => {
-    if (!selectedNode || !activeFunnel) return;
-    const updatedNodes = nodesRef.current.map((n) =>
-      n.id === selectedNode.id
-        ? {
-            ...n,
-            data: {
-              ...(n.data as unknown as FunnelNodeData),
-              [field]: value,
-              ...(field === "subType" && {
-                label:
-                  trafficSourceConfigs[value as TrafficSource]?.label ||
-                  pageNodeConfigs[value as PageNodeType]?.label ||
-                  value,
-              }),
-            },
-          }
-        : n
-    );
-    nodesRef.current = updatedNodes;
-    canvasHandle.current?.setNodes(updatedNodes);
-    // Update selectedNode in place so the editor panel stays in sync
-    const updatedSelected = updatedNodes.find((n) => n.id === selectedNode.id);
-    if (updatedSelected) setSelectedNode(updatedSelected);
-    debouncedSave();
-  };
-
-  const updateNodeMetric = (field: string, value: string) => {
-    if (!selectedNode || !activeFunnel) return;
-    const num = value === "" ? undefined : Number(value);
-    const updatedNodes = nodesRef.current.map((n) =>
-      n.id === selectedNode.id
-        ? {
-            ...n,
-            data: {
-              ...(n.data as unknown as FunnelNodeData),
-              metrics: {
-                ...((n.data as unknown as FunnelNodeData).metrics || {}),
-                [field]: num,
-              },
-            },
-          }
-        : n
-    );
-    nodesRef.current = updatedNodes;
-    canvasHandle.current?.setNodes(updatedNodes);
-    const updatedSelected = updatedNodes.find((n) => n.id === selectedNode.id);
-    if (updatedSelected) setSelectedNode(updatedSelected);
-    debouncedSave();
-  };
-
-  const deleteNode = async () => {
-    if (!selectedNode || !activeFunnel) return;
-    const nodeId = selectedNode.id;
-    const updatedNodes = nodesRef.current.filter((n) => n.id !== nodeId);
-    const updatedEdges = edgesRef.current.filter(
-      (e) => e.source !== nodeId && e.target !== nodeId
-    );
-    nodesRef.current = updatedNodes;
-    edgesRef.current = updatedEdges;
-    canvasHandle.current?.setNodes(updatedNodes);
-    canvasHandle.current?.setEdges(updatedEdges);
-    setSelectedNode(null);
-    const saved = await updateFunnel(activeFunnel.id, {
-      nodes: updatedNodes as unknown as SerializedNode[],
-      edges: updatedEdges as unknown as SerializedEdge[],
-    });
-    if (saved) setActiveFunnel(saved);
-  };
-
-  /* ── Export PNG ── */
-  const handleExport = async () => {
-    const el = canvasRef.current?.querySelector(".react-flow__viewport") as HTMLElement;
-    if (!el) return;
+  /* ── Export PNG ──────────────────────────────────────────────── */
+  const exportPng = async () => {
+    if (!exportRef.current || !active) return;
     try {
-      const dataUrl = await toPng(el, {
-        backgroundColor: "#FAFAFA",
+      const dataUrl = await toPng(exportRef.current, {
+        backgroundColor: "#ffffff",
         pixelRatio: 2,
       });
-      const link = document.createElement("a");
-      link.download = `${activeFunnel?.name || "funnel"}.png`;
-      link.href = dataUrl;
-      link.click();
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = `${active.name.replace(/\s+/g, "-").toLowerCase() || "roadmap"}.png`;
+      a.click();
     } catch (err) {
-      console.error("Export failed:", err);
+      console.error("Export failed", err);
     }
   };
 
-  /* ── Drag start from palette ── */
-  const onDragStart = (
-    event: React.DragEvent,
-    nodeType: "traffic" | "page" | "lead-magnet" | "email-sequence",
-    subType: string
-  ) => {
-    const data: FunnelNodeData = {
-      nodeType,
-      subType: subType as TrafficSource | PageNodeType,
-      label:
-        trafficSourceConfigs[subType as TrafficSource]?.label ||
-        pageNodeConfigs[subType as PageNodeType]?.label ||
-        (nodeType === "lead-magnet" ? "Lead Magnet" : nodeType === "email-sequence" ? "Email Sequence" : subType),
-      status: "planned",
-      ...(nodeType === "lead-magnet" ? { leadMagnetFormat: "pdf" as const, contentSlots: { headline: false, hook: false, offer: false, cta: false, socialProof: false } } : {}),
-      ...(nodeType === "email-sequence" ? { emailSequenceMetrics: { emailCount: 5, openRate: undefined, clickRate: undefined } } : {}),
-      ...((nodeType === "page") ? { contentSlots: { headline: false, hook: false, offer: false, cta: false, socialProof: false } } : {}),
-    };
-    event.dataTransfer.setData("application/reactflow", JSON.stringify(data));
-    event.dataTransfer.effectAllowed = "move";
+  const copyShare = () => {
+    if (!active) return;
+    const url = `${window.location.origin}/funnel/${active.shareToken}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
   };
 
-  /* ── Funnel List View ── */
-  if (!activeFunnel) {
+  /* ── Render ─────────────────────────────────────────────────── */
+
+  if (loading) {
     return (
-      <div className="relative min-h-screen overflow-hidden">
-        <DecorativeBlocks />
-        <div className="relative z-10 max-w-4xl mx-auto py-10 px-4">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight">Funnel Builder</h1>
-            <p className="text-sm text-[#7A7A7A] mt-1">
-              Visually map out e-commerce purchase funnels for clients
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin size-6 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full" />
+      </div>
+    );
+  }
+
+  // ─────────────────── List view ───────────────────
+  if (!active) {
+    return (
+      <div className="max-w-5xl mx-auto px-6 py-10">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Funnel Roadmaps</h1>
+            <p className="text-xs text-[#7A7A7A] mt-1">
+              Pick the pieces — render a clean, shareable client roadmap.
             </p>
           </div>
+          <button
+            onClick={createNew}
+            className="flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D]"
+          >
+            <PlusIcon className="size-4" />
+            New roadmap
+          </button>
+        </div>
 
-          {/* Create buttons */}
-          <div className="mb-8">
-            <p className={labelClass}>Start from template</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {funnelTemplates.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => handleCreate(t.id)}
-                  className="text-left p-4 bg-white border border-[#E5E5EA] rounded-lg hover:border-[#1B1B1B] transition-colors"
-                >
-                  <p className="text-sm font-semibold text-[#1B1B1B]">{t.name}</p>
-                  <p className="text-xs text-[#7A7A7A] mt-0.5">{t.description}</p>
-                </button>
-              ))}
+        {list.length === 0 ? (
+          <div className="border border-dashed border-[#E5E5EA] rounded-xl bg-[#FAFAFA] py-16 text-center">
+            <p className="text-sm text-[#A0A0A0]">
+              No roadmaps yet. Click <span className="font-semibold text-[#1B1B1B]">New roadmap</span> to start.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {list.map((r) => (
               <button
-                onClick={() => handleCreate()}
-                className="flex items-center justify-center gap-2 p-4 border border-dashed border-[#E5E5EA] rounded-lg text-[#7A7A7A] hover:border-[#1B1B1B] hover:text-[#1B1B1B] transition-colors"
+                key={r.id}
+                onClick={() => setActiveId(r.id)}
+                className="text-left bg-white border border-[#E5E5EA] rounded-xl p-4 hover:border-[#1A1A1A] transition-colors"
               >
-                <PlusIcon className="size-4" />
-                <span className="text-sm font-medium">Blank Canvas</span>
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-[#1B1B1B] truncate">
+                      {r.name || "Untitled roadmap"}
+                    </p>
+                    {r.clientName && (
+                      <p className="text-[11px] text-[#7A7A7A] mt-0.5 truncate">
+                        {r.clientName}
+                      </p>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-[#A0A0A0] shrink-0">
+                    {totalStepCount(r)} steps
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 mt-3">
+                  <Link
+                    href={`/funnel/${r.shareToken}`}
+                    target="_blank"
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-[10px] font-semibold text-[#7A7A7A] hover:text-[#1B1B1B] flex items-center gap-1"
+                  >
+                    <ArrowTopRightOnSquareIcon className="size-3" />
+                    Client view
+                  </Link>
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(r.id);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.stopPropagation();
+                        handleDelete(r.id);
+                      }
+                    }}
+                    className="text-[10px] font-semibold text-[#A0A0A0] hover:text-red-500 flex items-center gap-1 ml-auto cursor-pointer"
+                  >
+                    <TrashIcon className="size-3" />
+                    Delete
+                  </span>
+                </div>
               </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ─────────────────── Editor view ───────────────────
+  const counts = countByStatus(active);
+  const totalSteps = totalStepCount(active);
+  const liveCount = counts.live;
+  const allSteps: RoadmapStep[] = [
+    ...active.trafficSources,
+    ...active.pages,
+    ...(active.leadGen ? [active.leadGen.magnet, active.leadGen.sequence] : []),
+  ];
+  const selectedStep = allSteps.find((s) => s.id === selectedStepId) || null;
+
+  return (
+    <div className="px-4 py-4">
+      {/* ── Top bar ─────────────────────────────────────────── */}
+      <div className="flex items-center gap-3 mb-4 flex-wrap">
+        <button
+          onClick={() => setActiveId(null)}
+          className="flex items-center gap-1 px-2 py-1.5 text-xs text-[#7A7A7A] hover:text-[#1B1B1B]"
+        >
+          <ArrowLeftIcon className="size-3.5" />
+          All roadmaps
+        </button>
+        <input
+          value={active.name}
+          onChange={(e) => persist({ ...active, name: e.target.value })}
+          placeholder="Roadmap name"
+          className="text-sm font-semibold border-0 focus:outline-none focus:ring-0 bg-transparent min-w-[200px]"
+        />
+        <input
+          value={active.clientName}
+          onChange={(e) => persist({ ...active, clientName: e.target.value })}
+          placeholder="Client name"
+          className="text-xs text-[#7A7A7A] border-0 focus:outline-none focus:ring-0 bg-transparent min-w-[160px]"
+        />
+        <span className="text-[10px] text-[#A0A0A0] tabular-nums">
+          {liveCount} of {totalSteps} live
+        </span>
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            onClick={copyShare}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-[#E5E5EA] rounded-lg hover:border-[#1B1B1B]"
+          >
+            <LinkIcon className="size-3.5" />
+            {copied ? "Copied" : "Copy share link"}
+          </button>
+          <Link
+            href={`/funnel/${active.shareToken}`}
+            target="_blank"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-[#E5E5EA] rounded-lg hover:border-[#1B1B1B]"
+          >
+            <ArrowTopRightOnSquareIcon className="size-3.5" />
+            Preview client
+          </Link>
+          <button
+            onClick={exportPng}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D]"
+          >
+            <ArrowDownTrayIcon className="size-3.5" />
+            Export PNG
+          </button>
+        </div>
+      </div>
+
+      <div className="flex gap-4">
+        {/* ── Library rail ──────────────────────────────── */}
+        <aside className="w-[240px] flex-shrink-0 space-y-4">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-2">
+              Traffic sources
+            </p>
+            <div className="grid grid-cols-2 gap-1.5">
+              {TRAFFIC_LIST.map((t) => {
+                const cfg = trafficSourceConfigs[t];
+                return (
+                  <button
+                    key={t}
+                    onClick={() => addTraffic(t)}
+                    className="flex items-center gap-1 px-2 py-1.5 border border-[#E5E5EA] rounded-md text-[11px] hover:border-[#1B1B1B] hover:bg-[#FAFAFA] truncate"
+                  >
+                    <span
+                      className="text-[8px] font-bold tracking-wider px-1 py-0.5 rounded shrink-0"
+                      style={{
+                        background: cfg.color,
+                        color: cfg.textColor,
+                      }}
+                    >
+                      {cfg.short}
+                    </span>
+                    <span className="truncate">{cfg.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Existing funnels */}
-          {funnels.length > 0 && (
-            <div>
-              <p className={labelClass}>Your funnels</p>
-              <div className="space-y-2">
-                {funnels.map((f) => (
-                  <div
-                    key={f.id}
-                    className="flex items-center justify-between p-4 bg-white border border-[#E5E5EA] rounded-lg hover:border-[#CCC] transition-colors"
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-2">
+              Pages
+            </p>
+            <div className="grid grid-cols-2 gap-1.5">
+              {PAGE_LIST.map((p) => {
+                const cfg = pageNodeConfigs[p];
+                return (
+                  <button
+                    key={p}
+                    onClick={() => addPage(p)}
+                    className="flex items-center gap-1 px-2 py-1.5 border border-[#E5E5EA] rounded-md text-[11px] hover:border-[#1B1B1B] hover:bg-[#FAFAFA] truncate"
                   >
-                    <button
-                      onClick={() => {
-                        setActiveFunnel(f);
-                        setSelectedNode(null);
+                    <span
+                      className="text-[8px] font-bold tracking-wider px-1 py-0.5 rounded shrink-0"
+                      style={{
+                        background: cfg.color,
+                        color: cfg.textColor,
                       }}
-                      className="flex-1 text-left"
                     >
-                      <p className="text-sm font-semibold text-[#1B1B1B]">
-                        {f.name || "Untitled Funnel"}
-                      </p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <p className="text-xs text-[#7A7A7A]">
-                          {f.nodes.length} nodes · {f.clientName || "No client"} · {f.mode === "performance" ? "Performance" : "Strategy"}
-                        </p>
-                        {f.nodes.length > 0 && (() => {
-                          const score = calcHealthScore(f.nodes);
-                          return (
-                            <span className={`text-[10px] font-bold ${healthColor(score)}`}>{score}/100</span>
-                          );
-                        })()}
-                      </div>
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(f.id);
-                      }}
-                      className={`p-2 rounded-lg transition-colors ${
-                        deleteConfirm === f.id
-                          ? "bg-red-50 text-red-500"
-                          : "text-[#AAA] hover:text-red-400"
-                      }`}
-                    >
-                      <TrashIcon className="size-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
+                      {cfg.short}
+                    </span>
+                    <span className="truncate">{cfg.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-2">
+              Lead gen
+            </p>
+            {active.leadGen ? (
+              <button
+                onClick={removeLeadGen}
+                className="w-full px-2 py-2 border border-[#E5E5EA] rounded-md text-[11px] text-[#7A7A7A] hover:text-red-500 hover:border-red-200"
+              >
+                Remove lead-gen track
+              </button>
+            ) : (
+              <button
+                onClick={addLeadGen}
+                className="w-full flex items-center justify-center gap-1 px-2 py-2 border border-dashed border-[#E5E5EA] rounded-md text-[11px] text-[#7A7A7A] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"
+              >
+                <PlusIcon className="size-3" />
+                Add Lead Magnet + Email Sequence
+              </button>
+            )}
+          </div>
+        </aside>
+
+        {/* ── Canvas + step editor ─────────────────────── */}
+        <div className="flex-1 min-w-0">
+          <div
+            ref={exportRef}
+            className="bg-white border border-[#E5E5EA] rounded-xl p-6 mb-4"
+          >
+            <RoadmapSVG roadmap={active} onStepClick={(s) => setSelectedStepId(s.id)} />
+          </div>
+
+          {/* Step list / editor */}
+          {selectedStep ? (
+            <StepEditorPanel
+              step={selectedStep}
+              onUpdate={(patch) => updateStep(selectedStep.id, patch)}
+              onMove={(dir) => moveStep(selectedStep.id, dir)}
+              onRemove={() => removeStep(selectedStep.id)}
+              onClose={() => setSelectedStepId(null)}
+            />
+          ) : (
+            <div className="bg-[#FAFAFA] border border-dashed border-[#E5E5EA] rounded-lg px-4 py-6 text-center">
+              <p className="text-[12px] text-[#A0A0A0]">
+                Click any step in the roadmap to edit its status, note, or KPI target.
+              </p>
             </div>
           )}
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
-  /* ── Editor View ── */
-  const nodeData = selectedNode?.data as unknown as FunnelNodeData | undefined;
+/* ── Step editor panel ─────────────────────────────────────────── */
+
+function StepEditorPanel({
+  step,
+  onUpdate,
+  onMove,
+  onRemove,
+  onClose,
+}: {
+  step: RoadmapStep;
+  onUpdate: (patch: Partial<RoadmapStep>) => void;
+  onMove: (direction: -1 | 1) => void;
+  onRemove: () => void;
+  onClose: () => void;
+}) {
+  const reorderable = step.kind === "traffic" || step.kind === "page";
 
   return (
-    <div className="flex h-[calc(100vh-1rem)] overflow-hidden">
-      {/* Left Sidebar: Palette + Node Editor */}
-      <div className="w-64 flex-shrink-0 border-r border-[#E5E5EA] bg-white flex flex-col overflow-y-auto">
-        {/* Header */}
-        <div className="p-4 border-b border-[#E5E5EA]">
-          <button
-            onClick={handleBack}
-            className="flex items-center gap-1.5 text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors mb-3"
-          >
-            <ArrowLeftIcon className="size-3" />
-            Back
-          </button>
-          <input
-            type="text"
-            value={activeFunnel.name}
-            onChange={(e) => updateField("name", e.target.value)}
-            className="w-full text-sm font-semibold text-[#1B1B1B] bg-transparent border-0 p-0 focus:outline-none focus:ring-0"
-            placeholder="Funnel name..."
-          />
-          <input
-            type="text"
-            value={activeFunnel.clientName}
-            onChange={(e) => updateField("clientName", e.target.value)}
-            className="w-full text-xs text-[#7A7A7A] bg-transparent border-0 p-0 mt-1 focus:outline-none focus:ring-0"
-            placeholder="Client name..."
-          />
-        </div>
-
-        {/* Health Score */}
-        {activeFunnel.nodes.length > 0 && (() => {
-          const score = calcHealthScore(activeFunnel.nodes);
-          return (
-            <div className="p-4 border-b border-[#E5E5EA]">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Health</span>
-                <span className={`text-sm font-bold ${healthColor(score)}`}>{score}</span>
-              </div>
-              <div className="h-1.5 bg-[#F0F0F0] rounded-full overflow-hidden">
-                <div className={`h-full ${healthBg(score)} rounded-full transition-all`} style={{ width: `${score}%` }} />
-              </div>
-            </div>
-          );
-        })()}
-
-        {/* Mode + Export */}
-        <div className="p-4 border-b border-[#E5E5EA] space-y-2">
-          <div className="flex bg-[#F5F5F5] rounded-lg p-0.5">
-            {(["strategy", "performance"] as FunnelMode[]).map((m) => (
+    <div className="bg-white border border-[#1B1B1B] rounded-xl p-4">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#1B1B1B]">
+          Edit step
+        </p>
+        <div className="flex items-center gap-1">
+          {reorderable && (
+            <>
               <button
-                key={m}
-                onClick={() => updateField("mode", m)}
-                className={`flex-1 py-1.5 text-[10px] font-semibold uppercase tracking-wider rounded-md transition-colors ${
-                  activeFunnel.mode === m
-                    ? "bg-white text-[#1B1B1B] shadow-sm"
-                    : "text-[#999]"
-                }`}
+                onClick={() => onMove(-1)}
+                className="p-1 text-[#7A7A7A] hover:text-[#1B1B1B]"
+                title="Move earlier"
               >
-                {m}
+                <ChevronUpIcon className="size-4" />
               </button>
-            ))}
-          </div>
+              <button
+                onClick={() => onMove(1)}
+                className="p-1 text-[#7A7A7A] hover:text-[#1B1B1B]"
+                title="Move later"
+              >
+                <ChevronDownIcon className="size-4" />
+              </button>
+            </>
+          )}
           <button
-            onClick={handleExport}
-            className="w-full flex items-center justify-center gap-1.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A] border border-[#E5E5EA] rounded-lg hover:bg-[#F5F5F5] transition-colors"
+            onClick={onRemove}
+            className="p-1 text-[#7A7A7A] hover:text-red-500"
+            title="Remove"
           >
-            <ArrowDownTrayIcon className="size-3" />
-            Export PNG
+            <TrashIcon className="size-3.5" />
+          </button>
+          <button
+            onClick={onClose}
+            className="p-1 text-[#7A7A7A] hover:text-[#1B1B1B] text-sm"
+            title="Close"
+          >
+            ×
           </button>
         </div>
-
-        {/* Node Palette */}
-        {!selectedNode && (
-          <div className="p-4 flex-1">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">
-              Traffic Sources
-            </p>
-            <div className="space-y-1 mb-4">
-              {trafficSources.map((s) => (
-                <div
-                  key={s}
-                  draggable
-                  onDragStart={(e) => onDragStart(e, "traffic", s)}
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-[#FAFAFA] border border-[#E5E5EA] cursor-grab hover:border-[#CCC] transition-colors text-xs"
-                >
-                  <span
-                    className="text-[8px] font-bold uppercase px-1 py-0.5 rounded"
-                    style={{
-                      background: trafficSourceConfigs[s].color,
-                      color: trafficSourceConfigs[s].textColor,
-                    }}
-                  >
-                    {trafficSourceConfigs[s].short}
-                  </span>
-                  <span className="text-[#555]">{trafficSourceConfigs[s].label}</span>
-                </div>
-              ))}
-            </div>
-
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">
-              Pages
-            </p>
-            <div className="space-y-1 mb-4">
-              {pageNodeTypes.map((p) => (
-                <div
-                  key={p}
-                  draggable
-                  onDragStart={(e) => onDragStart(e, "page", p)}
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-[#FAFAFA] border border-[#E5E5EA] cursor-grab hover:border-[#CCC] transition-colors text-xs"
-                >
-                  <span
-                    className="text-[8px] font-bold uppercase px-1 py-0.5 rounded"
-                    style={{
-                      background: pageNodeConfigs[p].color,
-                      color: pageNodeConfigs[p].textColor,
-                    }}
-                  >
-                    {pageNodeConfigs[p].short}
-                  </span>
-                  <span className="text-[#555]">{pageNodeConfigs[p].label}</span>
-                </div>
-              ))}
-            </div>
-
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">
-              Lead Gen
-            </p>
-            <div className="space-y-1">
-              <div
-                draggable
-                onDragStart={(e) => onDragStart(e, "lead-magnet", "Lead Magnet")}
-                className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-[#F0FDF4] border border-[#BBF7D0] cursor-grab hover:border-[#15803D] transition-colors text-xs"
-              >
-                <span className="text-[8px] font-bold uppercase px-1 py-0.5 rounded bg-[#E6F9ED] text-[#15803D]">LM</span>
-                <span className="text-[#555]">Lead Magnet</span>
-              </div>
-              <div
-                draggable
-                onDragStart={(e) => onDragStart(e, "email-sequence", "Email Sequence")}
-                className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-[#FFF7ED] border border-[#FED7AA] cursor-grab hover:border-[#C2410C] transition-colors text-xs"
-              >
-                <span className="text-[8px] font-bold uppercase px-1 py-0.5 rounded bg-[#FDF2E9] text-[#C2410C]">SEQ</span>
-                <span className="text-[#555]">Email Sequence</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Node Editor */}
-        {selectedNode && nodeData && (
-          <div className="p-4 flex-1">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">
-                Edit Node
-              </p>
-              <button
-                onClick={() => setSelectedNode(null)}
-                className="text-[10px] text-[#AAA] hover:text-[#1B1B1B]"
-              >
-                Done
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <label className={labelClass}>Label</label>
-                <input
-                  type="text"
-                  value={nodeData.label}
-                  onChange={(e) => updateNodeData("label", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className={labelClass}>Type</label>
-                <select
-                  value={nodeData.subType}
-                  onChange={(e) => updateNodeData("subType", e.target.value)}
-                  className={selectClass}
-                >
-                  {nodeData.nodeType === "traffic" ? (
-                    trafficSources.map((s) => (
-                      <option key={s} value={s}>
-                        {trafficSourceConfigs[s].label}
-                      </option>
-                    ))
-                  ) : (
-                    pageNodeTypes.map((p) => (
-                      <option key={p} value={p}>
-                        {pageNodeConfigs[p].label}
-                      </option>
-                    ))
-                  )}
-                </select>
-              </div>
-
-              <div>
-                <label className={labelClass}>Status</label>
-                <select
-                  value={nodeData.status}
-                  onChange={(e) => updateNodeData("status", e.target.value)}
-                  className={selectClass}
-                >
-                  <option value="planned">Planned</option>
-                  <option value="in-progress">In Progress</option>
-                  <option value="live">Live</option>
-                </select>
-              </div>
-
-              {/* Warmth (traffic nodes only) */}
-              {nodeData.nodeType === "traffic" && (
-                <div>
-                  <label className={labelClass}>Traffic Warmth</label>
-                  <select
-                    value={nodeData.warmth || ""}
-                    onChange={(e) => updateNodeData("warmth", e.target.value)}
-                    className={selectClass}
-                  >
-                    <option value="">No warmth set</option>
-                    <option value="cold">Cold</option>
-                    <option value="warm">Warm</option>
-                    <option value="hot">Hot</option>
-                  </select>
-                </div>
-              )}
-
-              {/* Funnel Stage */}
-              <div>
-                <label className={labelClass}>Funnel Stage</label>
-                <select
-                  value={nodeData.stage || ""}
-                  onChange={(e) => updateNodeData("stage", e.target.value)}
-                  className={selectClass}
-                >
-                  <option value="">No stage set</option>
-                  <option value="tofu">TOFU (Top of Funnel)</option>
-                  <option value="mofu">MOFU (Middle of Funnel)</option>
-                  <option value="bofu">BOFU (Bottom of Funnel)</option>
-                </select>
-              </div>
-
-              {/* Lead Magnet format */}
-              {nodeData.nodeType === "lead-magnet" && (
-                <div>
-                  <label className={labelClass}>Format</label>
-                  <select
-                    value={nodeData.leadMagnetFormat || "pdf"}
-                    onChange={(e) => updateNodeData("leadMagnetFormat", e.target.value)}
-                    className={selectClass}
-                  >
-                    <option value="pdf">PDF Guide</option>
-                    <option value="video">Video</option>
-                    <option value="tool">Tool / Calculator</option>
-                    <option value="quiz">Quiz</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-              )}
-
-              {/* Email Sequence fields */}
-              {nodeData.nodeType === "email-sequence" && (
-                <div className="space-y-2">
-                  <div>
-                    <label className={labelClass}>Email Count</label>
-                    <input
-                      type="number"
-                      min={1}
-                      value={nodeData.emailSequenceMetrics?.emailCount || ""}
-                      onChange={(e) => {
-                        const val = e.target.value === "" ? undefined : Number(e.target.value);
-                        const updatedNodes = nodesRef.current.map((n) =>
-                          n.id === selectedNode.id ? { ...n, data: { ...(n.data as unknown as FunnelNodeData), emailSequenceMetrics: { ...((n.data as unknown as FunnelNodeData).emailSequenceMetrics || {}), emailCount: val } } } : n
-                        );
-                        nodesRef.current = updatedNodes;
-                        canvasHandle.current?.setNodes(updatedNodes);
-                        const u = updatedNodes.find((n) => n.id === selectedNode.id);
-                        if (u) setSelectedNode(u);
-                        debouncedSave();
-                      }}
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Open Rate %</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={nodeData.emailSequenceMetrics?.openRate ?? ""}
-                      onChange={(e) => {
-                        const val = e.target.value === "" ? undefined : Number(e.target.value);
-                        const updatedNodes = nodesRef.current.map((n) =>
-                          n.id === selectedNode.id ? { ...n, data: { ...(n.data as unknown as FunnelNodeData), emailSequenceMetrics: { ...((n.data as unknown as FunnelNodeData).emailSequenceMetrics || {}), openRate: val } } } : n
-                        );
-                        nodesRef.current = updatedNodes;
-                        canvasHandle.current?.setNodes(updatedNodes);
-                        const u = updatedNodes.find((n) => n.id === selectedNode.id);
-                        if (u) setSelectedNode(u);
-                        debouncedSave();
-                      }}
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Click Rate %</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={nodeData.emailSequenceMetrics?.clickRate ?? ""}
-                      onChange={(e) => {
-                        const val = e.target.value === "" ? undefined : Number(e.target.value);
-                        const updatedNodes = nodesRef.current.map((n) =>
-                          n.id === selectedNode.id ? { ...n, data: { ...(n.data as unknown as FunnelNodeData), emailSequenceMetrics: { ...((n.data as unknown as FunnelNodeData).emailSequenceMetrics || {}), clickRate: val } } } : n
-                        );
-                        nodesRef.current = updatedNodes;
-                        canvasHandle.current?.setNodes(updatedNodes);
-                        const u = updatedNodes.find((n) => n.id === selectedNode.id);
-                        if (u) setSelectedNode(u);
-                        debouncedSave();
-                      }}
-                      className={inputClass}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Content Slots (page + lead magnet nodes) */}
-              {(nodeData.nodeType === "page" || nodeData.nodeType === "lead-magnet") && (
-                <div className="pt-3 border-t border-[#E5E5EA]">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Content Checklist</p>
-                  {(["headline", "hook", "offer", "cta", "socialProof"] as const).map((slot) => {
-                    const checked = nodeData.contentSlots?.[slot] || false;
-                    const labels: Record<string, string> = { headline: "Headline written", hook: "Hook written", offer: "Offer defined", cta: "CTA written", socialProof: "Social proof added" };
-                    return (
-                      <label key={slot} className="flex items-center gap-2 py-1 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={(e) => {
-                            const updatedNodes = nodesRef.current.map((n) =>
-                              n.id === selectedNode.id ? { ...n, data: { ...(n.data as unknown as FunnelNodeData), contentSlots: { ...((n.data as unknown as FunnelNodeData).contentSlots || { headline: false, hook: false, offer: false, cta: false, socialProof: false }), [slot]: e.target.checked } } } : n
-                            );
-                            nodesRef.current = updatedNodes;
-                            canvasHandle.current?.setNodes(updatedNodes);
-                            const u = updatedNodes.find((n) => n.id === selectedNode.id);
-                            if (u) setSelectedNode(u);
-                            debouncedSave();
-                          }}
-                          className="size-3.5 rounded border-[#CCC] text-[#1B1B1B] focus:ring-0"
-                        />
-                        <span className={`text-xs ${checked ? "text-[#1B1B1B]" : "text-[#999]"}`}>{labels[slot]}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Preview URL */}
-              <div>
-                <label className={labelClass}>
-                  {nodeData.nodeType === "traffic" ? "Ad Preview URL" : nodeData.nodeType === "lead-magnet" ? "Lead Magnet URL" : "Page URL"}
-                </label>
-                <input
-                  type="url"
-                  value={nodeData.previewUrl || ""}
-                  onChange={(e) => updateNodeData("previewUrl", e.target.value)}
-                  className={inputClass}
-                  placeholder={nodeData.nodeType === "traffic" ? "https://fb.me/ad/..." : "https://store.com/..."}
-                />
-              </div>
-
-              {/* Metrics (performance mode only) */}
-              {activeFunnel.mode === "performance" && (
-                <div className="pt-3 border-t border-[#E5E5EA]">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">
-                    Metrics
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-[9px] text-[#AAA] uppercase">Traffic</label>
-                      <input
-                        type="number"
-                        value={nodeData.metrics?.traffic ?? ""}
-                        onChange={(e) => updateNodeMetric("traffic", e.target.value)}
-                        className="w-full px-2 py-1 text-xs border border-[#E5E5EA] rounded"
-                        placeholder="0"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[9px] text-[#AAA] uppercase">CVR %</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        value={nodeData.metrics?.cvr ?? ""}
-                        onChange={(e) => updateNodeMetric("cvr", e.target.value)}
-                        className="w-full px-2 py-1 text-xs border border-[#E5E5EA] rounded"
-                        placeholder="0"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[9px] text-[#AAA] uppercase">AOV $</label>
-                      <input
-                        type="number"
-                        value={nodeData.metrics?.aov ?? ""}
-                        onChange={(e) => updateNodeMetric("aov", e.target.value)}
-                        className="w-full px-2 py-1 text-xs border border-[#E5E5EA] rounded"
-                        placeholder="0"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[9px] text-[#AAA] uppercase">Drop-off %</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        value={nodeData.metrics?.dropOff ?? ""}
-                        onChange={(e) => updateNodeMetric("dropOff", e.target.value)}
-                        className="w-full px-2 py-1 text-xs border border-[#E5E5EA] rounded"
-                        placeholder="0"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <button
-                onClick={deleteNode}
-                className="w-full flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors mt-4"
-              >
-                <TrashIcon className="size-3.5" />
-                Delete Node
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Canvas */}
-      <div ref={canvasRef} className="flex-1 relative">
-        <FunnelCanvas
-          ref={canvasHandle}
-          key={activeFunnel.id}
-          initialNodes={activeFunnel.nodes}
-          initialEdges={activeFunnel.edges}
-          onNodesChange={handleNodesChange}
-          onEdgesChange={handleEdgesChange}
-          onNodeSelect={setSelectedNode}
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label className={labelClass}>Status</label>
+          <select
+            value={step.status}
+            onChange={(e) =>
+              onUpdate({ status: e.target.value as RoadmapStepStatus })
+            }
+            className={inputClass}
+          >
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s} value={s}>
+                {ROADMAP_STATUS_LABELS[s]}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className={labelClass}>Custom label (optional)</label>
+          <input
+            type="text"
+            value={step.customLabel || ""}
+            onChange={(e) => onUpdate({ customLabel: e.target.value || undefined })}
+            placeholder={defaultLabelFor(step)}
+            className={inputClass}
+          />
+        </div>
+
+        <div className="md:col-span-2">
+          <label className={labelClass}>Note (1–2 lines)</label>
+          <textarea
+            rows={2}
+            value={step.note || ""}
+            onChange={(e) => onUpdate({ note: e.target.value || undefined })}
+            placeholder="Why this step is here, what it does."
+            className={`${inputClass} resize-none`}
+          />
+        </div>
+
+        <div>
+          <label className={labelClass}>KPI target (optional)</label>
+          <input
+            type="text"
+            value={step.kpiTarget || ""}
+            onChange={(e) => onUpdate({ kpiTarget: e.target.value || undefined })}
+            placeholder="≥3% CVR · 100 leads/mo"
+            className={inputClass}
+          />
+        </div>
+
+        {step.kind === "page" && (
+          <div>
+            <label className={labelClass}>Funnel stage</label>
+            <select
+              value={step.stage || "mofu"}
+              onChange={(e) =>
+                onUpdate({ stage: e.target.value as PageStep["stage"] })
+              }
+              className={inputClass}
+            >
+              <option value="tofu">TOFU (top of funnel)</option>
+              <option value="mofu">MOFU (middle)</option>
+              <option value="bofu">BOFU (bottom)</option>
+            </select>
+          </div>
+        )}
+
+        {step.kind === "lead-magnet" && (
+          <div>
+            <label className={labelClass}>Format</label>
+            <select
+              value={step.format}
+              onChange={(e) =>
+                onUpdate({ format: e.target.value as LeadMagnetFormat })
+              }
+              className={inputClass}
+            >
+              <option value="pdf">PDF</option>
+              <option value="video">Video</option>
+              <option value="tool">Tool</option>
+              <option value="quiz">Quiz</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        )}
+
+        {step.kind === "email-sequence" && (
+          <div>
+            <label className={labelClass}>Email count</label>
+            <input
+              type="number"
+              min={1}
+              value={step.emailCount || ""}
+              onChange={(e) =>
+                onUpdate({ emailCount: Number(e.target.value) || undefined })
+              }
+              className={inputClass}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
+}
+
+function defaultLabelFor(step: RoadmapStep): string {
+  switch (step.kind) {
+    case "traffic":
+      return trafficSourceConfigs[step.source].label;
+    case "page":
+      return pageNodeConfigs[step.pageType].label;
+    case "lead-magnet":
+      return leadMagnetConfig.label;
+    case "email-sequence":
+      return emailSequenceConfig.label;
+  }
 }
