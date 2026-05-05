@@ -86,11 +86,11 @@ export default function DeckBuilderPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs text-[#999] mb-1">Brand Name</label>
-                <input value={brandName} onChange={e => setBrandName(e.target.value)} placeholder="e.g. Surreal" className="w-full px-3 py-2 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]" />
+                <input value={brandName} onChange={e => setBrandName(e.target.value)} placeholder="e.g. Ecomlanders" className="w-full px-3 py-2 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]" />
               </div>
               <div>
                 <label className="block text-xs text-[#999] mb-1">URL</label>
-                <input value={brandUrl} onChange={e => setBrandUrl(e.target.value)} placeholder="https://eatsurreal.com" className="w-full px-3 py-2 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]" />
+                <input value={brandUrl} onChange={e => setBrandUrl(e.target.value)} placeholder="https://ecomlanders.app" className="w-full px-3 py-2 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B]" />
               </div>
             </div>
           </section>

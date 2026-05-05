@@ -119,7 +119,7 @@ export function DeckBuilderInline() {
               <input
                 value={brandName}
                 onChange={(e) => setBrandName(e.target.value)}
-                placeholder="e.g. Surreal"
+                placeholder="e.g. Ecomlanders"
                 className={inputClass}
               />
             </div>
@@ -128,7 +128,7 @@ export function DeckBuilderInline() {
               <input
                 value={brandUrl}
                 onChange={(e) => setBrandUrl(e.target.value)}
-                placeholder="https://eatsurreal.com"
+                placeholder="https://ecomlanders.app"
                 className={inputClass}
               />
             </div>

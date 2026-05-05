@@ -14,10 +14,12 @@ import {
   ChartBarIcon,
   CalendarDaysIcon,
   ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   PhoneIcon,
   ClipboardDocumentListIcon,
   ArrowLongRightIcon,
   SparklesIcon,
+  LinkIcon,
 } from "@heroicons/react/24/outline";
 
 /**
@@ -46,14 +48,14 @@ interface CalcInputs {
   traffic: number; // monthly sessions
   cvr: number; // current CVR (%)
   aov: number; // £
-  lift: number; // CVR lift target (%)
+  target: number; // target CVR (%) — the CVR we'd hit together
 }
 
 const DEFAULT_CALC: CalcInputs = {
   traffic: 150000,
   cvr: 1.8,
   aov: 55,
-  lift: 1.0,
+  target: 2.8,
 };
 
 const RETAINER = 8000;
@@ -68,7 +70,8 @@ function formatGBP(n: number): string {
 }
 
 function monthlyRecovered(c: CalcInputs): number {
-  return c.traffic * (c.lift / 100) * c.aov;
+  const gapPp = Math.max(0, c.target - c.cvr);
+  return c.traffic * (gapPp / 100) * c.aov;
 }
 
 // ── Marquee (outskirts on cover) ──
@@ -147,6 +150,7 @@ function SliderRow({
   format: (v: number) => string;
   onChange: (v: number) => void;
 }) {
+  const pct = ((value - min) / (max - min)) * 100;
   return (
     <div className="slider-row">
       <div className="slider-row-head">
@@ -161,6 +165,7 @@ function SliderRow({
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className="deck-slider"
+        style={{ ["--progress" as string]: `${pct}%` }}
       />
     </div>
   );
@@ -178,6 +183,7 @@ function RevenueCalculatorSlide({
   const annual = monthly * 12;
   return (
     <div className="slide-calc">
+      <p className="slide-kicker">Drag to model your numbers</p>
       <h2>What you&rsquo;re leaving on the table</h2>
       <div className="slide-calc-body">
         <div className="slide-calc-sliders">
@@ -209,29 +215,26 @@ function RevenueCalculatorSlide({
             onChange={(v) => setInputs({ ...inputs, aov: v })}
           />
           <SliderRow
-            label="CVR lift target"
-            value={inputs.lift}
+            label="Target CVR"
+            value={inputs.target}
             min={0.5}
-            max={2}
+            max={6}
             step={0.1}
-            format={(v) => `+${v.toFixed(1)}%`}
-            onChange={(v) => setInputs({ ...inputs, lift: v })}
+            format={(v) => `${v.toFixed(1)}%`}
+            onChange={(v) => setInputs({ ...inputs, target: v })}
           />
         </div>
         <div className="slide-calc-output">
           <div className="calc-out-block">
-            <p className="calc-out-label">Monthly revenue recovered</p>
+            <p className="calc-out-label">Monthly recovered</p>
             <p className="calc-out-value">{formatGBP(monthly)}</p>
           </div>
           <div className="calc-out-block calc-out-block-big">
-            <p className="calc-out-label">Annual opportunity</p>
-            <p className="calc-out-value">{formatGBP(annual)}</p>
+            <p className="calc-out-label calc-out-label-accent">Annual opportunity</p>
+            <p className="calc-out-value calc-out-value-accent">{formatGBP(annual)}</p>
           </div>
         </div>
       </div>
-      <p className="slide-calc-foot">
-        Drag the sliders. Those are the numbers you&rsquo;re living with right now — and the revenue you&rsquo;re not.
-      </p>
     </div>
   );
 }
@@ -246,9 +249,13 @@ function InvestmentRoiSlide({ inputs }: { inputs: CalcInputs }) {
   const investPct = 100 / (clampedRatio + 1);
   const recoverPct = 100 - investPct;
 
+  const monthlyRev = inputs.traffic * inputs.aov;
+  const breakeven = monthlyRev > 0 ? (RETAINER / monthlyRev) * 100 : 0;
+
   return (
     <div className="slide-roi">
-      <h2>The investment</h2>
+      <p className="slide-kicker">Investment vs return</p>
+      <h2>The investment.</h2>
 
       <div className="roi-bars">
         <div className="roi-row">
@@ -263,7 +270,7 @@ function InvestmentRoiSlide({ inputs }: { inputs: CalcInputs }) {
           </div>
         </div>
         <div className="roi-row">
-          <span className="roi-tag">You recover</span>
+          <span className="roi-tag roi-tag-accent">You recover</span>
           <div className="roi-bar-track">
             <div
               className="roi-bar roi-bar-recover"
@@ -278,7 +285,7 @@ function InvestmentRoiSlide({ inputs }: { inputs: CalcInputs }) {
       <div className="roi-summary">
         <div className="roi-summary-block">
           <p className="roi-summary-label">Return multiple</p>
-          <p className="roi-summary-value">
+          <p className="roi-summary-value roi-summary-value-accent">
             {ratio > 0 ? ratio.toFixed(1) : "0.0"}×
           </p>
         </div>
@@ -288,26 +295,16 @@ function InvestmentRoiSlide({ inputs }: { inputs: CalcInputs }) {
         </div>
         <div className="roi-summary-block">
           <p className="roi-summary-label">Breakeven CVR lift</p>
-          <p className="roi-summary-value">
-            {(() => {
-              const monthlyRev = inputs.traffic * inputs.aov;
-              const be = monthlyRev > 0 ? (RETAINER / monthlyRev) * 100 : 0;
-              return `${be.toFixed(2)}%`;
-            })()}
-          </p>
+          <p className="roi-summary-value">{breakeven.toFixed(2)}%</p>
         </div>
       </div>
 
-      <ul className="roi-terms">
-        <li><strong>£8,000/month</strong> — single rate, no tiered pricing</li>
-        <li><strong>90-day minimum</strong> — enough to ship, test, measure a full cycle</li>
-        <li><strong>Month 4 onwards</strong> — rolling, 30-day notice</li>
-        <li><strong>No setup fees.</strong> No per-page upcharges.</li>
-      </ul>
-
-      <p className="slide-roi-foot">
-        At a conservative 1% CVR lift, the partnership pays for itself in the first week of the month.
-      </p>
+      <div className="roi-pills">
+        <span className="roi-pill">£8K/mo flat</span>
+        <span className="roi-pill">90-day minimum</span>
+        <span className="roi-pill">30-day notice from M4</span>
+        <span className="roi-pill">No setup, no upcharges</span>
+      </div>
     </div>
   );
 }
@@ -356,61 +353,95 @@ function MarkdownSlide({ content }: { content: string }) {
 function LeakDiagramSlide() {
   return (
     <div className="slide-leak">
-      <h2>Your ads are working. Your conversion isn&rsquo;t.</h2>
+      <p className="slide-kicker">The entire post-click layer</p>
+      <h2>
+        <span className="h2-muted">Take the traffic you&rsquo;re paying for.</span><br />
+        Make it work harder.
+      </h2>
 
-      <div className="flow-diagram">
-        <div className="flow-node">
-          <MegaphoneIcon className="flow-icon" />
-          <span className="flow-label">Ads</span>
-          <p className="flow-desc">Traffic in</p>
+      <div className="stack-row">
+        <div className="stack-node">
+          <p className="stack-label">Acquisition</p>
+          <p className="stack-sub">Ads — the spend that brings traffic in</p>
+          <p className="stack-tag">Ads agency</p>
         </div>
-
-        <div className="flow-pipe flow-pipe-in" aria-hidden>
-          <span className="flow-pipe-label">100K sessions / mo</span>
+        <div className="stack-arrow" aria-hidden>
+          <ArrowLongRightIcon />
         </div>
-
-        <div className="flow-node flow-node-us">
-          <span className="flow-node-badge">Us</span>
-          <SparklesIcon className="flow-icon" />
-          <span className="flow-label">Conversion Engine</span>
-          <p className="flow-desc">The layer between click and buy</p>
-          <span className="flow-warn">1.8% CVR — leaking 98% of ad spend</span>
+        <div className="stack-node stack-node-us">
+          <span className="stack-node-badge">This is where we come in</span>
+          <p className="stack-label">Conversion</p>
+          <p className="stack-sub">
+            Every click, working harder — we supercharge the entire post-click experience
+          </p>
+          <p className="stack-tag stack-tag-us">The layer we own</p>
         </div>
-
-        <div className="flow-pipe flow-pipe-out" aria-hidden>
-          <span className="flow-pipe-label">~1,800 buyers</span>
+        <div className="stack-arrow" aria-hidden>
+          <ArrowLongRightIcon />
         </div>
-
-        <div className="flow-node">
-          <EnvelopeIcon className="flow-icon" />
-          <span className="flow-label">Email / SMS</span>
-          <p className="flow-desc">Retain + LTV</p>
+        <div className="stack-node">
+          <p className="stack-label">Retention</p>
+          <p className="stack-sub">Email / SMS — the list that brings them back</p>
+          <p className="stack-tag">Email agency</p>
         </div>
       </div>
 
-      <p className="slide-foot">
-        The reason your ROAS has stalled isn&rsquo;t the ad team. It&rsquo;s the layer in the middle — the one nobody owns. <strong>That&rsquo;s the layer we own.</strong>
-      </p>
+      <div className="benefits-row">
+        <p className="benefits-kicker">What our layer unlocks</p>
+        <div className="benefits-grid">
+          <div className="benefit">
+            <ArrowTrendingUpIcon className="benefit-icon" />
+            <p className="benefit-title">Higher LTV</p>
+            <p className="benefit-desc">Bundles, upsells &amp; post-purchase flows that grow order value</p>
+          </div>
+          <div className="benefit">
+            <ArrowTrendingDownIcon className="benefit-icon" />
+            <p className="benefit-title">Fight rising CAC</p>
+            <p className="benefit-desc">Same ad spend, more customers — conversion beats acquisition cost</p>
+          </div>
+          <div className="benefit">
+            <LinkIcon className="benefit-icon" />
+            <p className="benefit-title">Funnel congruency</p>
+            <p className="benefit-desc">Ad → landing → offer aligned end-to-end, no mixed messages</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
 // ─────────── Slide 4: Page build vs Conversion Engine ───────────
 function PageBuildVsCESlide() {
+  const stack = [
+    "Roadmap",
+    "Landing pages",
+    "PDPs",
+    "Cart",
+    "Checkout",
+    "Post-purchase",
+    "Bundles + AOV",
+    "A/B tests",
+    "Reporting",
+  ];
   return (
     <div className="slide-compare">
-      <h2>Where this fits next to a page build</h2>
+      <p className="slide-kicker">Where this fits next to a page build</p>
+      <h2>One precision tool, or the whole system.</h2>
 
       <div className="compare-row">
-        <div className="compare-card">
-          <span className="compare-tag">Page build</span>
-          <p className="compare-title">A precision tool</p>
-          <p className="compare-sub">When you know exactly what you need</p>
-          <ul className="compare-list">
-            <li>Scoped brief → polished asset → live</li>
-            <li>You own the strategy</li>
-            <li>One-off engagement</li>
-          </ul>
+        <div className="compare-side">
+          <span className="compare-tag">One page</span>
+          <div className="compare-stack compare-stack-single">
+            {stack.map((s, i) => (
+              <div
+                key={s}
+                className={`stack-tile ${i === 2 ? "stack-tile-on" : "stack-tile-off"}`}
+              >
+                {s}
+              </div>
+            ))}
+          </div>
+          <p className="compare-sub">Scoped brief → polished asset → live.</p>
         </div>
 
         <div className="compare-arrow" aria-hidden>
@@ -418,21 +449,18 @@ function PageBuildVsCESlide() {
           <ArrowLongRightIcon className="compare-arrow-icon" />
         </div>
 
-        <div className="compare-card compare-card-accent">
-          <span className="compare-tag compare-tag-accent">Conversion Engine</span>
-          <p className="compare-title">The whole system</p>
-          <p className="compare-sub">When you want CVR to keep climbing</p>
-          <ul className="compare-list">
-            <li>We own the roadmap</li>
-            <li>Continuous builds + tests</li>
-            <li>Compounding monthly</li>
-          </ul>
+        <div className="compare-side compare-side-accent">
+          <span className="compare-tag compare-tag-accent">Whole stack</span>
+          <div className="compare-stack">
+            {stack.map((s) => (
+              <div key={s} className="stack-tile stack-tile-on stack-tile-accent">
+                {s}
+              </div>
+            ))}
+          </div>
+          <p className="compare-sub">We own the roadmap. CVR keeps climbing.</p>
         </div>
       </div>
-
-      <p className="slide-foot">
-        Most of our strongest partnerships start with a page build. When a brand outgrows the one-off brief model, this is where they land next.
-      </p>
     </div>
   );
 }
@@ -441,10 +469,12 @@ function PageBuildVsCESlide() {
 function PartnerDiagramSlide() {
   return (
     <div className="slide-partner">
-      <h2>Conversion partner, not vendor</h2>
+      <p className="slide-kicker">How we sit in your stack</p>
+      <h2>Conversion partner, not vendor.</h2>
 
       <div className="partner-diagram">
         <div className="partner-brand">
+          <span className="partner-brand-tag">Owner</span>
           <p className="partner-brand-label">Your brand</p>
         </div>
         <div className="partner-lines" aria-hidden>
@@ -453,27 +483,25 @@ function PartnerDiagramSlide() {
         <div className="partner-row">
           <div className="partner-node">
             <MegaphoneIcon className="partner-node-icon" />
-            <p className="partner-node-label">Ads team</p>
+            <p className="partner-node-label">Ads agency</p>
+            <p className="partner-node-scope">Traffic in</p>
+          </div>
+          <div className="partner-node partner-node-accent">
+            <span className="partner-node-badge">Peer</span>
+            <SparklesIcon className="partner-node-icon" />
+            <p className="partner-node-label">Conversion Engine</p>
+            <p className="partner-node-scope">Click → buy</p>
           </div>
           <div className="partner-node">
             <EnvelopeIcon className="partner-node-icon" />
-            <p className="partner-node-label">Email team</p>
-          </div>
-          <div className="partner-node partner-node-accent">
-            <SparklesIcon className="partner-node-icon" />
-            <p className="partner-node-label">Conversion Engine</p>
+            <p className="partner-node-label">Email agency</p>
+            <p className="partner-node-scope">Retain + LTV</p>
           </div>
         </div>
       </div>
 
-      <ul className="partner-bullets">
-        <li><strong>We own the roadmap.</strong> 60–90 days mapped, you sign off, we ship.</li>
-        <li><strong>We test continuously.</strong> Brief → Figma → live → learning, in weeks.</li>
-        <li><strong>We sit alongside your ads and email teams</strong> — not underneath them.</li>
-      </ul>
-
-      <p className="slide-foot">
-        One owner for the post-click experience. One throat to choke when conversion stalls.
+      <p className="slide-foot slide-foot-emphasis">
+        We sit beside, not underneath. One owner for everything post-click.
       </p>
     </div>
   );
@@ -482,19 +510,22 @@ function PartnerDiagramSlide() {
 // ─────────── Slide 6: Monthly scope ───────────
 function ScopeGridSlide() {
   const items = [
-    { icon: MapIcon, title: "Rolling roadmap", desc: "Live in Miro, updated weekly" },
-    { icon: DocumentTextIcon, title: "Page builds", desc: "PDPs, landers, advertorials, post-purchase" },
-    { icon: BeakerIcon, title: "A/B testing", desc: "Cadence tiered to your traffic" },
-    { icon: ShoppingCartIcon, title: "AOV + LTV", desc: "Bundles, upsells, post-purchase flows" },
-    { icon: ChartBarIcon, title: "Monthly readout", desc: "What shipped, what moved, what's next" },
+    { icon: MapIcon, title: "Rolling roadmap", desc: "Live in Miro, updated weekly", group: "Strategy" },
+    { icon: DocumentTextIcon, title: "Page builds", desc: "PDPs, landers, advertorials", group: "Execution" },
+    { icon: BeakerIcon, title: "A/B testing", desc: "Cadence tiered to your traffic", group: "Execution" },
+    { icon: ShoppingCartIcon, title: "AOV + LTV", desc: "Bundles, upsells, post-purchase", group: "Optimisation" },
+    { icon: SparklesIcon, title: "Offer + positioning", desc: "Hero, value props, proof", group: "Optimisation" },
+    { icon: ChartBarIcon, title: "Monthly readout", desc: "What shipped. What moved. What's next.", group: "Reporting" },
   ];
   return (
     <div className="slide-scope">
-      <h2>What&rsquo;s in the monthly scope</h2>
+      <p className="slide-kicker">Everything post-click, one retainer</p>
+      <h2>What&rsquo;s in the monthly scope.</h2>
 
       <div className="scope-grid">
         {items.map((it) => (
           <div key={it.title} className="scope-card">
+            <span className="scope-group">{it.group}</span>
             <it.icon className="scope-icon" />
             <p className="scope-title">{it.title}</p>
             <p className="scope-desc">{it.desc}</p>
@@ -503,7 +534,7 @@ function ScopeGridSlide() {
       </div>
 
       <p className="slide-foot">
-        No à la carte pricing. No per-page upcharges. Everything post-click, under one roof.
+        No à la carte. No per-page upcharges. One retainer, one team.
       </p>
     </div>
   );
@@ -518,7 +549,8 @@ function RhythmTimelineSlide() {
   ];
   return (
     <div className="slide-rhythm">
-      <h2>The rhythm</h2>
+      <p className="slide-kicker">Every month, on cadence</p>
+      <h2>The rhythm.</h2>
 
       <div className="rhythm-track">
         <div className="rhythm-line" aria-hidden />
@@ -530,10 +562,20 @@ function RhythmTimelineSlide() {
             <p className="rhythm-desc">{w.desc}</p>
           </div>
         ))}
+        <div className="rhythm-loop" aria-hidden>
+          <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" strokeWidth="1.25">
+            <path
+              d="M 16 8 A 28 28 0 1 1 16 72"
+              strokeLinecap="round"
+            />
+            <path d="M 8 60 L 16 72 L 24 60" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          </svg>
+          <span className="rhythm-loop-label">Repeats monthly</span>
+        </div>
       </div>
 
       <p className="slide-foot slide-foot-emphasis">
-        Every week you see progress. Every month you see numbers.
+        Every week you see progress. Every month you see numbers. Every quarter, the lift compounds.
       </p>
     </div>
   );
@@ -545,38 +587,64 @@ function ProofStatsSlide() {
     {
       metric: "+22%",
       brand: "Anglo Spirit",
+      lever: "Hero lander",
       detail: "Cold-traffic CVR on a rebuilt hero lander",
+      // sparkline points (left baseline → right peak), normalized 0-100
+      spark: [22, 28, 26, 35, 42, 48, 60, 72, 88],
     },
     {
       metric: "+14%",
       brand: "Client Y",
+      lever: "Cart bundle",
       detail: "AOV via a cart-level bundle",
+      spark: [40, 38, 45, 50, 48, 58, 64, 70, 78],
     },
     {
       metric: "+7%",
       brand: "Client Z",
+      lever: "Sticky ATC",
       detail: "Mobile PDP CVR with sticky ATC",
+      spark: [50, 52, 56, 54, 60, 62, 66, 68, 72],
     },
   ];
   return (
     <div className="slide-proof">
-      <h2>Proof</h2>
-      <p className="slide-kicker">Three recent brands. Three different levers.</p>
+      <p className="slide-kicker">Real brands · real lifts · compounding</p>
+      <h2>Proof.</h2>
 
       <div className="proof-grid">
-        {wins.map((w) => (
-          <div key={w.brand} className="proof-card">
-            <ArrowTrendingUpIcon className="proof-arrow" />
-            <p className="proof-metric">{w.metric}</p>
-            <p className="proof-brand">{w.brand}</p>
-            <p className="proof-detail">{w.detail}</p>
-          </div>
-        ))}
+        {wins.map((w) => {
+          const points = w.spark
+            .map((y, i) => `${(i / (w.spark.length - 1)) * 100},${100 - y}`)
+            .join(" ");
+          return (
+            <div key={w.brand} className="proof-card">
+              <p className="proof-metric">{w.metric}</p>
+              <svg
+                className="proof-spark"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+                aria-hidden
+              >
+                <polyline
+                  points={points}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </svg>
+              <div className="proof-meta">
+                <span className="proof-brand-chip">{w.brand}</span>
+                <span className="proof-lever">{w.lever}</span>
+              </div>
+              <p className="proof-detail">{w.detail}</p>
+            </div>
+          );
+        })}
       </div>
-
-      <p className="slide-foot">
-        Real brands. Real lifts. Compounding monthly.
-      </p>
     </div>
   );
 }
@@ -585,36 +653,59 @@ function ProofStatsSlide() {
 function NextStepSlide() {
   return (
     <div className="slide-next">
-      <h2>Next step</h2>
-      <p className="slide-kicker">Pick the path that fits.</p>
+      <p className="slide-kicker">One step from here</p>
+      <h2>Next step.</h2>
 
-      <div className="next-row">
-        <div className="next-card">
-          <PhoneIcon className="next-icon" />
-          <p className="next-title">Strategy call</p>
-          <p className="next-desc">
-            Align on the first 90 days. No deck, no pitch — just the plan.
+      <div className="next-hero">
+        <div className="next-hero-left">
+          <span className="next-hero-tag">Strategy call</span>
+          <p className="next-hero-title">
+            Align on the first 90 days.
           </p>
-          <span className="next-cta">30 min · Google Meet</span>
+          <p className="next-hero-desc">
+            No deck, no pitch — just the plan. We walk through the roadmap, the leak points, the math.
+          </p>
+          <div className="next-hero-meta">
+            <span>30 min</span>
+            <span aria-hidden>·</span>
+            <span>Google Meet</span>
+            <span aria-hidden>·</span>
+            <span>No prep needed</span>
+          </div>
+          <a
+            href="https://cal.com/ecomlanders"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="next-hero-cta"
+          >
+            Book a slot →
+          </a>
         </div>
-        <div className="next-divider" aria-hidden />
-        <div className="next-card next-card-accent">
-          <ClipboardDocumentListIcon className="next-icon" />
-          <p className="next-title">Deep-dive audit</p>
-          <p className="next-desc">
-            A custom revenue model built from your actual analytics.
-          </p>
-          <span className="next-cta">60 min · includes roadmap draft</span>
+        <div className="next-hero-right" aria-hidden>
+          <div className="next-cal">
+            <div className="next-cal-head">
+              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span>
+            </div>
+            <div className="next-cal-body">
+              {Array.from({ length: 20 }).map((_, i) => {
+                const lit = [2, 4, 7, 10, 12, 14, 18].includes(i);
+                const hot = i === 7;
+                return (
+                  <span
+                    key={i}
+                    className={`next-cal-cell ${lit ? "next-cal-cell-lit" : ""} ${
+                      hot ? "next-cal-cell-hot" : ""
+                    }`}
+                  />
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
 
-      <p className="slide-foot">
-        Both end with a concrete 90-day roadmap — yours to keep, partnership or not.
-      </p>
-      <p className="next-book">
-        <a href="https://cal.com/ecomlanders" target="_blank" rel="noopener noreferrer">
-          Book a slot →
-        </a>
+      <p className="slide-foot next-foot-secondary">
+        Want the full revenue model first? <a href="mailto:dylan@ecomlanders.com">Email us for a deep-dive audit</a> — custom-built from your analytics, includes a 90-day roadmap draft.
       </p>
     </div>
   );
@@ -655,6 +746,7 @@ export function SalesDeckPresentation({
   const slides = useMemo(() => splitSlides(markdown), [markdown]);
   const [index, setIndex] = useState(0);
   const [entering, setEntering] = useState(false);
+  const [exitingContent, setExitingContent] = useState<string | null>(null);
   const enterTimer = useRef<number | null>(null);
   const [calcInputs, setCalcInputs] = useState<CalcInputs>(DEFAULT_CALC);
 
@@ -664,15 +756,18 @@ export function SalesDeckPresentation({
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (index === 0 && slides.length > 1 && !reduce) {
+      // Cross-fade: render cover as overlay, swap to slide 2 immediately so it enters underneath
+      setExitingContent(slides[0]);
       setEntering(true);
+      setIndex(1);
       enterTimer.current = window.setTimeout(() => {
-        setIndex(1);
+        setExitingContent(null);
         setEntering(false);
-      }, 340);
+      }, 520);
       return;
     }
     setIndex((i) => Math.min(i + 1, slides.length - 1));
-  }, [index, slides.length, entering]);
+  }, [index, slides, entering]);
 
   const goPrev = useCallback(() => {
     if (entering) return;
@@ -723,12 +818,12 @@ export function SalesDeckPresentation({
         entering ? "is-entering-engine" : ""
       }`}
     >
-      <CoverBackdrop images={coverImages} visible={isCover || entering} />
+      <CoverBackdrop images={coverImages} visible={isCover && !entering} />
 
       <div
         aria-hidden
         className={`absolute inset-0 pointer-events-none dot-pattern ${
-          isCover || entering ? "dot-pattern-hidden" : "dot-pattern-visible"
+          isCover && !entering ? "dot-pattern-hidden" : "dot-pattern-visible"
         }`}
         style={{
           backgroundImage:
@@ -739,7 +834,7 @@ export function SalesDeckPresentation({
 
       {/* Slide */}
       <div className="relative z-10 min-h-screen flex items-center justify-center px-10 md:px-24 py-16">
-        <div className="max-w-5xl w-full">
+        <div className="max-w-5xl w-full relative">
           <article
             key={index}
             className={`deck-slide ${isCover ? "deck-slide-cover" : "deck-slide-enter"}`}
@@ -750,6 +845,16 @@ export function SalesDeckPresentation({
               setCalcInputs={setCalcInputs}
             />
           </article>
+
+          {exitingContent && (
+            <article className="deck-slide deck-slide-cover slide-exiting-overlay">
+              <SlideBody
+                content={exitingContent}
+                calcInputs={calcInputs}
+                setCalcInputs={setCalcInputs}
+              />
+            </article>
+          )}
         </div>
       </div>
 
@@ -976,12 +1081,23 @@ export function SalesDeckPresentation({
 
         /* Slide enter */
         .deck-slide-enter {
-          animation: deck-slide-enter 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+          animation: deck-slide-enter 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
           will-change: transform, opacity;
         }
         @keyframes deck-slide-enter {
-          from { opacity: 0.35; transform: translate3d(0, 6px, 0); }
+          from { opacity: 0;    transform: translate3d(0, 10px, 0); }
           to   { opacity: 1;    transform: translate3d(0, 0, 0); }
+        }
+
+        /* Cross-fade overlay: the exiting cover stays on top while the next slide rises in underneath */
+        .slide-exiting-overlay {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          pointer-events: none;
+          z-index: 2;
         }
 
         /* ─────────── Shared slide bits ─────────── */
@@ -1040,8 +1156,14 @@ export function SalesDeckPresentation({
           -webkit-appearance: none;
           appearance: none;
           width: 100%;
-          height: 2px;
-          background: rgba(255,255,255,0.14);
+          height: 6px;
+          background: linear-gradient(
+            to right,
+            white 0%,
+            white var(--progress, 0%),
+            rgba(255,255,255,0.12) var(--progress, 0%),
+            rgba(255,255,255,0.12) 100%
+          );
           border-radius: 999px;
           outline: none;
           cursor: pointer;
@@ -1049,19 +1171,36 @@ export function SalesDeckPresentation({
         .deck-slider::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
-          width: 14px;
-          height: 14px;
+          width: 20px;
+          height: 20px;
           background: white;
           border-radius: 50%;
           cursor: pointer;
+          box-shadow: 0 0 0 4px rgba(255,255,255,0.08), 0 2px 10px rgba(0,0,0,0.4);
+          transition: transform 150ms ease, box-shadow 150ms ease;
+          margin-top: 0;
+        }
+        .deck-slider::-webkit-slider-thumb:hover {
+          transform: scale(1.1);
+          box-shadow: 0 0 0 8px rgba(255,255,255,0.14), 0 2px 12px rgba(0,0,0,0.5);
+        }
+        .deck-slider:active::-webkit-slider-thumb {
+          transform: scale(1.15);
+          box-shadow: 0 0 0 10px rgba(255,255,255,0.2), 0 2px 14px rgba(0,0,0,0.5);
         }
         .deck-slider::-moz-range-thumb {
-          width: 14px;
-          height: 14px;
+          width: 20px;
+          height: 20px;
           background: white;
           border-radius: 50%;
           cursor: pointer;
           border: none;
+          box-shadow: 0 0 0 4px rgba(255,255,255,0.08), 0 2px 10px rgba(0,0,0,0.4);
+          transition: transform 150ms ease, box-shadow 150ms ease;
+        }
+        .deck-slider::-moz-range-thumb:hover {
+          transform: scale(1.1);
+          box-shadow: 0 0 0 8px rgba(255,255,255,0.14), 0 2px 12px rgba(0,0,0,0.5);
         }
         .slide-calc-output {
           display: flex;
@@ -1075,9 +1214,11 @@ export function SalesDeckPresentation({
           letter-spacing: 0.22em;
           color: rgba(255,255,255,0.4);
           margin-bottom: 0.6rem !important;
+          font-weight: 600;
         }
+        .calc-out-label-accent { color: #34D399 !important; }
         .calc-out-value {
-          font-size: 3.25rem;
+          font-size: 3rem;
           font-weight: 700;
           letter-spacing: -0.03em;
           color: white;
@@ -1085,37 +1226,38 @@ export function SalesDeckPresentation({
           line-height: 0.95;
         }
         .calc-out-block-big .calc-out-value {
-          font-size: 5.5rem;
+          font-size: 6.5rem;
         }
-        .slide-calc-foot {
-          margin-top: 3rem;
-          font-size: 1rem;
-          color: rgba(255,255,255,0.5);
+        .calc-out-value-accent {
+          color: #34D399 !important;
+          text-shadow: 0 0 60px rgba(52, 211, 153, 0.25);
         }
 
         /* ─────────── Slide 9: investment ROI ─────────── */
+        .slide-roi h2 { margin-bottom: 2.5rem; }
         .roi-bars {
           display: flex;
           flex-direction: column;
-          gap: 1.5rem;
-          margin-bottom: 3rem;
+          gap: 1.25rem;
+          margin-bottom: 2.5rem;
         }
         .roi-row {
           display: grid;
-          grid-template-columns: 140px 1fr;
+          grid-template-columns: 130px 1fr;
           gap: 1.5rem;
           align-items: center;
         }
         .roi-tag {
-          font-size: 0.72rem;
+          font-size: 0.7rem;
           text-transform: uppercase;
           letter-spacing: 0.22em;
           color: rgba(255,255,255,0.45);
-          font-weight: 500;
+          font-weight: 600;
         }
+        .roi-tag-accent { color: #34D399; }
         .roi-bar-track {
           width: 100%;
-          height: 56px;
+          height: 80px;
           background: transparent;
           position: relative;
         }
@@ -1123,264 +1265,357 @@ export function SalesDeckPresentation({
           height: 100%;
           display: flex;
           align-items: center;
-          padding: 0 1.1rem;
+          padding: 0 1.4rem;
+          border-radius: 6px;
           transition: width 450ms cubic-bezier(0.22, 1, 0.36, 1);
         }
         .roi-bar-invest {
-          background: rgba(255,255,255,0.14);
-          min-width: 110px;
+          background: rgba(255,255,255,0.12);
+          border: 1px solid rgba(255,255,255,0.1);
+          min-width: 120px;
         }
         .roi-bar-recover {
-          background: white;
+          background: linear-gradient(90deg, #34D399 0%, #10B981 100%);
+          box-shadow: 0 12px 40px -12px rgba(16,185,129,0.5);
         }
         .roi-bar-label {
-          font-size: 1rem;
-          font-weight: 600;
+          font-size: 1.15rem;
+          font-weight: 700;
           color: white;
           font-variant-numeric: tabular-nums;
           white-space: nowrap;
+          letter-spacing: -0.01em;
         }
-        .roi-bar-recover .roi-bar-label { color: #0A0A0A; }
+        .roi-bar-recover .roi-bar-label { color: #052E22; }
         .roi-summary {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
           gap: 2rem;
-          margin-bottom: 2.5rem;
-          padding: 2rem 0;
+          margin-bottom: 2rem;
+          padding: 1.75rem 0;
           border-top: 1px solid rgba(255,255,255,0.08);
           border-bottom: 1px solid rgba(255,255,255,0.08);
         }
         .roi-summary-block p { margin: 0; }
         .roi-summary-label {
-          font-size: 0.7rem;
+          font-size: 0.68rem;
           text-transform: uppercase;
           letter-spacing: 0.22em;
           color: rgba(255,255,255,0.4);
-          margin-bottom: 0.7rem !important;
+          margin-bottom: 0.65rem !important;
+          font-weight: 600;
         }
         .roi-summary-value {
-          font-size: 2.75rem;
+          font-size: 2.5rem;
           font-weight: 700;
           letter-spacing: -0.025em;
           color: white;
           font-variant-numeric: tabular-nums;
           line-height: 0.95;
         }
-        .roi-terms {
-          list-style: none !important;
-          padding: 0 !important;
-          margin: 0 0 2rem 0 !important;
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 0.65rem 2.5rem;
+        .roi-summary-value-accent { color: #34D399; }
+        .roi-pills {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
         }
-        .roi-terms li {
-          padding-left: 0 !important;
-          font-size: 0.95rem !important;
-          color: rgba(255,255,255,0.7) !important;
-          margin-bottom: 0 !important;
-        }
-        .roi-terms li::before { display: none !important; }
-        .roi-terms li strong { color: white; }
-        .slide-roi-foot {
-          font-size: 1rem;
-          color: rgba(255,255,255,0.5);
-        }
-
-        /* ─────────── Slide 2: Leak flow ─────────── */
-        .slide-leak h2 { max-width: 44rem; margin-bottom: 3rem; }
-        .flow-diagram {
-          display: grid;
-          grid-template-columns: auto 1fr auto 1fr auto;
-          align-items: center;
-          gap: 0;
-          margin-bottom: 1rem;
-        }
-        .flow-node {
-          position: relative;
-          padding: 1.5rem 1.25rem 1.5rem;
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 14px;
-          min-width: 160px;
-          background: transparent;
-        }
-        .flow-node-us {
-          padding: 2rem 1.75rem 2rem;
-          border: 1px solid rgba(255,255,255,0.85);
-          background: rgba(255,255,255,0.03);
-          min-width: 220px;
-          box-shadow: 0 0 0 4px rgba(255,255,255,0.04);
-        }
-        .flow-node-badge {
-          position: absolute;
-          top: -10px;
-          left: 1.5rem;
-          background: white;
-          color: #0A0A0A;
-          font-size: 0.65rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.22em;
-          padding: 0.2rem 0.55rem;
-          border-radius: 3px;
-        }
-        .flow-icon {
-          width: 20px;
-          height: 20px;
-          color: rgba(255,255,255,0.55);
-          margin-bottom: 0.75rem;
-        }
-        .flow-node-us .flow-icon { color: white; }
-        .flow-label {
-          display: block;
-          font-size: 1.05rem !important;
-          font-weight: 600 !important;
-          color: white !important;
-          margin: 0 0 0.2rem 0 !important;
-          letter-spacing: -0.01em;
-        }
-        .flow-node-us .flow-label { font-size: 1.25rem !important; }
-        .flow-desc {
-          font-size: 0.85rem !important;
-          color: rgba(255,255,255,0.5) !important;
-          margin: 0 !important;
-          line-height: 1.4;
-        }
-        .flow-warn {
-          display: inline-block;
-          margin-top: 0.85rem;
+        .roi-pill {
           font-size: 0.72rem;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: rgba(255,255,255,0.9);
-          padding: 0.3rem 0.55rem;
-          border-top: 1px solid rgba(255,255,255,0.15);
-          padding-top: 0.75rem;
-          padding-left: 0;
+          padding: 0.4rem 0.85rem;
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 999px;
+          color: rgba(255,255,255,0.7);
+          letter-spacing: -0.005em;
           font-weight: 500;
+          background: rgba(255,255,255,0.02);
         }
 
-        /* Flow pipes — the visual leak */
-        .flow-pipe {
-          position: relative;
-          background: white;
-          align-self: center;
+        /* ─────────── Slide 2: Missing layer ─────────── */
+        .slide-leak { text-align: center; }
+        .slide-leak h2 {
+          max-width: 54rem;
+          margin: 0 auto 3rem;
+          text-align: center;
         }
-        .flow-pipe-in {
-          height: 44px;
-          opacity: 0.85;
-        }
-        .flow-pipe-out {
-          height: 6px;
-          opacity: 0.55;
-        }
-        .flow-pipe-label {
-          position: absolute;
-          top: calc(100% + 10px);
-          left: 50%;
-          transform: translateX(-50%);
-          font-size: 0.72rem;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
-          color: rgba(255,255,255,0.55);
-          white-space: nowrap;
-          font-weight: 500;
-          font-variant-numeric: tabular-nums;
-        }
-
-        /* ─────────── Slide 4: Page build vs CE ─────────── */
-        .compare-row {
+        .slide-leak .slide-kicker { text-align: center; }
+        .slide-leak .h2-muted { color: rgba(255,255,255,0.5); font-weight: 700; }
+        .stack-row {
           display: grid;
-          grid-template-columns: 1fr 1px 1fr;
-          gap: 3rem;
+          grid-template-columns: 0.85fr auto 1.5fr auto 0.85fr;
           align-items: stretch;
-          margin-bottom: 1.5rem;
+          gap: 0.9rem;
+          margin: 0 -2.5rem 1rem;
         }
-        .compare-card {
-          background: transparent;
-          border: none;
-          padding: 0;
+        .stack-node {
+          position: relative;
+          padding: 1.75rem 1.5rem 1.5rem;
+          border: 1px solid rgba(255,255,255,0.07);
+          border-radius: 14px;
+          background: rgba(255,255,255,0.015);
           display: flex;
           flex-direction: column;
+          opacity: 0.5;
         }
-        .compare-card-accent { background: transparent; border: none; }
-        .compare-tag {
-          display: inline-block;
-          font-size: 0.7rem;
+        .stack-node-us {
+          border: 1px solid rgba(52, 211, 153, 0.5);
+          background: linear-gradient(180deg, rgba(16, 185, 129, 0.11) 0%, rgba(16, 185, 129, 0.02) 100%);
+          opacity: 1;
+          box-shadow: 0 0 0 1px rgba(52, 211, 153, 0.06), 0 12px 40px -20px rgba(16, 185, 129, 0.25);
+        }
+        .stack-node-badge {
+          position: absolute;
+          top: -12px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: #34D399;
+          color: #0A0A0A;
+          font-size: 0.66rem;
+          font-weight: 700;
           text-transform: uppercase;
-          letter-spacing: 0.22em;
-          color: rgba(255,255,255,0.45);
-          font-weight: 500;
-          padding: 0;
-          border: none;
-          margin-bottom: 1.25rem;
-          align-self: flex-start;
+          letter-spacing: 0.18em;
+          padding: 0.3rem 0.85rem;
+          border-radius: 4px;
+          white-space: nowrap;
         }
-        .compare-tag-accent {
-          color: white;
-          border: none;
-          background: none;
+        .stack-icon {
+          width: 22px;
+          height: 22px;
+          color: rgba(255,255,255,0.5);
+          margin-bottom: 1rem;
         }
-        .compare-title {
+        .stack-node-us .stack-icon { color: #34D399; }
+        .stack-label {
+          margin: 0 0 0.4rem 0 !important;
           font-size: 2rem !important;
           font-weight: 700 !important;
           color: white !important;
-          margin: 0 0 0.5rem 0 !important;
           letter-spacing: -0.025em;
-          line-height: 1.08;
+          line-height: 1;
+        }
+        .stack-sub {
+          margin: 0 0 1.5rem 0 !important;
+          font-size: 0.95rem !important;
+          color: rgba(255,255,255,0.6) !important;
+          line-height: 1.45;
+        }
+        .stack-node-us .stack-sub { color: rgba(255,255,255,0.75) !important; }
+        .stack-tag {
+          margin: auto 0 0 0 !important;
+          font-size: 0.68rem !important;
+          letter-spacing: 0.22em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.4) !important;
+          font-weight: 600;
+          padding-top: 1rem;
+          border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .stack-tag-us {
+          color: #34D399 !important;
+          border-top: 1px solid rgba(52, 211, 153, 0.25) !important;
+        }
+        .stack-arrow {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .stack-arrow svg {
+          width: 24px;
+          height: 24px;
+          color: rgba(255,255,255,0.3);
+        }
+
+        .benefits-row {
+          margin: 3rem -2.5rem 0;
+          padding: 2rem 0 0;
+          border-top: 1px solid rgba(52, 211, 153, 0.22);
+          position: relative;
+        }
+        .benefits-row::before {
+          content: "";
+          position: absolute;
+          top: -5px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 10px;
+          height: 10px;
+          background: #34D399;
+          border-radius: 50%;
+          box-shadow: 0 0 0 4px rgba(10,10,10,1);
+        }
+        .benefits-kicker {
+          font-size: 0.7rem !important;
+          text-transform: uppercase;
+          letter-spacing: 0.22em;
+          color: #34D399 !important;
+          font-weight: 600;
+          margin: 0 0 1.25rem 0 !important;
+          text-align: center;
+        }
+        .benefits-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 2.5rem;
+        }
+        .benefit {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+        .benefit-icon {
+          width: 28px;
+          height: 28px;
+          color: #34D399;
+          margin: 0 auto 1rem;
+        }
+        .benefit-title {
+          margin: 0 0 0.5rem 0 !important;
+          font-size: 1.25rem !important;
+          font-weight: 700 !important;
+          color: white !important;
+          letter-spacing: -0.02em;
+        }
+        .benefit-desc {
+          margin: 0 !important;
+          font-size: 0.92rem !important;
+          color: rgba(255,255,255,0.6) !important;
+          line-height: 1.5;
+          max-width: 16rem;
+        }
+
+        /* ─────────── Slide 4: Page build vs CE ─────────── */
+        .slide-compare h2 { max-width: 36rem; margin-bottom: 3rem; }
+        .compare-row {
+          display: grid;
+          grid-template-columns: 1fr auto 1.5fr;
+          gap: 2.5rem;
+          align-items: stretch;
+        }
+        .compare-side {
+          display: flex;
+          flex-direction: column;
+          gap: 1.25rem;
+        }
+        .compare-tag {
+          display: inline-block;
+          font-size: 0.68rem;
+          text-transform: uppercase;
+          letter-spacing: 0.22em;
+          color: rgba(255,255,255,0.4);
+          font-weight: 600;
+          margin: 0;
+          align-self: flex-start;
+        }
+        .compare-tag-accent { color: #34D399; }
+        .compare-stack {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 0.5rem;
+          padding: 1rem;
+          border: 1px solid rgba(255,255,255,0.06);
+          border-radius: 14px;
+          background: rgba(255,255,255,0.012);
+          flex: 1;
+        }
+        .compare-side-accent .compare-stack {
+          border-color: rgba(52,211,153,0.3);
+          background: linear-gradient(180deg, rgba(16,185,129,0.06) 0%, rgba(16,185,129,0.01) 100%);
+          box-shadow: 0 12px 40px -20px rgba(16,185,129,0.25);
+        }
+        .stack-tile {
+          padding: 0.85rem 0.6rem;
+          border: 1px solid rgba(255,255,255,0.06);
+          border-radius: 8px;
+          font-size: 0.78rem;
+          text-align: center;
+          color: rgba(255,255,255,0.4);
+          font-weight: 500;
+          letter-spacing: -0.005em;
+          background: transparent;
+          line-height: 1.2;
+        }
+        .stack-tile-off { opacity: 0.35; }
+        .stack-tile-on {
+          color: white;
+          background: rgba(255,255,255,0.04);
+          border-color: rgba(255,255,255,0.18);
+        }
+        .stack-tile-accent {
+          color: white;
+          background: rgba(52,211,153,0.08);
+          border-color: rgba(52,211,153,0.35);
         }
         .compare-sub {
-          font-size: 1rem !important;
-          color: rgba(255,255,255,0.5) !important;
-          margin: 0 0 1.75rem 0 !important;
+          font-size: 0.92rem !important;
+          color: rgba(255,255,255,0.55) !important;
+          margin: 0 !important;
+          line-height: 1.45;
         }
-        .compare-list { list-style: none !important; padding: 0 !important; margin: 0 !important; }
-        .compare-list li {
-          padding-left: 0 !important;
-          margin-bottom: 0.75rem !important;
-          font-size: 1rem !important;
-          color: rgba(255,255,255,0.75) !important;
-          position: relative;
-          border-top: 1px solid rgba(255,255,255,0.06);
-          padding-top: 0.75rem !important;
-        }
-        .compare-list li:first-child { border-top: none; padding-top: 0 !important; }
-        .compare-list li::before { display: none !important; }
-        .compare-card-accent .compare-list li::before { display: none !important; }
+        .compare-side-accent .compare-sub { color: rgba(255,255,255,0.75) !important; }
 
         .compare-arrow {
-          width: 1px;
-          background: rgba(255,255,255,0.08);
-          padding: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 0.6rem;
+          padding-top: 2.5rem;
         }
-        .compare-arrow-label, .compare-arrow-icon { display: none; }
+        .compare-arrow-label {
+          font-size: 0.62rem;
+          text-transform: uppercase;
+          letter-spacing: 0.22em;
+          color: rgba(255,255,255,0.35);
+          font-weight: 600;
+          white-space: nowrap;
+        }
+        .compare-arrow-icon {
+          width: 28px;
+          height: 28px;
+          color: rgba(52,211,153,0.6);
+        }
 
         /* ─────────── Slide 5: Partner diagram ─────────── */
+        .slide-partner h2 { margin-bottom: 3rem; text-align: center; }
+        .slide-partner .slide-kicker { text-align: center; }
         .partner-diagram {
           display: flex;
           flex-direction: column;
           align-items: center;
-          margin-bottom: 2.5rem;
+          margin-bottom: 3rem;
         }
         .partner-brand {
-          padding: 0.8rem 2rem;
-          border: 1px solid rgba(255,255,255,0.18);
+          position: relative;
+          padding: 1rem 2.5rem;
+          border: 1px solid rgba(255,255,255,0.22);
           border-radius: 999px;
-          background: transparent;
+          background: rgba(255,255,255,0.025);
+        }
+        .partner-brand-tag {
+          position: absolute;
+          top: -10px;
+          left: 50%;
+          transform: translateX(-50%);
+          font-size: 0.6rem;
+          text-transform: uppercase;
+          letter-spacing: 0.22em;
+          color: rgba(255,255,255,0.6);
+          background: #0A0A0A;
+          padding: 0 0.6rem;
+          font-weight: 600;
         }
         .partner-brand-label {
           margin: 0 !important;
-          font-size: 0.72rem !important;
-          text-transform: uppercase;
-          letter-spacing: 0.22em;
+          font-size: 0.95rem !important;
+          letter-spacing: -0.01em;
           color: white !important;
-          font-weight: 600;
+          font-weight: 700;
         }
         .partner-lines {
           position: relative;
-          width: 60%;
-          max-width: 560px;
-          height: 48px;
+          width: 70%;
+          max-width: 720px;
+          height: 64px;
           margin: 0 auto;
         }
         .partner-lines span {
@@ -1388,89 +1623,117 @@ export function SalesDeckPresentation({
           top: 0;
           width: 1px;
           height: 100%;
-          background: rgba(255,255,255,0.12);
+          background: rgba(255,255,255,0.14);
         }
         .partner-lines span:nth-child(1) { left: 16.67%; }
-        .partner-lines span:nth-child(2) { left: 50%; }
+        .partner-lines span:nth-child(2) { left: 50%; background: rgba(52,211,153,0.4); }
         .partner-lines span:nth-child(3) { left: 83.33%; }
         .partner-row {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 1rem;
-          width: 60%;
-          max-width: 560px;
+          gap: 1.25rem;
+          width: 70%;
+          max-width: 720px;
         }
         .partner-node {
-          background: transparent;
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 10px;
-          padding: 1rem;
+          position: relative;
+          background: rgba(255,255,255,0.015);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 14px;
+          padding: 1.5rem 1.25rem;
           text-align: center;
+          opacity: 0.6;
         }
         .partner-node-accent {
-          border-color: rgba(255,255,255,0.35);
-          background: transparent;
+          opacity: 1;
+          border-color: rgba(52,211,153,0.5);
+          background: linear-gradient(180deg, rgba(16,185,129,0.1) 0%, rgba(16,185,129,0.02) 100%);
+          box-shadow: 0 12px 40px -20px rgba(16,185,129,0.3);
+        }
+        .partner-node-badge {
+          position: absolute;
+          top: -10px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: #34D399;
+          color: #0A0A0A;
+          font-size: 0.6rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.18em;
+          padding: 0.25rem 0.7rem;
+          border-radius: 4px;
+          white-space: nowrap;
         }
         .partner-node-icon {
-          width: 18px;
-          height: 18px;
-          color: rgba(255,255,255,0.6);
-          margin: 0 auto 0.4rem;
+          width: 22px;
+          height: 22px;
+          color: rgba(255,255,255,0.5);
+          margin: 0 auto 0.75rem;
         }
-        .partner-node-accent .partner-node-icon { color: white; }
+        .partner-node-accent .partner-node-icon { color: #34D399; }
         .partner-node-label {
-          margin: 0 !important;
-          font-size: 0.82rem !important;
-          font-weight: 600 !important;
+          margin: 0 0 0.3rem 0 !important;
+          font-size: 1rem !important;
+          font-weight: 700 !important;
           color: white !important;
+          letter-spacing: -0.01em;
         }
-
-        .partner-bullets {
-          list-style: none !important;
-          padding: 0 !important;
+        .partner-node-scope {
           margin: 0 !important;
+          font-size: 0.72rem !important;
+          text-transform: uppercase;
+          letter-spacing: 0.18em;
+          color: rgba(255,255,255,0.4) !important;
+          font-weight: 500;
         }
-        .partner-bullets li {
-          padding-left: 0 !important;
-          margin-bottom: 0 !important;
-          padding-top: 1rem !important;
-          padding-bottom: 1rem !important;
-          font-size: 1.05rem !important;
-          color: rgba(255,255,255,0.78) !important;
-          border-top: 1px solid rgba(255,255,255,0.06);
-        }
-        .partner-bullets li::before { display: none !important; }
-        .partner-bullets li strong { color: white; }
+        .partner-node-accent .partner-node-scope { color: #34D399 !important; }
 
         /* ─────────── Slide 6: Scope ─────────── */
         .scope-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 2.5rem 3rem;
+          gap: 1rem;
           margin-bottom: 2rem;
         }
         .scope-card {
-          background: transparent;
-          border: none;
-          padding: 0;
+          position: relative;
+          background: rgba(255,255,255,0.015);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 14px;
+          padding: 1.5rem 1.4rem 1.4rem;
+          transition: border-color 200ms ease, background 200ms ease;
+        }
+        .scope-card:hover {
+          border-color: rgba(52,211,153,0.3);
+          background: rgba(52,211,153,0.03);
+        }
+        .scope-group {
+          display: inline-block;
+          font-size: 0.6rem;
+          text-transform: uppercase;
+          letter-spacing: 0.22em;
+          color: #34D399;
+          font-weight: 600;
+          margin-bottom: 0.85rem;
         }
         .scope-icon {
-          width: 22px;
-          height: 22px;
-          color: rgba(255,255,255,0.55);
-          margin-bottom: 1rem;
+          width: 26px;
+          height: 26px;
+          color: rgba(255,255,255,0.65);
+          margin-bottom: 0.85rem;
         }
         .scope-title {
-          margin: 0 0 0.4rem 0 !important;
-          font-size: 1.15rem !important;
-          font-weight: 600 !important;
+          margin: 0 0 0.35rem 0 !important;
+          font-size: 1.1rem !important;
+          font-weight: 700 !important;
           color: white !important;
-          letter-spacing: -0.01em;
+          letter-spacing: -0.015em;
         }
         .scope-desc {
           margin: 0 !important;
-          font-size: 0.95rem !important;
-          color: rgba(255,255,255,0.5) !important;
+          font-size: 0.88rem !important;
+          color: rgba(255,255,255,0.55) !important;
           line-height: 1.45;
         }
 
@@ -1478,16 +1741,17 @@ export function SalesDeckPresentation({
         .rhythm-track {
           position: relative;
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
+          grid-template-columns: repeat(3, 1fr) auto;
           gap: 2rem;
           padding-top: 1.5rem;
           margin-bottom: 2.5rem;
+          align-items: start;
         }
         .rhythm-line {
           position: absolute;
           top: 16px;
-          left: 12%;
-          right: 12%;
+          left: 8%;
+          right: 22%;
           height: 1px;
           background: rgba(255,255,255,0.16);
           z-index: 0;
@@ -1505,8 +1769,8 @@ export function SalesDeckPresentation({
           height: 32px;
           border-radius: 50%;
           background: #0A0A0A;
-          border: 1px solid rgba(255,255,255,0.4);
-          color: white;
+          border: 1px solid rgba(52,211,153,0.6);
+          color: #34D399;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1515,130 +1779,245 @@ export function SalesDeckPresentation({
         }
         .rhythm-week {
           display: block;
-          font-size: 0.72rem !important;
+          font-size: 0.7rem !important;
           text-transform: uppercase;
           letter-spacing: 0.22em;
-          color: rgba(255,255,255,0.5) !important;
+          color: #34D399 !important;
+          font-weight: 600;
           margin-bottom: 0.5rem;
           margin-top: 1.5rem;
         }
         .rhythm-title {
           margin: 0 0 0.4rem 0 !important;
-          font-size: 1.35rem !important;
-          font-weight: 600 !important;
+          font-size: 1.4rem !important;
+          font-weight: 700 !important;
           color: white !important;
           letter-spacing: -0.02em;
         }
         .rhythm-desc {
           margin: 0 !important;
-          font-size: 0.95rem !important;
-          color: rgba(255,255,255,0.5) !important;
+          font-size: 0.92rem !important;
+          color: rgba(255,255,255,0.55) !important;
+        }
+        .rhythm-loop {
+          position: relative;
+          padding: 0.5rem 0 0 1rem;
+          color: rgba(52,211,153,0.55);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.6rem;
+          width: 88px;
+        }
+        .rhythm-loop svg {
+          width: 56px;
+          height: 56px;
+        }
+        .rhythm-loop-label {
+          font-size: 0.6rem;
+          text-transform: uppercase;
+          letter-spacing: 0.22em;
+          color: #34D399;
+          font-weight: 600;
+          text-align: center;
+          line-height: 1.2;
         }
 
         /* ─────────── Slide 8: Proof ─────────── */
-        .slide-proof h2 { margin-bottom: 0.75rem; }
+        .slide-proof h2 { margin-bottom: 2.5rem; }
         .proof-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 3rem;
+          gap: 2.5rem;
           margin-bottom: 2rem;
-          padding-top: 1rem;
+          padding-top: 0;
         }
         .proof-card {
-          background: transparent;
-          border: none;
-          border-top: 1px solid rgba(255,255,255,0.14);
-          border-radius: 0;
-          padding: 1.75rem 0 0;
+          background: rgba(255,255,255,0.015);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 14px;
+          padding: 1.75rem 1.5rem 1.5rem;
           position: relative;
+          display: flex;
+          flex-direction: column;
         }
-        .proof-arrow { display: none; }
         .proof-metric {
-          margin: 0 0 1.25rem 0 !important;
-          font-size: 6rem !important;
+          margin: 0 0 0.5rem 0 !important;
+          font-size: 4.5rem !important;
           font-weight: 800 !important;
           letter-spacing: -0.04em;
-          color: white !important;
+          color: #34D399 !important;
           line-height: 0.9;
+          font-variant-numeric: tabular-nums;
         }
-        .proof-brand {
-          margin: 0 0 0.35rem 0 !important;
-          font-size: 1rem !important;
-          font-weight: 600 !important;
-          color: white !important;
+        .proof-spark {
+          width: 100%;
+          height: 48px;
+          color: #34D399;
+          opacity: 0.55;
+          margin-bottom: 1.25rem;
+        }
+        .proof-meta {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-bottom: 0.6rem;
+          padding-top: 1rem;
+          border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .proof-brand-chip {
+          font-size: 0.78rem;
+          font-weight: 700;
+          color: white;
+          letter-spacing: -0.005em;
+        }
+        .proof-lever {
+          font-size: 0.6rem;
+          text-transform: uppercase;
+          letter-spacing: 0.22em;
+          color: rgba(255,255,255,0.4);
+          font-weight: 600;
+          padding: 0.2rem 0.5rem;
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 999px;
+          margin-left: auto;
         }
         .proof-detail {
           margin: 0 !important;
-          font-size: 0.95rem !important;
+          font-size: 0.85rem !important;
           color: rgba(255,255,255,0.55) !important;
           line-height: 1.45;
         }
 
         /* ─────────── Slide 10: Next ─────────── */
-        .slide-next h2 { margin-bottom: 0.75rem; }
-        .next-row {
+        .slide-next h2 { margin-bottom: 2.5rem; }
+        .next-hero {
           display: grid;
-          grid-template-columns: 1fr 1px 1fr;
+          grid-template-columns: 1.4fr 1fr;
           gap: 3rem;
-          margin-bottom: 2.5rem;
+          align-items: center;
+          margin-bottom: 2rem;
+          padding: 2rem;
+          border: 1px solid rgba(52,211,153,0.25);
+          border-radius: 16px;
+          background: linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(16,185,129,0.01) 100%);
         }
-        .next-card {
-          background: transparent;
-          border: none;
-          padding: 0;
+        .next-hero-left {
           display: flex;
           flex-direction: column;
-          gap: 0.5rem;
+          gap: 0.85rem;
         }
-        .next-card-accent { background: transparent; border: none; }
-        .next-icon {
-          width: 22px;
-          height: 22px;
-          color: rgba(255,255,255,0.55);
-          margin-bottom: 1rem;
+        .next-hero-tag {
+          display: inline-block;
+          font-size: 0.62rem;
+          text-transform: uppercase;
+          letter-spacing: 0.22em;
+          color: #34D399;
+          font-weight: 700;
+          align-self: flex-start;
         }
-        .next-card-accent .next-icon { color: white; }
-        .next-title {
+        .next-hero-title {
           margin: 0 !important;
-          font-size: 2rem !important;
+          font-size: 2.25rem !important;
           font-weight: 700 !important;
           color: white !important;
           letter-spacing: -0.025em;
-          line-height: 1.1;
+          line-height: 1.05;
         }
-        .next-desc {
-          margin: 0 0 0.75rem 0 !important;
-          font-size: 1rem !important;
+        .next-hero-desc {
+          margin: 0 !important;
+          font-size: 0.95rem !important;
           color: rgba(255,255,255,0.6) !important;
+          line-height: 1.55;
         }
-        .next-cta {
-          font-size: 0.7rem;
-          color: rgba(255,255,255,0.4);
+        .next-hero-meta {
+          display: flex;
+          align-items: center;
+          gap: 0.6rem;
+          font-size: 0.72rem;
           text-transform: uppercase;
-          letter-spacing: 0.22em;
-          font-weight: 500;
-        }
-        .next-divider {
-          width: 1px;
-          background: rgba(255,255,255,0.08);
-        }
-        .next-book {
-          margin-top: 1.5rem !important;
-          text-align: left !important;
-        }
-        .next-book a {
-          display: inline-block;
-          padding: 0.85rem 1.5rem;
-          background: white;
-          color: #0A0A0A !important;
+          letter-spacing: 0.18em;
+          color: rgba(255,255,255,0.4);
           font-weight: 600;
+          margin-top: 0.4rem;
+        }
+        .next-hero-cta {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.95rem 1.5rem;
+          background: #34D399;
+          color: #052E22 !important;
+          font-weight: 700;
           font-size: 1rem;
           text-decoration: none !important;
-          border-radius: 0;
-          transition: background 150ms ease;
+          border-radius: 8px;
+          transition: background 150ms ease, transform 150ms ease;
           letter-spacing: -0.01em;
+          margin-top: 1rem;
+          align-self: flex-start;
+          box-shadow: 0 12px 40px -12px rgba(16,185,129,0.5);
         }
-        .next-book a:hover { background: rgba(255,255,255,0.85); }
+        .next-hero-cta:hover {
+          background: #10B981;
+          transform: translateY(-1px);
+        }
+        .next-hero-right {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .next-cal {
+          width: 100%;
+          padding: 1rem 1.1rem;
+          background: rgba(0,0,0,0.4);
+          border: 1px solid rgba(255,255,255,0.06);
+          border-radius: 12px;
+        }
+        .next-cal-head {
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          gap: 0.5rem;
+          margin-bottom: 0.65rem;
+        }
+        .next-cal-head span {
+          font-size: 0.55rem;
+          text-transform: uppercase;
+          letter-spacing: 0.18em;
+          color: rgba(255,255,255,0.35);
+          text-align: center;
+          font-weight: 600;
+        }
+        .next-cal-body {
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          gap: 0.5rem;
+        }
+        .next-cal-cell {
+          aspect-ratio: 1;
+          border-radius: 4px;
+          background: rgba(255,255,255,0.04);
+        }
+        .next-cal-cell-lit {
+          background: rgba(52,211,153,0.25);
+        }
+        .next-cal-cell-hot {
+          background: #34D399;
+          box-shadow: 0 0 0 2px rgba(52,211,153,0.25), 0 0 24px rgba(52,211,153,0.5);
+        }
+        .next-foot-secondary {
+          margin-top: 1.5rem !important;
+          font-size: 0.85rem !important;
+          color: rgba(255,255,255,0.5) !important;
+        }
+        .next-foot-secondary a {
+          color: rgba(255,255,255,0.85) !important;
+          text-decoration: underline !important;
+          text-decoration-color: rgba(255,255,255,0.3);
+        }
+        .next-foot-secondary a:hover {
+          text-decoration-color: rgba(255,255,255,0.7);
+        }
 
         @media (prefers-reduced-motion: reduce) {
           .marquee-col,
