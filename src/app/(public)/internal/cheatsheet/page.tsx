@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useRole } from "@/components/auth-gate";
 
 /* ── Ecomlanders cheat sheet ──
- * Admin-only. Single source of truth for senior-leader operating rules.
+ * Public route gated by a page-level password (WIPGate). Single source
+ * of truth for senior-leader operating rules.
+ *
  * Discipline: every line is a decision a senior leader could disagree
  * with. Anything purely descriptive doesn't belong here — cut it.
  *
@@ -14,22 +14,86 @@ import { useRole } from "@/components/auth-gate";
 const VERSION = "1.5";
 const LAST_UPDATED = "5 May 2026";
 const ACCENT = "#16A34A"; // brand-adjacent green
+const PAGE_PASSWORD = "WIP";
+const UNLOCK_KEY = "ecomlanders-cheatsheet-unlocked";
 
 export default function OperatingCheatsheetPage() {
-  const role = useRole();
-  const router = useRouter();
-  const [allowed, setAllowed] = useState(false);
+  return (
+    <WIPGate>
+      <CheatsheetBody />
+    </WIPGate>
+  );
+}
+
+function WIPGate({ children }: { children: React.ReactNode }) {
+  const [hydrated, setHydrated] = useState(false);
+  const [unlocked, setUnlocked] = useState(false);
+  const [input, setInput] = useState("");
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    if (role !== "admin") {
-      router.replace("/");
-      return;
+    setHydrated(true);
+    if (
+      typeof window !== "undefined" &&
+      sessionStorage.getItem(UNLOCK_KEY) === "true"
+    ) {
+      setUnlocked(true);
     }
-    setAllowed(true);
-  }, [role, router]);
+  }, []);
 
-  if (!allowed) return null;
+  if (!hydrated) return null;
 
+  if (!unlocked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F7F8FA] px-6">
+        <div className="bg-white rounded-2xl border border-[#EDEDEF] shadow-[var(--shadow-card)] p-8 max-w-sm w-full">
+          <p
+            className="text-[12px] font-semibold uppercase tracking-wider mb-2"
+            style={{ color: ACCENT }}
+          >
+            Ecomlanders
+          </p>
+          <h2 className="text-lg font-semibold text-[#1B1B1B]">
+            Cheat sheet
+          </h2>
+          <p className="mt-1 text-[13px] text-[#666]">
+            Enter the password to view.
+          </p>
+          <input
+            type="password"
+            value={input}
+            autoFocus
+            onChange={(e) => {
+              setInput(e.target.value);
+              setError(false);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                if (input === PAGE_PASSWORD) {
+                  sessionStorage.setItem(UNLOCK_KEY, "true");
+                  setUnlocked(true);
+                } else {
+                  setError(true);
+                }
+              }
+            }}
+            placeholder="Password"
+            className="mt-5 w-full px-4 py-3 text-[14px] border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B] transition-colors"
+          />
+          {error && (
+            <p className="mt-2 text-[12px] text-red-600">
+              Incorrect password.
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
+
+function CheatsheetBody() {
   return (
     <div className="px-6 py-8 max-w-[1200px] mx-auto">
       {/* ── Header ──────────────────────────── */}

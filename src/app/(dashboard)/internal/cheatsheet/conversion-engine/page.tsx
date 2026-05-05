@@ -1,0 +1,199 @@
+"use client";
+
+import { useState } from "react";
+import { CheckIcon, ClipboardIcon } from "@heroicons/react/24/outline";
+
+const objections: { q: string; a: string }[] = [
+  {
+    q: "We already have a CRO agency.",
+    a: "Most CRO agencies audit and recommend — we audit, build, and ship from one team. If yours is moving CVR every month, keep them. If they're sending 47-page reports and waiting on your dev team, that's the gap we fill.",
+  },
+  {
+    q: "We have an in-house designer/dev.",
+    a: "Good — that keeps cost down. We work two ways: hand over Figma + section specs for them to build, or run end-to-end and let them focus on product and brand. Most clients pick the second after one cycle.",
+  },
+  {
+    q: "It's too expensive.",
+    a: "The £8K retainer pays back at a 0.1% CVR lift on £800K monthly revenue. If your traffic and revenue numbers don't make those maths work, we're not the right fit and we'll tell you. Walk us through the numbers first — the gap is usually bigger than the retainer.",
+  },
+  {
+    q: "Why not a freelancer?",
+    a: "A freelancer gives you pages. We give you a roadmap, a test loop, and revenue attribution. The £500 page on a brand with no testing programme doesn't compound — that's the difference.",
+  },
+  {
+    q: "How is this different from [competitor]?",
+    a: "Most competitors split into two camps — strategy-only or build-only. We do both from the same team, so there's no handoff gap and the strategist who scoped the test is the one reviewing the result.",
+  },
+  {
+    q: "We tried CRO before and it didn't work.",
+    a: "One page is a guess. A programme is a process of elimination. Send us what was tested — usually the issue is offer mismatch, wrong traffic source, or a single shot with no iteration.",
+  },
+  {
+    q: "Can you guarantee results?",
+    a: "No. Anyone guaranteeing CVR lift is lying or charging for the risk. We guarantee the system: a roadmap, monthly builds, tracked tests, and revenue attribution. If 90 days in the numbers haven't moved, we have an honest conversation.",
+  },
+  {
+    q: "Why a retainer and not project-based?",
+    a: "One-off projects don't compound. The first build teaches you something — a retainer means we apply that on the next build instead of starting cold. We do projects, but the ROI only stacks on retainer.",
+  },
+  {
+    q: "We're not ready, we want to wait until [event].",
+    a: "Every month you wait costs the CVR gap × revenue. If a replatform or brand refresh is genuinely blocking, we'll wait. If it's \"Q4\" or \"after the launch\" — that's when you need it most, not least.",
+  },
+  {
+    q: "Can we start with just one funnel?",
+    a: "That's the standard £8K retainer. The full system focused on one funnel. If it lifts CVR there, expand scope from there — we don't tier or upsell, we just price the bigger scope.",
+  },
+];
+
+export default function ConversionEngineCheatsheetPage() {
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+
+  const copy = (text: string, idx: number) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIdx(idx);
+    setTimeout(() => setCopiedIdx(null), 1500);
+  };
+
+  return (
+    <div className="px-6 py-6 max-w-[1400px] mx-auto">
+      {/* Page header */}
+      <header className="mb-5 flex items-baseline justify-between gap-4 border-b border-[#F0F0F0] pb-3">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#BBB]">Internal · Sales Enablement</p>
+          <h1 className="text-xl font-semibold tracking-tight text-[#1B1B1B] mt-0.5">Conversion Engine — Cheat Sheet</h1>
+        </div>
+        <p className="text-[11px] text-[#999]">Cmd+F to find any answer.</p>
+      </header>
+
+      {/* Section 1: Cheat Sheet */}
+      <section className="mb-8">
+        <h2 className="text-[10px] font-semibold uppercase tracking-wider text-[#999] mb-3">§ 1 · Cheat Sheet</h2>
+
+        {/* Positioning — full width */}
+        <div className="rounded-lg border border-[#1B1B1B] bg-[#1B1B1B] text-white px-4 py-3 mb-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-white/50 mb-1">Positioning</p>
+          <p className="text-sm leading-snug">The post-click agency. We own the conversion layer for DTC brands — audit, build, test, compound.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {/* Who it's for */}
+          <Card title="Who it's for">
+            <p className="text-[11px] leading-snug text-[#444]"><span className="font-medium text-[#1B1B1B]">ICP:</span> DTC brands £80K–£300K/mo, £20K+ ad spend, no in-house CRO, post-click hasn't been touched in 12+ months.</p>
+            <p className="text-[11px] leading-snug text-[#444] mt-1.5"><span className="font-medium text-[#1B1B1B]">Not ICP:</span> brands under £50K/mo, &lt;£10K ad spend, anyone wanting one-off page builds.</p>
+          </Card>
+
+          {/* What's included */}
+          <Card title="What's included">
+            <ul className="text-[11px] leading-snug text-[#444] space-y-0.5">
+              <li>· Conversion audit + revenue gap analysis</li>
+              <li>· 60–90 day visual roadmap (Miro)</li>
+              <li>· Monthly page builds (LP, PDP, cart, bundle)</li>
+              <li>· A/B test programme with hypothesis chains</li>
+              <li>· AOV: bundles, upsells, post-purchase</li>
+              <li>· Monthly report with revenue attribution</li>
+              <li>· Dedicated Slack with the team</li>
+            </ul>
+          </Card>
+
+          {/* How it works */}
+          <Card title="How it works">
+            <p className="text-[11px] leading-snug text-[#444]"><span className="font-medium text-[#1B1B1B]">Audit (Mo 1)</span> → score every layer, find the 3 biggest leaks, ship quick wins Wk 1.</p>
+            <p className="text-[11px] leading-snug text-[#444] mt-1"><span className="font-medium text-[#1B1B1B]">Test cycle (Mo 2+)</span> → build, ship, measure, iterate. ICE-prioritised. 2-week test minimum.</p>
+            <p className="text-[11px] leading-snug text-[#444] mt-1"><span className="font-medium text-[#1B1B1B]">Cadence</span> — weekly Slack, monthly report, quarterly review.</p>
+          </Card>
+
+          {/* Pricing */}
+          <Card title="Pricing">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-md border border-[#1B1B1B] bg-white p-2">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#1B1B1B]">Standard</p>
+                <p className="text-base font-semibold text-[#1B1B1B] leading-tight mt-0.5">£8K<span className="text-[10px] font-normal text-[#999]">/mo</span></p>
+                <p className="text-[10px] text-[#666] mt-1">The deal. Roadmap, monthly builds, tests, monthly report.</p>
+              </div>
+              <div className="rounded-md border border-[#E5E5EA] bg-[#FAFAFA] p-2">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">Anchor</p>
+                <p className="text-base font-semibold text-[#1B1B1B] leading-tight mt-0.5">£12K<span className="text-[10px] font-normal text-[#999]">/mo</span></p>
+                <p className="text-[10px] text-[#666] mt-1">Faster turnarounds, more resources, dedicated calls.</p>
+              </div>
+            </div>
+            <p className="text-[10px] text-[#999] mt-1.5">Always quote both. £12K exists so £8K feels like the deal.</p>
+          </Card>
+
+          {/* Expected outcomes */}
+          <Card title="Expected outcomes">
+            <ul className="text-[11px] leading-snug text-[#444] space-y-0.5">
+              <li>· 0.5–2% site-wide CVR lift in 90 days (range, not promise)</li>
+              <li>· Quick wins live in Week 1</li>
+              <li>· First major build live Month 2</li>
+              <li>· Most retainers pay back inside 60 days</li>
+              <li>· Compounding kicks in from Month 3</li>
+            </ul>
+          </Card>
+
+          {/* Proof */}
+          <Card title="Proof">
+            <ul className="text-[11px] leading-snug text-[#444] space-y-0.5">
+              <li>· Supplements brand · 2.1% → 4.3% CVR · 90 days</li>
+              <li>· Skincare DTC · +38% AOV via bundle + upsell flow</li>
+              <li>· Apparel · +£42K/mo recovered on PDP rebuild</li>
+              <li>· Pet food · checkout opt → +14% completion rate</li>
+              <li>· Home goods · post-purchase upsell · +£18 per order</li>
+            </ul>
+          </Card>
+        </div>
+      </section>
+
+      {/* Section 2: Objections */}
+      <section>
+        <h2 className="text-[10px] font-semibold uppercase tracking-wider text-[#999] mb-3">§ 2 · Objections</h2>
+        <div className="rounded-lg border border-[#E5E5EA] overflow-hidden">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-[#FAFAFA] border-b border-[#E5E5EA]">
+                <th className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-[#999] w-[28%]">Objection</th>
+                <th className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-[#999]">Response</th>
+                <th className="w-[80px]"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {objections.map((o, i) => (
+                <tr key={i} className="border-b border-[#F0F0F0] last:border-0 hover:bg-[#FAFAFA]/60 align-top">
+                  <td className="px-3 py-2.5 text-[12px] font-medium text-[#1B1B1B] leading-snug">{o.q}</td>
+                  <td className="px-3 py-2.5 text-[12px] text-[#444] leading-snug">{o.a}</td>
+                  <td className="px-2 py-2.5">
+                    <button
+                      onClick={() => copy(o.a, i)}
+                      className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-md border border-[#E5E5EA] text-[#666] hover:border-[#1B1B1B] hover:text-[#1B1B1B] transition-colors"
+                    >
+                      {copiedIdx === i ? (
+                        <>
+                          <CheckIcon className="size-3" />
+                          Copied
+                        </>
+                      ) : (
+                        <>
+                          <ClipboardIcon className="size-3" />
+                          Copy
+                        </>
+                      )}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function Card({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-lg border border-[#E5E5EA] bg-white p-3">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#999] mb-1.5">{title}</p>
+      {children}
+    </div>
+  );
+}
