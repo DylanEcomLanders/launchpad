@@ -119,16 +119,36 @@ export function Sidebar() {
   const role = useRole();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  /* Accordion behaviour — at most one nav section open at a time. Initial
+   * open is the first section flagged defaultOpen so the user lands on a
+   * useful default; everything else stays collapsed until explicitly opened. */
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(
-    () => Object.fromEntries(navSections.map((s) => [s.title, s.defaultOpen !== false]))
+    () => {
+      const firstDefaultOpen = navSections.find((s) => s.defaultOpen !== false);
+      return Object.fromEntries(
+        navSections.map((s) => [s.title, s.title === firstDefaultOpen?.title]),
+      );
+    }
   );
 
   const visibleSections = navSections.filter((s) => !s.roles || (role !== "team" && s.roles.includes(role)));
   const [now, setNow] = useState(() => new Date());
   const [onboardingCount, setOnboardingCount] = useState(0);
 
+  /* Accordion: opening a section closes every other one. Clicking the
+   * currently-open section closes it (so user can still get to a fully
+   * collapsed state if they want pure focus). */
   function toggleSection(title: string) {
-    setOpenSections((prev) => ({ ...prev, [title]: !prev[title] }));
+    setOpenSections((prev) => {
+      if (prev[title]) {
+        return { ...prev, [title]: false };
+      }
+      const next: Record<string, boolean> = {};
+      for (const s of navSections) {
+        next[s.title] = s.title === title;
+      }
+      return next;
+    });
   }
 
   // Poll onboarding submissions every 5 minutes
