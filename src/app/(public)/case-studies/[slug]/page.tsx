@@ -10,7 +10,6 @@ import { getCaseStudy, getCaseStudies } from "@/lib/case-studies/data";
 import { makeExampleCaseStudy } from "@/lib/case-studies/seed";
 import { type CaseStudy, type HeadlineStat, type ResultComparison } from "@/lib/case-studies/types";
 import { AnimatedCounter } from "@/components/case-studies/public/animated-counter";
-import { FigmaEmbed } from "@/components/case-studies/public/figma-embed";
 import { MotionSection, MotionItem } from "@/components/case-studies/public/motion-section";
 import { PageViewer } from "@/components/case-studies/public/page-viewer";
 
@@ -277,7 +276,6 @@ function CaseStudyRender({
 
       {/* ── The Design ───────────────────────── */}
       {(study.designs.headline ||
-        study.designs.figmaFrames.length > 0 ||
         study.designs.desktopSlices.length > 0 ||
         study.designs.mobileSlices.length > 0) && (
         <MotionSection className="px-6 md:px-10 py-16 border-t border-[#EDEDEF]">
@@ -289,25 +287,21 @@ function CaseStudyRender({
               </h2>
             )}
             {(study.designs.desktopSlices.length > 0 || study.designs.mobileSlices.length > 0) && (
-              <div className="mt-10">
-                <PageViewer
-                  desktopSlices={study.designs.desktopSlices}
-                  mobileSlices={study.designs.mobileSlices}
-                  brandName={study.meta.brandName}
-                />
-              </div>
-            )}
-            {study.designs.figmaFrames.length > 0 && (
-              <div
-                className={`mt-10 ${
-                  study.designs.figmaFrames.length > 1
-                    ? "grid grid-cols-1 md:grid-cols-2 gap-8 items-start"
-                    : "space-y-8"
-                }`}
-              >
-                {study.designs.figmaFrames.map((f) => (
-                  <FigmaEmbed key={f.id} frame={f} />
-                ))}
+              <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+                {study.designs.desktopSlices.length > 0 && (
+                  <PageViewer
+                    slices={study.designs.desktopSlices}
+                    device="desktop"
+                    brandName={study.meta.brandName}
+                  />
+                )}
+                {study.designs.mobileSlices.length > 0 && (
+                  <PageViewer
+                    slices={study.designs.mobileSlices}
+                    device="mobile"
+                    brandName={study.meta.brandName}
+                  />
+                )}
               </div>
             )}
           </div>

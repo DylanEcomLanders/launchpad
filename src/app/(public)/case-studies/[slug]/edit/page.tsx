@@ -32,7 +32,6 @@ import { makeEmptyCaseStudy, slugify, genId, duplicateCaseStudy } from "@/lib/ca
 import { EditorSection } from "@/components/case-studies/editor/section";
 import { ImageUpload } from "@/components/case-studies/editor/image-upload";
 import { IntelligemsTestCard } from "@/components/case-studies/editor/intelligems-test-card";
-import { FigmaFrameCard } from "@/components/case-studies/editor/figma-frame-card";
 import { HeadlineStatCard } from "@/components/case-studies/editor/headline-stat-card";
 import { SolutionCardEditor } from "@/components/case-studies/editor/solution-card-editor";
 import { ComparisonRowEditor } from "@/components/case-studies/editor/comparison-row-editor";
@@ -745,10 +744,10 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
           {/* ── Designs ──────────────────────── */}
           <EditorSection
             title="The Design"
-            description="Headline, full-page renders (desktop/mobile), and Figma frames"
+            description="Headline + full-page renders synced from Figma (desktop/mobile)"
             badge={
-              (study.designs.desktopSlices.length + study.designs.mobileSlices.length + study.designs.figmaFrames.length) > 0
-                ? `${study.designs.desktopSlices.length + study.designs.mobileSlices.length + study.designs.figmaFrames.length}`
+              (study.designs.desktopSlices.length + study.designs.mobileSlices.length) > 0
+                ? `${study.designs.desktopSlices.length + study.designs.mobileSlices.length}`
                 : undefined
             }
           >
@@ -774,58 +773,6 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                 mobileCount={study.designs.mobileSlices.length}
                 onSynced={(synced) => setStudy(synced)}
               />
-
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-2">
-                  Figma frames (interactive embeds)
-                </div>
-                <div className="space-y-3">
-                  {study.designs.figmaFrames.map((f, i) => (
-                    <FigmaFrameCard
-                      key={f.id}
-                      frame={f}
-                      index={i}
-                      onChange={(next) =>
-                        updateStudy((prev) => ({
-                          ...prev,
-                          designs: {
-                            ...prev.designs,
-                            figmaFrames: prev.designs.figmaFrames.map((x) => (x.id === f.id ? next : x)),
-                          },
-                        }))
-                      }
-                      onDelete={() =>
-                        updateStudy((prev) => ({
-                          ...prev,
-                          designs: {
-                            ...prev.designs,
-                            figmaFrames: prev.designs.figmaFrames.filter((x) => x.id !== f.id),
-                          },
-                        }))
-                      }
-                    />
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() =>
-                      updateStudy((prev) => ({
-                        ...prev,
-                        designs: {
-                          ...prev.designs,
-                          figmaFrames: [
-                            ...prev.designs.figmaFrames,
-                            { id: genId(), shareUrl: "", caption: "", device: "desktop" },
-                          ],
-                        },
-                      }))
-                    }
-                    className="w-full flex items-center justify-center gap-1.5 px-4 py-3 border-2 border-dashed border-[#E5E5EA] rounded-lg text-xs font-semibold text-[#7A7A7A] hover:border-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
-                  >
-                    <PlusIcon className="size-4" />
-                    Add Figma frame
-                  </button>
-                </div>
-              </div>
             </div>
           </EditorSection>
 
@@ -1285,7 +1232,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
               <Stat label="Solution cards" value={study.approach.cards.length} />
               <Stat label="Compounded results" value={study.compoundedResults.length} />
               <Stat label="Tests" value={study.results.tests.length} />
-              <Stat label="Figma frames" value={study.designs.figmaFrames.length} />
+              <Stat label="Design slices" value={study.designs.desktopSlices.length + study.designs.mobileSlices.length} />
               <Stat label="Tech tags" value={study.techStack.length} />
             </div>
           </div>
