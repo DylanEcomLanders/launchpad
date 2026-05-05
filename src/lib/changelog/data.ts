@@ -37,6 +37,20 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-57",
+    date: "5 May 2026",
+    version: "0.36.3",
+    title: "Case Studies — editorial sales pages",
+    changes: [
+      { type: "added", text: "New Case Studies module under Sales Engine → Content. Editorial light-mode page template designed as a sales tool, not a portfolio entry — hero with bold headline + screenshot collage, four KPI stat cards with cascading expo-out counter animations, brand/niche/engagement/services meta row, three-image preview grid, two-column problem statement, three numbered solution cards (01/02/03), Figma frame embeds for designs, four-card before/after comparison row with strikethrough befores and green delta arrows, testimonial card paired with a black CTA card (primary button + green WhatsApp button), tech-stack pill row" },
+      { type: "added", text: "Single-page editor at /case-studies/[slug]/edit with collapsible sections for every block (Client, Hero, Headline stats, Problem, Solution, Design, Compounded results, Testimonial, CTA, Tech, Related, Intelligems test data, Settings). Drag-and-drop image upload with sharp auto-compression to webp@85 max 2400px, debounced auto-save, live public-render preview iframe in the right rail, slug edit + uniqueness check, brand-colour picker, publish toggle, copy-share-URL, duplicate-as-new" },
+      { type: "added", text: "List view at /sales-engine/case-studies with a brand/headline/test-count/status table, edit/view/duplicate/delete actions per row, and a New-case-study modal with auto-derived slug. Sidebar entry added under Content lane" },
+      { type: "added", text: "Structured Intelligems test storage — every test captures variant labels, primary metric, lift %, confidence interval, sample size, traffic split, duration. Stored as DB rows so we can later filter case studies by confidence ≥ 95% or aggregate \"$X driven across all tests\" without re-parsing prose" },
+      { type: "added", text: "Editorial details: section eyebrows in section-specific colours (grey default, brand-red for The Problem, green for The Solution + 01/02/03 numbers), green ▲ chip on every headline stat card to signify a win, draggable-free Figma embeds with light browser chrome, dynamic OG image at 1200×630 with brand-coloured eyebrow + headline, JSON-LD Article schema, draft preview via ?draft=1, design-review bypass via ?example=1 (renders the seeded SuppsX example without touching the DB)" },
+      { type: "added", text: "Bootstrap helper at /api/case-studies/seed creates a fully-populated SuppsX example so the layout can be pressure-tested end-to-end after the DB table + storage bucket are provisioned" },
+    ],
+  },
+  {
     id: "cl-56",
     date: "5 May 2026",
     version: "0.36.2",
