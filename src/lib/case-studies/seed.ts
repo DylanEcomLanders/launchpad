@@ -107,6 +107,8 @@ export function makeExampleCaseStudy(): CaseStudy {
     designs: {
       headline: "The same brand, but better.",
       figmaFrames: [],
+      desktopSlices: [],
+      mobileSlices: [],
     },
     compoundedResults: [
       {

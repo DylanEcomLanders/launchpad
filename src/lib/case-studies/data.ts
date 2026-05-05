@@ -57,6 +57,8 @@ function normalize(raw: unknown): CaseStudy {
     designs: {
       ...(c.designs as CaseStudy["designs"]),
       figmaFrames: c.designs?.figmaFrames ?? [],
+      desktopSlices: c.designs?.desktopSlices ?? [],
+      mobileSlices: c.designs?.mobileSlices ?? [],
     },
   };
 }

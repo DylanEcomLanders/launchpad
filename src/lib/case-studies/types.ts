@@ -140,6 +140,8 @@ export interface CaseStudyResults {
 export interface CaseStudyDesigns {
   headline?: string;          // "The Same Brand, But Better"
   figmaFrames: FigmaFrame[];
+  desktopSlices: CaseStudyImage[];   // full-page screenshots, stacked in modal viewer
+  mobileSlices: CaseStudyImage[];
 }
 
 export interface CaseStudySettings {

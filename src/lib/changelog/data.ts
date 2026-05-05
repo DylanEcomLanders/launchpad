@@ -49,6 +49,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Editorial details: section eyebrows in section-specific colours (grey default, brand-red for The Problem, green for The Solution + 01/02/03 numbers), green ▲ chip on every headline stat card to signify a win, draggable-free Figma embeds with light browser chrome, dynamic OG image at 1200×630 with brand-coloured eyebrow + headline, JSON-LD Article schema, draft preview via ?draft=1, design-review bypass via ?example=1 (renders the seeded SuppsX example without touching the DB)" },
       { type: "added", text: "Bootstrap helper at /api/case-studies/seed creates a fully-populated SuppsX example so the layout can be pressure-tested end-to-end after the DB table + storage bucket are provisioned" },
       { type: "fixed", text: "Hotfix the upload route Buffer typing — Next 16 strict prod build flagged Buffer<ArrayBuffer> can't receive sharp.toBuffer's wider Buffer<ArrayBufferLike>. Widened the local binding so reassignment after webp compression type-checks. Vercel deploy unblocked" },
+      { type: "added", text: "Live page render in The Design section — upload full-page desktop and mobile screenshot slices, visitors get a browser-chrome thumbnail with a \"View full page →\" affordance. Click opens a full-screen scrollable modal with desktop/mobile toggle (only shown when both are populated), ESC + click-outside to close, body-scroll lock while open. Mirrors the portfolio-v2 viewer pattern but as a modal instead of inline scroll" },
     ],
   },
   {

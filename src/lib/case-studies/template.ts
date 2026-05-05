@@ -36,6 +36,8 @@ export function makeEmptyCaseStudy(slug: string): CaseStudy {
     },
     designs: {
       figmaFrames: [],
+      desktopSlices: [],
+      mobileSlices: [],
     },
     compoundedResults: [],
     techStack: [],
@@ -75,13 +77,15 @@ export function duplicateCaseStudy(source: CaseStudy, newSlug: string): CaseStud
       ...source.approach,
       cards: source.approach.cards.map((c) => ({ ...c, id: genId() })),
     },
-    results: {
-      ...source.results,
-      tests: source.results.tests.map((t) => ({ ...t, id: genId() })),
-    },
     designs: {
       ...source.designs,
       figmaFrames: source.designs.figmaFrames.map((f) => ({ ...f, id: genId() })),
+      desktopSlices: [...source.designs.desktopSlices],
+      mobileSlices: [...source.designs.mobileSlices],
+    },
+    results: {
+      ...source.results,
+      tests: source.results.tests.map((t) => ({ ...t, id: genId() })),
     },
     compoundedResults: source.compoundedResults.map((c) => ({ ...c, id: genId() })),
     settings: {

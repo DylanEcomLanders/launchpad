@@ -12,6 +12,7 @@ import { type CaseStudy, type HeadlineStat, type ResultComparison } from "@/lib/
 import { AnimatedCounter } from "@/components/case-studies/public/animated-counter";
 import { FigmaEmbed } from "@/components/case-studies/public/figma-embed";
 import { MotionSection, MotionItem } from "@/components/case-studies/public/motion-section";
+import { PageViewer } from "@/components/case-studies/public/page-viewer";
 
 export const revalidate = 0;
 export const dynamic = "force-dynamic";
@@ -275,7 +276,10 @@ function CaseStudyRender({
       )}
 
       {/* ── The Design ───────────────────────── */}
-      {(study.designs.headline || study.designs.figmaFrames.length > 0) && (
+      {(study.designs.headline ||
+        study.designs.figmaFrames.length > 0 ||
+        study.designs.desktopSlices.length > 0 ||
+        study.designs.mobileSlices.length > 0) && (
         <MotionSection className="px-6 md:px-10 py-16 border-t border-[#EDEDEF]">
           <div className="max-w-[1200px] mx-auto">
             <Eyebrow color={sectionGrey}>The Design</Eyebrow>
@@ -283,6 +287,15 @@ function CaseStudyRender({
               <h2 className="mt-4 text-2xl md:text-[32px] font-semibold tracking-tight leading-[1.15] max-w-3xl">
                 {study.designs.headline}
               </h2>
+            )}
+            {(study.designs.desktopSlices.length > 0 || study.designs.mobileSlices.length > 0) && (
+              <div className="mt-10">
+                <PageViewer
+                  desktopSlices={study.designs.desktopSlices}
+                  mobileSlices={study.designs.mobileSlices}
+                  brandName={study.meta.brandName}
+                />
+              </div>
             )}
             {study.designs.figmaFrames.length > 0 && (
               <div className="mt-10 space-y-8">
