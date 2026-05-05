@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import type { FigmaFrame } from "@/lib/case-studies/types";
 
 function toEmbedUrl(url: string): string {
@@ -14,9 +13,8 @@ interface Props {
 }
 
 /* Light-mode Figma embed with subtle browser-style chrome.
- * Lazy-loads on click to avoid loading dozens of iframes at once. */
+ * Browser-native lazy-loads when the iframe scrolls into view. */
 export function FigmaEmbed({ frame }: Props) {
-  const [loaded, setLoaded] = useState(false);
   const embedUrl = toEmbedUrl(frame.shareUrl);
   if (!embedUrl) return null;
 
@@ -38,24 +36,13 @@ export function FigmaEmbed({ frame }: Props) {
           </div>
         </div>
         <div className={`${aspect} relative bg-white`}>
-          <button
-            type="button"
-            onClick={() => setLoaded(true)}
-            className={`absolute inset-0 flex items-center justify-center text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors ${
-              loaded ? "hidden" : ""
-            }`}
-          >
-            <span className="text-sm">Tap to load Figma frame</span>
-          </button>
-          {loaded && (
-            <iframe
-              src={embedUrl}
-              title={frame.caption || "Figma frame"}
-              className="absolute inset-0 w-full h-full border-0"
-              loading="lazy"
-              allowFullScreen
-            />
-          )}
+          <iframe
+            src={embedUrl}
+            title={frame.caption || "Figma frame"}
+            className="absolute inset-0 w-full h-full border-0"
+            loading="lazy"
+            allowFullScreen
+          />
         </div>
       </div>
       {frame.caption && (

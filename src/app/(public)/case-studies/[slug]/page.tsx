@@ -298,7 +298,13 @@ function CaseStudyRender({
               </div>
             )}
             {study.designs.figmaFrames.length > 0 && (
-              <div className="mt-10 space-y-8">
+              <div
+                className={`mt-10 ${
+                  study.designs.figmaFrames.length > 1
+                    ? "grid grid-cols-1 md:grid-cols-2 gap-8 items-start"
+                    : "space-y-8"
+                }`}
+              >
                 {study.designs.figmaFrames.map((f) => (
                   <FigmaEmbed key={f.id} frame={f} />
                 ))}
