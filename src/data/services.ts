@@ -1,11 +1,8 @@
 // ── Service catalog ─────────────────────────────────────────────
-// Single source of truth — mirrors the public Pricing & Packages page.
-// Pricing is tiered (Tier 1 / Tier 2) based on client classification.
-// Tier is selected when generating a proposal link.
+// Mirrors the public Pricing & Packages page.
 // Whop checkout configurations are created dynamically from this data.
 
 export type ServiceMode = "one-off" | "retainer";
-export type ClientTier = 1 | 2;
 
 export interface TierPricing {
   amount: number; // pence (GBP)
@@ -13,8 +10,7 @@ export interface TierPricing {
 }
 
 export interface ServicePricing {
-  tier1: TierPricing;
-  tier2: TierPricing;
+  price: TierPricing;
   interval?: string; // "month" for retainers
 }
 
@@ -44,7 +40,6 @@ export interface ServiceOption {
 
 export const serviceCategories: Record<string, string> = {
   builds: "Page Builds",
-  cro: "CRO Retainer",
   additional: "Additional Services",
 };
 
@@ -68,8 +63,7 @@ export const services: ServiceOption[] = [
     modes: ["one-off"],
     pricing: {
       "one-off": {
-        tier1: { amount: 299900, label: "£2,999" },
-        tier2: { amount: 399900, label: "£3,999" },
+        price: { amount: 299900, label: "£2,999" },
       },
     },
   },
@@ -85,11 +79,9 @@ export const services: ServiceOption[] = [
       "10% volume saving",
     ],
     modes: ["one-off"],
-    recommended: true,
     pricing: {
       "one-off": {
-        tier1: { amount: 549900, label: "£5,499" },
-        tier2: { amount: 699900, label: "£6,999" },
+        price: { amount: 549900, label: "£5,499" },
       },
     },
   },
@@ -107,8 +99,7 @@ export const services: ServiceOption[] = [
     modes: ["one-off"],
     pricing: {
       "one-off": {
-        tier1: { amount: 799900, label: "£7,999" },
-        tier2: { amount: 1049900, label: "£10,499" },
+        price: { amount: 799900, label: "£7,999" },
       },
     },
   },
@@ -126,8 +117,28 @@ export const services: ServiceOption[] = [
     modes: ["one-off"],
     pricing: {
       "one-off": {
-        tier1: { amount: 999900, label: "£9,999" },
-        tier2: { amount: 1249900, label: "£12,499" },
+        price: { amount: 999900, label: "£9,999" },
+      },
+    },
+  },
+  {
+    id: "funnel-build",
+    name: "Funnel Build",
+    category: "builds",
+    description:
+      "The complete buyer journey — framing page → product page → cart. Designed as one system, not three separate pages.",
+    features: [
+      "Framing page (advertorial or landing)",
+      "Product detail page (PDP)",
+      "Cart drawer + page",
+      "Conversion strategy across the full funnel",
+      "Copywriting, design, development & support",
+    ],
+    modes: ["one-off"],
+    recommended: true,
+    pricing: {
+      "one-off": {
+        price: { amount: 799900, label: "£7,999" },
       },
     },
   },
@@ -145,8 +156,7 @@ export const services: ServiceOption[] = [
     modes: ["one-off"],
     pricing: {
       "one-off": {
-        tier1: { amount: 200000, label: "£2,000" },
-        tier2: { amount: 269900, label: "£2,699" },
+        price: { amount: 200000, label: "£2,000" },
       },
     },
   },
@@ -164,77 +174,7 @@ export const services: ServiceOption[] = [
     modes: ["one-off"],
     pricing: {
       "one-off": {
-        tier1: { amount: 350000, label: "£3,500" },
-        tier2: { amount: 469900, label: "£4,699" },
-      },
-    },
-  },
-
-  // ━━ CRO RETAINER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  {
-    id: "cro-foundation",
-    name: "Foundation — 1 Test / Week",
-    category: "cro",
-    description:
-      "Ongoing testing to compound growth. 60 day commitment.",
-    features: [
-      "4 A/B tests per month",
-      "Weekly A/B test — setup, deployment & monitoring",
-      "Protect your revenue baseline with ongoing Shopify support",
-      "Regular reporting on test results and learnings",
-      "Eliminates friction keeping your funnel healthy & efficient",
-    ],
-    modes: ["retainer"],
-    recommended: true,
-    pricing: {
-      retainer: {
-        tier1: { amount: 149900, label: "£1,499/mo" },
-        tier2: { amount: 299900, label: "£2,999/mo" },
-        interval: "month",
-      },
-    },
-  },
-  {
-    id: "cro-growth",
-    name: "Growth — 2 Tests / Week",
-    category: "cro",
-    description:
-      "The more we test, the faster you win. 60 day commitment.",
-    features: [
-      "8 A/B tests per month",
-      "Double the testing velocity — find winners faster",
-      "Scale your output based on the data your brand generates",
-      "Priority test scheduling and implementation",
-      "Monthly strategy session to review results and plan next cycle",
-    ],
-    modes: ["retainer"],
-    pricing: {
-      retainer: {
-        tier1: { amount: 249900, label: "£2,499/mo" },
-        tier2: { amount: 399900, label: "£3,999/mo" },
-        interval: "month",
-      },
-    },
-  },
-  {
-    id: "cro-scale",
-    name: "Scale — 4 Tests / Week",
-    category: "cro",
-    description:
-      "Maximum testing cadence for brands serious about CRO. 60 day commitment.",
-    features: [
-      "16 A/B tests per month",
-      "Broad coverage across your entire funnel simultaneously",
-      "Full test documentation and conversion rate tracking",
-      "Dedicated CRO roadmap updated weekly based on live data",
-    ],
-    modes: ["retainer"],
-    pricing: {
-      retainer: {
-        tier1: { amount: 349900, label: "£3,499/mo" },
-        tier2: { amount: 499900, label: "£4,999/mo" },
-        interval: "month",
+        price: { amount: 350000, label: "£3,500" },
       },
     },
   },
@@ -260,8 +200,7 @@ export const services: ServiceOption[] = [
     ],
     pricing: {
       "one-off": {
-        tier1: { amount: 10000, label: "£100/ad" },
-        tier2: { amount: 10000, label: "£100/ad" },
+        price: { amount: 10000, label: "£100/ad" },
       },
     },
   },
@@ -283,8 +222,7 @@ export const services: ServiceOption[] = [
     ],
     pricing: {
       "one-off": {
-        tier1: { amount: 7500, label: "£75/email" },
-        tier2: { amount: 7500, label: "£75/email" },
+        price: { amount: 7500, label: "£75/email" },
       },
     },
   },
@@ -298,8 +236,7 @@ export const services: ServiceOption[] = [
     isAddOn: true,
     pricing: {
       "one-off": {
-        tier1: { amount: 100000, label: "£1,000" },
-        tier2: { amount: 125000, label: "£1,250" },
+        price: { amount: 100000, label: "£1,000" },
       },
     },
   },
@@ -313,8 +250,7 @@ export const services: ServiceOption[] = [
     isAddOn: true,
     pricing: {
       "one-off": {
-        tier1: { amount: 50000, label: "£500" },
-        tier2: { amount: 62500, label: "£625" },
+        price: { amount: 50000, label: "£500" },
       },
     },
   },
@@ -328,8 +264,7 @@ export const services: ServiceOption[] = [
     isAddOn: true,
     pricing: {
       "one-off": {
-        tier1: { amount: 250000, label: "£2,500" },
-        tier2: { amount: 299900, label: "£2,999" },
+        price: { amount: 250000, label: "£2,500" },
       },
     },
   },
@@ -343,8 +278,7 @@ export const services: ServiceOption[] = [
     isAddOn: true,
     pricing: {
       "one-off": {
-        tier1: { amount: 50000, label: "£500" },
-        tier2: { amount: 62500, label: "£625" },
+        price: { amount: 50000, label: "£500" },
       },
     },
   },
@@ -358,8 +292,7 @@ export const services: ServiceOption[] = [
     isAddOn: true,
     pricing: {
       "one-off": {
-        tier1: { amount: 200000, label: "£2,000" },
-        tier2: { amount: 250000, label: "£2,500" },
+        price: { amount: 200000, label: "£2,000" },
       },
     },
   },
@@ -373,8 +306,7 @@ export const services: ServiceOption[] = [
     isAddOn: true,
     pricing: {
       "one-off": {
-        tier1: { amount: 100000, label: "£1,000" },
-        tier2: { amount: 125000, label: "£1,250" },
+        price: { amount: 100000, label: "£1,000" },
       },
     },
   },
@@ -388,8 +320,7 @@ export const services: ServiceOption[] = [
     isAddOn: true,
     pricing: {
       "one-off": {
-        tier1: { amount: 50000, label: "£500" },
-        tier2: { amount: 62500, label: "£625" },
+        price: { amount: 50000, label: "£500" },
       },
     },
   },
@@ -403,8 +334,7 @@ export const services: ServiceOption[] = [
     isAddOn: true,
     pricing: {
       "one-off": {
-        tier1: { amount: 100000, label: "£1,000" },
-        tier2: { amount: 100000, label: "£1,000" },
+        price: { amount: 100000, label: "£1,000" },
       },
     },
   },
@@ -418,8 +348,7 @@ export const services: ServiceOption[] = [
     isAddOn: true,
     pricing: {
       "one-off": {
-        tier1: { amount: 50000, label: "£500" },
-        tier2: { amount: 62500, label: "£625" },
+        price: { amount: 50000, label: "£500" },
       },
     },
   },
@@ -433,8 +362,7 @@ export const services: ServiceOption[] = [
     isAddOn: true,
     pricing: {
       "one-off": {
-        tier1: { amount: 250000, label: "£2,500" },
-        tier2: { amount: 299900, label: "£2,999" },
+        price: { amount: 250000, label: "£2,500" },
       },
     },
   },
@@ -451,22 +379,20 @@ export const services: ServiceOption[] = [
     isAddOn: true,
     pricing: {
       "one-off": {
-        tier1: { amount: 50, label: "£0.50" },
-        tier2: { amount: 50, label: "£0.50" },
+        price: { amount: 50, label: "£0.50" },
       },
     },
   },
 ];
 
 // ── Retainer × Build discount ───────────────────────────────────
-// When a CRO retainer is selected alongside page builds, the build
-// prices are discounted. Matches the public pricing page.
+// Empty since the Foundation/Growth/Scale CRO retainers were retired.
+// Kept as an exported empty record so existing consumers
+// (proposal-builder, pricing/[tier], proposals/checkout) keep type-checking
+// — `retainerBuildDiscount[id]` returns undefined and they fall through to
+// the no-discount branch. Re-populate if a future retainer SKU bundles in.
 
-export const retainerBuildDiscount: Record<string, number> = {
-  "cro-foundation": 0.10, // 10 % off builds
-  "cro-growth": 0.15, // 15 % off builds
-  "cro-scale": 0.20, // 20 % off builds
-};
+export const retainerBuildDiscount: Record<string, number> = {};
 
 // ── Helpers ─────────────────────────────────────────────────────
 
@@ -485,12 +411,9 @@ export function getServicesByCategory(
   return cats;
 }
 
-/** Resolve tier-specific pricing from a ServicePricing object */
-export function getPrice(
-  pricing: ServicePricing,
-  tier: ClientTier
-): TierPricing {
-  return tier === 1 ? pricing.tier1 : pricing.tier2;
+/** Resolve the price from a ServicePricing object. */
+export function getPrice(pricing: ServicePricing): TierPricing {
+  return pricing.price;
 }
 
 /** Resolve per-unit price taking volume discounts into account.
