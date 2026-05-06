@@ -269,6 +269,7 @@ export function TicketsPanel({ currentUser, clients, onPromoteToTask }: Props) {
                 onDone={() => handleDone(t.id)}
                 onKill={(reason) => handleKill(t.id, reason)}
                 onPromote={onPromoteToTask ? () => handlePromote(t.id) : undefined}
+                onUpdate={(patch) => updateTicket(t.id, patch)}
               />
             ))
           )}

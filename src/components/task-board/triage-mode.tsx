@@ -8,6 +8,7 @@ import {
   ageLabel,
   type Ticket,
 } from "@/lib/tickets/types";
+import { ScreenshotStrip } from "./screenshot-strip";
 
 type TriageDecision = "do" | "shift" | "kill";
 
@@ -172,12 +173,18 @@ export function TriageMode({ tickets, currentUser, onClose, onResolve }: Props) 
             {current.title}
           </h3>
           {(current.client_id || current.raised_by || current.notes) && (
-            <div className="space-y-1 text-[12px] text-[#7A7A7A] mb-6">
+            <div className="space-y-1 text-[12px] text-[#7A7A7A] mb-4">
               {current.client_id && <p>Client: {current.client_id}</p>}
               <p>Raised by {current.raised_by}</p>
               {current.notes && (
                 <p className="italic mt-2 text-[#888]">{current.notes}</p>
               )}
+            </div>
+          )}
+
+          {(current.screenshots?.length ?? 0) > 0 && (
+            <div className="mb-6">
+              <ScreenshotStrip urls={current.screenshots!} />
             </div>
           )}
 

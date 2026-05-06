@@ -29,6 +29,9 @@ export interface Ticket {
   closed_at?: string;
   shifted_count?: number;
   linked_task_id?: string;
+  /** Public URLs of attached screenshots (Supabase storage `tickets` bucket).
+   * Captured via drop, Cmd+V paste, or file picker on the card / composer. */
+  screenshots?: string[];
 }
 
 export interface TicketsData {

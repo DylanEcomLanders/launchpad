@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   PlayIcon,
   CheckIcon,
   XMarkIcon,
   ArrowUpRightIcon,
+  PaperClipIcon,
 } from "@heroicons/react/24/outline";
 import {
   AGE_COLORS,
@@ -15,6 +16,12 @@ import {
   ageLevel,
   type Ticket,
 } from "@/lib/tickets/types";
+import {
+  filterImages,
+  imagesFromPaste,
+  uploadBatch,
+} from "@/lib/tickets/screenshots";
+import { ScreenshotStrip } from "./screenshot-strip";
 
 interface Props {
   ticket: Ticket;
@@ -24,25 +31,54 @@ interface Props {
   /** Optional — if omitted, the Promote button is hidden (used on
    * team-facing surfaces where only leadership promotes). */
   onPromote?: () => void;
+  /** Patch the ticket with new fields (e.g. add screenshots).
+   * Optional — when omitted, the card is read-only for screenshots. */
+  onUpdate?: (patch: Partial<Ticket>) => void;
 }
 
 /* Ticket card with age-based visual escalation. The left border colour
  * + badge update on every render based on now - raised_at, so the team
- * feels old tickets without reading dates. */
+ * feels old tickets without reading dates.
+ *
+ * Screenshots: drop on the card or Cmd+V paste while it's focused. The
+ * paperclip in the action row opens the file picker. */
 export function TicketCard({
   ticket,
   onStart,
   onDone,
   onKill,
   onPromote,
+  onUpdate,
 }: Props) {
   const [killing, setKilling] = useState(false);
   const [killReason, setKillReason] = useState("");
+  const [dragOver, setDragOver] = useState(false);
+  const [uploading, setUploading] = useState(0);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const level = ageLevel(ticket.raised_at);
   const colours = AGE_COLORS[level];
   const inProgress = ticket.status === "in_progress";
   const shifted = ticket.shifted_count || 0;
+  const screenshots = ticket.screenshots || [];
+
+  const ingest = async (files: File[]) => {
+    if (!onUpdate || files.length === 0) return;
+    setUploading((n) => n + files.length);
+    try {
+      const urls = await uploadBatch(files);
+      if (urls.length > 0) {
+        onUpdate({ screenshots: [...screenshots, ...urls] });
+      }
+    } finally {
+      setUploading((n) => Math.max(0, n - files.length));
+    }
+  };
+
+  const removeScreenshot = (url: string) => {
+    if (!onUpdate) return;
+    onUpdate({ screenshots: screenshots.filter((u) => u !== url) });
+  };
 
   const submitKill = () => {
     if (!killReason.trim()) return;
@@ -53,12 +89,35 @@ export function TicketCard({
 
   return (
     <div
-      className={`group rounded-lg border bg-white px-3 py-2.5 transition-shadow hover:shadow-sm ${
+      tabIndex={0}
+      className={`group rounded-lg border bg-white px-3 py-2.5 transition-shadow hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1A1A1A]/10 ${
         level === "critical" ? "animate-pulse-soft" : ""
-      }`}
+      } ${dragOver ? "ring-2 ring-[#1A1A1A]/20" : ""}`}
       style={{
         borderColor: colours.border,
         borderLeftWidth: 3,
+      }}
+      onDragOver={(e) => {
+        if (!onUpdate) return;
+        if (Array.from(e.dataTransfer.types).includes("Files")) {
+          e.preventDefault();
+          setDragOver(true);
+        }
+      }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={(e) => {
+        if (!onUpdate) return;
+        e.preventDefault();
+        setDragOver(false);
+        ingest(filterImages(e.dataTransfer.files));
+      }}
+      onPaste={(e) => {
+        if (!onUpdate) return;
+        const files = imagesFromPaste(e);
+        if (files.length > 0) {
+          e.preventDefault();
+          ingest(files);
+        }
       }}
     >
       {/* Header row — type, age, in-progress chip */}
@@ -111,6 +170,22 @@ export function TicketCard({
         </p>
       )}
 
+      {/* Screenshots */}
+      {(screenshots.length > 0 || uploading > 0) && (
+        <div className="mt-2 flex items-center gap-2">
+          <ScreenshotStrip
+            urls={screenshots}
+            onRemove={onUpdate ? removeScreenshot : undefined}
+            compact
+          />
+          {uploading > 0 && (
+            <span className="text-[10px] text-[#7A7A7A] italic">
+              Uploading…
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Actions — appear on hover */}
       {!killing && (
         <div className="mt-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -143,6 +218,16 @@ export function TicketCard({
             <XMarkIcon className="size-3" />
             Kill
           </button>
+          {onUpdate && (
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold rounded border border-[#E5E5EA] text-[#7A7A7A] hover:text-[#1A1A1A]"
+              title="Attach screenshot (drop or paste also works)"
+            >
+              <PaperClipIcon className="size-3" />
+            </button>
+          )}
           {onPromote && (
             <button
               type="button"
@@ -156,6 +241,18 @@ export function TicketCard({
           )}
         </div>
       )}
+
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={(e) => {
+          ingest(filterImages(e.target.files));
+          e.target.value = "";
+        }}
+      />
 
       {killing && (
         <div className="mt-2 flex items-center gap-1">
