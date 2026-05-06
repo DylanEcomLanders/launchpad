@@ -14,7 +14,6 @@ import {
 import {
   type ServiceOption,
   type ServiceMode,
-  type ClientTier,
   serviceCategories,
   retainerBuildDiscount,
   getPrice,
@@ -55,9 +54,6 @@ export function ProposalBuilder({
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
-  // Resolve tier — default to 1 for legacy proposals without tier
-  const tier: ClientTier = (proposal.tier ?? 1) as ClientTier;
-
   // Split services into main and add-ons
   const mainServices = services.filter((s) => !s.isAddOn);
   const addOnServices = services.filter((s) => s.isAddOn);
@@ -97,7 +93,7 @@ export function ProposalBuilder({
     return Object.entries(selections).map(([id, sel]) => {
       const service = services.find((s) => s.id === id)!;
       const pricing = service.pricing[sel.mode];
-      const tierPrice = pricing ? getPrice(pricing, tier) : null;
+      const tierPrice = pricing ? getPrice(pricing) : null;
       let baseAmount = tierPrice?.amount ?? 0;
 
       // Apply volume discounts for per-unit services
@@ -118,7 +114,7 @@ export function ProposalBuilder({
       const baseLineTotal = (tierPrice?.amount ?? 0) * sel.quantity; // always use original base for savings display
       return { service, sel, lineTotal, baseLineTotal, discount };
     });
-  }, [selections, services, tier, activeRetainerDiscount]);
+  }, [selections, services, activeRetainerDiscount]);
 
   const totalPence = selectedItems.reduce((sum, i) => sum + i.lineTotal, 0);
   const hasRetainer = selectedItems.some((i) => i.sel.mode === "retainer");
@@ -171,7 +167,6 @@ export function ProposalBuilder({
         proposalToken: proposal.token,
         clientName: proposal.client_name,
         clientEmail: clientEmail.trim() || undefined,
-        tier,
       };
 
       const res = await fetch("/api/proposals/checkout", {
@@ -254,7 +249,6 @@ export function ProposalBuilder({
                   <ServiceCard
                     key={service.id}
                     service={service}
-                    tier={tier}
                     buildDiscount={
                       service.category === "builds"
                         ? activeRetainerDiscount
@@ -285,7 +279,6 @@ export function ProposalBuilder({
                   <ServiceCard
                     key={service.id}
                     service={service}
-                    tier={tier}
                     buildDiscount={0}
                     selection={selections[service.id]}
                     onToggle={() => toggleService(service)}
@@ -429,7 +422,6 @@ export function ProposalBuilder({
 
 function ServiceCard({
   service,
-  tier,
   buildDiscount,
   selection,
   onToggle,
@@ -437,7 +429,6 @@ function ServiceCard({
   onSetQuantity,
 }: {
   service: ServiceOption;
-  tier: ClientTier;
   buildDiscount: number;
   selection?: Selection;
   onToggle: () => void;
@@ -447,7 +438,7 @@ function ServiceCard({
   const isSelected = !!selection;
   const activeMode = selection?.mode ?? service.modes[0];
   const pricing = service.pricing[activeMode];
-  const tierPrice = pricing ? getPrice(pricing, tier) : null;
+  const tierPrice = pricing ? getPrice(pricing) : null;
   const hasBothModes = service.modes.length > 1;
 
   // Discount
