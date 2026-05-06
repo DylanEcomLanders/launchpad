@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import Whop from "@whop/sdk";
 import { getServiceById, getPrice, getUnitPriceForQuantity, retainerBuildDiscount } from "@/data/services";
-import type { ServiceMode, ClientTier } from "@/data/services";
+import type { ServiceMode } from "@/data/services";
 
 // ── Create Whop Checkout from proposal selections ───────────────
 // Builds a single checkout configuration with an inline plan whose
@@ -32,7 +32,6 @@ export async function POST(request: Request) {
     proposalToken: string;
     clientName: string;
     clientEmail?: string;
-    tier?: number;
   };
 
   try {
@@ -45,7 +44,6 @@ export async function POST(request: Request) {
   }
 
   const { selections, proposalToken, clientName, clientEmail } = body;
-  const tier: ClientTier = body.tier === 2 ? 2 : 1;
 
   if (!selections?.length || !proposalToken || !clientName) {
     return NextResponse.json(
@@ -78,7 +76,7 @@ export async function POST(request: Request) {
     const pricing = service.pricing[sel.mode];
     if (!pricing) continue;
 
-    const tierPrice = getPrice(pricing, tier);
+    const tierPrice = getPrice(pricing);
     let amountPence = tierPrice.amount;
 
     // Apply volume discounts for per-unit services
@@ -140,7 +138,6 @@ export async function POST(request: Request) {
         proposal_token: proposalToken,
         client_name: clientName,
         client_email: clientEmail || "",
-        pricing_tier: String(tier),
         line_items: JSON.stringify(
           lineItems.map((li) => ({
             title: li.title,
