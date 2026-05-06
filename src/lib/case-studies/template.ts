@@ -54,6 +54,7 @@ export function makeEmptyCaseStudy(slug: string): CaseStudy {
       published: false,
       brandColor: "#E04A2F",     // default coral accent
     },
+    extraBlocks: [],
     created_at: now,
     updated_at: now,
   };
@@ -88,6 +89,7 @@ export function duplicateCaseStudy(source: CaseStudy, newSlug: string): CaseStud
       tests: source.results.tests.map((t) => ({ ...t, id: genId() })),
     },
     compoundedResults: source.compoundedResults.map((c) => ({ ...c, id: genId() })),
+    extraBlocks: source.extraBlocks?.map((b) => ({ ...b, id: genId() })) ?? [],
     settings: {
       ...source.settings,
       published: false,

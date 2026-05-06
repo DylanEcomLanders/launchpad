@@ -13,6 +13,7 @@ import { AnimatedCounter } from "@/components/case-studies/public/animated-count
 import { MotionSection, MotionItem } from "@/components/case-studies/public/motion-section";
 import { PageViewer } from "@/components/case-studies/public/page-viewer";
 import { ScreenshotGrid } from "@/components/case-studies/screenshot-grid";
+import { ExtraBlocks } from "@/components/case-studies/extra-blocks-render";
 
 export const revalidate = 0;
 export const dynamic = "force-dynamic";
@@ -143,6 +144,8 @@ function CaseStudyRender({
         </div>
       </section>
 
+      <ExtraBlocks anchor="hero" blocks={study.extraBlocks} />
+
       {/* ── 4-stat row ───────────────────────── */}
       {study.headlineStats.length > 0 && (
         <section className="px-6 md:px-10 pb-10">
@@ -155,6 +158,8 @@ function CaseStudyRender({
           </div>
         </section>
       )}
+
+      <ExtraBlocks anchor="stats" blocks={study.extraBlocks} />
 
       {/* ── Meta row ─────────────────────────── */}
       <MotionSection className="px-6 md:px-10 pb-14">
@@ -221,6 +226,8 @@ function CaseStudyRender({
         );
       })()}
 
+      <ExtraBlocks anchor="screenshots" blocks={study.extraBlocks} />
+
       {/* ── The Problem ──────────────────────── */}
       {(study.challenge.headline || study.challenge.prose) && (
         <MotionSection className="px-6 md:px-10 py-16 border-t border-[#EDEDEF]">
@@ -259,6 +266,8 @@ function CaseStudyRender({
           </div>
         </MotionSection>
       )}
+
+      <ExtraBlocks anchor="problem" blocks={study.extraBlocks} />
 
       {/* ── The Solution ─────────────────────── */}
       {(study.approach.headline || study.approach.cards.length > 0) && (
@@ -303,6 +312,8 @@ function CaseStudyRender({
         </MotionSection>
       )}
 
+      <ExtraBlocks anchor="solution" blocks={study.extraBlocks} />
+
       {/* ── The Design ───────────────────────── */}
       {(study.designs.headline ||
         study.designs.desktopSlices.length > 0 ||
@@ -337,6 +348,8 @@ function CaseStudyRender({
         </MotionSection>
       )}
 
+      <ExtraBlocks anchor="design" blocks={study.extraBlocks} />
+
       {/* ── The Full Results ─────────────────── */}
       {study.compoundedResults.length > 0 && (
         <MotionSection className="px-6 md:px-10 py-16 border-t border-[#EDEDEF]">
@@ -355,6 +368,8 @@ function CaseStudyRender({
           </div>
         </MotionSection>
       )}
+
+      <ExtraBlocks anchor="results" blocks={study.extraBlocks} />
 
       {/* ── Testimonial + CTA ────────────────── */}
       {/* Two layouts: testimonial present → 2-up cards (testimonial left,

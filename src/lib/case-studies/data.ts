@@ -61,6 +61,7 @@ function normalize(raw: unknown): CaseStudy {
       desktopSlices: c.designs?.desktopSlices ?? [],
       mobileSlices: c.designs?.mobileSlices ?? [],
     },
+    extraBlocks: c.extraBlocks ?? [],
   };
 }
 

@@ -179,6 +179,70 @@ export interface CaseStudySettings {
   publishedAt?: string;
 }
 
+/* ── Extra blocks ──
+ * Inserted between fixed spine sections (Hero → Screenshots → Stats →
+ * Problem → Solution → Design → Results → Testimonial+CTA → Tech →
+ * Related). The narrative spine stays in order; extra blocks fill the
+ * gaps when a case study needs more proof, prose, or a second collage.
+ *
+ * Each block is anchored to "after <section>". Within the same anchor,
+ * `order` decides vertical sequence (drag-to-reorder in the editor). */
+export type ExtraBlockAnchor =
+  | "hero"          // after the hero section
+  | "screenshots"   // after the meta + screenshot row
+  | "stats"         // after the 4 KPI cards
+  | "problem"       // after The Problem
+  | "solution"      // after The Solution
+  | "design"        // after The Design
+  | "results";      // after Compounded Results (before Testimonial+CTA)
+
+export const EXTRA_BLOCK_ANCHORS: { id: ExtraBlockAnchor; label: string }[] = [
+  { id: "hero",        label: "After hero" },
+  { id: "screenshots", label: "After screenshot row" },
+  { id: "stats",       label: "After headline stats" },
+  { id: "problem",     label: "After The Problem" },
+  { id: "solution",    label: "After The Solution" },
+  { id: "design",      label: "After The Design" },
+  { id: "results",     label: "After the Compounded Results" },
+];
+
+export type ExtraBlockType = "screenshot-collage" | "prose";
+
+export const EXTRA_BLOCK_TYPES: { id: ExtraBlockType; label: string; description: string }[] = [
+  {
+    id: "screenshot-collage",
+    label: "Screenshot collage",
+    description: "Another image row — picks a layout (1 / 2 / 3 / wide-stack / stack-wide), uploads slot images. Same renderer as the main screenshot row.",
+  },
+  {
+    id: "prose",
+    label: "Prose block",
+    description: "Optional headline + a body paragraph. Use it to insert commentary or tie sections together.",
+  },
+];
+
+interface ExtraBlockBase {
+  id: string;
+  anchor: ExtraBlockAnchor;
+  /** Position within the same anchor — lower numbers render first. */
+  order: number;
+}
+
+export interface ScreenshotCollageBlock extends ExtraBlockBase {
+  type: "screenshot-collage";
+  headline?: string;          // optional H3 above the collage
+  screenshots: CaseStudyImage[];
+  layout?: ScreenshotLayout;
+}
+
+export interface ProseBlock extends ExtraBlockBase {
+  type: "prose";
+  headline?: string;
+  body: string;
+}
+
+export type ExtraBlock = ScreenshotCollageBlock | ProseBlock;
+
 export interface CaseStudy {
   id: string;
   slug: string;
@@ -196,6 +260,10 @@ export interface CaseStudy {
   relatedCaseStudyIds: string[];
   cta: CtaBlock;
   settings: CaseStudySettings;
+  /** Optional extra blocks slotted between fixed spine sections. Each
+   * block carries its anchor + order; the public page renders them
+   * after their named section in order. Empty/undefined = pure spine. */
+  extraBlocks?: ExtraBlock[];
   created_at: string;
   updated_at: string;
 }

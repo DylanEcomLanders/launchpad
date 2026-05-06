@@ -39,6 +39,7 @@ import { HeadlineStatCard } from "@/components/case-studies/editor/headline-stat
 import { SolutionCardEditor } from "@/components/case-studies/editor/solution-card-editor";
 import { ComparisonRowEditor } from "@/components/case-studies/editor/comparison-row-editor";
 import { FigmaSyncForm } from "@/components/case-studies/editor/figma-sync-form";
+import { ExtraBlocksEditor } from "@/components/case-studies/editor/extra-blocks-editor";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
@@ -1026,6 +1027,22 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                 </div>
               </div>
             </div>
+          </EditorSection>
+
+          {/* ── Extra blocks ─────────────────── */}
+          <EditorSection
+            title="Extra blocks"
+            description="Slot extra screenshot collages or prose between the fixed spine sections. Drag within an anchor to reorder."
+            badge={study.extraBlocks && study.extraBlocks.length > 0 ? `${study.extraBlocks.length}` : undefined}
+            defaultOpen={false}
+          >
+            <ExtraBlocksEditor
+              slug={study.slug}
+              extraBlocks={study.extraBlocks || []}
+              onChange={(next) =>
+                updateStudy((prev) => ({ ...prev, extraBlocks: next }))
+              }
+            />
           </EditorSection>
 
           {/* ── Tech stack ────────────────────── */}
