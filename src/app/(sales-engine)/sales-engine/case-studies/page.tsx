@@ -99,17 +99,25 @@ export default function CaseStudiesIndex() {
             Editorial sales pages with structured proof artifacts.
           </p>
         </div>
-        <button
-          onClick={() => {
-            setNewSlug("");
-            setNewName("");
-            setError(null);
-            setModalOpen(true);
-          }}
-          className="px-4 py-2 bg-[#1B1B1B] text-white text-sm font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors"
-        >
-          New case study
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/sales-engine/case-studies/showcase-settings"
+            className="px-4 py-2 border border-[#E5E5EA] text-[#1B1B1B] text-sm font-semibold rounded-lg hover:bg-[#F7F8FA] transition-colors"
+          >
+            Showcase page
+          </Link>
+          <button
+            onClick={() => {
+              setNewSlug("");
+              setNewName("");
+              setError(null);
+              setModalOpen(true);
+            }}
+            className="px-4 py-2 bg-[#1B1B1B] text-white text-sm font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors"
+          >
+            New case study
+          </button>
+        </div>
       </div>
 
       {loading ? (

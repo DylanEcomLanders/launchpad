@@ -10,6 +10,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { getPublishedCaseStudies } from "@/lib/case-studies/data";
+import { getShowcaseSettings } from "@/lib/case-studies/showcase-settings";
 import type { CaseStudy } from "@/lib/case-studies/types";
 import { PROJECT_TYPE_LABELS } from "@/lib/case-studies/types";
 
@@ -22,7 +23,10 @@ export const metadata: Metadata = {
 };
 
 export default async function CaseStudiesIndexPage() {
-  const studies = await getPublishedCaseStudies();
+  const [studies, settings] = await Promise.all([
+    getPublishedCaseStudies(),
+    getShowcaseSettings(),
+  ]);
   // Newest first by updated_at (falls back to created_at).
   const sorted = [...studies].sort((a, b) => {
     const ta = new Date(a.updated_at || a.created_at).getTime();
@@ -39,10 +43,10 @@ export default async function CaseStudiesIndexPage() {
             <Logo height={22} />
           </Link>
           <Link
-            href="/audit"
+            href={settings.headerCtaHref}
             className="text-xs md:text-sm font-semibold px-4 py-2 bg-[#1B1B1B] text-white rounded-full hover:bg-[#2D2D2D] transition-colors"
           >
-            Free audit
+            {settings.headerCtaLabel}
           </Link>
         </div>
       </header>
@@ -50,15 +54,13 @@ export default async function CaseStudiesIndexPage() {
       {/* Hero */}
       <section className="max-w-7xl mx-auto px-6 md:px-10 pt-12 md:pt-16 pb-10">
         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7A7A7A] mb-5">
-          Case studies
+          {settings.eyebrow}
         </p>
         <h1 className="text-4xl md:text-5xl lg:text-[56px] font-semibold tracking-tight leading-[1.05] max-w-3xl">
-          Conversion engine in action.
+          {settings.headline}
         </h1>
-        <p className="text-[#5A5A5A] text-base md:text-lg mt-5 max-w-2xl leading-relaxed">
-          Real brands, real numbers. Each study walks through the funnel we inherited, the
-          system we shipped, and the compounded outcome — MRR, AOV, conversion rate, the
-          lot.
+        <p className="text-[#5A5A5A] text-base md:text-lg mt-5 max-w-2xl leading-relaxed whitespace-pre-line">
+          {settings.subhead}
         </p>
       </section>
 
@@ -86,29 +88,32 @@ export default async function CaseStudiesIndexPage() {
                 Ready to start?
               </p>
               <h2 className="text-2xl md:text-3xl font-semibold tracking-tight leading-[1.15]">
-                Want to see the same play run on your funnel?
+                {settings.closingHeadline}
               </h2>
-              <p className="text-white/70 text-sm md:text-base mt-3 max-w-xl leading-relaxed">
-                Get a free 15-min audit — we&apos;ll mark the leaks on a Loom and tell you
-                whether we can help.
-              </p>
+              {settings.closingSubhead && (
+                <p className="text-white/70 text-sm md:text-base mt-3 max-w-xl leading-relaxed whitespace-pre-line">
+                  {settings.closingSubhead}
+                </p>
+              )}
             </div>
             <div className="flex flex-col gap-2 md:flex-shrink-0 md:min-w-[260px]">
               <Link
-                href="/audit"
+                href={settings.primaryCtaHref}
                 className="flex items-center justify-center px-5 py-3 bg-white text-[#1B1B1B] text-sm font-semibold rounded-lg hover:bg-[#F3F3F5] transition-colors whitespace-nowrap"
               >
-                Get a free audit
+                {settings.primaryCtaLabel}
                 <span className="ml-2">↗</span>
               </Link>
-              <Link
-                href="https://cal.com/dylanevans"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center px-5 py-3 border border-white/20 text-white text-sm font-semibold rounded-lg hover:bg-white/5 transition-colors whitespace-nowrap"
-              >
-                Book a call
-              </Link>
+              {settings.secondaryCtaLabel && settings.secondaryCtaHref && (
+                <Link
+                  href={settings.secondaryCtaHref}
+                  target={settings.secondaryCtaHref.startsWith("http") ? "_blank" : undefined}
+                  rel={settings.secondaryCtaHref.startsWith("http") ? "noopener noreferrer" : undefined}
+                  className="flex items-center justify-center px-5 py-3 border border-white/20 text-white text-sm font-semibold rounded-lg hover:bg-white/5 transition-colors whitespace-nowrap"
+                >
+                  {settings.secondaryCtaLabel}
+                </Link>
+              )}
             </div>
           </div>
         </div>
