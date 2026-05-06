@@ -37,6 +37,16 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-58",
+    date: "6 May 2026",
+    version: "0.36.4",
+    title: "Case studies — screenshot row layouts",
+    changes: [
+      { type: "added", text: "Five screenshot row layout options on case studies — 1 hero, 2 side-by-side, 3 equal, 1 wide + 2 stack, 2 stack + 1 wide. Visual picker with mini SVG diagrams sits above the slot uploads in the editor, and both editor and public render share a single grid component so the live preview matches the published page exactly. Slot count auto-trims when switching to a smaller layout" },
+      { type: "fixed", text: "Selected screenshot layout reverted to the 3-equal default after reload because the case-study data normaliser rebuilt the results object with only tests + screenshots, silently dropping screenshotLayout on every load. Now persisted through the read path so a chosen layout sticks across reloads and renders correctly on the public page" },
+    ],
+  },
+  {
     id: "cl-57",
     date: "5 May 2026",
     version: "0.36.3",

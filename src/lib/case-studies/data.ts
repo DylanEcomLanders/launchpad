@@ -53,6 +53,7 @@ function normalize(raw: unknown): CaseStudy {
     results: {
       tests: c.results?.tests ?? [],
       screenshots: c.results?.screenshots ?? [],
+      screenshotLayout: c.results?.screenshotLayout,
     },
     designs: {
       ...(c.designs as CaseStudy["designs"]),
