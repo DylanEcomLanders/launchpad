@@ -9,37 +9,20 @@ import {
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 import {
   services as allServices,
-  serviceCategories,
   getPrice,
   formatGBP,
-  type ClientTier,
 } from "@/data/services";
 
 const services = allServices.filter((s) => s.id !== "test-checkout");
 
-const tiers: { tier: ClientTier; label: string; slug: string; description: string }[] = [
-  {
-    tier: 1,
-    label: "Tier 1",
-    slug: "tier-1",
-    description: "Standard pricing for smaller brands and new clients",
-  },
-  {
-    tier: 2,
-    label: "Tier 2",
-    slug: "tier-2",
-    description: "Premium pricing for established brands and larger projects",
-  },
-];
-
 export default function PriceListsPage() {
-  const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
-  const copyLink = (slug: string) => {
-    const url = `${window.location.origin}/pricing/${slug}`;
+  const copyLink = () => {
+    const url = `${window.location.origin}/pricing`;
     navigator.clipboard.writeText(url);
-    setCopiedSlug(slug);
-    setTimeout(() => setCopiedSlug(null), 2000);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -49,99 +32,88 @@ export default function PriceListsPage() {
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
-            Price Lists
+            Price List
           </h1>
           <p className="text-[#7A7A7A]">
-            Shareable pricing pages for clients. Each tier has its own link.
+            Shareable pricing page for clients.
           </p>
         </div>
 
-        {/* Tier Cards */}
-        <div className="space-y-4 mb-10">
-          {tiers.map(({ tier, label, slug, description }) => {
-            const isCopied = copiedSlug === slug;
+        {/* Single share card */}
+        <div className="bg-white border border-[#E5E5EA] rounded-lg p-5 mb-10">
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-[#1B1B1B]">
+              /pricing
+            </h2>
+            <p className="text-sm text-[#7A7A7A] mt-0.5">
+              Public pricing page — services, retainer-paired discounts, and live totals.
+            </p>
+          </div>
 
-            return (
-              <div
-                key={slug}
-                className="bg-white border border-[#E5E5EA] rounded-lg p-5"
-              >
-                <div className="mb-4">
-                  <h2 className="text-lg font-semibold text-[#1B1B1B]">
-                    {label}
-                  </h2>
-                  <p className="text-sm text-[#7A7A7A] mt-0.5">
-                    {description}
-                  </p>
-                </div>
+          <div className="flex items-center gap-3 mb-4">
+            <button
+              onClick={copyLink}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors"
+            >
+              {copied ? (
+                <>
+                  <CheckIcon className="size-4" />
+                  Copied to clipboard!
+                </>
+              ) : (
+                <>
+                  <ClipboardDocumentIcon className="size-4" />
+                  Copy Share Link
+                </>
+              )}
+            </button>
+            <a
+              href="/pricing"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium border border-[#E5E5EA] rounded-lg text-[#1B1B1B] hover:bg-[#F3F3F5] transition-colors"
+            >
+              <ArrowTopRightOnSquareIcon className="size-4" />
+              Preview Page
+            </a>
+          </div>
 
-                <div className="flex items-center gap-3 mb-4">
-                  <button
-                    onClick={() => copyLink(slug)}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors"
-                  >
-                    {isCopied ? (
-                      <>
-                        <CheckIcon className="size-4" />
-                        Copied to clipboard!
-                      </>
-                    ) : (
-                      <>
-                        <ClipboardDocumentIcon className="size-4" />
-                        Copy Share Link
-                      </>
-                    )}
-                  </button>
-                  <a
-                    href={`/pricing/${slug}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium border border-[#E5E5EA] rounded-lg text-[#1B1B1B] hover:bg-[#F3F3F5] transition-colors"
-                  >
-                    <ArrowTopRightOnSquareIcon className="size-4" />
-                    Preview Page
-                  </a>
-                </div>
+          {/* Quick price overview */}
+          <div className="border-t border-[#EDEDEF] pt-3">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-2">
+              Price snapshot
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1.5">
+              {services
+                .filter((s) => !s.isAddOn)
+                .map((svc) => {
+                  const mode = svc.modes[0];
+                  const pricing = svc.pricing[mode];
+                  if (!pricing) return null;
+                  const tierPrice = getPrice(pricing);
+                  const isRecurring = !!pricing.interval;
 
-                {/* Quick price overview */}
-                <div className="border-t border-[#EDEDEF] pt-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-2">
-                    Price snapshot
-                  </p>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1.5">
-                    {services
-                      .filter((s) => !s.isAddOn)
-                      .map((svc) => {
-                        const mode = svc.modes[0];
-                        const pricing = svc.pricing[mode];
-                        if (!pricing) return null;
-                        const tierPrice = getPrice(pricing, tier);
-                        const isRecurring = !!pricing.interval;
-
-                        return (
-                          <div
-                            key={svc.id}
-                            className="flex items-baseline justify-between gap-2"
-                          >
-                            <span className="text-xs text-[#7A7A7A] truncate">
-                              {svc.name}
-                            </span>
-                            <span className="text-xs font-semibold text-[#1B1B1B] tabular-nums shrink-0">
-                              {formatGBP(tierPrice.amount)}
-                              {isRecurring && (
-                                <span className="font-normal text-[#A0A0A0]">
-                                  /mo
-                                </span>
-                              )}
-                            </span>
-                          </div>
-                        );
-                      })}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                  return (
+                    <div
+                      key={svc.id}
+                      className="flex items-baseline justify-between gap-2"
+                    >
+                      <span className="text-xs text-[#7A7A7A] truncate">
+                        {svc.name}
+                      </span>
+                      <span className="text-xs font-semibold text-[#1B1B1B] tabular-nums shrink-0">
+                        {formatGBP(tierPrice.amount)}
+                        {isRecurring && (
+                          <span className="font-normal text-[#A0A0A0]">
+                            /mo
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
         </div>
 
         {/* Add-ons summary */}
@@ -159,16 +131,12 @@ export default function PriceListsPage() {
                 const mode = svc.modes[0];
                 const pricing = svc.pricing[mode];
                 if (!pricing) return null;
-                const t1 = getPrice(pricing, 1);
-                const t2 = getPrice(pricing, 2);
+                const tierPrice = getPrice(pricing);
                 const hasUnit = svc.unitLabel && svc.minQuantity;
                 const hasVolume = svc.volumeDiscounts && svc.volumeDiscounts.length > 0;
 
                 return (
-                  <div
-                    key={svc.id}
-                    className="px-4 py-2.5"
-                  >
+                  <div key={svc.id} className="px-4 py-2.5">
                     <div className="flex items-center justify-between gap-4">
                       <span className="text-xs text-[#7A7A7A] truncate">
                         {svc.name}
@@ -178,14 +146,9 @@ export default function PriceListsPage() {
                           </span>
                         )}
                       </span>
-                      <div className="flex items-center gap-4 shrink-0">
-                        <span className="text-xs tabular-nums text-[#A0A0A0]">
-                          T1: <span className="font-semibold text-[#1B1B1B]">{t1.label}</span>
-                        </span>
-                        <span className="text-xs tabular-nums text-[#A0A0A0]">
-                          T2: <span className="font-semibold text-[#1B1B1B]">{t2.label}</span>
-                        </span>
-                      </div>
+                      <span className="text-xs tabular-nums text-[#A0A0A0]">
+                        <span className="font-semibold text-[#1B1B1B]">{tierPrice.label}</span>
+                      </span>
                     </div>
                     {hasVolume && (
                       <div className="flex items-center gap-3 mt-1 ml-0 flex-wrap">
