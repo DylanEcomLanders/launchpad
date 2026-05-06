@@ -166,37 +166,60 @@ function CaseStudyRender({
         </div>
       </MotionSection>
 
-      {/* ── Screenshot collage row — always 3 slots ── */}
-      <MotionSection className="px-6 md:px-10 pb-20">
-        <div className="max-w-[1200px] mx-auto">
-          <ScreenshotGrid
-            layout={study.results.screenshotLayout || "three"}
-            children={Array.from({
-              length: slotsForLayout(study.results.screenshotLayout || "three"),
-            }).map((_, i) => {
-              const img = study.results.screenshots[i];
-              return img ? (
-                <div
-                  key={img.filename || i}
-                  className="w-full h-full rounded-lg overflow-hidden border border-[#EDEDEF] bg-white"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={img.url}
-                    alt={img.alt || ""}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ) : (
-                <div
-                  key={`placeholder-${i}`}
-                  className="w-full h-full rounded-lg border border-[#EDEDEF] bg-[#EDEDEF]/40"
-                />
-              );
-            })}
-          />
-        </div>
-      </MotionSection>
+      {/* ── Screenshot collage row ── */}
+      {/* For single/two/three layouts the slot adapts to the image's natural
+       * aspect-ratio (so wide screenshots aren't crushed into a 4:3 box).
+       * Wide-stack and stack-wide are rigid grid compositions — those slots
+       * still use h-full + object-cover so the wide cell can span 2 rows
+       * without breaking the layout. */}
+      {(() => {
+        const layout = study.results.screenshotLayout || "three";
+        const isRigidLayout = layout === "wide-stack" || layout === "stack-wide";
+        return (
+          <MotionSection className="px-6 md:px-10 pb-20">
+            <div className="max-w-[1200px] mx-auto">
+              <ScreenshotGrid
+                layout={layout}
+                children={Array.from({
+                  length: slotsForLayout(layout),
+                }).map((_, i) => {
+                  const img = study.results.screenshots[i];
+                  if (img) {
+                    const useNaturalAspect = !isRigidLayout && img.width && img.height;
+                    return (
+                      <div
+                        key={img.filename || i}
+                        className={`w-full ${isRigidLayout ? "h-full" : ""} rounded-lg overflow-hidden border border-[#EDEDEF] bg-white`}
+                        style={
+                          useNaturalAspect
+                            ? { aspectRatio: `${img.width} / ${img.height}` }
+                            : !isRigidLayout
+                              ? { aspectRatio: "4 / 3" }
+                              : undefined
+                        }
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={img.url}
+                          alt={img.alt || ""}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    );
+                  }
+                  return (
+                    <div
+                      key={`placeholder-${i}`}
+                      className={`w-full ${isRigidLayout ? "h-full" : ""} rounded-lg border border-[#EDEDEF] bg-[#EDEDEF]/40`}
+                      style={!isRigidLayout ? { aspectRatio: "4 / 3" } : undefined}
+                    />
+                  );
+                })}
+              />
+            </div>
+          </MotionSection>
+        );
+      })()}
 
       {/* ── The Problem ──────────────────────── */}
       {(study.challenge.headline || study.challenge.prose) && (

@@ -25,26 +25,25 @@ export function ScreenshotGrid({ layout, children }: Props) {
 
   switch (layout) {
     case "single":
-      return (
-        <div className="grid grid-cols-1 gap-3">
-          <div className="aspect-[16/9]">{slots[0]}</div>
-        </div>
-      );
+      // Flexible layout — slot dictates its own aspect (from image dims).
+      return <div className="grid grid-cols-1 gap-3">{slots[0]}</div>;
 
     case "two":
+      // Flexible layout — slots align to top so unequal natural heights
+      // sit cleanly instead of stretching to a forced shared height.
       return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="aspect-[4/3]">{slots[0]}</div>
-          <div className="aspect-[4/3]">{slots[1]}</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:items-start">
+          {slots[0]}
+          {slots[1]}
         </div>
       );
 
     case "three":
       return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div className="aspect-[4/3]">{slots[0]}</div>
-          <div className="aspect-[4/3]">{slots[1]}</div>
-          <div className="aspect-[4/3]">{slots[2]}</div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:items-start">
+          {slots[0]}
+          {slots[1]}
+          {slots[2]}
         </div>
       );
 
