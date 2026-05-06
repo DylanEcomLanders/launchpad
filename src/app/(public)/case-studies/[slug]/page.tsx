@@ -357,62 +357,83 @@ function CaseStudyRender({
       )}
 
       {/* ── Testimonial + CTA ────────────────── */}
+      {/* Two layouts: testimonial present → 2-up cards (testimonial left,
+       * vertical CTA card right). Testimonial missing → CTA spans full
+       * width as a horizontal bar (headline left, buttons right) instead
+       * of leaving the right half empty. */}
       <MotionSection className="px-6 md:px-10 py-16 border-t border-[#EDEDEF]">
-        <div className="max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-          {study.testimonial?.quote ? (
-            <div className="bg-white border border-[#EDEDEF] rounded-xl p-8 shadow-[var(--shadow-soft)]">
-              <Eyebrow color={sectionGrey}>The Client&apos;s Thoughts</Eyebrow>
-              <blockquote className="mt-5 text-lg md:text-xl font-semibold tracking-tight leading-snug text-[#1B1B1B]">
-                &ldquo;{study.testimonial.quote}&rdquo;
-              </blockquote>
-              <div className="flex items-center gap-3 mt-6">
-                {study.testimonial.headshot?.url && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={study.testimonial.headshot.url}
-                    alt={study.testimonial.name}
-                    className="size-10 rounded-full object-cover"
-                  />
-                )}
-                <div>
-                  <div className="text-sm font-semibold text-[#1B1B1B]">{study.testimonial.name}</div>
-                  <div className="text-xs text-[#7A7A7A]">{study.testimonial.role}</div>
+        {(() => {
+          const hasTestimonial = !!study.testimonial?.quote;
+          return (
+            <div
+              className={`max-w-[1200px] mx-auto ${
+                hasTestimonial ? "grid grid-cols-1 md:grid-cols-2 gap-6" : ""
+              }`}
+            >
+              {hasTestimonial && study.testimonial && (
+                <div className="bg-white border border-[#EDEDEF] rounded-xl p-8 shadow-[var(--shadow-soft)]">
+                  <Eyebrow color={sectionGrey}>The Client&apos;s Thoughts</Eyebrow>
+                  <blockquote className="mt-5 text-lg md:text-xl font-semibold tracking-tight leading-snug text-[#1B1B1B]">
+                    &ldquo;{study.testimonial.quote}&rdquo;
+                  </blockquote>
+                  <div className="flex items-center gap-3 mt-6">
+                    {study.testimonial.headshot?.url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={study.testimonial.headshot.url}
+                        alt={study.testimonial.name}
+                        className="size-10 rounded-full object-cover"
+                      />
+                    )}
+                    <div>
+                      <div className="text-sm font-semibold text-[#1B1B1B]">{study.testimonial.name}</div>
+                      <div className="text-xs text-[#7A7A7A]">{study.testimonial.role}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div
+                className={`bg-[#1B1B1B] text-white rounded-xl p-8 ${
+                  hasTestimonial
+                    ? "flex flex-col justify-between min-h-[260px]"
+                    : "flex flex-col md:flex-row md:items-center md:justify-between gap-6 md:gap-10"
+                }`}
+              >
+                <div className={hasTestimonial ? "" : "md:flex-1"}>
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/60">
+                    Ready to start?
+                  </div>
+                  <h3 className="mt-4 text-2xl md:text-3xl font-semibold tracking-tight leading-[1.15]">
+                    {study.cta.headline}
+                  </h3>
+                </div>
+                <div
+                  className={`flex flex-col gap-2 ${
+                    hasTestimonial ? "mt-6" : "md:flex-row md:flex-shrink-0 md:min-w-[280px]"
+                  }`}
+                >
+                  <Link
+                    href={study.cta.buttonHref || "/audit"}
+                    className="flex items-center justify-center px-4 py-3 bg-white text-[#1B1B1B] text-sm font-semibold rounded-lg hover:bg-[#F3F3F5] transition-colors whitespace-nowrap"
+                  >
+                    {study.cta.buttonLabel || "Book a call"}
+                    <span className="ml-2">↗</span>
+                  </Link>
+                  {study.cta.secondaryLabel && study.cta.secondaryHref && (
+                    <Link
+                      href={study.cta.secondaryHref}
+                      className="flex items-center justify-center px-4 py-3 bg-[#3FB95F] hover:bg-[#34a04f] text-white text-sm font-semibold rounded-lg transition-colors whitespace-nowrap"
+                    >
+                      {study.cta.secondaryLabel}
+                      <svg className="ml-2 size-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>
-          ) : (
-            <div />
-          )}
-
-          <div className="bg-[#1B1B1B] text-white rounded-xl p-8 flex flex-col justify-between min-h-[260px]">
-            <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/60">
-                Ready to start?
-              </div>
-              <h3 className="mt-4 text-2xl md:text-3xl font-semibold tracking-tight leading-[1.15]">
-                {study.cta.headline}
-              </h3>
-            </div>
-            <div className="mt-6 flex flex-col gap-2">
-              <Link
-                href={study.cta.buttonHref || "/audit"}
-                className="flex items-center justify-center px-4 py-3 bg-white text-[#1B1B1B] text-sm font-semibold rounded-lg hover:bg-[#F3F3F5] transition-colors"
-              >
-                {study.cta.buttonLabel || "Book a call"}
-                <span className="ml-2">↗</span>
-              </Link>
-              {study.cta.secondaryLabel && study.cta.secondaryHref && (
-                <Link
-                  href={study.cta.secondaryHref}
-                  className="flex items-center justify-center px-4 py-3 bg-[#3FB95F] hover:bg-[#34a04f] text-white text-sm font-semibold rounded-lg transition-colors"
-                >
-                  {study.cta.secondaryLabel}
-                  <svg className="ml-2 size-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
+          );
+        })()}
       </MotionSection>
 
       {/* ── Tech stack (if any) ──────────────── */}
