@@ -60,7 +60,7 @@ const toolkitStages: ToolkitStage[] = [
       { title: "Case studies", subtitle: "Results & outcomes", href: "/sales-engine/case-studies", icon: TrophyIcon },
       { title: "Price list", subtitle: "Surfaces & retainers", href: "/internal/pricing", icon: TagIcon },
       { title: "Sales deck", subtitle: "Conversion engine", href: "/sales-deck", icon: PresentationChartLineIcon },
-      { title: "Cheat sheet", subtitle: "Conversion engine", href: "/internal/cheatsheet", icon: BookmarkIcon },
+      { title: "Cheat sheet", subtitle: "Conversion engine", href: "/internal/cheatsheet/conversion-engine", icon: BookmarkIcon },
     ],
   },
   {

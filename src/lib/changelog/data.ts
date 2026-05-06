@@ -49,6 +49,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "fixed", text: "Selected screenshot layout reverted to the 3-equal default after reload because the case-study data normaliser rebuilt the results object with only tests + screenshots, silently dropping screenshotLayout on every load. Now persisted through the read path so a chosen layout sticks across reloads and renders correctly on the public page" },
       { type: "fixed", text: "Case study Design syncs hitting Figma's \"Render timeout, try requesting fewer or smaller images\" error on heavy frames. Sync now tries @2x first and falls back to @1x on render timeout (with a brief gap between attempts to give Figma's render farm room); other errors (bad token, missing node) still fail fast" },
       { type: "fixed", text: "Four-file ClientTier cleanup sweep — the type was removed from @/data/services when tiers were retired, but four sites still imported it and broke Vercel builds one by one across the day: tools/price-lists page, proposal-builder page, /api/proposals/checkout route, and the dead /pricing/[tier] route (now removed entirely). Local working trees already had the cleanups; this committed and pushed them" },
+      { type: "fixed", text: "Dashboard \"Cheat sheet\" tile under Sell was pointing at /internal/cheatsheet (the Ecomlanders operating cheat sheet) despite its \"Conversion engine\" subtitle. Repointed at /internal/cheatsheet/conversion-engine so the link matches the label" },
     ],
   },
   {
