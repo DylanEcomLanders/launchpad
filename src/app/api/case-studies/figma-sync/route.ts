@@ -45,20 +45,46 @@ async function figmaFetch(path: string, token: string) {
   return res.json();
 }
 
+/* Figma's render endpoint times out on heavy frames (large canvases,
+ * lots of effects). Strategy: try @2x first for sharpness, fall back to
+ * @1x if Figma returns a render timeout. Wait briefly between attempts
+ * to give the render farm room to recover. */
 async function fetchFigmaFrameImage(
   fileKey: string,
   nodeId: string,
   token: string,
 ): Promise<Buffer> {
-  const data = await figmaFetch(
-    `/images/${fileKey}?ids=${encodeURIComponent(nodeId)}&scale=2&format=png`,
-    token,
-  );
-  const imageUrl = data.images?.[nodeId];
-  if (!imageUrl) throw new Error(`Figma returned no image for node ${nodeId}`);
-  const imgRes = await fetch(imageUrl);
-  if (!imgRes.ok) throw new Error(`Failed to download Figma image: ${imgRes.status}`);
-  return Buffer.from(await imgRes.arrayBuffer());
+  const scales = [2, 1, 1] as const; // 2x → 1x → 1x retry
+  let lastErr: unknown = null;
+  for (let attempt = 0; attempt < scales.length; attempt++) {
+    const scale = scales[attempt];
+    try {
+      const data = await figmaFetch(
+        `/images/${fileKey}?ids=${encodeURIComponent(nodeId)}&scale=${scale}&format=png`,
+        token,
+      );
+      const imageUrl = data.images?.[nodeId];
+      if (!imageUrl) {
+        throw new Error(`Figma returned no image for node ${nodeId}`);
+      }
+      const imgRes = await fetch(imageUrl);
+      if (!imgRes.ok) {
+        throw new Error(`Failed to download Figma image: ${imgRes.status}`);
+      }
+      return Buffer.from(await imgRes.arrayBuffer());
+    } catch (err) {
+      lastErr = err;
+      const msg = err instanceof Error ? err.message : String(err);
+      // Only retry on render timeout — other errors (bad token, missing
+      // node) won't get better with another shot.
+      if (!msg.toLowerCase().includes("render timeout")) throw err;
+      // Brief wait before the next attempt
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+  }
+  throw lastErr instanceof Error
+    ? lastErr
+    : new Error("Figma render failed after retries");
 }
 
 /* Remove existing design-{variant}-*.avif files before re-uploading so a
