@@ -21,7 +21,10 @@ import {
   type PullQuote,
   TECH_STACK_OPTIONS,
   PROJECT_TYPE_LABELS,
+  slotsForLayout,
 } from "@/lib/case-studies/types";
+import { ScreenshotLayoutPicker } from "@/components/case-studies/screenshot-layout-picker";
+import { ScreenshotGrid } from "@/components/case-studies/screenshot-grid";
 import {
   getCaseStudy,
   getCaseStudies,
@@ -457,36 +460,70 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
           {/* ── Screenshot row ────────────────── */}
           <EditorSection
             title="Screenshot row"
-            description="3 screenshots that sit under the meta row (Brand · Niche · Engagement · Services)"
-            badge={
-              study.results.screenshots.length > 0
-                ? `${study.results.screenshots.length}/3`
-                : undefined
-            }
+            description="Screenshots that sit under the meta row (Brand · Niche · Engagement · Services). Pick a layout, then fill the slots."
+            badge={(() => {
+              const layout = study.results.screenshotLayout || "three";
+              const slots = slotsForLayout(layout);
+              const filled = study.results.screenshots
+                .slice(0, slots)
+                .filter(Boolean).length;
+              return filled > 0 ? `${filled}/${slots}` : undefined;
+            })()}
           >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <ImageUpload
-                  key={i}
-                  slug={study.slug}
-                  aspect="auto"
-                  value={study.results.screenshots[i]}
+            <div className="space-y-4">
+              <div>
+                <label className={labelClass}>Layout</label>
+                <ScreenshotLayoutPicker
+                  value={study.results.screenshotLayout || "three"}
                   onChange={(next) =>
                     updateStudy((prev) => {
-                      const screenshots = [...prev.results.screenshots];
-                      if (next) {
-                        screenshots[i] = next;
-                      } else {
-                        screenshots.splice(i, 1);
-                      }
+                      const slots = slotsForLayout(next);
+                      // Trim screenshots if the new layout has fewer slots
+                      const screenshots = prev.results.screenshots.slice(0, slots);
                       return {
                         ...prev,
-                        results: { ...prev.results, screenshots },
+                        results: {
+                          ...prev.results,
+                          screenshotLayout: next,
+                          screenshots,
+                        },
                       };
                     })
                   }
                 />
-              ))}
+              </div>
+
+              {(() => {
+                const layout = study.results.screenshotLayout || "three";
+                const slots = slotsForLayout(layout);
+                return (
+                  <ScreenshotGrid
+                    layout={layout}
+                    children={Array.from({ length: slots }).map((_, i) => (
+                      <ImageUpload
+                        key={i}
+                        slug={study.slug}
+                        aspect="auto"
+                        value={study.results.screenshots[i]}
+                        onChange={(next) =>
+                          updateStudy((prev) => {
+                            const screenshots = [...prev.results.screenshots];
+                            if (next) {
+                              screenshots[i] = next;
+                            } else {
+                              screenshots.splice(i, 1);
+                            }
+                            return {
+                              ...prev,
+                              results: { ...prev.results, screenshots },
+                            };
+                          })
+                        }
+                      />
+                    ))}
+                  />
+                );
+              })()}
             </div>
           </EditorSection>
 

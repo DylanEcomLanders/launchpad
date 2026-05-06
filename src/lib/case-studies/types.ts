@@ -132,9 +132,38 @@ export interface CaseStudyApproach {
   processDiagram?: CaseStudyImage;
 }
 
+/* Layout for the screenshot row that sits under the meta strip on the
+ * public case study page. Each layout dictates the slot count + their
+ * dimensions on the public render. Defaults to "three" for backwards
+ * compatibility with case studies created before layouts existed. */
+export type ScreenshotLayout =
+  | "single"      // 1 image, full width
+  | "two"         // 2 equal side-by-side
+  | "three"       // 3 equal (default)
+  | "wide-stack"  // 1 wide left, 2 stacked right
+  | "stack-wide"; // 2 stacked left, 1 wide right
+
+export const SCREENSHOT_LAYOUTS: {
+  id: ScreenshotLayout;
+  label: string;
+  slots: number;
+}[] = [
+  { id: "single",     label: "1 hero",            slots: 1 },
+  { id: "two",        label: "2 side-by-side",    slots: 2 },
+  { id: "three",      label: "3 equal",           slots: 3 },
+  { id: "wide-stack", label: "1 wide + 2 stack",  slots: 3 },
+  { id: "stack-wide", label: "2 stack + 1 wide",  slots: 3 },
+];
+
+export function slotsForLayout(layout: ScreenshotLayout): number {
+  return SCREENSHOT_LAYOUTS.find((l) => l.id === layout)?.slots ?? 3;
+}
+
 export interface CaseStudyResults {
   tests: IntelligemsTest[];
   screenshots: CaseStudyImage[];
+  /** How the screenshots render on the public page. Defaults to "three". */
+  screenshotLayout?: ScreenshotLayout;
 }
 
 export interface CaseStudyDesigns {

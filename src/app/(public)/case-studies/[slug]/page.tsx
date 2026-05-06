@@ -8,10 +8,11 @@ import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { getCaseStudy, getCaseStudies } from "@/lib/case-studies/data";
 import { makeExampleCaseStudy } from "@/lib/case-studies/seed";
-import { type CaseStudy, type HeadlineStat, type ResultComparison } from "@/lib/case-studies/types";
+import { type CaseStudy, type HeadlineStat, type ResultComparison, slotsForLayout } from "@/lib/case-studies/types";
 import { AnimatedCounter } from "@/components/case-studies/public/animated-counter";
 import { MotionSection, MotionItem } from "@/components/case-studies/public/motion-section";
 import { PageViewer } from "@/components/case-studies/public/page-viewer";
+import { ScreenshotGrid } from "@/components/case-studies/screenshot-grid";
 
 export const revalidate = 0;
 export const dynamic = "force-dynamic";
@@ -167,28 +168,33 @@ function CaseStudyRender({
 
       {/* ── Screenshot collage row — always 3 slots ── */}
       <MotionSection className="px-6 md:px-10 pb-20">
-        <div className="max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
-          {Array.from({ length: 3 }).map((_, i) => {
-            const img = study.results.screenshots[i];
-            return img ? (
-              <div
-                key={img.filename || i}
-                className="aspect-[4/3] rounded-lg overflow-hidden border border-[#EDEDEF] bg-white"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={img.url}
-                  alt={img.alt || ""}
-                  className="w-full h-full object-cover"
+        <div className="max-w-[1200px] mx-auto">
+          <ScreenshotGrid
+            layout={study.results.screenshotLayout || "three"}
+            children={Array.from({
+              length: slotsForLayout(study.results.screenshotLayout || "three"),
+            }).map((_, i) => {
+              const img = study.results.screenshots[i];
+              return img ? (
+                <div
+                  key={img.filename || i}
+                  className="w-full h-full rounded-lg overflow-hidden border border-[#EDEDEF] bg-white"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={img.url}
+                    alt={img.alt || ""}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div
+                  key={`placeholder-${i}`}
+                  className="w-full h-full rounded-lg border border-[#EDEDEF] bg-[#EDEDEF]/40"
                 />
-              </div>
-            ) : (
-              <div
-                key={`placeholder-${i}`}
-                className="aspect-[4/3] rounded-lg border border-[#EDEDEF] bg-[#EDEDEF]/40"
-              />
-            );
-          })}
+              );
+            })}
+          />
         </div>
       </MotionSection>
 
