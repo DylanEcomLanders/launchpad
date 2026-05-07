@@ -19,6 +19,7 @@ import {
   FlagIcon,
   BookOpenIcon,
   ArrowTrendingUpIcon,
+  BuildingOffice2Icon,
 } from "@heroicons/react/24/solid";
 import { Logo, LogoMark } from "@/components/logo";
 import { AppSwitcher } from "@/components/app-switcher";
@@ -71,6 +72,7 @@ const navSections: NavSection[] = [
       { label: "Onboarding", href: "/tools/onboarding-inbox" },
       { label: "Portals", href: "/tools/client-portal" },
       { label: "Pods", href: "/pods" },
+      { label: "Pods v2", href: "/pods-v2" },
       { label: "Task Board", href: "/tools/task-board" },
     ],
   },
@@ -99,6 +101,20 @@ const navSections: NavSection[] = [
     items: [
       { label: "Ecomlanders Cheat Sheet", href: "/internal/cheatsheet" },
       { label: "Conversion Engine Sheet", href: "/internal/cheatsheet/conversion-engine" },
+    ],
+  },
+  {
+    title: "Company",
+    icon: <BuildingOffice2Icon className="size-4" />,
+    defaultOpen: false,
+    roles: ["admin"],
+    group: "main",
+    items: [
+      { label: "Overview", href: "/company" },
+      { label: "People", href: "/company/people" },
+      { label: "Org Structure", href: "/company/structure" },
+      { label: "Invoices", href: "/company/invoices" },
+      { label: "Hiring", href: "/company/hiring" },
     ],
   },
   {
