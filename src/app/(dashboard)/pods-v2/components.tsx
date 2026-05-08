@@ -13,6 +13,44 @@ import { isMonday } from "@/lib/pods-v2/calc";
 import { formatDayMonth } from "@/lib/dates";
 import { PodAvatar } from "@/lib/pods-v2/avatars/PodAvatar";
 
+/* Resize a user-picked image file to a square-friendly avatar and
+ * return a JPEG data URL. Used as a fallback when the Supabase
+ * company-avatars bucket isn't set up — keeps the upload affordance
+ * working without infra plumbing. */
+async function imageFileToDataUrl(
+  file: File,
+  maxEdgePx: number,
+  quality: number,
+): Promise<string> {
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.readAsDataURL(file);
+  });
+  // If we can't get a canvas (SSR — shouldn't happen here) or the image
+  // is small enough, just return the raw data URL.
+  if (typeof document === "undefined") return dataUrl;
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const i = new Image();
+    i.onload = () => resolve(i);
+    i.onerror = () => reject(new Error("Failed to decode image"));
+    i.src = dataUrl;
+  });
+  const longEdge = Math.max(img.width, img.height);
+  if (longEdge <= maxEdgePx) return dataUrl;
+  const scale = maxEdgePx / longEdge;
+  const w = Math.round(img.width * scale);
+  const h = Math.round(img.height * scale);
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return dataUrl;
+  ctx.drawImage(img, 0, 0, w, h);
+  return canvas.toDataURL("image/jpeg", quality);
+}
+
 const BUCKET_COLOR: Record<Bucket, string> = {
   A: "bg-emerald-50 text-emerald-700 border-emerald-200",
   B: "bg-blue-50 text-blue-700 border-blue-200",
@@ -126,14 +164,32 @@ export function MemberAvatar({
   const [uploading, setUploading] = useState(false);
 
   async function handleFile(file: File) {
+    if (!onChangeAvatar) return;
     setUploading(true);
     try {
+      // 1. Try Supabase upload (preferred — durable, shareable URL).
       const fd = new FormData();
       fd.append("file", file);
       fd.append("bucket", "company-avatars");
       const res = await fetch("/api/company/upload", { method: "POST", body: fd });
       const json = await res.json();
-      if (json.url && onChangeAvatar) onChangeAvatar(json.url);
+      if (json.url) {
+        onChangeAvatar(json.url);
+        return;
+      }
+      // 2. Fall back: downscale to a data URL so avatars work even when
+      // the Supabase bucket isn't set up. Resize to max 256px on the
+      // long edge to keep storage sane (~30-50KB per avatar).
+      const dataUrl = await imageFileToDataUrl(file, 256, 0.85);
+      onChangeAvatar(dataUrl);
+    } catch {
+      // Last-resort fallback (e.g. server error) — same as above.
+      try {
+        const dataUrl = await imageFileToDataUrl(file, 256, 0.85);
+        onChangeAvatar(dataUrl);
+      } catch {
+        alert("Couldn't upload — please try a different image (JPG/PNG/WebP under 5MB).");
+      }
     } finally {
       setUploading(false);
     }
