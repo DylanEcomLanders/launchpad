@@ -34,8 +34,10 @@ const LS_TASKS = "launchpad-pods-v2-tasks";
 const LS_SEEDED = "launchpad-pods-v2-seeded-v4";
 /* Bumped when we want every browser to wipe its old fake-seed data on
  * the next page load. Any browser without this sentinel runs the
- * one-time cleanup in ensureSeed() and then sets it. */
-const LS_CLEAN = "launchpad-pods-v2-clean-v1";
+ * one-time cleanup in ensureSeed() and then sets it. v2 — second wipe
+ * to clear test clients/projects/tasks accumulated during pre-launch
+ * iteration so every pod starts clean. */
+const LS_CLEAN = "launchpad-pods-v2-clean-v2";
 
 function uid(): string {
   return typeof crypto !== "undefined" && "randomUUID" in crypto
