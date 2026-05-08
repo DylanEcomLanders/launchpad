@@ -71,8 +71,7 @@ const navSections: NavSection[] = [
     items: [
       { label: "Onboarding", href: "/tools/onboarding-inbox" },
       { label: "Portals", href: "/tools/client-portal" },
-      { label: "Pods", href: "/pods" },
-      { label: "Pods v2", href: "/pods-v2" },
+      { label: "Pods", href: "/pods-v2" },
       { label: "Task Board", href: "/tools/task-board" },
     ],
   },

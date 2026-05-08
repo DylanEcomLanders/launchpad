@@ -70,6 +70,12 @@ export interface OnboardingSubmission {
     brand_assets_received: boolean;
     slack_channel_created: boolean;
   };
+  /* Scoped deliverables — captured during the PM phase before assignment.
+   * The assign-to-pod step reads this list and confirms before spawning
+   * paired design/dev tasks. `type` is a pods-v2 PageType string
+   * ("pdp" | "homepage" | "cart" | …); `label` is the human-friendly
+   * variant name (e.g., "Lavender oil" for one of three PDPs). */
+  deliverables?: { id: string; type: string; label: string }[];
   assigned_portal_id?: string;
   assigned_by?: string;
   assigned_at?: string;

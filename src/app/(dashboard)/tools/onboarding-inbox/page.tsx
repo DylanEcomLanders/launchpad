@@ -14,7 +14,10 @@ import {
   ChevronRightIcon,
   XMarkIcon,
   InformationCircleIcon,
+  PlusIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
+import { PAGE_LABEL, type PageType } from "@/lib/pods-v2/types";
 
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
   pending: { label: "Pending", color: "#F59E0B", bg: "#FEF3C7" },
@@ -52,11 +55,15 @@ export default function OnboardingInboxPage() {
 
   const updateSubmission = async (id: string, patch: Partial<OnboardingSubmission>) => {
     setSaving(true);
-    await onboardingStore.update(id, { ...patch, updated_at: new Date().toISOString() });
-    await load();
+    const fullPatch = { ...patch, updated_at: new Date().toISOString() };
+    /* Update local state optimistically — don't await load() which re-fetches
+     * from Supabase and clobbers any in-flight edits. The store call still
+     * persists to Supabase + localStorage in the background. */
+    setSubmissions((prev) => prev.map((s) => (s.id === id ? { ...s, ...fullPatch } : s)));
     if (selected?.id === id) {
-      setSelected((prev) => prev ? { ...prev, ...patch } : prev);
+      setSelected((prev) => (prev ? { ...prev, ...fullPatch } : prev));
     }
+    await onboardingStore.update(id, fullPatch);
     setSaving(false);
   };
 
@@ -319,6 +326,94 @@ export default function OnboardingInboxPage() {
                   placeholder="Internal notes..."
                   className="w-full text-xs px-3 py-2.5 border border-[#E8E8E8] rounded-lg focus:outline-none focus:border-[#999] placeholder:text-[#CCC] min-h-[60px] resize-y"
                 />
+              </div>
+
+              {/* Deliverables scope — captured by the PM, confirmed at assign-to-pod */}
+              <div className="mt-4 p-3 bg-white border border-[#E8E8E8] rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-semibold text-[#1A1A1A]">Deliverables scope</p>
+                  <span className="text-[10px] text-[#999]">
+                    {(selected.deliverables?.length || 0)} {(selected.deliverables?.length || 0) === 1 ? "item" : "items"}
+                  </span>
+                </div>
+                <p className="text-[10px] text-[#888] mb-3">
+                  Pages to spin up when this onboarding is assigned to a pod. Multiple of the same type are fine — give each a label.
+                </p>
+                <div className="space-y-1.5">
+                  {(selected.deliverables || []).map((d) => (
+                    <div key={d.id} className="flex items-center gap-1.5">
+                      <select
+                        value={d.type}
+                        onChange={(e) => {
+                          const newType = e.target.value;
+                          setSelected((prev) => {
+                            if (!prev) return prev;
+                            const next = (prev.deliverables || []).map((x) => x.id === d.id ? { ...x, type: newType } : x);
+                            updateSubmission(prev.id, { deliverables: next });
+                            return { ...prev, deliverables: next };
+                          });
+                        }}
+                        className="rounded-md border border-[#E8E8E8] bg-white px-2 py-1 text-[11px]"
+                      >
+                        {(Object.keys(PAGE_LABEL) as PageType[]).map((p) => (
+                          <option key={p} value={p}>
+                            {PAGE_LABEL[p]}
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        value={d.label}
+                        onChange={(e) => {
+                          const newLabel = e.target.value;
+                          setSelected((prev) => {
+                            if (!prev) return prev;
+                            const next = (prev.deliverables || []).map((x) => x.id === d.id ? { ...x, label: newLabel } : x);
+                            return { ...prev, deliverables: next };
+                          });
+                        }}
+                        onBlur={() => {
+                          setSelected((prev) => {
+                            if (prev) updateSubmission(prev.id, { deliverables: prev.deliverables });
+                            return prev;
+                          });
+                        }}
+                        placeholder="Variant label (e.g. Lavender oil)"
+                        className="flex-1 rounded-md border border-[#E8E8E8] bg-white px-2 py-1 text-[11px] placeholder:text-[#CCC]"
+                      />
+                      <button
+                        onClick={() => {
+                          setSelected((prev) => {
+                            if (!prev) return prev;
+                            const next = (prev.deliverables || []).filter((x) => x.id !== d.id);
+                            updateSubmission(prev.id, { deliverables: next });
+                            return { ...prev, deliverables: next };
+                          });
+                        }}
+                        className="p-1 text-[#CCC] hover:text-rose-600"
+                        title="Remove"
+                      >
+                        <TrashIcon className="size-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={() => {
+                    setSelected((prev) => {
+                      if (!prev) return prev;
+                      const next = [
+                        ...(prev.deliverables || []),
+                        { id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, type: "pdp", label: "" },
+                      ];
+                      updateSubmission(prev.id, { deliverables: next });
+                      return { ...prev, deliverables: next };
+                    });
+                  }}
+                  className="mt-2 inline-flex items-center gap-1 rounded-md border border-dashed border-[#E8E8E8] px-2 py-1 text-[11px] text-[#666] hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
+                >
+                  <PlusIcon className="size-3" />
+                  Add deliverable
+                </button>
               </div>
 
               {/* Portal assignment + approve */}
