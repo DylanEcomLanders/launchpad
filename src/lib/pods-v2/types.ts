@@ -3,6 +3,7 @@
 // Strict weekly cadence, points → bucket → duration auto-calculation.
 
 export type PodMemberRole =
+  | "cro_lead"
   | "primary_designer"
   | "secondary_designer"
   | "primary_dev"
@@ -111,7 +112,7 @@ export type TaskType =
 export type TaskStatus = "todo" | "in_progress" | "done";
 
 /** Whether the task belongs to the design or development side of the pod. */
-export type TaskDiscipline = "design" | "development";
+export type TaskDiscipline = "strategy" | "design" | "development";
 
 /**
  * Phase a core_deliverable task is sitting in. Mirrors the task-board phase
@@ -199,6 +200,7 @@ export const TASK_PHASE_ORDER: TaskPhase[] = [
 ];
 
 export const TASK_DISCIPLINE_LABEL: Record<TaskDiscipline, string> = {
+  strategy: "Strategy",
   design: "Design",
   development: "Dev",
 };
@@ -279,6 +281,7 @@ export const BUCKET_DURATIONS: Record<Bucket, number | null> = {
 };
 
 export const ROLE_LABEL: Record<PodMemberRole, string> = {
+  cro_lead: "CRO lead",
   primary_designer: "Primary designer",
   secondary_designer: "Secondary designer",
   primary_dev: "Primary dev",

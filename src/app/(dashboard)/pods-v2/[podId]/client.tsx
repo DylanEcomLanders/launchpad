@@ -1010,9 +1010,11 @@ function AddTaskInline({
     member.role === "primary_designer" || member.role === "secondary_designer";
   const memberIsSecondary =
     member.role === "secondary_designer" || member.role === "secondary_dev";
+  const memberIsCro = member.role === "cro_lead";
   /* Only PRIMARY members get the core-deliverable add-flow. Secondaries
    * do tickets (revisions, bugs, desktop fixes, asset prep) — give them
-   * the ticket form regardless of the swim-lane's default. */
+   * the ticket form regardless of the swim-lane's default. CRO lead
+   * (Dan) gets a standalone strategy-task flow — no pair, no points. */
   const memberIsPrimary =
     member.role === "primary_designer" || member.role === "primary_dev";
   /* Only admins can spawn paired core deliverables — that's PM-side
@@ -1022,8 +1024,13 @@ function AddTaskInline({
   /* For secondaries, default the ticket type to "revision" (the most
    * common secondary-work flavour). Designer secondaries → revision;
    * dev secondaries → desktop_fix is also common, but revision covers
-   * the broader case so we keep one default. */
-  const secondaryDefault: TaskType = memberIsDesigner ? "revision" : "desktop_fix";
+   * the broader case so we keep one default. CRO lead → asset_prep
+   * is a reasonable default for strategy artefacts (deck, brief). */
+  const secondaryDefault: TaskType = memberIsCro
+    ? "asset_prep"
+    : memberIsDesigner
+      ? "revision"
+      : "desktop_fix";
 
   /* Pair partner: same tier (primary↔primary, secondary↔secondary) on the
    * opposite discipline. Falls back to the other tier if same-tier slot
@@ -1231,6 +1238,7 @@ function AddTaskInline({
                 title: title.trim(),
                 type,
                 assigned_to: member.id,
+                discipline: memberIsCro ? "strategy" : undefined,
               });
             }
             reset();

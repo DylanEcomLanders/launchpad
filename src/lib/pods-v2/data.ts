@@ -603,6 +603,7 @@ const SEED_POD_DEFINITIONS: Array<{
     name: "Pod 1",
     tagline: "Barnaby's pod",
     members: [
+      { name: "Dan", role: "cro_lead" },
       { name: "Barnaby", role: "primary_designer" },
       { name: "Victoria", role: "secondary_designer" },
       { name: "Angel", role: "primary_dev" },
@@ -613,6 +614,7 @@ const SEED_POD_DEFINITIONS: Array<{
     name: "Pod 2",
     tagline: "Jack's pod",
     members: [
+      { name: "Dan", role: "cro_lead" },
       { name: "Jack", role: "primary_designer" },
       { name: "Anastasia", role: "secondary_designer" },
       { name: "Ian", role: "primary_dev" },
@@ -623,6 +625,7 @@ const SEED_POD_DEFINITIONS: Array<{
     name: "Pod 3",
     tagline: "Brandon's pod",
     members: [
+      { name: "Dan", role: "cro_lead" },
       { name: "Brandon", role: "primary_designer" },
       { name: "TO HIRE", role: "secondary_designer", placeholder: true },
       { name: "Hitesh", role: "primary_dev" },
@@ -912,6 +915,24 @@ export function ensureSeed(): void {
   // other sentinel — so admins always land on the real team grid.
   if (!localStorage.getItem(LS_PODS)) {
     write(LS_PODS, buildSeedPods());
+  } else {
+    // Migration: ensure every pod has Dan (CRO lead) seeded. Browsers
+    // that loaded pods before the cro_lead role existed are missing him.
+    const existing = getPods();
+    let dirty = false;
+    const migrated = existing.map((p) => {
+      if (p.members.some((m) => m.role === "cro_lead")) return p;
+      dirty = true;
+      const dan: PodMember = {
+        id: uid(),
+        name: "Dan",
+        role: "cro_lead",
+        pod_id: p.id,
+        is_placeholder: false,
+      };
+      return { ...p, members: [dan, ...p.members] };
+    });
+    if (dirty) write(LS_PODS, migrated);
   }
 
   if (!localStorage.getItem(LS_SEEDED)) {
