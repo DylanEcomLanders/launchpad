@@ -8,10 +8,17 @@ import {
   PhotoIcon,
   Squares2X2Icon,
   SwatchIcon,
+  UserGroupIcon,
 } from "@heroicons/react/24/solid";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 
 const primary = [
+  {
+    title: "Pods",
+    description: "Your pod's work in flight — deliverables, tickets, blockers. Mark tasks done, raise tickets, escalate blockers.",
+    href: "/pods-v2",
+    icon: UserGroupIcon,
+  },
   {
     title: "Task Board",
     description: "Live deliverables grouped by project — phases, deadlines, who's on what. Auto-refreshes every 30s.",

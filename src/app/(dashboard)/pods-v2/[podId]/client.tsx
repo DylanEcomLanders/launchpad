@@ -9,6 +9,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { ClockIcon } from "@heroicons/react/24/solid";
+import { useRole } from "@/components/auth-gate";
 import {
   addTask,
   deleteTask,
@@ -165,6 +166,8 @@ function daysBetween(a: string, b: string): number {
 // ─── Component ──────────────────────────────────────────────────────
 
 export default function PodDetailClient({ podId }: { podId: string }) {
+  const role = useRole();
+  const isAdmin = role === "admin";
   const [pod, setPod] = useState<Pod | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
@@ -285,7 +288,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
       <PodBlockersPanel pod={pod} onMutate={refresh} />
 
       {/* CLIENT ROSTER — moved up */}
-      <ClientRoster clients={clients} currentPodId={pod.id} onMutate={refresh} />
+      <ClientRoster clients={clients} currentPodId={pod.id} onMutate={refresh} canUnassign={isAdmin} />
 
       {/* WORK IN FLIGHT — one column per pod member, all task types combined */}
       <SwimLane
@@ -299,6 +302,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
         today={today}
         onMutate={refresh}
         defaultTaskType="core_deliverable"
+        isAdmin={isAdmin}
       />
     </div>
   );
@@ -414,6 +418,7 @@ function SwimLane({
   today,
   onMutate,
   defaultTaskType,
+  isAdmin,
 }: {
   title: string;
   subtitle: string;
@@ -425,6 +430,7 @@ function SwimLane({
   today: string;
   onMutate: () => void;
   defaultTaskType: TaskType;
+  isAdmin: boolean;
 }) {
   return (
     <div className="mt-10">
@@ -488,6 +494,7 @@ function SwimLane({
                     members={allMembers}
                     today={today}
                     onMutate={onMutate}
+                    isAdmin={isAdmin}
                   />
                 ))}
                 <AddTaskInline
@@ -497,6 +504,7 @@ function SwimLane({
                   projects={Array.from(projectById.values())}
                   clientById={clientById}
                   onMutate={onMutate}
+                  isAdmin={isAdmin}
                 />
               </div>
             </div>
@@ -514,12 +522,14 @@ function PrimaryTaskRow({
   members,
   today,
   onMutate,
+  isAdmin,
 }: {
   task: Task;
   project?: Project;
   client?: Client;
   members: PodMember[];
   today: string;
+  isAdmin: boolean;
   onMutate: () => void;
 }) {
   const [reassignOpen, setReassignOpen] = useState(false);
@@ -713,18 +723,20 @@ function PrimaryTaskRow({
             {formatDayMonth(task.due_date)}
           </span>
         )}
-        <button
-          onClick={() => {
-            if (confirm(`Delete task "${task.title}"?`)) {
-              deleteTask(task.id);
-              onMutate();
-            }
-          }}
-          className="opacity-0 transition-opacity group-hover:opacity-100"
-          title="Delete task"
-        >
-          <XMarkIcon className="size-3.5 text-[#A0A0A0] hover:text-rose-600" />
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => {
+              if (confirm(`Delete task "${task.title}"?`)) {
+                deleteTask(task.id);
+                onMutate();
+              }
+            }}
+            className="opacity-0 transition-opacity group-hover:opacity-100"
+            title="Delete task"
+          >
+            <XMarkIcon className="size-3.5 text-[#A0A0A0] hover:text-rose-600" />
+          </button>
+        )}
       </div>
 
       {reassignOpen && (
@@ -963,6 +975,7 @@ function AddTaskInline({
   projects,
   clientById,
   onMutate,
+  isAdmin,
 }: {
   member: PodMember;
   allMembers: PodMember[];
@@ -970,6 +983,7 @@ function AddTaskInline({
   projects: Project[];
   clientById: Map<string, Client>;
   onMutate: () => void;
+  isAdmin: boolean;
 }) {
   const memberIsDesigner =
     member.role === "primary_designer" || member.role === "secondary_designer";
@@ -980,7 +994,10 @@ function AddTaskInline({
    * the ticket form regardless of the swim-lane's default. */
   const memberIsPrimary =
     member.role === "primary_designer" || member.role === "primary_dev";
-  const isPrimaryMode = defaultType === "core_deliverable" && memberIsPrimary;
+  /* Only admins can spawn paired core deliverables — that's PM-side
+   * scope-setting. Team members get the ticket form regardless of
+   * which column they're adding to. */
+  const isPrimaryMode = defaultType === "core_deliverable" && memberIsPrimary && isAdmin;
   /* For secondaries, default the ticket type to "revision" (the most
    * common secondary-work flavour). Designer secondaries → revision;
    * dev secondaries → desktop_fix is also common, but revision covers
@@ -1392,10 +1409,12 @@ function ClientRoster({
   clients,
   currentPodId,
   onMutate,
+  canUnassign,
 }: {
   clients: Client[];
   currentPodId: string;
   onMutate: () => void;
+  canUnassign: boolean;
 }) {
   return (
     <div className="mt-10">
@@ -1404,7 +1423,7 @@ function ClientRoster({
       </h2>
       <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
         {clients.map((c) => (
-          <ClientCard key={c.id} client={c} currentPodId={currentPodId} onMutate={onMutate} />
+          <ClientCard key={c.id} client={c} currentPodId={currentPodId} onMutate={onMutate} canUnassign={canUnassign} />
         ))}
         {clients.length === 0 && (
           <div className="rounded-xl border border-dashed border-[#E5E5EA] bg-white px-4 py-6 text-center text-xs text-[#A0A0A0]">
@@ -1420,10 +1439,12 @@ function ClientCard({
   client,
   currentPodId,
   onMutate,
+  canUnassign,
 }: {
   client: Client;
   currentPodId: string;
   onMutate: () => void;
+  canUnassign: boolean;
 }) {
   const [unassignOpen, setUnassignOpen] = useState(false);
   const tier = TIER_PILL[client.retainer_tier];
@@ -1454,13 +1475,15 @@ function ClientCard({
             )}
           </div>
         </Link>
-        <button
-          onClick={() => setUnassignOpen(true)}
-          className="rounded-md px-1.5 py-0.5 text-[10px] text-[#A0A0A0] hover:bg-[#F7F8FA] hover:text-[#1B1B1B]"
-          title="Unassign from pod"
-        >
-          Unassign
-        </button>
+        {canUnassign && (
+          <button
+            onClick={() => setUnassignOpen(true)}
+            className="rounded-md px-1.5 py-0.5 text-[10px] text-[#A0A0A0] hover:bg-[#F7F8FA] hover:text-[#1B1B1B]"
+            title="Unassign from pod"
+          >
+            Unassign
+          </button>
+        )}
       </div>
       {client.retainer_tier !== "none" && (
         <div className="mt-3 text-[11px] text-[#7A7A7A]">

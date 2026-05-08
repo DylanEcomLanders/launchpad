@@ -34,10 +34,13 @@ import { WeeksView } from "./WeeksView";
 import { onboardingStore, type OnboardingSubmission } from "@/lib/onboarding";
 import { getPortalById } from "@/lib/portal/data";
 import type { PortalData, ScopeItem } from "@/lib/portal/types";
+import { useRole } from "@/components/auth-gate";
 
 type View = "overview" | "pipeline";
 
 export default function PodsIndexClient() {
+  const role = useRole();
+  const isAdmin = role === "admin";
   const [pods, setPods] = useState<Pod[]>([]);
   const [allProjects, setAllProjects] = useState<Project[]>([]);
   const [allClients, setAllClients] = useState<Client[]>([]);
@@ -133,22 +136,24 @@ export default function PodsIndexClient() {
             Three pods. One cadence. Mondays kick off, Thursdays ship.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Link
-            href="/pods-v2/new-project"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[#1B1B1B] bg-[#1B1B1B] px-3 py-2 text-xs font-medium text-white shadow-[var(--shadow-soft)] transition-colors hover:bg-[#2D2D2D]"
-          >
-            <PlusIcon className="size-3.5" />
-            New project
-          </Link>
-          <Link
-            href="/pods-v2/admin"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[#E5E5EA] bg-white px-3 py-2 text-xs font-medium text-[#1B1B1B] shadow-[var(--shadow-soft)] transition-colors hover:bg-[#F3F3F5]"
-          >
-            <ShieldCheckIcon className="size-3.5" />
-            Admin view
-          </Link>
-        </div>
+        {isAdmin && (
+          <div className="flex items-center gap-2">
+            <Link
+              href="/pods-v2/new-project"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[#1B1B1B] bg-[#1B1B1B] px-3 py-2 text-xs font-medium text-white shadow-[var(--shadow-soft)] transition-colors hover:bg-[#2D2D2D]"
+            >
+              <PlusIcon className="size-3.5" />
+              New project
+            </Link>
+            <Link
+              href="/pods-v2/admin"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[#E5E5EA] bg-white px-3 py-2 text-xs font-medium text-[#1B1B1B] shadow-[var(--shadow-soft)] transition-colors hover:bg-[#F3F3F5]"
+            >
+              <ShieldCheckIcon className="size-3.5" />
+              Admin view
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Top-level toggle: Overview vs Pipeline */}
@@ -186,6 +191,7 @@ export default function PodsIndexClient() {
           clientById={clientById}
           today={today}
           onAssign={(o) => setAssigning(o)}
+          isAdmin={isAdmin}
         />
       ) : (
         <div className="mt-6">
@@ -198,23 +204,25 @@ export default function PodsIndexClient() {
         </div>
       )}
 
-      <div className="mt-12 text-right">
-        <button
-          onClick={() => {
-            if (
-              confirm(
-                "Wipe all clients, projects and tasks? Pods + team members are kept. This cannot be undone.",
-              )
-            ) {
-              resetAndReseed();
-              window.location.reload();
-            }
-          }}
-          className="text-[11px] uppercase tracking-wider text-[#A0A0A0] hover:text-rose-700"
-        >
-          Wipe all data
-        </button>
-      </div>
+      {isAdmin && (
+        <div className="mt-12 text-right">
+          <button
+            onClick={() => {
+              if (
+                confirm(
+                  "Wipe all clients, projects and tasks? Pods + team members are kept. This cannot be undone.",
+                )
+              ) {
+                resetAndReseed();
+                window.location.reload();
+              }
+            }}
+            className="text-[11px] uppercase tracking-wider text-[#A0A0A0] hover:text-rose-700"
+          >
+            Wipe all data
+          </button>
+        </div>
+      )}
 
       {assigning && (
         <AssignToPodModal
@@ -247,6 +255,7 @@ function Overview({
   clientById,
   today,
   onAssign,
+  isAdmin,
 }: {
   pods: Pod[];
   projectsByPod: Record<string, Project[]>;
@@ -257,6 +266,7 @@ function Overview({
   clientById: Map<string, Client>;
   today: string;
   onAssign: (o: OnboardingSubmission) => void;
+  isAdmin: boolean;
 }) {
   return (
     <>
@@ -320,7 +330,10 @@ function Overview({
         })}
       </div>
 
-      {/* Purgatory — processed onboardings without assigned tasks */}
+      {/* Purgatory — processed onboardings without assigned tasks. Admin
+       * only — assign-to-pod is a PM action and onboarding form data
+       * isn't relevant to delivery team members. */}
+      {isAdmin && (
       <div className="mt-10">
         <div className="flex items-baseline justify-between gap-3">
           <div>
@@ -419,6 +432,7 @@ function Overview({
           )}
         </div>
       </div>
+      )}
     </>
   );
 }

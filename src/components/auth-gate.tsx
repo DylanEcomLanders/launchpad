@@ -6,6 +6,15 @@ import { Tackboard } from "@/components/tackboard";
 const STORAGE_KEY = "launchpad-auth";
 const ROLE_KEY = "launchpad-role";
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "ecomlanders2025";
+
+/* Cookie shadow of the sessionStorage role. Set so server-side API routes
+ * (which can't read sessionStorage) can validate that the caller went
+ * through AuthGate. SameSite=Strict prevents another origin from
+ * triggering an authenticated request. 8h covers a typical work day. */
+function setRoleCookie(role: "admin" | "cro" | "team") {
+  if (typeof document === "undefined") return;
+  document.cookie = `launchpad-role=${role}; Path=/; Max-Age=${8 * 3600}; SameSite=Strict`;
+}
 const CRO_PASSWORD = process.env.NEXT_PUBLIC_CRO_PASSWORD || "cro2025";
 const TEAM_PASSWORD = process.env.NEXT_PUBLIC_TEAM_PASSWORD || "team2026";
 
@@ -17,9 +26,18 @@ export function useRole() {
   return useContext(RoleContext);
 }
 
-/** Team role can only see /team/* and /portal/* — everything else kicks them back to /team. */
+/** Team role can only see /team/*, /portal/*, /tasks (the team task board)
+ * and /pods-v2 (their pod's work in flight). Everything else kicks them
+ * back to /team. */
 function isTeamAllowedPath(pathname: string): boolean {
-  return pathname === "/team" || pathname.startsWith("/team/") || pathname.startsWith("/portal/");
+  return (
+    pathname === "/team" ||
+    pathname.startsWith("/team/") ||
+    pathname.startsWith("/portal/") ||
+    pathname === "/tasks" ||
+    pathname === "/pods-v2" ||
+    pathname.startsWith("/pods-v2/")
+  );
 }
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
@@ -37,6 +55,9 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     if (stored === "true" && storedRole) {
       setAuthed(true);
       setRole(storedRole);
+      // Refresh the cookie shadow on every load so existing logged-in
+      // users get server-side auth without having to re-authenticate.
+      setRoleCookie(storedRole);
     }
     setChecking(false);
   }, []);
@@ -55,6 +76,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     if (input === ADMIN_PASSWORD) {
       sessionStorage.setItem(STORAGE_KEY, "true");
       sessionStorage.setItem(ROLE_KEY, "admin");
+      setRoleCookie("admin");
       setEntering(true);
       setTimeout(() => {
         setAuthed(true);
@@ -63,6 +85,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     } else if (input === CRO_PASSWORD) {
       sessionStorage.setItem(STORAGE_KEY, "true");
       sessionStorage.setItem(ROLE_KEY, "cro");
+      setRoleCookie("cro");
       setEntering(true);
       setTimeout(() => {
         setAuthed(true);
@@ -71,6 +94,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     } else if (input === TEAM_PASSWORD) {
       sessionStorage.setItem(STORAGE_KEY, "true");
       sessionStorage.setItem(ROLE_KEY, "team");
+      setRoleCookie("team");
       setEntering(true);
       setTimeout(() => {
         // Team lands on /team no matter where they typed the password
