@@ -31,6 +31,7 @@ const LS_PODS = "launchpad-pods-v2-pods";
 const LS_CLIENTS = "launchpad-pods-v2-clients";
 const LS_PROJECTS = "launchpad-pods-v2-projects";
 const LS_TASKS = "launchpad-pods-v2-tasks";
+const LS_CRO_LEADS = "launchpad-pods-v2-cro-leads";
 const LS_SEEDED = "launchpad-pods-v2-seeded-v4";
 /* Bumped when we want every browser to wipe its old fake-seed data on
  * the next page load. Any browser without this sentinel runs the
@@ -603,7 +604,6 @@ const SEED_POD_DEFINITIONS: Array<{
     name: "Pod 1",
     tagline: "Barnaby's pod",
     members: [
-      { name: "Dan", role: "cro_lead" },
       { name: "Barnaby", role: "primary_designer" },
       { name: "Victoria", role: "secondary_designer" },
       { name: "Angel", role: "primary_dev" },
@@ -614,7 +614,6 @@ const SEED_POD_DEFINITIONS: Array<{
     name: "Pod 2",
     tagline: "Jack's pod",
     members: [
-      { name: "Dan", role: "cro_lead" },
       { name: "Jack", role: "primary_designer" },
       { name: "Anastasia", role: "secondary_designer" },
       { name: "Ian", role: "primary_dev" },
@@ -625,7 +624,6 @@ const SEED_POD_DEFINITIONS: Array<{
     name: "Pod 3",
     tagline: "Brandon's pod",
     members: [
-      { name: "Dan", role: "cro_lead" },
       { name: "Brandon", role: "primary_designer" },
       { name: "TO HIRE", role: "secondary_designer", placeholder: true },
       { name: "Hitesh", role: "primary_dev" },
@@ -916,28 +914,68 @@ export function ensureSeed(): void {
   if (!localStorage.getItem(LS_PODS)) {
     write(LS_PODS, buildSeedPods());
   } else {
-    // Migration: ensure every pod has Dan (CRO lead) seeded. Browsers
-    // that loaded pods before the cro_lead role existed are missing him.
+    /* Migration: an earlier iteration added Dan as a cro_lead member to
+     * each pod. The CRO lead now lives at the org level (LS_CRO_LEADS),
+     * not inside pods. Strip any cro_lead members and reassign their
+     * tasks to the central Dan id. */
     const existing = getPods();
-    let dirty = false;
-    const migrated = existing.map((p) => {
-      if (p.members.some((m) => m.role === "cro_lead")) return p;
-      dirty = true;
-      const dan: PodMember = {
-        id: uid(),
-        name: "Dan",
-        role: "cro_lead",
-        pod_id: p.id,
-        is_placeholder: false,
-      };
-      return { ...p, members: [dan, ...p.members] };
-    });
-    if (dirty) write(LS_PODS, migrated);
+    const oldDanIds = existing.flatMap((p) =>
+      p.members.filter((m) => m.role === "cro_lead").map((m) => m.id),
+    );
+    if (oldDanIds.length > 0) {
+      const cleaned = existing.map((p) => ({
+        ...p,
+        members: p.members.filter((m) => m.role !== "cro_lead"),
+      }));
+      write(LS_PODS, cleaned);
+      // Re-point any tasks assigned to old Dan-on-pod ids → central Dan
+      const central = ensureCroLeads()[0];
+      if (central) {
+        const tasks = getTasks();
+        const fixed = tasks.map((t) =>
+          oldDanIds.includes(t.assigned_to)
+            ? { ...t, assigned_to: central.id }
+            : t,
+        );
+        write(LS_TASKS, fixed);
+      }
+    }
   }
+
+  // Seed the org-level CRO lead (Dan) on first load.
+  ensureCroLeads();
 
   if (!localStorage.getItem(LS_SEEDED)) {
     localStorage.setItem(LS_SEEDED, "1");
   }
+}
+
+/* Org-level CRO leads — separate from pod members. Returns the current
+ * list, seeding Dan if the store is empty. */
+export function getCroLeads(): PodMember[] {
+  return read<PodMember>(LS_CRO_LEADS);
+}
+
+function ensureCroLeads(): PodMember[] {
+  const existing = read<PodMember>(LS_CRO_LEADS);
+  if (existing.length > 0) return existing;
+  const dan: PodMember = {
+    id: "cro-dan",
+    name: "Dan",
+    role: "cro_lead",
+    pod_id: "*",
+    is_placeholder: false,
+  };
+  write(LS_CRO_LEADS, [dan]);
+  return [dan];
+}
+
+export function updateCroLeadAvatar(memberId: string, avatarUrl: string | undefined): void {
+  const all = getCroLeads();
+  write(
+    LS_CRO_LEADS,
+    all.map((m) => (m.id === memberId ? { ...m, avatar_url: avatarUrl } : m)),
+  );
 }
 
 /** Wipe all client / project / task data. Pods + members are kept —

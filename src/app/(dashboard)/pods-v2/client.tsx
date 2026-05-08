@@ -9,14 +9,19 @@ import {
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 import {
+  addTask,
   createClient,
   createProject,
+  deleteTask,
   ensureSeed,
   getClients,
+  getCroLeads,
   getPods,
   getProjects,
   getTasks,
   resetAndReseed,
+  updateCroLeadAvatar,
+  updateTaskStatus,
 } from "@/lib/pods-v2/data";
 import {
   Client,
@@ -30,6 +35,7 @@ import {
 } from "@/lib/pods-v2/types";
 import { capacityUsed, isMidWeekKickoff } from "@/lib/pods-v2/calc";
 import { formatDayMonth, todayYMD } from "@/lib/dates";
+import { formatTimeInPhase } from "@/lib/task-board/phases";
 import { CapacityMeter, MemberAvatar } from "./components";
 import { WeeksView } from "./WeeksView";
 import { onboardingStore, type OnboardingSubmission } from "@/lib/onboarding";
@@ -70,6 +76,7 @@ export default function PodsIndexClient() {
   const [allProjects, setAllProjects] = useState<Project[]>([]);
   const [allClients, setAllClients] = useState<Client[]>([]);
   const [allTasks, setAllTasks] = useState<Task[]>([]);
+  const [croLeads, setCroLeads] = useState<PodMember[]>([]);
   const [onboardings, setOnboardings] = useState<OnboardingSubmission[]>([]);
   const [view, setView] = useState<View>("overview");
   const [assigning, setAssigning] = useState<OnboardingSubmission | null>(null);
@@ -80,8 +87,16 @@ export default function PodsIndexClient() {
     setAllProjects(getProjects());
     setAllClients(getClients());
     setAllTasks(getTasks());
+    setCroLeads(getCroLeads());
     onboardingStore.getAll().then(setOnboardings).catch(() => {});
   }, []);
+  function refreshAll() {
+    setPods(getPods());
+    setAllProjects(getProjects());
+    setAllClients(getClients());
+    setAllTasks(getTasks());
+    setCroLeads(getCroLeads());
+  }
 
   const today = todayYMD();
   const projectsByPod = useMemo(() => {
@@ -210,12 +225,14 @@ export default function PodsIndexClient() {
           pods={pods}
           projectsByPod={projectsByPod}
           allTasks={allTasks}
+          croLeads={croLeads}
           purgatoryOnboardings={purgatoryOnboardings}
           memberById={memberById}
           projectById={projectById}
           clientById={clientById}
           today={today}
           onAssign={(o) => setAssigning(o)}
+          onMutate={refreshAll}
           isAdmin={isAdmin}
           linkBase={linkBase}
         />
@@ -275,24 +292,28 @@ function Overview({
   pods,
   projectsByPod,
   allTasks,
+  croLeads,
   purgatoryOnboardings,
   memberById,
   projectById,
   clientById,
   today,
   onAssign,
+  onMutate: refreshAll,
   isAdmin,
   linkBase,
 }: {
   pods: Pod[];
   projectsByPod: Record<string, Project[]>;
   allTasks: Task[];
+  croLeads: PodMember[];
   purgatoryOnboardings: OnboardingSubmission[];
   memberById: Map<string, { member: PodMember; pod: Pod }>;
   projectById: Map<string, Project>;
   clientById: Map<string, Client>;
   today: string;
   onAssign: (o: OnboardingSubmission) => void;
+  onMutate: () => void;
   isAdmin: boolean;
   linkBase: string;
 }) {
@@ -357,6 +378,19 @@ function Overview({
           );
         })}
       </div>
+
+      {/* CRO Pipeline — Dan's strategy work across all pods, separate
+       * from per-pod swim lanes since he's a shared resource. */}
+      <CroPipeline
+        croLeads={croLeads}
+        tasks={allTasks}
+        projectById={projectById}
+        clientById={clientById}
+        pods={pods}
+        today={today}
+        onMutate={refreshAll}
+        isAdmin={isAdmin}
+      />
 
       {/* Purgatory — processed onboardings without assigned tasks. Admin
        * only — assign-to-pod is a PM action and onboarding form data
@@ -842,6 +876,244 @@ function AssignToPodModal({
             {submitting ? "Assigning…" : `Confirm & assign · ${items.length} deliverable${items.length === 1 ? "" : "s"}`}
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── CRO Pipeline panel ─────────────────────────────────────────────
+
+function CroPipeline({
+  croLeads,
+  tasks,
+  projectById,
+  clientById,
+  pods,
+  today,
+  onMutate,
+  isAdmin,
+}: {
+  croLeads: PodMember[];
+  tasks: Task[];
+  projectById: Map<string, Project>;
+  clientById: Map<string, Client>;
+  pods: Pod[];
+  today: string;
+  onMutate: () => void;
+  isAdmin: boolean;
+}) {
+  const dan = croLeads[0];
+  const [adding, setAdding] = useState(false);
+  const [taskTitle, setTaskTitle] = useState("");
+  const [taskProjectId, setTaskProjectId] = useState("");
+
+  if (!dan) return null;
+
+  // Tasks owned by Dan, sorted by due date (open first, done at bottom)
+  const danTasks = tasks
+    .filter((t) => t.assigned_to === dan.id)
+    .sort((a, b) => {
+      if (a.status === "done" && b.status !== "done") return 1;
+      if (a.status !== "done" && b.status === "done") return -1;
+      return (a.due_date || "").localeCompare(b.due_date || "");
+    });
+
+  // Group by pod for easier scanning
+  const tasksByPod = new Map<string, Task[]>();
+  for (const t of danTasks) {
+    const project = projectById.get(t.project_id);
+    if (!project) continue;
+    const podId = project.pod_id || "unassigned";
+    if (!tasksByPod.has(podId)) tasksByPod.set(podId, []);
+    tasksByPod.get(podId)!.push(t);
+  }
+
+  const allProjects = Array.from(projectById.values());
+
+  return (
+    <div className="mt-10">
+      <div className="flex items-baseline justify-between gap-3">
+        <div>
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+            CRO Pipeline
+          </h2>
+          <p className="mt-0.5 text-xs text-[#7A7A7A]">
+            {dan.name}&apos;s strategy + wireframe work across all pods. Week 1 of every retainer cycle lands here first.
+          </p>
+        </div>
+        <span className="text-[11px] tabular-nums text-[#A0A0A0]">
+          {danTasks.filter((t) => t.status !== "done").length} open · {danTasks.length} total
+        </span>
+      </div>
+
+      <div className="mt-3 overflow-hidden rounded-xl border border-[#E5E5EA] bg-white shadow-[var(--shadow-soft)]">
+        {/* Dan's header strip */}
+        <div className="flex items-center justify-between gap-3 border-b border-[#E5E5EA] bg-[#F7F8FA] px-4 py-3">
+          <div className="flex items-center gap-3">
+            <MemberAvatar
+              member={dan}
+              onChangeAvatar={(url) => {
+                updateCroLeadAvatar(dan.id, url);
+                onMutate();
+              }}
+            />
+            <div>
+              <div className="text-sm font-semibold text-[#1B1B1B]">{dan.name}</div>
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">CRO lead</div>
+            </div>
+          </div>
+          {isAdmin && allProjects.length > 0 && (
+            <button
+              onClick={() => setAdding(true)}
+              className="rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-[11px] font-medium text-[#1B1B1B] hover:border-[#1B1B1B]"
+            >
+              + Add strategy task
+            </button>
+          )}
+        </div>
+
+        {/* Add-task form */}
+        {adding && (
+          <div className="border-b border-[#E5E5EA] bg-[#F7F8FA] px-4 py-3">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <input
+                autoFocus
+                value={taskTitle}
+                onChange={(e) => setTaskTitle(e.target.value)}
+                placeholder="Strategy task (e.g. Wireframe — PDP — Sling Carrier)"
+                className="flex-1 min-w-[280px] rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-xs"
+              />
+              <select
+                value={taskProjectId || allProjects[0]?.id || ""}
+                onChange={(e) => setTaskProjectId(e.target.value)}
+                className="rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-xs"
+              >
+                {allProjects.map((p) => {
+                  const c = clientById.get(p.client_id);
+                  return (
+                    <option key={p.id} value={p.id}>
+                      {p.name} · {c?.name ?? "—"}
+                    </option>
+                  );
+                })}
+              </select>
+              <button
+                onClick={() => {
+                  setAdding(false);
+                  setTaskTitle("");
+                }}
+                className="px-2 py-1 text-[11px] text-[#7A7A7A] hover:text-[#1B1B1B]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  const projectId = taskProjectId || allProjects[0]?.id;
+                  if (!taskTitle.trim() || !projectId) return;
+                  addTask({
+                    project_id: projectId,
+                    title: taskTitle.trim(),
+                    type: "asset_prep",
+                    assigned_to: dan.id,
+                    discipline: "strategy",
+                  });
+                  setTaskTitle("");
+                  setTaskProjectId("");
+                  setAdding(false);
+                  onMutate();
+                }}
+                className="rounded-md bg-[#1B1B1B] px-2 py-1 text-[11px] font-medium text-white hover:bg-[#2D2D2D]"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Task list grouped by pod */}
+        {danTasks.length === 0 ? (
+          <div className="px-4 py-8 text-center text-xs text-[#A0A0A0]">
+            No strategy tasks on Dan&apos;s plate. As retainers come in, week-1 strategy work lands here.
+          </div>
+        ) : (
+          <div>
+            {Array.from(tasksByPod.entries()).map(([podId, podTasks]) => {
+              const pod = pods.find((p) => p.id === podId);
+              return (
+                <div key={podId} className="border-b border-[#EDEDEF] last:border-b-0">
+                  <div className="bg-[#FAFAFA] px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+                    {pod?.name || "Unassigned pod"}
+                  </div>
+                  {podTasks.map((t) => {
+                    const project = projectById.get(t.project_id);
+                    const client = project ? clientById.get(project.client_id) : undefined;
+                    const isDone = t.status === "done";
+                    const ageHours = Math.max(0, Math.floor((Date.now() - new Date(t.created_at).getTime()) / 3_600_000));
+                    const ageColor = ageHours >= 48 ? "text-rose-700" : ageHours >= 24 ? "text-amber-700" : "text-emerald-700";
+                    const ageLabel = formatTimeInPhase(t.created_at);
+                    return (
+                      <div
+                        key={t.id}
+                        className={`group flex items-center gap-3 px-4 py-2 hover:bg-[#F7F8FA] ${isDone ? "opacity-50" : ""}`}
+                      >
+                        <button
+                          onClick={() => {
+                            const next = isDone ? "todo" : t.status === "in_progress" ? "done" : "in_progress";
+                            updateTaskStatus(t.id, next);
+                            onMutate();
+                          }}
+                          className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                            isDone
+                              ? "border-emerald-500 bg-emerald-500 text-white"
+                              : t.status === "in_progress"
+                                ? "border-blue-500 bg-white text-blue-500"
+                                : "border-[#D5D5DC] bg-white hover:border-[#1B1B1B]"
+                          }`}
+                          title="Cycle status"
+                        >
+                          {isDone && (
+                            <svg viewBox="0 0 12 12" className="size-3" fill="currentColor">
+                              <path d="M10.28 3.28L4.5 9.06 1.72 6.28l1.06-1.06L4.5 6.94l4.72-4.72z" />
+                            </svg>
+                          )}
+                          {t.status === "in_progress" && <span className="size-1.5 rounded-full bg-blue-500" />}
+                        </button>
+                        <div className="min-w-0 flex-1">
+                          <div className={`truncate text-sm leading-tight ${isDone ? "text-[#A0A0A0] line-through" : "text-[#1B1B1B]"}`}>
+                            {t.title}
+                          </div>
+                          {client && (
+                            <div className="mt-0.5 truncate text-[11px] text-[#7A7A7A]">
+                              <span className="font-medium text-[#1B1B1B]">{client.name}</span>
+                              {project && <span className="text-[#A0A0A0]"> · {project.name}</span>}
+                            </div>
+                          )}
+                        </div>
+                        <span className={`shrink-0 text-[11px] font-medium tabular-nums ${ageColor}`} title={`Opened ${new Date(t.created_at).toLocaleString()}`}>
+                          {ageLabel}
+                        </span>
+                        {isAdmin && (
+                          <button
+                            onClick={() => {
+                              if (confirm(`Delete task "${t.title}"?`)) {
+                                deleteTask(t.id);
+                                onMutate();
+                              }
+                            }}
+                            className="opacity-0 transition-opacity group-hover:opacity-100"
+                            title="Delete task"
+                          >
+                            <span className="text-[#A0A0A0] hover:text-rose-600">×</span>
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
