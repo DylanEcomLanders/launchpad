@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { onboardingStore, type OnboardingSubmission } from "@/lib/onboarding";
-import { getPortals, createPortal } from "@/lib/portal/data";
-import type { PortalData } from "@/lib/portal/types";
+import { getPortals, createPortal, updatePortal } from "@/lib/portal/data";
+import type { PortalData, ScopeItem } from "@/lib/portal/types";
 import Link from "next/link";
 import {
   CheckCircleIcon,
@@ -26,6 +26,51 @@ const statusConfig: Record<string, { label: string; color: string; bg: string }>
   rejected: { label: "Rejected", color: "#EF4444", bg: "#FEE2E2" },
   archived: { label: "Archived", color: "#999", bg: "#F0F0F0" },
 };
+
+/* Build portal-shaped scope items from a submission's PM-captured
+ * deliverables. Falls back to parsing the legacy comma-separated
+ * `page_type` field if no structured deliverables were captured. */
+function deliverablesToScope(submission: OnboardingSubmission): ScopeItem[] {
+  const list = submission.deliverables || [];
+  if (list.length > 0) {
+    return list.map((d) => {
+      const typeLabel = (PAGE_LABEL[d.type as PageType] as string) || d.type;
+      const description = d.label?.trim()
+        ? `${typeLabel} — ${d.label.trim()}`
+        : typeLabel;
+      return {
+        description,
+        type: typeLabel,
+        design_approved: false,
+        dev_live: false,
+      };
+    });
+  }
+  // Legacy fallback — comma-separated string from public form
+  const tokens = (submission.page_type || "")
+    .split(/[,;]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return tokens.map((token) => ({
+    description: token,
+    type: token,
+    design_approved: false,
+    dev_live: false,
+  }));
+}
+
+/* Short summary for portal.project_type used as the description on the
+ * team /clients view. Prefers the new deliverables list, falls back to
+ * page_type. */
+function summariseDeliverables(submission: OnboardingSubmission): string {
+  const list = submission.deliverables || [];
+  if (list.length > 0) {
+    return list
+      .map((d) => (PAGE_LABEL[d.type as PageType] as string) || d.type)
+      .join(", ");
+  }
+  return submission.page_type?.trim() || "Page build";
+}
 
 export default function OnboardingInboxPage() {
   const router = useRouter();
@@ -422,6 +467,28 @@ export default function OnboardingInboxPage() {
 
                 const handleAssignExisting = async () => {
                   if (!selectedPortalId || selectedPortalId === "__new__") return;
+                  /* Append the onboarding's deliverables onto the chosen
+                   * portal's scope so the team sees them in the portal,
+                   * not just the inbox. Skips items already present
+                   * (matched by description) to avoid duplicate seeds
+                   * if an onboarding gets re-attached. */
+                  const portal = portals.find((p) => p.id === selectedPortalId);
+                  if (portal) {
+                    const incoming = deliverablesToScope(selected);
+                    const existingDescriptions = new Set(
+                      (portal.scope || []).map((s) =>
+                        typeof s === "string" ? s : s.description,
+                      ),
+                    );
+                    const newOnes = incoming.filter(
+                      (s) => typeof s !== "string" && !existingDescriptions.has(s.description),
+                    );
+                    if (newOnes.length > 0) {
+                      await updatePortal(portal.id, {
+                        scope: [...(portal.scope || []), ...newOnes],
+                      });
+                    }
+                  }
                   await updateSubmission(selected.id, {
                     status: "approved",
                     assigned_portal_id: selectedPortalId,
@@ -434,10 +501,11 @@ export default function OnboardingInboxPage() {
                   setSaving(true);
                   try {
                     // Pull as much as we can from the onboarding submission so the portal isn't bare on Day 1.
-                    const pageType = selected.page_type?.trim() || "";
-                    const projectName = pageType ? `${pageType}` : "New Project";
+                    const scopeItems = deliverablesToScope(selected);
+                    const projectTypeSummary = summariseDeliverables(selected);
+                    const projectName = `${selected.company_name} — full build`;
 
-                    // Seed a single project sized to the onboarding's page_type.
+                    // Seed a project pre-loaded with the deliverables scope captured during PM intake.
                     const project = {
                       id: `proj-${Date.now()}`,
                       name: projectName,
@@ -450,10 +518,8 @@ export default function OnboardingInboxPage() {
                         { id: "ph-dev", name: "Development", status: "upcoming" as const, date: "", description: "" },
                         { id: "ph-qa", name: "QA & Launch", status: "upcoming" as const, date: "", description: "" },
                       ],
-                      deliverables: pageType
-                        ? [{ id: "del-1", type: pageType.toLowerCase().includes("pdp") ? "pdp" : "landing-page", title: `1x ${pageType}`, status: "in-progress" as const }]
-                        : [],
-                      scope: [],
+                      deliverables: [],
+                      scope: scopeItems,
                       documents: (selected.uploaded_files || []).map((f, i) => ({
                         id: `doc-${i}`,
                         title: f.originalName,
@@ -485,13 +551,13 @@ export default function OnboardingInboxPage() {
                       client_name: selected.company_name,
                       client_email: "",
                       client_type: "regular",
-                      project_type: pageType,
+                      project_type: projectTypeSummary,
                       current_phase: "Design",
                       progress: 0,
                       // next_touchpoint deliberately left blank — createPortal auto-fills with next Mon/Wed/Fri
                       next_touchpoint: { date: "", description: "" },
                       phases: [],
-                      scope: [],
+                      scope: scopeItems,
                       deliverables: [],
                       documents: [],
                       results: [],
@@ -574,12 +640,46 @@ export default function OnboardingInboxPage() {
                     <span className="text-sm font-medium">Approved {selected.assigned_at ? new Date(selected.assigned_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : ""}</span>
                   </div>
                   {selected.assigned_portal_id && (
-                    <Link
-                      href={`/tools/client-portal/${selected.assigned_portal_id}`}
-                      className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:underline"
-                    >
-                      View Portal <ArrowTopRightOnSquareIcon className="size-3" />
-                    </Link>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Link
+                        href={`/tools/client-portal/${selected.assigned_portal_id}`}
+                        className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:underline"
+                      >
+                        View Portal <ArrowTopRightOnSquareIcon className="size-3" />
+                      </Link>
+                      {(selected.deliverables?.length || 0) > 0 && (
+                        <button
+                          onClick={async () => {
+                            const portal = portals.find((p) => p.id === selected.assigned_portal_id);
+                            if (!portal) return;
+                            const incoming = deliverablesToScope(selected);
+                            const existingDescriptions = new Set(
+                              (portal.scope || []).map((s) =>
+                                typeof s === "string" ? s : s.description,
+                              ),
+                            );
+                            const newOnes = incoming.filter(
+                              (s) => typeof s !== "string" && !existingDescriptions.has(s.description),
+                            );
+                            if (newOnes.length === 0) {
+                              alert("Portal scope is already up to date — nothing to add.");
+                              return;
+                            }
+                            await updatePortal(portal.id, {
+                              scope: [...(portal.scope || []), ...newOnes],
+                              project_type: summariseDeliverables(selected),
+                            });
+                            await load();
+                            getPortals().then(setPortals).catch(() => {});
+                            alert(`Pushed ${newOnes.length} deliverable${newOnes.length === 1 ? "" : "s"} to the portal.`);
+                          }}
+                          className="inline-flex items-center gap-1.5 rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-[11px] font-medium text-[#1B1B1B] hover:border-[#1B1B1B]"
+                          title="Push current deliverables to the linked portal's scope"
+                        >
+                          ↻ Sync deliverables to portal
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
               )}
