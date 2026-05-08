@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowTopRightOnSquareIcon,
@@ -167,7 +168,12 @@ function daysBetween(a: string, b: string): number {
 
 export default function PodDetailClient({ podId }: { podId: string }) {
   const role = useRole();
-  const isAdmin = role === "admin";
+  /* `?view=team` query param force-downgrades the view (set on the team
+   * tile in /team). Keeps team-flavoured chrome even for admins when
+   * they click through from the team hub. */
+  const searchParams = useSearchParams();
+  const forceTeamView = searchParams.get("view") === "team";
+  const isAdmin = role === "admin" && !forceTeamView;
   const [pod, setPod] = useState<Pod | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [clients, setClients] = useState<Client[]>([]);

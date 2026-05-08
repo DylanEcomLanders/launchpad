@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRightIcon,
@@ -40,7 +41,12 @@ type View = "overview" | "pipeline";
 
 export default function PodsIndexClient() {
   const role = useRole();
-  const isAdmin = role === "admin";
+  /* `?view=team` query param force-downgrades the view to non-admin chrome,
+   * so admins clicking through the Team Hub see what the team sees and
+   * sensitive controls stay hidden. */
+  const searchParams = useSearchParams();
+  const forceTeamView = searchParams.get("view") === "team";
+  const isAdmin = role === "admin" && !forceTeamView;
   const [pods, setPods] = useState<Pod[]>([]);
   const [allProjects, setAllProjects] = useState<Project[]>([]);
   const [allClients, setAllClients] = useState<Client[]>([]);
