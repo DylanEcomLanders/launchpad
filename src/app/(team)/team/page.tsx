@@ -5,6 +5,7 @@ import {
   ClipboardDocumentListIcon,
   FolderIcon,
   BookOpenIcon,
+  LightBulbIcon,
   PhotoIcon,
   Squares2X2Icon,
   SwatchIcon,
@@ -18,6 +19,12 @@ const primary = [
     description: "Your pod's work in flight — deliverables, tickets, blockers. Mark tasks done, raise tickets, escalate blockers.",
     href: "/pods-v2?view=team",
     icon: UserGroupIcon,
+  },
+  {
+    title: "Why Pods",
+    description: "How we work, and why. Pods, the week, buckets, the Monday Protocol — read once, pop it open whenever you need a reminder.",
+    href: "/team/why-pods",
+    icon: LightBulbIcon,
   },
   {
     title: "Task Board",
