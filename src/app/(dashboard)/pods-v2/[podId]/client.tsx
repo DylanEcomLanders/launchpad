@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowTopRightOnSquareIcon,
@@ -168,20 +168,24 @@ function daysBetween(a: string, b: string): number {
 
 export default function PodDetailClient({ podId }: { podId: string }) {
   const role = useRole();
-  /* Team-view flag persists across navigation via sessionStorage
-   * (managed by the all-pods route). Honour the ?view=team query
-   * param too in case someone deep-links directly into a pod. */
+  /* Team flavour decided by URL: anything under /team/pods/* runs in
+   * the (team) layout and force-downgrades isAdmin. Legacy ?view=team
+   * + sessionStorage flag still honoured as fallback. */
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [forceTeamView, setForceTeamView] = useState(false);
+  const inTeamRoute = pathname?.startsWith("/team/pods") ?? false;
+  const linkBase = inTeamRoute ? "/team/pods" : "/pods-v2";
+  const [paramTeamView, setParamTeamView] = useState(false);
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (searchParams.get("view") === "team") {
       sessionStorage.setItem("pods-v2-team-view", "1");
-      setForceTeamView(true);
+      setParamTeamView(true);
       return;
     }
-    setForceTeamView(sessionStorage.getItem("pods-v2-team-view") === "1");
+    setParamTeamView(sessionStorage.getItem("pods-v2-team-view") === "1");
   }, [searchParams]);
+  const forceTeamView = inTeamRoute || paramTeamView;
   const isAdmin = role === "admin" && !forceTeamView;
   const [pod, setPod] = useState<Pod | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -258,19 +262,21 @@ export default function PodDetailClient({ podId }: { podId: string }) {
     <div className="mx-auto max-w-7xl px-6 py-8 md:px-10">
       <div className="flex items-center justify-between">
         <Link
-          href="/pods-v2"
+          href={linkBase}
           className="inline-flex items-center gap-1 text-xs text-[#7A7A7A] hover:text-[#1B1B1B]"
         >
           <ChevronLeftIcon className="size-3.5" />
           All pods
         </Link>
-        <Link
-          href="/pods-v2/new-project"
-          className="inline-flex items-center gap-1.5 rounded-lg border border-[#1B1B1B] bg-[#1B1B1B] px-3 py-2 text-xs font-medium text-white shadow-[var(--shadow-soft)] transition-colors hover:bg-[#2D2D2D]"
-        >
-          <PlusIcon className="size-3.5" />
-          New project
-        </Link>
+        {isAdmin && (
+          <Link
+            href="/pods-v2/new-project"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[#1B1B1B] bg-[#1B1B1B] px-3 py-2 text-xs font-medium text-white shadow-[var(--shadow-soft)] transition-colors hover:bg-[#2D2D2D]"
+          >
+            <PlusIcon className="size-3.5" />
+            New project
+          </Link>
+        )}
       </div>
 
       {/* HEADER STRIP */}

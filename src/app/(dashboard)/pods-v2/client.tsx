@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRightIcon,
@@ -41,24 +41,30 @@ type View = "overview" | "pipeline";
 
 export default function PodsIndexClient() {
   const role = useRole();
-  /* Team-view flag — set once when arriving at /pods-v2 with ?view=team,
-   * cleared when arriving at /pods-v2 without it. Sub-routes read the
-   * sessionStorage flag so the team flavour persists across navigation
-   * (Pod 1 → drill in → back). The all-pods route is the manager —
-   * direct sidebar access (no param) re-enters admin mode. */
+  /* Team flavour is decided by URL: when mounted under /team/pods/* the
+   * client is in the team route group, so admin-only chrome stays
+   * hidden + internal links stay inside the team layout. The legacy
+   * ?view=team query param + sessionStorage flag are kept as a
+   * deep-link / Team-Hub fallback so old bookmarks still work. */
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [forceTeamView, setForceTeamView] = useState(false);
+  const inTeamRoute = pathname?.startsWith("/team/pods") ?? false;
+  const linkBase = inTeamRoute ? "/team/pods" : "/pods-v2";
+  const [paramTeamView, setParamTeamView] = useState(false);
   useEffect(() => {
     if (typeof window === "undefined") return;
     const fromParam = searchParams.get("view") === "team";
     if (fromParam) {
       sessionStorage.setItem("pods-v2-team-view", "1");
-      setForceTeamView(true);
-    } else {
+      setParamTeamView(true);
+    } else if (!inTeamRoute) {
       sessionStorage.removeItem("pods-v2-team-view");
-      setForceTeamView(false);
+      setParamTeamView(false);
+    } else {
+      setParamTeamView(sessionStorage.getItem("pods-v2-team-view") === "1");
     }
-  }, [searchParams]);
+  }, [searchParams, inTeamRoute]);
+  const forceTeamView = inTeamRoute || paramTeamView;
   const isAdmin = role === "admin" && !forceTeamView;
   const [pods, setPods] = useState<Pod[]>([]);
   const [allProjects, setAllProjects] = useState<Project[]>([]);
@@ -211,6 +217,7 @@ export default function PodsIndexClient() {
           today={today}
           onAssign={(o) => setAssigning(o)}
           isAdmin={isAdmin}
+          linkBase={linkBase}
         />
       ) : (
         <div className="mt-6">
@@ -275,6 +282,7 @@ function Overview({
   today,
   onAssign,
   isAdmin,
+  linkBase,
 }: {
   pods: Pod[];
   projectsByPod: Record<string, Project[]>;
@@ -286,6 +294,7 @@ function Overview({
   today: string;
   onAssign: (o: OnboardingSubmission) => void;
   isAdmin: boolean;
+  linkBase: string;
 }) {
   return (
     <>
@@ -301,7 +310,7 @@ function Overview({
           return (
             <Link
               key={pod.id}
-              href={`/pods-v2/${pod.id}`}
+              href={`${linkBase}/${pod.id}`}
               className="group rounded-2xl border border-[#E5E5EA] bg-white p-5 shadow-[var(--shadow-soft)] transition-all hover:border-[#C5C5C5] hover:shadow-[var(--shadow-card)]"
             >
               <div className="flex items-start justify-between">

@@ -17,7 +17,7 @@ const primary = [
   {
     title: "Pods",
     description: "Your pod's work in flight — deliverables, tickets, blockers. Mark tasks done, raise tickets, escalate blockers.",
-    href: "/pods-v2?view=team",
+    href: "/team/pods",
     icon: UserGroupIcon,
   },
   {
