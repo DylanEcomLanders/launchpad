@@ -59,6 +59,12 @@ export function taskDueDateFor(
   discipline: TaskDiscipline,
 ): string {
   if (discipline === "development") return project.delivery_date;
+  if (discipline === "strategy") {
+    // Dan's CRO work is due end of week 1 = Friday after the Monday kickoff.
+    const d = new Date(`${project.kickoff_date}T12:00:00`);
+    d.setDate(d.getDate() + 4);
+    return d.toISOString().slice(0, 10);
+  }
   // Design due = delivery minus 7 days, snapped backward to the previous Thursday.
   const d = new Date(`${project.delivery_date}T12:00:00`);
   d.setDate(d.getDate() - 7);
@@ -402,6 +408,56 @@ export function resumeTask(taskId: string): void {
  * type (any other PDP, etc.), the new one comes in at half points. The
  * caller passes the *full* points value; we halve it here when the
  * second-of-type rule applies. */
+/* Seed Dan (the CRO lead) with W1 strategy + wireframe tasks for a
+ * project. Called by the Assign-to-Pod flow when the engagement is a
+ * Conversion Engine retainer. One Strategy + one Wireframe task per
+ * deliverable, both due end of W1 (Friday after the Monday kickoff).
+ *
+ * Items is the same labelled list the modal uses to title the
+ * design+dev pairs — keeps strategy/wireframe titles in sync. */
+export function seedDanForProject(input: {
+  project_id: string;
+  items: Array<{ type: PageType; label: string }>;
+}): void {
+  const project = getProjects().find((p) => p.id === input.project_id);
+  const dan = read<PodMember>(LS_CRO_LEADS)[0];
+  if (!project || !dan) return;
+
+  const due = taskDueDateFor(project, "strategy");
+  const nowIso = new Date().toISOString();
+  const newTasks: Task[] = [];
+
+  for (const it of input.items) {
+    const label = PAGE_LABEL[it.type];
+    const variant = it.label.trim() ? ` · ${it.label.trim()}` : "";
+    newTasks.push({
+      id: uid(),
+      project_id: project.id,
+      title: `Strategy – ${label}${variant}`,
+      type: "asset_prep",
+      discipline: "strategy",
+      assigned_to: dan.id,
+      status: "todo",
+      due_date: due,
+      created_at: nowIso,
+    });
+    newTasks.push({
+      id: uid(),
+      project_id: project.id,
+      title: `Wireframe – ${label}${variant}`,
+      type: "asset_prep",
+      discipline: "strategy",
+      assigned_to: dan.id,
+      status: "todo",
+      due_date: due,
+      created_at: nowIso,
+    });
+  }
+
+  const tasks = getTasks();
+  write(LS_TASKS, [...tasks, ...newTasks]);
+}
+
 export function addPairedDeliverable(input: {
   project_id: string;
   deliverable_type: PageType;

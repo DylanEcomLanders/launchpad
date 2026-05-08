@@ -20,6 +20,7 @@ import {
   getProjects,
   getTasks,
   resetAndReseed,
+  seedDanForProject,
   updateCroLeadAvatar,
   updateTaskStatus,
 } from "@/lib/pods-v2/data";
@@ -600,6 +601,11 @@ function AssignToPodModal({
   const [items, setItems] = useState<Array<{ id: string; type: PageType; label: string }>>([]);
   const [source, setSource] = useState<"portal" | "deliverables" | "page_type" | "blank">("blank");
   const [submitting, setSubmitting] = useState(false);
+  /* Conversion Engine flag — when ticked, also routes the engagement
+   * through Dan's CRO Pipeline (W1 strategy + wireframes per
+   * deliverable, due Friday W1) before pod design starts. Persists
+   * retainer_tier="8k" on the auto-created Client too. */
+  const [conversionEngine, setConversionEngine] = useState(false);
 
   /* Source-of-truth chain for deliverables, in order:
    *   1. Linked portal's `scope` array (PM's working source while building scope)
@@ -690,7 +696,8 @@ function AssignToPodModal({
         name: companyName,
         pod_id: podId,
         brand_warm: false,
-        retainer_tier: "8k",
+        // Conversion Engine ticked → £8K retainer; otherwise project-only.
+        retainer_tier: conversionEngine ? "8k" : "none",
       });
     }
 
@@ -737,6 +744,16 @@ function AssignToPodModal({
       });
       // Direct write — tasks are localStorage-backed
       localStorage.setItem("launchpad-pods-v2-tasks", JSON.stringify(updated));
+    }
+
+    /* Conversion Engine retainer → also seed Dan with W1 strategy +
+     * wireframe tasks per deliverable. Lands on Dan's CRO Pipeline
+     * before the pod's design week starts. */
+    if (conversionEngine) {
+      seedDanForProject({
+        project_id: project.id,
+        items: items.map((it) => ({ type: it.type, label: it.label })),
+      });
     }
 
     setSubmitting(false);
@@ -790,6 +807,28 @@ function AssignToPodModal({
               Kickoff rolls forward to the next Monday. Design due Friday week 1; dev due delivery Thursday.
             </p>
           </div>
+
+          <label
+            className={`flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 ${
+              conversionEngine ? "border-[#16A34A] bg-emerald-50" : "border-[#E5E5EA]"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={conversionEngine}
+              onChange={(e) => setConversionEngine(e.target.checked)}
+              className="mt-0.5"
+            />
+            <div className="flex-1">
+              <div className="text-xs font-medium text-[#1B1B1B]">
+                Conversion Engine retainer
+              </div>
+              <div className="text-[10px] text-[#7A7A7A]">
+                Hands W1 strategy + wireframes to Dan first. Each deliverable creates a Strategy
+                + Wireframe task on the CRO Pipeline, due Friday week 1. Pod design starts after.
+              </div>
+            </div>
+          </label>
 
           <div>
             <div className="mb-1 flex items-center justify-between">
