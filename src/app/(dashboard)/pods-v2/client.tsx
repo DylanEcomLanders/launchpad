@@ -137,7 +137,7 @@ export default function PodsIndexClient() {
           <p className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
             Operating system
           </p>
-          <h1 className="mt-1 text-3xl font-medium tracking-tight">Pods v2</h1>
+          <h1 className="mt-1 text-3xl font-medium tracking-tight">Pod Overview</h1>
           <p className="mt-1 max-w-xl text-sm text-[#7A7A7A]">
             Three pods. One cadence. Mondays kick off, Thursdays ship.
           </p>

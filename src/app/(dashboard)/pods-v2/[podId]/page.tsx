@@ -1,7 +1,7 @@
 import PodDetailClient from "./client";
 
 export const metadata = {
-  title: "Pod · Pods v2 · Launchpad",
+  title: "Pod · Pod Overview · Launchpad",
 };
 
 export default async function PodPage({

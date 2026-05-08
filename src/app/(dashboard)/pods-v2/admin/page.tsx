@@ -1,7 +1,7 @@
 import AdminClient from "./client";
 
 export const metadata = {
-  title: "Admin · Pods v2 · Launchpad",
+  title: "Admin · Pod Overview · Launchpad",
 };
 
 export default function PodsAdminPage() {

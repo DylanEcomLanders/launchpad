@@ -1,7 +1,7 @@
 import PipelineClient from "./client";
 
 export const metadata = {
-  title: "Pipeline · Pods v2 · Launchpad",
+  title: "Pipeline · Pod Overview · Launchpad",
 };
 
 export default function PipelinePage() {

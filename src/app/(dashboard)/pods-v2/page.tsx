@@ -1,7 +1,7 @@
 import PodsIndexClient from "./client";
 
 export const metadata = {
-  title: "Pods v2 · Launchpad",
+  title: "Pod Overview · Launchpad",
 };
 
 export default function PodsV2IndexPage() {
