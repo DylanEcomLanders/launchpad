@@ -168,11 +168,20 @@ function daysBetween(a: string, b: string): number {
 
 export default function PodDetailClient({ podId }: { podId: string }) {
   const role = useRole();
-  /* `?view=team` query param force-downgrades the view (set on the team
-   * tile in /team). Keeps team-flavoured chrome even for admins when
-   * they click through from the team hub. */
+  /* Team-view flag persists across navigation via sessionStorage
+   * (managed by the all-pods route). Honour the ?view=team query
+   * param too in case someone deep-links directly into a pod. */
   const searchParams = useSearchParams();
-  const forceTeamView = searchParams.get("view") === "team";
+  const [forceTeamView, setForceTeamView] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (searchParams.get("view") === "team") {
+      sessionStorage.setItem("pods-v2-team-view", "1");
+      setForceTeamView(true);
+      return;
+    }
+    setForceTeamView(sessionStorage.getItem("pods-v2-team-view") === "1");
+  }, [searchParams]);
   const isAdmin = role === "admin" && !forceTeamView;
   const [pod, setPod] = useState<Pod | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);

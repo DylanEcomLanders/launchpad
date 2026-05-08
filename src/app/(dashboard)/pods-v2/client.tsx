@@ -41,11 +41,24 @@ type View = "overview" | "pipeline";
 
 export default function PodsIndexClient() {
   const role = useRole();
-  /* `?view=team` query param force-downgrades the view to non-admin chrome,
-   * so admins clicking through the Team Hub see what the team sees and
-   * sensitive controls stay hidden. */
+  /* Team-view flag — set once when arriving at /pods-v2 with ?view=team,
+   * cleared when arriving at /pods-v2 without it. Sub-routes read the
+   * sessionStorage flag so the team flavour persists across navigation
+   * (Pod 1 → drill in → back). The all-pods route is the manager —
+   * direct sidebar access (no param) re-enters admin mode. */
   const searchParams = useSearchParams();
-  const forceTeamView = searchParams.get("view") === "team";
+  const [forceTeamView, setForceTeamView] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const fromParam = searchParams.get("view") === "team";
+    if (fromParam) {
+      sessionStorage.setItem("pods-v2-team-view", "1");
+      setForceTeamView(true);
+    } else {
+      sessionStorage.removeItem("pods-v2-team-view");
+      setForceTeamView(false);
+    }
+  }, [searchParams]);
   const isAdmin = role === "admin" && !forceTeamView;
   const [pods, setPods] = useState<Pod[]>([]);
   const [allProjects, setAllProjects] = useState<Project[]>([]);
