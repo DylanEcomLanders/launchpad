@@ -159,7 +159,7 @@ export function MemberAvatar({
    * back so the caller can persist it. */
   onChangeAvatar?: (newUrl: string) => void;
 }) {
-  const px = size === "sm" ? 36 : size === "lg" ? 64 : 48;
+  const px = size === "sm" ? 40 : size === "lg" ? 72 : 56;
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
 

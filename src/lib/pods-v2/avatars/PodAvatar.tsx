@@ -281,26 +281,30 @@ export interface AvatarProps {
 function Character(p: AvatarProps): ReactElement {
   const size = p.size ?? 48;
   return (
-    <svg
-      viewBox="0 0 120 100"
-      width={size}
-      height={(size * 100) / 120}
-      role="img"
-      aria-hidden
-      className="shrink-0"
-      preserveAspectRatio="xMidYMid meet"
+    <div
+      style={{ width: size, height: size }}
+      className="shrink-0 overflow-hidden rounded-md bg-[#F3F3F5]"
     >
-      <Shoulders />
-      <Neck />
-      <FaceShape />
-      <Ear side="left" />
-      <Ear side="right" />
-      <Eyes style={p.eyes ?? "dots"} />
-      <Nose style={p.nose ?? "comma"} />
-      <Mouth style={p.mouth ?? "smile"} />
-      {/* Hair drawn last so it overlaps face crown */}
-      <Hair style={p.hair} />
-    </svg>
+      <svg
+        viewBox="10 0 100 100"
+        width={size}
+        height={size}
+        role="img"
+        aria-hidden
+        preserveAspectRatio="xMidYMid slice"
+      >
+        <Shoulders />
+        <Neck />
+        <FaceShape />
+        <Ear side="left" />
+        <Ear side="right" />
+        <Eyes style={p.eyes ?? "dots"} />
+        <Nose style={p.nose ?? "comma"} />
+        <Mouth style={p.mouth ?? "smile"} />
+        {/* Hair drawn last so it overlaps face crown */}
+        <Hair style={p.hair} />
+      </svg>
+    </div>
   );
 }
 
@@ -343,8 +347,8 @@ export function PodAvatar({ name, size = 48, isPlaceholder, avatarUrl }: PodAvat
         src={avatarUrl}
         alt={name}
         width={size}
-        height={(size * 100) / 120}
-        style={{ width: size, height: (size * 100) / 120, objectFit: "cover" }}
+        height={size}
+        style={{ width: size, height: size, objectFit: "cover" }}
         className="shrink-0 rounded-md"
       />
     );
@@ -352,21 +356,21 @@ export function PodAvatar({ name, size = 48, isPlaceholder, avatarUrl }: PodAvat
   if (isPlaceholder) {
     return (
       <div
-        style={{ width: size, height: (size * 100) / 120 }}
+        style={{ width: size, height: size }}
         className="grid shrink-0 place-items-center rounded-md border border-dashed border-[#C5C5C5] bg-white"
       >
         <svg
-          viewBox="0 0 120 100"
+          viewBox="0 0 120 120"
           width={size * 0.85}
-          height={(size * 0.85 * 100) / 120}
+          height={size * 0.85}
           fill="none"
           stroke="#A0A0A0"
           strokeWidth="1.6"
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <circle cx="60" cy="40" r="20" />
-          <path d="M30 92 C30 76, 44 70, 60 70 C76 70, 90 76, 90 92" />
+          <circle cx="60" cy="48" r="22" />
+          <path d="M28 110 C28 88, 44 80, 60 80 C76 80, 92 88, 92 110" />
         </svg>
       </div>
     );
@@ -381,7 +385,7 @@ export function PodAvatar({ name, size = 48, isPlaceholder, avatarUrl }: PodAvat
       .toUpperCase();
     return (
       <div
-        style={{ width: size, height: (size * 100) / 120, fontSize: size * 0.3 }}
+        style={{ width: size, height: size, fontSize: size * 0.34 }}
         className="grid shrink-0 place-items-center rounded-md bg-[#1A1F50] font-semibold text-white"
       >
         {initials}
