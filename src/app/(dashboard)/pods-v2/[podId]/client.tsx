@@ -31,12 +31,14 @@ import {
   resolveBlocker,
   resumeTask,
   updateMemberAvatar,
+  updatePodSlackChannel,
   updateTaskPhase,
   updateTaskPriority,
   updateTaskStatus,
 } from "@/lib/pods-v2/data";
 import {
   capacityUsed,
+  fourWeekWindow,
   isMidWeekKickoff,
 } from "@/lib/pods-v2/calc";
 import {
@@ -50,6 +52,7 @@ import {
   Project,
   RETAINER_SCOPE,
   RetainerTier,
+  CYCLE_WEEK_LABEL,
   TASK_PHASE_LABEL,
   TASK_PHASE_ORDER,
   Task,
@@ -210,7 +213,22 @@ export default function PodDetailClient({ podId }: { podId: string }) {
 
   const today = todayYMD();
 
-  const used = useMemo(() => capacityUsed(projects, tasks), [projects, tasks]);
+  /* Two windows for the meter — current 4-week month from today's Mon,
+   * then the 4 weeks after that. M2/M3 cycle tasks carry half-points
+   * so the next-month projection actually catches the iteration load. */
+  const { used, nextMonthUsed } = useMemo(() => {
+    const tw = fourWeekWindow(today);
+    const dayAfterEnd = (() => {
+      const d = new Date(`${tw.end}T12:00:00`);
+      d.setDate(d.getDate() + 1);
+      return d.toISOString().slice(0, 10);
+    })();
+    const nw = fourWeekWindow(dayAfterEnd);
+    return {
+      used: capacityUsed(projects, tasks, tw.start, tw.end),
+      nextMonthUsed: capacityUsed(projects, tasks, nw.start, nw.end),
+    };
+  }, [projects, tasks, today]);
 
   const clientById = useMemo(() => {
     const map = new Map<string, Client>();
@@ -299,6 +317,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
         <CapacityPanel
           pod={pod}
           used={used}
+          nextMonthUsed={nextMonthUsed}
           projects={projects}
           tasks={tasks}
           midWeekCount={midWeekCount}
@@ -306,7 +325,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
       </div>
 
       {/* BLOCKERS — pod-wide blockers visible to everyone */}
-      <PodBlockersPanel pod={pod} onMutate={refresh} />
+      <PodBlockersPanel pod={pod} onMutate={refresh} isAdmin={isAdmin} />
 
       {/* CLIENT ROSTER — moved up */}
       <ClientRoster clients={clients} currentPodId={pod.id} onMutate={refresh} canUnassign={isAdmin} />
@@ -334,12 +353,14 @@ export default function PodDetailClient({ podId }: { podId: string }) {
 function CapacityPanel({
   pod,
   used,
+  nextMonthUsed,
   projects,
   tasks,
   midWeekCount,
 }: {
   pod: Pod;
   used: number;
+  nextMonthUsed: number;
   projects: Project[];
   tasks: Task[];
   midWeekCount: number;
@@ -356,6 +377,10 @@ function CapacityPanel({
         t.status !== "done",
     ).length,
   }));
+  const cycleProjectIds = new Set(tasks.filter((t) => t.cycle).map((t) => t.project_id));
+  const cycleRetainers = projects.filter(
+    (p) => cycleProjectIds.has(p.id) && p.status !== "shipped" && p.status !== "slipped",
+  ).length;
 
   return (
     <div className="rounded-2xl border border-[#E5E5EA] bg-white p-5 shadow-[var(--shadow-soft)]">
@@ -365,6 +390,8 @@ function CapacityPanel({
             used={used}
             total={pod.capacity_points_per_month}
             label="Capacity this month"
+            cycleRetainers={cycleRetainers}
+            nextMonthUsed={nextMonthUsed}
           />
         </div>
         <SnapshotStat label="In flight" value={inFlight} />
@@ -656,6 +683,14 @@ function PrimaryTaskRow({
           }`}
         >
           <span className="truncate">{task.title}</span>
+          {task.cycle && (
+            <span
+              className="shrink-0 rounded border border-emerald-200 bg-emerald-50 px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-emerald-800"
+              title={`Conversion Engine — Month ${task.cycle.month}, Week ${task.cycle.week} (${CYCLE_WEEK_LABEL[task.cycle.week]})`}
+            >
+              M{task.cycle.month} · W{task.cycle.week} · {CYCLE_WEEK_LABEL[task.cycle.week]}
+            </span>
+          )}
           {task.points != null && (
             <span
               className="shrink-0 rounded border border-[#E5E5EA] bg-white px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-[#7A7A7A]"
@@ -1250,11 +1285,24 @@ function AddTaskInline({
 
 // ─── Pod blockers panel ──────────────────────────────────────────
 
-function PodBlockersPanel({ pod, onMutate }: { pod: Pod; onMutate: () => void }) {
+function PodBlockersPanel({
+  pod,
+  onMutate,
+  isAdmin,
+}: {
+  pod: Pod;
+  onMutate: () => void;
+  isAdmin: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [ownerId, setOwnerId] = useState<string>("");
+  /* Slack channel editor — admins can paste a channel id. Saved on
+   * blur; shows a tiny green dot when configured so the team knows
+   * blocker pings are live. */
+  const [editingSlack, setEditingSlack] = useState(false);
+  const [slackDraft, setSlackDraft] = useState(pod.slack_channel_id || "");
 
   const blockers = pod.blockers || [];
   const active = blockers.filter((b) => !b.resolved_at);
@@ -1283,7 +1331,47 @@ function PodBlockersPanel({ pod, onMutate }: { pod: Pod; onMutate: () => void })
           </h2>
           <p className="mt-0.5 text-xs text-[#7A7A7A]">
             Pod-wide blockers everyone needs to see — a missing asset, a sick teammate, a tool down.
+            {pod.slack_channel_id && (
+              <span className="ml-1.5 inline-flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-emerald-800">
+                <span className="size-1 rounded-full bg-emerald-500" /> Slack
+              </span>
+            )}
           </p>
+          {isAdmin && (
+            <div className="mt-1 flex items-center gap-1.5 text-[10px] text-[#A0A0A0]">
+              <span>Slack channel:</span>
+              {editingSlack ? (
+                <>
+                  <input
+                    autoFocus
+                    value={slackDraft}
+                    onChange={(e) => setSlackDraft(e.target.value)}
+                    placeholder="C0123456 (channel id)"
+                    className="rounded border border-[#E5E5EA] bg-white px-1.5 py-0.5 text-[10px]"
+                    onBlur={() => {
+                      updatePodSlackChannel(pod.id, slackDraft.trim());
+                      setEditingSlack(false);
+                      onMutate();
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                      if (e.key === "Escape") {
+                        setSlackDraft(pod.slack_channel_id || "");
+                        setEditingSlack(false);
+                      }
+                    }}
+                  />
+                </>
+              ) : (
+                <button
+                  onClick={() => setEditingSlack(true)}
+                  className="font-mono text-[#1B1B1B] hover:underline"
+                >
+                  {pod.slack_channel_id || "— not set —"}
+                </button>
+              )}
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2 text-[11px] tabular-nums text-[#A0A0A0]">
           <span className={active.length > 0 ? "font-semibold text-rose-700" : ""}>

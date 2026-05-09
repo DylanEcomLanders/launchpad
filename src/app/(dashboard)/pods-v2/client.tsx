@@ -20,7 +20,7 @@ import {
   getProjects,
   getTasks,
   resetAndReseed,
-  seedDanForProject,
+  seedConversionEngineCycle,
   updateCroLeadAvatar,
   updateTaskStatus,
 } from "@/lib/pods-v2/data";
@@ -34,7 +34,7 @@ import {
   Project,
   Task,
 } from "@/lib/pods-v2/types";
-import { capacityUsed, isMidWeekKickoff } from "@/lib/pods-v2/calc";
+import { capacityUsed, fourWeekWindow, isMidWeekKickoff } from "@/lib/pods-v2/calc";
 import { formatDayMonth, todayYMD } from "@/lib/dates";
 import { formatTimeInPhase } from "@/lib/task-board/phases";
 import { CapacityMeter, MemberAvatar } from "./components";
@@ -323,12 +323,42 @@ function Overview({
       <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
         {pods.map((pod) => {
           const projects = projectsByPod[pod.id] ?? [];
-          const used = capacityUsed(projects, allTasks);
+          /* Two windows so the meter shows current vs next-month load.
+           * `thisMonth` = next 4 weeks from today's Monday; `nextMonth`
+           * = the 4 weeks after that. Capacity is design-discipline
+           * points (paired tasks share one points value) whose due_date
+           * lands in each window. M2/M3 cycle tasks now carry half-
+           * points so they show up in the projection. */
+          const thisMonth = fourWeekWindow(today);
+          const nextMonthStart = (() => {
+            const d = new Date(`${thisMonth.end}T12:00:00`);
+            d.setDate(d.getDate() + 1);
+            return d.toISOString().slice(0, 10);
+          })();
+          const nextMonth = fourWeekWindow(nextMonthStart);
+          const used = capacityUsed(projects, allTasks, thisMonth.start, thisMonth.end);
+          const nextMonthUsed = capacityUsed(projects, allTasks, nextMonth.start, nextMonth.end);
           const midWeek = projects.filter(isMidWeekKickoff).length;
+          const rushCount = projects.filter(
+            (p) => p.is_rush && p.status !== "shipped" && p.status !== "slipped",
+          ).length;
           const inFlight = projects.filter(
             (p) => p.status === "in_progress" || p.status === "in_review",
           ).length;
           const activeBlockers = (pod.blockers || []).filter((b) => !b.resolved_at).length;
+          /* Forward-looking signal: count Conversion Engine retainers
+           * (projects with at least one cycle-tagged task) that aren't
+           * already shipped/slipped — represents queued 90-day work
+           * beyond this month's capacity bar. */
+          const cycleProjectIds = new Set(
+            allTasks.filter((t) => t.cycle).map((t) => t.project_id),
+          );
+          const cycleRetainers = projects.filter(
+            (p) =>
+              cycleProjectIds.has(p.id) &&
+              p.status !== "shipped" &&
+              p.status !== "slipped",
+          ).length;
           return (
             <Link
               key={pod.id}
@@ -355,14 +385,17 @@ function Overview({
                 <CapacityMeter
                   used={used}
                   total={pod.capacity_points_per_month}
+                  cycleRetainers={cycleRetainers}
+                  nextMonthUsed={nextMonthUsed}
                 />
               </div>
 
               <div className="mt-3 grid grid-cols-4 gap-2 text-xs">
                 <PodStat label="In flight" value={inFlight} />
                 <PodStat
-                  label="Total active"
-                  value={projects.filter((p) => p.status !== "shipped").length}
+                  label="Rush"
+                  value={rushCount}
+                  alert={rushCount > 0}
                 />
                 <PodStat
                   label="Mid-week"
@@ -606,6 +639,11 @@ function AssignToPodModal({
    * deliverable, due Friday W1) before pod design starts. Persists
    * retainer_tier="8k" on the auto-created Client too. */
   const [conversionEngine, setConversionEngine] = useState(false);
+  /* Rush flag — bypasses the Monday-snap (kickoff = signoff_date) and
+   * halves the bucket duration. Per the team launch deck, rush is the
+   * exception so it's the second checkbox not a default; pod cards
+   * track count so heavy rush use shows up in the operating model. */
+  const [rush, setRush] = useState(false);
 
   /* Source-of-truth chain for deliverables, in order:
    *   1. Linked portal's `scope` array (PM's working source while building scope)
@@ -717,7 +755,7 @@ function AssignToPodModal({
       pages,
       signoff_date: signoffDate,
       signoff_hour: 12,
-      is_rush: false,
+      is_rush: rush,
       brand_warm: client.brand_warm,
       onboarding_id: onboarding.id,
     });
@@ -746,11 +784,13 @@ function AssignToPodModal({
       localStorage.setItem("launchpad-pods-v2-tasks", JSON.stringify(updated));
     }
 
-    /* Conversion Engine retainer → also seed Dan with W1 strategy +
-     * wireframe tasks per deliverable. Lands on Dan's CRO Pipeline
-     * before the pod's design week starts. */
+    /* Conversion Engine retainer → seed the full 12-week cycle
+     * (3 monthly W1→W4 rounds), autopaired across designer + dev. Drops
+     * the default M1 design+build tasks createProject just seeded
+     * (their dates assume a 10/15/20-day bucket) and rebuilds them with
+     * proper week dates + cycle metadata for the M{n} W{n} chip. */
     if (conversionEngine) {
-      seedDanForProject({
+      seedConversionEngineCycle({
         project_id: project.id,
         items: items.map((it) => ({ type: it.type, label: it.label })),
       });
@@ -824,8 +864,28 @@ function AssignToPodModal({
                 Conversion Engine retainer
               </div>
               <div className="text-[10px] text-[#7A7A7A]">
-                Hands W1 strategy + wireframes to Dan first. Each deliverable creates a Strategy
-                + Wireframe task on the CRO Pipeline, due Friday week 1. Pod design starts after.
+                Pre-seeds the full 90-day cycle: 3 months × W1 strategy → W2 design → W3 build → W4 test, autopaired across designer + dev. Project delivery moves to W12 Thu.
+              </div>
+            </div>
+          </label>
+
+          <label
+            className={`flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 ${
+              rush ? "border-rose-400 bg-rose-50" : "border-[#E5E5EA]"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={rush}
+              onChange={(e) => setRush(e.target.checked)}
+              className="mt-0.5"
+            />
+            <div className="flex-1">
+              <div className="text-xs font-medium text-[#1B1B1B]">
+                Rush — exception flow
+              </div>
+              <div className="text-[10px] text-[#7A7A7A]">
+                Skips the Monday-snap (kickoff = signoff date) and halves bucket duration. Use sparingly — pod cards track rush count so heavy use shows up in the operating model.
               </div>
             </div>
           </label>
@@ -967,6 +1027,29 @@ function CroPipeline({
     tasksByPod.get(podId)!.push(t);
   }
 
+  /* Within a pod section, sub-group Conversion Engine cycle tasks by
+   * month so the 3-month runway is visible at a glance. Tasks without a
+   * cycle (manually-added strategy work) sit in an "Ad-hoc" group. */
+  function subGroupByMonth(podTasks: Task[]): Array<{ key: string; label: string; tasks: Task[] }> {
+    const buckets = new Map<string, Task[]>();
+    for (const t of podTasks) {
+      const key = t.cycle ? `m${t.cycle.month}` : "adhoc";
+      if (!buckets.has(key)) buckets.set(key, []);
+      buckets.get(key)!.push(t);
+    }
+    const order = ["m1", "m2", "m3", "adhoc"];
+    return order
+      .filter((k) => buckets.has(k))
+      .map((k) => ({
+        key: k,
+        label:
+          k === "adhoc"
+            ? "Ad-hoc"
+            : `Month ${k.slice(1)}`,
+        tasks: buckets.get(k)!,
+      }));
+  }
+
   const allProjects = Array.from(projectById.values());
 
   return (
@@ -977,7 +1060,7 @@ function CroPipeline({
             CRO Pipeline
           </h2>
           <p className="mt-0.5 text-xs text-[#7A7A7A]">
-            {dan.name}&apos;s strategy + wireframe work across all pods. Week 1 of every retainer cycle lands here first.
+            {dan.name}&apos;s strategy + wireframe work across all pods. Pre-seeded for the full 90-day cycle on Conversion Engine retainers — grouped by month so the runway is visible at a glance.
           </p>
         </div>
         <span className="text-[11px] tabular-nums text-[#A0A0A0]">
@@ -1078,73 +1161,89 @@ function CroPipeline({
           <div>
             {Array.from(tasksByPod.entries()).map(([podId, podTasks]) => {
               const pod = pods.find((p) => p.id === podId);
+              const groups = subGroupByMonth(podTasks);
               return (
                 <div key={podId} className="border-b border-[#EDEDEF] last:border-b-0">
                   <div className="bg-[#FAFAFA] px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
                     {pod?.name || "Unassigned pod"}
                   </div>
-                  {podTasks.map((t) => {
-                    const project = projectById.get(t.project_id);
-                    const client = project ? clientById.get(project.client_id) : undefined;
-                    const isDone = t.status === "done";
-                    const ageHours = Math.max(0, Math.floor((Date.now() - new Date(t.created_at).getTime()) / 3_600_000));
-                    const ageColor = ageHours >= 48 ? "text-rose-700" : ageHours >= 24 ? "text-amber-700" : "text-emerald-700";
-                    const ageLabel = formatTimeInPhase(t.created_at);
+                  {groups.map((g) => {
+                    const showHeader = groups.length > 1 || g.key !== "adhoc";
                     return (
-                      <div
-                        key={t.id}
-                        className={`group flex items-center gap-3 px-4 py-2 hover:bg-[#F7F8FA] ${isDone ? "opacity-50" : ""}`}
-                      >
-                        <button
-                          onClick={() => {
-                            const next = isDone ? "todo" : t.status === "in_progress" ? "done" : "in_progress";
-                            updateTaskStatus(t.id, next);
-                            onMutate();
-                          }}
-                          className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-                            isDone
-                              ? "border-emerald-500 bg-emerald-500 text-white"
-                              : t.status === "in_progress"
-                                ? "border-blue-500 bg-white text-blue-500"
-                                : "border-[#D5D5DC] bg-white hover:border-[#1B1B1B]"
-                          }`}
-                          title="Cycle status"
-                        >
-                          {isDone && (
-                            <svg viewBox="0 0 12 12" className="size-3" fill="currentColor">
-                              <path d="M10.28 3.28L4.5 9.06 1.72 6.28l1.06-1.06L4.5 6.94l4.72-4.72z" />
-                            </svg>
-                          )}
-                          {t.status === "in_progress" && <span className="size-1.5 rounded-full bg-blue-500" />}
-                        </button>
-                        <div className="min-w-0 flex-1">
-                          <div className={`truncate text-sm leading-tight ${isDone ? "text-[#A0A0A0] line-through" : "text-[#1B1B1B]"}`}>
-                            {t.title}
+                      <div key={g.key}>
+                        {showHeader && (
+                          <div className="bg-emerald-50/40 px-4 py-1 text-[9px] font-semibold uppercase tracking-wider text-emerald-800">
+                            {g.label}
+                            <span className="ml-1.5 text-[#A0A0A0]">
+                              · {g.tasks.filter((t) => t.status !== "done").length} open
+                            </span>
                           </div>
-                          {client && (
-                            <div className="mt-0.5 truncate text-[11px] text-[#7A7A7A]">
-                              <span className="font-medium text-[#1B1B1B]">{client.name}</span>
-                              {project && <span className="text-[#A0A0A0]"> · {project.name}</span>}
-                            </div>
-                          )}
-                        </div>
-                        <span className={`shrink-0 text-[11px] font-medium tabular-nums ${ageColor}`} title={`Opened ${new Date(t.created_at).toLocaleString()}`}>
-                          {ageLabel}
-                        </span>
-                        {isAdmin && (
-                          <button
-                            onClick={() => {
-                              if (confirm(`Delete task "${t.title}"?`)) {
-                                deleteTask(t.id);
-                                onMutate();
-                              }
-                            }}
-                            className="opacity-0 transition-opacity group-hover:opacity-100"
-                            title="Delete task"
-                          >
-                            <span className="text-[#A0A0A0] hover:text-rose-600">×</span>
-                          </button>
                         )}
+                        {g.tasks.map((t) => {
+                          const project = projectById.get(t.project_id);
+                          const client = project ? clientById.get(project.client_id) : undefined;
+                          const isDone = t.status === "done";
+                          const ageHours = Math.max(0, Math.floor((Date.now() - new Date(t.created_at).getTime()) / 3_600_000));
+                          const ageColor = ageHours >= 48 ? "text-rose-700" : ageHours >= 24 ? "text-amber-700" : "text-emerald-700";
+                          const ageLabel = formatTimeInPhase(t.created_at);
+                          return (
+                            <div
+                              key={t.id}
+                              className={`group flex items-center gap-3 px-4 py-2 hover:bg-[#F7F8FA] ${isDone ? "opacity-50" : ""}`}
+                            >
+                              <button
+                                onClick={() => {
+                                  const next = isDone ? "todo" : t.status === "in_progress" ? "done" : "in_progress";
+                                  updateTaskStatus(t.id, next);
+                                  onMutate();
+                                }}
+                                className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                                  isDone
+                                    ? "border-emerald-500 bg-emerald-500 text-white"
+                                    : t.status === "in_progress"
+                                      ? "border-blue-500 bg-white text-blue-500"
+                                      : "border-[#D5D5DC] bg-white hover:border-[#1B1B1B]"
+                                }`}
+                                title="Cycle status"
+                              >
+                                {isDone && (
+                                  <svg viewBox="0 0 12 12" className="size-3" fill="currentColor">
+                                    <path d="M10.28 3.28L4.5 9.06 1.72 6.28l1.06-1.06L4.5 6.94l4.72-4.72z" />
+                                  </svg>
+                                )}
+                                {t.status === "in_progress" && <span className="size-1.5 rounded-full bg-blue-500" />}
+                              </button>
+                              <div className="min-w-0 flex-1">
+                                <div className={`truncate text-sm leading-tight ${isDone ? "text-[#A0A0A0] line-through" : "text-[#1B1B1B]"}`}>
+                                  {t.title}
+                                </div>
+                                {client && (
+                                  <div className="mt-0.5 truncate text-[11px] text-[#7A7A7A]">
+                                    <span className="font-medium text-[#1B1B1B]">{client.name}</span>
+                                    {project && <span className="text-[#A0A0A0]"> · {project.name}</span>}
+                                  </div>
+                                )}
+                              </div>
+                              <span className={`shrink-0 text-[11px] font-medium tabular-nums ${ageColor}`} title={`Opened ${new Date(t.created_at).toLocaleString()}`}>
+                                {ageLabel}
+                              </span>
+                              {isAdmin && (
+                                <button
+                                  onClick={() => {
+                                    if (confirm(`Delete task "${t.title}"?`)) {
+                                      deleteTask(t.id);
+                                      onMutate();
+                                    }
+                                  }}
+                                  className="opacity-0 transition-opacity group-hover:opacity-100"
+                                  title="Delete task"
+                                >
+                                  <span className="text-[#A0A0A0] hover:text-rose-600">×</span>
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     );
                   })}

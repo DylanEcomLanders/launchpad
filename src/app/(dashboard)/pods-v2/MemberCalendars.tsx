@@ -73,6 +73,7 @@ const PHASE_DOT: Record<TaskPhase, string> = {
 };
 
 const DISCIPLINE_BADGE: Record<TaskDiscipline, string> = {
+  strategy: "border-amber-200 bg-amber-50 text-amber-800",
   design: "border-purple-200 bg-purple-50 text-purple-800",
   development: "border-emerald-200 bg-emerald-50 text-emerald-800",
 };

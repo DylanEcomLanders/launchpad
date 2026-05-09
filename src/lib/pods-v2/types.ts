@@ -29,6 +29,10 @@ export interface Pod {
   /** Active blockers raised on this pod. Active = no resolved_at. Visible
    * to everyone in the pod and surfaced as a count on the overview. */
   blockers?: PodBlocker[];
+  /** Slack channel ID (e.g. "C0123456") for pod-internal notifications.
+   * When set, raising a blocker pings this channel so the team can
+   * react without opening Launchpad. Optional — empty string disables. */
+  slack_channel_id?: string;
 }
 
 export interface PodBlocker {
@@ -168,7 +172,20 @@ export interface Task {
   /** Other half of a design+dev deliverable pair — design task points to
    * its dev counterpart, and vice versa. */
   paired_task_id?: string;
+  /** Conversion Engine cycle position. Engagements run as 3 monthly
+   * cycles of W1 strategy → W2 design → W3 build → W4 test/prep. Tasks
+   * created outside that flow leave this undefined. */
+  cycle?: { month: 1 | 2 | 3; week: 1 | 2 | 3 | 4 };
 }
+
+/** Phase label derived from the cycle week — used for the
+ * `M{n} · W{n} · {phase}` chip on Conversion Engine tasks. */
+export const CYCLE_WEEK_LABEL: Record<1 | 2 | 3 | 4, string> = {
+  1: "Strategy",
+  2: "Design",
+  3: "Build",
+  4: "Test",
+};
 
 export const TASK_PHASE_LABEL: Record<TaskPhase, string> = {
   onboarding: "Onboarding",

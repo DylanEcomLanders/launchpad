@@ -67,10 +67,28 @@ function formatYMD(d: Date): string {
  * Rule: kickoffs only happen on Mondays. If signed before Friday 5pm,
  * the next Monday counts. If signed Friday after 5pm or weekend, push to
  * the Monday after that.
+ *
+ * Rush mode bypasses the Monday rule — kickoff = signoff_date, snapped
+ * forward to the next weekday if signoff lands on Sat/Sun. Used by the
+ * Rush exception flow on Assign-to-Pod when a project genuinely can't
+ * wait for the next Monday window.
  */
-export function kickoffMondayFor(signoffYMD: string, signoffHour = 12): string {
+export function kickoffMondayFor(
+  signoffYMD: string,
+  signoffHour = 12,
+  rush = false,
+): string {
   const d = parseDate(signoffYMD);
   const dow = d.getDay();
+
+  if (rush) {
+    // Skip the Mon-rounding. Sat → Mon, Sun → Mon (weekends have no
+    // working hours so we still bump forward to the next weekday).
+    if (dow === 6) d.setDate(d.getDate() + 2);
+    else if (dow === 0) d.setDate(d.getDate() + 1);
+    return formatYMD(d);
+  }
+
   // If sign-off IS Monday and before 5pm — kick off same day.
   if (dow === MONDAY && signoffHour < 17) return formatYMD(d);
 
@@ -97,15 +115,21 @@ export function kickoffMondayFor(signoffYMD: string, signoffHour = 12): string {
  * Calculate delivery Thursday from kickoff Monday + bucket duration.
  * Bucket A = +10 calendar days = the Thursday of week 2.
  * Bucket B = +15 → Thursday of week 3. Bucket C = +20 → Thursday of week 4.
+ *
+ * Rush mode halves the bucket duration (rounded up). Kickoff doesn't
+ * have to be a Monday in rush mode; we still snap delivery to the
+ * nearest Thursday forward of (kickoff + halved duration).
  */
 export function deliveryThursdayFor(
-  kickoffMondayYMD: string,
+  kickoffYMD: string,
   bucket: Bucket,
+  rush = false,
 ): string | null {
   const dur = BUCKET_DURATIONS[bucket];
   if (dur === null) return null; // Bespoke — no auto delivery
-  const d = parseDate(kickoffMondayYMD);
-  d.setDate(d.getDate() + dur);
+  const effective = rush ? Math.ceil(dur / 2) : dur;
+  const d = parseDate(kickoffYMD);
+  d.setDate(d.getDate() + effective);
   // Snap to nearest Thursday (forward) — defensive in case durations drift.
   while (d.getDay() !== THURSDAY) d.setDate(d.getDate() + 1);
   return formatYMD(d);
@@ -157,8 +181,18 @@ export function retainerValueGbp(tier: RetainerTier): number {
  *
  * Tickets (revisions, bugs, asset_prep, etc.) carry no `points` and
  * don't count — they're variable-effort work, not scoped capacity.
+ *
+ * Optional time window — when `windowStart`/`windowEnd` are passed,
+ * only tasks whose due_date falls inside [start, end] (inclusive) are
+ * summed. Lets callers compute "this month" vs "next month" capacity
+ * forward-projections off the same task graph.
  */
-export function capacityUsed(projects: Project[], tasks: Task[] = []): number {
+export function capacityUsed(
+  projects: Project[],
+  tasks: Task[] = [],
+  windowStart?: string,
+  windowEnd?: string,
+): number {
   const liveProjectIds = new Set(
     projects
       .filter((p) => p.status !== "shipped" && p.status !== "slipped")
@@ -169,9 +203,24 @@ export function capacityUsed(projects: Project[], tasks: Task[] = []): number {
       (t) =>
         t.discipline === "design" &&
         t.points != null &&
-        liveProjectIds.has(t.project_id),
+        liveProjectIds.has(t.project_id) &&
+        (!windowStart || t.due_date >= windowStart) &&
+        (!windowEnd || t.due_date <= windowEnd),
     )
     .reduce((sum, t) => sum + (t.points || 0), 0);
+}
+
+/** Inclusive [start, end] YMD window covering 4 weeks starting at `fromYMD`'s
+ * Monday. Used for the rolling "this month / next month" capacity meter. */
+export function fourWeekWindow(fromYMD: string): { start: string; end: string } {
+  const d = parseDate(fromYMD);
+  // Roll back to Monday of fromYMD's week.
+  const dow = d.getDay();
+  const back = dow === 0 ? 6 : dow - 1;
+  d.setDate(d.getDate() - back);
+  const start = formatYMD(d);
+  d.setDate(d.getDate() + 27); // +27 = inclusive 4-week span
+  return { start, end: formatYMD(d) };
 }
 
 /** True if a project is shipping in the same week as `referenceYMD`. */

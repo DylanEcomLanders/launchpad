@@ -7,6 +7,7 @@
 import {
   Bucket,
   Client,
+  PAGE_DEFAULT_WEIGHT,
   PAGE_LABEL,
   PageType,
   Pod,
@@ -166,8 +167,8 @@ export interface CreateProjectInput {
 export function createProject(input: CreateProjectInput): Project {
   const points = adjustedPoints(input.pages, input.brand_warm);
   const bucket: Bucket = bucketFromPoints(points);
-  const kickoff = kickoffMondayFor(input.signoff_date, input.signoff_hour ?? 12);
-  const delivery = deliveryThursdayFor(kickoff, bucket) ?? kickoff;
+  const kickoff = kickoffMondayFor(input.signoff_date, input.signoff_hour ?? 12, input.is_rush);
+  const delivery = deliveryThursdayFor(kickoff, bucket, input.is_rush) ?? kickoff;
 
   const project: Project = {
     id: uid(),
@@ -267,7 +268,29 @@ export function getTasksForMember(memberId: string): Task[] {
 
 export function updateTaskStatus(taskId: string, status: Task["status"]): void {
   const all = getTasks();
+  const task = all.find((t) => t.id === taskId);
   write(LS_TASKS, all.map((t) => (t.id === taskId ? { ...t, status } : t)));
+
+  /* Pod ↔ portal phase sync — when a core deliverable's design or dev
+   * half flips to done, mark the matching scope item on the linked
+   * client portal so the portal's phase advances automatically. Fire-
+   * and-forget; failures don't block the local mutation.
+   *
+   * Only fires for core_deliverable tasks (revisions/tickets don't
+   * advance phase) and only on transition into `done` (not back out). */
+  if (
+    task &&
+    status === "done" &&
+    task.type === "core_deliverable" &&
+    task.deliverable_type &&
+    typeof window !== "undefined"
+  ) {
+    syncPortalDeliverable({
+      project_id: task.project_id,
+      deliverable_type: task.deliverable_type,
+      discipline: task.discipline,
+    }).catch(() => {});
+  }
 }
 
 export function updateTaskPhase(taskId: string, phase: Task["phase"]): void {
@@ -278,6 +301,70 @@ export function updateTaskPhase(taskId: string, phase: Task["phase"]): void {
 export function updateTaskPriority(taskId: string, priority: Task["priority"]): void {
   const all = getTasks();
   write(LS_TASKS, all.map((t) => (t.id === taskId ? { ...t, priority } : t)));
+}
+
+/* ── Pod ↔ portal phase sync ───────────────────────────────────── */
+
+/* When a core deliverable hits done in a pod, advance the linked
+ * client portal's matching scope item. Design done → design_approved.
+ * Build done → dev_live. Both flags are already wired to advance the
+ * portal's per-deliverable phase ladder.
+ *
+ * Lookup chain: project → onboarding_id → assigned_portal_id → portal.
+ * Match scope item by `type` (canonical PageType — "pdp", "homepage")
+ * since that's the field shared between pods-v2 and the portal scope.
+ * Falls back to substring match on description if `type` isn't set
+ * (legacy string-only scope items). */
+async function syncPortalDeliverable(input: {
+  project_id: string;
+  deliverable_type: PageType;
+  discipline: TaskDiscipline;
+}): Promise<void> {
+  const project = getProjects().find((p) => p.id === input.project_id);
+  if (!project?.onboarding_id) return;
+
+  const { onboardingStore } = await import("../onboarding");
+  const onboarding = await onboardingStore.getById(project.onboarding_id);
+  if (!onboarding?.assigned_portal_id) return;
+
+  const { getPortalById, updatePortal } = await import("../portal/data");
+  const portal = await getPortalById(onboarding.assigned_portal_id);
+  if (!portal?.scope) return;
+
+  const flag = input.discipline === "design" ? "design_approved" : "dev_live";
+  const matchType = input.deliverable_type;
+
+  let touched = false;
+  const nextScope = portal.scope.map((item) => {
+    if (typeof item === "string") return item;
+    const itemType = (item as { type?: string }).type?.toLowerCase();
+    const matchesType = itemType === matchType;
+    const desc = (item as { description?: string }).description?.toLowerCase() || "";
+    const matchesDesc = !itemType && desc.includes(matchType.toLowerCase());
+    if (matchesType || matchesDesc) {
+      // Already set — don't no-op churn the portal
+      if ((item as Record<string, unknown>)[flag] === true) return item;
+      touched = true;
+      return { ...item, [flag]: true };
+    }
+    return item;
+  });
+
+  if (touched) {
+    await updatePortal(portal.id, { scope: nextScope });
+  }
+}
+
+/* ── Pod Slack channel ─────────────────────────────────────────── */
+
+/* Set or clear the pod's Slack channel id used for blocker notifications.
+ * Empty string clears (no notifications). */
+export function updatePodSlackChannel(podId: string, channelId: string | undefined): void {
+  const pods = getPods();
+  const next = pods.map((p) =>
+    p.id === podId ? { ...p, slack_channel_id: channelId || undefined } : p,
+  );
+  write(LS_PODS, next);
 }
 
 /* ── Member avatar ─────────────────────────────────────────────── */
@@ -300,6 +387,10 @@ export function addBlocker(
   const pods = getPods();
   const idx = pods.findIndex((p) => p.id === podId);
   if (idx < 0) return;
+  const pod = pods[idx];
+  const owner = input.owner_id
+    ? pod.members.find((m) => m.id === input.owner_id)?.name
+    : undefined;
   const blocker = {
     id: uid(),
     title: input.title.trim(),
@@ -314,6 +405,25 @@ export function addBlocker(
     blockers: [...(next[idx].blockers || []), blocker],
   };
   write(LS_PODS, next);
+
+  /* Fire-and-forget Slack ping when the pod has a channel configured.
+   * Failure (no channel, network error, missing token) is intentionally
+   * silent — the blocker is already saved locally; the channel post is
+   * a nice-to-have, not a correctness gate. */
+  if (pod.slack_channel_id && typeof window !== "undefined") {
+    fetch("/api/pods/blocker-notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        channel_id: pod.slack_channel_id,
+        pod_name: pod.name,
+        title: blocker.title,
+        description: blocker.description,
+        owner_name: owner,
+        raised_by: input.raised_by,
+      }),
+    }).catch(() => {});
+  }
 }
 
 export function resolveBlocker(podId: string, blockerId: string, resolvedBy?: string): void {
@@ -408,54 +518,206 @@ export function resumeTask(taskId: string): void {
  * type (any other PDP, etc.), the new one comes in at half points. The
  * caller passes the *full* points value; we halve it here when the
  * second-of-type rule applies. */
-/* Seed Dan (the CRO lead) with W1 strategy + wireframe tasks for a
- * project. Called by the Assign-to-Pod flow when the engagement is a
- * Conversion Engine retainer. One Strategy + one Wireframe task per
- * deliverable, both due end of W1 (Friday after the Monday kickoff).
+/* Compute the date for week W of month M of a Conversion Engine cycle.
+ * Kickoff = Mon of M1 W1. weekday="fri" lands on Fri of that week (W1
+ * strategy due date), "thu" lands on Thu (delivery day for design /
+ * build / test). */
+function cycleWeekDate(
+  kickoffYMD: string,
+  month: 1 | 2 | 3,
+  week: 1 | 2 | 3 | 4,
+  weekday: "fri" | "thu",
+): string {
+  const k = new Date(`${kickoffYMD}T12:00:00`);
+  const weekIndex = (month - 1) * 4 + (week - 1);
+  k.setDate(k.getDate() + weekIndex * 7 + (weekday === "fri" ? 4 : 3));
+  return k.toISOString().slice(0, 10);
+}
+
+/** Last day of the 12-week Conversion Engine cycle — Thu of M3 W4. */
+export function conversionEngineDeliveryDate(kickoffYMD: string): string {
+  return cycleWeekDate(kickoffYMD, 3, 4, "thu");
+}
+
+/* Seed a full 12-week Conversion Engine cycle on a project. Replaces
+ * the default per-page design+build tasks createProject seeded (their
+ * due dates assume a 10/15/20-day bucket, not 12 weeks). For each of
+ * the 3 months, per deliverable:
+ *   W1 — Dan: Strategy + Wireframe (asset_prep, due Fri W1)
+ *   W2 — Designer pair: Design (core_deliverable, paired, due Thu W2)
+ *   W3 — Dev pair: Build (core_deliverable, paired, due Thu W3)
+ *   W4 — Designer + Dev: Test/Prep (asset_prep, due Thu W4)
  *
- * Items is the same labelled list the modal uses to title the
- * design+dev pairs — keeps strategy/wireframe titles in sync. */
+ * Capacity model: M1 W2/W3 carry full deliverable points. M2/M3
+ * iteration cycles carry no points (variant tests, not new builds) so
+ * they don't multiply pod capacity 3× while still showing up on the
+ * board with proper dates. */
+export function seedConversionEngineCycle(input: {
+  project_id: string;
+  items: Array<{ type: PageType; label: string }>;
+}): void {
+  const projects = getProjects();
+  const project = projects.find((p) => p.id === input.project_id);
+  if (!project) return;
+  const pod = getPodById(project.pod_id);
+  if (!pod) return;
+  const dan = read<PodMember>(LS_CRO_LEADS)[0];
+
+  const designer = pod.members.find((m) => m.role === "primary_designer");
+  const dev = pod.members.find((m) => m.role === "primary_dev");
+
+  /* Override project window to 12 weeks (Bespoke bucket) so the
+   * delivery_date reflects the engagement's true end. */
+  const newDelivery = conversionEngineDeliveryDate(project.kickoff_date);
+  write(
+    LS_PROJECTS,
+    projects.map((p) =>
+      p.id === project.id
+        ? { ...p, bucket: "Bespoke" as Bucket, delivery_date: newDelivery }
+        : p,
+    ),
+  );
+
+  /* Drop the default M1 design+build tasks createProject just seeded —
+   * their due dates assume a short bucket. The cycle seeder below
+   * recreates them with proper week dates and the cycle field set. */
+  const allTasks = getTasks().filter(
+    (t) => !(t.project_id === project.id && t.type === "core_deliverable"),
+  );
+
+  const nowIso = new Date().toISOString();
+  const pagePts = effectivePagePoints(input.items.map((it) => ({
+    type: it.type,
+    weight: PAGE_DEFAULT_WEIGHT[it.type],
+  })));
+
+  const newTasks: Task[] = [];
+
+  for (let mIdx = 1 as 1 | 2 | 3; mIdx <= 3; mIdx = (mIdx + 1) as 1 | 2 | 3) {
+    for (let dIdx = 0; dIdx < input.items.length; dIdx++) {
+      const it = input.items[dIdx];
+      const label = PAGE_LABEL[it.type];
+      const variant = it.label.trim() ? ` · ${it.label.trim()}` : "";
+      const fullSuffix = `${label}${variant}`;
+      const points = pagePts[dIdx];
+
+      // W1 — Dan: Strategy + Wireframe
+      if (dan) {
+        newTasks.push({
+          id: uid(),
+          project_id: project.id,
+          title: `Strategy – ${fullSuffix}`,
+          type: "asset_prep",
+          discipline: "strategy",
+          assigned_to: dan.id,
+          status: "todo",
+          due_date: cycleWeekDate(project.kickoff_date, mIdx, 1, "fri"),
+          created_at: nowIso,
+          cycle: { month: mIdx, week: 1 },
+        });
+        newTasks.push({
+          id: uid(),
+          project_id: project.id,
+          title: `Wireframe – ${fullSuffix}`,
+          type: "asset_prep",
+          discipline: "strategy",
+          assigned_to: dan.id,
+          status: "todo",
+          due_date: cycleWeekDate(project.kickoff_date, mIdx, 1, "fri"),
+          created_at: nowIso,
+          cycle: { month: mIdx, week: 1 },
+        });
+      }
+
+      // W2 — Designer: Design.  W3 — Dev: Build. Paired.
+      // M1 carries full points, M2/M3 carry half — variant-test
+      // iterations on the same deliverable cost less than a fresh
+      // build but aren't free either. Capacity meter is now time-
+      // window scoped (capacityUsed takes start/end YMD), so summing
+      // M2 design points only counts when the meter's window covers
+      // M2's due date. That's how "next month: X / 40" works.
+      const designId = uid();
+      const buildId = uid();
+      const cyclePoints = mIdx === 1 ? points : points * 0.5;
+      if (designer) {
+        newTasks.push({
+          id: designId,
+          project_id: project.id,
+          title: `Design – ${fullSuffix}`,
+          type: "core_deliverable",
+          discipline: "design",
+          phase: "design",
+          assigned_to: designer.id,
+          status: "todo",
+          due_date: cycleWeekDate(project.kickoff_date, mIdx, 2, "thu"),
+          created_at: nowIso,
+          deliverable_type: it.type,
+          points: cyclePoints,
+          paired_task_id: dev ? buildId : undefined,
+          cycle: { month: mIdx, week: 2 },
+        });
+      }
+      if (dev) {
+        newTasks.push({
+          id: buildId,
+          project_id: project.id,
+          title: `Build – ${fullSuffix}`,
+          type: "core_deliverable",
+          discipline: "development",
+          phase: "development",
+          assigned_to: dev.id,
+          status: "todo",
+          due_date: cycleWeekDate(project.kickoff_date, mIdx, 3, "thu"),
+          created_at: nowIso,
+          deliverable_type: it.type,
+          points: cyclePoints,
+          paired_task_id: designer ? designId : undefined,
+          cycle: { month: mIdx, week: 3 },
+        });
+      }
+
+      // W4 — Designer + Dev: Test / Prep
+      if (designer) {
+        newTasks.push({
+          id: uid(),
+          project_id: project.id,
+          title: `Test/Prep – ${fullSuffix}`,
+          type: "asset_prep",
+          discipline: "design",
+          assigned_to: designer.id,
+          status: "todo",
+          due_date: cycleWeekDate(project.kickoff_date, mIdx, 4, "thu"),
+          created_at: nowIso,
+          cycle: { month: mIdx, week: 4 },
+        });
+      }
+      if (dev) {
+        newTasks.push({
+          id: uid(),
+          project_id: project.id,
+          title: `QA/Prep – ${fullSuffix}`,
+          type: "asset_prep",
+          discipline: "development",
+          assigned_to: dev.id,
+          status: "todo",
+          due_date: cycleWeekDate(project.kickoff_date, mIdx, 4, "thu"),
+          created_at: nowIso,
+          cycle: { month: mIdx, week: 4 },
+        });
+      }
+    }
+  }
+
+  write(LS_TASKS, [...allTasks, ...newTasks]);
+}
+
+/** @deprecated Kept for back-compat with any callers still on the W1-only
+ * seeder. New code should use seedConversionEngineCycle. */
 export function seedDanForProject(input: {
   project_id: string;
   items: Array<{ type: PageType; label: string }>;
 }): void {
-  const project = getProjects().find((p) => p.id === input.project_id);
-  const dan = read<PodMember>(LS_CRO_LEADS)[0];
-  if (!project || !dan) return;
-
-  const due = taskDueDateFor(project, "strategy");
-  const nowIso = new Date().toISOString();
-  const newTasks: Task[] = [];
-
-  for (const it of input.items) {
-    const label = PAGE_LABEL[it.type];
-    const variant = it.label.trim() ? ` · ${it.label.trim()}` : "";
-    newTasks.push({
-      id: uid(),
-      project_id: project.id,
-      title: `Strategy – ${label}${variant}`,
-      type: "asset_prep",
-      discipline: "strategy",
-      assigned_to: dan.id,
-      status: "todo",
-      due_date: due,
-      created_at: nowIso,
-    });
-    newTasks.push({
-      id: uid(),
-      project_id: project.id,
-      title: `Wireframe – ${label}${variant}`,
-      type: "asset_prep",
-      discipline: "strategy",
-      assigned_to: dan.id,
-      status: "todo",
-      due_date: due,
-      created_at: nowIso,
-    });
-  }
-
-  const tasks = getTasks();
-  write(LS_TASKS, [...tasks, ...newTasks]);
+  seedConversionEngineCycle(input);
 }
 
 export function addPairedDeliverable(input: {
@@ -651,6 +913,17 @@ export function addTask(input: AddTaskInput): Task {
 
 // ─── Seed ───────────────────────────────────────────────────────────
 
+/* Default Slack channel ids for blocker notifications, keyed by pod
+ * name. Used by buildSeedPods on first load AND by the back-fill
+ * migration in ensureSeed so browsers that already seeded their pods
+ * (before slack_channel_id existed) pick up the channel without
+ * losing their clients/projects/tasks. */
+const POD_DEFAULT_SLACK_CHANNELS: Record<string, string> = {
+  "Pod 1": "C0B289Z9Y9M",
+  "Pod 2": "C0B28A1GDAT",
+  "Pod 3": "C0B2PPN424A",
+};
+
 const SEED_POD_DEFINITIONS: Array<{
   name: string;
   tagline: string;
@@ -696,6 +969,7 @@ function buildSeedPods(): Pod[] {
       name: def.name,
       tagline: def.tagline,
       capacity_points_per_month: 40,
+      slack_channel_id: POD_DEFAULT_SLACK_CHANNELS[def.name],
       members: def.members.map((m) => ({
         id: uid(),
         name: m.name,
@@ -970,6 +1244,22 @@ export function ensureSeed(): void {
   if (!localStorage.getItem(LS_PODS)) {
     write(LS_PODS, buildSeedPods());
   } else {
+    /* Back-fill default Slack channel ids onto pods that were seeded
+     * before slack_channel_id existed. Only writes when missing — never
+     * overwrites a channel an admin set manually. */
+    {
+      const pods = getPods();
+      let touched = false;
+      const withChannels = pods.map((p) => {
+        if (p.slack_channel_id) return p;
+        const def = POD_DEFAULT_SLACK_CHANNELS[p.name];
+        if (!def) return p;
+        touched = true;
+        return { ...p, slack_channel_id: def };
+      });
+      if (touched) write(LS_PODS, withChannels);
+    }
+
     /* Migration: an earlier iteration added Dan as a cro_lead member to
      * each pod. The CRO lead now lives at the org level (LS_CRO_LEADS),
      * not inside pods. Strip any cro_lead members and reassign their

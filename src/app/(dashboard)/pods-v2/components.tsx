@@ -107,10 +107,21 @@ export function CapacityMeter({
   used,
   total,
   label,
+  cycleRetainers,
+  nextMonthUsed,
 }: {
   used: number;
   total: number;
   label?: string;
+  /** Conversion Engine retainers running on this pod. Surfaced as a
+   * forward-looking note so the bar reads as "this month" while the
+   * full 90-day pipeline is still visible. */
+  cycleRetainers?: number;
+  /** Projected utilisation for the *next* 4-week window — sum of
+   * design-discipline points whose due_date is in weeks 5-8 from now.
+   * When provided, renders a thin secondary bar + label so capacity
+   * planning can see the cliff before it hits. */
+  nextMonthUsed?: number;
 }) {
   const pct = Math.min(100, Math.round((used / total) * 100));
   const tone =
@@ -142,6 +153,46 @@ export function CapacityMeter({
           style={{ width: `${pct}%` }}
         />
       </div>
+      {nextMonthUsed != null && (
+        <div className="mt-1.5">
+          <div className="flex items-baseline justify-between text-[10px]">
+            <span className="font-semibold uppercase tracking-wider text-[#A0A0A0]">
+              Next month
+            </span>
+            <span className="tabular-nums text-[#7A7A7A]">
+              <span
+                className={
+                  nextMonthUsed >= total
+                    ? "font-semibold text-rose-700"
+                    : nextMonthUsed >= total * 0.8
+                      ? "font-semibold text-amber-700"
+                      : "font-semibold text-[#1B1B1B]"
+                }
+              >
+                {nextMonthUsed}
+              </span>
+              <span> / {total} pts</span>
+            </span>
+          </div>
+          <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-[#EDEDEF]">
+            <div
+              className={`h-full transition-all ${
+                nextMonthUsed >= total
+                  ? "bg-rose-300"
+                  : nextMonthUsed >= total * 0.8
+                    ? "bg-amber-300"
+                    : "bg-emerald-300"
+              }`}
+              style={{ width: `${Math.min(100, Math.round((nextMonthUsed / total) * 100))}%` }}
+            />
+          </div>
+        </div>
+      )}
+      {cycleRetainers != null && cycleRetainers > 0 && (
+        <div className="mt-1.5 text-[10px] text-emerald-700">
+          {cycleRetainers} CE retainer{cycleRetainers === 1 ? "" : "s"} running · 90-day cycle queued
+        </div>
+      )}
     </div>
   );
 }
