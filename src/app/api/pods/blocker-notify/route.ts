@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { postSlackMessage, getAppUrl } from "@/lib/slack-bot";
+import { authedRole } from "@/lib/auth/role";
 
 /**
  * POST /api/pods/blocker-notify
@@ -9,9 +10,15 @@ import { postSlackMessage, getAppUrl } from "@/lib/slack-bot";
  * without opening Launchpad. Best-effort — caller (`addBlocker`) does
  * not await the result; failures are silent.
  *
+ * Auth: requires `launchpad-role` cookie (admin / cro / team). Stops
+ * random curls from posting arbitrary text into the pod's Slack.
+ *
  * Body shape: { channel_id, pod_name, title, description?, owner_name?, raised_by? }
  */
 export async function POST(req: NextRequest) {
+  if (!authedRole(req, ["admin", "cro", "team"])) {
+    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  }
   let body: {
     channel_id?: string;
     pod_name?: string;

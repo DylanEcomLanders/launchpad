@@ -37,6 +37,21 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-62",
+    date: "10 May 2026",
+    version: "0.41.0",
+    title: "Pods — agency health, today/standup, test results, CVR delta, share-cards, slack auth",
+    changes: [
+      { type: "fixed", text: "Slack notify endpoints (/api/pods/blocker-notify, /slip-notify, /stale-notify) now require the launchpad-role cookie. Anyone with the URL could previously POST arbitrary text to a pod's Slack channel. Auth helper extracted to src/lib/auth/role.ts so other internal API routes can reuse the same check" },
+      { type: "added", text: "Test result tracking on Build tasks (M2/M3 of a Conversion Engine cycle). New `test_result` field captures status (pending/winner/loser/inconclusive), lift % vs control, significance %, and free-text notes. A coloured chip on the swim lane row reads \"+18.4% won\" / \"-3% lost\" / \"pending\" — click to edit. Without this the entire CE retainer was running on vibes; now M3 strategy is informed by what M2 actually moved" },
+      { type: "added", text: "CVR + AOV per client. Baseline + current entered manually by the PM at intake / each month, with a % delta computed live. Surfaces as two tiles on each Client Roster card (\"2.1% → 3.4% +61.9%\"). Click either tile to edit. Drives the renewal conversation — turns CE retainers from a design service into a measurable growth product" },
+      { type: "added", text: "Pod health dashboard at the top of /pods-v2. Single row, three pod tiles, each with a green/amber/red overall tone derived from four signals: capacity utilisation (≥100% red, ≥80% amber), slips this quarter (>2 red, >0 amber), oldest open blocker (>96h red, >48h amber), out-of-office count (both primaries out = red, ≥2 members out = amber). Header shows agency-wide tone (\"Healthy\" / \"Watch\" / \"Action needed\"). Lets Dylan/Alister scan agency state in 2 seconds before reading individual cards" },
+      { type: "added", text: "Today view at /pods-v2/me. Per-member filter — visitor picks their name from a dropdown (saved on this device); page shows their work in four buckets: Overdue (rose), Due today (amber), In progress (blue), Up next (gray). Click status circle to cycle. Replaces \"scroll three columns to find my next task\" with a one-screen focused view. \"Today\" button added to the /pods-v2 header" },
+      { type: "added", text: "Standup view at /pods-v2/standup. One-screen agency-wide brief of what changed in the last 24h: tasks created, blockers raised, blockers resolved, projects shipping in next 48h, slipped projects still active. Read top-to-bottom in standup; nothing to click. \"Standup\" button added to the /pods-v2 header" },
+      { type: "added", text: "Test-result share-card at /share/test-result. URL-driven (no DB lookup) so the page is fully shareable — params are client, page, lift, sig, status, period, hyp. Renders a 540×540 card optimised for screenshot/social: client name, what was tested, big coloured lift % (green for winner, rose for loser), significance, hypothesis, ecomlanders watermark. \"Save as PNG\" button uses an SVG → canvas pipeline (no external service). Test-result editor on Build tasks shows a \"Share-card →\" link in the footer once a non-pending result is recorded — one click to a renewal-ready asset" },
+    ],
+  },
+  {
     id: "cl-61",
     date: "9 May 2026",
     version: "0.39.0",

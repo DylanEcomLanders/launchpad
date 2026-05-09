@@ -188,24 +188,40 @@ export default function PodsIndexClient() {
             Three pods. One cadence. Mondays kick off, Thursdays ship.
           </p>
         </div>
-        {isAdmin && (
-          <div className="flex items-center gap-2">
-            <Link
-              href="/pods-v2/new-project"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-[#1B1B1B] bg-[#1B1B1B] px-3 py-2 text-xs font-medium text-white shadow-[var(--shadow-soft)] transition-colors hover:bg-[#2D2D2D]"
-            >
-              <PlusIcon className="size-3.5" />
-              New project
-            </Link>
-            <Link
-              href="/pods-v2/admin"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-[#E5E5EA] bg-white px-3 py-2 text-xs font-medium text-[#1B1B1B] shadow-[var(--shadow-soft)] transition-colors hover:bg-[#F3F3F5]"
-            >
-              <ShieldCheckIcon className="size-3.5" />
-              Admin view
-            </Link>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          <Link
+            href="/pods-v2/me"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[#E5E5EA] bg-white px-3 py-2 text-xs font-medium text-[#1B1B1B] shadow-[var(--shadow-soft)] transition-colors hover:bg-[#F3F3F5]"
+            title="Your tasks today, focused"
+          >
+            Today
+          </Link>
+          <Link
+            href="/pods-v2/standup"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[#E5E5EA] bg-white px-3 py-2 text-xs font-medium text-[#1B1B1B] shadow-[var(--shadow-soft)] transition-colors hover:bg-[#F3F3F5]"
+            title="What changed in the last 24h"
+          >
+            Standup
+          </Link>
+          {isAdmin && (
+            <>
+              <Link
+                href="/pods-v2/new-project"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[#1B1B1B] bg-[#1B1B1B] px-3 py-2 text-xs font-medium text-white shadow-[var(--shadow-soft)] transition-colors hover:bg-[#2D2D2D]"
+              >
+                <PlusIcon className="size-3.5" />
+                New project
+              </Link>
+              <Link
+                href="/pods-v2/admin"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[#E5E5EA] bg-white px-3 py-2 text-xs font-medium text-[#1B1B1B] shadow-[var(--shadow-soft)] transition-colors hover:bg-[#F3F3F5]"
+              >
+                <ShieldCheckIcon className="size-3.5" />
+                Admin view
+              </Link>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Top-level toggle: Overview vs Pipeline */}
@@ -334,6 +350,13 @@ function Overview({
 }) {
   return (
     <>
+      {/* HEALTH ROW — green/amber/red signal per pod, derived from
+       * existing data (capacity utilisation, slip count this quarter,
+       * blocker resolution time, OOO coverage). One line, three cells.
+       * Helps Dylan/Alister scan agency health in 2 seconds before
+       * diving into pod cards. */}
+      <PodHealthRow pods={pods} projectsByPod={projectsByPod} allTasks={allTasks} today={today} />
+
       <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
         {pods.map((pod) => {
           const projects = projectsByPod[pod.id] ?? [];
@@ -1052,6 +1075,170 @@ function AssignToPodModal({
 }
 
 // ─── CRO Pipeline panel ─────────────────────────────────────────────
+
+/* Pod health row — single line of three cells, one per pod, with a
+ * single overall tone (green / amber / red) and a list of micro-
+ * indicators. Tone aggregation: any red signal → red; any amber → amber;
+ * else green. Indicators: capacity utilisation now, slip count
+ * (active), blocker count (open >48h elevates), OOO coverage. All
+ * thresholds are tunable constants below.
+ *
+ * Why up here: Dylan/Alister need to glance at the page and see if
+ * anything's on fire before they read individual pod cards. */
+function PodHealthRow({
+  pods,
+  projectsByPod,
+  allTasks,
+  today,
+}: {
+  pods: Pod[];
+  projectsByPod: Record<string, Project[]>;
+  allTasks: Task[];
+  today: string;
+}) {
+  if (pods.length === 0) return null;
+
+  const tw = fourWeekWindow(today);
+  const QUARTER_DAYS = 90;
+  const quarterStart = (() => {
+    const d = new Date(`${today}T12:00:00`);
+    d.setDate(d.getDate() - QUARTER_DAYS);
+    return d.toISOString().slice(0, 10);
+  })();
+
+  type Tone = "green" | "amber" | "red";
+  function worse(a: Tone, b: Tone): Tone {
+    if (a === "red" || b === "red") return "red";
+    if (a === "amber" || b === "amber") return "amber";
+    return "green";
+  }
+
+  const cells = pods.map((pod) => {
+    const podProjects = projectsByPod[pod.id] ?? [];
+    const used = capacityUsed(podProjects, allTasks, tw.start, tw.end);
+    const cap = pod.capacity_points_per_month;
+    const utilPct = cap > 0 ? Math.round((used / cap) * 100) : 0;
+    const utilTone: Tone = utilPct >= 100 ? "red" : utilPct >= 80 ? "amber" : "green";
+
+    const slips = podProjects.filter(
+      (p) => p.status === "slipped" && p.delivery_date >= quarterStart,
+    ).length;
+    const slipTone: Tone = slips > 2 ? "red" : slips > 0 ? "amber" : "green";
+
+    const openBlockers = (pod.blockers || []).filter((b) => !b.resolved_at);
+    const oldestBlockerHours = openBlockers.reduce((max, b) => {
+      const ageMs = Date.now() - new Date(b.raised_at).getTime();
+      return Math.max(max, ageMs / 3_600_000);
+    }, 0);
+    const blockerTone: Tone =
+      oldestBlockerHours >= 96 ? "red" : oldestBlockerHours >= 48 ? "amber" : openBlockers.length > 0 ? "amber" : "green";
+
+    const oooCount = pod.members.filter(
+      (m) =>
+        !m.is_placeholder &&
+        ((m.ooo_start && today >= m.ooo_start && (!m.ooo_end || today <= m.ooo_end)) ||
+          (!m.ooo_start && m.ooo_end && today <= m.ooo_end)),
+    ).length;
+    // Half or more of the pod out is amber (covered but stressed); both
+    // primaries out is red.
+    const primariesOut = pod.members.filter(
+      (m) =>
+        (m.role === "primary_designer" || m.role === "primary_dev") &&
+        ((m.ooo_start && today >= m.ooo_start && (!m.ooo_end || today <= m.ooo_end)) ||
+          (!m.ooo_start && m.ooo_end && today <= m.ooo_end)),
+    ).length;
+    const oooTone: Tone = primariesOut >= 2 ? "red" : oooCount >= 2 ? "amber" : "green";
+
+    const overall: Tone = [utilTone, slipTone, blockerTone, oooTone].reduce(worse, "green");
+
+    return {
+      pod,
+      overall,
+      utilPct,
+      utilTone,
+      slips,
+      slipTone,
+      openBlockers: openBlockers.length,
+      oldestBlockerHours,
+      blockerTone,
+      oooCount,
+      oooTone,
+    };
+  });
+
+  const overallTone = cells.reduce<Tone>((acc, c) => worse(acc, c.overall), "green");
+  const overallLabel =
+    overallTone === "red" ? "Action needed" : overallTone === "amber" ? "Watch" : "Healthy";
+
+  function toneClass(t: Tone): string {
+    return t === "red"
+      ? "bg-rose-500"
+      : t === "amber"
+        ? "bg-amber-500"
+        : "bg-emerald-500";
+  }
+  function toneText(t: Tone): string {
+    return t === "red"
+      ? "text-rose-700"
+      : t === "amber"
+        ? "text-amber-700"
+        : "text-emerald-700";
+  }
+
+  return (
+    <div className="mt-6 rounded-2xl border border-[#E5E5EA] bg-white p-4 shadow-[var(--shadow-soft)]">
+      <div className="flex items-baseline justify-between">
+        <div className="flex items-center gap-2">
+          <span className={`size-2 rounded-full ${toneClass(overallTone)}`} />
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+            Agency health
+          </h2>
+          <span className={`text-[11px] font-semibold ${toneText(overallTone)}`}>
+            {overallLabel}
+          </span>
+        </div>
+        <span className="text-[10px] text-[#A0A0A0]">
+          Capacity · Slips this quarter · Blockers · OOO
+        </span>
+      </div>
+      <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-3">
+        {cells.map((c) => (
+          <div
+            key={c.pod.id}
+            className="rounded-xl border border-[#E5E5EA] bg-[#FAFAFA] p-3"
+          >
+            <div className="flex items-center gap-2">
+              <span className={`size-2 rounded-full ${toneClass(c.overall)}`} />
+              <span className="text-sm font-semibold text-[#1B1B1B]">{c.pod.name}</span>
+            </div>
+            <div className="mt-2 grid grid-cols-4 gap-1 text-[10px]">
+              <div>
+                <span className={`size-1.5 inline-block rounded-full ${toneClass(c.utilTone)} mr-1`} />
+                <span className="font-semibold text-[#1B1B1B]">{c.utilPct}%</span>
+                <div className="text-[#A0A0A0]">cap</div>
+              </div>
+              <div>
+                <span className={`size-1.5 inline-block rounded-full ${toneClass(c.slipTone)} mr-1`} />
+                <span className="font-semibold text-[#1B1B1B]">{c.slips}</span>
+                <div className="text-[#A0A0A0]">slip</div>
+              </div>
+              <div>
+                <span className={`size-1.5 inline-block rounded-full ${toneClass(c.blockerTone)} mr-1`} />
+                <span className="font-semibold text-[#1B1B1B]">{c.openBlockers}</span>
+                <div className="text-[#A0A0A0]">block</div>
+              </div>
+              <div>
+                <span className={`size-1.5 inline-block rounded-full ${toneClass(c.oooTone)} mr-1`} />
+                <span className="font-semibold text-[#1B1B1B]">{c.oooCount}</span>
+                <div className="text-[#A0A0A0]">ooo</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /* Friday weekly digest. Admin-only, shows only on Fridays (Mon-Thu it's
  * collapsed entirely so it doesn't add noise mid-week). Computes a per-

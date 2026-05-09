@@ -127,6 +127,39 @@ export function getClientById(id: string): Client | null {
   return getClients().find((c) => c.id === id) ?? null;
 }
 
+/* Update a client's CVR / AOV metrics. Pass undefined for any field
+ * to leave it unchanged; pass null to clear. metrics_updated_at is
+ * stamped automatically when any metric value changes. */
+export function updateClientMetrics(
+  clientId: string,
+  patch: {
+    cvr_baseline?: number | null;
+    cvr_current?: number | null;
+    aov_baseline?: number | null;
+    aov_current?: number | null;
+  },
+): void {
+  const all = getClients();
+  const next = all.map((c) => {
+    if (c.id !== clientId) return c;
+    const updated: Client = { ...c, metrics_updated_at: new Date().toISOString() };
+    if ("cvr_baseline" in patch) {
+      updated.cvr_baseline = patch.cvr_baseline === null ? undefined : patch.cvr_baseline;
+    }
+    if ("cvr_current" in patch) {
+      updated.cvr_current = patch.cvr_current === null ? undefined : patch.cvr_current;
+    }
+    if ("aov_baseline" in patch) {
+      updated.aov_baseline = patch.aov_baseline === null ? undefined : patch.aov_baseline;
+    }
+    if ("aov_current" in patch) {
+      updated.aov_current = patch.aov_current === null ? undefined : patch.aov_current;
+    }
+    return updated;
+  });
+  write(LS_CLIENTS, next);
+}
+
 export function createClient(input: Omit<Client, "id">): Client {
   const client: Client = {
     ...input,
@@ -329,6 +362,27 @@ export function updateTaskPhase(taskId: string, phase: Task["phase"]): void {
 export function updateTaskPriority(taskId: string, priority: Task["priority"]): void {
   const all = getTasks();
   write(LS_TASKS, all.map((t) => (t.id === taskId ? { ...t, priority } : t)));
+}
+
+/** Set / update a Build task's test_result. Pass undefined to clear. */
+export function updateTaskTestResult(
+  taskId: string,
+  result: Task["test_result"] | undefined,
+): void {
+  const all = getTasks();
+  write(
+    LS_TASKS,
+    all.map((t) =>
+      t.id === taskId
+        ? {
+            ...t,
+            test_result: result
+              ? { ...result, recorded_at: new Date().toISOString() }
+              : undefined,
+          }
+        : t,
+    ),
+  );
 }
 
 /* ── Pod ↔ portal phase sync ───────────────────────────────────── */

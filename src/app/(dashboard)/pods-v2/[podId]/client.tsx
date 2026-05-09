@@ -31,12 +31,14 @@ import {
   resolveBlocker,
   resumeTask,
   isMemberOoo,
+  updateClientMetrics,
   updateMemberAvatar,
   updateMemberOoo,
   updatePodSlackChannel,
   updateTaskPhase,
   updateTaskPriority,
   updateTaskStatus,
+  updateTaskTestResult,
 } from "@/lib/pods-v2/data";
 import {
   capacityUsed,
@@ -829,6 +831,7 @@ function PrimaryTaskRow({
    * must tick before the status flip lands. Stops the back-and-forth
    * where dev pings the designer two days later asking for the file. */
   const [handoffOpen, setHandoffOpen] = useState(false);
+  const [testResultOpen, setTestResultOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -947,6 +950,37 @@ function PrimaryTaskRow({
             >
               M{task.cycle.month} · W{task.cycle.week} · {CYCLE_WEEK_LABEL[task.cycle.week]}
             </span>
+          )}
+          {/* Test result chip — only on Build tasks (variant tests
+           * shipped as Conversion Engine cycle work). Clickable to
+           * open the result editor inline. */}
+          {task.discipline === "development" && task.cycle && task.cycle.month >= 2 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setTestResultOpen((v) => !v);
+              }}
+              className={`shrink-0 rounded border px-1 py-0 text-[9px] font-semibold uppercase tracking-wider hover:opacity-80 ${
+                task.test_result?.status === "winner"
+                  ? "border-emerald-300 bg-emerald-100 text-emerald-900"
+                  : task.test_result?.status === "loser"
+                    ? "border-rose-300 bg-rose-100 text-rose-900"
+                    : task.test_result?.status === "inconclusive"
+                      ? "border-[#E5E5EA] bg-[#F7F8FA] text-[#7A7A7A]"
+                      : task.test_result?.status === "pending"
+                        ? "border-amber-200 bg-amber-50 text-amber-800"
+                        : "border-dashed border-[#D5D5DC] bg-white text-[#A0A0A0]"
+              }`}
+              title="Click to edit test result"
+            >
+              {task.test_result
+                ? task.test_result.status === "winner" && task.test_result.lift_pct != null
+                  ? `+${task.test_result.lift_pct}% won`
+                  : task.test_result.status === "loser" && task.test_result.lift_pct != null
+                    ? `${task.test_result.lift_pct}% lost`
+                    : task.test_result.status
+                : "+ result"}
+            </button>
           )}
           {task.points != null && (
             <span
@@ -1071,6 +1105,41 @@ function PrimaryTaskRow({
           onConfirm={() => {
             updateTaskStatus(task.id, "done");
             setHandoffOpen(false);
+            onMutate();
+          }}
+        />
+      )}
+
+      {testResultOpen && (
+        <TestResultEditor
+          taskTitle={task.title}
+          current={task.test_result}
+          shareHref={(() => {
+            if (!task.test_result || task.test_result.status === "pending") return undefined;
+            const params = new URLSearchParams({
+              client: client?.name || "",
+              page: task.title.replace(/^Build\s*–\s*/i, ""),
+              lift: task.test_result.lift_pct != null
+                ? `${task.test_result.lift_pct > 0 ? "+" : ""}${task.test_result.lift_pct}`
+                : "0",
+              sig: task.test_result.significance_pct != null
+                ? String(task.test_result.significance_pct)
+                : "—",
+              status: task.test_result.status,
+              period: task.cycle ? `M${task.cycle.month} cycle` : "",
+              hyp: task.test_result.notes || "",
+            });
+            return `/share/test-result?${params.toString()}`;
+          })()}
+          onCancel={() => setTestResultOpen(false)}
+          onSave={(result) => {
+            updateTaskTestResult(task.id, result);
+            setTestResultOpen(false);
+            onMutate();
+          }}
+          onClear={() => {
+            updateTaskTestResult(task.id, undefined);
+            setTestResultOpen(false);
             onMutate();
           }}
         />
@@ -1264,6 +1333,296 @@ function MemberOooEditor({
       >
         Cancel
       </button>
+    </div>
+  );
+}
+
+/* Inline modal to set/update a client's CVR + AOV baseline + current.
+ * Manually entered — we don't have GA / Shopify integration yet, but
+ * the delta math runs as soon as both numbers exist. metrics_updated_at
+ * stamps automatically on save. */
+function ClientMetricsEditor({
+  client,
+  onCancel,
+  onSave,
+}: {
+  client: Client;
+  onCancel: () => void;
+  onSave: () => void;
+}) {
+  const [cvrBase, setCvrBase] = useState(
+    client.cvr_baseline != null ? String(client.cvr_baseline) : "",
+  );
+  const [cvrCur, setCvrCur] = useState(
+    client.cvr_current != null ? String(client.cvr_current) : "",
+  );
+  const [aovBase, setAovBase] = useState(
+    client.aov_baseline != null ? String(client.aov_baseline) : "",
+  );
+  const [aovCur, setAovCur] = useState(
+    client.aov_current != null ? String(client.aov_current) : "",
+  );
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+          Client metrics
+        </p>
+        <h2 className="mt-0.5 text-base font-semibold text-[#1B1B1B]">{client.name}</h2>
+        <p className="mt-1 text-[11px] text-[#7A7A7A]">
+          Baseline at engagement start, current latest. Drives the renewal share-card and the % delta on the roster card.
+        </p>
+
+        <div className="mt-3 space-y-3">
+          <div>
+            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+              Conversion rate (%)
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] text-[#A0A0A0]">Baseline</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={cvrBase}
+                  onChange={(e) => setCvrBase(e.target.value)}
+                  placeholder="2.4"
+                  className="w-full rounded-lg border border-[#E5E5EA] bg-white px-2 py-1.5 text-xs"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] text-[#A0A0A0]">Current</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={cvrCur}
+                  onChange={(e) => setCvrCur(e.target.value)}
+                  placeholder="3.1"
+                  className="w-full rounded-lg border border-[#E5E5EA] bg-white px-2 py-1.5 text-xs"
+                />
+              </div>
+            </div>
+          </div>
+          <div>
+            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+              Average order value (£)
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] text-[#A0A0A0]">Baseline</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={aovBase}
+                  onChange={(e) => setAovBase(e.target.value)}
+                  placeholder="68"
+                  className="w-full rounded-lg border border-[#E5E5EA] bg-white px-2 py-1.5 text-xs"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] text-[#A0A0A0]">Current</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={aovCur}
+                  onChange={(e) => setAovCur(e.target.value)}
+                  placeholder="74"
+                  className="w-full rounded-lg border border-[#E5E5EA] bg-white px-2 py-1.5 text-xs"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 flex items-center justify-end gap-2">
+          <button
+            onClick={onCancel}
+            className="rounded-lg px-3 py-1.5 text-xs text-[#7A7A7A] hover:text-[#1B1B1B]"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              const parse = (v: string) => (v === "" ? null : Number(v));
+              updateClientMetrics(client.id, {
+                cvr_baseline: parse(cvrBase),
+                cvr_current: parse(cvrCur),
+                aov_baseline: parse(aovBase),
+                aov_current: parse(aovCur),
+              });
+              onSave();
+            }}
+            className="rounded-lg bg-[#1B1B1B] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#2D2D2D]"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* Test result editor for Build tasks (M2/M3 variant tests). Captures
+ * lift %, significance, status enum, free-text notes. Status drives the
+ * chip colour on the swim lane. Save persists; Clear strips the result
+ * back to "+ result" placeholder. */
+function TestResultEditor({
+  taskTitle,
+  current,
+  shareHref,
+  onCancel,
+  onSave,
+  onClear,
+}: {
+  taskTitle: string;
+  current?: Task["test_result"];
+  /** When the task already has a non-pending result, this is the URL
+   * for the share-card. Surfaced as a "Share-card →" link in the
+   * footer so the designer/Dan can grab a renewal asset on the spot. */
+  shareHref?: string;
+  onCancel: () => void;
+  onSave: (result: NonNullable<Task["test_result"]>) => void;
+  onClear: () => void;
+}) {
+  const [status, setStatus] = useState<NonNullable<Task["test_result"]>["status"]>(
+    current?.status || "pending",
+  );
+  const [lift, setLift] = useState<string>(
+    current?.lift_pct != null ? String(current.lift_pct) : "",
+  );
+  const [sig, setSig] = useState<string>(
+    current?.significance_pct != null ? String(current.significance_pct) : "95",
+  );
+  const [notes, setNotes] = useState(current?.notes || "");
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+          Test result
+        </p>
+        <h2 className="mt-0.5 text-base font-semibold text-[#1B1B1B]">{taskTitle}</h2>
+        <p className="mt-1 text-[11px] text-[#7A7A7A]">
+          Captures the outcome so retainer renewals run on data, not vibes. Surfaces a chip on the task and feeds the share-card.
+        </p>
+
+        <div className="mt-3 space-y-3">
+          <div>
+            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+              Status
+            </label>
+            <div className="grid grid-cols-4 gap-1">
+              {(["pending", "winner", "loser", "inconclusive"] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setStatus(s)}
+                  className={`rounded-md border px-2 py-1.5 text-[11px] font-medium capitalize ${
+                    status === s
+                      ? s === "winner"
+                        ? "border-emerald-500 bg-emerald-50 text-emerald-900"
+                        : s === "loser"
+                          ? "border-rose-500 bg-rose-50 text-rose-900"
+                          : s === "inconclusive"
+                            ? "border-[#1B1B1B] bg-[#F7F8FA] text-[#1B1B1B]"
+                            : "border-amber-500 bg-amber-50 text-amber-900"
+                      : "border-[#E5E5EA] bg-white text-[#7A7A7A]"
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+                Lift % vs control
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                value={lift}
+                onChange={(e) => setLift(e.target.value)}
+                placeholder="e.g. 18.4"
+                className="w-full rounded-lg border border-[#E5E5EA] bg-white px-2 py-1.5 text-xs"
+                disabled={status === "pending"}
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+                Significance %
+              </label>
+              <input
+                type="number"
+                value={sig}
+                onChange={(e) => setSig(e.target.value)}
+                placeholder="95"
+                className="w-full rounded-lg border border-[#E5E5EA] bg-white px-2 py-1.5 text-xs"
+                disabled={status === "pending"}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+              Notes
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={2}
+              placeholder="Hypothesis, what changed, what to try next…"
+              className="w-full rounded-lg border border-[#E5E5EA] bg-white px-2 py-1.5 text-xs"
+            />
+          </div>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {current && (
+              <button
+                onClick={onClear}
+                className="text-[11px] text-rose-700 hover:underline"
+              >
+                Clear result
+              </button>
+            )}
+            {shareHref && (
+              <a
+                href={shareHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] font-semibold text-emerald-700 hover:underline"
+              >
+                Share-card →
+              </a>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onCancel}
+              className="rounded-lg px-3 py-1.5 text-xs text-[#7A7A7A] hover:text-[#1B1B1B]"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() =>
+                onSave({
+                  status,
+                  lift_pct: lift !== "" ? Number(lift) : undefined,
+                  significance_pct: sig !== "" ? Number(sig) : undefined,
+                  notes: notes.trim() || undefined,
+                })
+              }
+              className="rounded-lg bg-[#1B1B1B] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#2D2D2D]"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -2016,10 +2375,20 @@ function ClientCard({
   revisionCount: number;
 }) {
   const [unassignOpen, setUnassignOpen] = useState(false);
+  const [metricsOpen, setMetricsOpen] = useState(false);
   const tier = TIER_PILL[client.retainer_tier];
   const portalHref = client.portal_slug
     ? `/tools/client-portal?client=${client.portal_slug}`
     : "/tools/client-portal";
+
+  const cvrDelta =
+    client.cvr_baseline != null && client.cvr_current != null
+      ? ((client.cvr_current - client.cvr_baseline) / client.cvr_baseline) * 100
+      : null;
+  const aovDelta =
+    client.aov_baseline != null && client.aov_current != null
+      ? ((client.aov_current - client.aov_baseline) / client.aov_baseline) * 100
+      : null;
 
   return (
     <div className="group relative rounded-xl border border-[#E5E5EA] bg-white p-4 shadow-[var(--shadow-soft)] transition-colors hover:border-[#1B1B1B]/30">
@@ -2067,6 +2436,90 @@ function ClientCard({
           {RETAINER_SCOPE[client.retainer_tier]}
         </div>
       )}
+
+      {/* Metrics row: baseline → current with delta. Click to edit. */}
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <button
+          onClick={() => setMetricsOpen(true)}
+          className="rounded-lg border border-[#E5E5EA] bg-[#FAFAFA] px-2 py-1.5 text-left transition-colors hover:border-[#1B1B1B]/30"
+          title="Click to edit CVR baseline / current"
+        >
+          <div className="text-[9px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+            CVR
+          </div>
+          {client.cvr_baseline != null || client.cvr_current != null ? (
+            <div className="mt-0.5 flex items-baseline gap-1 text-[11px] tabular-nums">
+              <span className="text-[#7A7A7A]">{client.cvr_baseline ?? "—"}%</span>
+              <span className="text-[#C5C5C5]">→</span>
+              <span className="font-semibold text-[#1B1B1B]">
+                {client.cvr_current ?? "—"}%
+              </span>
+              {cvrDelta != null && (
+                <span
+                  className={`ml-auto text-[10px] font-semibold ${
+                    cvrDelta > 0
+                      ? "text-emerald-700"
+                      : cvrDelta < 0
+                        ? "text-rose-700"
+                        : "text-[#7A7A7A]"
+                  }`}
+                >
+                  {cvrDelta > 0 ? "+" : ""}
+                  {cvrDelta.toFixed(1)}%
+                </span>
+              )}
+            </div>
+          ) : (
+            <div className="mt-0.5 text-[10px] italic text-[#A0A0A0]">+ set</div>
+          )}
+        </button>
+        <button
+          onClick={() => setMetricsOpen(true)}
+          className="rounded-lg border border-[#E5E5EA] bg-[#FAFAFA] px-2 py-1.5 text-left transition-colors hover:border-[#1B1B1B]/30"
+          title="Click to edit AOV baseline / current"
+        >
+          <div className="text-[9px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+            AOV
+          </div>
+          {client.aov_baseline != null || client.aov_current != null ? (
+            <div className="mt-0.5 flex items-baseline gap-1 text-[11px] tabular-nums">
+              <span className="text-[#7A7A7A]">£{client.aov_baseline ?? "—"}</span>
+              <span className="text-[#C5C5C5]">→</span>
+              <span className="font-semibold text-[#1B1B1B]">
+                £{client.aov_current ?? "—"}
+              </span>
+              {aovDelta != null && (
+                <span
+                  className={`ml-auto text-[10px] font-semibold ${
+                    aovDelta > 0
+                      ? "text-emerald-700"
+                      : aovDelta < 0
+                        ? "text-rose-700"
+                        : "text-[#7A7A7A]"
+                  }`}
+                >
+                  {aovDelta > 0 ? "+" : ""}
+                  {aovDelta.toFixed(1)}%
+                </span>
+              )}
+            </div>
+          ) : (
+            <div className="mt-0.5 text-[10px] italic text-[#A0A0A0]">+ set</div>
+          )}
+        </button>
+      </div>
+
+      {metricsOpen && (
+        <ClientMetricsEditor
+          client={client}
+          onCancel={() => setMetricsOpen(false)}
+          onSave={() => {
+            setMetricsOpen(false);
+            onMutate();
+          }}
+        />
+      )}
+
       {unassignOpen && (
         <UnassignClientModal
           client={client}

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { postSlackMessage, getAppUrl } from "@/lib/slack-bot";
+import { authedRole } from "@/lib/auth/role";
 
 /**
  * POST /api/pods/stale-notify
@@ -9,9 +10,14 @@ import { postSlackMessage, getAppUrl } from "@/lib/slack-bot";
  * pinging the owner if known. Caller (`scanAndNotifyStaleTickets`)
  * marks the task `stale_pinged_at` so the same ticket only pings once.
  *
+ * Auth: requires launchpad-role cookie (admin / cro / team).
+ *
  * Body: { channel_id, pod_name, task_title, owner_name?, age_hours }
  */
 export async function POST(req: NextRequest) {
+  if (!authedRole(req, ["admin", "cro", "team"])) {
+    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  }
   let body: { channel_id?: string; pod_name?: string; task_title?: string; owner_name?: string; age_hours?: number } = {};
   try {
     body = await req.json();

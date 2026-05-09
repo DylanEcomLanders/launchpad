@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { postSlackMessage, getAppUrl } from "@/lib/slack-bot";
+import { authedRole } from "@/lib/auth/role";
 
 /**
  * POST /api/pods/slip-notify
@@ -8,9 +9,14 @@ import { postSlackMessage, getAppUrl } from "@/lib/slack-bot";
  * Slack channel so admins/owners see the slip without watching the
  * dashboard. Best-effort, silent on failure.
  *
+ * Auth: requires launchpad-role cookie (admin / cro / team).
+ *
  * Body: { channel_id, pod_name, project_name, client_name?, delivery_date?, slip_reason? }
  */
 export async function POST(req: NextRequest) {
+  if (!authedRole(req, ["admin", "cro", "team"])) {
+    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  }
   let body: Record<string, string | undefined> = {};
   try {
     body = await req.json();

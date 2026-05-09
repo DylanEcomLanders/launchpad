@@ -66,6 +66,20 @@ export interface Client {
   retainer_tier: RetainerTier;
   /** Optional link to the launchpad client portal slug. */
   portal_slug?: string;
+  /** Conversion-rate snapshot at engagement start. % as decimal — 2.4
+   * means 2.4%. Manually entered by the PM at intake. Drives the
+   * baseline → current delta on the client roster card and feeds
+   * retainer-renewal share-cards. */
+  cvr_baseline?: number;
+  /** Latest CVR reading for this client. Manually updated by Dan / the
+   * pod after each test or each month. */
+  cvr_current?: number;
+  /** Average order value snapshot at engagement start, in GBP. */
+  aov_baseline?: number;
+  /** Latest AOV reading. */
+  aov_current?: number;
+  /** ISO timestamp of when CVR/AOV were last updated. */
+  metrics_updated_at?: string;
 }
 
 /** Headline scope of each retainer tier. Shown on client cards. */
@@ -191,6 +205,29 @@ export interface Task {
    * notifications. Cleared if the ticket is resolved (status=done) or
    * paused. */
   stale_pinged_at?: string;
+  /** Conversion test outcome for Build tasks shipped as variant tests
+   * (typically M2/M3 of a Conversion Engine cycle). Captures whether
+   * the test moved the metric and by how much, so retainer renewals
+   * have hard data instead of vibes. Only set after the test has run
+   * — pending = "shipped, waiting for results"; winner/loser =
+   * statistically meaningful in either direction; inconclusive = no
+   * meaningful difference. */
+  test_result?: {
+    status: "pending" | "winner" | "loser" | "inconclusive";
+    /** Lift in % vs control. Negative = control won. May be undefined
+     * for `pending` and `inconclusive`. */
+    lift_pct?: number;
+    /** Significance / confidence level (e.g. 95). Not required, but
+     * sets the bar for the share-card visual. */
+    significance_pct?: number;
+    /** Free-text designer/Dan note — what changed, what the hypothesis
+     * was, what we'd try next. Surfaces under the result chip on the
+     * task row. */
+    notes?: string;
+    /** ISO timestamp of when the result was last set, used for
+     * sort-order on retro pages and share-card "as of" line. */
+    recorded_at?: string;
+  };
 }
 
 /** Phase label derived from the cycle week — used for the
