@@ -19,6 +19,7 @@ import {
   getPods,
   getProjects,
   getTasks,
+  hydrateTeamAvatarsFromCloud,
   resetAndReseed,
   scanAndNotifyStaleTickets,
   seedConversionEngineCycle,
@@ -91,6 +92,16 @@ export default function PodsIndexClient() {
     setAllTasks(getTasks());
     setCroLeads(getCroLeads());
     onboardingStore.getAll().then(setOnboardings).catch(() => {});
+    /* Pull team avatar URLs from Supabase and overlay onto local pod
+     * members. Files persist in the company-avatars bucket; this step
+     * makes sure the URLs survive a localStorage reset / new device.
+     * Refreshes pods + cro leads once any changes have been merged. */
+    hydrateTeamAvatarsFromCloud().then((changed) => {
+      if (changed) {
+        setPods(getPods());
+        setCroLeads(getCroLeads());
+      }
+    });
     /* Scan for tickets that crossed 48h since the last visit and ping
      * Slack once per ticket. Idempotent — already-pinged tickets are
      * skipped via stale_pinged_at. Only runs in admin mode so the

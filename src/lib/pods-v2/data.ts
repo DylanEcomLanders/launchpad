@@ -385,6 +385,55 @@ export function updateTaskTestResult(
   );
 }
 
+/* ── Avatar hydration from Supabase ────────────────────────────── */
+
+/* Read the cloud-stored team-avatars map and overlay the URLs onto the
+ * local pod members + CRO leads. Run once after ensureSeed on every
+ * /pods-v2 mount so a freshly-seeded localStorage picks up everyone's
+ * existing photos instead of showing initials.
+ *
+ * Cloud is the source of truth here — local URLs that aren't in the
+ * cloud map get cleared, and cloud URLs override local. That's the
+ * right call for "this should match across devices" UX. */
+export async function hydrateTeamAvatarsFromCloud(): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  const { loadTeamAvatars, podMemberAvatarKey, croLeadAvatarKey } = await import("./team-avatars");
+  const cloud = await loadTeamAvatars();
+  if (Object.keys(cloud).length === 0) return false;
+
+  let touched = false;
+
+  // Merge into pods
+  const pods = getPods();
+  const nextPods = pods.map((p) => ({
+    ...p,
+    members: p.members.map((m) => {
+      const cloudUrl = cloud[podMemberAvatarKey(p.name, m.role)];
+      if (cloudUrl !== undefined && cloudUrl !== m.avatar_url) {
+        touched = true;
+        return { ...m, avatar_url: cloudUrl };
+      }
+      return m;
+    }),
+  }));
+  if (touched) write(LS_PODS, nextPods);
+
+  // Merge into CRO leads
+  const cros = getCroLeads();
+  let croTouched = false;
+  const nextCros = cros.map((c) => {
+    const cloudUrl = cloud[croLeadAvatarKey(c.name)];
+    if (cloudUrl !== undefined && cloudUrl !== c.avatar_url) {
+      croTouched = true;
+      return { ...c, avatar_url: cloudUrl };
+    }
+    return c;
+  });
+  if (croTouched) write(LS_CRO_LEADS, nextCros);
+
+  return touched || croTouched;
+}
+
 /* ── Pod ↔ portal phase sync ───────────────────────────────────── */
 
 /* When a core deliverable hits done in a pod, advance the linked
@@ -555,11 +604,28 @@ export function isMemberOoo(member: PodMember, todayYMD: string): boolean {
 
 export function updateMemberAvatar(memberId: string, avatarUrl: string | undefined): void {
   const pods = getPods();
+  let touchedPodName: string | undefined;
+  let touchedRole: string | undefined;
   const next = pods.map((p) => ({
     ...p,
-    members: p.members.map((m) => (m.id === memberId ? { ...m, avatar_url: avatarUrl } : m)),
+    members: p.members.map((m) => {
+      if (m.id !== memberId) return m;
+      touchedPodName = p.name;
+      touchedRole = m.role;
+      return { ...m, avatar_url: avatarUrl };
+    }),
   }));
   write(LS_PODS, next);
+
+  /* Persist the URL → slot mapping to Supabase so the avatar survives
+   * any localStorage reset / different browser / new device. Files are
+   * already permanent in the company-avatars bucket; we just need the
+   * pointer to be too. Best-effort, silent on failure. */
+  if (touchedPodName && touchedRole && typeof window !== "undefined") {
+    import("./team-avatars").then(({ podMemberAvatarKey, saveTeamAvatar }) => {
+      saveTeamAvatar(podMemberAvatarKey(touchedPodName!, touchedRole!), avatarUrl);
+    });
+  }
 }
 
 /* ── Pod blockers ───────────────────────────────────────────────── */
@@ -1515,10 +1581,23 @@ function ensureCroLeads(): PodMember[] {
 
 export function updateCroLeadAvatar(memberId: string, avatarUrl: string | undefined): void {
   const all = getCroLeads();
+  let touchedName: string | undefined;
   write(
     LS_CRO_LEADS,
-    all.map((m) => (m.id === memberId ? { ...m, avatar_url: avatarUrl } : m)),
+    all.map((m) => {
+      if (m.id !== memberId) return m;
+      touchedName = m.name;
+      return { ...m, avatar_url: avatarUrl };
+    }),
   );
+
+  /* Same cloud-pin pattern as updateMemberAvatar — persists the URL so
+   * Dan's photo doesn't reset when localStorage gets cleared. */
+  if (touchedName && typeof window !== "undefined") {
+    import("./team-avatars").then(({ croLeadAvatarKey, saveTeamAvatar }) => {
+      saveTeamAvatar(croLeadAvatarKey(touchedName!), avatarUrl);
+    });
+  }
 }
 
 /** Wipe all client / project / task data. Pods + members are kept —
