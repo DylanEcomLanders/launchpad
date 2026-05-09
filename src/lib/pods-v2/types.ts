@@ -18,6 +18,14 @@ export interface PodMember {
   /** Optional uploaded photo. If set, replaces the generated PodAvatar
    * SVG/initial fallback. */
   avatar_url?: string;
+  /** Out-of-office window. When today's date is inside [start, end]
+   * (inclusive), the member is treated as away: avatar dims, swim
+   * lane shows an "OOO until" pill, and autopair on Conversion Engine
+   * seeding falls through to the secondary if the primary is away.
+   * Both dates are YYYY-MM-DD; either can be missing if the absence
+   * is open-ended. */
+  ooo_start?: string;
+  ooo_end?: string;
 }
 
 export interface Pod {
@@ -126,6 +134,7 @@ export type TaskDiscipline = "strategy" | "design" | "development";
 export type TaskPhase =
   | "onboarding"
   | "research"
+  | "wireframe"
   | "design"
   | "internal-design-qa"
   | "external-design-review"
@@ -176,6 +185,12 @@ export interface Task {
    * cycles of W1 strategy → W2 design → W3 build → W4 test/prep. Tasks
    * created outside that flow leave this undefined. */
   cycle?: { month: 1 | 2 | 3; week: 1 | 2 | 3 | 4 };
+  /** Set when a stale-ticket Slack ping has been fired for this task.
+   * Stops the same ticket from re-pinging on every page load — a
+   * ticket that's been open for a week shouldn't generate seven
+   * notifications. Cleared if the ticket is resolved (status=done) or
+   * paused. */
+  stale_pinged_at?: string;
 }
 
 /** Phase label derived from the cycle week — used for the
@@ -190,6 +205,7 @@ export const CYCLE_WEEK_LABEL: Record<1 | 2 | 3 | 4, string> = {
 export const TASK_PHASE_LABEL: Record<TaskPhase, string> = {
   onboarding: "Onboarding",
   research: "Research",
+  wireframe: "Wireframe",
   design: "Design",
   "internal-design-qa": "Internal design QA",
   "external-design-review": "External design review",
@@ -205,6 +221,7 @@ export const TASK_PHASE_LABEL: Record<TaskPhase, string> = {
 export const TASK_PHASE_ORDER: TaskPhase[] = [
   "onboarding",
   "research",
+  "wireframe",
   "design",
   "internal-design-qa",
   "external-design-review",

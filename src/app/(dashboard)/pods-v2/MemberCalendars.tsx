@@ -61,6 +61,7 @@ function buildWeekGrid(today: string, weeks: number): string[][] {
 const PHASE_DOT: Record<TaskPhase, string> = {
   onboarding: "bg-[#9CA3AF]",
   research: "bg-[#0891B2]",
+  wireframe: "bg-[#F59E0B]",
   design: "bg-[#7C3AED]",
   "internal-design-qa": "bg-[#9333EA]",
   "external-design-review": "bg-[#DB2777]",

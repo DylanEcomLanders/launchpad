@@ -293,12 +293,19 @@ export function MemberAvatar({
 export function MemberRow({
   member,
   onChangeAvatar,
+  isOoo,
+  oooLabel,
 }: {
   member: PodMember;
   onChangeAvatar?: (newUrl: string) => void;
+  /** Whether the member is out-of-office today. Avatar dims and a small
+   * "OOO" pill appears under the role line. */
+  isOoo?: boolean;
+  /** Optional human-friendly OOO range, e.g. "until 14 May". */
+  oooLabel?: string;
 }) {
   return (
-    <div className="flex items-center gap-2.5">
+    <div className={`flex items-center gap-2.5 ${isOoo ? "opacity-60" : ""}`}>
       <MemberAvatar member={member} onChangeAvatar={onChangeAvatar} />
       <div className="min-w-0 leading-tight">
         <div
@@ -310,6 +317,11 @@ export function MemberRow({
         </div>
         <div className="truncate text-[11px] text-[#7A7A7A]">
           {ROLE_LABEL[member.role]}
+          {isOoo && (
+            <span className="ml-1 rounded border border-amber-200 bg-amber-50 px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-amber-800">
+              OOO{oooLabel ? ` ${oooLabel}` : ""}
+            </span>
+          )}
         </div>
       </div>
     </div>

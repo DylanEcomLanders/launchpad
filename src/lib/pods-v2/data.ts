@@ -248,8 +248,36 @@ export function createProject(input: CreateProjectInput): Project {
 
 export function updateProjectStatus(id: string, status: ProjectStatus): void {
   const all = getProjects();
+  const before = all.find((p) => p.id === id);
   const next = all.map((p) => (p.id === id ? { ...p, status } : p));
   write(LS_PROJECTS, next);
+
+  /* Slipped-project Slack ping. Fires once on the transition into
+   * "slipped" — no re-ping if it was already slipped. Goes to the pod's
+   * Slack channel, fire-and-forget, silent on failure. */
+  if (
+    before &&
+    before.status !== "slipped" &&
+    status === "slipped" &&
+    typeof window !== "undefined"
+  ) {
+    const pod = getPodById(before.pod_id);
+    const client = getClientById(before.client_id);
+    if (pod?.slack_channel_id) {
+      fetch("/api/pods/slip-notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channel_id: pod.slack_channel_id,
+          pod_name: pod.name,
+          project_name: before.name,
+          client_name: client?.name,
+          delivery_date: before.delivery_date,
+          slip_reason: before.slip_reason,
+        }),
+      }).catch(() => {});
+    }
+  }
 }
 
 // ─── Tasks ──────────────────────────────────────────────────────────
@@ -355,6 +383,78 @@ async function syncPortalDeliverable(input: {
   }
 }
 
+/* ── Stale-ticket scanner ──────────────────────────────────────── */
+
+/* Scan all open tickets and fire a Slack ping for any that have been
+ * sitting unresolved for more than 48 hours of effective time (paused
+ * windows excluded). Marks `stale_pinged_at` on the task so the same
+ * ticket doesn't re-ping every page load. Called from /pods-v2 admin
+ * mount; safe to call repeatedly.
+ *
+ * Why client-side: pods data lives in localStorage; a server cron
+ * can't see it. Per-admin browser scan is good enough — the staleness
+ * threshold is 48h, not minutes, so we don't need second-by-second
+ * precision. */
+export function scanAndNotifyStaleTickets(): void {
+  if (typeof window === "undefined") return;
+  const tasks = getTasks();
+  const projects = getProjects();
+  const projectById = new Map<string, Project>();
+  for (const p of projects) projectById.set(p.id, p);
+  const pods = getPods();
+  const podById = new Map<string, Pod>();
+  for (const p of pods) podById.set(p.id, p);
+
+  const now = Date.now();
+  const FORTY_EIGHT_H_MS = 48 * 60 * 60 * 1000;
+
+  let touched = false;
+  const updated = tasks.map((t) => {
+    // Only tickets — core deliverables don't get stale pings (they
+    // have due_dates, not age clocks)
+    const isTicket =
+      t.type === "revision" ||
+      t.type === "bug" ||
+      t.type === "desktop_fix" ||
+      t.type === "asset_prep" ||
+      t.type === "library";
+    if (!isTicket) return t;
+    if (t.status === "done") return t;
+    if (t.stale_pinged_at) return t; // already pinged once
+    if (t.waiting_on) return t; // paused — clock isn't running
+
+    const created = new Date(t.created_at).getTime();
+    const banked = t.paused_total_ms || 0;
+    const livePauseMs = t.paused_at
+      ? Math.max(0, now - new Date(t.paused_at).getTime())
+      : 0;
+    const effectiveAgeMs = now - created - banked - livePauseMs;
+    if (effectiveAgeMs < FORTY_EIGHT_H_MS) return t;
+
+    // Stale — fire the ping
+    const project = projectById.get(t.project_id);
+    const pod = project ? podById.get(project.pod_id) : undefined;
+    if (pod?.slack_channel_id) {
+      const owner = pod.members.find((m) => m.id === t.assigned_to)?.name;
+      fetch("/api/pods/stale-notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channel_id: pod.slack_channel_id,
+          pod_name: pod.name,
+          task_title: t.title,
+          owner_name: owner,
+          age_hours: Math.floor(effectiveAgeMs / 3_600_000),
+        }),
+      }).catch(() => {});
+    }
+    touched = true;
+    return { ...t, stale_pinged_at: new Date().toISOString() };
+  });
+
+  if (touched) write(LS_TASKS, updated);
+}
+
 /* ── Pod Slack channel ─────────────────────────────────────────── */
 
 /* Set or clear the pod's Slack channel id used for blocker notifications.
@@ -365,6 +465,36 @@ export function updatePodSlackChannel(podId: string, channelId: string | undefin
     p.id === podId ? { ...p, slack_channel_id: channelId || undefined } : p,
   );
   write(LS_PODS, next);
+}
+
+/* ── Member out-of-office ──────────────────────────────────────── */
+
+/** Set or clear a member's OOO window. Pass empty strings to clear. */
+export function updateMemberOoo(
+  memberId: string,
+  start: string | undefined,
+  end: string | undefined,
+): void {
+  const pods = getPods();
+  const next = pods.map((p) => ({
+    ...p,
+    members: p.members.map((m) =>
+      m.id === memberId
+        ? { ...m, ooo_start: start || undefined, ooo_end: end || undefined }
+        : m,
+    ),
+  }));
+  write(LS_PODS, next);
+}
+
+/** True if a member's OOO window contains today (inclusive). Open-
+ * ended starts (no `ooo_start`) count as ongoing; open-ended ends
+ * count as still away. */
+export function isMemberOoo(member: PodMember, todayYMD: string): boolean {
+  if (!member.ooo_start && !member.ooo_end) return false;
+  if (member.ooo_start && todayYMD < member.ooo_start) return false;
+  if (member.ooo_end && todayYMD > member.ooo_end) return false;
+  return true;
 }
 
 /* ── Member avatar ─────────────────────────────────────────────── */
@@ -563,8 +693,21 @@ export function seedConversionEngineCycle(input: {
   if (!pod) return;
   const dan = read<PodMember>(LS_CRO_LEADS)[0];
 
-  const designer = pod.members.find((m) => m.role === "primary_designer");
-  const dev = pod.members.find((m) => m.role === "primary_dev");
+  /* Pick designer + dev for the cycle. If the primary is out of
+   * office on the project's kickoff date, fall through to the
+   * secondary so we don't seed a stack of work on an empty seat.
+   * Logged so admins can see the swap happened. */
+  const todayYMD = new Date().toISOString().slice(0, 10);
+  const referenceYMD = project.kickoff_date < todayYMD ? todayYMD : project.kickoff_date;
+  const pickRole = (primary: PodMemberRole, secondary: PodMemberRole) => {
+    const p = pod.members.find((m) => m.role === primary);
+    if (p && !isMemberOoo(p, referenceYMD) && !p.is_placeholder) return p;
+    const s = pod.members.find((m) => m.role === secondary);
+    if (s && !isMemberOoo(s, referenceYMD) && !s.is_placeholder) return s;
+    return p || s;
+  };
+  const designer = pickRole("primary_designer", "secondary_designer");
+  const dev = pickRole("primary_dev", "secondary_dev");
 
   /* Override project window to 12 weeks (Bespoke bucket) so the
    * delivery_date reflects the engagement's true end. */

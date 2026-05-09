@@ -30,7 +30,9 @@ import {
   reopenBlocker,
   resolveBlocker,
   resumeTask,
+  isMemberOoo,
   updateMemberAvatar,
+  updateMemberOoo,
   updatePodSlackChannel,
   updateTaskPhase,
   updateTaskPriority,
@@ -113,6 +115,7 @@ const STATUS_CYCLE: Record<TaskStatus, TaskStatus> = {
 const PHASE_PILL: Record<TaskPhase, string> = {
   onboarding: "bg-[#F3F4F6] text-[#374151] border-[#E5E7EB]",
   research: "bg-[#ECFEFF] text-[#0E7490] border-[#A5F3FC]",
+  wireframe: "bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]",
   design: "bg-[#F5F3FF] text-[#6D28D9] border-[#DDD6FE]",
   "internal-design-qa": "bg-[#FAF5FF] text-[#7E22CE] border-[#E9D5FF]",
   "external-design-review": "bg-[#FDF2F8] text-[#BE185D] border-[#FBCFE8]",
@@ -194,6 +197,12 @@ export default function PodDetailClient({ podId }: { podId: string }) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  /* Filter state for the swim lane. `me` filters to the current member
+   * (only meaningful in team-view; admin doesn't have a "me"). `client`
+   * filters to a single client id. `hideDone` hides done tasks. */
+  const [filterClient, setFilterClient] = useState<string>("");
+  const [hideDone, setHideDone] = useState(false);
+  const [hotkeyHelpOpen, setHotkeyHelpOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const refresh = () => {
@@ -212,6 +221,137 @@ export default function PodDetailClient({ podId }: { podId: string }) {
   }, [podId]);
 
   const today = todayYMD();
+
+  /* Revision count per client — sum of `revision`-type tasks across
+   * all of a client's projects (not just this pod's projects, but in
+   * practice the pod owns the client so it's the same thing). >2 is
+   * the threshold the team uses for "this client/project is
+   * struggling" — surfaced as a rose pill on the client card. */
+  const revisionsByClient = useMemo(() => {
+    const projectClient = new Map<string, string>();
+    for (const p of projects) projectClient.set(p.id, p.client_id);
+    const counts = new Map<string, number>();
+    for (const t of tasks) {
+      if (t.type !== "revision") continue;
+      const cid = projectClient.get(t.project_id);
+      if (!cid) continue;
+      counts.set(cid, (counts.get(cid) || 0) + 1);
+    }
+    return counts;
+  }, [projects, tasks]);
+
+  /* Apply filter state to allTasks. `filteredTasks` is what the swim
+   * lane renders; `allTasks` stays in tact for capacity / revisions /
+   * cycle counts which are unaffected by what the user is currently
+   * looking at. */
+  const filteredTasks = useMemo(() => {
+    let out = tasks;
+    if (filterClient) {
+      const projectIdsForClient = new Set(
+        projects.filter((p) => p.client_id === filterClient).map((p) => p.id),
+      );
+      out = out.filter((t) => projectIdsForClient.has(t.project_id));
+    }
+    if (hideDone) {
+      out = out.filter((t) => t.status !== "done");
+    }
+    return out;
+  }, [tasks, projects, filterClient, hideDone]);
+
+  /* Hotkeys: j/k navigate, space toggles, d toggles hideDone, / focuses
+   * filter, ? toggles help, esc clears. Listener is global; ignored
+   * when the user is already typing in an input/textarea/select. */
+  useEffect(() => {
+    function isTypingTarget(t: EventTarget | null): boolean {
+      if (!(t instanceof HTMLElement)) return false;
+      const tag = t.tagName;
+      return (
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        tag === "SELECT" ||
+        t.isContentEditable
+      );
+    }
+    function focusedTaskRow(): HTMLElement | null {
+      const el = document.activeElement;
+      if (el instanceof HTMLElement && el.dataset.taskId) return el;
+      return null;
+    }
+    function listAllTaskRows(): HTMLElement[] {
+      return Array.from(
+        document.querySelectorAll<HTMLElement>("[data-task-id]"),
+      );
+    }
+    function moveFocus(dir: 1 | -1) {
+      const rows = listAllTaskRows();
+      if (rows.length === 0) return;
+      const current = focusedTaskRow();
+      const idx = current ? rows.indexOf(current) : -1;
+      const nextIdx =
+        idx < 0
+          ? dir === 1
+            ? 0
+            : rows.length - 1
+          : Math.min(rows.length - 1, Math.max(0, idx + dir));
+      rows[nextIdx]?.focus();
+      rows[nextIdx]?.scrollIntoView({ block: "nearest" });
+    }
+    function handler(e: KeyboardEvent) {
+      if (isTypingTarget(e.target)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      switch (e.key) {
+        case "j":
+          e.preventDefault();
+          moveFocus(1);
+          break;
+        case "k":
+          e.preventDefault();
+          moveFocus(-1);
+          break;
+        case " ": {
+          const row = focusedTaskRow();
+          if (!row?.dataset.taskId) return;
+          e.preventDefault();
+          const t = tasks.find((x) => x.id === row.dataset.taskId);
+          if (!t) return;
+          updateTaskStatus(
+            t.id,
+            t.status === "todo"
+              ? "in_progress"
+              : t.status === "in_progress"
+                ? "done"
+                : "todo",
+          );
+          refresh();
+          break;
+        }
+        case "d":
+          e.preventDefault();
+          setHideDone((v) => !v);
+          break;
+        case "/":
+          e.preventDefault();
+          (document.querySelector("[data-filter-client]") as HTMLElement | null)?.focus();
+          break;
+        case "?":
+          e.preventDefault();
+          setHotkeyHelpOpen((v) => !v);
+          break;
+        case "Escape":
+          if (filterClient || hideDone) {
+            setFilterClient("");
+            setHideDone(false);
+          } else if (hotkeyHelpOpen) {
+            setHotkeyHelpOpen(false);
+          }
+          break;
+        default:
+          break;
+      }
+    }
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [tasks, filterClient, hideDone, hotkeyHelpOpen]);
 
   /* Two windows for the meter — current 4-week month from today's Mon,
    * then the 4 weeks after that. M2/M3 cycle tasks carry half-points
@@ -302,16 +442,30 @@ export default function PodDetailClient({ podId }: { podId: string }) {
         <div className="rounded-2xl border border-[#E5E5EA] bg-white p-5 shadow-[var(--shadow-soft)]">
           <PodHeading name={pod.name} tagline={pod.tagline} />
           <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
-            {pod.members.map((m) => (
-              <MemberRow
-                key={m.id}
-                member={m}
-                onChangeAvatar={(url) => {
-                  updateMemberAvatar(m.id, url);
-                  refresh();
-                }}
-              />
-            ))}
+            {pod.members.map((m) => {
+              const ooo = isMemberOoo(m, today);
+              const oooLabel = m.ooo_end
+                ? `until ${formatDayMonth(m.ooo_end)}`
+                : m.ooo_start
+                  ? `from ${formatDayMonth(m.ooo_start)}`
+                  : "";
+              return (
+                <div key={m.id} className="space-y-1">
+                  <MemberRow
+                    member={m}
+                    isOoo={ooo}
+                    oooLabel={oooLabel}
+                    onChangeAvatar={(url) => {
+                      updateMemberAvatar(m.id, url);
+                      refresh();
+                    }}
+                  />
+                  {isAdmin && !m.is_placeholder && (
+                    <MemberOooEditor member={m} onChange={refresh} />
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
         <CapacityPanel
@@ -328,7 +482,92 @@ export default function PodDetailClient({ podId }: { podId: string }) {
       <PodBlockersPanel pod={pod} onMutate={refresh} isAdmin={isAdmin} />
 
       {/* CLIENT ROSTER — moved up */}
-      <ClientRoster clients={clients} currentPodId={pod.id} onMutate={refresh} canUnassign={isAdmin} />
+      <ClientRoster
+        clients={clients}
+        currentPodId={pod.id}
+        onMutate={refresh}
+        canUnassign={isAdmin}
+        revisionsByClient={revisionsByClient}
+      />
+
+      {/* FILTERS — narrow the swim lane to a single client or hide
+       * done tasks. Useful when columns get full and you want to zoom
+       * in on what matters. */}
+      <div className="mt-10 flex flex-wrap items-center gap-2 text-[11px]">
+        <span className="font-semibold uppercase tracking-wider text-[#7A7A7A]">
+          Filter:
+        </span>
+        <select
+          data-filter-client
+          value={filterClient}
+          onChange={(e) => setFilterClient(e.target.value)}
+          className="rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-[11px]"
+        >
+          <option value="">All clients</option>
+          {clients.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+        <label className="flex cursor-pointer items-center gap-1.5 rounded-md border border-[#E5E5EA] bg-white px-2 py-1">
+          <input
+            type="checkbox"
+            checked={hideDone}
+            onChange={(e) => setHideDone(e.target.checked)}
+            className="size-3"
+          />
+          Hide done
+        </label>
+        {(filterClient || hideDone) && (
+          <button
+            onClick={() => {
+              setFilterClient("");
+              setHideDone(false);
+            }}
+            className="rounded-md px-2 py-1 text-[10px] text-rose-700 hover:bg-rose-50"
+          >
+            Clear
+          </button>
+        )}
+        <button
+          onClick={() => setHotkeyHelpOpen((v) => !v)}
+          className="ml-auto rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-[10px] text-[#7A7A7A] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"
+          title="Show keyboard shortcuts (?)"
+        >
+          ? Hotkeys
+        </button>
+      </div>
+
+      {hotkeyHelpOpen && (
+        <div className="mt-2 grid grid-cols-1 gap-2 rounded-xl border border-[#E5E5EA] bg-white p-3 text-[11px] md:grid-cols-3">
+          <div>
+            <kbd className="rounded border border-[#E5E5EA] bg-[#F7F8FA] px-1 font-mono text-[10px]">j</kbd>
+            <kbd className="ml-1 rounded border border-[#E5E5EA] bg-[#F7F8FA] px-1 font-mono text-[10px]">k</kbd>
+            <span className="ml-2 text-[#7A7A7A]">Move focus down / up between tasks</span>
+          </div>
+          <div>
+            <kbd className="rounded border border-[#E5E5EA] bg-[#F7F8FA] px-1 font-mono text-[10px]">space</kbd>
+            <span className="ml-2 text-[#7A7A7A]">Cycle focused task status</span>
+          </div>
+          <div>
+            <kbd className="rounded border border-[#E5E5EA] bg-[#F7F8FA] px-1 font-mono text-[10px]">d</kbd>
+            <span className="ml-2 text-[#7A7A7A]">Toggle Hide done</span>
+          </div>
+          <div>
+            <kbd className="rounded border border-[#E5E5EA] bg-[#F7F8FA] px-1 font-mono text-[10px]">/</kbd>
+            <span className="ml-2 text-[#7A7A7A]">Focus the client filter</span>
+          </div>
+          <div>
+            <kbd className="rounded border border-[#E5E5EA] bg-[#F7F8FA] px-1 font-mono text-[10px]">esc</kbd>
+            <span className="ml-2 text-[#7A7A7A]">Clear filters / close popovers</span>
+          </div>
+          <div>
+            <kbd className="rounded border border-[#E5E5EA] bg-[#F7F8FA] px-1 font-mono text-[10px]">?</kbd>
+            <span className="ml-2 text-[#7A7A7A]">Toggle this help</span>
+          </div>
+        </div>
+      )}
 
       {/* WORK IN FLIGHT — one column per pod member, all task types combined */}
       <SwimLane
@@ -336,7 +575,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
         subtitle="Core deliverables and tickets. One column per pod member, sorted by due date."
         members={pod.members}
         allMembers={pod.members}
-        tasks={allTasks}
+        tasks={filteredTasks}
         projectById={projectById}
         clientById={clientById}
         today={today}
@@ -584,6 +823,12 @@ function PrimaryTaskRow({
   const [phaseOpen, setPhaseOpen] = useState(false);
   const [priorityOpen, setPriorityOpen] = useState(false);
   const [pauseOpen, setPauseOpen] = useState(false);
+  /* Designer → Dev handoff checklist. When a designer flips a Design
+   * core_deliverable from in_progress to done, surface a 3-checkbox
+   * gate (Figma link / assets exported / scope locked). All three
+   * must tick before the status flip lands. Stops the back-and-forth
+   * where dev pings the designer two days later asking for the file. */
+  const [handoffOpen, setHandoffOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -647,15 +892,27 @@ function PrimaryTaskRow({
 
   return (
     <div
-      className={`group relative flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-[#F7F8FA] ${
+      data-task-id={task.id}
+      tabIndex={-1}
+      className={`group relative flex items-center gap-3 rounded-lg px-2 py-2 outline-none transition-colors hover:bg-[#F7F8FA] focus:bg-[#EEF2FF] focus:ring-2 focus:ring-[#1B1B1B]/20 ${
         task.status === "done" ? "opacity-50" : ""
       }`}
       ref={ref}
     >
-      {/* Status circle — click to cycle */}
+      {/* Status circle — click to cycle. Design core deliverables open
+       * a handoff checklist when transitioning to done. */}
       <button
         onClick={() => {
-          updateTaskStatus(task.id, STATUS_CYCLE[task.status]);
+          const next = STATUS_CYCLE[task.status];
+          const isDesignHandoff =
+            next === "done" &&
+            task.type === "core_deliverable" &&
+            task.discipline === "design";
+          if (isDesignHandoff) {
+            setHandoffOpen(true);
+            return;
+          }
+          updateTaskStatus(task.id, next);
           onMutate();
         }}
         className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
@@ -807,6 +1064,18 @@ function PrimaryTaskRow({
         />
       )}
 
+      {handoffOpen && (
+        <DesignHandoffModal
+          taskTitle={task.title}
+          onCancel={() => setHandoffOpen(false)}
+          onConfirm={() => {
+            updateTaskStatus(task.id, "done");
+            setHandoffOpen(false);
+            onMutate();
+          }}
+        />
+      )}
+
       {phaseOpen && task.phase && (
         <PhasePopover
           currentPhase={task.phase}
@@ -912,6 +1181,186 @@ function PhasePopover({
           </span>
         </button>
       ))}
+    </div>
+  );
+}
+
+/* Inline OOO editor for a pod member. Two date inputs (start / end);
+ * either can be left empty for an open-ended absence. Saves on blur.
+ * Render only for admins — non-admins see the OOO pill (set elsewhere)
+ * but can't edit. Compact so it fits under the MemberRow without
+ * pushing the header out of shape. */
+function MemberOooEditor({
+  member,
+  onChange,
+}: {
+  member: PodMember;
+  onChange: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [start, setStart] = useState(member.ooo_start || "");
+  const [end, setEnd] = useState(member.ooo_end || "");
+  const hasOoo = !!(member.ooo_start || member.ooo_end);
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="text-[10px] text-[#A0A0A0] hover:text-[#1B1B1B] hover:underline"
+      >
+        {hasOoo ? "Edit OOO" : "+ Set OOO"}
+      </button>
+    );
+  }
+  return (
+    <div className="flex flex-wrap items-center gap-1 text-[10px]">
+      <input
+        type="date"
+        value={start}
+        onChange={(e) => setStart(e.target.value)}
+        className="rounded border border-[#E5E5EA] bg-white px-1 py-0.5 text-[10px]"
+        title="OOO start"
+      />
+      <span className="text-[#A0A0A0]">→</span>
+      <input
+        type="date"
+        value={end}
+        onChange={(e) => setEnd(e.target.value)}
+        className="rounded border border-[#E5E5EA] bg-white px-1 py-0.5 text-[10px]"
+        title="OOO end"
+      />
+      <button
+        onClick={() => {
+          updateMemberOoo(member.id, start || undefined, end || undefined);
+          setOpen(false);
+          onChange();
+        }}
+        className="rounded bg-[#1B1B1B] px-1.5 py-0.5 text-[10px] font-medium text-white hover:bg-[#2D2D2D]"
+      >
+        Save
+      </button>
+      {hasOoo && (
+        <button
+          onClick={() => {
+            updateMemberOoo(member.id, undefined, undefined);
+            setStart("");
+            setEnd("");
+            setOpen(false);
+            onChange();
+          }}
+          className="rounded px-1.5 py-0.5 text-[10px] text-rose-700 hover:bg-rose-50"
+          title="Clear OOO — back at the desk"
+        >
+          Clear
+        </button>
+      )}
+      <button
+        onClick={() => {
+          setStart(member.ooo_start || "");
+          setEnd(member.ooo_end || "");
+          setOpen(false);
+        }}
+        className="rounded px-1.5 py-0.5 text-[10px] text-[#7A7A7A] hover:text-[#1B1B1B]"
+      >
+        Cancel
+      </button>
+    </div>
+  );
+}
+
+/* Designer → Dev handoff modal. Three checkboxes the designer has to
+ * tick before flipping a Design core deliverable to done. Live count
+ * gates the Confirm button. Cancel leaves the task in_progress. */
+function DesignHandoffModal({
+  taskTitle,
+  onCancel,
+  onConfirm,
+}: {
+  taskTitle: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const [figma, setFigma] = useState(false);
+  const [assets, setAssets] = useState(false);
+  const [scope, setScope] = useState(false);
+  const ready = figma && assets && scope;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+          Design → Dev handoff
+        </p>
+        <h2 className="mt-0.5 text-base font-semibold text-[#1B1B1B]">{taskTitle}</h2>
+        <p className="mt-1 text-[11px] text-[#7A7A7A]">
+          Tick all three before flipping to done — stops the back-and-forth where dev pings the designer two days later.
+        </p>
+
+        <div className="mt-3 space-y-2">
+          <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-[#E5E5EA] px-3 py-2 hover:border-[#1B1B1B]">
+            <input
+              type="checkbox"
+              checked={figma}
+              onChange={(e) => setFigma(e.target.checked)}
+              className="mt-0.5"
+            />
+            <div className="flex-1">
+              <div className="text-xs font-medium text-[#1B1B1B]">Figma link present</div>
+              <div className="text-[10px] text-[#7A7A7A]">
+                Pasted on the project / portal so dev can find it without asking.
+              </div>
+            </div>
+          </label>
+          <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-[#E5E5EA] px-3 py-2 hover:border-[#1B1B1B]">
+            <input
+              type="checkbox"
+              checked={assets}
+              onChange={(e) => setAssets(e.target.checked)}
+              className="mt-0.5"
+            />
+            <div className="flex-1">
+              <div className="text-xs font-medium text-[#1B1B1B]">Assets exported</div>
+              <div className="text-[10px] text-[#7A7A7A]">
+                Hero images, icons, fonts — sliced and dropped where dev expects them.
+              </div>
+            </div>
+          </label>
+          <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-[#E5E5EA] px-3 py-2 hover:border-[#1B1B1B]">
+            <input
+              type="checkbox"
+              checked={scope}
+              onChange={(e) => setScope(e.target.checked)}
+              className="mt-0.5"
+            />
+            <div className="flex-1">
+              <div className="text-xs font-medium text-[#1B1B1B]">Scope locked</div>
+              <div className="text-[10px] text-[#7A7A7A]">
+                No outstanding client comments. Anything new is a separate revision.
+              </div>
+            </div>
+          </label>
+        </div>
+
+        <div className="mt-4 flex items-center justify-end gap-2">
+          <button
+            onClick={onCancel}
+            className="rounded-lg px-3 py-1.5 text-xs text-[#7A7A7A] hover:text-[#1B1B1B]"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={!ready}
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
+              ready
+                ? "bg-[#1B1B1B] text-white hover:bg-[#2D2D2D]"
+                : "cursor-not-allowed bg-[#E5E5EA] text-[#A0A0A0]"
+            }`}
+          >
+            {ready ? "Confirm — mark done" : `Tick all 3 (${[figma, assets, scope].filter(Boolean).length}/3)`}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1519,11 +1968,13 @@ function ClientRoster({
   currentPodId,
   onMutate,
   canUnassign,
+  revisionsByClient,
 }: {
   clients: Client[];
   currentPodId: string;
   onMutate: () => void;
   canUnassign: boolean;
+  revisionsByClient: Map<string, number>;
 }) {
   return (
     <div className="mt-10">
@@ -1532,7 +1983,14 @@ function ClientRoster({
       </h2>
       <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
         {clients.map((c) => (
-          <ClientCard key={c.id} client={c} currentPodId={currentPodId} onMutate={onMutate} canUnassign={canUnassign} />
+          <ClientCard
+            key={c.id}
+            client={c}
+            currentPodId={currentPodId}
+            onMutate={onMutate}
+            canUnassign={canUnassign}
+            revisionCount={revisionsByClient.get(c.id) || 0}
+          />
         ))}
         {clients.length === 0 && (
           <div className="rounded-xl border border-dashed border-[#E5E5EA] bg-white px-4 py-6 text-center text-xs text-[#A0A0A0]">
@@ -1549,11 +2007,13 @@ function ClientCard({
   currentPodId,
   onMutate,
   canUnassign,
+  revisionCount,
 }: {
   client: Client;
   currentPodId: string;
   onMutate: () => void;
   canUnassign: boolean;
+  revisionCount: number;
 }) {
   const [unassignOpen, setUnassignOpen] = useState(false);
   const tier = TIER_PILL[client.retainer_tier];
@@ -1580,6 +2040,14 @@ function ClientCard({
             {client.brand_warm && (
               <span className="rounded border border-orange-200 bg-orange-50 px-1.5 py-0.5 text-[10px] font-medium text-orange-700">
                 Brand-warm
+              </span>
+            )}
+            {revisionCount > 2 && (
+              <span
+                className="rounded border border-rose-200 bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-700"
+                title={`${revisionCount} revision rounds — quality signal, this engagement may be struggling`}
+              >
+                {revisionCount} revs
               </span>
             )}
           </div>

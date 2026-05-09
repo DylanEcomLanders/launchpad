@@ -20,6 +20,7 @@ import {
   getProjects,
   getTasks,
   resetAndReseed,
+  scanAndNotifyStaleTickets,
   seedConversionEngineCycle,
   updateCroLeadAvatar,
   updateTaskStatus,
@@ -90,6 +91,16 @@ export default function PodsIndexClient() {
     setAllTasks(getTasks());
     setCroLeads(getCroLeads());
     onboardingStore.getAll().then(setOnboardings).catch(() => {});
+    /* Scan for tickets that crossed 48h since the last visit and ping
+     * Slack once per ticket. Idempotent — already-pinged tickets are
+     * skipped via stale_pinged_at. Only runs in admin mode so the
+     * team-view doesn't trigger unauthorised scans. */
+    if (role === "admin") {
+      scanAndNotifyStaleTickets();
+      // Refresh tasks once after scan so any pinged_at writes surface.
+      setAllTasks(getTasks());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   function refreshAll() {
     setPods(getPods());
@@ -272,7 +283,10 @@ export default function PodsIndexClient() {
         <AssignToPodModal
           onboarding={assigning}
           pods={pods}
+          allProjects={allProjects}
+          allTasks={allTasks}
           existingClients={allClients}
+          today={todayYMD()}
           onCancel={() => setAssigning(null)}
           onComplete={() => {
             setAssigning(null);
@@ -412,6 +426,11 @@ function Overview({
           );
         })}
       </div>
+
+      {/* Friday weekly digest — admin-only, only shows on Fridays. One-
+       * click summary of the week per pod, with a button that posts the
+       * formatted message to a Slack channel of choice. */}
+      {isAdmin && <FridayDigestPanel pods={pods} projects={Object.values(projectsByPod).flat()} tasks={allTasks} clientById={clientById} today={today} />}
 
       {/* CRO Pipeline — Dan's strategy work across all pods, separate
        * from per-pod swim lanes since he's a shared resource. */}
@@ -616,18 +635,60 @@ function scopeItemsToDeliverables(portal: PortalData): Array<{ id: string; type:
 function AssignToPodModal({
   onboarding,
   pods,
+  allProjects,
+  allTasks,
   existingClients,
+  today,
   onCancel,
   onComplete,
 }: {
   onboarding: OnboardingSubmission;
   pods: Pod[];
+  allProjects: Project[];
+  allTasks: Task[];
   existingClients: Client[];
+  today: string;
   onCancel: () => void;
   onComplete: () => void;
 }) {
   const eligiblePods = pods;
-  const [podId, setPodId] = useState<string>(eligiblePods[0]?.id ?? "");
+  /* Compute this-month + next-month load per pod once, render in the
+   * dropdown options so the PM can see capacity before picking. Default
+   * selects the lightest-loaded pod (lowest `used` value) so the modal
+   * doesn't always default to Pod 1 like it used to. */
+  const podLoads = useMemo(() => {
+    const tw = fourWeekWindow(today);
+    const dayAfter = (() => {
+      const d = new Date(`${tw.end}T12:00:00`);
+      d.setDate(d.getDate() + 1);
+      return d.toISOString().slice(0, 10);
+    })();
+    const nw = fourWeekWindow(dayAfter);
+    const map = new Map<string, { used: number; next: number }>();
+    for (const p of pods) {
+      const podProjects = allProjects.filter((pr) => pr.pod_id === p.id);
+      map.set(p.id, {
+        used: capacityUsed(podProjects, allTasks, tw.start, tw.end),
+        next: capacityUsed(podProjects, allTasks, nw.start, nw.end),
+      });
+    }
+    return map;
+  }, [pods, allProjects, allTasks, today]);
+
+  const lightestPodId = useMemo(() => {
+    let best = eligiblePods[0]?.id ?? "";
+    let bestUsed = Infinity;
+    for (const p of eligiblePods) {
+      const u = podLoads.get(p.id)?.used ?? 0;
+      if (u < bestUsed) {
+        bestUsed = u;
+        best = p.id;
+      }
+    }
+    return best;
+  }, [eligiblePods, podLoads]);
+
+  const [podId, setPodId] = useState<string>(lightestPodId);
   const [signoffDate, setSignoffDate] = useState<string>(() => {
     return new Date().toISOString().slice(0, 10);
   });
@@ -825,12 +886,22 @@ function AssignToPodModal({
               onChange={(e) => setPodId(e.target.value)}
               className="w-full rounded-lg border border-[#E5E5EA] bg-white px-2 py-1.5 text-xs"
             >
-              {eligiblePods.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
+              {eligiblePods.map((p) => {
+                const load = podLoads.get(p.id);
+                const used = load?.used ?? 0;
+                const next = load?.next ?? 0;
+                const cap = p.capacity_points_per_month;
+                const isLightest = p.id === lightestPodId;
+                return (
+                  <option key={p.id} value={p.id}>
+                    {p.name} — {used}/{cap}pts now · {next}/{cap}pts next{isLightest ? " · lightest" : ""}
+                  </option>
+                );
+              })}
             </select>
+            <p className="mt-1 text-[10px] text-[#A0A0A0]">
+              Defaults to the lightest-loaded pod for this month. Pre-selected: <strong>{eligiblePods.find((p) => p.id === lightestPodId)?.name ?? "—"}</strong>.
+            </p>
           </div>
 
           <div>
@@ -981,6 +1052,172 @@ function AssignToPodModal({
 }
 
 // ─── CRO Pipeline panel ─────────────────────────────────────────────
+
+/* Friday weekly digest. Admin-only, shows only on Fridays (Mon-Thu it's
+ * collapsed entirely so it doesn't add noise mid-week). Computes a per-
+ * pod summary of the week — what shipped, what's still open, what's
+ * stale (>48h ticket), what's blocked, what slipped — and offers a one-
+ * click "Post to Slack" button that fires it to a channel the admin
+ * picks. The summary itself is also rendered on-screen so the admin
+ * can review before posting (or use the digest in standup without ever
+ * posting it). */
+function FridayDigestPanel({
+  pods,
+  projects,
+  tasks,
+  clientById,
+  today,
+}: {
+  pods: Pod[];
+  projects: Project[];
+  tasks: Task[];
+  clientById: Map<string, Client>;
+  today: string;
+}) {
+  const [forceShow, setForceShow] = useState(false);
+  const [posting, setPosting] = useState<string | null>(null); // pod id mid-post
+
+  const isFriday = new Date(`${today}T12:00:00`).getDay() === 5;
+
+  const summaries = useMemo(() => {
+    const weekStart = (() => {
+      const d = new Date(`${today}T12:00:00`);
+      // Roll back to Monday
+      const dow = d.getDay();
+      const back = dow === 0 ? 6 : dow - 1;
+      d.setDate(d.getDate() - back);
+      return d.toISOString().slice(0, 10);
+    })();
+    return pods.map((pod) => {
+      const podProjects = projects.filter((p) => p.pod_id === pod.id);
+      const podTasks = tasks.filter((t) => podProjects.some((pp) => pp.id === t.project_id));
+      const shipped = podProjects.filter(
+        (p) => p.status === "shipped" && p.delivery_date >= weekStart && p.delivery_date <= today,
+      );
+      const slipped = podProjects.filter((p) => p.status === "slipped");
+      const inFlight = podProjects.filter(
+        (p) => p.status === "in_progress" || p.status === "in_review",
+      );
+      const stale = podTasks.filter((t) => t.stale_pinged_at && t.status !== "done");
+      const activeBlockers = (pod.blockers || []).filter((b) => !b.resolved_at);
+      return { pod, shipped, slipped, inFlight, stale, activeBlockers, podProjects };
+    });
+  }, [pods, projects, tasks, today]);
+
+  function formatSlackMessage(s: typeof summaries[number]): string {
+    const lines: string[] = [
+      `:calendar_spiral: *Friday digest — ${s.pod.name}* — week of ${today}`,
+    ];
+    if (s.shipped.length > 0) {
+      lines.push(
+        `:white_check_mark: Shipped this week (${s.shipped.length}): ${s.shipped
+          .map((p) => `${p.name}${clientById.get(p.client_id) ? ` _(${clientById.get(p.client_id)!.name})_` : ""}`)
+          .join(", ")}`,
+      );
+    } else {
+      lines.push(`:white_check_mark: Shipped this week: nothing`);
+    }
+    lines.push(`:building_construction: In flight: ${s.inFlight.length} project${s.inFlight.length === 1 ? "" : "s"}`);
+    if (s.stale.length > 0) {
+      lines.push(`:hourglass_flowing_sand: Stale tickets (>48h): ${s.stale.length}`);
+    }
+    if (s.activeBlockers.length > 0) {
+      lines.push(`:rotating_light: Active blockers: ${s.activeBlockers.length}`);
+    }
+    if (s.slipped.length > 0) {
+      lines.push(`:warning: Slipped: ${s.slipped.length}`);
+    }
+    return lines.join("\n");
+  }
+
+  async function postPodDigest(s: typeof summaries[number]) {
+    if (!s.pod.slack_channel_id) {
+      alert(`No Slack channel configured for ${s.pod.name}. Set one on the pod's Blockers panel.`);
+      return;
+    }
+    setPosting(s.pod.id);
+    try {
+      await fetch("/api/pods/blocker-notify", {
+        // Reuse the existing endpoint — it accepts arbitrary text via
+        // title (description optional). Keeps endpoint count down for
+        // a once-a-week feature.
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channel_id: s.pod.slack_channel_id,
+          pod_name: s.pod.name,
+          title: `Friday digest — week of ${today}`,
+          description: formatSlackMessage(s).split("\n").slice(1).join("\n"),
+        }),
+      });
+    } finally {
+      setPosting(null);
+    }
+  }
+
+  if (!isFriday && !forceShow) {
+    return (
+      <div className="mt-10">
+        <button
+          onClick={() => setForceShow(true)}
+          className="text-[11px] text-[#A0A0A0] hover:text-[#1B1B1B] hover:underline"
+        >
+          + Show Friday digest (off-day preview)
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-10">
+      <div className="flex items-baseline justify-between gap-3">
+        <div>
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+            Friday digest{!isFriday && " — preview"}
+          </h2>
+          <p className="mt-0.5 text-xs text-[#7A7A7A]">
+            What each pod shipped this week, what&apos;s still open, what&apos;s stale. One click posts the formatted summary to the pod&apos;s Slack channel.
+          </p>
+        </div>
+        {!isFriday && (
+          <button
+            onClick={() => setForceShow(false)}
+            className="text-[10px] text-[#A0A0A0] hover:text-[#1B1B1B] hover:underline"
+          >
+            Hide
+          </button>
+        )}
+      </div>
+      <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
+        {summaries.map((s) => (
+          <div
+            key={s.pod.id}
+            className="rounded-xl border border-[#E5E5EA] bg-white p-3 shadow-[var(--shadow-soft)]"
+          >
+            <div className="flex items-baseline justify-between">
+              <h3 className="text-sm font-semibold text-[#1B1B1B]">{s.pod.name}</h3>
+              <button
+                disabled={posting === s.pod.id || !s.pod.slack_channel_id}
+                onClick={() => postPodDigest(s)}
+                className={`rounded-md px-2 py-1 text-[10px] font-medium ${
+                  s.pod.slack_channel_id
+                    ? "bg-[#1B1B1B] text-white hover:bg-[#2D2D2D]"
+                    : "cursor-not-allowed bg-[#E5E5EA] text-[#A0A0A0]"
+                } ${posting === s.pod.id ? "opacity-60" : ""}`}
+                title={s.pod.slack_channel_id ? "Post to Slack" : "No channel configured for this pod"}
+              >
+                {posting === s.pod.id ? "Posting…" : "Post to Slack"}
+              </button>
+            </div>
+            <pre className="mt-2 whitespace-pre-wrap text-[11px] leading-relaxed text-[#1B1B1B]" style={{ fontFamily: "inherit" }}>
+              {formatSlackMessage(s)}
+            </pre>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function CroPipeline({
   croLeads,
