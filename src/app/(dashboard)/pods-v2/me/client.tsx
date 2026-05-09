@@ -34,8 +34,7 @@ export default function MeClient() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
 
-  useEffect(() => {
-    ensureSeed();
+  function hydrateLocal() {
     const pods = getPods();
     const allMembers = pods.flatMap((p) => p.members);
     const cros = getCroLeads();
@@ -43,10 +42,24 @@ export default function MeClient() {
     setTasks(getTasks());
     setProjects(getProjects());
     setClients(getClients());
+  }
+
+  useEffect(() => {
+    ensureSeed();
+    hydrateLocal();
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem(ME_KEY);
       if (stored) setMeId(stored);
     }
+    /* Pull cloud-truth pods data so this device sees the same tasks
+     * everyone else does. Refresh local state once any changes have
+     * been merged. */
+    import("@/lib/pods-v2/sync").then(({ bootstrapPodsSync }) => {
+      bootstrapPodsSync().then((changed) => {
+        if (changed) hydrateLocal();
+      });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function refresh() {

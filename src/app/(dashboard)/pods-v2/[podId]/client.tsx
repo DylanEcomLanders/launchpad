@@ -17,7 +17,6 @@ import {
   ensureSeed,
   getClientsForPod,
   getPodById,
-  hydrateTeamAvatarsFromCloud,
   getProjectsForPod,
   getTasks,
   addBlocker,
@@ -220,14 +219,17 @@ export default function PodDetailClient({ podId }: { podId: string }) {
     setPod(getPodById(podId));
     refresh();
     setLoading(false);
-    /* Pull cloud-pinned avatar URLs and overlay onto local pod data
-     * so photos survive localStorage resets / new devices. Refreshes
-     * the pod state if anything changed. */
-    hydrateTeamAvatarsFromCloud().then((changed) => {
-      if (changed) {
-        setPod(getPodById(podId));
-        refresh();
-      }
+    /* Pull all pods-v2 data from Supabase and overlay onto local
+     * cache so the pod detail reflects multi-device truth. Avatar
+     * URLs ride along on Pod.members[] so this also handles the
+     * older hydrateTeamAvatarsFromCloud path. */
+    import("@/lib/pods-v2/sync").then(({ bootstrapPodsSync }) => {
+      bootstrapPodsSync().then((changed) => {
+        if (changed) {
+          setPod(getPodById(podId));
+          refresh();
+        }
+      });
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [podId]);

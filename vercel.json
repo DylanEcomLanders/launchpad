@@ -5,12 +5,24 @@
       "schedule": "0 8 * * *"
     },
     {
+      "path": "/api/cron/felix-digest",
+      "schedule": "0 7 * * *"
+    },
+    {
       "path": "/api/cron/monday-breakdown",
       "schedule": "30 8 * * 1"
     },
     {
       "path": "/api/cron/friday-digest",
       "schedule": "30 16 * * 5"
+    },
+    {
+      "path": "/api/cron/pods-standup",
+      "schedule": "0 9 * * 1-5"
+    },
+    {
+      "path": "/api/cron/pods-weekly-digest",
+      "schedule": "0 16 * * 5"
     }
   ]
 }

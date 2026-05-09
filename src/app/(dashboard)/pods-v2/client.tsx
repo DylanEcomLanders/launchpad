@@ -19,7 +19,6 @@ import {
   getPods,
   getProjects,
   getTasks,
-  hydrateTeamAvatarsFromCloud,
   resetAndReseed,
   scanAndNotifyStaleTickets,
   seedConversionEngineCycle,
@@ -92,15 +91,22 @@ export default function PodsIndexClient() {
     setAllTasks(getTasks());
     setCroLeads(getCroLeads());
     onboardingStore.getAll().then(setOnboardings).catch(() => {});
-    /* Pull team avatar URLs from Supabase and overlay onto local pod
-     * members. Files persist in the company-avatars bucket; this step
-     * makes sure the URLs survive a localStorage reset / new device.
-     * Refreshes pods + cro leads once any changes have been merged. */
-    hydrateTeamAvatarsFromCloud().then((changed) => {
-      if (changed) {
-        setPods(getPods());
-        setCroLeads(getCroLeads());
-      }
+    /* Pull all pods-v2 data from Supabase and overlay onto local
+     * cache. Cloud is source of truth on hydrate so multi-device
+     * shows the same data. After bootstrap, refresh React state so
+     * the page reflects the cloud truth. (Avatar URLs ride along on
+     * Pod.members[] so the older hydrateTeamAvatarsFromCloud is now
+     * redundant; bootstrapPodsSync covers it.) */
+    import("@/lib/pods-v2/sync").then(({ bootstrapPodsSync }) => {
+      bootstrapPodsSync().then((changed) => {
+        if (changed) {
+          setPods(getPods());
+          setAllProjects(getProjects());
+          setAllClients(getClients());
+          setAllTasks(getTasks());
+          setCroLeads(getCroLeads());
+        }
+      });
     });
     /* Scan for tickets that crossed 48h since the last visit and ping
      * Slack once per ticket. Idempotent — already-pinged tickets are

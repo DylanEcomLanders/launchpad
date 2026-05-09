@@ -31,12 +31,23 @@ export default function StandupClient() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
 
-  useEffect(() => {
-    ensureSeed();
+  function hydrateLocal() {
     setPods(getPods());
     setTasks(getTasks());
     setProjects(getProjects());
     setClients(getClients());
+  }
+
+  useEffect(() => {
+    ensureSeed();
+    hydrateLocal();
+    /* Cloud-truth pull so the standup reflects multi-device state. */
+    import("@/lib/pods-v2/sync").then(({ bootstrapPodsSync }) => {
+      bootstrapPodsSync().then((changed) => {
+        if (changed) hydrateLocal();
+      });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const today = todayYMD();

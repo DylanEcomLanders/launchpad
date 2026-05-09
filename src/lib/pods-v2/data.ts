@@ -96,6 +96,18 @@ function read<T>(key: string): T[] {
 function write<T>(key: string, value: T[]): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(key, JSON.stringify(value));
+  /* Mirror to Supabase so pods data is durable across browsers /
+   * devices / localStorage clears. Fire-and-forget — localStorage is
+   * the always-correct sync cache; cloud failures don't affect
+   * correctness. Dynamic import keeps the sync module out of the
+   * critical bundle path for cold loads. */
+  if (typeof window !== "undefined") {
+    import("./sync").then(({ POD_KEY_TO_TABLE, mirrorToSupabase }) => {
+      const table = POD_KEY_TO_TABLE[key];
+      if (!table) return;
+      mirrorToSupabase(table, value as Array<Record<string, unknown> & { id: string }>);
+    });
+  }
 }
 
 // ─── Pods ───────────────────────────────────────────────────────────
