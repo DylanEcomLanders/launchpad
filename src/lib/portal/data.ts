@@ -546,6 +546,7 @@ function mapPortalRow(row: any): PortalData {
     view_count: row.view_count || 0,
     deleted_at: row.deleted_at || null,
     projects: row.projects || [],
+    pod_id: row.pod_id ?? null,
   };
 
   // Auto-migrate: if projects is empty but legacy fields exist, create projects[0]

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, Children, Fragment, isValidElement, type ReactElement, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -92,6 +92,48 @@ const categoryColors: Record<string, string> = {
 };
 
 const categoryOrder: OpsWikiModule["category"][] = ["flow", "design", "development", "cro", "operations", "qa", "client"];
+
+function extractText(node: ReactNode): string {
+  if (typeof node === "string") return node;
+  if (typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(extractText).join("");
+  if (isValidElement(node)) {
+    const el = node as ReactElement<{ children?: ReactNode }>;
+    return extractText(el.props.children);
+  }
+  return "";
+}
+
+function AssemblyLine({ text }: { text: string }) {
+  const steps = text
+    .replace(/\n/g, " ")
+    .split("→")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return (
+    <div className="not-prose my-6 flex flex-wrap items-center gap-x-2 gap-y-2 rounded-lg border border-[#E5E5EA] bg-[#FAFAFA] p-4">
+      {steps.map((step, i) => {
+        const isGate = step.includes("🚧");
+        const cleaned = step.replace("🚧", "").trim();
+        return (
+          <Fragment key={i}>
+            <span
+              className={
+                isGate
+                  ? "inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-amber-900"
+                  : "inline-flex items-center rounded-md border border-[#E5E5EA] bg-white px-3 py-1.5 text-xs font-medium text-[#1B1B1B]"
+              }
+            >
+              {isGate && <span aria-hidden>🚧</span>}
+              <span>{cleaned}</span>
+            </span>
+            {i < steps.length - 1 && <span className="text-[#999]" aria-hidden>→</span>}
+          </Fragment>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function OpsWikiClient({ modules }: { modules: OpsWikiModule[] }) {
   const searchParams = useSearchParams();
@@ -313,7 +355,18 @@ export default function OpsWikiClient({ modules }: { modules: OpsWikiModule[] })
             )}
 
             <article className="prose prose-sm max-w-none prose-headings:text-[#1B1B1B] prose-p:text-[#444] prose-strong:text-[#1B1B1B] prose-a:text-blue-600 prose-table:text-xs prose-th:text-[#999] prose-th:font-medium prose-th:uppercase prose-th:tracking-wider prose-th:text-[10px] prose-td:py-2 prose-blockquote:border-blue-400 prose-blockquote:bg-blue-50 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:text-blue-900 prose-code:bg-[#F5F5F5] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-[#1B1B1B] prose-code:font-mono prose-code:text-xs prose-pre:bg-[#1B1B1B] prose-pre:text-[#E5E5EA] prose-li:text-[#444]">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{active.content}</ReactMarkdown>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  pre: ({ children }) => {
+                    const text = extractText(children);
+                    if (text.includes("→")) return <AssemblyLine text={text} />;
+                    return <pre>{children}</pre>;
+                  },
+                }}
+              >
+                {active.content}
+              </ReactMarkdown>
             </article>
           </div>
         </main>

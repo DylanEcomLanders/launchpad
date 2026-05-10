@@ -394,7 +394,7 @@ export default function OutreachPage() {
                 type="text"
                 value={brandName}
                 onChange={(e) => setBrandName(e.target.value)}
-                placeholder="e.g. Gymshark"
+                placeholder="e.g. Ecomlanders"
                 className={inputClass}
               />
             </div>
@@ -417,7 +417,7 @@ export default function OutreachPage() {
               type="text"
               value={storeUrl}
               onChange={(e) => setStoreUrl(e.target.value)}
-              placeholder="e.g. gymshark.com"
+              placeholder="e.g. ecomlanders.app"
               className={inputClass}
             />
             <p className="text-[10px] text-[#A0A0A0] mt-1">

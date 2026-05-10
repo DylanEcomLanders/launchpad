@@ -971,7 +971,7 @@ export default function CroMonitorPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                   <label className={labelClass}>Client Name</label>
-                  <input type="text" value={form.client_name} onChange={(e) => setForm((p) => ({ ...p, client_name: e.target.value }))} placeholder="e.g. Gymshark" className={inputClass} list="cro-clients" required />
+                  <input type="text" value={form.client_name} onChange={(e) => setForm((p) => ({ ...p, client_name: e.target.value }))} placeholder="e.g. Ecomlanders" className={inputClass} list="cro-clients" required />
                   <datalist id="cro-clients">{uniqueClients.map((c) => <option key={c} value={c} />)}</datalist>
                 </div>
                 <div>

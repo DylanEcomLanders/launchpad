@@ -141,7 +141,7 @@ export default function FeedbackPage() {
                 type="text"
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
-                placeholder="e.g., John from Acme Co"
+                placeholder="e.g., Sarah from Ecomlanders"
                 className="w-full px-3.5 py-2.5 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B1B1B]/10 focus:border-[#1B1B1B] transition-colors"
               />
             </div>
@@ -153,7 +153,7 @@ export default function FeedbackPage() {
                 type="email"
                 value={clientEmail}
                 onChange={(e) => setClientEmail(e.target.value)}
-                placeholder="john@acme.com"
+                placeholder="sarah@ecomlanders.app"
                 className="w-full px-3.5 py-2.5 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B1B1B]/10 focus:border-[#1B1B1B] transition-colors"
               />
             </div>

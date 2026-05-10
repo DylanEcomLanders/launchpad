@@ -169,7 +169,7 @@ export default function ContentRepurposerPage() {
                     type="text"
                     value={source.title}
                     onChange={(e) => updateSource("title", e.target.value)}
-                    placeholder="e.g., How we rebuilt Nutribloom's PDP for 43% more conversions"
+                    placeholder="e.g., How we rebuilt Ecomlanders' PDP for 43% more conversions"
                     className={inputClass}
                   />
                 </div>
@@ -202,7 +202,7 @@ export default function ContentRepurposerPage() {
                       onChange={(e) =>
                         updateSource("clientName", e.target.value)
                       }
-                      placeholder="e.g., Nutribloom"
+                      placeholder="e.g., Ecomlanders"
                       className={inputClass}
                     />
                   </div>

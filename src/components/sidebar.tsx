@@ -11,17 +11,17 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   ClockIcon,
-  FolderIcon,
   BanknotesIcon,
   UserGroupIcon,
-  InboxStackIcon,
   SparklesIcon,
-  FlagIcon,
   BookOpenIcon,
-  ArrowTrendingUpIcon,
   BuildingOffice2Icon,
+  RocketLaunchIcon,
+  ArchiveBoxIcon,
+  WrenchScrewdriverIcon,
+  PuzzlePieceIcon,
 } from "@heroicons/react/24/solid";
-import { Logo, LogoMark } from "@/components/logo";
+import { LogoMark } from "@/components/logo";
 import { AppSwitcher } from "@/components/app-switcher";
 import { useRole } from "@/components/auth-gate";
 
@@ -38,9 +38,10 @@ interface NavSection {
   defaultOpen?: boolean;
   roles?: ("admin" | "cro")[];
   badge?: string;
-  /* Visual grouping — sections with the same group render together,
-   * separated by a hairline divider from the next group. */
-  group: "main" | "reference" | "extras";
+  /* Visual grouping — sections within the same group render together,
+   * separated by a hairline divider from the next group. Order matters
+   * (top-down): lifecycle → ops → shelved. */
+  group: "lifecycle" | "ops" | "shelved";
 }
 
 const teamZones = [
@@ -51,28 +52,47 @@ const teamZones = [
   { label: "NZ", flag: "\u{1F1F3}\u{1F1FF}", tz: "Pacific/Auckland" },
 ];
 
+/* Sidebar follows the agency lifecycle (top-down): pin the daily drivers
+ * (Mission Control, Offer, Pods), then dropdowns for each lifecycle phase,
+ * ops/finance, reference material, and a default-collapsed Shelved drawer
+ * for parked tools we're not actively using.
+ *
+ * Shelved housekeeping: review every 3 months — promote what's back in
+ * use, or kill what's truly dead. Don't let it become a graveyard. */
 const navSections: NavSection[] = [
   {
-    title: "Operations",
-    icon: <BookOpenIcon className="size-4" />,
+    title: "Acquisition",
+    icon: <RocketLaunchIcon className="size-4" />,
     defaultOpen: true,
-    group: "main",
+    group: "lifecycle",
     items: [
-      { label: "Operations Wiki", href: "/tools/ops-wiki" },
-      { label: "Funnel Playbook", href: "/tools/funnel-knowledge" },
-      { label: "Funnels", href: "/tools/funnel-builder" },
+      { label: "Audits", href: "/sales-engine/audits" },
+      { label: "Social", href: "/sales-engine/social" },
+      { label: "Portfolio", href: "/sales-engine/portfolio" },
+      { label: "Case Studies", href: "/sales-engine/case-studies" },
+      { label: "Proposals", href: "/sales-engine/proposals" },
     ],
   },
   {
-    title: "Execution",
-    icon: <FolderIcon className="size-4" />,
+    title: "Delivery",
+    icon: <PuzzlePieceIcon className="size-4" />,
     defaultOpen: false,
-    group: "main",
+    group: "lifecycle",
     items: [
       { label: "Onboarding", href: "/tools/onboarding-inbox" },
       { label: "Portals", href: "/tools/client-portal" },
-      { label: "Pods", href: "/pods-v2" },
       { label: "Task Board", href: "/tools/task-board" },
+    ],
+  },
+  {
+    title: "Operations",
+    icon: <BookOpenIcon className="size-4" />,
+    defaultOpen: false,
+    group: "lifecycle",
+    items: [
+      { label: "Operations Wiki", href: "/tools/ops-wiki" },
+      { label: "Tickets", href: "/tools/issues" },
+      { label: "Feedback", href: "/tools/feedback" },
     ],
   },
   {
@@ -80,10 +100,11 @@ const navSections: NavSection[] = [
     icon: <BanknotesIcon className="size-4" />,
     defaultOpen: false,
     roles: ["admin"],
-    group: "main",
+    group: "ops",
     items: [
       { label: "Price List", href: "/internal/pricing" },
       { label: "Price Calculator", href: "/tools/price-calculator" },
+      { label: "Revenue", href: "/sales-engine/revenue" },
       { label: "Turnaround Times", href: "/internal/turnarounds" },
       { label: "Invoice Generator", href: "/tools/invoice-generator" },
       { label: "Payment Link", href: "/tools/payment-link" },
@@ -92,22 +113,11 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: "Source of Truth",
-    icon: <FlagIcon className="size-4 text-[#16A34A]" />,
-    defaultOpen: false,
-    roles: ["admin"],
-    group: "reference",
-    items: [
-      { label: "Ecomlanders Cheat Sheet", href: "/internal/cheatsheet" },
-      { label: "Conversion Engine Sheet", href: "/internal/cheatsheet/conversion-engine" },
-    ],
-  },
-  {
     title: "Company",
     icon: <BuildingOffice2Icon className="size-4" />,
     defaultOpen: false,
     roles: ["admin"],
-    group: "main",
+    group: "ops",
     items: [
       { label: "Overview", href: "/company" },
       { label: "People", href: "/company/people" },
@@ -117,12 +127,27 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: "Growth",
-    icon: <ArrowTrendingUpIcon className="size-4" />,
+    title: "Shelved",
+    icon: <ArchiveBoxIcon className="size-4" />,
     defaultOpen: false,
-    group: "extras",
+    roles: ["admin"],
+    badge: "PARKED",
+    group: "shelved",
     items: [
-      { label: "Feedback", href: "/tools/feedback" },
+      { label: "Ecomlanders Cheat Sheet", href: "/internal/cheatsheet" },
+      { label: "Conversion Engine Sheet", href: "/internal/cheatsheet/conversion-engine" },
+      { label: "Articles", href: "/sales-engine/articles" },
+      { label: "Calendar", href: "/sales-engine/calendar" },
+      { label: "Lead Magnets", href: "/sales-engine/lead-magnets" },
+      { label: "Leads (Outreach)", href: "/sales-engine/leads" },
+      { label: "Quiz Leads", href: "/sales-engine/quiz-leads" },
+      { label: "Scout", href: "/sales-engine/scout" },
+      { label: "Resources (Referrals)", href: "/sales-engine/resources" },
+      { label: "Pipeline", href: "/sales-engine/pipeline" },
+      { label: "Funnel Playbook", href: "/tools/funnel-knowledge" },
+      { label: "Funnels", href: "/tools/funnel-builder" },
+      { label: "Deck Builder", href: "/sales-engine/deck-builder" },
+      { label: "Referral Programme", href: "/referral-programme" },
     ],
   },
 ];
@@ -132,10 +157,20 @@ const homeItem = {
   href: "/",
   icon: <HomeIcon className="size-4" />,
 };
+const offerItem = {
+  label: "Offer",
+  href: "/offer",
+  icon: <SparklesIcon className="size-4" />,
+};
+const podsItem = {
+  label: "Pods",
+  href: "/pods-v2",
+  icon: <UserGroupIcon className="size-4" />,
+};
 const agentsItem = {
   label: "Agents",
   href: "/agents",
-  icon: <SparklesIcon className="size-4" />,
+  icon: <WrenchScrewdriverIcon className="size-4" />,
 };
 
 export function Sidebar() {
@@ -200,7 +235,7 @@ export function Sidebar() {
     return pathname === href || pathname.startsWith(href + "/");
   }
 
-  /* Top-level link (Mission Control, Agents). Pinned, not collapsible. */
+  /* Top-level link (Mission Control, Offer, Pods, Agents). Pinned, not collapsible. */
   function renderTopLink(item: { label: string; href: string; icon: React.ReactNode }) {
     return (
       <Link
@@ -241,6 +276,8 @@ export function Sidebar() {
                   className={`text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${
                     section.badge === "ADMIN"
                       ? "bg-[#FFEFE0] text-[#D97746]"
+                      : section.badge === "PARKED"
+                      ? "bg-[#F0F0F0] text-[#999]"
                       : "bg-amber-100 text-amber-600"
                   }`}
                 >
@@ -315,6 +352,11 @@ export function Sidebar() {
     );
   }
 
+  function renderDivider() {
+    if (collapsed) return <div className="mx-3 my-2 border-t border-[#EDEDEF]" />;
+    return <div className="mx-5 my-3 border-t border-[#EDEDEF]" />;
+  }
+
   return (
     <>
       {/* Mobile hamburger */}
@@ -382,60 +424,47 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto scrollbar-thin py-2">
-          {/* Mission Control — pinned top, always visible */}
-          <div className="px-3 mb-1 mt-2">
+          {/* Pinned daily drivers — Mission Control, Offer, Pods */}
+          <div className="px-3 mb-1 mt-2 space-y-0.5">
             {renderTopLink(homeItem)}
+            {renderTopLink(offerItem)}
+            {renderTopLink(podsItem)}
           </div>
 
-          {/* Main group: Operations, Execution, Finance */}
-          {visibleSections.filter((s) => s.group === "main").map((section) => renderSection(section))}
+          {renderDivider()}
 
-          {/* Divider 1 — separates main work from reference + agents */}
-          {!collapsed && <div className="mx-5 my-3 border-t border-[#EDEDEF]" />}
-          {collapsed && <div className="mx-3 my-2 border-t border-[#EDEDEF]" />}
+          {/* Lifecycle: Acquire, Deliver, Operate */}
+          {visibleSections.filter((s) => s.group === "lifecycle").map((section) => renderSection(section))}
 
-          {/* Agents + Source of Truth */}
+          {renderDivider()}
+
+          {/* Ops: Money, Company */}
+          {visibleSections.filter((s) => s.group === "ops").map((section) => renderSection(section))}
+
+          {renderDivider()}
+
+          {/* Shelved — parked tools, default-collapsed */}
+          {visibleSections.filter((s) => s.group === "shelved").map((section) => renderSection(section))}
+
+          {renderDivider()}
+
+          {/* Standalone bottom links — Agents, Settings */}
           <div className="px-3 mb-1">{renderTopLink(agentsItem)}</div>
-          {visibleSections.filter((s) => s.group === "reference").map((section) => renderSection(section))}
-
-          {/* Divider 2 — extras at the bottom */}
-          {!collapsed && <div className="mx-5 my-3 border-t border-[#EDEDEF]" />}
-          {collapsed && <div className="mx-3 my-2 border-t border-[#EDEDEF]" />}
-
-          {/* Extras: Growth */}
-          {visibleSections.filter((s) => s.group === "extras").map((section) => renderSection(section))}
-
-          {/* Standalone links */}
-          {!collapsed && (
+          {!collapsed && role === "admin" && (
             <div className="px-5 mt-2 space-y-1">
               <Link
-                href="/tools/issues"
+                href="/settings"
                 onClick={() => setMobileOpen(false)}
                 className={`
                   flex items-center gap-2 px-2.5 py-1.5 text-[12px] font-semibold uppercase tracking-wider rounded-md transition-all duration-150
-                  ${pathname === "/tools/issues"
+                  ${pathname === "/settings"
                     ? "text-[#1B1B1B] bg-white shadow-[var(--shadow-soft)]"
                     : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
                   }
                 `}
               >
-                Issues
+                Settings
               </Link>
-              {role === "admin" && (
-                <Link
-                  href="/settings"
-                  onClick={() => setMobileOpen(false)}
-                  className={`
-                    flex items-center gap-2 px-2.5 py-1.5 text-[12px] font-semibold uppercase tracking-wider rounded-md transition-all duration-150
-                    ${pathname === "/settings"
-                      ? "text-[#1B1B1B] bg-white shadow-[var(--shadow-soft)]"
-                      : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
-                    }
-                  `}
-                >
-                  Settings
-                </Link>
-              )}
             </div>
           )}
         </nav>

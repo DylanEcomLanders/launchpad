@@ -254,7 +254,7 @@ export default function PageCopyAuditPage() {
               onChange={(e) => setBrandName(e.target.value)}
               disabled={briefLocked}
               className={inputClass}
-              placeholder="e.g. AG1"
+              placeholder="e.g. Ecomlanders"
             />
             {vocLoading && <p className="text-[10px] text-[#AAA] mt-1">Researching VOC...</p>}
             {vocDone && vocData && <p className="text-[10px] text-emerald-600 mt-1">VOC data loaded ✓</p>}

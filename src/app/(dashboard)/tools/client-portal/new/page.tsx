@@ -404,7 +404,7 @@ function BrandStep(props: {
         <label className={labelClass}>Client name *</label>
         <input
           className={inputClass}
-          placeholder="e.g. Pupganics"
+          placeholder="e.g. Ecomlanders"
           value={props.clientName}
           onChange={(e) => props.setClientName(e.target.value)}
         />

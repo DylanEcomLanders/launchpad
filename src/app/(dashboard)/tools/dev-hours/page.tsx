@@ -500,7 +500,7 @@ export default function DevHoursPage() {
                     onChange={(e) =>
                       setForm((f) => ({ ...f, client_name: e.target.value }))
                     }
-                    placeholder="e.g. Acme Ltd"
+                    placeholder="e.g. Ecomlanders"
                     className={inputClass}
                     required
                   />

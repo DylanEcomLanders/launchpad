@@ -5,10 +5,19 @@ import { MinusIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { ClipboardDocumentIcon, ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 import { labelClass } from "@/lib/form-styles";
+import {
+  CALC_CATEGORY_ORDER,
+  calculatorItems,
+  type CalcCategory,
+  type PriceItem,
+  type Role,
+} from "@/lib/pricing";
 
-/* ── Types ── */
-type Tier = 1 | 2;
-type Role = "dev" | "designer" | "juniorDesigner";
+/* ── Calculator-local types/aliases ──
+ * Pricing data lives in src/lib/pricing.ts (single source of truth).
+ * The calculator only surfaces items that have roleCosts + a price —
+ * see calculatorItems() in that file.
+ */
 
 const roleLabels: Record<Role, string> = {
   dev: "Developer",
@@ -18,89 +27,21 @@ const roleLabels: Record<Role, string> = {
 
 const allRoles: Role[] = ["dev", "designer", "juniorDesigner"];
 
-interface RoleCosts {
-  dev: number;
-  designer: number;
-  juniorDesigner: number;
-}
+// Calculator-shaped item — narrowed view of PriceItem with required calc fields.
+type PricedDeliverable = PriceItem & {
+  category: CalcCategory;
+  price: number;
+  roleCosts: { dev: number; designer: number; juniorDesigner: number };
+};
 
-interface PricedDeliverable {
-  name: string;
-  category: "Page Builds" | "Secondary Pages" | "Tertiary Pages" | "CRO Retainer" | "Additional Services";
-  roleCosts: RoleCosts;
-  tier1Price: number;
-  tier2Price: number;
-  pageCount?: number; // how many "pages" this counts for discount calc
-}
+const deliverables: PricedDeliverable[] = calculatorItems().map((it) => ({
+  ...it,
+  // Calculator's local category alias
+  category: it.calcCategory!,
+  roleCosts: it.roleCosts!,
+}));
 
-/* ──────────────────────────────────────────────────────────────────────────
-   Deliverables — real per-role costs
-
-   Main page rate: Dev £300, Design £300, Jr £250 = £850 per page
-   Secondary rate: Dev £200, Design £200, Jr £150 = £550 per page
-   Tertiary rate:  Dev £100, Design £100, Jr £75  = £275 per page
-   Test rate: Dev £75, Design £75, Jr £50 = £200 per test
-   Foundation = 4 tests/mo, Growth = 8, Scale = 16
-
-   Volume discounts on page internal costs (all page types):
-     3 pages total → 10% off
-     4+ pages total → 15% off
-   (applied dynamically based on total page count in project)
-   ────────────────────────────────────────────────────────────────────── */
-
-const deliverables: PricedDeliverable[] = [
-  /* ── Page Builds (per page: Dev £300 / Design £300 / Jr £250) ── */
-  { name: "1 Page Build", category: "Page Builds", roleCosts: { dev: 300, designer: 300, juniorDesigner: 250 }, tier1Price: 2999, tier2Price: 3999, pageCount: 1 },
-  { name: "2 Page Build", category: "Page Builds", roleCosts: { dev: 600, designer: 600, juniorDesigner: 500 }, tier1Price: 5499, tier2Price: 6999, pageCount: 2 },
-  { name: "3 Page Build", category: "Page Builds", roleCosts: { dev: 900, designer: 900, juniorDesigner: 750 }, tier1Price: 7999, tier2Price: 10499, pageCount: 3 },
-  { name: "4 Page Build", category: "Page Builds", roleCosts: { dev: 1200, designer: 1200, juniorDesigner: 1000 }, tier1Price: 9999, tier2Price: 12499, pageCount: 4 },
-  { name: "Single Advertorial / Listicle", category: "Page Builds", roleCosts: { dev: 300, designer: 300, juniorDesigner: 250 }, tier1Price: 2000, tier2Price: 2699, pageCount: 1 },
-  { name: "Advertorial / Listicle Bundle ×2", category: "Page Builds", roleCosts: { dev: 600, designer: 600, juniorDesigner: 500 }, tier1Price: 3500, tier2Price: 4699, pageCount: 2 },
-
-  /* ── Secondary Pages (per page: Dev £200 / Design £200 / Jr £150) ── */
-  { name: "Collection Page", category: "Secondary Pages", roleCosts: { dev: 200, designer: 200, juniorDesigner: 150 }, tier1Price: 750, tier2Price: 1000, pageCount: 1 },
-  { name: "Account Page", category: "Secondary Pages", roleCosts: { dev: 200, designer: 200, juniorDesigner: 150 }, tier1Price: 750, tier2Price: 1000, pageCount: 1 },
-  { name: "About Us Page", category: "Secondary Pages", roleCosts: { dev: 200, designer: 200, juniorDesigner: 150 }, tier1Price: 750, tier2Price: 1000, pageCount: 1 },
-
-  /* ── Tertiary Pages (per page: Dev £100 / Design £100 / Jr £75) ── */
-  { name: "FAQ Page", category: "Tertiary Pages", roleCosts: { dev: 100, designer: 100, juniorDesigner: 75 }, tier1Price: 500, tier2Price: 750, pageCount: 1 },
-  { name: "Contact Page", category: "Tertiary Pages", roleCosts: { dev: 100, designer: 100, juniorDesigner: 75 }, tier1Price: 500, tier2Price: 750, pageCount: 1 },
-  { name: "Cart Page", category: "Tertiary Pages", roleCosts: { dev: 100, designer: 100, juniorDesigner: 75 }, tier1Price: 500, tier2Price: 750, pageCount: 1 },
-  { name: "Navigation", category: "Tertiary Pages", roleCosts: { dev: 100, designer: 100, juniorDesigner: 75 }, tier1Price: 500, tier2Price: 750, pageCount: 1 },
-  { name: "Policy Pages (All)", category: "Tertiary Pages", roleCosts: { dev: 100, designer: 100, juniorDesigner: 75 }, tier1Price: 500, tier2Price: 750, pageCount: 1 },
-
-  /* ── CRO Retainer (per test: Dev £75 / Design £75 / Jr £50) ── */
-  /* Foundation = 1 test/wk = 4 tests/mo */
-  { name: "Foundation — 1 Test / Week", category: "CRO Retainer", roleCosts: { dev: 300, designer: 300, juniorDesigner: 200 }, tier1Price: 1499, tier2Price: 2999 },
-  /* Growth = 2 tests/wk = 8 tests/mo */
-  { name: "Growth — 2 Tests / Week", category: "CRO Retainer", roleCosts: { dev: 600, designer: 600, juniorDesigner: 400 }, tier1Price: 2499, tier2Price: 3999 },
-  /* Scale = 4 tests/wk = 16 tests/mo */
-  { name: "Scale — 4 Tests / Week", category: "CRO Retainer", roleCosts: { dev: 1200, designer: 1200, juniorDesigner: 800 }, tier1Price: 3499, tier2Price: 4999 },
-
-  /* ── Additional Services ── */
-  /* Static ads: Designer £25 / Jr £20 each */
-  { name: "5 Static Ads", category: "Additional Services", roleCosts: { dev: 0, designer: 125, juniorDesigner: 100 }, tier1Price: 500, tier2Price: 625 },
-  { name: "10 Static Ads", category: "Additional Services", roleCosts: { dev: 0, designer: 250, juniorDesigner: 200 }, tier1Price: 850, tier2Price: 1050 },
-  /* Emails: Designer £40 / Jr £35 each */
-  { name: "10 Email Designs", category: "Additional Services", roleCosts: { dev: 0, designer: 400, juniorDesigner: 350 }, tier1Price: 750, tier2Price: 999 },
-  { name: "20 Email Designs", category: "Additional Services", roleCosts: { dev: 0, designer: 800, juniorDesigner: 700 }, tier1Price: 1500, tier2Price: 1799 },
-  /* Support */
-  { name: "Extended 30 Day Support", category: "Additional Services", roleCosts: { dev: 250, designer: 0, juniorDesigner: 0 }, tier1Price: 1000, tier2Price: 1250 },
-  { name: "Extended 14 Day Support", category: "Additional Services", roleCosts: { dev: 150, designer: 0, juniorDesigner: 0 }, tier1Price: 500, tier2Price: 625 },
-  /* Design services */
-  { name: "Full Email Flow Design", category: "Additional Services", roleCosts: { dev: 0, designer: 750, juniorDesigner: 0 }, tier1Price: 2500, tier2Price: 2999 },
-  { name: "Brand Refresh", category: "Additional Services", roleCosts: { dev: 0, designer: 200, juniorDesigner: 0 }, tier1Price: 500, tier2Price: 625 },
-  /* Turnarounds */
-  { name: "24hr Turnaround", category: "Additional Services", roleCosts: { dev: 0, designer: 400, juniorDesigner: 0 }, tier1Price: 2000, tier2Price: 2500 },
-  { name: "48hr Turnaround", category: "Additional Services", roleCosts: { dev: 0, designer: 200, juniorDesigner: 0 }, tier1Price: 1000, tier2Price: 1250 },
-  /* Testing & variants */
-  { name: "A/B Test Setup + Monitor", category: "Additional Services", roleCosts: { dev: 100, designer: 0, juniorDesigner: 0 }, tier1Price: 500, tier2Price: 625 },
-  { name: "Page Variant / Reskin", category: "Additional Services", roleCosts: { dev: 200, designer: 200, juniorDesigner: 0 }, tier1Price: 1000, tier2Price: 1000 },
-  { name: "Cart / Post Purchase", category: "Additional Services", roleCosts: { dev: 100, designer: 100, juniorDesigner: 75 }, tier1Price: 500, tier2Price: 625 },
-  { name: "Full Brand Refresh", category: "Additional Services", roleCosts: { dev: 0, designer: 1000, juniorDesigner: 750 }, tier1Price: 2500, tier2Price: 2999 },
-];
-
-const categories = ["Page Builds", "Secondary Pages", "Tertiary Pages", "CRO Retainer", "Additional Services"] as const;
+const categories = CALC_CATEGORY_ORDER;
 
 /* ── Currency formatters ── */
 const fmt = new Intl.NumberFormat("en-GB", {
@@ -116,10 +57,6 @@ const fmtDetailed = new Intl.NumberFormat("en-GB", {
   minimumFractionDigits: 2,
 });
 
-function getClientPrice(d: PricedDeliverable, tier: Tier): number {
-  return tier === 1 ? d.tier1Price : d.tier2Price;
-}
-
 function getInternalCost(d: PricedDeliverable, activeRoles: Set<Role>): number {
   let cost = 0;
   if (activeRoles.has("dev")) cost += d.roleCosts.dev;
@@ -129,9 +66,8 @@ function getInternalCost(d: PricedDeliverable, activeRoles: Set<Role>): number {
 }
 
 export default function PriceCalculatorPage() {
-  const [tier, setTier] = useState<Tier>(1);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const [copiedTier, setCopiedTier] = useState<number | null>(null);
+  const [copiedShareLink, setCopiedShareLink] = useState(false);
   const [activeRoles, setActiveRoles] = useState<Set<Role>>(
     new Set(["dev", "designer", "juniorDesigner"])
   );
@@ -193,7 +129,7 @@ export default function PriceCalculatorPage() {
       .filter((d) => getQty(d.name) > 0)
       .map((d) => {
         const qty = getQty(d.name);
-        const price = getClientPrice(d, tier);
+        const price = d.price;
         const unitCostFull = getInternalCost(d, activeRoles);
 
         // Apply discount only to page-type deliverables
@@ -262,7 +198,7 @@ export default function PriceCalculatorPage() {
       totalSaved,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quantities, tier, activeRoles]);
+  }, [quantities, activeRoles]);
 
   const hasActiveItems = activeItems.length > 0;
   const activeRoleCount = activeRoles.size;
@@ -283,82 +219,52 @@ export default function PriceCalculatorPage() {
           {/* Share Price List Links */}
           <div className="flex flex-wrap items-center gap-3 mt-4">
             <span className="text-xs font-medium text-[#A0A0A0]">Share price list:</span>
-            {[1, 2].map((t) => (
-              <div key={t} className="flex items-center gap-1">
-                <button
-                  onClick={() => {
-                    const url = `${window.location.origin}/pricing/tier-${t}`;
-                    navigator.clipboard.writeText(url);
-                    setCopiedTier(t);
-                    setTimeout(() => setCopiedTier(null), 2000);
-                  }}
-                  className="flex items-center gap-1 text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
-                >
-                  <ClipboardDocumentIcon className="size-3.5" />
-                  {copiedTier === t ? "Copied!" : `Tier ${t}`}
-                </button>
-                <a
-                  href={`/pricing/tier-${t}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
-                >
-                  <ArrowTopRightOnSquareIcon className="size-3.5" />
-                </a>
-              </div>
-            ))}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => {
+                  const url = `${window.location.origin}/pricing`;
+                  navigator.clipboard.writeText(url);
+                  setCopiedShareLink(true);
+                  setTimeout(() => setCopiedShareLink(false), 2000);
+                }}
+                className="flex items-center gap-1 text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+              >
+                <ClipboardDocumentIcon className="size-3.5" />
+                {copiedShareLink ? "Copied!" : "/pricing"}
+              </button>
+              <a
+                href="/pricing"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
+              >
+                <ArrowTopRightOnSquareIcon className="size-3.5" />
+              </a>
+            </div>
           </div>
         </div>
 
         <div className="space-y-8">
-          {/* Tier Toggle + Team Roles */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className={labelClass}>Pricing Tier</label>
-              <div className="inline-flex rounded-md border border-[#E5E5EA] bg-[#F3F3F5] p-0.5">
-                <button
-                  onClick={() => setTier(1)}
-                  className={`px-4 py-2 text-sm font-medium rounded transition-colors ${
-                    tier === 1
-                      ? "bg-[#1B1B1B] text-white"
-                      : "text-[#7A7A7A] hover:text-[#1B1B1B]"
-                  }`}
-                >
-                  Tier 1
-                </button>
-                <button
-                  onClick={() => setTier(2)}
-                  className={`px-4 py-2 text-sm font-medium rounded transition-colors ${
-                    tier === 2
-                      ? "bg-[#1B1B1B] text-white"
-                      : "text-[#7A7A7A] hover:text-[#1B1B1B]"
-                  }`}
-                >
-                  Tier 2
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className={labelClass}>Team</label>
-              <div className="flex flex-wrap gap-2">
-                {allRoles.map((role) => {
-                  const isOn = activeRoles.has(role);
-                  return (
-                    <button
-                      key={role}
-                      onClick={() => toggleRole(role)}
-                      className={`px-3 py-2 text-sm font-medium rounded-md border transition-colors ${
-                        isOn
-                          ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
-                          : "bg-white text-[#A0A0A0] border-[#E5E5EA] hover:text-[#7A7A7A] hover:border-[#C5C5C5]"
-                      }`}
-                    >
-                      {roleLabels[role]}
-                    </button>
-                  );
-                })}
-              </div>
+          {/* Team Roles */}
+          <div>
+            <label className={labelClass}>Team</label>
+            <div className="flex flex-wrap gap-2">
+              {allRoles.map((role) => {
+                const isOn = activeRoles.has(role);
+                return (
+                  <button
+                    key={role}
+                    onClick={() => toggleRole(role)}
+                    className={`px-3 py-2 text-sm font-medium rounded-md border transition-colors ${
+                      isOn
+                        ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
+                        : "bg-white text-[#A0A0A0] border-[#E5E5EA] hover:text-[#7A7A7A] hover:border-[#C5C5C5]"
+                    }`}
+                  >
+                    {roleLabels[role]}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -404,7 +310,7 @@ export default function PriceCalculatorPage() {
                     {items.map((d) => {
                       const qty = getQty(d.name);
                       const isActive = qty > 0;
-                      const price = getClientPrice(d, tier);
+                      const price = d.price;
                       const costFull = getInternalCost(d, activeRoles);
                       const discountRate = d.pageCount ? pageDiscount : 0;
                       const cost = Math.round(costFull * (1 - discountRate));

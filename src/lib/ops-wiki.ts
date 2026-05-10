@@ -24,7 +24,7 @@ const moduleMap: Record<
   // ── Project Flows (Layer 1) ──
   "flow-00-inbox": {
     title: "Onboarding Inbox — Intake & Triage",
-    shortTitle: "Onboarding Inbox",
+    shortTitle: "Onboarding",
     icon: "inbox",
     category: "flow",
   },
@@ -35,20 +35,14 @@ const moduleMap: Record<
     category: "flow",
   },
   "flow-02-design-dev": {
-    title: "Flow: Design & Development",
-    shortTitle: "Design & Dev",
+    title: "Flow: Page Build",
+    shortTitle: "Page Build",
     icon: "code",
-    category: "flow",
-  },
-  "flow-03-design-dev-cro": {
-    title: "Flow: Design, Dev & CRO",
-    shortTitle: "D&D + CRO",
-    icon: "beaker",
     category: "flow",
   },
   "flow-04-conversion-engine": {
     title: "Flow: Conversion Engine",
-    shortTitle: "Conversion Engine",
+    shortTitle: "Conversion Engine (Hero Offer)",
     icon: "rocket",
     category: "flow",
   },
@@ -138,6 +132,14 @@ const moduleMap: Record<
     title: "Objection Bank — Position & Proof",
     shortTitle: "Objection Bank",
     icon: "megaphone",
+    category: "flow",
+    adminOnly: true,
+    subGroup: "Sales Material",
+  },
+  "ce-tighten-the-ship": {
+    title: "Tighten The Ship — May 2026",
+    shortTitle: "Tighten The Ship",
+    icon: "clipboard",
     category: "flow",
     adminOnly: true,
     subGroup: "Sales Material",

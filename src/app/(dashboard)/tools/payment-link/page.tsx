@@ -130,7 +130,7 @@ export default function PaymentLinkPage() {
             <input
               type="text"
               className={inputClass}
-              placeholder="e.g. Acme Store"
+              placeholder="e.g. Ecomlanders"
               value={clientName}
               onChange={(e) => setClientName(e.target.value)}
             />

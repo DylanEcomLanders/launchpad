@@ -393,7 +393,7 @@ export default function ResearchPage() {
               type="text"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
-              placeholder="e.g. AntiApex Defender, Kyoku Knives, Hydra Bottle"
+              placeholder="e.g. Ecomlanders"
               className={inputClass}
               disabled={isRunning}
             />

@@ -115,7 +115,7 @@ export default function ClientPortalPage() {
     const isRetainer = clientType === "retainer";
     const firstProject = {
       id: crypto.randomUUID(),
-      name: isRetainer ? "CRO Retainer" : projectType.trim() || "Page Build",
+      name: isRetainer ? "Conversion Partnership" : projectType.trim() || "Page Build",
       type: (isRetainer ? "retainer" : "page-build") as "retainer" | "page-build",
       status: "active" as const,
       created_at: new Date().toISOString(),
@@ -678,7 +678,7 @@ export default function ClientPortalPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className={labelClass}>Client Name *</label>
-                  <input type="text" value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="e.g., Nutribloom" className={inputClass} autoFocus />
+                  <input type="text" value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="e.g., Ecomlanders" className={inputClass} autoFocus />
                 </div>
                 <div>
                   <label className={labelClass}>Client Email</label>

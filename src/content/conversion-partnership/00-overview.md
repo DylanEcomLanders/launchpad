@@ -1,4 +1,4 @@
-# Conversion Partnership — The Offer
+# Conversion Engine — The Offer
 
 ## The Positioning
 
@@ -8,40 +8,42 @@ Vendors get briefed, build, and hand over. Agencies create reports and recommend
 
 **Think of us as the conversion layer** — just like brands have an email agency (Klaviyo) and an ad agency (Meta/Google), they need a conversion agency. We are that layer. The one that turns the traffic they're already paying for into revenue.
 
-## The Two Tiers
+## Pricing
 
-### Conversion Partnership (Core) — £8,000–£10,000/mo
+The offer has a single buy-in and a single anchor. **No tiers. No T1/T2. No Core/Pro.** One number per shape, always quoted together.
 
-The primary offer. Everything a DTC brand needs to systematically improve their post-click conversion rate, managed end-to-end by our team.
+### £8K/mo — the buy-in
+
+This is the deal. The number we quote. The full Conversion Engine in its standard shape.
 
 **Includes:**
 - Comprehensive conversion audit and revenue gap analysis (Month 1)
-- 60-90 day visual strategy roadmap (Miro) — updated monthly
+- 60–90 day visual strategy roadmap (Miro) — updated monthly
 - Monthly page builds (landing pages, PDPs, cart/checkout optimisation)
-- A/B testing roadmap with if/then hypothesis chains
+- A/B testing programme with if/then hypothesis chains
 - AOV optimisation (bundles, upsells, cross-sells, post-purchase offers)
-- Post-purchase flow design (thank you pages, email sequences, replenishment)
+- Post-purchase flow design (thank-you pages, email sequences, replenishment)
 - Offer and positioning optimisation
 - Monthly reporting with revenue attribution
 - Dedicated Slack channel with the team
 
 **Positioning:** "Your full conversion team for less than one senior hire."
 
-### Conversion Partnership Pro (Anchor) — £12,000–£15,000/mo
+### £12K/mo — the anchor
 
-The anchor offer. Everything in Core, plus:
+This exists so £8K feels like a steal. Always quote both — never quote £12K alone.
 
-- Priority turnaround (48h on design, 5 days on build)
-- Dedicated strategist on weekly calls
-- Ad creative → landing page alignment
-- Quarterly business reviews with exec team
-- Email/SMS flow integration and design
+Same system, more of it: faster turnarounds (48h on design, 5 days on build), more resources, dedicated strategist on weekly calls, ad creative → landing page alignment, quarterly business reviews.
 
-**Positioning:** "For brands scaling past 8 figures who need speed and depth."
+**When to lead with anchor:** brands scaling past 8 figures who need speed and depth, or where the £8K shape would constrain delivery.
+
+### Larger scopes
+
+Pricing scales upward from £8K naturally as scope grows — not via tier. If a prospect needs more than the anchor, we price the bigger scope as its own number. No upselling between fixed packages.
 
 ## Why This Model Works
 
-The anchor makes Core feel accessible. Core is still premium — it's the full team — but compared to Pro it feels like the smart choice for brands not yet at 8 figures.
+Always quoting £8K alongside £12K makes the £8K number feel obvious — premium, but accessible. The anchor is doing the comparison work; the buy-in is doing the closing.
 
 ### Team-Led, Not Client-Led
 
@@ -76,14 +78,14 @@ This kills the common objections:
 
 | Retainers | Monthly Recurring | Annual |
 |-----------|------------------|--------|
-| 1 | £8-10K | £96-120K |
-| 3 | £24-30K | £288-360K |
-| 5 | £40-50K | £480-600K |
-| 10 | £80-100K | £960K-1.2M |
+| 1 | £8K | £96K |
+| 3 | £24K | £288K |
+| 5 | £40K | £480K |
+| 10 | £80K | £960K |
 
-**Target: 5 retainers = £40K/mo recurring.** This is the number that changes everything. Once the system is dialled in and the first 2-3 case studies are bulletproof, the offer sells itself.
+**Target: 5 retainers = £40K/mo recurring.** Stretch: 10 retainers. Once the system is dialled in and the first 2–3 case studies are bulletproof, the offer sells itself.
 
-As demand grows and case studies stack, pricing scales to £10-15K per retainer. The system is the same — the proof just gets stronger.
+Larger scopes price upward from £8K naturally — not via tier. As demand grows and case studies stack, average retainer size rises because we pick up bigger shapes, not because we add tiers.
 
 ## Target Client Profile
 

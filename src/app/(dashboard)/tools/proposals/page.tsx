@@ -257,7 +257,7 @@ export default function ProposalsPage() {
                   type="text"
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
-                  placeholder="e.g. Gymshark"
+                  placeholder="e.g. Ecomlanders"
                   className={inputClass}
                   required
                 />

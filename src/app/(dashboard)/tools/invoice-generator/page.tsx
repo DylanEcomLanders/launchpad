@@ -10,60 +10,53 @@ import { paymentTerms, type PaymentTerm } from "@/lib/config";
 import { inputClass, selectClass, labelClass } from "@/lib/form-styles";
 import { formatGBP } from "@/lib/formatters";
 
-/* ── Tier pricing data (client-facing only) ── */
-type Tier = 1 | 2;
+/* ── Pricing data (client-facing) ── */
 
 interface InvoiceDeliverable {
   name: string;
   category: string;
-  tier1Price: number;
-  tier2Price: number;
+  price: number;
 }
 
 const invoiceDeliverables: InvoiceDeliverable[] = [
   /* Page Builds */
-  { name: "1 Page Build", category: "Page Builds", tier1Price: 2999, tier2Price: 3999 },
-  { name: "2 Page Build", category: "Page Builds", tier1Price: 5499, tier2Price: 6999 },
-  { name: "3 Page Build", category: "Page Builds", tier1Price: 7999, tier2Price: 10499 },
-  { name: "4 Page Build", category: "Page Builds", tier1Price: 9999, tier2Price: 12499 },
-  { name: "Single Advertorial / Listicle", category: "Page Builds", tier1Price: 2000, tier2Price: 2699 },
-  { name: "Advertorial / Listicle Bundle ×2", category: "Page Builds", tier1Price: 3500, tier2Price: 4699 },
+  { name: "1 Page Build", category: "Page Builds", price: 2999 },
+  { name: "2 Page Build", category: "Page Builds", price: 5499 },
+  { name: "3 Page Build", category: "Page Builds", price: 7999 },
+  { name: "4 Page Build", category: "Page Builds", price: 9999 },
+  { name: "Single Advertorial / Listicle", category: "Page Builds", price: 2000 },
+  { name: "Advertorial / Listicle Bundle ×2", category: "Page Builds", price: 3500 },
   /* Secondary Pages */
-  { name: "Collection Page", category: "Secondary Pages", tier1Price: 750, tier2Price: 1000 },
-  { name: "Account Page", category: "Secondary Pages", tier1Price: 750, tier2Price: 1000 },
-  { name: "About Us Page", category: "Secondary Pages", tier1Price: 750, tier2Price: 1000 },
+  { name: "Collection Page", category: "Secondary Pages", price: 750 },
+  { name: "Account Page", category: "Secondary Pages", price: 750 },
+  { name: "About Us Page", category: "Secondary Pages", price: 750 },
   /* Tertiary Pages */
-  { name: "FAQ Page", category: "Tertiary Pages", tier1Price: 500, tier2Price: 750 },
-  { name: "Contact Page", category: "Tertiary Pages", tier1Price: 500, tier2Price: 750 },
-  { name: "Cart Page", category: "Tertiary Pages", tier1Price: 500, tier2Price: 750 },
-  { name: "Navigation", category: "Tertiary Pages", tier1Price: 500, tier2Price: 750 },
-  { name: "Policy Pages (All)", category: "Tertiary Pages", tier1Price: 500, tier2Price: 750 },
-  /* CRO Retainer */
-  { name: "Foundation — 1 Test / Week", category: "CRO Retainer", tier1Price: 1499, tier2Price: 2999 },
-  { name: "Growth — 2 Tests / Week", category: "CRO Retainer", tier1Price: 2499, tier2Price: 3999 },
-  { name: "Scale — 4 Tests / Week", category: "CRO Retainer", tier1Price: 3499, tier2Price: 4999 },
+  { name: "FAQ Page", category: "Tertiary Pages", price: 500 },
+  { name: "Contact Page", category: "Tertiary Pages", price: 500 },
+  { name: "Cart Page", category: "Tertiary Pages", price: 500 },
+  { name: "Navigation", category: "Tertiary Pages", price: 500 },
+  { name: "Policy Pages (All)", category: "Tertiary Pages", price: 500 },
   /* Additional Services */
-  { name: "5 Static Ads", category: "Additional Services", tier1Price: 500, tier2Price: 625 },
-  { name: "10 Static Ads", category: "Additional Services", tier1Price: 850, tier2Price: 1050 },
-  { name: "10 Email Designs", category: "Additional Services", tier1Price: 750, tier2Price: 999 },
-  { name: "20 Email Designs", category: "Additional Services", tier1Price: 1500, tier2Price: 1799 },
-  { name: "Extended 30 Day Support", category: "Additional Services", tier1Price: 1000, tier2Price: 1250 },
-  { name: "Extended 14 Day Support", category: "Additional Services", tier1Price: 500, tier2Price: 625 },
-  { name: "Full Email Flow Design", category: "Additional Services", tier1Price: 2500, tier2Price: 2999 },
-  { name: "Brand Refresh", category: "Additional Services", tier1Price: 500, tier2Price: 625 },
-  { name: "24hr Turnaround", category: "Additional Services", tier1Price: 2000, tier2Price: 2500 },
-  { name: "48hr Turnaround", category: "Additional Services", tier1Price: 1000, tier2Price: 1250 },
-  { name: "A/B Test Setup + Monitor", category: "Additional Services", tier1Price: 500, tier2Price: 625 },
-  { name: "Page Variant / Reskin", category: "Additional Services", tier1Price: 1000, tier2Price: 1000 },
-  { name: "Cart / Post Purchase", category: "Additional Services", tier1Price: 500, tier2Price: 625 },
-  { name: "Full Brand Refresh", category: "Additional Services", tier1Price: 2500, tier2Price: 2999 },
+  { name: "5 Static Ads", category: "Additional Services", price: 500 },
+  { name: "10 Static Ads", category: "Additional Services", price: 850 },
+  { name: "10 Email Designs", category: "Additional Services", price: 750 },
+  { name: "20 Email Designs", category: "Additional Services", price: 1500 },
+  { name: "Extended 30 Day Support", category: "Additional Services", price: 1000 },
+  { name: "Extended 14 Day Support", category: "Additional Services", price: 500 },
+  { name: "Full Email Flow Design", category: "Additional Services", price: 2500 },
+  { name: "Brand Refresh", category: "Additional Services", price: 500 },
+  { name: "24hr Turnaround", category: "Additional Services", price: 2000 },
+  { name: "48hr Turnaround", category: "Additional Services", price: 1000 },
+  { name: "A/B Test Setup + Monitor", category: "Additional Services", price: 500 },
+  { name: "Page Variant / Reskin", category: "Additional Services", price: 1000 },
+  { name: "Cart / Post Purchase", category: "Additional Services", price: 500 },
+  { name: "Full Brand Refresh", category: "Additional Services", price: 2500 },
 ];
 
 const deliverableCategories = [
   "Page Builds",
   "Secondary Pages",
   "Tertiary Pages",
-  "CRO Retainer",
   "Additional Services",
 ] as const;
 
@@ -106,7 +99,6 @@ function addDays(dateStr: string, days: number) {
 }
 
 export default function InvoiceGeneratorPage() {
-  const [tier, setTier] = useState<Tier>(1);
   const [showPreview, setShowPreview] = useState(false);
   const [generating, setGenerating] = useState(false);
 
@@ -137,7 +129,6 @@ export default function InvoiceGeneratorPage() {
     if (!selectedDeliverable) return;
     const d = invoiceDeliverables.find((x) => x.name === selectedDeliverable);
     if (!d) return;
-    const price = tier === 1 ? d.tier1Price : d.tier2Price;
     setItems((prev) => [
       ...prev,
       {
@@ -145,7 +136,7 @@ export default function InvoiceGeneratorPage() {
         type: "deliverable",
         name: d.name,
         quantity: 1,
-        unitPrice: price,
+        unitPrice: d.price,
       },
     ]);
     setSelectedDeliverable("");
@@ -175,20 +166,6 @@ export default function InvoiceGeneratorPage() {
   const updateItem = (id: string, updates: Partial<InvoiceLineItem>) => {
     setItems((prev) =>
       prev.map((i) => (i.id === id ? { ...i, ...updates } : i))
-    );
-    resetPreview();
-  };
-
-  /* ── Switch tier → update deliverable prices ── */
-  const switchTier = (newTier: Tier) => {
-    setTier(newTier);
-    setItems((prev) =>
-      prev.map((item) => {
-        if (item.type !== "deliverable") return item;
-        const d = invoiceDeliverables.find((x) => x.name === item.name);
-        if (!d) return item;
-        return { ...item, unitPrice: newTier === 1 ? d.tier1Price : d.tier2Price };
-      })
     );
     resetPreview();
   };
@@ -305,7 +282,7 @@ export default function InvoiceGeneratorPage() {
                   type="text"
                   value={clientName}
                   onChange={(e) => { setClientName(e.target.value); resetPreview(); }}
-                  placeholder="Acme Ltd"
+                  placeholder="Ecomlanders"
                   className={inputClass}
                 />
               </div>
@@ -315,7 +292,7 @@ export default function InvoiceGeneratorPage() {
                   type="text"
                   value={contactName}
                   onChange={(e) => { setContactName(e.target.value); resetPreview(); }}
-                  placeholder="John Smith"
+                  placeholder="Sarah Jones"
                   className={inputClass}
                 />
               </div>
@@ -325,7 +302,7 @@ export default function InvoiceGeneratorPage() {
                   type="email"
                   value={clientEmail}
                   onChange={(e) => { setClientEmail(e.target.value); resetPreview(); }}
-                  placeholder="john@acme.com"
+                  placeholder="sarah@ecomlanders.app"
                   className={inputClass}
                 />
               </div>
@@ -339,28 +316,6 @@ export default function InvoiceGeneratorPage() {
                   className={`${inputClass} resize-none`}
                 />
               </div>
-            </div>
-          </section>
-
-          {/* ── Tier Toggle ── */}
-          <section>
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
-              Pricing Tier
-            </h2>
-            <div className="inline-flex rounded-md border border-[#E5E5EA] overflow-hidden">
-              {([1, 2] as Tier[]).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => switchTier(t)}
-                  className={`px-5 py-2 text-sm font-medium transition-colors ${
-                    tier === t
-                      ? "bg-[#1B1B1B] text-white"
-                      : "bg-white text-[#7A7A7A] hover:bg-[#F3F3F5]"
-                  }`}
-                >
-                  Tier {t}
-                </button>
-              ))}
             </div>
           </section>
 
@@ -384,7 +339,7 @@ export default function InvoiceGeneratorPage() {
                       .filter((d) => d.category === cat)
                       .map((d) => (
                         <option key={d.name} value={d.name}>
-                          {d.name} — {formatGBP(tier === 1 ? d.tier1Price : d.tier2Price)}
+                          {d.name} — {formatGBP(d.price)}
                         </option>
                       ))}
                   </optgroup>

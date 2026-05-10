@@ -72,6 +72,13 @@ const moduleMap: Record<
     icon: "chat",
     category: "reference",
   },
+  "09-objections": {
+    title: "Objection Handling",
+    shortTitle: "Objections",
+    icon: "chat",
+    category: "reference",
+    toolHref: "/internal/cheatsheet/conversion-engine",
+  },
 };
 
 export function getWikiModule(slug: string): WikiModule | null {

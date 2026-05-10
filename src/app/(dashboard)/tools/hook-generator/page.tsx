@@ -227,7 +227,7 @@ export default function HookGeneratorPage() {
                     type="text"
                     value={input.clientName}
                     onChange={(e) => updateInput("clientName", e.target.value)}
-                    placeholder="e.g., Nutribloom"
+                    placeholder="e.g., Ecomlanders"
                     className={inputClass}
                   />
                 </div>

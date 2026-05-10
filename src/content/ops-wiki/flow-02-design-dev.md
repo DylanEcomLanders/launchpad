@@ -1,10 +1,12 @@
-# Flow: Design & Development
+# Flow: Page Build
 
 ## When This Flow Applies
 
-The most common project type. Client is buying a full page build — we design it, we build it, we launch it. No CRO/testing component.
+The most common project type. Client is buying a full page build — we design it, we build it, we launch it.
 
 **Examples:** Landing page build, homepage redesign, PDP template redesign, collection page build.
+
+> **Optional CRO layer:** if the page is being built to test a specific hypothesis (A/B, before/after), layer in the CRO additions — see [Optional: CRO Test Layer](#optional-cro-test-layer) at the end of this doc for the extra stages and gate items.
 
 ---
 
@@ -195,3 +197,97 @@ If issues found → developer fixes → re-QA on fixed items only.
 - Document any learnings for future projects
 
 > **Reference:** [Client Communication & Updates](/tools/ops-wiki?section=14-client-comms) for close-out communication.
+
+---
+
+## Optional: CRO Test Layer
+
+Add this layer when the page is being built to test a specific hypothesis with a measurement plan. Everything in the standard flow above still applies — these are additions, not replacements.
+
+### Pre-flight: CRO Research & Hypothesis
+
+**Owner:** Strategist / Lead (not the designer)
+
+Before any design starts, define what's being tested and why.
+
+- Pull current page performance (CVR, bounce rate, scroll depth, heatmap)
+- Identify the specific conversion leak
+- Score the relevant conversion matrix layers
+- Write the hypothesis:
+
+```
+IF we [specific change]
+THEN we expect [metric] to [direction] by [range]
+BECAUSE [evidence from data/research]
+```
+
+- Define the test method: A/B split, before/after, or multivariate
+- Calculate required sample size and minimum test duration
+- Set the success metric and minimum detectable effect
+
+> **Reference:** [CRO Audit Process](/tools/ops-wiki?section=06-audit-process) and [Testing & Experimentation Framework](/tools/ops-wiki?section=07-testing-framework)
+
+**Output:** CRO brief with hypothesis, test method, success metric, and duration. Lead-approved before design starts.
+
+### Design Brief — add CRO rationale
+
+Translate the hypothesis into the brief. Every section should connect back to the hypothesis: "this section addresses objection X" / "this CTA tests message Y."
+
+### Build — add A/B test infrastructure
+
+On top of the standard build:
+- A/B testing tool wired up (Google Optimize, VWO, Convert, Shopify native)
+- Test variant and control configured correctly
+- Custom GA4 events for the success metric
+- UTM parameters if test is traffic-source specific
+
+### Self-QA — extra checklist items
+
+- [ ] A/B test serving correctly (both variants load, split is working)
+- [ ] Tracking events fire on the success metric action
+- [ ] Test is not leaking (control visitors don't see variant and vice versa)
+- [ ] Analytics records test variant as a dimension
+
+### Internal QA — extra checks
+
+- Verify traffic is splitting correctly
+- Confirm tracking fires on both variants
+- Confirm test doesn't break anything elsewhere on the site
+
+### Launch Prep — Test Method Gate
+
+Stricter than standard launch prep. A badly launched test corrupts data and wastes the project.
+
+- [ ] Test method confirmed and documented (A/B, before/after, etc.)
+- [ ] Traffic allocation set (50/50 for A/B, 100% for before/after)
+- [ ] Test duration calculated (minimum 2 weeks or 1,000 visitors per variant)
+- [ ] Statistical significance threshold agreed (95% standard)
+- [ ] Baseline metrics recorded (current CVR, ATC rate, bounce rate)
+- [ ] Success metric confirmed and trackable
+- [ ] Client understands test will run for [X] weeks — no pulling early
+- [ ] Daily monitoring plan in place
+
+### Post-Launch: Measure & Report
+
+**Owner:** Strategist
+
+- Wait for statistical significance (minimum 95% confidence)
+- Pull final results for both variants: CVR, ATC rate, bounce rate, scroll depth
+- Calculate revenue impact of the winner
+- Write the test report:
+  - Hypothesis (what we tested)
+  - Result (which variant won, by how much)
+  - Statistical significance
+  - Revenue impact (projected monthly)
+  - Learnings
+  - Next step (iterate, ship as-is, or test next hypothesis)
+- Present to client
+
+> **Reference:** [Reporting & Analytics](/tools/ops-wiki?section=08-reporting)
+
+### Complete — extra steps
+
+- Implement winning variant as permanent (if A/B) or confirm before/after results
+- Remove test infrastructure
+- Add results to case study pipeline
+- Feed learnings into the next hypothesis (if ongoing relationship)

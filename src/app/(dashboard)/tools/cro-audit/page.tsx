@@ -124,7 +124,7 @@ export default function CroAuditPage() {
             type="text"
             value={clientName}
             onChange={(e) => setClientName(e.target.value)}
-            placeholder="e.g. Huel"
+            placeholder="e.g. Ecomlanders"
             className={inputClass}
           />
         </div>

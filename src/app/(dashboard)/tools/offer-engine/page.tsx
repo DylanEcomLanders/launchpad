@@ -209,7 +209,7 @@ export default function OfferEnginePage() {
                 <label className={labelClass}>Brand name</label>
                 <input
                   className={inputClass}
-                  placeholder="Yorkshire Dental Suite"
+                  placeholder="Ecomlanders"
                   value={brandName}
                   onChange={(e) => setBrandName(e.target.value)}
                 />
@@ -218,7 +218,7 @@ export default function OfferEnginePage() {
                 <label className={labelClass}>Slug</label>
                 <input
                   className={inputClass}
-                  placeholder="yorkshire-dental-suite"
+                  placeholder="ecomlanders"
                   value={slug}
                   onChange={(e) => {
                     setSlug(slugify(e.target.value));

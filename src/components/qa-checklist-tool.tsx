@@ -177,7 +177,7 @@ export function QAChecklistTool({ prefillClient }: { prefillClient?: string } = 
               <input
                 type="text"
                 className={inputClass}
-                placeholder="e.g. Nutribloom Redesign"
+                placeholder="e.g. Ecomlanders Redesign"
                 value={formData.projectName}
                 onChange={(e) => updateField("projectName", e.target.value)}
               />
