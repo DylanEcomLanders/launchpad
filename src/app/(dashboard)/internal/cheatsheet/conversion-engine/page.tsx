@@ -1,9 +1,96 @@
 "use client";
 
-import { useState } from "react";
-import { CheckIcon, ClipboardIcon } from "@heroicons/react/24/outline";
+import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import {
+  CheckIcon,
+  ClipboardIcon,
+  PencilSquareIcon,
+  XMarkIcon,
+  ArrowUturnLeftIcon,
+} from "@heroicons/react/24/outline";
+import {
+  loadOfferContent,
+  saveOfferContent,
+  getOfferContent,
+  type OfferContentOverrides,
+} from "@/lib/offer-content";
 
-const objections: { q: string; a: string }[] = [
+/* ── Defaults ── */
+
+const DEFAULT_POSITIONING =
+  "The post-click agency. We own the conversion layer for DTC brands — audit, build, test, compound.";
+
+interface CardDef {
+  id: string;
+  title: string;
+  defaultMarkdown: string;
+}
+
+const CARDS: CardDef[] = [
+  {
+    id: "who",
+    title: "Who it's for",
+    defaultMarkdown: `**ICP:** DTC brands £80K–£300K/mo, £20K+ ad spend, no in-house CRO, post-click hasn't been touched in 12+ months.
+
+**Not ICP:** brands under £50K/mo, <£10K ad spend, anyone wanting one-off page builds.`,
+  },
+  {
+    id: "included",
+    title: "What's included",
+    defaultMarkdown: `- Conversion audit + revenue gap analysis
+- 60–90 day visual roadmap (Miro)
+- Monthly page builds (LP, PDP, cart, bundle)
+- A/B test programme with hypothesis chains
+- AOV: bundles, upsells, post-purchase
+- Monthly report with revenue attribution
+- Dedicated Slack with the team`,
+  },
+  {
+    id: "how",
+    title: "How it works",
+    defaultMarkdown: `**Audit (Mo 1)** → score every layer, find the 3 biggest leaks, ship quick wins Wk 1.
+
+**Test cycle (Mo 2+)** → build, ship, measure, iterate. ICE-prioritised. 2-week test minimum.
+
+**Cadence** — weekly Slack, monthly report, quarterly review.`,
+  },
+  {
+    id: "pricing",
+    title: "Pricing",
+    defaultMarkdown: `**Standard — £8K/mo.** The deal. Roadmap, monthly builds, tests, monthly report.
+
+**Anchor — £12K/mo.** Faster turnarounds, more resources, dedicated calls.
+
+Always quote both. £12K exists so £8K feels like the deal.`,
+  },
+  {
+    id: "outcomes",
+    title: "Expected outcomes",
+    defaultMarkdown: `- 0.5–2% site-wide CVR lift in 90 days (range, not promise)
+- Quick wins live in Week 1
+- First major build live Month 2
+- Most retainers pay back inside 60 days
+- Compounding kicks in from Month 3`,
+  },
+  {
+    id: "proof",
+    title: "Proof",
+    defaultMarkdown: `- Supplements brand · 2.1% → 4.3% CVR · 90 days
+- Skincare DTC · +38% AOV via bundle + upsell flow
+- Apparel · +£42K/mo recovered on PDP rebuild
+- Pet food · checkout opt → +14% completion rate
+- Home goods · post-purchase upsell · +£18 per order`,
+  },
+];
+
+interface ObjectionDef {
+  q: string;
+  a: string;
+}
+
+const DEFAULT_OBJECTIONS: ObjectionDef[] = [
   {
     q: "We already have a CRO agency.",
     a: "Most CRO agencies audit and recommend — we audit, build, and ship from one team. If yours is moving CVR every month, keep them. If they're sending 47-page reports and waiting on your dev team, that's the gap we fill.",
@@ -46,13 +133,119 @@ const objections: { q: string; a: string }[] = [
   },
 ];
 
+/* ── Page ── */
+
+const PROSE_CLASS =
+  "prose prose-sm max-w-none prose-p:text-[#444] prose-p:my-1 prose-strong:text-[#1B1B1B] prose-ul:my-1 prose-li:my-0 prose-li:text-[#444]";
+
 export default function ConversionEngineCheatsheetPage() {
+  const [overrides, setOverrides] = useState<NonNullable<OfferContentOverrides["cheatsheet"]>>(() => {
+    return getOfferContent().cheatsheet ?? {};
+  });
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [editing, setEditing] = useState<string | null>(null); // e.g. "positioning", "card:who", "obj:0:q", "obj:0:a"
+  const [draft, setDraft] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadOfferContent().then((c) => {
+      if (!cancelled) setOverrides(c.cheatsheet ?? {});
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const positioning = overrides.positioning ?? DEFAULT_POSITIONING;
+  const getCard = (id: string, def: string) => overrides.cards?.[id] ?? def;
+  const getObjection = (i: number) => {
+    const o = overrides.objections?.[String(i)];
+    return {
+      q: o?.q ?? DEFAULT_OBJECTIONS[i].q,
+      a: o?.a ?? DEFAULT_OBJECTIONS[i].a,
+    };
+  };
 
   const copy = (text: string, idx: number) => {
     navigator.clipboard.writeText(text);
     setCopiedIdx(idx);
     setTimeout(() => setCopiedIdx(null), 1500);
+  };
+
+  const persist = async (next: NonNullable<OfferContentOverrides["cheatsheet"]>) => {
+    setOverrides(next);
+    const current = getOfferContent();
+    await saveOfferContent({ ...current, cheatsheet: next });
+  };
+
+  const startEdit = (key: string, current: string) => {
+    setEditing(key);
+    setDraft(current);
+  };
+
+  const cancelEdit = () => {
+    setEditing(null);
+    setDraft("");
+  };
+
+  const saveEdit = async () => {
+    if (!editing) return;
+    setSaving(true);
+    const next: NonNullable<OfferContentOverrides["cheatsheet"]> = {
+      ...overrides,
+      cards: { ...(overrides.cards ?? {}) },
+      objections: { ...(overrides.objections ?? {}) },
+    };
+
+    if (editing === "positioning") {
+      if (draft.trim() === DEFAULT_POSITIONING) delete next.positioning;
+      else next.positioning = draft;
+    } else if (editing.startsWith("card:")) {
+      const id = editing.slice(5);
+      const def = CARDS.find((c) => c.id === id)?.defaultMarkdown ?? "";
+      if (draft.trim() === def.trim()) delete next.cards![id];
+      else next.cards![id] = draft;
+    } else if (editing.startsWith("obj:")) {
+      const [, idxStr, field] = editing.split(":");
+      const i = Number(idxStr);
+      const key = String(i);
+      const existing = next.objections![key] ?? {};
+      const defVal = field === "q" ? DEFAULT_OBJECTIONS[i].q : DEFAULT_OBJECTIONS[i].a;
+      if (draft.trim() === defVal.trim()) {
+        delete existing[field as "q" | "a"];
+      } else {
+        existing[field as "q" | "a"] = draft;
+      }
+      if (existing.q === undefined && existing.a === undefined) {
+        delete next.objections![key];
+      } else {
+        next.objections![key] = existing;
+      }
+    }
+
+    // Clean empty containers
+    if (next.cards && Object.keys(next.cards).length === 0) delete next.cards;
+    if (next.objections && Object.keys(next.objections).length === 0) delete next.objections;
+
+    await persist(next);
+    setSaving(false);
+    setEditing(null);
+    setDraft("");
+  };
+
+  const resetPositioning = () => persist({ ...overrides, positioning: undefined });
+  const resetCard = (id: string) => {
+    const cards = { ...(overrides.cards ?? {}) };
+    delete cards[id];
+    const next = { ...overrides, cards: Object.keys(cards).length ? cards : undefined };
+    persist(next);
+  };
+  const resetObjection = (i: number) => {
+    const objs = { ...(overrides.objections ?? {}) };
+    delete objs[String(i)];
+    const next = { ...overrides, objections: Object.keys(objs).length ? objs : undefined };
+    persist(next);
   };
 
   return (
@@ -63,7 +256,7 @@ export default function ConversionEngineCheatsheetPage() {
           <p className="text-[10px] font-semibold uppercase tracking-wider text-[#BBB]">Internal · Sales Enablement</p>
           <h1 className="text-xl font-semibold tracking-tight text-[#1B1B1B] mt-0.5">Conversion Engine — Cheat Sheet</h1>
         </div>
-        <p className="text-[11px] text-[#999]">Cmd+F to find any answer.</p>
+        <p className="text-[11px] text-[#999]">Hover any block to edit. Cmd+F to find any answer.</p>
       </header>
 
       {/* Section 1: Cheat Sheet */}
@@ -71,76 +264,61 @@ export default function ConversionEngineCheatsheetPage() {
         <h2 className="text-[10px] font-semibold uppercase tracking-wider text-[#999] mb-3">§ 1 · Cheat Sheet</h2>
 
         {/* Positioning — full width */}
-        <div className="rounded-lg border border-[#1B1B1B] bg-[#1B1B1B] text-white px-4 py-3 mb-3">
+        <EditableBlock
+          isEditing={editing === "positioning"}
+          overridden={overrides.positioning !== undefined}
+          onEdit={() => startEdit("positioning", positioning)}
+          onReset={resetPositioning}
+          onCancel={cancelEdit}
+          onSave={saveEdit}
+          draft={draft}
+          setDraft={setDraft}
+          saving={saving}
+          className={`rounded-lg border px-4 py-3 mb-3 ${
+            editing === "positioning"
+              ? "border-[#1B1B1B] bg-white"
+              : "border-[#1B1B1B] bg-[#1B1B1B] text-white"
+          }`}
+          textareaRows={3}
+        >
           <p className="text-[10px] font-semibold uppercase tracking-wider text-white/50 mb-1">Positioning</p>
-          <p className="text-sm leading-snug">The post-click agency. We own the conversion layer for DTC brands — audit, build, test, compound.</p>
-        </div>
+          <p className="text-sm leading-snug">{positioning}</p>
+        </EditableBlock>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {/* Who it's for */}
-          <Card title="Who it's for">
-            <p className="text-[11px] leading-snug text-[#444]"><span className="font-medium text-[#1B1B1B]">ICP:</span> DTC brands £80K–£300K/mo, £20K+ ad spend, no in-house CRO, post-click hasn't been touched in 12+ months.</p>
-            <p className="text-[11px] leading-snug text-[#444] mt-1.5"><span className="font-medium text-[#1B1B1B]">Not ICP:</span> brands under £50K/mo, &lt;£10K ad spend, anyone wanting one-off page builds.</p>
-          </Card>
-
-          {/* What's included */}
-          <Card title="What's included">
-            <ul className="text-[11px] leading-snug text-[#444] space-y-0.5">
-              <li>· Conversion audit + revenue gap analysis</li>
-              <li>· 60–90 day visual roadmap (Miro)</li>
-              <li>· Monthly page builds (LP, PDP, cart, bundle)</li>
-              <li>· A/B test programme with hypothesis chains</li>
-              <li>· AOV: bundles, upsells, post-purchase</li>
-              <li>· Monthly report with revenue attribution</li>
-              <li>· Dedicated Slack with the team</li>
-            </ul>
-          </Card>
-
-          {/* How it works */}
-          <Card title="How it works">
-            <p className="text-[11px] leading-snug text-[#444]"><span className="font-medium text-[#1B1B1B]">Audit (Mo 1)</span> → score every layer, find the 3 biggest leaks, ship quick wins Wk 1.</p>
-            <p className="text-[11px] leading-snug text-[#444] mt-1"><span className="font-medium text-[#1B1B1B]">Test cycle (Mo 2+)</span> → build, ship, measure, iterate. ICE-prioritised. 2-week test minimum.</p>
-            <p className="text-[11px] leading-snug text-[#444] mt-1"><span className="font-medium text-[#1B1B1B]">Cadence</span> — weekly Slack, monthly report, quarterly review.</p>
-          </Card>
-
-          {/* Pricing */}
-          <Card title="Pricing">
-            <div className="grid grid-cols-2 gap-2">
-              <div className="rounded-md border border-[#1B1B1B] bg-white p-2">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#1B1B1B]">Standard</p>
-                <p className="text-base font-semibold text-[#1B1B1B] leading-tight mt-0.5">£8K<span className="text-[10px] font-normal text-[#999]">/mo</span></p>
-                <p className="text-[10px] text-[#666] mt-1">The deal. Roadmap, monthly builds, tests, monthly report.</p>
-              </div>
-              <div className="rounded-md border border-[#E5E5EA] bg-[#FAFAFA] p-2">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">Anchor</p>
-                <p className="text-base font-semibold text-[#1B1B1B] leading-tight mt-0.5">£12K<span className="text-[10px] font-normal text-[#999]">/mo</span></p>
-                <p className="text-[10px] text-[#666] mt-1">Faster turnarounds, more resources, dedicated calls.</p>
-              </div>
-            </div>
-            <p className="text-[10px] text-[#999] mt-1.5">Always quote both. £12K exists so £8K feels like the deal.</p>
-          </Card>
-
-          {/* Expected outcomes */}
-          <Card title="Expected outcomes">
-            <ul className="text-[11px] leading-snug text-[#444] space-y-0.5">
-              <li>· 0.5–2% site-wide CVR lift in 90 days (range, not promise)</li>
-              <li>· Quick wins live in Week 1</li>
-              <li>· First major build live Month 2</li>
-              <li>· Most retainers pay back inside 60 days</li>
-              <li>· Compounding kicks in from Month 3</li>
-            </ul>
-          </Card>
-
-          {/* Proof */}
-          <Card title="Proof">
-            <ul className="text-[11px] leading-snug text-[#444] space-y-0.5">
-              <li>· Supplements brand · 2.1% → 4.3% CVR · 90 days</li>
-              <li>· Skincare DTC · +38% AOV via bundle + upsell flow</li>
-              <li>· Apparel · +£42K/mo recovered on PDP rebuild</li>
-              <li>· Pet food · checkout opt → +14% completion rate</li>
-              <li>· Home goods · post-purchase upsell · +£18 per order</li>
-            </ul>
-          </Card>
+          {CARDS.map((c) => {
+            const editKey = `card:${c.id}`;
+            const isEditing = editing === editKey;
+            const value = getCard(c.id, c.defaultMarkdown);
+            const overridden = overrides.cards?.[c.id] !== undefined;
+            return (
+              <EditableBlock
+                key={c.id}
+                isEditing={isEditing}
+                overridden={overridden}
+                onEdit={() => startEdit(editKey, value)}
+                onReset={() => resetCard(c.id)}
+                onCancel={cancelEdit}
+                onSave={saveEdit}
+                draft={draft}
+                setDraft={setDraft}
+                saving={saving}
+                className={`rounded-lg border p-3 ${
+                  isEditing
+                    ? "border-[#1B1B1B] bg-white"
+                    : overridden
+                      ? "border-[#E5E5EA] bg-[#FFFBEB]"
+                      : "border-[#E5E5EA] bg-white"
+                }`}
+                textareaRows={8}
+              >
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#999] mb-1.5">{c.title}</p>
+                <div className={`${PROSE_CLASS} text-[11px] leading-snug`}>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{value}</ReactMarkdown>
+                </div>
+              </EditableBlock>
+            );
+          })}
         </div>
       </section>
 
@@ -157,30 +335,71 @@ export default function ConversionEngineCheatsheetPage() {
               </tr>
             </thead>
             <tbody>
-              {objections.map((o, i) => (
-                <tr key={i} className="border-b border-[#F0F0F0] last:border-0 hover:bg-[#FAFAFA]/60 align-top">
-                  <td className="px-3 py-2.5 text-[12px] font-medium text-[#1B1B1B] leading-snug">{o.q}</td>
-                  <td className="px-3 py-2.5 text-[12px] text-[#444] leading-snug">{o.a}</td>
-                  <td className="px-2 py-2.5">
-                    <button
-                      onClick={() => copy(o.a, i)}
-                      className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-md border border-[#E5E5EA] text-[#666] hover:border-[#1B1B1B] hover:text-[#1B1B1B] transition-colors"
-                    >
-                      {copiedIdx === i ? (
-                        <>
-                          <CheckIcon className="size-3" />
-                          Copied
-                        </>
-                      ) : (
-                        <>
-                          <ClipboardIcon className="size-3" />
-                          Copy
-                        </>
-                      )}
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {DEFAULT_OBJECTIONS.map((_, i) => {
+                const obj = getObjection(i);
+                const qOverridden = overrides.objections?.[String(i)]?.q !== undefined;
+                const aOverridden = overrides.objections?.[String(i)]?.a !== undefined;
+                const editingQ = editing === `obj:${i}:q`;
+                const editingA = editing === `obj:${i}:a`;
+                const rowOverridden = qOverridden || aOverridden;
+                return (
+                  <tr
+                    key={i}
+                    className={`border-b border-[#F0F0F0] last:border-0 align-top ${
+                      rowOverridden ? "bg-[#FFFBEB]/60" : "hover:bg-[#FAFAFA]/60"
+                    }`}
+                  >
+                    <td className="px-3 py-2.5 text-[12px] font-medium text-[#1B1B1B] leading-snug">
+                      <InlineEditable
+                        isEditing={editingQ}
+                        overridden={qOverridden}
+                        value={obj.q}
+                        onEdit={() => startEdit(`obj:${i}:q`, obj.q)}
+                        onCancel={cancelEdit}
+                        onSave={saveEdit}
+                        onReset={() => resetObjection(i)}
+                        draft={draft}
+                        setDraft={setDraft}
+                        saving={saving}
+                        textareaRows={2}
+                      />
+                    </td>
+                    <td className="px-3 py-2.5 text-[12px] text-[#444] leading-snug">
+                      <InlineEditable
+                        isEditing={editingA}
+                        overridden={aOverridden}
+                        value={obj.a}
+                        onEdit={() => startEdit(`obj:${i}:a`, obj.a)}
+                        onCancel={cancelEdit}
+                        onSave={saveEdit}
+                        onReset={() => resetObjection(i)}
+                        draft={draft}
+                        setDraft={setDraft}
+                        saving={saving}
+                        textareaRows={4}
+                      />
+                    </td>
+                    <td className="px-2 py-2.5">
+                      <button
+                        onClick={() => copy(obj.a, i)}
+                        className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-md border border-[#E5E5EA] text-[#666] hover:border-[#1B1B1B] hover:text-[#1B1B1B] transition-colors"
+                      >
+                        {copiedIdx === i ? (
+                          <>
+                            <CheckIcon className="size-3" />
+                            Copied
+                          </>
+                        ) : (
+                          <>
+                            <ClipboardIcon className="size-3" />
+                            Copy
+                          </>
+                        )}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -189,11 +408,179 @@ export default function ConversionEngineCheatsheetPage() {
   );
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+/* ── Editable block (positioning + cards) ── */
+
+function EditableBlock({
+  isEditing,
+  overridden,
+  onEdit,
+  onReset,
+  onCancel,
+  onSave,
+  draft,
+  setDraft,
+  saving,
+  className,
+  textareaRows,
+  children,
+}: {
+  isEditing: boolean;
+  overridden: boolean;
+  onEdit: () => void;
+  onReset: () => void;
+  onCancel: () => void;
+  onSave: () => void;
+  draft: string;
+  setDraft: (s: string) => void;
+  saving: boolean;
+  className: string;
+  textareaRows: number;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="rounded-lg border border-[#E5E5EA] bg-white p-3">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#999] mb-1.5">{title}</p>
-      {children}
+    <div className={`group relative ${className}`}>
+      {overridden && !isEditing && (
+        <span className="absolute top-1.5 right-12 text-[9px] font-semibold uppercase tracking-wider text-[#92400E] bg-[#FEF3C7] px-1.5 py-0.5 rounded">
+          Edited
+        </span>
+      )}
+      {!isEditing && (
+        <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          {overridden && (
+            <button
+              onClick={onReset}
+              title="Reset to default"
+              className="p-1 rounded hover:bg-black/10 text-[#999] hover:text-[#1B1B1B]"
+            >
+              <ArrowUturnLeftIcon className="size-3.5" />
+            </button>
+          )}
+          <button
+            onClick={onEdit}
+            title="Edit"
+            className="p-1 rounded hover:bg-black/10 text-[#999] hover:text-[#1B1B1B]"
+          >
+            <PencilSquareIcon className="size-3.5" />
+          </button>
+        </div>
+      )}
+      {isEditing ? (
+        <div>
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            rows={Math.max(textareaRows, draft.split("\n").length + 1)}
+            className="w-full font-mono text-[11px] leading-relaxed border border-[#E5E5EA] rounded-md p-2 focus:outline-none focus:border-[#1B1B1B] focus:ring-1 focus:ring-[#1B1B1B] resize-y text-[#1B1B1B] bg-white"
+          />
+          <div className="mt-1.5 flex items-center justify-end gap-2">
+            <button
+              onClick={onCancel}
+              disabled={saving}
+              className="inline-flex items-center gap-1 text-[10px] font-medium text-[#666] hover:text-[#1B1B1B] px-2 py-1 rounded disabled:opacity-50"
+            >
+              <XMarkIcon className="size-3" />
+              Cancel
+            </button>
+            <button
+              onClick={onSave}
+              disabled={saving}
+              className="inline-flex items-center gap-1 text-[10px] font-semibold text-white bg-[#1B1B1B] hover:bg-black px-2 py-1 rounded disabled:opacity-50"
+            >
+              <CheckIcon className="size-3" />
+              {saving ? "Saving…" : "Save"}
+            </button>
+          </div>
+        </div>
+      ) : (
+        children
+      )}
+    </div>
+  );
+}
+
+/* ── Inline editable text (objection q/a cells) ── */
+
+function InlineEditable({
+  isEditing,
+  overridden,
+  value,
+  onEdit,
+  onCancel,
+  onSave,
+  onReset,
+  draft,
+  setDraft,
+  saving,
+  textareaRows,
+}: {
+  isEditing: boolean;
+  overridden: boolean;
+  value: string;
+  onEdit: () => void;
+  onCancel: () => void;
+  onSave: () => void;
+  onReset: () => void;
+  draft: string;
+  setDraft: (s: string) => void;
+  saving: boolean;
+  textareaRows: number;
+}) {
+  if (isEditing) {
+    return (
+      <div>
+        <textarea
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          rows={Math.max(textareaRows, draft.split("\n").length + 1)}
+          className="w-full text-[12px] leading-snug border border-[#1B1B1B] rounded-md p-2 focus:outline-none focus:ring-1 focus:ring-[#1B1B1B] resize-y bg-white"
+        />
+        <div className="mt-1 flex items-center justify-end gap-1.5">
+          <button
+            onClick={onCancel}
+            disabled={saving}
+            className="inline-flex items-center gap-0.5 text-[10px] font-medium text-[#666] hover:text-[#1B1B1B] px-1.5 py-0.5 rounded disabled:opacity-50"
+          >
+            <XMarkIcon className="size-3" />
+            Cancel
+          </button>
+          <button
+            onClick={onSave}
+            disabled={saving}
+            className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-white bg-[#1B1B1B] hover:bg-black px-1.5 py-0.5 rounded disabled:opacity-50"
+          >
+            <CheckIcon className="size-3" />
+            {saving ? "Saving…" : "Save"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="group relative">
+      <span>{value}</span>
+      <span className="ml-1 inline-flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity align-middle">
+        {overridden && (
+          <button
+            onClick={onReset}
+            title="Reset to default"
+            className="p-0.5 rounded hover:bg-[#F0F0F0] text-[#999] hover:text-[#1B1B1B]"
+          >
+            <ArrowUturnLeftIcon className="size-3" />
+          </button>
+        )}
+        <button
+          onClick={onEdit}
+          title="Edit"
+          className="p-0.5 rounded hover:bg-[#F0F0F0] text-[#999] hover:text-[#1B1B1B]"
+        >
+          <PencilSquareIcon className="size-3" />
+        </button>
+        {overridden && (
+          <span className="text-[8px] font-semibold uppercase tracking-wider text-[#92400E] bg-[#FEF3C7] px-1 py-0.5 rounded">
+            edited
+          </span>
+        )}
+      </span>
     </div>
   );
 }
