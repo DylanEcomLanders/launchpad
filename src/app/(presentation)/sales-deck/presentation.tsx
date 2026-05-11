@@ -1671,6 +1671,11 @@ export function SalesDeckPresentation({
           from { opacity: 0;    transform: translate3d(0, 10px, 0); }
           to   { opacity: 1;    transform: translate3d(0, 0, 0); }
         }
+        /* When transitioning out of the cover, hold the new slide hidden until
+           the cover has finished exiting — otherwise both headlines overlap. */
+        .is-entering-engine .deck-slide-enter {
+          animation: deck-slide-enter 320ms cubic-bezier(0.16, 1, 0.3, 1) 240ms both;
+        }
 
         /* Cross-fade overlay: the exiting cover stays on top while the next slide rises in underneath */
         .slide-exiting-overlay {
@@ -1681,11 +1686,11 @@ export function SalesDeckPresentation({
           justify-content: center;
           pointer-events: none;
           z-index: 2;
-          animation: cover-exit-fade 360ms cubic-bezier(0.4, 0, 0.6, 1) forwards;
+          animation: cover-exit-fade 260ms cubic-bezier(0.4, 0, 0.6, 1) forwards;
         }
         @keyframes cover-exit-fade {
-          from { opacity: 1; }
-          to { opacity: 0; }
+          from { opacity: 1; transform: translate3d(0, 0, 0); }
+          to   { opacity: 0; transform: translate3d(0, -2.5vh, 0); }
         }
 
         /* ─────────── Shared slide bits ─────────── */
