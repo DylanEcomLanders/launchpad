@@ -60,14 +60,6 @@ Every week you see progress. Every month you see numbers.
 
 ---
 
-## Slide 8 — Proof
-
-::proof-stats::
-
-Real brands. Real lifts. Compounding monthly. _Swap in the three sharpest results per vertical before the call._
-
----
-
 ## Slide 9 — The investment
 
 ::investment-roi::
