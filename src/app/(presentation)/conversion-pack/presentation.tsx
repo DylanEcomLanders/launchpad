@@ -1217,14 +1217,20 @@ function NextStepSlide() {
       </p>
 
       <div className="next-v2-row">
-        <div className="next-v2-hero">
+        <a
+          href="https://calendly.com/hello-ecomlanders/demo-call"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="next-v2-hero no-underline"
+          style={{ textDecoration: "none" }}
+        >
           <span className="next-v2-hero-arrow" aria-hidden>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
               <path d="M7 17L17 7" />
               <path d="M9 7h8v8" />
             </svg>
           </span>
-          <span className="next-v2-hero-tag">Free funnel audit</span>
+          <span className="next-v2-hero-tag">Book a call · Free funnel audit</span>
           <h3 className="next-v2-hero-title">We&rsquo;ll dig in and map the leaks.</h3>
           <ul className="next-v2-hero-list">
             <li className="next-v2-hero-item">
@@ -1245,14 +1251,14 @@ function NextStepSlide() {
             <span aria-hidden>·</span>
             <span>No commitment</span>
             <span aria-hidden>·</span>
-            <span>No call needed</span>
+            <span>30 min</span>
           </div>
-        </div>
+        </a>
 
         <div className="next-v2-side">
           <p className="next-v2-side-tag">Prefer to chat first?</p>
           <a
-            href="https://wa.me/447XXXXXXXXX"
+            href="https://api.whatsapp.com/send/?phone=447457414032&text&type=phone_number&app_absent=0"
             target="_blank"
             rel="noopener noreferrer"
             className="next-v2-contact"
