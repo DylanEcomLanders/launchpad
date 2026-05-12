@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowRightIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { MOCK_ENGAGEMENTS, type MockEngagement } from "@/lib/engagement-mocks";
+import { loadEngagementsFromPods } from "@/lib/engagement-from-pods";
 import { loadLocalEngagements } from "@/lib/engagement-storage";
 import {
   BUCKETS,
@@ -115,10 +116,28 @@ function HealthStat({
 
 export default function EngagementsPage() {
   const [localEngagements, setLocalEngagements] = useState<MockEngagement[]>([]);
+  const [podsEngagements, setPodsEngagements] = useState<MockEngagement[]>([]);
   useEffect(() => {
     setLocalEngagements(loadLocalEngagements());
+    setPodsEngagements(loadEngagementsFromPods());
+    /* Pods-v2 hydrates from Supabase on /pods-v2 mount; if a user lands
+     * on /engagements first their cache may be cold. Re-read shortly
+     * after to pick up any late hydration. Cheap and harmless. */
+    const t = setTimeout(() => setPodsEngagements(loadEngagementsFromPods()), 1500);
+    return () => clearTimeout(t);
   }, []);
-  const allEngagements = [...localEngagements, ...MOCK_ENGAGEMENTS];
+  /* Order: local-created (most recent) → pods-v2 Clients (real ops data)
+   * → static MOCK_ENGAGEMENTS (reference bucket examples). Dedupe by id so
+   * a pods-v2 Client that also has a localStorage override wins from
+   * local. */
+  const combined = [...localEngagements, ...podsEngagements, ...MOCK_ENGAGEMENTS];
+  const seen = new Set<string>();
+  const allEngagements: MockEngagement[] = [];
+  for (const e of combined) {
+    if (seen.has(e.id)) continue;
+    seen.add(e.id);
+    allEngagements.push(e);
+  }
   const healths = allEngagements.map((eng) => ({ eng, health: computeHealth(eng) }));
   const retainerHealths = healths.filter(({ eng }) => eng.kind === "retainer");
   const bucketHealths = healths.filter(({ eng }) => eng.kind === "bucket");
