@@ -7,6 +7,8 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { BUCKETS, type BucketSize, type EngagementKind } from "@/lib/engagement-template";
 import type { MockEngagement } from "@/lib/engagement-mocks";
 import { saveLocalEngagement } from "@/lib/engagement-storage";
+import { createClient as createPodsClient, getPods } from "@/lib/pods-v2/data";
+import type { RetainerTier } from "@/lib/pods-v2/types";
 
 function todayMonday(): string {
   const d = new Date();
@@ -45,38 +47,69 @@ export default function NewEngagementPage() {
 
     const kind: EngagementKind = isRetainer ? "retainer" : "bucket";
     const bucket: BucketSize | undefined = isRetainer ? undefined : (kindChoice as BucketSize);
-    const id = uid();
 
-    const eng: MockEngagement = {
-      id,
-      brand: brand.trim(),
-      vertical: vertical.trim(),
-      retainer: isRetainer ? value.trim() : "Project",
-      anchor: isRetainer ? "" : `Bucket ${bucket}`,
-      startDate,
-      currentDay: 1,
-      podNumber,
-      kind,
-      bucket,
-      brief: {
-        websiteUrl: websiteUrl.trim() || undefined,
-        primaryContact: primaryContact.trim() || undefined,
-        timezone: timezone.trim() || undefined,
-      },
-      customDeliverables: [],
-      deliverables: [],
-      assets: [],
-      activity: [
-        {
-          id: `act-${Date.now()}`,
-          day: 1,
-          actor: "You",
-          action: "Client created",
+    /* Resolve the chosen Pod number → actual pods-v2 Pod.id (UUID) so the
+     * Client row is wired to the correct pod for capacity tracking. */
+    const podRow = getPods().find((p) => p.name === `Pod ${podNumber}`);
+
+    /* Translate the form's value field → pods-v2 RetainerTier. */
+    const tier: RetainerTier = !isRetainer
+      ? "none"
+      : value.trim().match(/12/)
+        ? "12k"
+        : "8k";
+
+    let id: string;
+    if (podRow) {
+      /* Create the pods-v2 Client row first — that becomes the canonical
+       * record. The Client appears on the pod board AND on /engagements
+       * via the bridge. */
+      const client = createPodsClient({
+        name: brand.trim(),
+        pod_id: podRow.id,
+        brand_warm: false,
+        retainer_tier: tier,
+        kickoff_date: startDate,
+        brief: {
+          websiteUrl: websiteUrl.trim() || undefined,
+          primaryContact: primaryContact.trim() || undefined,
+          timezone: timezone.trim() || undefined,
         },
-      ],
-    };
-
-    saveLocalEngagement(eng);
+      });
+      id = client.id;
+    } else {
+      /* Pods-v2 not seeded — fall back to localStorage-only engagement. */
+      id = uid();
+      const eng: MockEngagement = {
+        id,
+        brand: brand.trim(),
+        vertical: vertical.trim(),
+        retainer: isRetainer ? value.trim() : "Project",
+        anchor: isRetainer ? "" : `Bucket ${bucket}`,
+        startDate,
+        currentDay: 1,
+        podNumber,
+        kind,
+        bucket,
+        brief: {
+          websiteUrl: websiteUrl.trim() || undefined,
+          primaryContact: primaryContact.trim() || undefined,
+          timezone: timezone.trim() || undefined,
+        },
+        customDeliverables: [],
+        deliverables: [],
+        assets: [],
+        activity: [
+          {
+            id: `act-${Date.now()}`,
+            day: 1,
+            actor: "You",
+            action: "Client created",
+          },
+        ],
+      };
+      saveLocalEngagement(eng);
+    }
     router.push(`/engagements/${id}`);
   };
 

@@ -172,15 +172,41 @@ export function updateClientMetrics(
   write(LS_CLIENTS, next);
 }
 
-export function createClient(input: Omit<Client, "id">): Client {
+export function createClient(input: Omit<Client, "id"> & { id?: string }): Client {
   const client: Client = {
     ...input,
-    id: uid(),
+    id: input.id ?? uid(),
   };
   const all = getClients();
   all.push(client);
   write(LS_CLIENTS, all);
   return client;
+}
+
+/** Persist the editable client brief snapshot. Used by the engagement
+ * portal's Brief panel. Initial values typically come from an
+ * OnboardingSubmission via onboardingToBrief(); subsequent edits are
+ * decoupled. */
+export function updateClientBrief(
+  clientId: string,
+  brief: import("./types").ClientBrief,
+): void {
+  const all = getClients();
+  const next = all.map((c) => (c.id === clientId ? { ...c, brief } : c));
+  write(LS_CLIENTS, next);
+}
+
+/** Append a manual win to the client (test winners are auto-derived from
+ * Tasks; this is for non-test ships the pod wants to flag). */
+export function addClientWin(
+  clientId: string,
+  win: import("./types").ClientWin,
+): void {
+  const all = getClients();
+  const next = all.map((c) =>
+    c.id === clientId ? { ...c, wins: [...(c.wins ?? []), win] } : c,
+  );
+  write(LS_CLIENTS, next);
 }
 
 // ─── Projects ───────────────────────────────────────────────────────
@@ -338,6 +364,7 @@ export function getTasksForProject(projectId: string): Task[] {
 export function getTasksForMember(memberId: string): Task[] {
   return getTasks().filter((t) => t.assigned_to === memberId);
 }
+
 
 export function updateTaskStatus(taskId: string, status: Task["status"]): void {
   const all = getTasks();
@@ -1157,6 +1184,10 @@ export interface AddTaskInput {
   assigned_to: string;
   /** Optional override; otherwise inferred from project + discipline. */
   due_date?: string;
+  /** Conversion Engine cycle position. When set, the engagement portal
+   * bridge groups the task into the matching month + week. Tasks created
+   * outside the CE flow (ad-hoc tickets, bugs) leave this undefined. */
+  cycle?: { month: 1 | 2 | 3; week: 1 | 2 | 3 | 4 };
 }
 
 export function addTask(input: AddTaskInput): Task {
@@ -1180,6 +1211,7 @@ export function addTask(input: AddTaskInput): Task {
     status: "todo",
     due_date: dueDate,
     created_at: new Date().toISOString(),
+    cycle: input.cycle,
   };
   const all = getTasks();
   write(LS_TASKS, [...all, task]);

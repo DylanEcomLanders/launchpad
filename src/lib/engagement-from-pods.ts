@@ -264,6 +264,21 @@ export function clientToEngagement(client: Client): MockEngagement {
   const kind = kindFromTier(client.retainer_tier);
   const { customDeliverables, deliverables, wins, activity } =
     tasksToEngagementParts(client, startDate, kind);
+  /* Wins: manual entries on the Client row + auto-derived from task winners.
+   * Dedupe by id so a winner that's also been manually flagged shows once. */
+  const manualWins: EngagementWin[] = (client.wins ?? []).map((w) => ({
+    id: w.id,
+    shippedAtDay: w.shippedAtDay,
+    title: w.title,
+    metric: w.metric,
+    notes: w.notes,
+  }));
+  const seenWinIds = new Set(wins.map((w) => w.id));
+  const combinedWins = [
+    ...wins,
+    ...manualWins.filter((w) => !seenWinIds.has(w.id)),
+  ];
+
   return {
     id: client.id,
     brand: client.name,
@@ -274,7 +289,7 @@ export function clientToEngagement(client: Client): MockEngagement {
     currentDay: daysSince(startDate),
     podNumber,
     kind,
-    brief: {},
+    brief: client.brief ?? {},
     metrics: {
       cvrBaseline: client.cvr_baseline,
       cvrCurrent: client.cvr_current,
@@ -282,7 +297,7 @@ export function clientToEngagement(client: Client): MockEngagement {
       aovCurrent: client.aov_current,
       metricsUpdatedAt: client.metrics_updated_at,
     },
-    wins,
+    wins: combinedWins,
     deliverables,
     customDeliverables,
     assets: [],

@@ -385,9 +385,18 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
 
   const handleSaveBriefField = (key: keyof EngagementBrief) => {
     const trimmed = briefDraft.trim();
-    setBrief((prev) => ({ ...prev, [key]: trimmed || undefined }));
+    const nextBrief: EngagementBrief = { ...brief, [key]: trimmed || undefined };
+    setBrief(nextBrief);
     setEditingBriefField(null);
     setBriefDraft("");
+    /* Persist back to the pods-v2 Client row so the brief survives a
+     * reload + shows up on every device. Falls through silently when this
+     * isn't a pods-v2 Client (e.g. a localStorage-only engagement created
+     * before the bridge landed). */
+    import("@/lib/pods-v2/data").then(({ getClientById, updateClientBrief }) => {
+      const exists = getClientById(engagement.id);
+      if (exists) updateClientBrief(engagement.id, nextBrief);
+    });
   };
 
   const startEditingBriefField = (key: keyof EngagementBrief) => {
@@ -462,6 +471,78 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
     ]);
     setAddingDeliverableIn(null);
     setNewDeliverableDraft({ name: "", owner: "Pod", dueDay: "" });
+
+    /* Write back: if this engagement is a pods-v2 Client, also create
+     * the matching pod Task so the pod board picks it up. Skipped silently
+     * for localStorage-only engagements. */
+    import("@/lib/pods-v2/data").then(
+      ({ getClientById, getProjectsForClient, createProject, addTask, getPodById }) => {
+        const client = getClientById(engagement.id);
+        if (!client) return;
+        const pod = getPodById(client.pod_id);
+        if (!pod) return;
+
+        /* Find or create a Project for this client + cycle. We use one
+         * Project per cycle as a rough grouping; refine later if a cycle
+         * spans multiple parallel builds. */
+        let project = getProjectsForClient(client.id).find(
+          (p) => p.kickoff_date === engagement.startDate,
+        );
+        if (!project) {
+          project = createProject({
+            name: `${client.name} · Month ${newItem.cycle}`,
+            client_id: client.id,
+            pod_id: client.pod_id,
+            bucket: engagement.bucket ?? "Bespoke",
+            kickoff_date: engagement.startDate,
+            is_rush: false,
+            pages: [],
+          });
+        }
+
+        /* Map engagement owner → pods-v2 discipline + assigned PodMember.
+         * Design → primary_designer · Pod → primary_dev · CRO → cro_lead.
+         * Falls back to the first member with that role on the pod. */
+        const roleMap: Record<string, string> = {
+          Design: "primary_designer",
+          Pod: "primary_dev",
+          CRO: "cro_lead",
+          PM: "primary_designer",
+          Dylan: "primary_dev",
+        };
+        const targetRole = roleMap[newItem.owner] ?? "primary_dev";
+        const member = pod.members.find((m) => m.role === targetRole) ?? pod.members[0];
+        const discipline =
+          newItem.owner === "Design"
+            ? "design"
+            : newItem.owner === "CRO"
+              ? "strategy"
+              : "development";
+
+        /* Compute due_date from engagement startDate + dueDay working days. */
+        const due = new Date(engagement.startDate);
+        if (engagement.kind === "bucket") {
+          let added = 1;
+          while (added < newItem.dueDay) {
+            due.setDate(due.getDate() + 1);
+            const d = due.getDay();
+            if (d !== 0 && d !== 6) added++;
+          }
+        } else {
+          due.setDate(due.getDate() + (newItem.dueDay - 1));
+        }
+
+        addTask({
+          project_id: project.id,
+          title: newItem.name,
+          type: "core_deliverable",
+          discipline: discipline as "design" | "development" | "strategy",
+          assigned_to: member?.id ?? "",
+          due_date: due.toISOString().slice(0, 10),
+          cycle: { month: newItem.cycle, week: newItem.weekInCycle },
+        });
+      },
+    );
   };
 
   return (

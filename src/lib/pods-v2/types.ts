@@ -80,6 +80,46 @@ export interface Client {
   aov_current?: number;
   /** ISO timestamp of when CVR/AOV were last updated. */
   metrics_updated_at?: string;
+  /** Editable client brief snapshot. Populated initially from the
+   * OnboardingSubmission when an engagement is spawned and decoupled
+   * thereafter — PMs edit per-client without mutating the original
+   * intake record. Surfaces in the /engagements Brief panel. */
+  brief?: ClientBrief;
+  /** Wins log — what shipped and what it moved. Auto-derived entries
+   * (test winners) are added by the Tasks bridge; manual entries for
+   * non-test ships can also be appended here. */
+  wins?: ClientWin[];
+  /** YYYY-MM-DD kickoff Monday. Authoritative when there are no Projects
+   * yet (single source for the engagement startDate). */
+  kickoff_date?: string;
+}
+
+/** 14-field client brief snapshot, intentionally the same keys as the
+ * /engagements Brief panel so the bridge is a 1:1 read. */
+export interface ClientBrief {
+  websiteUrl?: string;
+  shopifyUrl?: string;
+  primaryContact?: string;
+  timezone?: string;
+  primaryGoal?: string;
+  successMetric?: string;
+  timelineExpectation?: string;
+  toneOfVoice?: string;
+  wordsToAvoid?: string;
+  usps?: string;
+  valueProps?: string;
+  targetCustomer?: string;
+  competitors?: string;
+  challenges?: string;
+  notes?: string;
+}
+
+export interface ClientWin {
+  id: string;
+  shippedAtDay: number;
+  title: string;
+  metric?: string;
+  notes?: string;
 }
 
 /** Headline scope of each retainer tier. Shown on client cards. */
