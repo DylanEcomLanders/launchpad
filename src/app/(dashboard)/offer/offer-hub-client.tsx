@@ -24,15 +24,16 @@ interface Tier {
   retainers: string;
   price: string;
   value: number;
+  anchor: string;
   note: string;
 }
 
 const TIERS: Tier[] = [
-  { step: 1, retainers: "0–4 retainers", price: "£8K", value: 8000, note: "Current floor — lead with this." },
-  { step: 2, retainers: "5 retainers", price: "£10K", value: 10000, note: "Capacity tightening." },
-  { step: 3, retainers: "10 retainers", price: "£15K", value: 15000, note: "Waitlist begins." },
-  { step: 4, retainers: "15 retainers", price: "£20K", value: 20000, note: "Selective intake." },
-  { step: 5, retainers: "20 retainers", price: "£25K", value: 25000, note: "Premium-only." },
+  { step: 1, retainers: "0–4 retainers", price: "£8K", value: 8000, anchor: "£12K", note: "Current floor — lead with this." },
+  { step: 2, retainers: "5 retainers", price: "£10K", value: 10000, anchor: "£15K", note: "Capacity tightening." },
+  { step: 3, retainers: "10 retainers", price: "£15K", value: 15000, anchor: "£20K", note: "Waitlist begins." },
+  { step: 4, retainers: "15 retainers", price: "£20K", value: 20000, anchor: "£25K", note: "Selective intake." },
+  { step: 5, retainers: "20 retainers", price: "£25K", value: 25000, anchor: "£35K", note: "Premium-only." },
 ];
 
 interface SectionTile {
@@ -178,15 +179,21 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
             </p>
           </div>
           {/* Anchor */}
-          <div className="rounded-lg border border-[#E5E5EA] bg-[#FAFAFA] p-5">
+          <div
+            className={`rounded-lg border bg-[#FAFAFA] p-5 transition-all ${
+              isPreviewing ? "border-[#00C853] ring-2 ring-[#00C853]/30" : "border-[#E5E5EA]"
+            }`}
+          >
             <div className="flex items-baseline justify-between mb-3">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
                 The anchor
               </p>
-              <p className="text-[10px] font-medium text-[#999]">Quote alongside</p>
+              <p className="text-[10px] font-medium text-[#999]">
+                {isPreviewing ? "Previewing" : "Quote alongside"}
+              </p>
             </div>
             <p className="text-3xl font-semibold tracking-tight text-[#1B1B1B]">
-              £12K<span className="text-sm font-normal text-[#999] ml-1">/mo</span>
+              {activeTier.anchor}<span className="text-sm font-normal text-[#999] ml-1">/mo</span>
             </p>
             <p className="text-[12px] leading-snug text-[#666] mt-2">
               Same system, more of it. 48h design / 5d build, dedicated strategist, ad-to-page
@@ -198,8 +205,8 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
           </div>
         </div>
         <p className="text-[11px] text-[#999] mt-2">
-          No tiers. No T1/T2. £12K exists so the buy-in feels like the deal — never quote it alone.
-          Bigger scopes price upward naturally.
+          No tiers. No T1/T2. The anchor ({activeTier.anchor}) exists so the buy-in feels like
+          the deal, never quote it alone. Bigger scopes price upward naturally.
         </p>
       </section>
 
