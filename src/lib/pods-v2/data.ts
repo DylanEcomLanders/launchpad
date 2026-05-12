@@ -1170,10 +1170,19 @@ export function reassignTask(taskId: string, memberId: string): void {
 
 export function deleteTask(taskId: string): void {
   const all = getTasks();
-  write(
+  /* Explicit Supabase delete — the collection mirror is additive only
+   * (see sync.ts), so genuine removals have to call this directly to
+   * propagate. localStorage is updated first as the always-correct
+   * cache; Supabase delete is fire-and-forget. */
+  localStorage.setItem(
     LS_TASKS,
-    all.filter((t) => t.id !== taskId),
+    JSON.stringify(all.filter((t) => t.id !== taskId)),
   );
+  if (typeof window !== "undefined") {
+    import("./sync").then(({ mirrorDeleteFromSupabase }) => {
+      mirrorDeleteFromSupabase("pods_v2_tasks", [taskId]);
+    });
+  }
 }
 
 export interface AddTaskInput {

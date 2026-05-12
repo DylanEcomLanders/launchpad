@@ -29,39 +29,52 @@ export const POD_KEY_TO_TABLE: Record<string, string> = {
   "launchpad-pods-v2-cro-leads": "pods_v2_cro_leads",
 };
 
-/** Mirror an entire collection to Supabase. Upserts everything in
- * `items` and deletes any rows on the server whose id isn't present.
- * Same semantics as createStore.saveAll — but standalone so it can
- * be called from inside the sync `write` helper. */
+/** Mirror an entire collection to Supabase — ADDITIVE ONLY.
+ *
+ * Upserts every row in `items`. Does NOT delete Supabase rows whose id
+ * isn't in `items`. The previous version did, which meant any browser
+ * with a stale or empty localStorage cache would wipe other clients'
+ * data the moment it wrote a single row. We learned this the hard way
+ * on 2026-05-12 — a verification run with a cleared local cache caused
+ * deletion of real pod data on the cloud. Never again.
+ *
+ * Explicit deletes go through mirrorDeleteFromSupabase(), called only
+ * by the small number of genuine delete operations in data.ts. The
+ * collection-mirror path stays additive so a partial local snapshot
+ * never destroys cloud state. */
 export async function mirrorToSupabase(
   table: string,
   items: Array<Record<string, unknown> & { id: string }>,
 ): Promise<void> {
   if (!isSupabaseConfigured()) return;
   try {
-    const keepIds = new Set(items.map((i) => i.id));
-    const { data: existing } = await supabase.from(table).select("id");
-    if (existing) {
-      const toDelete = (existing as { id: string }[])
-        .map((r) => r.id)
-        .filter((id) => !keepIds.has(id));
-      if (toDelete.length > 0) {
-        await supabase.from(table).delete().in("id", toDelete);
-      }
-    }
     const rows = items.map((item) => {
       const { id, ...rest } = item;
       return { id, data: rest, updated_at: new Date().toISOString() };
     });
-    if (rows.length > 0) {
-      // Chunk to stay well under any payload limits.
-      const CHUNK = 200;
-      for (let i = 0; i < rows.length; i += CHUNK) {
-        await supabase.from(table).upsert(rows.slice(i, i + CHUNK));
-      }
+    if (rows.length === 0) return;
+    /* Chunk to stay well under any payload limits. */
+    const CHUNK = 200;
+    for (let i = 0; i < rows.length; i += CHUNK) {
+      await supabase.from(table).upsert(rows.slice(i, i + CHUNK));
     }
   } catch {
-    // Silent — localStorage already saved.
+    /* Silent — localStorage already saved. */
+  }
+}
+
+/** Explicitly delete rows from Supabase by id. Use this when an item is
+ * genuinely removed (deleteTask, deleteBlocker, etc.) — never as a
+ * passive side-effect of a cache diff. */
+export async function mirrorDeleteFromSupabase(
+  table: string,
+  ids: string[],
+): Promise<void> {
+  if (!isSupabaseConfigured() || ids.length === 0) return;
+  try {
+    await supabase.from(table).delete().in("id", ids);
+  } catch {
+    /* Silent — localStorage already saved. */
   }
 }
 
