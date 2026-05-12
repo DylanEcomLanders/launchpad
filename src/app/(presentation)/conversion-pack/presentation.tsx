@@ -1422,7 +1422,7 @@ export function SalesDeckPresentation({
       />
 
       {/* Slide */}
-      <div className="relative z-10 min-h-screen flex items-center justify-center px-10 md:px-24 py-8">
+      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 sm:px-6 md:px-24 py-6 md:py-8">
         <div className="max-w-5xl w-full relative">
           <article
             key={index}
@@ -1476,7 +1476,7 @@ export function SalesDeckPresentation({
         </button>
       </div>
 
-      <div className="fixed top-6 right-6 z-20 text-[10px] font-medium tracking-wider uppercase text-[#BBB]">
+      <div className="hidden md:block fixed top-6 right-6 z-20 text-[10px] font-medium tracking-wider uppercase text-[#BBB]">
         ← → arrow keys to navigate
       </div>
 
@@ -5010,6 +5010,179 @@ export function SalesDeckPresentation({
           height: 8px;
           border-radius: 50%;
           background: #00C853;
+        }
+
+        /* ─────────── Mobile ─────────── */
+        @media (max-width: 768px) {
+          /* Hide noisy backdrop on mobile */
+          .cover-backdrop { display: none !important; }
+
+          /* Base typography */
+          .deck-slide h1 { font-size: 2.25rem; line-height: 1.05; margin-bottom: 1rem; }
+          .deck-slide h2 { font-size: 1.6rem; line-height: 1.1; margin-bottom: 1.25rem; }
+          .deck-slide h3 { font-size: 0.95rem; margin-bottom: 0.75rem; }
+          .deck-slide p { font-size: 0.95rem; line-height: 1.55; margin-bottom: 0.85rem; }
+          .deck-slide ul { margin: 0.75rem 0; }
+          .deck-slide ul li { font-size: 0.95rem; padding-left: 1.1rem; margin-bottom: 0.5rem; }
+          .deck-slide blockquote { padding-left: 0.9rem; margin: 1rem 0; }
+          .deck-slide > img, .deck-slide p > img { margin: 0 auto 1.25rem; }
+
+          /* Shared kicker / foot */
+          .slide-kicker { font-size: 0.62rem !important; margin: 0 0 0.85rem 0 !important; letter-spacing: 0.2em; }
+          .slide-foot { margin-top: 1.5rem !important; font-size: 0.85rem !important; }
+          .slide-foot-emphasis { font-size: 0.95rem !important; }
+
+          /* Cover slide v2 */
+          .slide-cover-v2 { gap: 1.5rem; min-height: 70vh; }
+          .cover-v2-headline { font-size: 2.25rem !important; line-height: 1.05 !important; max-width: 100%; margin: 0 0 1rem 0 !important; }
+          .cover-v2-sub { font-size: 1rem !important; line-height: 1.4 !important; max-width: 100%; }
+          .cover-v2-kicker { font-size: 0.6rem !important; margin: 0 0 0.9rem 0 !important; }
+          .cover-v2-foot { font-size: 0.58rem; letter-spacing: 0.2em; flex-wrap: wrap; }
+
+          /* CE logo */
+          .deck-slide .ce-logo { gap: 1rem; margin: 0 auto 1rem; }
+          .deck-slide .ce-logo-mark { width: 64px; height: 64px; }
+          .deck-slide .ce-logo-wordmark { width: 180px; max-width: 70vw; }
+
+          /* Calc slide */
+          .calc-v2-headline { font-size: 1.55rem !important; line-height: 1.1 !important; }
+          .calc-v2-sub { font-size: 0.9rem !important; margin: 0 0 1.5rem 0 !important; }
+          .calc-v2-body { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
+          .calc-v2-sliders { gap: 1rem; }
+          .calc-v2-values-row-hero { padding: 1rem !important; }
+          .calc-v2-values-amount-hero { font-size: 1.6rem !important; }
+          .calc-v2-values-arrow { width: 1.4rem; height: 1.4rem; }
+          .calc-v2-values-arrow svg { width: 0.9rem; height: 0.9rem; }
+          .calc-out-value { font-size: 2rem; }
+          .calc-out-block-big .calc-out-value { font-size: 3rem; }
+          .slide-calc-body { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
+          .calc-v2-output-vis-axis { grid-template-columns: 1fr !important; gap: 0.75rem; }
+          .calc-v2-output-compare { grid-template-columns: 1fr !important; gap: 0.75rem; }
+          .rev-dot-bars { grid-template-columns: 1fr !important; gap: 0.5rem; }
+          .rev-bucket-cards { flex-direction: column; gap: 0.75rem; }
+          .rev-bucket-card { padding: 1rem; }
+          .rev-bucket-card-value { font-size: 1.5rem; }
+
+          /* Slider */
+          .slider-label { font-size: 0.65rem; letter-spacing: 0.16em; }
+          .slider-value { font-size: 0.9rem; }
+          .slider-row-head { margin-bottom: 0.45rem; }
+
+          /* ROI slide */
+          .roi-v2-headline { font-size: 1.55rem !important; line-height: 1.1 !important; }
+          .roi-v2-sub { font-size: 0.9rem !important; margin: 0 0 1.5rem 0 !important; }
+          .roi-v2-cards { grid-template-columns: 1fr !important; gap: 1rem !important; }
+          .roi-v2-card { padding: 1.1rem; }
+          .roi-v2-card-value { font-size: 1.85rem; }
+          .roi-v2-card-arrow { width: 1.6rem; height: 1.6rem; }
+          .roi-v2-card-arrow svg { width: 1rem; height: 1rem; }
+          .roi-v2-summary { grid-template-columns: 1fr !important; gap: 1rem !important; }
+          .roi-row { grid-template-columns: 1fr !important; gap: 0.4rem !important; }
+          .roi-summary { grid-template-columns: 1fr !important; }
+          .roi-v2-pills { flex-wrap: wrap; gap: 0.5rem; }
+
+          /* Leak / What / Stack rows */
+          .what-funnel-header,
+          .what-funnel-row { grid-template-columns: 1fr !important; gap: 0.4rem !important; }
+          .what-pillars { grid-template-columns: 1fr 1fr !important; gap: 0.75rem !important; }
+          .funnel-row { grid-template-columns: 1fr !important; gap: 0.4rem !important; padding: 0.75rem 0; }
+          .leak-stats { grid-template-columns: 1fr !important; gap: 0.75rem !important; }
+          .leak-v2-headline,
+          .leak-v3-headline { font-size: 1.55rem !important; line-height: 1.1 !important; }
+          .leak-bar-wrap { flex-wrap: wrap; }
+
+          /* Partner / Stack diagram */
+          .stack-row { grid-template-columns: 1fr !important; gap: 0.5rem !important; margin: 0 0 1rem !important; }
+          .stack-row > .stack-arrow,
+          .stack-row > svg { display: none; }
+          .stack-node { padding: 1rem; }
+          .stack-label { font-size: 1.4rem !important; }
+          .stack-sub { font-size: 0.85rem !important; margin: 0 0 1rem 0 !important; }
+          .partner-v2-satellites { grid-template-columns: 1fr !important; gap: 0.75rem !important; }
+          .partner-v2-hero-grid { grid-template-columns: 1fr !important; gap: 0.5rem !important; }
+          .partner-row { grid-template-columns: 1fr !important; gap: 0.75rem !important; }
+
+          /* Scope */
+          .scope-v2-grid,
+          .scope-grid { grid-template-columns: 1fr !important; gap: 0.75rem !important; }
+          .scope-v2-orbit-stage {
+            height: auto !important;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.75rem;
+            margin: 1.25rem auto 0 !important;
+            max-width: 100% !important;
+          }
+          .scope-v2-orbit-lines { display: none !important; }
+          .scope-v2-orbit-hub {
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            transform: none !important;
+            width: 5rem !important;
+            height: 5rem !important;
+            padding: 0.75rem !important;
+            margin: 0 auto 0.5rem !important;
+          }
+          .scope-v2-orbit-hub::before { display: none; }
+          .scope-v2-orbit-hub-glow { display: none !important; }
+          .scope-v2-orbit-hub-mark { width: 2.5rem !important; height: 2.5rem !important; }
+          .scope-v2-orbit-node {
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            transform: none !important;
+            width: 100% !important;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.75rem !important;
+            text-align: left !important;
+            padding: 0.6rem 0.75rem;
+            border: 1px solid #E5E5EA;
+            border-radius: 10px;
+            background: #FAFAFA;
+          }
+          .scope-v2-orbit-node-badge { width: 2.25rem !important; height: 2.25rem !important; flex-shrink: 0; }
+          .scope-v2-orbit-subnode { display: none !important; }
+
+          /* Rhythm */
+          .rhythm-v2-headline { font-size: 1.55rem !important; line-height: 1.1 !important; }
+          .rhythm-v2-sub { font-size: 0.9rem !important; }
+          .rhythm-v2-row { grid-template-columns: 1fr !important; gap: 0.5rem !important; }
+          .rhythm-v2-row > svg,
+          .rhythm-v2-row-arrow { display: none; }
+          .rhythm-v2-card { padding: 1rem; }
+          .rhythm-track { grid-template-columns: 1fr !important; gap: 1rem !important; }
+          .rhythm-line { display: none; }
+
+          /* Proof */
+          .proof-v2-grid,
+          .proof-grid { grid-template-columns: 1fr !important; gap: 0.75rem !important; }
+
+          /* Compare */
+          .compare-v2-row { grid-template-columns: 1fr !important; gap: 0.75rem !important; }
+          .compare-row { grid-template-columns: 1fr !important; gap: 0.5rem !important; }
+          .compare-stack { grid-template-columns: 1fr !important; }
+          .benefits-grid { grid-template-columns: 1fr !important; gap: 0.75rem !important; }
+
+          /* Next step */
+          .next-v2-row,
+          .next-hero { grid-template-columns: 1fr !important; gap: 1rem !important; }
+          .next-cal-head,
+          .next-cal-body { gap: 4px; }
+          .next-foot-secondary { font-size: 0.78rem !important; }
+        }
+
+        @media (max-width: 480px) {
+          .deck-slide h1 { font-size: 1.9rem; }
+          .cover-v2-headline { font-size: 1.9rem !important; }
+          .calc-v2-headline,
+          .roi-v2-headline,
+          .leak-v2-headline,
+          .leak-v3-headline,
+          .rhythm-v2-headline { font-size: 1.4rem !important; }
         }
       `}</style>
     </div>
