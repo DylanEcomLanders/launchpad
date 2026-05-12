@@ -20,6 +20,7 @@ import {
   ArchiveBoxIcon,
   WrenchScrewdriverIcon,
   PuzzlePieceIcon,
+  Squares2X2Icon,
 } from "@heroicons/react/24/solid";
 import { LogoMark } from "@/components/logo";
 import { AppSwitcher } from "@/components/app-switcher";
@@ -166,6 +167,11 @@ const podsItem = {
   label: "Pods",
   href: "/pods-v2",
   icon: <UserGroupIcon className="size-4" />,
+};
+const engagementsItem = {
+  label: "Clients",
+  href: "/engagements",
+  icon: <Squares2X2Icon className="size-4" />,
 };
 const agentsItem = {
   label: "Agents",
@@ -428,6 +434,7 @@ export function Sidebar() {
           <div className="px-3 mb-1 mt-2 space-y-0.5">
             {renderTopLink(homeItem)}
             {renderTopLink(offerItem)}
+            {renderTopLink(engagementsItem)}
             {renderTopLink(podsItem)}
           </div>
 
