@@ -300,7 +300,7 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
           <div className="md:col-span-2">
             <RevenueProjectorWidget retainer={activeTier.value} />
           </div>
-          <Link href="/sales-deck" className="block h-full group">
+          <Link href="/conversion-pack" className="block h-full group">
             <div className="relative rounded-lg overflow-hidden border border-[#1B1B1B] bg-[#0a0a0a] h-full flex flex-col hover:shadow-[var(--shadow-soft)] transition-all duration-150">
               <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
                 <span className="text-[9px] font-semibold uppercase tracking-wider text-white/45 bg-white/5 backdrop-blur-sm px-1.5 py-0.5 rounded">

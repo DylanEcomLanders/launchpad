@@ -973,13 +973,13 @@ function ScopeGridSlide() {
         {items.flatMap((it, idx) => {
           const angle = (idx / items.length) * Math.PI * 2 - Math.PI / 2;
           const count = it.subs.length;
-          const subSpacing = 0.26;
+          const subSpacing = 0.22;
           return it.subs.map((sub, sIdx) => {
             const offset = (sIdx - (count - 1) / 2) * subSpacing;
             const subAngle = angle + offset;
-            const stagger = sIdx % 2 === 0 ? 0 : 4;
-            const subRx = 50 + stagger;
-            const subRy = 53 + stagger;
+            const stagger = sIdx % 2 === 0 ? 0 : 3;
+            const subRx = 43 + stagger;
+            const subRy = 46 + stagger;
             const sx = 50 + subRx * Math.cos(subAngle);
             const sy = 50 + subRy * Math.sin(subAngle);
             return (
@@ -3888,9 +3888,10 @@ export function SalesDeckPresentation({
         .scope-v2-orbit-stage {
           position: relative;
           width: 100%;
-          max-width: 42rem;
+          max-width: 48rem;
           height: 32rem;
           margin: 2rem auto 0;
+          overflow: visible;
         }
         .scope-v2-orbit-lines {
           position: absolute;

@@ -37,6 +37,16 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-64",
+    date: "12 May 2026",
+    version: "0.42.1",
+    title: "Conversion Pack rename + orbit diagram fit fix",
+    changes: [
+      { type: "improved", text: "Sales deck route renamed from /sales-deck to /conversion-pack so the URL reads cleanly when shared with leads. Internal links on the dashboard tile and the /offer hub Deck card both updated. Permanent 301 redirect added from /sales-deck so any links already in the wild keep working" },
+      { type: "fixed", text: "Slide 6 (Monthly scope) orbit diagram sub-label pills no longer clip on MacBook Air 15 / sub-1440 viewports. Root cause: sub-nodes were positioned at radius 50/54% of the orbit stage, which with nowrap pill text extended past the stage's right and left bounds. Stage max-width bumped 42rem to 48rem, sub-node radii pulled in to 43/46, stagger reduced from 4 to 3, radial spacing tightened from 0.26 to 0.22 rad. Every sub-label ('Funnel audits', 'Components', 'USP framing', 'Stat-sig analysis' etc.) now sits fully inside the slide's content width with breathing room left over" },
+    ],
+  },
+  {
     id: "cl-63",
     date: "11 May 2026",
     version: "0.42.0",

@@ -20,6 +20,11 @@ const nextConfig: NextConfig = {
         destination: "/pricing",
         permanent: true,
       },
+      {
+        source: "/sales-deck",
+        destination: "/conversion-pack",
+        permanent: true,
+      },
     ];
   },
 };
