@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { onboardingStore, type OnboardingSubmission } from "@/lib/onboarding";
 import { getPortals, createPortal, updatePortal } from "@/lib/portal/data";
 import type { PortalData, ScopeItem } from "@/lib/portal/types";
+import { spawnEngagementFromOnboarding } from "@/lib/engagement-spawn";
 import Link from "next/link";
 import {
   CheckCircleIcon,
@@ -592,14 +593,40 @@ export default function OnboardingInboxPage() {
                     {allChecked && (
                       <div className="space-y-2">
                         <button
-                          onClick={handleCreateNewPortal}
+                          onClick={async () => {
+                            setSaving(true);
+                            try {
+                              const result = spawnEngagementFromOnboarding(selected);
+                              await updateSubmission(selected.id, {
+                                status: "approved",
+                                assigned_at: new Date().toISOString(),
+                                assigned_by: "pm",
+                              });
+                              router.push(`/engagements/${result.clientId}`);
+                            } catch (err) {
+                              console.error("Failed to spawn engagement:", err);
+                            }
+                            setSaving(false);
+                          }}
                           disabled={saving}
                           className="w-full flex items-center gap-3 px-4 py-3 bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
                         >
                           <svg className="size-4 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
                           <div className="text-left">
-                            <p className="text-sm font-semibold">{saving ? "Creating..." : "Create New Portal"}</p>
-                            <p className="text-[10px] text-white/50">Blank portal with brief attached</p>
+                            <p className="text-sm font-semibold">{saving ? "Creating..." : "Create Client Engagement"}</p>
+                            <p className="text-[10px] text-white/50">Spawns Client + Project + brief on the pod board, opens at /engagements</p>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={handleCreateNewPortal}
+                          disabled={saving}
+                          className="w-full flex items-center gap-3 px-4 py-3 bg-white border border-[#E5E5EA] text-[#1B1B1B] rounded-lg hover:bg-[#F5F5F5] transition-colors disabled:opacity-50"
+                        >
+                          <svg className="size-4 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
+                          <div className="text-left">
+                            <p className="text-sm font-semibold">{saving ? "Creating..." : "Create Legacy Portal"}</p>
+                            <p className="text-[10px] text-[#999]">Old client portal — kept while migration is in flight</p>
                           </div>
                         </button>
 

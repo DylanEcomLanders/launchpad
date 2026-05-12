@@ -118,16 +118,14 @@ export function spawnEngagementFromOnboarding(
 
   let projectId: string | null = null;
   if (pages.length > 0) {
-    const pts = pages.reduce((sum, p) => sum + POINT_VALUE[p.weight], 0);
-    const bucket = bucketFromPoints(pts);
     const project = createPodsProject({
       name: `${submission.company_name} · Initial build`,
       client_id: client.id,
       pod_id: podId,
-      bucket,
-      kickoff_date: client.kickoff_date ?? nextMonday(),
-      is_rush: false,
       pages,
+      signoff_date: client.kickoff_date ?? nextMonday(),
+      is_rush: false,
+      brand_warm: client.brand_warm,
     });
     projectId = project.id;
   }

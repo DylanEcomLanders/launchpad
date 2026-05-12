@@ -137,6 +137,7 @@ function taskToCustomDeliverable(
     stage,
     weekInCycle: weekInCycleFromTask(task),
     owner: ownerFromTask(task, member),
+    assigneeName: member?.name,
     dueDay: workingDaysBetween(startDate, task.due_date),
     testResult,
   };

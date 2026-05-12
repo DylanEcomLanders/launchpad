@@ -473,18 +473,27 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
     setNewDeliverableDraft({ name: "", owner: "Pod", dueDay: "" });
 
     /* Write back: if this engagement is a pods-v2 Client, also create
-     * the matching pod Task so the pod board picks it up. Skipped silently
-     * for localStorage-only engagements. */
+     * the matching pod Task(s) so the pod board picks it up. Build /
+     * design / development stages create a paired design + dev task pair
+     * (mirrors how createProject seeds CE retainers). Test / audit
+     * stages create a single task. Skipped silently for localStorage-
+     * only engagements. */
     import("@/lib/pods-v2/data").then(
-      ({ getClientById, getProjectsForClient, createProject, addTask, getPodById }) => {
+      ({
+        getClientById,
+        getProjectsForClient,
+        createProject,
+        addTask,
+        addPairedTasks,
+        podPointsForMonth,
+        getPodById,
+      }) => {
         const client = getClientById(engagement.id);
         if (!client) return;
         const pod = getPodById(client.pod_id);
         if (!pod) return;
 
-        /* Find or create a Project for this client + cycle. We use one
-         * Project per cycle as a rough grouping; refine later if a cycle
-         * spans multiple parallel builds. */
+        /* Find or create a Project for this client + cycle. */
         let project = getProjectsForClient(client.id).find(
           (p) => p.kickoff_date === engagement.startDate,
         );
@@ -493,54 +502,110 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
             name: `${client.name} · Month ${newItem.cycle}`,
             client_id: client.id,
             pod_id: client.pod_id,
-            bucket: engagement.bucket ?? "Bespoke",
-            kickoff_date: engagement.startDate,
-            is_rush: false,
             pages: [],
+            signoff_date: engagement.startDate,
+            is_rush: false,
+            brand_warm: client.brand_warm,
           });
         }
 
-        /* Map engagement owner → pods-v2 discipline + assigned PodMember.
-         * Design → primary_designer · Pod → primary_dev · CRO → cro_lead.
-         * Falls back to the first member with that role on the pod. */
-        const roleMap: Record<string, string> = {
-          Design: "primary_designer",
-          Pod: "primary_dev",
-          CRO: "cro_lead",
-          PM: "primary_designer",
-          Dylan: "primary_dev",
-        };
-        const targetRole = roleMap[newItem.owner] ?? "primary_dev";
-        const member = pod.members.find((m) => m.role === targetRole) ?? pod.members[0];
-        const discipline =
-          newItem.owner === "Design"
-            ? "design"
-            : newItem.owner === "CRO"
-              ? "strategy"
-              : "development";
-
-        /* Compute due_date from engagement startDate + dueDay working days. */
-        const due = new Date(engagement.startDate);
-        if (engagement.kind === "bucket") {
-          let added = 1;
-          while (added < newItem.dueDay) {
-            due.setDate(due.getDate() + 1);
-            const d = due.getDay();
-            if (d !== 0 && d !== 6) added++;
+        /* Compute due_date from engagement startDate + dueDay (working
+         * days for buckets, calendar days for retainers). */
+        const dueDate = (() => {
+          const d = new Date(engagement.startDate);
+          if (engagement.kind === "bucket") {
+            let added = 1;
+            while (added < newItem.dueDay) {
+              d.setDate(d.getDate() + 1);
+              const wd = d.getDay();
+              if (wd !== 0 && wd !== 6) added++;
+            }
+          } else {
+            d.setDate(d.getDate() + (newItem.dueDay - 1));
           }
-        } else {
-          due.setDate(due.getDate() + (newItem.dueDay - 1));
-        }
+          return d.toISOString().slice(0, 10);
+        })();
 
-        addTask({
-          project_id: project.id,
-          title: newItem.name,
-          type: "core_deliverable",
-          discipline: discipline as "design" | "development" | "strategy",
-          assigned_to: member?.id ?? "",
-          due_date: due.toISOString().slice(0, 10),
-          cycle: { month: newItem.cycle, week: newItem.weekInCycle },
-        });
+        const isBuildStage =
+          newItem.stage === "build" ||
+          newItem.stage === "design" ||
+          newItem.stage === "development";
+
+        if (isBuildStage) {
+          /* Capacity check: warn if the assumed 3pt deliverable would
+           * push the pod past its 40pt monthly cap. User can bypass. */
+          const PRESUMED_POINTS = 3;
+          const currentLoad = podPointsForMonth(pod.id, newItem.cycle);
+          if (currentLoad + PRESUMED_POINTS > 40) {
+            const proceed = window.confirm(
+              `Pod ${engagement.podNumber} is at ${currentLoad}pt of 40pt this month. Adding this deliverable will push them to ${currentLoad + PRESUMED_POINTS}pt. Proceed anyway?`,
+            );
+            if (!proceed) return;
+          }
+
+          const designer = pod.members.find((m) => m.role === "primary_designer") ?? pod.members[0];
+          const dev = pod.members.find((m) => m.role === "primary_dev") ?? pod.members[1] ?? pod.members[0];
+
+          /* Design ships earlier than dev in the standard pair. For
+           * buckets, design lands mid-cycle; dev lands at the bucket's
+           * delivery Thursday. For retainers, use the user-supplied
+           * dueDay for dev and back the design up by 5 working days. */
+          const designDueDate = (() => {
+            const d = new Date(engagement.startDate);
+            if (engagement.kind === "bucket") {
+              const targetWd = Math.max(1, newItem.dueDay - 5);
+              let added = 1;
+              while (added < targetWd) {
+                d.setDate(d.getDate() + 1);
+                const wd = d.getDay();
+                if (wd !== 0 && wd !== 6) added++;
+              }
+            } else {
+              d.setDate(d.getDate() + Math.max(0, newItem.dueDay - 6));
+            }
+            return d.toISOString().slice(0, 10);
+          })();
+
+          addPairedTasks({
+            project_id: project.id,
+            label: newItem.name,
+            designer_id: designer?.id ?? "",
+            dev_id: dev?.id ?? "",
+            design_due_date: designDueDate,
+            dev_due_date: dueDate,
+            cycle: { month: newItem.cycle, week: newItem.weekInCycle },
+            points: PRESUMED_POINTS,
+          });
+        } else {
+          /* Single-task stages: test, audit. Assign to the role that
+           * matches the engagement owner. */
+          const roleMap: Record<string, string> = {
+            Design: "primary_designer",
+            Pod: "primary_dev",
+            CRO: "cro_lead",
+            PM: "primary_designer",
+            Dylan: "primary_dev",
+          };
+          const targetRole = roleMap[newItem.owner] ?? "primary_dev";
+          const member =
+            pod.members.find((m) => m.role === targetRole) ?? pod.members[0];
+          const discipline =
+            newItem.owner === "Design"
+              ? "design"
+              : newItem.owner === "CRO"
+                ? "strategy"
+                : "development";
+
+          addTask({
+            project_id: project.id,
+            title: newItem.name,
+            type: "core_deliverable",
+            discipline: discipline as "design" | "development" | "strategy",
+            assigned_to: member?.id ?? "",
+            due_date: dueDate,
+            cycle: { month: newItem.cycle, week: newItem.weekInCycle },
+          });
+        }
       },
     );
   };
@@ -956,10 +1021,26 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                           })()}
                         </div>
 
-                        {/* Owner */}
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-[#666] bg-[#F5F5F5] px-1.5 py-0.5 rounded justify-self-start">
-                          {d.owner === "Pod" ? `Pod ${engagement.podNumber}` : d.owner}
-                        </span>
+                        {/* Owner · hover shows specific assigned PodMember when known */}
+                        {(() => {
+                          const isCustomRow = stage.id !== "audit";
+                          const assigneeName = isCustomRow
+                            ? customDeliverables.find((cd) => cd.id === d.id)?.assigneeName
+                            : undefined;
+                          const tooltip = assigneeName
+                            ? `${assigneeName} · ${d.owner === "Pod" ? `Pod ${engagement.podNumber}` : d.owner}`
+                            : undefined;
+                          return (
+                            <span
+                              className={`text-[10px] font-semibold uppercase tracking-wider text-[#666] bg-[#F5F5F5] px-1.5 py-0.5 rounded justify-self-start ${
+                                assigneeName ? "cursor-help" : ""
+                              }`}
+                              title={tooltip}
+                            >
+                              {d.owner === "Pod" ? `Pod ${engagement.podNumber}` : d.owner}
+                            </span>
+                          );
+                        })()}
 
                         {/* Due date */}
                         <span className={`text-[12px] tabular-nums flex items-center gap-1.5 ${overdue ? "text-[#C62828] font-semibold" : "text-[#666]"}`}>

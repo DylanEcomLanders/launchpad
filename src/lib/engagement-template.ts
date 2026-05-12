@@ -228,6 +228,11 @@ export interface CustomDeliverable {
   stage: Exclude<StageId, "audit">;
   weekInCycle: WeekInCycle;
   owner: OwnerRole;
+  /** Optional specific assignee name — set when the deliverable came
+   * from a pods-v2 Task (resolved via PodMember.role + pod_id). Surfaces
+   * as a hover tooltip on the owner badge while the badge itself stays
+   * generic role-coloured. */
+  assigneeName?: string;
   dueDay: number;
   gates?: QAGates;
   testResult?: DeliverableTestResult;

@@ -1190,6 +1190,85 @@ export interface AddTaskInput {
   cycle?: { month: 1 | 2 | 3; week: 1 | 2 | 3 | 4 };
 }
 
+export interface AddPairedTasksInput {
+  project_id: string;
+  /** Common label for the deliverable. Becomes "Design – {label}" and
+   * "Build – {label}" on the two paired tasks. */
+  label: string;
+  designer_id: string;
+  dev_id: string;
+  design_due_date: string;
+  dev_due_date: string;
+  cycle?: { month: 1 | 2 | 3; week: 1 | 2 | 3 | 4 };
+  /** Optional points for capacity math. Counted once across the pair. */
+  points?: number;
+}
+
+/** Create paired design + dev tasks linked via paired_task_id. Mirrors
+ * the seeding pattern in createProject so engagement-portal-added build
+ * deliverables behave identically to onboarding-form-spawned ones. */
+export function addPairedTasks(input: AddPairedTasksInput): { designTaskId: string; devTaskId: string } {
+  const designId = uid();
+  const devId = uid();
+  const now = new Date().toISOString();
+  const design: Task = {
+    id: designId,
+    project_id: input.project_id,
+    title: `Design – ${input.label}`,
+    type: "core_deliverable",
+    discipline: "design",
+    assigned_to: input.designer_id,
+    status: "todo",
+    due_date: input.design_due_date,
+    created_at: now,
+    paired_task_id: devId,
+    points: input.points,
+    cycle: input.cycle,
+  };
+  const dev: Task = {
+    id: devId,
+    project_id: input.project_id,
+    title: `Build – ${input.label}`,
+    type: "core_deliverable",
+    discipline: "development",
+    assigned_to: input.dev_id,
+    status: "todo",
+    due_date: input.dev_due_date,
+    created_at: now,
+    paired_task_id: designId,
+    points: input.points,
+    cycle: input.cycle,
+  };
+  const all = getTasks();
+  write(LS_TASKS, [...all, design, dev]);
+  return { designTaskId: designId, devTaskId: devId };
+}
+
+/** Return total points loaded into a pod for a given month. Counts each
+ * paired deliverable once (sums distinct paired_task_id groups). Used by
+ * the engagement portal to warn on capacity overflow. */
+export function podPointsForMonth(podId: string, month: 1 | 2 | 3): number {
+  const podProjects = getProjectsForPod(podId).map((p) => p.id);
+  const tasks = getTasks().filter(
+    (t) => podProjects.includes(t.project_id) && t.cycle?.month === month,
+  );
+  const seen = new Set<string>();
+  let total = 0;
+  for (const t of tasks) {
+    if (!t.points) continue;
+    /* Pair dedup: skip the secondary half if we've already counted the
+     * primary. Sorting by id and only counting the lexicographically
+     * smaller id makes this deterministic. */
+    if (t.paired_task_id) {
+      const pairKey = [t.id, t.paired_task_id].sort().join("|");
+      if (seen.has(pairKey)) continue;
+      seen.add(pairKey);
+    }
+    total += t.points;
+  }
+  return total;
+}
+
 export function addTask(input: AddTaskInput): Task {
   const project = getProjects().find((p) => p.id === input.project_id);
   // Default discipline to design for revision/asset_prep, dev for bug/desktop_fix.
