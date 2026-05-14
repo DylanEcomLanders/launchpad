@@ -288,6 +288,7 @@ export function clientToEngagement(client: Client): MockEngagement {
     kind,
     onboardingSubmissionId: client.onboarding_submission_id,
     mustDos: client.must_dos,
+    notes: client.notes,
     brief: client.brief ?? {},
     metrics: {
       cvrBaseline: client.cvr_baseline,

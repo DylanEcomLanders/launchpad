@@ -110,6 +110,19 @@ export interface Client {
     dev_handoff?: MustDoGate;
     launch_prep?: MustDoGate;
   };
+  /** Timestamped notes log on the engagement. Free-text entries the PM
+   *  / pod can drop at any point ("client asked for X on Slack", "rev
+   *  round 2 landed", "blocker resolved", etc.). Newest-first when
+   *  rendered. Optional author field for when a multi-user setup wants
+   *  to attribute notes; otherwise blank reads as "team". */
+  notes?: ClientNote[];
+}
+
+export interface ClientNote {
+  id: string;
+  content: string;
+  created_at: string;
+  author?: string;
 }
 
 export interface MustDoGate {

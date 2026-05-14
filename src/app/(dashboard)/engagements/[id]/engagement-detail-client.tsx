@@ -252,11 +252,50 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
   const [wins, setWins] = useState(engagement.wins ?? []);
   const [addingWin, setAddingWin] = useState(false);
   const [winDraft, setWinDraft] = useState({ title: "", metric: "", day: "", notes: "" });
+  const [notes, setNotes] = useState<NonNullable<typeof engagement.notes>>(engagement.notes ?? []);
+  const [noteDraft, setNoteDraft] = useState("");
   const [mustDos, setMustDos] = useState<NonNullable<typeof engagement.mustDos>>(engagement.mustDos ?? {});
   const [openMustDo, setOpenMustDo] = useState<MustDoGateKey | null>(null);
   const [deleteStage, setDeleteStage] = useState<"closed" | "confirm-1" | "confirm-2">("closed");
   const [deleteTyped, setDeleteTyped] = useState("");
   const router = useRouter();
+
+  /** Stamp a timestamped note onto the engagement. Optimistic local
+   *  state update + cloud-side write through addClientNote for
+   *  pods-sourced engagements. Locally-created engagements (no Client
+   *  row) keep the note in-memory + persist to localStorage via the
+   *  existing engagement-storage shim. */
+  const handleAddNote = () => {
+    const content = noteDraft.trim();
+    if (!content) return;
+    const note = {
+      id: `note-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      content,
+      created_at: new Date().toISOString(),
+    };
+    setNotes((prev) => [note, ...prev]);
+    setNoteDraft("");
+    /* Mirror to pods-v2 Client if this engagement is pods-backed. The
+     *  pods-v2 helper stamps its own created_at + id, so we sync the
+     *  local entry to the returned note id once the write lands to keep
+     *  the IDs in lockstep across devices. */
+    import("@/lib/pods-v2/data").then(({ addClientNote, getClientById }) => {
+      if (!getClientById(engagement.id)) return;
+      const persisted = addClientNote(engagement.id, { content });
+      setNotes((prev) =>
+        prev.map((n) => (n.id === note.id ? { ...persisted } : n)),
+      );
+    }).catch((err) => console.error("[engagements] note add sync failed:", err));
+  };
+
+  const handleDeleteNote = (noteId: string) => {
+    if (!confirm("Delete this note? Can't be undone.")) return;
+    setNotes((prev) => prev.filter((n) => n.id !== noteId));
+    import("@/lib/pods-v2/data").then(({ deleteClientNote, getClientById }) => {
+      if (!getClientById(engagement.id)) return;
+      deleteClientNote(engagement.id, noteId);
+    }).catch((err) => console.error("[engagements] note delete sync failed:", err));
+  };
 
   const handleConfirmDelete = () => {
     const source = detectEngagementSource(engagement.id);
@@ -1597,6 +1636,84 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
             </div>
           );
         })()}
+      </section>
+
+      {/* Notes · timestamped log for ad-hoc context the PM / pod want
+       *  to capture: client decisions, blocker recaps, "asked for X on
+       *  Slack", etc. Persists to the pods-v2 Client.notes array for
+       *  pod-sourced engagements; locally-only engagements keep the
+       *  log in component state. */}
+      <section className="mb-6">
+        <div className="flex items-baseline justify-between mb-3">
+          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
+            Notes ({notes.length})
+          </h2>
+        </div>
+        <div className="rounded-lg border border-[#E5E5EA] bg-white">
+          <div className="p-3 border-b border-[#E5E5EA]">
+            <textarea
+              value={noteDraft}
+              onChange={(e) => setNoteDraft(e.target.value)}
+              onKeyDown={(e) => {
+                /* Cmd/Ctrl + Enter to submit, matches the rest of the
+                 *  app's free-text inputs. */
+                if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                  e.preventDefault();
+                  handleAddNote();
+                }
+              }}
+              placeholder="Drop a note (decisions, blockers, client asks). Cmd+Enter to save."
+              className="w-full text-[13px] px-3 py-2 border border-[#E5E5EA] rounded resize-y min-h-[60px] focus:outline-none focus:border-[#1B1B1B] placeholder:text-[#CCC]"
+            />
+            <div className="mt-2 flex items-center justify-end">
+              <button
+                onClick={handleAddNote}
+                disabled={!noteDraft.trim()}
+                className="text-[12px] font-semibold text-white bg-[#1B1B1B] hover:bg-black px-3 py-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Add note
+              </button>
+            </div>
+          </div>
+          {notes.length === 0 ? (
+            <p className="text-[12px] text-[#999] p-4 italic">No notes yet.</p>
+          ) : (
+            <ul className="divide-y divide-[#F0F0F0]">
+              {notes.map((n) => {
+                const dt = new Date(n.created_at);
+                const datePart = dt.toLocaleDateString("en-GB", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                });
+                const timePart = dt.toLocaleTimeString("en-GB", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+                return (
+                  <li key={n.id} className="group px-4 py-3">
+                    <div className="flex items-baseline justify-between gap-3 mb-1">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#999] tabular-nums">
+                        {datePart} · {timePart}
+                        {n.author ? ` · ${n.author}` : ""}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteNote(n.id)}
+                        className="text-[10px] text-[#CCC] hover:text-[#C62828] opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Delete note"
+                      >
+                        <TrashIcon className="size-3" />
+                      </button>
+                    </div>
+                    <p className="text-[13px] text-[#1B1B1B] whitespace-pre-wrap leading-relaxed">
+                      {n.content}
+                    </p>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
       </section>
 
       {/* Activity feed */}

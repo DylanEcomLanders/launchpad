@@ -236,6 +236,41 @@ export function addClientWin(
   write(LS_CLIENTS, next);
 }
 
+/** Append a timestamped note to the client. created_at is stamped here
+ *  so the call site doesn't need to pass it. Returns the new note so
+ *  the caller can update local state without re-reading. */
+export function addClientNote(
+  clientId: string,
+  input: { content: string; author?: string },
+): import("./types").ClientNote {
+  const note: import("./types").ClientNote = {
+    id: uid(),
+    content: input.content,
+    author: input.author,
+    created_at: new Date().toISOString(),
+  };
+  const all = getClients();
+  const next = all.map((c) =>
+    c.id === clientId ? { ...c, notes: [note, ...(c.notes ?? [])] } : c,
+  );
+  write(LS_CLIENTS, next);
+  return note;
+}
+
+/** Remove a note from a client by id. Used by the delete button on
+ *  each note row. No cloud-side delete needed because the notes are
+ *  embedded on the Client row, the full Client gets re-upserted with
+ *  the note dropped. */
+export function deleteClientNote(clientId: string, noteId: string): void {
+  const all = getClients();
+  const next = all.map((c) =>
+    c.id === clientId
+      ? { ...c, notes: (c.notes ?? []).filter((n) => n.id !== noteId) }
+      : c,
+  );
+  write(LS_CLIENTS, next);
+}
+
 // ─── Projects ───────────────────────────────────────────────────────
 
 export function getProjects(): Project[] {

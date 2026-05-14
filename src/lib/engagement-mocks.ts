@@ -68,6 +68,12 @@ export interface MockEngagement {
     dev_handoff?: import("@/lib/pods-v2/types").MustDoGate;
     launch_prep?: import("@/lib/pods-v2/types").MustDoGate;
   };
+  /** Timestamped notes on the engagement. Free-text entries the PM /
+   *  pod drops as the project moves: client asks, decisions, blockers
+   *  surfaced or resolved, etc. Newest-first on render. Threaded
+   *  through from Client.notes on the pods-v2 side; locally-created
+   *  engagements get their own log via the same shape. */
+  notes?: import("@/lib/pods-v2/types").ClientNote[];
 }
 
 /* Minimal client roster, only the three bucket example shapes (A/B/C)
