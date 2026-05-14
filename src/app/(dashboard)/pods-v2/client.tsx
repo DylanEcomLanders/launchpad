@@ -36,7 +36,7 @@ import {
   Project,
   Task,
 } from "@/lib/pods-v2/types";
-import { capacityUsed, fourWeekWindow, isMidWeekKickoff } from "@/lib/pods-v2/calc";
+import { capacityUsed, fourWeekWindow, isMidWeekKickoff, weekWindow } from "@/lib/pods-v2/calc";
 import { formatDayMonth, todayYMD } from "@/lib/dates";
 import { formatTimeInPhase } from "@/lib/task-board/phases";
 import { CapacityMeter, MemberAvatar } from "./components";
@@ -416,6 +416,20 @@ function Overview({
           const nextMonth = fourWeekWindow(nextMonthStart);
           const used = capacityUsed(projects, allTasks, thisMonth.start, thisMonth.end);
           const nextMonthUsed = capacityUsed(projects, allTasks, nextMonth.start, nextMonth.end);
+          /* Per-week load. Splits the rolling monthly view into the
+           *  current Mon-Sun window and the next, so the PM can see if
+           *  this week is overloaded even when the month overall looks
+           *  fine. Weekly cap (capacity_points_per_month / 4) is
+           *  derived inside CapacityMeter. */
+          const thisWeek = weekWindow(today);
+          const nextWeekStart = (() => {
+            const d = new Date(`${thisWeek.end}T12:00:00`);
+            d.setDate(d.getDate() + 1);
+            return d.toISOString().slice(0, 10);
+          })();
+          const nextWeek = weekWindow(nextWeekStart);
+          const thisWeekUsed = capacityUsed(projects, allTasks, thisWeek.start, thisWeek.end);
+          const nextWeekUsed = capacityUsed(projects, allTasks, nextWeek.start, nextWeek.end);
           const midWeek = projects.filter(isMidWeekKickoff).length;
           const rushCount = projects.filter(
             (p) => p.is_rush && p.status !== "shipped" && p.status !== "slipped",
@@ -465,6 +479,8 @@ function Overview({
                   total={pod.capacity_points_per_month}
                   cycleRetainers={cycleRetainers}
                   nextMonthUsed={nextMonthUsed}
+                  thisWeekUsed={thisWeekUsed}
+                  nextWeekUsed={nextWeekUsed}
                 />
               </div>
 

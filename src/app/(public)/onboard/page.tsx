@@ -224,10 +224,10 @@ export default function OnboardingFormPage() {
           <SectionHeader title="Brand & Business" />
           <Row>
             <Field label="Company / Brand Name" required>
-              <input className={inputClass} value={form.company_name} onChange={set("company_name")} placeholder="e.g., Luma Nutrition" />
+              <input className={inputClass} value={form.company_name} onChange={set("company_name")} placeholder="e.g., Ecomlanders" />
             </Field>
             <Field label="Website URL" required>
-              <input className={inputClass} value={form.website_url} onChange={set("website_url")} placeholder="e.g., https://lumanutrition.com" />
+              <input className={inputClass} value={form.website_url} onChange={set("website_url")} placeholder="e.g., https://ecomlanders.com" />
             </Field>
           </Row>
           <Field label="Brief description" required>
@@ -237,7 +237,7 @@ export default function OnboardingFormPage() {
             <textarea className={textareaClass} value={form.target_customer} onChange={set("target_customer")} placeholder="e.g., Women 25-45, health-conscious, active on Instagram..." />
           </Field>
           <Field label="Top 3 competitors (URLs or brand names)" required>
-            <textarea className={textareaClass} value={form.top_competitors} onChange={set("top_competitors")} placeholder="e.g., https://competitor1.com, Brand X, Brand Y" />
+            <textarea className={textareaClass} value={form.top_competitors} onChange={set("top_competitors")} placeholder="e.g., https://ecomlanders.com, similar brand, another" />
           </Field>
           <Field label="What are your main USPs that set you apart?" required>
             <textarea className={textareaClass} value={form.usps} onChange={set("usps")} />
@@ -252,7 +252,7 @@ export default function OnboardingFormPage() {
           {/* ── Project Specifics ── */}
           <SectionHeader title="Project Specifics" />
           <Field label="Product URL(s) — the page(s) being built or rebuilt">
-            <textarea className={textareaClass} value={form.product_url} onChange={set("product_url")} placeholder="e.g., https://store.com/products/your-product" />
+            <textarea className={textareaClass} value={form.product_url} onChange={set("product_url")} placeholder="e.g., https://ecomlanders.com/products/example" />
           </Field>
           <Row>
             <Field label="Page type — select all that apply">
@@ -274,7 +274,7 @@ export default function OnboardingFormPage() {
             <input className={inputClass} value={form.amazon_asins} onChange={set("amazon_asins")} placeholder="e.g., B09XYZ1234" />
           </Field>
           <Field label="Meta page name — so we can find running ads">
-            <input className={inputClass} value={form.meta_page_name} onChange={set("meta_page_name")} placeholder="e.g., Your Brand Name on Facebook/Meta" />
+            <input className={inputClass} value={form.meta_page_name} onChange={set("meta_page_name")} placeholder="e.g., Ecomlanders on Facebook/Meta" />
           </Field>
           <Field label="Specific direction — anything to prioritise or exclude">
             <textarea className={textareaClass} value={form.specific_direction} onChange={set("specific_direction")} placeholder="e.g., Focus on subscription push, avoid mentioning competitor X..." />
@@ -301,7 +301,7 @@ export default function OnboardingFormPage() {
           {/* ── Access & Data ── */}
           <SectionHeader title="Access & Data" />
           <Field label="Please enter your myshopify.com URL & collaborator code" required>
-            <input className={inputClass} value={form.myshopify_url} onChange={set("myshopify_url")} placeholder="e.g., your-store.myshopify.com / code: XXXX" />
+            <input className={inputClass} value={form.myshopify_url} onChange={set("myshopify_url")} placeholder="e.g., ecomlanders.myshopify.com / code: XXXX" />
           </Field>
           <Field label="Do you have analytics software set up? (Clarity, Intelligems, etc.)" required>
             <textarea className={textareaClass} value={form.analytics_software} onChange={set("analytics_software")} />

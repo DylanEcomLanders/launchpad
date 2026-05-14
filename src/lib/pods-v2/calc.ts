@@ -223,6 +223,19 @@ export function fourWeekWindow(fromYMD: string): { start: string; end: string } 
   return { start, end: formatYMD(d) };
 }
 
+/** Inclusive [start, end] YMD window covering the Mon-Sun week containing
+ *  `fromYMD`. Used for the per-week capacity stat on pod cards, which
+ *  shows this-week + next-week load alongside the monthly meter. */
+export function weekWindow(fromYMD: string): { start: string; end: string } {
+  const d = parseDate(fromYMD);
+  const dow = d.getDay();
+  const back = dow === 0 ? 6 : dow - 1;
+  d.setDate(d.getDate() - back);
+  const start = formatYMD(d);
+  d.setDate(d.getDate() + 6); // Sunday
+  return { start, end: formatYMD(d) };
+}
+
 /** True if a project is shipping in the same week as `referenceYMD`. */
 export function shipsThisWeek(project: Project, referenceYMD: string): boolean {
   const week = weekDays(referenceYMD);

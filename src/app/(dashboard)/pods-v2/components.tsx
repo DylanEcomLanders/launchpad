@@ -109,6 +109,8 @@ export function CapacityMeter({
   label,
   cycleRetainers,
   nextMonthUsed,
+  thisWeekUsed,
+  nextWeekUsed,
 }: {
   used: number;
   total: number;
@@ -122,7 +124,13 @@ export function CapacityMeter({
    * When provided, renders a thin secondary bar + label so capacity
    * planning can see the cliff before it hits. */
   nextMonthUsed?: number;
+  /** Per-week loads. Weekly cap = total / 4 (40pts/month → 10pts/week).
+   *  When provided, a tiny two-cell strip below the monthly bar shows
+   *  This week + Next week so the PM can plan around real cadence. */
+  thisWeekUsed?: number;
+  nextWeekUsed?: number;
 }) {
+  const weeklyCap = total > 0 ? total / 4 : 0;
   const pct = Math.min(100, Math.round((used / total) * 100));
   const tone =
     pct >= 100
@@ -188,11 +196,60 @@ export function CapacityMeter({
           </div>
         </div>
       )}
+      {(thisWeekUsed != null || nextWeekUsed != null) && weeklyCap > 0 && (
+        <div className="mt-2 grid grid-cols-2 gap-1.5">
+          <WeekCell label="This week" used={thisWeekUsed ?? 0} cap={weeklyCap} />
+          <WeekCell label="Next week" used={nextWeekUsed ?? 0} cap={weeklyCap} />
+        </div>
+      )}
       {cycleRetainers != null && cycleRetainers > 0 && (
         <div className="mt-1.5 text-[10px] text-emerald-700">
           {cycleRetainers} CE retainer{cycleRetainers === 1 ? "" : "s"} running · 90-day cycle queued
         </div>
       )}
+    </div>
+  );
+}
+
+/** Compact per-week capacity cell rendered inside the CapacityMeter
+ *  monthly card. Mirrors the same tone scale (emerald/amber/rose) so
+ *  this-week / next-week reads at the same glance as the headline bar. */
+function WeekCell({
+  label,
+  used,
+  cap,
+}: {
+  label: string;
+  used: number;
+  cap: number;
+}) {
+  const pct = Math.min(100, Math.round((used / cap) * 100));
+  const tone =
+    used >= cap
+      ? "bg-rose-300"
+      : used >= cap * 0.8
+        ? "bg-amber-300"
+        : "bg-emerald-300";
+  const valueTone =
+    used >= cap
+      ? "text-rose-700"
+      : used >= cap * 0.8
+        ? "text-amber-700"
+        : "text-[#1B1B1B]";
+  return (
+    <div className="rounded-md border border-[#EDEDEF] bg-white px-2 py-1.5">
+      <div className="flex items-baseline justify-between">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+          {label}
+        </span>
+        <span className="text-[11px] tabular-nums">
+          <span className={`font-semibold ${valueTone}`}>{used}</span>
+          <span className="text-[#7A7A7A]"> / {cap} pts</span>
+        </span>
+      </div>
+      <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-[#F5F5F5]">
+        <div className={`h-full ${tone} transition-all`} style={{ width: `${pct}%` }} />
+      </div>
     </div>
   );
 }

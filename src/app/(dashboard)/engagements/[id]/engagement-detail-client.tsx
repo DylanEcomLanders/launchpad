@@ -37,7 +37,6 @@ import {
   type OwnerRole,
   type QAGateKey,
   type StageId,
-  type WeekInCycle,
 } from "@/lib/engagement-template";
 import type {
   EngagementActivity,
@@ -241,8 +240,12 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
     type: string;
     label: string;
     owner: OwnerRole;
-    week: WeekInCycle;
-  }>({ type: "pdp", label: "", owner: "Pod", week: 3 });
+    /** YYYY-MM-DD. Free-pick any calendar date. Defaults to the W3
+     *  Thursday of the chosen cycle when the form opens; the PM can
+     *  override to any day (rush deliveries, mid-cycle adds, off-cadence
+     *  one-offs). dueDay + weekInCycle get derived on submit. */
+    dueDate: string;
+  }>({ type: "pdp", label: "", owner: "Pod", dueDate: "" });
   const [expandedTimeline, setExpandedTimeline] = useState<string | null>(null);
   const [intakeOpen, setIntakeOpen] = useState(true);
   const [intake, setIntake] = useState<OnboardingSubmission | null>(null);
@@ -484,25 +487,87 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
   };
 
   const viewCycleDef = ENGAGEMENT_CYCLES.find((c) => c.number === viewCycle)!;
+  /** Remove a custom (PM-added) deliverable from the engagement. Drops
+   *  the row from the stage table, clears its deliverable state, logs an
+   *  activity entry, and (for pods-v2 Clients) deletes any linked Tasks
+   *  on the pod board so the same item doesn't keep appearing there.
+   *  Audit-template rows aren't deletable, those are fixed CRO scaffolding. */
+  const handleDeleteCustomDeliverable = (deliverableId: string) => {
+    const target = customDeliverables.find((d) => d.id === deliverableId);
+    if (!target) return;
+    if (!confirm(`Remove "${target.name}" from the engagement? This drops the row and any pod-board task linked to it.`)) return;
+    setCustomDeliverables((prev) => prev.filter((d) => d.id !== deliverableId));
+    setDeliverables((prev) => {
+      const next = new Map(prev);
+      next.delete(deliverableId);
+      return next;
+    });
+    setActivity((prev) => [
+      {
+        id: `act-${Date.now()}`,
+        day: currentDay,
+        actor: "You",
+        action: `Removed '${target.name}' from Month ${target.cycle} ${target.stage}`,
+      },
+      ...prev,
+    ]);
+    /* Pods-v2 mirror: remove the matching Task(s). The deliverable id
+     *  for pod-sourced clients is the Task.id (see engagement-from-pods),
+     *  so deleteTask just works. Paired design+dev tasks share a
+     *  paired_task_id, drop both halves when present. Locally-created
+     *  engagements aren't backed by pod Tasks, the import resolves to a
+     *  no-op there. */
+    import("@/lib/pods-v2/data").then(
+      ({ getTasks, deleteTask, getClientById }) => {
+        if (!getClientById(engagement.id)) return;
+        const tasks = getTasks();
+        const main = tasks.find((t) => t.id === deliverableId);
+        if (!main) return;
+        deleteTask(main.id);
+        if (main.paired_task_id) deleteTask(main.paired_task_id);
+      },
+    ).catch((err) => console.error("[engagements] delete deliverable pod sync failed:", err));
+  };
+  /** Calendar-day index from the engagement startDate. Used to translate
+   *  a free-picked YYYY-MM-DD back into the engagement-template's
+   *  working-day numbering so cycle + week placement still works. */
+  const dayFromDate = (ymd: string): number => {
+    const start = new Date(`${engagement.startDate}T12:00:00`);
+    const end = new Date(`${ymd}T12:00:00`);
+    const ms = end.getTime() - start.getTime();
+    return Math.max(1, Math.floor(ms / 86400000) + 1);
+  };
+  /** YYYY-MM-DD string for a given engagement day-index. Reuses the
+   *  existing dateForDay (above) which already handles the
+   *  bucket-skip-weekends vs retainer-straight-calendar split. */
+  const ymdForDay = (day: number): string => {
+    const d = dateForDay(day);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day2 = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day2}`;
+  };
   const handleAddCustomDeliverable = () => {
     if (!addingDeliverableIn) return;
-    const { type, label, owner, week } = newDeliverableDraft;
-    if (!type) return;
-    /* Compute dueDay = engagement working day that lands on the chosen
-     * week's Thursday in the selected cycle. Engagement template uses
-     * 30 days per cycle and a 7-day week, with Thursday at day 4 of
-     * each week (W1=4, W2=11, W3=18, W4=25). Keeps every new
-     * deliverable on the cadence the team already runs to. */
-    const dueDayNum = (addingDeliverableIn.cycle - 1) * 30 + (week - 1) * 7 + 4;
+    const { type, label, owner, dueDate } = newDeliverableDraft;
+    if (!type || !dueDate) return;
+    /* Free-pick date path: translate the chosen calendar date back into
+     *  the engagement-template's day index, then derive cycle + week
+     *  from that. Lets a PM put a deliverable on any Thursday (or any
+     *  other day for a rush / off-cadence one-off) while still keeping
+     *  the deck and stage tables grouping it correctly. */
+    const dueDayNum = dayFromDate(dueDate);
+    const derivedCycle = cycleForDay(dueDayNum);
+    const derivedWeek = weekInCycleForDay(dueDayNum);
     const typeLabel = PAGE_LABEL[type as PageType] ?? type;
     const variant = label.trim();
     const name = variant ? `${typeLabel} · ${variant}` : typeLabel;
     const newItem: CustomDeliverable = {
       id: `custom-${Date.now()}`,
       name,
-      cycle: addingDeliverableIn.cycle,
+      cycle: derivedCycle,
       stage: addingDeliverableIn.stage,
-      weekInCycle: week,
+      weekInCycle: derivedWeek,
       owner,
       dueDay: dueDayNum,
     };
@@ -522,7 +587,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
       ...prev,
     ]);
     setAddingDeliverableIn(null);
-    setNewDeliverableDraft({ type: "pdp", label: "", owner: "Pod", week: 3 });
+    setNewDeliverableDraft({ type: "pdp", label: "", owner: "Pod", dueDate: "" });
 
     /* Write back: if this engagement is a pods-v2 Client, also create
      * the matching pod Task(s) so the pod board picks it up. Build /
@@ -931,7 +996,20 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                     </span>
                     {canAdd && !isAddingHere && (
                       <button
-                        onClick={() => setAddingDeliverableIn({ cycle: viewCycle, stage: stage.id as Exclude<StageId, "audit"> })}
+                        onClick={() => {
+                          /* Default the date picker to the W3 Thursday
+                           *  of the currently-viewed cycle so the form
+                           *  opens with a sensible cadence-aligned date
+                           *  that the PM can leave alone or override. */
+                          const defaultDay = (viewCycle - 1) * 30 + 2 * 7 + 4;
+                          setNewDeliverableDraft({
+                            type: "pdp",
+                            label: "",
+                            owner: "Pod",
+                            dueDate: ymdForDay(defaultDay),
+                          });
+                          setAddingDeliverableIn({ cycle: viewCycle, stage: stage.id as Exclude<StageId, "audit"> });
+                        }}
                         className="inline-flex items-center gap-1 text-[11px] font-medium text-[#666] hover:text-[#1B1B1B]"
                       >
                         <PlusIcon className="size-3" />
@@ -1153,6 +1231,17 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                               Attach
                             </button>
                           )}
+                          {/* Delete · custom deliverables only. Audit
+                           *   template rows aren't user-removable. */}
+                          {stage.id !== "audit" && customDeliverables.some((cd) => cd.id === d.id) && (
+                            <button
+                              onClick={() => handleDeleteCustomDeliverable(d.id)}
+                              className="shrink-0 text-[#CCC] hover:text-[#C62828] opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Remove deliverable"
+                            >
+                              <TrashIcon className="size-3.5" />
+                            </button>
+                          )}
                         </div>
                       </div>
                       {timelineOpen && hasPhaseHistory && (
@@ -1214,33 +1303,38 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                         <option value="Dylan">Dylan</option>
                       </select>
                     </div>
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1.5">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">Lands on</span>
-                        <select
-                          value={newDeliverableDraft.week}
-                          onChange={(e) => setNewDeliverableDraft((d) => ({ ...d, week: parseInt(e.target.value, 10) as WeekInCycle }))}
+                        <input
+                          type="date"
+                          value={newDeliverableDraft.dueDate}
+                          onChange={(e) => setNewDeliverableDraft((d) => ({ ...d, dueDate: e.target.value }))}
                           className="text-[12px] px-2 py-1.5 border border-[#E5E5EA] rounded focus:outline-none focus:border-[#1B1B1B] bg-white"
-                        >
-                          <option value={1}>W1 Thursday</option>
-                          <option value={2}>W2 Thursday</option>
-                          <option value={3}>W3 Thursday</option>
-                          <option value={4}>W4 Thursday</option>
-                        </select>
-                        <span className="text-[10px] text-[#999]">
-                          (M{addingDeliverableIn.cycle} · day {(addingDeliverableIn.cycle - 1) * 30 + (newDeliverableDraft.week - 1) * 7 + 4})
-                        </span>
+                        />
+                        {newDeliverableDraft.dueDate && (() => {
+                          /* Live preview so the PM can see which Month
+                           *  + Week the picked date will slot into. */
+                          const previewDay = dayFromDate(newDeliverableDraft.dueDate);
+                          const previewCycle = cycleForDay(previewDay);
+                          const previewWeek = weekInCycleForDay(previewDay);
+                          return (
+                            <span className="text-[10px] text-[#999]">
+                              (M{previewCycle} W{previewWeek} · day {previewDay})
+                            </span>
+                          );
+                        })()}
                       </div>
                       <div className="flex items-center gap-1.5">
                         <button
-                          onClick={() => { setAddingDeliverableIn(null); setNewDeliverableDraft({ type: "pdp", label: "", owner: "Pod", week: 3 }); }}
+                          onClick={() => { setAddingDeliverableIn(null); setNewDeliverableDraft({ type: "pdp", label: "", owner: "Pod", dueDate: "" }); }}
                           className="text-[11px] text-[#999] hover:text-[#1B1B1B] px-2 py-1.5"
                         >
                           Cancel
                         </button>
                         <button
                           onClick={handleAddCustomDeliverable}
-                          disabled={!newDeliverableDraft.type}
+                          disabled={!newDeliverableDraft.type || !newDeliverableDraft.dueDate}
                           className="text-[12px] font-semibold text-white bg-[#1B1B1B] hover:bg-black px-3 py-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Add deliverable

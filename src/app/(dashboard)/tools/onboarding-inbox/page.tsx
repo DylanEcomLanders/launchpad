@@ -584,6 +584,7 @@ export default function OnboardingInboxPage() {
                   setSaving(false);
                 };
 
+                const hasDeliverables = (selected.deliverables?.length || 0) > 0;
                 return (
                   <div className="mt-5 space-y-3">
                     {!allChecked && (
@@ -592,6 +593,11 @@ export default function OnboardingInboxPage() {
 
                     {allChecked && (
                       <div className="space-y-2">
+                        {!hasDeliverables && (
+                          <p className="text-[10px] text-amber-600 text-center font-medium">
+                            Scope at least one deliverable above before spinning up an engagement
+                          </p>
+                        )}
                         <button
                           onClick={async () => {
                             setSaving(true);
@@ -608,8 +614,9 @@ export default function OnboardingInboxPage() {
                             }
                             setSaving(false);
                           }}
-                          disabled={saving}
-                          className="w-full flex items-center gap-3 px-4 py-3 bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50"
+                          disabled={saving || !hasDeliverables}
+                          className="w-full flex items-center gap-3 px-4 py-3 bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                          title={hasDeliverables ? "" : "Add at least one deliverable to the scope panel above"}
                         >
                           <svg className="size-4 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
                           <div className="text-left">
@@ -662,9 +669,25 @@ export default function OnboardingInboxPage() {
               })()}
               {selected.status === "approved" && (
                 <div className="mt-4">
-                  <div className="flex items-center gap-2 text-emerald-600 mb-1">
-                    <CheckCircleIcon className="size-5" />
-                    <span className="text-sm font-medium">Approved {selected.assigned_at ? new Date(selected.assigned_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : ""}</span>
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <div className="flex items-center gap-2 text-emerald-600">
+                      <CheckCircleIcon className="size-5" />
+                      <span className="text-sm font-medium">Approved {selected.assigned_at ? new Date(selected.assigned_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : ""}</span>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        if (!confirm("Send this submission back to pending? The linked engagement (if any) stays put, you can re-approve later.")) return;
+                        await updateSubmission(selected.id, {
+                          status: "pending",
+                          assigned_at: undefined,
+                          assigned_by: undefined,
+                        });
+                      }}
+                      className="text-[11px] font-medium text-[#666] hover:text-[#1B1B1B] hover:bg-[#F5F5F5] px-2 py-1 rounded"
+                      title="Move back to pending"
+                    >
+                      ↩ Send back to pending
+                    </button>
                   </div>
                   <ApprovedLinkRow submissionId={selected.id} />
                   {selected.assigned_portal_id && (
