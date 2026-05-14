@@ -2,10 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRightIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { ArrowRightIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { MOCK_ENGAGEMENTS, type MockEngagement } from "@/lib/engagement-mocks";
 import { loadEngagementsFromPods } from "@/lib/engagement-from-pods";
 import { loadLocalEngagements } from "@/lib/engagement-storage";
+import {
+  bootstrapEngagementTrash,
+  getTrashedIds,
+} from "@/lib/engagement-trash";
 import {
   BUCKETS,
   ENGAGEMENT_DELIVERABLES,
@@ -117,9 +121,11 @@ function HealthStat({
 export default function EngagementsPage() {
   const [localEngagements, setLocalEngagements] = useState<MockEngagement[]>([]);
   const [podsEngagements, setPodsEngagements] = useState<MockEngagement[]>([]);
+  const [trashedIds, setTrashedIds] = useState<Set<string>>(new Set());
   useEffect(() => {
     let cancelled = false;
     setLocalEngagements(loadLocalEngagements());
+    setTrashedIds(getTrashedIds());
     /* Read once synchronously off localStorage so warm caches paint
      * immediately, then bootstrap from Supabase so fresh browsers land
      * with real data. Previously this relied on a /pods-v2 mount to
@@ -133,8 +139,13 @@ export default function EngagementsPage() {
       } catch (err) {
         console.error("[engagements] bootstrap failed:", err);
       }
+      /* Pull cloud trash so an engagement deleted on another device
+       *  stays hidden here. */
+      await bootstrapEngagementTrash();
       if (cancelled) return;
       setPodsEngagements(loadEngagementsFromPods());
+      setLocalEngagements(loadLocalEngagements());
+      setTrashedIds(getTrashedIds());
     })();
     return () => { cancelled = true; };
   }, []);
@@ -147,9 +158,11 @@ export default function EngagementsPage() {
   const allEngagements: MockEngagement[] = [];
   for (const e of combined) {
     if (seen.has(e.id)) continue;
+    if (trashedIds.has(e.id)) continue;
     seen.add(e.id);
     allEngagements.push(e);
   }
+  const trashedCount = trashedIds.size;
   const healths = allEngagements.map((eng) => ({ eng, health: computeHealth(eng) }));
   const retainerHealths = healths.filter(({ eng }) => eng.kind === "retainer");
   const bucketHealths = healths.filter(({ eng }) => eng.kind === "bucket");
@@ -174,13 +187,22 @@ export default function EngagementsPage() {
             Active clients and one-off projects. Click in to open the delivery dashboard.
           </p>
         </div>
-        <Link
-          href="/engagements/new"
-          className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-white bg-[#1B1B1B] hover:bg-black px-3 py-2 rounded shrink-0"
-        >
-          <PlusIcon className="size-3.5" />
-          New client
-        </Link>
+        <div className="flex items-center gap-2 shrink-0">
+          <Link
+            href="/engagements/trash"
+            className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#666] hover:text-[#1B1B1B] hover:bg-[#F5F5F5] px-3 py-2 rounded"
+          >
+            <TrashIcon className="size-3.5" />
+            Trash{trashedCount > 0 ? ` (${trashedCount})` : ""}
+          </Link>
+          <Link
+            href="/engagements/new"
+            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-white bg-[#1B1B1B] hover:bg-black px-3 py-2 rounded"
+          >
+            <PlusIcon className="size-3.5" />
+            New client
+          </Link>
+        </div>
       </header>
 
       {allEngagements.length === 0 ? (

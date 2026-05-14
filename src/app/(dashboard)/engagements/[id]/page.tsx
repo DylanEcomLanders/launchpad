@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { MOCK_ENGAGEMENTS } from "@/lib/engagement-mocks";
 import { loadEngagementFromPodsById } from "@/lib/engagement-from-pods";
 import { loadLocalEngagementById } from "@/lib/engagement-storage";
+import { getTrashedIds } from "@/lib/engagement-trash";
 import type { MockEngagement } from "@/lib/engagement-mocks";
 import EngagementDetailClient from "./engagement-detail-client";
 
@@ -16,6 +17,15 @@ export default function EngagementDetailPage() {
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
+
+    /* Soft-deleted engagements 404 even if their static mock still
+     *  exists in code, so a trashed reference engagement doesn't
+     *  resurface via direct URL. Pods + local sources are physically
+     *  removed by the trash flow so they already 404 naturally. */
+    if (getTrashedIds().has(id)) {
+      setEngagement(null);
+      return;
+    }
 
     /* Lookup order: localStorage-created (user form), then pods-v2 Client
      * (real ops data), then static MOCK_ENGAGEMENTS (bucket examples).

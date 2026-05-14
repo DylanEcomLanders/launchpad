@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { onboardingStore, type OnboardingSubmission } from "@/lib/onboarding";
 import {
@@ -11,10 +12,15 @@ import {
   ExclamationTriangleIcon,
   LinkIcon,
   PlusIcon,
+  TrashIcon,
   ArrowTopRightOnSquareIcon,
   ArrowDownTrayIcon,
   EyeIcon,
 } from "@heroicons/react/24/outline";
+import {
+  detectEngagementSource,
+  trashEngagement,
+} from "@/lib/engagement-trash";
 import {
   BUCKETS,
   ENGAGEMENT_CYCLES,
@@ -245,6 +251,15 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
   const [winDraft, setWinDraft] = useState({ title: "", metric: "", day: "", notes: "" });
   const [mustDos, setMustDos] = useState<NonNullable<typeof engagement.mustDos>>(engagement.mustDos ?? {});
   const [openMustDo, setOpenMustDo] = useState<MustDoGateKey | null>(null);
+  const [deleteStage, setDeleteStage] = useState<"closed" | "confirm-1" | "confirm-2">("closed");
+  const [deleteTyped, setDeleteTyped] = useState("");
+  const router = useRouter();
+
+  const handleConfirmDelete = () => {
+    const source = detectEngagementSource(engagement.id);
+    trashEngagement(engagement, source);
+    router.push("/engagements");
+  };
 
   /* Lazy-fetch the source OnboardingSubmission so the Intake panel can
    * show the full intake form (40+ fields). Only fires when an
@@ -649,13 +664,26 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
 
   return (
     <div className="px-6 py-6 max-w-[1400px] mx-auto">
-      <Link
-        href="/engagements"
-        className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#666] hover:text-[#1B1B1B] mb-4"
-      >
-        <ArrowLeftIcon className="size-3" />
-        All clients
-      </Link>
+      <div className="flex items-center justify-between mb-4">
+        <Link
+          href="/engagements"
+          className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#666] hover:text-[#1B1B1B]"
+        >
+          <ArrowLeftIcon className="size-3" />
+          All clients
+        </Link>
+        <button
+          type="button"
+          onClick={() => {
+            setDeleteTyped("");
+            setDeleteStage("confirm-1");
+          }}
+          className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#999] hover:text-[#C62828] hover:bg-[#FFEBEE] px-2 py-1 rounded transition-colors"
+        >
+          <TrashIcon className="size-3" />
+          Delete client
+        </button>
+      </div>
 
       <header className="mb-5 pb-4 border-b border-[#E5E5EA]">
         <div className="flex items-baseline justify-between gap-4 flex-wrap">
@@ -1500,6 +1528,96 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
           )}
         </div>
       </section>
+
+      {/* Delete client, two-step confirmation. Stage one is a plain
+       *  modal with a Continue button; stage two requires typing the
+       *  brand name so a slip of the trash button can't nuke a client
+       *  by accident. Trashed clients land in /engagements/trash and
+       *  can be restored from there. */}
+      {deleteStage !== "closed" && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setDeleteStage("closed")}
+        >
+          <div
+            className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {deleteStage === "confirm-1" ? (
+              <>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#C62828]">
+                  Step 1 of 2
+                </p>
+                <h2 className="text-[16px] font-semibold text-[#1B1B1B] mt-1">
+                  Move {engagement.brand} to trash?
+                </h2>
+                <p className="text-[13px] text-[#666] mt-2 leading-relaxed">
+                  This removes the client from the engagements list and the pod board. Linked projects, tasks, brief, and metrics travel with it. You can restore from{" "}
+                  <span className="font-semibold text-[#1B1B1B]">Engagements, Trash</span>{" "}
+                  any time.
+                </p>
+                <div className="mt-5 flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDeleteStage("closed")}
+                    className="text-[12px] font-medium text-[#666] hover:text-[#1B1B1B] px-3 py-2 rounded"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeleteStage("confirm-2")}
+                    className="text-[12px] font-semibold text-white bg-[#C62828] hover:bg-[#B71C1C] px-3 py-2 rounded"
+                  >
+                    Continue
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#C62828]">
+                  Step 2 of 2
+                </p>
+                <h2 className="text-[16px] font-semibold text-[#1B1B1B] mt-1">
+                  Type the client name to confirm
+                </h2>
+                <p className="text-[13px] text-[#666] mt-2 leading-relaxed">
+                  Type{" "}
+                  <span className="font-semibold text-[#1B1B1B]">
+                    {engagement.brand}
+                  </span>{" "}
+                  exactly to move this engagement to trash.
+                </p>
+                <input
+                  type="text"
+                  value={deleteTyped}
+                  onChange={(e) => setDeleteTyped(e.target.value)}
+                  autoFocus
+                  className="mt-3 w-full rounded border border-[#E5E5EA] px-3 py-2 text-[13px] focus:border-[#C62828] focus:outline-none"
+                  placeholder={engagement.brand}
+                />
+                <div className="mt-5 flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDeleteStage("closed")}
+                    className="text-[12px] font-medium text-[#666] hover:text-[#1B1B1B] px-3 py-2 rounded"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={deleteTyped.trim() !== engagement.brand}
+                    onClick={handleConfirmDelete}
+                    className="text-[12px] font-semibold text-white bg-[#C62828] hover:bg-[#B71C1C] disabled:bg-[#E5E5EA] disabled:text-[#999] disabled:cursor-not-allowed px-3 py-2 rounded"
+                  >
+                    Move to trash
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

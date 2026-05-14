@@ -1226,6 +1226,80 @@ export function reassignTask(taskId: string, memberId: string): void {
   );
 }
 
+/** Cascade-delete a client: removes the Client row, all its Projects,
+ *  and all Tasks across those Projects, both from localStorage and from
+ *  Supabase. Used by the engagement trash flow, which snapshots the
+ *  data before calling this so it can be restored later via
+ *  restoreClientCascade.
+ *
+ *  Each table is updated through the same `write()` helper used by
+ *  every other mutation so the additive mirror still runs, then the
+ *  explicit Supabase delete fires for the removed ids. Without the
+ *  explicit delete the cloud copy would simply reappear on the next
+ *  bootstrap pull. */
+export function deleteClientCascade(clientId: string): void {
+  if (typeof window === "undefined") return;
+  const projects = getProjectsForClient(clientId);
+  const projectIds = projects.map((p) => p.id);
+  const taskIds = projects
+    .flatMap((p) => getTasksForProject(p.id))
+    .map((t) => t.id);
+
+  /* Local writes first so the page reflects the change immediately. */
+  localStorage.setItem(
+    LS_CLIENTS,
+    JSON.stringify(getClients().filter((c) => c.id !== clientId)),
+  );
+  localStorage.setItem(
+    LS_PROJECTS,
+    JSON.stringify(getProjects().filter((p) => p.client_id !== clientId)),
+  );
+  localStorage.setItem(
+    LS_TASKS,
+    JSON.stringify(getTasks().filter((t) => !projectIds.includes(t.project_id))),
+  );
+
+  /* Explicit Supabase deletes, the collection mirror is additive
+   * only, so genuine removals have to fire deletes directly. */
+  import("./sync").then(({ mirrorDeleteFromSupabase }) => {
+    mirrorDeleteFromSupabase("pods_v2_clients", [clientId]);
+    if (projectIds.length > 0) {
+      mirrorDeleteFromSupabase("pods_v2_projects", projectIds);
+    }
+    if (taskIds.length > 0) {
+      mirrorDeleteFromSupabase("pods_v2_tasks", taskIds);
+    }
+  });
+}
+
+/** Restore a previously trashed client: re-add the Client + Projects +
+ *  Tasks back into localStorage and mirror them up to Supabase via the
+ *  standard write() upsert. Idempotent, repeated calls just re-upsert
+ *  the same ids. */
+export function restoreClientCascade(
+  client: Client,
+  projects: Project[],
+  tasks: Task[],
+): void {
+  if (typeof window === "undefined") return;
+  const existingClients = getClients();
+  if (!existingClients.some((c) => c.id === client.id)) {
+    write(LS_CLIENTS, [...existingClients, client]);
+  }
+  const existingProjects = getProjects();
+  const projectIds = new Set(existingProjects.map((p) => p.id));
+  const newProjects = projects.filter((p) => !projectIds.has(p.id));
+  if (newProjects.length > 0) {
+    write(LS_PROJECTS, [...existingProjects, ...newProjects]);
+  }
+  const existingTasks = getTasks();
+  const taskIds = new Set(existingTasks.map((t) => t.id));
+  const newTasks = tasks.filter((t) => !taskIds.has(t.id));
+  if (newTasks.length > 0) {
+    write(LS_TASKS, [...existingTasks, ...newTasks]);
+  }
+}
+
 export function deleteTask(taskId: string): void {
   const all = getTasks();
   /* Explicit Supabase delete, the collection mirror is additive only
