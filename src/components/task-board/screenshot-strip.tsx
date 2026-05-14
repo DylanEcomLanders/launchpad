@@ -7,7 +7,7 @@ interface Props {
   urls: string[];
   /** When provided, each thumb gets a remove X. */
   onRemove?: (url: string) => void;
-  /** Compact mode for triage / detail views — smaller thumbs, no remove. */
+  /** Compact mode for triage / detail views, smaller thumbs, no remove. */
   compact?: boolean;
 }
 

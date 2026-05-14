@@ -1,4 +1,4 @@
-// ─── Pods v2 — operating-system data model ─────────────────────────
+// ─── Pods v2, operating-system data model ─────────────────────────
 // Per spec: three pods, each four-person (primary + secondary designer/dev).
 // Strict weekly cadence, points → bucket → duration auto-calculation.
 
@@ -39,7 +39,7 @@ export interface Pod {
   blockers?: PodBlocker[];
   /** Slack channel ID (e.g. "C0123456") for pod-internal notifications.
    * When set, raising a blocker pings this channel so the team can
-   * react without opening Launchpad. Optional — empty string disables. */
+   * react without opening Launchpad. Optional, empty string disables. */
   slack_channel_id?: string;
 }
 
@@ -47,7 +47,7 @@ export interface PodBlocker {
   id: string;
   title: string;
   description?: string;
-  /** Member id of who's owning the resolution. Optional — blockers can
+  /** Member id of who's owning the resolution. Optional, blockers can
    * be raised without an owner. */
   owner_id?: string;
   raised_at: string; // ISO
@@ -66,7 +66,7 @@ export interface Client {
   retainer_tier: RetainerTier;
   /** Optional link to the launchpad client portal slug. */
   portal_slug?: string;
-  /** Conversion-rate snapshot at engagement start. % as decimal — 2.4
+  /** Conversion-rate snapshot at engagement start. % as decimal, 2.4
    * means 2.4%. Manually entered by the PM at intake. Drives the
    * baseline → current delta on the client roster card and feeds
    * retainer-renewal share-cards. */
@@ -82,16 +82,52 @@ export interface Client {
   metrics_updated_at?: string;
   /** Editable client brief snapshot. Populated initially from the
    * OnboardingSubmission when an engagement is spawned and decoupled
-   * thereafter — PMs edit per-client without mutating the original
+   * thereafter, PMs edit per-client without mutating the original
    * intake record. Surfaces in the /engagements Brief panel. */
   brief?: ClientBrief;
-  /** Wins log — what shipped and what it moved. Auto-derived entries
+  /** Wins log, what shipped and what it moved. Auto-derived entries
    * (test winners) are added by the Tasks bridge; manual entries for
    * non-test ships can also be appended here. */
   wins?: ClientWin[];
   /** YYYY-MM-DD kickoff Monday. Authoritative when there are no Projects
    * yet (single source for the engagement startDate). */
   kickoff_date?: string;
+  /** Link back to the OnboardingSubmission this engagement was spawned
+   * from. Powers the Intake panel on /engagements, pods working a
+   * client can see the full intake form (brand assets, Shopify creds,
+   * tracking pixels, etc.) without needing the inbox link. */
+  onboarding_submission_id?: string;
+  /** Engagement-level QA gates. Four gates mirroring the portal QA
+   * pipeline so the team uses identical vocabulary + checklists across
+   * both surfaces. Keys align with portal's qa_gates keys (cro_brief
+   * = Design Brief, design_handoff = Dev Handover, dev_handoff = Dev
+   * QA, launch_prep = Handoff / Testing). Surfaces as the "Must dos"
+   * row at the top of /engagements/[id]; each pill opens a modal with
+   * the gate's items, optional artefact links, and a notes textarea. */
+  must_dos?: {
+    cro_brief?: MustDoGate;
+    design_handoff?: MustDoGate;
+    dev_handoff?: MustDoGate;
+    launch_prep?: MustDoGate;
+  };
+}
+
+export interface MustDoGate {
+  /** Map of item label to checked state. Items that haven't been touched
+   * yet are absent (treated as unchecked). */
+  items?: Record<string, boolean>;
+  /** Free-text notes captured during the gate. */
+  notes?: string;
+  /** Optional artefact URL (Figma link for Design Brief / Dev Handover). */
+  link?: string;
+  /** Preview / staging URLs submitted with the Dev QA gate, multiple,
+   * mirroring the portal flow where the dev submits every page they want
+   * QA'd. Only used by dev_handoff today; left optional on the type so
+   * other gates can opt-in later. */
+  preview_urls?: { url: string; label?: string }[];
+  /** Set when the gate is marked complete (every item checked + saved).
+   * Cleared if any item is unchecked again after completion. */
+  completed_at?: string;
 }
 
 /** 14-field client brief snapshot, intentionally the same keys as the
@@ -165,6 +201,11 @@ export type PageWeight = "heavy" | "medium" | "light";
 export interface ProjectPage {
   type: PageType;
   weight: PageWeight;
+  /** Optional variant label that the PM captured during intake (e.g.
+   * "Whitening Strips" for one of three PDPs). Threads through to the
+   * seeded task titles so the pod can tell paired deliverables apart
+   * at a glance instead of seeing four identical "Design - PDP" rows. */
+  label?: string;
 }
 
 export type TaskType =
@@ -211,14 +252,19 @@ export interface Task {
   status: TaskStatus;
   /** Per-task deadline. Design tasks end of week 1; dev tasks on delivery Thursday. */
   due_date: string; // YYYY-MM-DD
-  /** When the task was created — drives "open Xd" age display on tickets. */
+  /** When the task was created, drives "open Xd" age display on tickets. */
   created_at: string; // ISO timestamp
   /** Optional phase for core deliverables; tickets leave this undefined. */
   phase?: TaskPhase;
-  /** Priority — mainly used for tickets where reaction time matters. */
+  /** Per-visit phase history. Every entry into a phase appends a new
+   * row, revisits are kept as separate spans (not aggregated) so the
+   * revision-loop count is visible in the timeline. Drives the shared
+   * Phase Timeline component in both pod and engagement surfaces. */
+  phase_history?: import("@/lib/task-board/phases").PhaseEntry[];
+  /** Priority, mainly used for tickets where reaction time matters. */
   priority?: TaskPriority;
   /** Pause state for tickets: who we're waiting on. While set, the age
-   * clock is paused — paused duration is excluded from age escalation
+   * clock is paused, paused duration is excluded from age escalation
    * so a ticket sat on a client signoff doesn't go red unfairly. */
   waiting_on?: "client" | "internal";
   /** ISO timestamp when the current pause began. Cleared on resume. */
@@ -228,11 +274,11 @@ export interface Task {
   paused_total_ms?: number;
   /** Deliverable type for core_deliverable tasks (PDP, Homepage, etc.). */
   deliverable_type?: PageType;
-  /** Points for the whole deliverable — covers design + dev together,
+  /** Points for the whole deliverable, covers design + dev together,
    * not counted twice. Both halves of a paired deliverable carry the
    * same `points` value for display, but capacity-wise it's one number. */
   points?: number;
-  /** Other half of a design+dev deliverable pair — design task points to
+  /** Other half of a design+dev deliverable pair, design task points to
    * its dev counterpart, and vice versa. */
   paired_task_id?: string;
   /** Conversion Engine cycle position. Engagements run as 3 monthly
@@ -240,7 +286,7 @@ export interface Task {
    * created outside that flow leave this undefined. */
   cycle?: { month: 1 | 2 | 3; week: 1 | 2 | 3 | 4 };
   /** Set when a stale-ticket Slack ping has been fired for this task.
-   * Stops the same ticket from re-pinging on every page load — a
+   * Stops the same ticket from re-pinging on every page load, a
    * ticket that's been open for a week shouldn't generate seven
    * notifications. Cleared if the ticket is resolved (status=done) or
    * paused. */
@@ -249,7 +295,7 @@ export interface Task {
    * (typically M2/M3 of a Conversion Engine cycle). Captures whether
    * the test moved the metric and by how much, so retainer renewals
    * have hard data instead of vibes. Only set after the test has run
-   * — pending = "shipped, waiting for results"; winner/loser =
+   *, pending = "shipped, waiting for results"; winner/loser =
    * statistically meaningful in either direction; inconclusive = no
    * meaningful difference. */
   test_result?: {
@@ -260,7 +306,7 @@ export interface Task {
     /** Significance / confidence level (e.g. 95). Not required, but
      * sets the bar for the share-card visual. */
     significance_pct?: number;
-    /** Free-text designer/Dan note — what changed, what the hypothesis
+    /** Free-text designer/Dan note, what changed, what the hypothesis
      * was, what we'd try next. Surfaces under the result chip on the
      * task row. */
     notes?: string;
@@ -270,7 +316,7 @@ export interface Task {
   };
 }
 
-/** Phase label derived from the cycle week — used for the
+/** Phase label derived from the cycle week, used for the
  * `M{n} · W{n} · {phase}` chip on Conversion Engine tasks. */
 export const CYCLE_WEEK_LABEL: Record<1 | 2 | 3 | 4, string> = {
   1: "Strategy",
@@ -343,7 +389,7 @@ export const PAGE_WEIGHT_POINTS: Record<PageWeight, number> = {
   light: 1,
 };
 
-// Default weight for each page type — used to autofill in the intake form.
+// Default weight for each page type, used to autofill in the intake form.
 // Heavy = strategic conversion surface. Medium = standard. Light = utility.
 export const PAGE_DEFAULT_WEIGHT: Record<PageType, PageWeight> = {
   pdp: "heavy",

@@ -22,7 +22,7 @@ interface Props {
   onCancel: () => void;
 }
 
-/* Inline composer (NOT a modal — modals kill flow). Cmd/Ctrl+Enter
+/* Inline composer (NOT a modal, modals kill flow). Cmd/Ctrl+Enter
  * submits. Whole capture flow should take <5 seconds.
  *
  * Screenshots: drop on the card, paste with Cmd+V, or click the paperclip

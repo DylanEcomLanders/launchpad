@@ -61,7 +61,7 @@ export default function NewEngagementPage() {
 
     let id: string;
     if (podRow) {
-      /* Create the pods-v2 Client row first — that becomes the canonical
+      /* Create the pods-v2 Client row first, that becomes the canonical
        * record. The Client appears on the pod board AND on /engagements
        * via the bridge. */
       const client = createPodsClient({
@@ -78,7 +78,7 @@ export default function NewEngagementPage() {
       });
       id = client.id;
     } else {
-      /* Pods-v2 not seeded — fall back to localStorage-only engagement. */
+      /* Pods-v2 not seeded, fall back to localStorage-only engagement. */
       id = uid();
       const eng: MockEngagement = {
         id,

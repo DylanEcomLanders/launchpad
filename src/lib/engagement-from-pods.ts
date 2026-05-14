@@ -8,7 +8,7 @@
  * the Client portal can display real pod-board clients on /engagements
  * without duplicating storage. Fields that have no pods-v2 equivalent
  * (vertical, brief, customDeliverables, assets, activity) default to
- * empty so the UI degrades gracefully — they'll fill in as later slices
+ * empty so the UI degrades gracefully, they'll fill in as later slices
  * wire Tasks, OnboardingSubmissions, etc.
  */
 
@@ -140,6 +140,8 @@ function taskToCustomDeliverable(
     assigneeName: member?.name,
     dueDay: workingDaysBetween(startDate, task.due_date),
     testResult,
+    phase: task.phase,
+    phaseHistory: task.phase_history,
   };
 }
 
@@ -181,19 +183,13 @@ function tasksToEngagementParts(
         : undefined,
   }));
 
-  // Auto-derive wins from tasks whose test_result is a confirmed winner.
-  const wins: EngagementWin[] = visibleTasks
-    .filter((t) => t.test_result?.status === "winner")
-    .map((t) => ({
-      id: `win-${t.id}`,
-      shippedAtDay: workingDaysBetween(startDate, t.due_date),
-      title: t.title,
-      metric:
-        t.test_result?.lift_pct != null
-          ? `+${t.test_result.lift_pct}% lift`
-          : undefined,
-      notes: t.test_result?.notes,
-    }));
+  /* Wins are now manual-entry only (per 2026-05-14 spec). Auto-derive
+   * from test_result winners was confusing because there was no input
+   * path on the engagement side, the wins appeared from nowhere. PMs
+   * log each win deliberately via the Add win button on the wins panel.
+   * Test results are still recorded on the pod board for the share-card
+   * + retro analytics, just not surfaced as engagement wins automatically. */
+  const wins: EngagementWin[] = [];
 
   // Activity: surface recent task completions (most recent 8).
   const activity: EngagementActivity[] = visibleTasks
@@ -290,6 +286,8 @@ export function clientToEngagement(client: Client): MockEngagement {
     currentDay: daysSince(startDate),
     podNumber,
     kind,
+    onboardingSubmissionId: client.onboarding_submission_id,
+    mustDos: client.must_dos,
     brief: client.brief ?? {},
     metrics: {
       cvrBaseline: client.cvr_baseline,

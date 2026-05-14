@@ -1,5 +1,5 @@
 /* localStorage layer for engagements created via the UI before Supabase
- * is wired up. Coexists with MOCK_ENGAGEMENTS — combined views append
+ * is wired up. Coexists with MOCK_ENGAGEMENTS, combined views append
  * locally-created entries on top of the static mock set. */
 
 import type { MockEngagement } from "./engagement-mocks";

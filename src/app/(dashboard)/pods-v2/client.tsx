@@ -19,6 +19,7 @@ import {
   getPods,
   getProjects,
   getTasks,
+  moveClientToPod,
   resetAndReseed,
   scanAndNotifyStaleTickets,
   seedConversionEngineCycle,
@@ -109,7 +110,7 @@ export default function PodsIndexClient() {
       });
     });
     /* Scan for tickets that crossed 48h since the last visit and ping
-     * Slack once per ticket. Idempotent — already-pinged tickets are
+     * Slack once per ticket. Idempotent, already-pinged tickets are
      * skipped via stale_pinged_at. Only runs in admin mode so the
      * team-view doesn't trigger unauthorised scans. */
     if (role === "admin") {
@@ -160,14 +161,16 @@ export default function PodsIndexClient() {
     [allProjects],
   );
 
-  /* Purgatory: onboarding forms that have been processed (PM picked them up
-   * and assigned a portal, or status moved past pending) AND either:
-   *   - no Client/Project exists for them yet, OR
-   *   - their matching Client has zero tasks, OR
-   *   - their matching Client has been parked (pod_id cleared)
+  /* Purgatory: onboarding forms that have been processed (PM checked the
+   * intake box and either spawned an engagement or the legacy portal)
+   * AND haven't been assigned tasks under a pod yet. Two paths in:
+   *   - new flow: status=approved, onboarding_submission_id linked to a
+   *     Client row that exists in pods_v2_clients
+   *   - legacy flow: assigned_portal_id set on the submission
    *
-   * Parked clients explicitly belong here so the PM can re-assign them
-   * to a pod when capacity opens up. */
+   * Either way, the row stays in purgatory until tasks exist on the
+   * matched Client (pod has picked it up), OR the Client gets parked
+   * (pod_id cleared) which sends it back here for re-assignment. */
   const purgatoryOnboardings = useMemo(() => {
     if (!onboardings.length) return [];
     const tasksByClientId = new Map<string, number>();
@@ -179,12 +182,19 @@ export default function PodsIndexClient() {
     const clientByName = new Map(
       allClients.map((c) => [c.name.toLowerCase().trim(), c] as const),
     );
+    const clientBySubmissionId = new Map(
+      allClients
+        .filter((c) => !!c.onboarding_submission_id)
+        .map((c) => [c.onboarding_submission_id as string, c] as const),
+    );
     return onboardings
       .filter((o) => {
         if (o.deleted_at) return false;
         const processed = !!o.assigned_portal_id || o.status === "approved" || o.status === "in-progress";
         if (!processed) return false;
-        const matchedClient = o.company_name ? clientByName.get(o.company_name.toLowerCase().trim()) : undefined;
+        const matchedClient =
+          clientBySubmissionId.get(o.id) ??
+          (o.company_name ? clientByName.get(o.company_name.toLowerCase().trim()) : undefined);
         // Parked client (pod_id empty) → always in purgatory
         if (matchedClient && !matchedClient.pod_id) return true;
         const taskCount = matchedClient ? tasksByClientId.get(matchedClient.id) || 0 : 0;
@@ -192,6 +202,17 @@ export default function PodsIndexClient() {
       })
       .sort((a, b) => (a.assigned_at || a.updated_at).localeCompare(b.assigned_at || b.updated_at));
   }, [onboardings, allClients, allProjects, allTasks]);
+
+  /* Resolve onboarding submission → engagement (pods_v2_clients) id when
+   * one exists, so purgatory rows can deep-link to /engagements/[id]
+   * instead of the legacy portal. */
+  const clientBySubmissionId = useMemo(() => {
+    return new Map(
+      allClients
+        .filter((c) => !!c.onboarding_submission_id)
+        .map((c) => [c.onboarding_submission_id as string, c] as const),
+    );
+  }, [allClients]);
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-8 md:px-10">
@@ -207,14 +228,14 @@ export default function PodsIndexClient() {
         </div>
         <div className="flex items-center gap-2">
           <Link
-            href="/pods-v2/me"
+            href={`${linkBase}/me`}
             className="inline-flex items-center gap-1.5 rounded-lg border border-[#E5E5EA] bg-white px-3 py-2 text-xs font-medium text-[#1B1B1B] shadow-[var(--shadow-soft)] transition-colors hover:bg-[#F3F3F5]"
             title="Your tasks today, focused"
           >
             Today
           </Link>
           <Link
-            href="/pods-v2/standup"
+            href={`${linkBase}/standup`}
             className="inline-flex items-center gap-1.5 rounded-lg border border-[#E5E5EA] bg-white px-3 py-2 text-xs font-medium text-[#1B1B1B] shadow-[var(--shadow-soft)] transition-colors hover:bg-[#F3F3F5]"
             title="What changed in the last 24h"
           >
@@ -272,6 +293,7 @@ export default function PodsIndexClient() {
           allTasks={allTasks}
           croLeads={croLeads}
           purgatoryOnboardings={purgatoryOnboardings}
+          clientBySubmissionId={clientBySubmissionId}
           memberById={memberById}
           projectById={projectById}
           clientById={clientById}
@@ -342,6 +364,7 @@ function Overview({
   allTasks,
   croLeads,
   purgatoryOnboardings,
+  clientBySubmissionId,
   memberById,
   projectById,
   clientById,
@@ -356,6 +379,7 @@ function Overview({
   allTasks: Task[];
   croLeads: PodMember[];
   purgatoryOnboardings: OnboardingSubmission[];
+  clientBySubmissionId: Map<string, Client>;
   memberById: Map<string, { member: PodMember; pod: Pod }>;
   projectById: Map<string, Project>;
   clientById: Map<string, Client>;
@@ -367,7 +391,7 @@ function Overview({
 }) {
   return (
     <>
-      {/* HEALTH ROW — green/amber/red signal per pod, derived from
+      {/* HEALTH ROW, green/amber/red signal per pod, derived from
        * existing data (capacity utilisation, slip count this quarter,
        * blocker resolution time, OOO coverage). One line, three cells.
        * Helps Dylan/Alister scan agency health in 2 seconds before
@@ -402,7 +426,7 @@ function Overview({
           const activeBlockers = (pod.blockers || []).filter((b) => !b.resolved_at).length;
           /* Forward-looking signal: count Conversion Engine retainers
            * (projects with at least one cycle-tagged task) that aren't
-           * already shipped/slipped — represents queued 90-day work
+           * already shipped/slipped, represents queued 90-day work
            * beyond this month's capacity bar. */
           const cycleProjectIds = new Set(
             allTasks.filter((t) => t.cycle).map((t) => t.project_id),
@@ -467,12 +491,12 @@ function Overview({
         })}
       </div>
 
-      {/* Friday weekly digest — admin-only, only shows on Fridays. One-
+      {/* Friday weekly digest, admin-only, only shows on Fridays. One-
        * click summary of the week per pod, with a button that posts the
        * formatted message to a Slack channel of choice. */}
       {isAdmin && <FridayDigestPanel pods={pods} projects={Object.values(projectsByPod).flat()} tasks={allTasks} clientById={clientById} today={today} />}
 
-      {/* CRO Pipeline — Dan's strategy work across all pods, separate
+      {/* CRO Pipeline, Dan's strategy work across all pods, separate
        * from per-pod swim lanes since he's a shared resource. */}
       <CroPipeline
         croLeads={croLeads}
@@ -485,8 +509,8 @@ function Overview({
         isAdmin={isAdmin}
       />
 
-      {/* Purgatory — processed onboardings without assigned tasks. Admin
-       * only — assign-to-pod is a PM action and onboarding form data
+      {/* Purgatory, processed onboardings without assigned tasks. Admin
+       * only, assign-to-pod is a PM action and onboarding form data
        * isn't relevant to delivery team members. */}
       {isAdmin && (
       <div className="mt-10">
@@ -509,7 +533,7 @@ function Overview({
               <tr>
                 <th className="px-3 py-2 text-left">Client</th>
                 <th className="px-3 py-2 text-left">Status</th>
-                <th className="px-3 py-2 text-left">Portal</th>
+                <th className="px-3 py-2 text-left">View</th>
                 <th className="px-3 py-2 text-right">Processed</th>
                 <th className="px-3 py-2 text-right">Open</th>
                 <th className="px-3 py-2 text-right">Action</th>
@@ -544,16 +568,31 @@ function Overview({
                       {o.status.replace("-", " ")}
                     </td>
                     <td className="px-3 py-2 text-[12px]">
-                      {o.assigned_portal_id ? (
-                        <Link
-                          href={`/tools/client-portal/${o.assigned_portal_id}`}
-                          className="text-[#1B1B1B] hover:underline"
-                        >
-                          View portal →
-                        </Link>
-                      ) : (
-                        <span className="text-[#A0A0A0]">—</span>
-                      )}
+                      {(() => {
+                        const engagementClient = clientBySubmissionId.get(o.id);
+                        if (engagementClient) {
+                          return (
+                            <Link
+                              href={`/engagements/${engagementClient.id}`}
+                              className="text-[#1B1B1B] hover:underline"
+                            >
+                              Open engagement →
+                            </Link>
+                          );
+                        }
+                        if (o.assigned_portal_id) {
+                          return (
+                            <Link
+                              href={`/tools/client-portal/${o.assigned_portal_id}`}
+                              className="text-[#1B1B1B] hover:underline"
+                              title="Legacy portal"
+                            >
+                              View portal →
+                            </Link>
+                          );
+                        }
+                        return <span className="text-[#A0A0A0]">-</span>;
+                      })()}
                     </td>
                     <td className="px-3 py-2 text-right text-[12px] text-[#7A7A7A] tabular-nums">
                       {formatDayMonth(processedAt.slice(0, 10))}
@@ -596,7 +635,7 @@ function Overview({
 
 /* Free-text → canonical PageType. Matches by substring so "PDP (Product
  * Page)" and "Pdp" both resolve to "pdp". Returns null if nothing
- * matches. Order matters — more specific first. */
+ * matches. Order matters, more specific first. */
 function tokenToPageType(raw: string): PageType | null {
   const s = raw.toLowerCase();
   const rules: Array<[RegExp, PageType]> = [
@@ -635,7 +674,7 @@ function parsePageTypeString(input: string): Array<{ id: string; type: PageType;
 
 /* Pull the deliverables list off a Portal's scope array (the actual
  * source of truth Alister sees on the project page). ScopeItems are
- * either plain strings or { description, type } objects — we map the
+ * either plain strings or { description, type } objects, we map the
  * `type` string via tokenToPageType and use `description` as the
  * variant label. */
 function scopeItemsToDeliverables(portal: PortalData): Array<{ id: string; type: PageType; label: string }> {
@@ -735,12 +774,12 @@ function AssignToPodModal({
   const [items, setItems] = useState<Array<{ id: string; type: PageType; label: string }>>([]);
   const [source, setSource] = useState<"portal" | "deliverables" | "page_type" | "blank">("blank");
   const [submitting, setSubmitting] = useState(false);
-  /* Conversion Engine flag — when ticked, also routes the engagement
+  /* Conversion Engine flag, when ticked, also routes the engagement
    * through Dan's CRO Pipeline (W1 strategy + wireframes per
    * deliverable, due Friday W1) before pod design starts. Persists
    * retainer_tier="8k" on the auto-created Client too. */
   const [conversionEngine, setConversionEngine] = useState(false);
-  /* Rush flag — bypasses the Monday-snap (kickoff = signoff_date) and
+  /* Rush flag, bypasses the Monday-snap (kickoff = signoff_date) and
    * halves the bucket duration. Per the team launch deck, rush is the
    * exception so it's the second checkbox not a default; pod cards
    * track count so heavy rush use shows up in the operating model. */
@@ -827,7 +866,13 @@ function AssignToPodModal({
     setSubmitting(true);
 
     const companyName = (onboarding.company_name || "Untitled").trim();
+    /* Match the existing Client by submission id first (this is the
+     * canonical link set by spawnEngagementFromOnboarding when the
+     * engagement was approved in the inbox), falling back to company
+     * name for legacy rows that were created before the link existed. */
     let client = existingClients.find(
+      (c) => c.onboarding_submission_id === onboarding.id,
+    ) ?? existingClients.find(
       (c) => c.name.toLowerCase().trim() === companyName.toLowerCase(),
     );
     if (!client) {
@@ -837,7 +882,16 @@ function AssignToPodModal({
         brand_warm: false,
         // Conversion Engine ticked → £8K retainer; otherwise project-only.
         retainer_tier: conversionEngine ? "8k" : "none",
+        onboarding_submission_id: onboarding.id,
       });
+    } else if (!client.pod_id) {
+      /* Parked Client (spawned via the inbox) being assigned to a pod
+       * for the first time. Sync pod_id so it leaves purgatory and
+       * shows up under the chosen pod on the roster. moveClientToPod
+       * handles project + task assignment too, but at this point we
+       * haven't created the project yet so it's a clean pod_id update. */
+      moveClientToPod(client.id, podId);
+      client = { ...client, pod_id: podId };
     }
 
     /* Build the pages array. The label is appended to the page type via
@@ -850,7 +904,7 @@ function AssignToPodModal({
     }));
 
     const project = createProject({
-      name: `${companyName} — full build`,
+      name: `${companyName} - full build`,
       client_id: client.id,
       pod_id: podId,
       pages,
@@ -877,11 +931,11 @@ function AssignToPodModal({
         });
         if (matchKey && matchKey.label.trim()) {
           const verb = t.discipline === "design" ? "Design" : "Build";
-          return { ...t, title: `${verb} – ${PAGE_LABEL[matchKey.type]} · ${matchKey.label.trim()}` };
+          return { ...t, title: `${verb} - ${PAGE_LABEL[matchKey.type]} · ${matchKey.label.trim()}` };
         }
         return t;
       });
-      // Direct write — tasks are localStorage-backed
+      // Direct write, tasks are localStorage-backed
       localStorage.setItem("launchpad-pods-v2-tasks", JSON.stringify(updated));
     }
 
@@ -934,13 +988,13 @@ function AssignToPodModal({
                 const isLightest = p.id === lightestPodId;
                 return (
                   <option key={p.id} value={p.id}>
-                    {p.name} — {used}/{cap}pts now · {next}/{cap}pts next{isLightest ? " · lightest" : ""}
+                    {p.name}, {used}/{cap}pts now · {next}/{cap}pts next{isLightest ? " · lightest" : ""}
                   </option>
                 );
               })}
             </select>
             <p className="mt-1 text-[10px] text-[#A0A0A0]">
-              Defaults to the lightest-loaded pod for this month. Pre-selected: <strong>{eligiblePods.find((p) => p.id === lightestPodId)?.name ?? "—"}</strong>.
+              Defaults to the lightest-loaded pod for this month. Pre-selected: <strong>{eligiblePods.find((p) => p.id === lightestPodId)?.name ?? ","}</strong>.
             </p>
           </div>
 
@@ -993,10 +1047,10 @@ function AssignToPodModal({
             />
             <div className="flex-1">
               <div className="text-xs font-medium text-[#1B1B1B]">
-                Rush — exception flow
+                Rush, exception flow
               </div>
               <div className="text-[10px] text-[#7A7A7A]">
-                Skips the Monday-snap (kickoff = signoff date) and halves bucket duration. Use sparingly — pod cards track rush count so heavy use shows up in the operating model.
+                Skips the Monday-snap (kickoff = signoff date) and halves bucket duration. Use sparingly, pod cards track rush count so heavy use shows up in the operating model.
               </div>
             </div>
           </label>
@@ -1004,7 +1058,7 @@ function AssignToPodModal({
           <div>
             <div className="mb-1 flex items-center justify-between">
               <label className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
-                Deliverables — confirm before assigning
+                Deliverables, confirm before assigning
               </label>
               <span className="text-[10px] text-[#A0A0A0]">
                 {items.length} {items.length === 1 ? "item" : "items"}
@@ -1027,7 +1081,7 @@ function AssignToPodModal({
             )}
             {source === "blank" && (
               <p className="mb-1.5 text-[10px] text-amber-700">
-                ⚠ No deliverables found on the portal, the onboarding form, or page_type — add them here.
+                ⚠ No deliverables found on the portal, the onboarding form, or page_type, add them here.
               </p>
             )}
             <div className="space-y-1.5">
@@ -1093,7 +1147,7 @@ function AssignToPodModal({
 
 // ─── CRO Pipeline panel ─────────────────────────────────────────────
 
-/* Pod health row — single line of three cells, one per pod, with a
+/* Pod health row, single line of three cells, one per pod, with a
  * single overall tone (green / amber / red) and a list of micro-
  * indicators. Tone aggregation: any red signal → red; any amber → amber;
  * else green. Indicators: capacity utilisation now, slip count
@@ -1201,6 +1255,17 @@ function PodHealthRow({
         ? "text-amber-700"
         : "text-emerald-700";
   }
+  /* Tile background by tone, matches the pod card PodStat alert pattern
+   * (rose-50 for alert) but extended to three tones. Green = neutral pod-
+   * card grey so a healthy pod looks identical in tone to a happy stat
+   * box; amber/red lift attention without flooding the row. */
+  function toneTile(t: Tone): string {
+    return t === "red"
+      ? "bg-rose-50 text-rose-800"
+      : t === "amber"
+        ? "bg-amber-50 text-amber-800"
+        : "bg-[#F7F8FA] text-[#1B1B1B]";
+  }
 
   return (
     <div className="mt-6 rounded-2xl border border-[#E5E5EA] bg-white p-4 shadow-[var(--shadow-soft)]">
@@ -1218,37 +1283,21 @@ function PodHealthRow({
           Capacity · Slips this quarter · Blockers · OOO
         </span>
       </div>
-      <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-3">
+      <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
         {cells.map((c) => (
           <div
             key={c.pod.id}
-            className="rounded-xl border border-[#E5E5EA] bg-[#FAFAFA] p-3"
+            className="rounded-xl border border-[#E5E5EA] bg-white p-3"
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mb-2.5">
               <span className={`size-2 rounded-full ${toneClass(c.overall)}`} />
               <span className="text-sm font-semibold text-[#1B1B1B]">{c.pod.name}</span>
             </div>
-            <div className="mt-2 grid grid-cols-4 gap-1 text-[10px]">
-              <div>
-                <span className={`size-1.5 inline-block rounded-full ${toneClass(c.utilTone)} mr-1`} />
-                <span className="font-semibold text-[#1B1B1B]">{c.utilPct}%</span>
-                <div className="text-[#A0A0A0]">cap</div>
-              </div>
-              <div>
-                <span className={`size-1.5 inline-block rounded-full ${toneClass(c.slipTone)} mr-1`} />
-                <span className="font-semibold text-[#1B1B1B]">{c.slips}</span>
-                <div className="text-[#A0A0A0]">slip</div>
-              </div>
-              <div>
-                <span className={`size-1.5 inline-block rounded-full ${toneClass(c.blockerTone)} mr-1`} />
-                <span className="font-semibold text-[#1B1B1B]">{c.openBlockers}</span>
-                <div className="text-[#A0A0A0]">block</div>
-              </div>
-              <div>
-                <span className={`size-1.5 inline-block rounded-full ${toneClass(c.oooTone)} mr-1`} />
-                <span className="font-semibold text-[#1B1B1B]">{c.oooCount}</span>
-                <div className="text-[#A0A0A0]">ooo</div>
-              </div>
+            <div className="grid grid-cols-4 gap-1.5">
+              <HealthStat label="Capacity" value={`${c.utilPct}%`} tone={c.utilTone} toneTile={toneTile} />
+              <HealthStat label="Slips" value={c.slips} tone={c.slipTone} toneTile={toneTile} />
+              <HealthStat label="Blockers" value={c.openBlockers} tone={c.blockerTone} toneTile={toneTile} />
+              <HealthStat label="OOO" value={c.oooCount} tone={c.oooTone} toneTile={toneTile} />
             </div>
           </div>
         ))}
@@ -1259,8 +1308,8 @@ function PodHealthRow({
 
 /* Friday weekly digest. Admin-only, shows only on Fridays (Mon-Thu it's
  * collapsed entirely so it doesn't add noise mid-week). Computes a per-
- * pod summary of the week — what shipped, what's still open, what's
- * stale (>48h ticket), what's blocked, what slipped — and offers a one-
+ * pod summary of the week, what shipped, what's still open, what's
+ * stale (>48h ticket), what's blocked, what slipped, and offers a one-
  * click "Post to Slack" button that fires it to a channel the admin
  * picks. The summary itself is also rendered on-screen so the admin
  * can review before posting (or use the digest in standup without ever
@@ -1310,7 +1359,7 @@ function FridayDigestPanel({
 
   function formatSlackMessage(s: typeof summaries[number]): string {
     const lines: string[] = [
-      `:calendar_spiral: *Friday digest — ${s.pod.name}* — week of ${today}`,
+      `:calendar_spiral: *Friday digest - ${s.pod.name}*, week of ${today}`,
     ];
     if (s.shipped.length > 0) {
       lines.push(
@@ -1342,7 +1391,7 @@ function FridayDigestPanel({
     setPosting(s.pod.id);
     try {
       await fetch("/api/pods/blocker-notify", {
-        // Reuse the existing endpoint — it accepts arbitrary text via
+        // Reuse the existing endpoint, it accepts arbitrary text via
         // title (description optional). Keeps endpoint count down for
         // a once-a-week feature.
         method: "POST",
@@ -1350,7 +1399,7 @@ function FridayDigestPanel({
         body: JSON.stringify({
           channel_id: s.pod.slack_channel_id,
           pod_name: s.pod.name,
-          title: `Friday digest — week of ${today}`,
+          title: `Friday digest - week of ${today}`,
           description: formatSlackMessage(s).split("\n").slice(1).join("\n"),
         }),
       });
@@ -1377,7 +1426,7 @@ function FridayDigestPanel({
       <div className="flex items-baseline justify-between gap-3">
         <div>
           <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
-            Friday digest{!isFriday && " — preview"}
+            Friday digest{!isFriday && ", preview"}
           </h2>
           <p className="mt-0.5 text-xs text-[#7A7A7A]">
             What each pod shipped this week, what&apos;s still open, what&apos;s stale. One click posts the formatted summary to the pod&apos;s Slack channel.
@@ -1501,7 +1550,7 @@ function CroPipeline({
             CRO Pipeline
           </h2>
           <p className="mt-0.5 text-xs text-[#7A7A7A]">
-            {dan.name}&apos;s strategy + wireframe work across all pods. Pre-seeded for the full 90-day cycle on Conversion Engine retainers — grouped by month so the runway is visible at a glance.
+            {dan.name}&apos;s strategy + wireframe work across all pods. Pre-seeded for the full 90-day cycle on Conversion Engine retainers, grouped by month so the runway is visible at a glance.
           </p>
         </div>
         <span className="text-[11px] tabular-nums text-[#A0A0A0]">
@@ -1543,7 +1592,7 @@ function CroPipeline({
                 autoFocus
                 value={taskTitle}
                 onChange={(e) => setTaskTitle(e.target.value)}
-                placeholder="Strategy task (e.g. Wireframe — PDP — Sling Carrier)"
+                placeholder="Strategy task (e.g. Wireframe, PDP, Sling Carrier)"
                 className="flex-1 min-w-[280px] rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-xs"
               />
               <select
@@ -1555,7 +1604,7 @@ function CroPipeline({
                   const c = clientById.get(p.client_id);
                   return (
                     <option key={p.id} value={p.id}>
-                      {p.name} · {c?.name ?? "—"}
+                      {p.name} · {c?.name ?? ","}
                     </option>
                   );
                 })}
@@ -1716,6 +1765,36 @@ function PodStat({
         {label}
       </div>
       <div className="mt-0.5 text-base font-semibold tabular-nums">{value}</div>
+    </div>
+  );
+}
+
+/* Three-tone variant of PodStat used by Agency Health. Same shape as
+ * PodStat (rounded tile, label-on-top + big-value pattern) so the
+ * Agency Health row and the per-pod stat strip read as the same
+ * component family, they just differ in what signal they show.
+ *
+ * Background carries the traffic-light tone instead of a separate dot,
+ * which removes a layer of visual noise from the previous "dot + tiny
+ * inline number" pattern. toneTile is passed in so callers control the
+ * tone-to-class mapping. */
+function HealthStat({
+  label,
+  value,
+  tone,
+  toneTile,
+}: {
+  label: string;
+  value: string | number;
+  tone: "green" | "amber" | "red";
+  toneTile: (t: "green" | "amber" | "red") => string;
+}) {
+  return (
+    <div className={`rounded-lg px-2.5 py-1.5 ${toneTile(tone)}`}>
+      <div className="text-[9px] font-semibold uppercase tracking-wider opacity-70">
+        {label}
+      </div>
+      <div className="mt-0.5 text-sm font-semibold tabular-nums">{value}</div>
     </div>
   );
 }

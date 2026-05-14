@@ -15,21 +15,37 @@ export default function EngagementDetailPage() {
 
   useEffect(() => {
     if (!id) return;
-    /* Lookup order: localStorage-created (user form) → pods-v2 Client
-     * (real ops data) → static MOCK_ENGAGEMENTS (bucket examples). First
-     * hit wins. */
+    let cancelled = false;
+
+    /* Lookup order: localStorage-created (user form), then pods-v2 Client
+     * (real ops data), then static MOCK_ENGAGEMENTS (bucket examples).
+     * First hit wins. We pull cloud-side pods data first because a fresh
+     * browser landing here without visiting /pods-v2 has a cold cache
+     * and would 404 on a real pods-v2 client id. */
     const local = loadLocalEngagementById(id);
     if (local) {
       setEngagement(local);
       return;
     }
-    const fromPods = loadEngagementFromPodsById(id);
-    if (fromPods) {
-      setEngagement(fromPods);
-      return;
-    }
-    const mock = MOCK_ENGAGEMENTS.find((e) => e.id === id);
-    setEngagement(mock ?? null);
+
+    (async () => {
+      try {
+        const { bootstrapPodsSync } = await import("@/lib/pods-v2/sync");
+        await bootstrapPodsSync();
+      } catch (err) {
+        console.error("[engagements] bootstrap failed:", err);
+      }
+      if (cancelled) return;
+      const fromPods = loadEngagementFromPodsById(id);
+      if (fromPods) {
+        setEngagement(fromPods);
+        return;
+      }
+      const mock = MOCK_ENGAGEMENTS.find((e) => e.id === id);
+      setEngagement(mock ?? null);
+    })();
+
+    return () => { cancelled = true; };
   }, [id]);
 
   if (engagement === undefined) {

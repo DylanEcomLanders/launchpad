@@ -15,7 +15,7 @@ import { PodAvatar } from "@/lib/pods-v2/avatars/PodAvatar";
 
 /* Resize a user-picked image file to a square-friendly avatar and
  * return a JPEG data URL. Used as a fallback when the Supabase
- * company-avatars bucket isn't set up — keeps the upload affordance
+ * company-avatars bucket isn't set up, keeps the upload affordance
  * working without infra plumbing. */
 async function imageFileToDataUrl(
   file: File,
@@ -28,7 +28,7 @@ async function imageFileToDataUrl(
     reader.onerror = () => reject(new Error("Failed to read file"));
     reader.readAsDataURL(file);
   });
-  // If we can't get a canvas (SSR — shouldn't happen here) or the image
+  // If we can't get a canvas (SSR, shouldn't happen here) or the image
   // is small enough, just return the raw data URL.
   if (typeof document === "undefined") return dataUrl;
   const img = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -117,7 +117,7 @@ export function CapacityMeter({
    * forward-looking note so the bar reads as "this month" while the
    * full 90-day pipeline is still visible. */
   cycleRetainers?: number;
-  /** Projected utilisation for the *next* 4-week window — sum of
+  /** Projected utilisation for the *next* 4-week window, sum of
    * design-discipline points whose due_date is in weeks 5-8 from now.
    * When provided, renders a thin secondary bar + label so capacity
    * planning can see the cliff before it hits. */
@@ -218,7 +218,7 @@ export function MemberAvatar({
     if (!onChangeAvatar) return;
     setUploading(true);
     try {
-      // 1. Try Supabase upload (preferred — durable, shareable URL).
+      // 1. Try Supabase upload (preferred, durable, shareable URL).
       const fd = new FormData();
       fd.append("file", file);
       fd.append("bucket", "company-avatars");
@@ -234,12 +234,12 @@ export function MemberAvatar({
       const dataUrl = await imageFileToDataUrl(file, 256, 0.85);
       onChangeAvatar(dataUrl);
     } catch {
-      // Last-resort fallback (e.g. server error) — same as above.
+      // Last-resort fallback (e.g. server error), same as above.
       try {
         const dataUrl = await imageFileToDataUrl(file, 256, 0.85);
         onChangeAvatar(dataUrl);
       } catch {
-        alert("Couldn't upload — please try a different image (JPG/PNG/WebP under 5MB).");
+        alert("Couldn't upload, please try a different image (JPG/PNG/WebP under 5MB).");
       }
     } finally {
       setUploading(false);

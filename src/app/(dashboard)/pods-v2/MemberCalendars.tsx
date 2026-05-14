@@ -2,7 +2,7 @@
 
 // ─── Per-member calendars ──────────────────────────────────────────
 // One mini calendar grid per pod member. Each shows that member's
-// tasks plotted on the day they're due. Renders Mon–Fri columns
+// tasks plotted on the day they're due. Renders Mon,Fri columns
 // across either a single week (week mode) or four weeks (month mode).
 
 import { useMemo } from "react";

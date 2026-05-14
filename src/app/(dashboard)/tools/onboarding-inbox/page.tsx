@@ -614,7 +614,7 @@ export default function OnboardingInboxPage() {
                           <svg className="size-4 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
                           <div className="text-left">
                             <p className="text-sm font-semibold">{saving ? "Creating..." : "Create Client Engagement"}</p>
-                            <p className="text-[10px] text-white/50">Spawns Client + Project + brief on the pod board, opens at /engagements</p>
+                            <p className="text-[10px] text-white/50">Creates a parked client (sits in purgatory). Assign to a pod from /pods-v2 to seed the build.</p>
                           </div>
                         </button>
 
@@ -666,6 +666,7 @@ export default function OnboardingInboxPage() {
                     <CheckCircleIcon className="size-5" />
                     <span className="text-sm font-medium">Approved {selected.assigned_at ? new Date(selected.assigned_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : ""}</span>
                   </div>
+                  <ApprovedLinkRow submissionId={selected.id} />
                   {selected.assigned_portal_id && (
                     <div className="flex flex-wrap items-center gap-3">
                       <Link
@@ -812,6 +813,33 @@ function DetailField({ label, value, link }: { label: string; value: string; lin
       ) : (
         <p className="text-sm text-[#444] whitespace-pre-wrap">{value}</p>
       )}
+    </div>
+  );
+}
+
+/* Find the pods-v2 Client spawned from this submission (if any) and show
+ * an Open-engagement link. Sits above the legacy portal link so the new
+ * flow surfaces by default without removing the old escape hatch. */
+function ApprovedLinkRow({ submissionId }: { submissionId: string }) {
+  const [clientId, setClientId] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    import("@/lib/pods-v2/data").then(({ getClients }) => {
+      if (cancelled) return;
+      const match = getClients().find((c) => c.onboarding_submission_id === submissionId);
+      if (match) setClientId(match.id);
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [submissionId]);
+  if (!clientId) return null;
+  return (
+    <div className="mb-2">
+      <Link
+        href={`/engagements/${clientId}`}
+        className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 hover:underline"
+      >
+        Open client engagement <ArrowTopRightOnSquareIcon className="size-3" />
+      </Link>
     </div>
   );
 }

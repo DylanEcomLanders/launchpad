@@ -45,6 +45,7 @@ import {
   fourWeekWindow,
   isMidWeekKickoff,
 } from "@/lib/pods-v2/calc";
+import { PhaseTimeline } from "@/components/task-board/phase-timeline";
 import {
   Client,
   PAGE_DEFAULT_WEIGHT,
@@ -58,15 +59,15 @@ import {
   RetainerTier,
   CYCLE_WEEK_LABEL,
   TASK_PHASE_LABEL,
-  TASK_PHASE_ORDER,
   Task,
+  TaskDiscipline,
   TaskPhase,
   TaskPriority,
   TaskStatus,
   TaskType,
 } from "@/lib/pods-v2/types";
 import { formatDayMonth, todayYMD } from "@/lib/dates";
-import { formatTimeInPhase } from "@/lib/task-board/phases";
+import { formatTimeInPhase, phasesForDiscipline } from "@/lib/task-board/phases";
 import {
   CapacityMeter,
   MemberAvatar,
@@ -236,11 +237,11 @@ export default function PodDetailClient({ podId }: { podId: string }) {
 
   const today = todayYMD();
 
-  /* Revision count per client — sum of `revision`-type tasks across
+  /* Revision count per client, sum of `revision`-type tasks across
    * all of a client's projects (not just this pod's projects, but in
    * practice the pod owns the client so it's the same thing). >2 is
    * the threshold the team uses for "this client/project is
-   * struggling" — surfaced as a rose pill on the client card. */
+   * struggling", surfaced as a rose pill on the client card. */
   const revisionsByClient = useMemo(() => {
     const projectClient = new Map<string, string>();
     for (const p of projects) projectClient.set(p.id, p.client_id);
@@ -367,7 +368,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
     return () => window.removeEventListener("keydown", handler);
   }, [tasks, filterClient, hideDone, hotkeyHelpOpen]);
 
-  /* Two windows for the meter — current 4-week month from today's Mon,
+  /* Two windows for the meter, current 4-week month from today's Mon,
    * then the 4 weeks after that. M2/M3 cycle tasks carry half-points
    * so the next-month projection actually catches the iteration load. */
   const { used, nextMonthUsed } = useMemo(() => {
@@ -403,8 +404,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
   );
 
   /* All work in flight for the pod, regardless of task type. The view used
-   * to split this into a Core Deliverables swim lane + a Tickets table —
-   * combined into one per-member list so each pod member's full plate
+   * to split this into a Core Deliverables swim lane + a Tickets table, * combined into one per-member list so each pod member's full plate
    * lives in the same place. Sort by due date so urgent items float up. */
   const allTasks = useMemo(
     () =>
@@ -492,10 +492,10 @@ export default function PodDetailClient({ podId }: { podId: string }) {
         />
       </div>
 
-      {/* BLOCKERS — pod-wide blockers visible to everyone */}
+      {/* BLOCKERS, pod-wide blockers visible to everyone */}
       <PodBlockersPanel pod={pod} onMutate={refresh} isAdmin={isAdmin} />
 
-      {/* CLIENT ROSTER — moved up */}
+      {/* CLIENT ROSTER, moved up */}
       <ClientRoster
         clients={clients}
         currentPodId={pod.id}
@@ -504,7 +504,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
         revisionsByClient={revisionsByClient}
       />
 
-      {/* FILTERS — narrow the swim lane to a single client or hide
+      {/* FILTERS, narrow the swim lane to a single client or hide
        * done tasks. Useful when columns get full and you want to zoom
        * in on what matters. */}
       <div className="mt-10 flex flex-wrap items-center gap-2 text-[11px]">
@@ -583,7 +583,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
         </div>
       )}
 
-      {/* WORK IN FLIGHT — one column per pod member, all task types combined */}
+      {/* WORK IN FLIGHT, one column per pod member, all task types combined */}
       <SwimLane
         title="Work in flight"
         subtitle="Core deliverables and tickets. One column per pod member, sorted by due date."
@@ -878,15 +878,15 @@ function PrimaryTaskRow({
         : `${daysToDeadline}d`
   }`;
 
-  /* Open-age signal on tickets only. Tickets are fast-moving — thresholds
+  /* Open-age signal on tickets only. Tickets are fast-moving, thresholds
    * are 24h (amber) and 48h (red), not days. Anything still sitting
    * after two days needs eyes on it.
    *
-   * Secondaries do tickets only — even if a task on a secondary's column
+   * Secondaries do tickets only, even if a task on a secondary's column
    * is technically `core_deliverable` (legacy/bad data), render it
    * ticket-style so the column reads consistently.
    *
-   * Pause: when `waiting_on` is set, the age clock is frozen — paused
+   * Pause: when `waiting_on` is set, the age clock is frozen, paused
    * duration is subtracted from elapsed time so a ticket sitting on a
    * client signoff doesn't escalate unfairly. */
   const assignee = members.find((m) => m.id === task.assigned_to);
@@ -914,7 +914,7 @@ function PrimaryTaskRow({
       }`}
       ref={ref}
     >
-      {/* Status circle — click to cycle. Design core deliverables open
+      {/* Status circle, click to cycle. Design core deliverables open
        * a handoff checklist when transitioning to done. */}
       <button
         onClick={() => {
@@ -958,12 +958,12 @@ function PrimaryTaskRow({
           {task.cycle && (
             <span
               className="shrink-0 rounded border border-emerald-200 bg-emerald-50 px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-emerald-800"
-              title={`Conversion Engine — Month ${task.cycle.month}, Week ${task.cycle.week} (${CYCLE_WEEK_LABEL[task.cycle.week]})`}
+              title={`Conversion Engine, Month ${task.cycle.month}, Week ${task.cycle.week} (${CYCLE_WEEK_LABEL[task.cycle.week]})`}
             >
               M{task.cycle.month} · W{task.cycle.week} · {CYCLE_WEEK_LABEL[task.cycle.week]}
             </span>
           )}
-          {/* Test result chip — only on Build tasks (variant tests
+          {/* Test result chip, only on Build tasks (variant tests
            * shipped as Conversion Engine cycle work). Clickable to
            * open the result editor inline. */}
           {task.discipline === "development" && task.cycle && task.cycle.month >= 2 && (
@@ -997,7 +997,7 @@ function PrimaryTaskRow({
           {task.points != null && (
             <span
               className="shrink-0 rounded border border-[#E5E5EA] bg-white px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-[#7A7A7A]"
-              title={`${task.points} pt deliverable — covers design + dev together`}
+              title={`${task.points} pt deliverable, covers design + dev together`}
             >
               {task.points}pt{task.points === 1 ? "" : "s"}
             </span>
@@ -1062,7 +1062,7 @@ function PrimaryTaskRow({
                     ? "text-amber-700"
                     : "text-emerald-700"
               }`}
-              title={`Opened ${new Date(task.created_at).toLocaleString()} — click to pause`}
+              title={`Opened ${new Date(task.created_at).toLocaleString()}, click to pause`}
             >
               {ageTime}
             </button>
@@ -1130,13 +1130,13 @@ function PrimaryTaskRow({
             if (!task.test_result || task.test_result.status === "pending") return undefined;
             const params = new URLSearchParams({
               client: client?.name || "",
-              page: task.title.replace(/^Build\s*–\s*/i, ""),
+              page: task.title.replace(/^Build\s*,\s*/i, ""),
               lift: task.test_result.lift_pct != null
                 ? `${task.test_result.lift_pct > 0 ? "+" : ""}${task.test_result.lift_pct}`
                 : "0",
               sig: task.test_result.significance_pct != null
                 ? String(task.test_result.significance_pct)
-                : "—",
+                : ",",
               status: task.test_result.status,
               period: task.cycle ? `M${task.cycle.month} cycle` : "",
               hyp: task.test_result.notes || "",
@@ -1160,6 +1160,8 @@ function PrimaryTaskRow({
       {phaseOpen && task.phase && (
         <PhasePopover
           currentPhase={task.phase}
+          discipline={task.discipline}
+          history={task.phase_history}
           onPick={(phase) => {
             updateTaskPhase(task.id, phase);
             setPhaseOpen(false);
@@ -1236,39 +1238,58 @@ function ReassignPopover({
 
 function PhasePopover({
   currentPhase,
+  discipline,
+  history,
   onPick,
 }: {
   currentPhase: TaskPhase;
+  discipline?: TaskDiscipline;
+  history?: import("@/lib/task-board/phases").PhaseEntry[];
   onPick: (p: TaskPhase) => void;
 }) {
+  const hasHistory = (history?.length ?? 0) > 0;
+  /* Filter the picker by discipline so a design task can't accidentally
+   * be flipped into Development phases. Universal phases (onboarding,
+   * launch) surface for both lanes; research is design-side. */
+  const applicable = phasesForDiscipline(discipline) as TaskPhase[];
   return (
-    <div className="absolute left-0 top-full z-30 mt-1 w-56 overflow-hidden rounded-lg border border-[#E5E5EA] bg-white shadow-[var(--shadow-card)]">
+    <div className="absolute left-0 top-full z-30 mt-1 w-72 overflow-hidden rounded-lg border border-[#E5E5EA] bg-white shadow-[var(--shadow-card)]">
       <div className="border-b border-[#EDEDEF] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
         Move to phase…
       </div>
-      {TASK_PHASE_ORDER.map((p) => (
-        <button
-          key={p}
-          onClick={() => onPick(p)}
-          className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-[#F7F8FA] ${
-            p === currentPhase ? "bg-[#F3F3F5] font-medium" : ""
-          }`}
-        >
-          <span>{TASK_PHASE_LABEL[p]}</span>
-          <span
-            className={`inline-flex items-center rounded border px-1 py-0.5 text-[9px] font-medium ${PHASE_PILL[p]}`}
+      <div className="max-h-64 overflow-y-auto">
+        {applicable.map((p) => (
+          <button
+            key={p}
+            onClick={() => onPick(p)}
+            className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-[#F7F8FA] ${
+              p === currentPhase ? "bg-[#F3F3F5] font-medium" : ""
+            }`}
           >
-            ●
-          </span>
-        </button>
-      ))}
+            <span>{TASK_PHASE_LABEL[p]}</span>
+            <span
+              className={`inline-flex items-center rounded border px-1 py-0.5 text-[9px] font-medium ${PHASE_PILL[p]}`}
+            >
+              ●
+            </span>
+          </button>
+        ))}
+      </div>
+      {hasHistory && (
+        <div className="border-t border-[#EDEDEF] bg-[#FAFBFD] px-3 py-3">
+          <p className="text-[9px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-2">
+            Phase history
+          </p>
+          <PhaseTimeline history={history} compact />
+        </div>
+      )}
     </div>
   );
 }
 
 /* Inline OOO editor for a pod member. Two date inputs (start / end);
  * either can be left empty for an open-ended absence. Saves on blur.
- * Render only for admins — non-admins see the OOO pill (set elsewhere)
+ * Render only for admins, non-admins see the OOO pill (set elsewhere)
  * but can't edit. Compact so it fits under the MemberRow without
  * pushing the header out of shape. */
 function MemberOooEditor({
@@ -1330,7 +1351,7 @@ function MemberOooEditor({
             onChange();
           }}
           className="rounded px-1.5 py-0.5 text-[10px] text-rose-700 hover:bg-rose-50"
-          title="Clear OOO — back at the desk"
+          title="Clear OOO, back at the desk"
         >
           Clear
         </button>
@@ -1350,7 +1371,7 @@ function MemberOooEditor({
 }
 
 /* Inline modal to set/update a client's CVR + AOV baseline + current.
- * Manually entered — we don't have GA / Shopify integration yet, but
+ * Manually entered, we don't have GA / Shopify integration yet, but
  * the delta math runs as soon as both numbers exist. metrics_updated_at
  * stamps automatically on save. */
 function ClientMetricsEditor({
@@ -1664,7 +1685,7 @@ function DesignHandoffModal({
         </p>
         <h2 className="mt-0.5 text-base font-semibold text-[#1B1B1B]">{taskTitle}</h2>
         <p className="mt-1 text-[11px] text-[#7A7A7A]">
-          Tick all three before flipping to done — stops the back-and-forth where dev pings the designer two days later.
+          Tick all three before flipping to done, stops the back-and-forth where dev pings the designer two days later.
         </p>
 
         <div className="mt-3 space-y-2">
@@ -1692,7 +1713,7 @@ function DesignHandoffModal({
             <div className="flex-1">
               <div className="text-xs font-medium text-[#1B1B1B]">Assets exported</div>
               <div className="text-[10px] text-[#7A7A7A]">
-                Hero images, icons, fonts — sliced and dropped where dev expects them.
+                Hero images, icons, fonts, sliced and dropped where dev expects them.
               </div>
             </div>
           </label>
@@ -1728,7 +1749,7 @@ function DesignHandoffModal({
                 : "cursor-not-allowed bg-[#E5E5EA] text-[#A0A0A0]"
             }`}
           >
-            {ready ? "Confirm — mark done" : `Tick all 3 (${[figma, assets, scope].filter(Boolean).length}/3)`}
+            {ready ? "Confirm, mark done" : `Tick all 3 (${[figma, assets, scope].filter(Boolean).length}/3)`}
           </button>
         </div>
       </div>
@@ -1750,7 +1771,7 @@ function PausePopover({
   return (
     <div className="absolute right-0 top-full z-30 mt-1 w-52 overflow-hidden rounded-lg border border-[#E5E5EA] bg-white shadow-[var(--shadow-card)]">
       <div className="border-b border-[#EDEDEF] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
-        {isPaused ? "Currently paused" : "Pause clock — waiting on…"}
+        {isPaused ? "Currently paused" : "Pause clock, waiting on…"}
       </div>
       {isPaused ? (
         <>
@@ -1866,11 +1887,11 @@ function AddTaskInline({
   const memberIsSecondary =
     member.role === "secondary_designer" || member.role === "secondary_dev";
   /* Only PRIMARY members get the core-deliverable add-flow. Secondaries
-   * do tickets (revisions, bugs, desktop fixes, asset prep) — give them
+   * do tickets (revisions, bugs, desktop fixes, asset prep), give them
    * the ticket form regardless of the swim-lane's default. */
   const memberIsPrimary =
     member.role === "primary_designer" || member.role === "primary_dev";
-  /* Only admins can spawn paired core deliverables — that's PM-side
+  /* Only admins can spawn paired core deliverables, that's PM-side
    * scope-setting. Team members get the ticket form regardless of
    * which column they're adding to. */
   const isPrimaryMode = defaultType === "core_deliverable" && memberIsPrimary && isAdmin;
@@ -1991,17 +2012,17 @@ function AddTaskInline({
                 const client = clientById.get(p.client_id);
                 return (
                   <option key={p.id} value={p.id}>
-                    {p.name} · {client?.name ?? "—"}
+                    {p.name} · {client?.name ?? ","}
                   </option>
                 );
               })}
             </select>
             <div className="mt-1.5 text-[10px] text-[#7A7A7A]">
-              Creates two paired tasks: <strong>Design – {PAGE_LABEL[deliverableType]}</strong> for{" "}
-              <strong className="text-[#1B1B1B]">{memberIsDesigner ? member.name : pairPartner?.name ?? "—"}</strong>
+              Creates two paired tasks: <strong>Design, {PAGE_LABEL[deliverableType]}</strong> for{" "}
+              <strong className="text-[#1B1B1B]">{memberIsDesigner ? member.name : pairPartner?.name ?? ","}</strong>
               {" "}+{" "}
-              <strong>Build – {PAGE_LABEL[deliverableType]}</strong> for{" "}
-              <strong className="text-[#1B1B1B]">{memberIsDesigner ? pairPartner?.name ?? "—" : member.name}</strong>.
+              <strong>Build, {PAGE_LABEL[deliverableType]}</strong> for{" "}
+              <strong className="text-[#1B1B1B]">{memberIsDesigner ? pairPartner?.name ?? "," : member.name}</strong>.
               Points cover both halves: <strong>{pointsFor(deliverableType)}pt{pointsFor(deliverableType) === 1 ? "" : "s"}</strong>.
               Same-type discount applies if a {PAGE_LABEL[deliverableType]} already exists on this project.
             </div>
@@ -2039,7 +2060,7 @@ function AddTaskInline({
                 const client = clientById.get(p.client_id);
                 return (
                   <option key={p.id} value={p.id}>
-                    {p.name} · {client?.name ?? "—"}
+                    {p.name} · {client?.name ?? ","}
                   </option>
                 );
               })}
@@ -2072,8 +2093,8 @@ function AddTaskInline({
               if (variantLabel.trim()) {
                 const tasks = getTasks();
                 const next = tasks.map((t) => {
-                  if (t.id === design.id) return { ...t, title: `Design – ${PAGE_LABEL[deliverableType]} · ${variantLabel.trim()}` };
-                  if (t.id === dev.id) return { ...t, title: `Build – ${PAGE_LABEL[deliverableType]} · ${variantLabel.trim()}` };
+                  if (t.id === design.id) return { ...t, title: `Design, ${PAGE_LABEL[deliverableType]} · ${variantLabel.trim()}` };
+                  if (t.id === dev.id) return { ...t, title: `Build, ${PAGE_LABEL[deliverableType]} · ${variantLabel.trim()}` };
                   return t;
                 });
                 localStorage.setItem("launchpad-pods-v2-tasks", JSON.stringify(next));
@@ -2118,7 +2139,7 @@ function PodBlockersPanel({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [ownerId, setOwnerId] = useState<string>("");
-  /* Slack channel editor — admins can paste a channel id. Saved on
+  /* Slack channel editor, admins can paste a channel id. Saved on
    * blur; shows a tiny green dot when configured so the team knows
    * blocker pings are live. */
   const [editingSlack, setEditingSlack] = useState(false);
@@ -2150,7 +2171,7 @@ function PodBlockersPanel({
             Blockers
           </h2>
           <p className="mt-0.5 text-xs text-[#7A7A7A]">
-            Pod-wide blockers everyone needs to see — a missing asset, a sick teammate, a tool down.
+            Pod-wide blockers everyone needs to see, a missing asset, a sick teammate, a tool down.
             {pod.slack_channel_id && (
               <span className="ml-1.5 inline-flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-emerald-800">
                 <span className="size-1 rounded-full bg-emerald-500" /> Slack
@@ -2187,7 +2208,7 @@ function PodBlockersPanel({
                   onClick={() => setEditingSlack(true)}
                   className="font-mono text-[#1B1B1B] hover:underline"
                 >
-                  {pod.slack_channel_id || "— not set —"}
+                  {pod.slack_channel_id || ", not set ,"}
                 </button>
               )}
             </div>
@@ -2319,7 +2340,7 @@ function PodBlockersPanel({
                         onMutate();
                       }}
                       className="rounded px-1.5 py-0.5 text-[10px] font-medium text-[#1B1B1B] opacity-0 transition-opacity hover:bg-white hover:underline group-hover:opacity-100"
-                      title="Re-open — moves back to active blockers"
+                      title="Re-open, moves back to active blockers"
                     >
                       ↺ Re-open
                     </button>
@@ -2426,7 +2447,7 @@ function ClientCard({
             {revisionCount > 2 && (
               <span
                 className="rounded border border-rose-200 bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-700"
-                title={`${revisionCount} revision rounds — quality signal, this engagement may be struggling`}
+                title={`${revisionCount} revision rounds, quality signal, this engagement may be struggling`}
               >
                 {revisionCount} revs
               </span>
@@ -2461,10 +2482,10 @@ function ClientCard({
           </div>
           {client.cvr_baseline != null || client.cvr_current != null ? (
             <div className="mt-0.5 flex items-baseline gap-1 text-[11px] tabular-nums">
-              <span className="text-[#7A7A7A]">{client.cvr_baseline ?? "—"}%</span>
+              <span className="text-[#7A7A7A]">{client.cvr_baseline ?? ","}%</span>
               <span className="text-[#C5C5C5]">→</span>
               <span className="font-semibold text-[#1B1B1B]">
-                {client.cvr_current ?? "—"}%
+                {client.cvr_current ?? ","}%
               </span>
               {cvrDelta != null && (
                 <span
@@ -2495,10 +2516,10 @@ function ClientCard({
           </div>
           {client.aov_baseline != null || client.aov_current != null ? (
             <div className="mt-0.5 flex items-baseline gap-1 text-[11px] tabular-nums">
-              <span className="text-[#7A7A7A]">£{client.aov_baseline ?? "—"}</span>
+              <span className="text-[#7A7A7A]">£{client.aov_baseline ?? ","}</span>
               <span className="text-[#C5C5C5]">→</span>
               <span className="font-semibold text-[#1B1B1B]">
-                £{client.aov_current ?? "—"}
+                £{client.aov_current ?? ","}
               </span>
               {aovDelta != null && (
                 <span

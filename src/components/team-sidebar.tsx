@@ -14,6 +14,7 @@ import {
   ClipboardDocumentListIcon,
   PhotoIcon,
   Squares2X2Icon,
+  BanknotesIcon,
 } from "@heroicons/react/24/solid";
 import { Logo } from "@/components/logo";
 
@@ -41,6 +42,11 @@ const navItems: NavItem[] = [
     href: "/team/ops-wiki",
     icon: <BookOpenIcon className="size-4" />,
     badge: "WIP",
+  },
+  {
+    label: "Payments",
+    href: "/team/payments",
+    icon: <BanknotesIcon className="size-4" />,
   },
 ];
 

@@ -21,7 +21,7 @@ const ROW_ID = "pods-v2-team-avatars";
 
 export type TeamAvatarMap = Record<string, string>;
 
-/** Pod member key — stable across browsers because pod name + role are
+/** Pod member key, stable across browsers because pod name + role are
  * fixed by the seed. Two designers in the same pod can't both be
  * "primary_designer" so this is unique. */
 export function podMemberAvatarKey(podName: string, role: string): string {
@@ -69,7 +69,7 @@ export async function saveTeamAvatar(key: string, url: string | undefined): Prom
       { onConflict: "id" },
     );
   } catch {
-    // Silent — localStorage already up to date; cloud just falls behind
+    // Silent, localStorage already up to date; cloud just falls behind
     // until the next successful save.
   }
 }

@@ -279,7 +279,7 @@ export default function AdminClient() {
           value={overCapacity.length}
           desc={
             overCapacity.length === 0
-              ? `${nearCapacity.length} pod${nearCapacity.length === 1 ? "" : "s"} near 80–100%`
+              ? `${nearCapacity.length} pod${nearCapacity.length === 1 ? "" : "s"} near 80,100%`
               : `${overCapacity.map((s) => s.pod.name).join(", ")}`
           }
         />
@@ -329,7 +329,7 @@ export default function AdminClient() {
                       {project.name}
                     </div>
                     <div className="text-[11px] text-[#7A7A7A]">
-                      {pod?.name} · {client?.name ?? "—"}
+                      {pod?.name} · {client?.name ?? ","}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-[11px]">
@@ -400,7 +400,7 @@ export default function AdminClient() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums text-[#7A7A7A]">
-                      {perPoint > 0 ? CURRENCY(perPoint) : "—"}
+                      {perPoint > 0 ? CURRENCY(perPoint) : ","}
                     </td>
                   </tr>
                 );
@@ -446,7 +446,7 @@ export default function AdminClient() {
                             {p.name}
                           </div>
                           <div className="text-[11px] text-[#7A7A7A]">
-                            {client?.name ?? "—"}
+                            {client?.name ?? ","}
                           </div>
                         </div>
                         <BucketBadge bucket={p.bucket} />

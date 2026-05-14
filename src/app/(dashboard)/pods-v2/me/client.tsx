@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
   ensureSeed,
@@ -21,13 +22,17 @@ import { todayYMD, formatDayMonth } from "@/lib/dates";
 
 const ME_KEY = "launchpad-pods-v2-me";
 
-/* "Today" view — per-member filter that surfaces what each person
+/* "Today" view, per-member filter that surfaces what each person
  * needs to do RIGHT NOW. No auth identity in this app, so visitor
  * picks their member from a dropdown; choice persists in localStorage.
  *
  * Sections: overdue → due today → in progress → up next (next 7 days).
  * Click the status circle to cycle. Done tasks hidden by default. */
 export default function MeClient() {
+  /* Team-flavour detection, keeps back link inside the (team) layout
+   * when mounted at /team/pods/me. */
+  const pathname = usePathname();
+  const linkBase = pathname?.startsWith("/team/pods") ? "/team/pods" : "/pods-v2";
   const [meId, setMeId] = useState<string>("");
   const [members, setMembers] = useState<PodMember[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -139,7 +144,7 @@ export default function MeClient() {
           </h1>
         </div>
         <Link
-          href="/pods-v2"
+          href={linkBase}
           className="text-[11px] text-[#7A7A7A] hover:text-[#1B1B1B] hover:underline"
         >
           ← All pods
@@ -155,7 +160,7 @@ export default function MeClient() {
           onChange={(e) => setMe(e.target.value)}
           className="mt-1 w-full rounded-lg border border-[#E5E5EA] bg-white px-2 py-1.5 text-sm"
         >
-          <option value="">— choose your name —</option>
+          <option value="">, choose your name ,</option>
           {members.map((m) => (
             <option key={m.id} value={m.id}>
               {m.name}

@@ -52,9 +52,25 @@ export interface MockEngagement {
   customDeliverables: CustomDeliverable[];
   assets: EngagementAsset[];
   activity: EngagementActivity[];
+  /** Pointer back to the original OnboardingSubmission. When set, the
+   * /engagements detail page lazy-loads the full intake form (40+
+   * fields) into the Intake panel so the pod has the asset links,
+   * Shopify creds, tracking pixels, and uploaded files without
+   * bouncing through the inbox. */
+  onboardingSubmissionId?: string;
+  /** Engagement-level Must do gates. Four gates aligned with the portal
+   * QA pipeline: cro_brief (Design Brief), design_handoff (Dev Handover),
+   * dev_handoff (Dev QA), launch_prep (Handoff / Testing). Same
+   * checklist content as portal; same modal workflow shape. */
+  mustDos?: {
+    cro_brief?: import("@/lib/pods-v2/types").MustDoGate;
+    design_handoff?: import("@/lib/pods-v2/types").MustDoGate;
+    dev_handoff?: import("@/lib/pods-v2/types").MustDoGate;
+    launch_prep?: import("@/lib/pods-v2/types").MustDoGate;
+  };
 }
 
-/* Minimal client roster — only the three bucket example shapes (A/B/C)
+/* Minimal client roster, only the three bucket example shapes (A/B/C)
  * remain so the buckets stay visible as reference. Retainer examples
  * cleared; create new ones via /engagements/new. */
 export const MOCK_ENGAGEMENTS: MockEngagement[] = [

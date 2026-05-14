@@ -260,7 +260,7 @@ export default function IntakeClient() {
                 const pod = pods.find((p) => p.id === c.pod_id);
                 return (
                   <option key={c.id} value={c.id}>
-                    {c.name} · {pod?.name ?? "—"}
+                    {c.name} · {pod?.name ?? ","}
                   </option>
                 );
               })}
@@ -297,7 +297,7 @@ export default function IntakeClient() {
                     }
                     className={selectClass}
                   >
-                    <option value="none">None — project only</option>
+                    <option value="none">None, project only</option>
                     <option value="8k">£8k retainer</option>
                     <option value="12k">£12k retainer</option>
                   </select>
@@ -318,7 +318,7 @@ export default function IntakeClient() {
           {existingClient && (
             <div className="mt-2 rounded-lg bg-[#F7F8FA] px-3 py-2 text-[11px] text-[#7A7A7A]">
               Pod: <span className="font-medium text-[#1B1B1B]">
-                {pods.find((p) => p.id === existingClient.pod_id)?.name ?? "—"}
+                {pods.find((p) => p.id === existingClient.pod_id)?.name ?? ","}
               </span>
               {existingClient.brand_warm && (
                 <span className="ml-2 font-medium text-orange-700">Brand-warm</span>
@@ -433,7 +433,7 @@ export default function IntakeClient() {
             className="h-4 w-4 rounded border-rose-300"
           />
           <div>
-            <div className="text-rose-900">Rush — kicks off off-cycle</div>
+            <div className="text-rose-900">Rush, kicks off off-cycle</div>
             <div className="text-[10px] text-rose-700">
               Skips the Monday-only rule. Logged but allowed.
             </div>
@@ -465,7 +465,7 @@ export default function IntakeClient() {
             </div>
             <PreviewStat
               label="Pod"
-              value={pods.find((p) => p.id === suggestedPodId)?.name ?? "—"}
+              value={pods.find((p) => p.id === suggestedPodId)?.name ?? ","}
             />
           </div>
           <div className="mt-3 grid grid-cols-2 gap-3 border-t border-[#E5E5EA] pt-3">
@@ -482,7 +482,7 @@ export default function IntakeClient() {
                 Delivery Thursday
               </div>
               <div className="mt-0.5 text-sm font-medium">
-                {delivery ? formatLongDate(delivery) : "Bespoke — set manually"}
+                {delivery ? formatLongDate(delivery) : "Bespoke, set manually"}
               </div>
             </div>
           </div>

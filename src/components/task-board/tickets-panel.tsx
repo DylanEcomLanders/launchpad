@@ -20,7 +20,7 @@ interface Props {
   currentUser: string;
   /** List of client names for the composer datalist. */
   clients: string[];
-  /** Called when "Promote to task" fires. Optional — when omitted, the
+  /** Called when "Promote to task" fires. Optional, when omitted, the
    * Promote button is hidden. Use the omission on team-facing surfaces
    * where only leadership should be able to promote a ticket to a task. */
   onPromoteToTask?: (ticket: Ticket) => Promise<string | null>;
@@ -48,7 +48,7 @@ export function TicketsPanel({ currentUser, clients, onPromoteToTask }: Props) {
   const persist = (next: Ticket[]) => {
     setTickets(next);
     saveTickets(next).catch(() => {
-      /* swallow — UX shouldn't block on save errors. Last write wins. */
+      /* swallow, UX shouldn't block on save errors. Last write wins. */
     });
   };
 
@@ -177,7 +177,7 @@ export function TicketsPanel({ currentUser, clients, onPromoteToTask }: Props) {
   return (
     <>
       <div className="rounded-xl border border-[#E5E5EA] bg-white overflow-hidden">
-        {/* Header — counts are the always-visible pressure signal */}
+        {/* Header, counts are the always-visible pressure signal */}
         <div className="flex items-center justify-between px-3 py-2.5 border-b border-[#E5E5EA] bg-[#FAFAFA]">
           <div className="flex items-baseline gap-2">
             <h2 className="text-[12px] font-semibold uppercase tracking-wider text-[#1A1A1A]">

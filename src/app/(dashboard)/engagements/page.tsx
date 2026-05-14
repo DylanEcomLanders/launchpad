@@ -63,7 +63,7 @@ function computeHealth(eng: MockEngagement): EngagementHealth {
   }).length;
 
   // Missing resources = asset categories with zero entries in the current cycle
-  // (kind-aware — buckets have a smaller category set)
+  // (kind-aware, buckets have a smaller category set)
   const categories = assetCategoriesForKind(eng.kind);
   const missingResources = categories.filter((cat) => {
     const hits = eng.assets.filter((a) => a.category === cat.id && a.cycle === currentCycle);
@@ -118,13 +118,25 @@ export default function EngagementsPage() {
   const [localEngagements, setLocalEngagements] = useState<MockEngagement[]>([]);
   const [podsEngagements, setPodsEngagements] = useState<MockEngagement[]>([]);
   useEffect(() => {
+    let cancelled = false;
     setLocalEngagements(loadLocalEngagements());
+    /* Read once synchronously off localStorage so warm caches paint
+     * immediately, then bootstrap from Supabase so fresh browsers land
+     * with real data. Previously this relied on a /pods-v2 mount to
+     * populate localStorage which meant /engagements-first visitors
+     * saw only mocks. */
     setPodsEngagements(loadEngagementsFromPods());
-    /* Pods-v2 hydrates from Supabase on /pods-v2 mount; if a user lands
-     * on /engagements first their cache may be cold. Re-read shortly
-     * after to pick up any late hydration. Cheap and harmless. */
-    const t = setTimeout(() => setPodsEngagements(loadEngagementsFromPods()), 1500);
-    return () => clearTimeout(t);
+    (async () => {
+      try {
+        const { bootstrapPodsSync } = await import("@/lib/pods-v2/sync");
+        await bootstrapPodsSync();
+      } catch (err) {
+        console.error("[engagements] bootstrap failed:", err);
+      }
+      if (cancelled) return;
+      setPodsEngagements(loadEngagementsFromPods());
+    })();
+    return () => { cancelled = true; };
   }, []);
   /* Order: local-created (most recent) → pods-v2 Clients (real ops data)
    * → static MOCK_ENGAGEMENTS (reference bucket examples). Dedupe by id so

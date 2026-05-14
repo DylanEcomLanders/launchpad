@@ -1,6 +1,7 @@
 export type Phase =
   | "onboarding"
   | "research"
+  | "wireframe"
   | "design"
   | "internal-design-qa"
   | "external-design-review"
@@ -19,6 +20,7 @@ export interface PhaseEntry {
 export const PHASE_OPTIONS: { value: Phase; label: string; color: string; bg: string }[] = [
   { value: "onboarding",              label: "Onboarding",             color: "#6B7280", bg: "#F3F4F6" },
   { value: "research",                label: "Research",               color: "#0891B2", bg: "#ECFEFF" },
+  { value: "wireframe",               label: "Wireframe",              color: "#0D9488", bg: "#F0FDFA" },
   { value: "design",                  label: "Design",                 color: "#7C3AED", bg: "#F5F3FF" },
   { value: "internal-design-qa",      label: "Internal Design QA",     color: "#9333EA", bg: "#FAF5FF" },
   { value: "external-design-review",  label: "External Design Review", color: "#DB2777", bg: "#FDF2F8" },
@@ -108,6 +110,7 @@ export type DeadlineField = "designDueDate" | "devDueDate" | "launchDueDate";
 const PHASE_TO_DEADLINE: Record<Phase, DeadlineField> = {
   "onboarding": "designDueDate",
   "research": "designDueDate",
+  "wireframe": "designDueDate",
   "design": "designDueDate",
   "internal-design-qa": "designDueDate",
   "external-design-review": "designDueDate",
@@ -214,6 +217,7 @@ export type PhaseCategory = "research" | "design" | "dev";
 const PHASE_TO_CATEGORY: Record<Phase, PhaseCategory> = {
   "onboarding": "design",
   "research": "research",
+  "wireframe": "design",
   "design": "design",
   "internal-design-qa": "design",
   "external-design-review": "design",
@@ -229,6 +233,41 @@ const PHASE_TO_CATEGORY: Record<Phase, PhaseCategory> = {
 export function categoryForPhase(phase: string | undefined): PhaseCategory | null {
   if (!phase) return null;
   return PHASE_TO_CATEGORY[phase as Phase] ?? null;
+}
+
+/** Phases applicable to a given task discipline. Design tasks shouldn't see
+ * Development phases (and vice-versa) when picking a phase — that's how
+ * cross-discipline mistakes happen. Onboarding + launch are universal and
+ * surface for both; research is design-side (Dan's CRO work feeds the
+ * design brief). Strategy tasks (Dan's CRO weekly work) share the
+ * research lane only. */
+export function phasesForDiscipline(
+  discipline: "design" | "development" | "strategy" | undefined,
+): Phase[] {
+  if (discipline === "strategy") {
+    return ["onboarding", "research"];
+  }
+  if (discipline === "development") {
+    return [
+      "onboarding",
+      "development",
+      "development-qa",
+      "external-dev-review",
+      "dev-revision",
+      "launch",
+    ];
+  }
+  // default to design (covers undefined too)
+  return [
+    "onboarding",
+    "research",
+    "wireframe",
+    "design",
+    "internal-design-qa",
+    "external-design-review",
+    "design-revision",
+    "launch",
+  ];
 }
 
 export interface TaskWithAssignees {

@@ -10,6 +10,7 @@ import {
   Squares2X2Icon,
   SwatchIcon,
   UserGroupIcon,
+  BanknotesIcon,
 } from "@heroicons/react/24/solid";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 
@@ -44,6 +45,12 @@ const primary = [
     href: "/team/ops-wiki",
     icon: BookOpenIcon,
     badge: "WIP",
+  },
+  {
+    title: "Payments",
+    description: "How you get paid — per-page rates by tier, the volume rebate, rush fee, retainers, and invoicing. Read once, bookmark it.",
+    href: "/team/payments",
+    icon: BanknotesIcon,
   },
 ];
 

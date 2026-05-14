@@ -1,9 +1,9 @@
 // ─── Monochrome line-art pod-member avatars ──────────────────────────
-// Single navy ink on white. Hair carries the identity — face features
+// Single navy ink on white. Hair carries the identity, face features
 // are minimal (dot eyes, comma nose, single-curve smile). Shoulder
 // triangle in navy. Optional white highlight stripe on hair.
 //
-// To tweak a person, edit AVATAR_PRESETS below — change `hair` to one
+// To tweak a person, edit AVATAR_PRESETS below, change `hair` to one
 // of the named styles and optionally adjust `mouth` or `nose`.
 
 "use client";
@@ -82,7 +82,7 @@ function Nose({ style }: { style: NoseStyle }) {
   if (style === "dot") {
     return <circle cx="60" cy="48" r="1" fill={INK} />;
   }
-  // comma — a tiny J curve
+  // comma, a tiny J curve
   return <path d="M59 46 Q58 50, 61 50" {...lineProps} strokeWidth={1.4} />;
 }
 
@@ -335,7 +335,7 @@ interface PodAvatarProps {
   name: string;
   size?: number;
   isPlaceholder?: boolean;
-  /** Uploaded photo URL — when set, replaces the SVG/initial fallback. */
+  /** Uploaded photo URL, when set, replaces the SVG/initial fallback. */
   avatarUrl?: string;
 }
 

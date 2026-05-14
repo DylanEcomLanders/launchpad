@@ -1,4 +1,4 @@
-// ─── Pods v2 — localStorage repo with seed ──────────────────────────
+// ─── Pods v2, localStorage repo with seed ──────────────────────────
 // Per agreement: V1 is localStorage-only with seed. Supabase tables can be
 // wired up later by adding queries here without touching call-sites.
 
@@ -27,6 +27,7 @@ import {
   effectivePagePoints,
   kickoffMondayFor,
 } from "./calc";
+import type { Phase } from "@/lib/task-board/phases";
 
 const LS_PODS = "launchpad-pods-v2-pods";
 const LS_CLIENTS = "launchpad-pods-v2-clients";
@@ -36,7 +37,7 @@ const LS_CRO_LEADS = "launchpad-pods-v2-cro-leads";
 const LS_SEEDED = "launchpad-pods-v2-seeded-v4";
 /* Bumped when we want every browser to wipe its old fake-seed data on
  * the next page load. Any browser without this sentinel runs the
- * one-time cleanup in ensureSeed() and then sets it. v2 — second wipe
+ * one-time cleanup in ensureSeed() and then sets it. v2, second wipe
  * to clear test clients/projects/tasks accumulated during pre-launch
  * iteration so every pod starts clean. */
 const LS_CLEAN = "launchpad-pods-v2-clean-v2";
@@ -88,7 +89,12 @@ function read<T>(key: string): T[] {
   try {
     const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T[]) : [];
-  } catch {
+  } catch (err) {
+    /* JSON.parse failure means the localStorage blob is corrupt. We
+     * return [] so the page still renders, but log the cache key so a
+     * dev can spot the corruption (typically from manual edits during
+     * debugging). */
+    console.error(`[pods-v2/data] read(${key}) failed:`, err);
     return [];
   }
 }
@@ -97,7 +103,7 @@ function write<T>(key: string, value: T[]): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(key, JSON.stringify(value));
   /* Mirror to Supabase so pods data is durable across browsers /
-   * devices / localStorage clears. Fire-and-forget — localStorage is
+   * devices / localStorage clears. Fire-and-forget, localStorage is
    * the always-correct sync cache; cloud failures don't affect
    * correctness. Dynamic import keeps the sync module out of the
    * critical bundle path for cold loads. */
@@ -196,6 +202,27 @@ export function updateClientBrief(
   write(LS_CLIENTS, next);
 }
 
+/** Patch one of the engagement-level Must do gates. Each gate carries
+ * its own checklist + notes + optional link + completed timestamp, so
+ * the call sites are the modal's "save progress" and "mark complete"
+ * handlers. Pass a partial, merges with the existing gate state. */
+export function setClientMustDoGate(
+  clientId: string,
+  key: "cro_brief" | "design_handoff" | "dev_handoff" | "launch_prep",
+  patch: Partial<import("./types").MustDoGate>,
+): void {
+  const all = getClients();
+  const next = all.map((c) => {
+    if (c.id !== clientId) return c;
+    const prev = c.must_dos?.[key] ?? {};
+    return {
+      ...c,
+      must_dos: { ...(c.must_dos ?? {}), [key]: { ...prev, ...patch } },
+    };
+  });
+  write(LS_CLIENTS, next);
+}
+
 /** Append a manual win to the client (test winners are auto-derived from
  * Tasks; this is for non-test ships the pod wants to flag). */
 export function addClientWin(
@@ -274,15 +301,22 @@ export function createProject(input: CreateProjectInput): Project {
       const points = pagePoints[pi];
       const designId = uid();
       const devId = uid();
-      const label = PAGE_LABEL[page.type];
+      /* Title carries the page type plus the PM-supplied variant label
+       * if one was captured at intake. That lets a pod looking at four
+       * paired PDPs tell them apart ("Whitening Strips" vs "Floss Pro")
+       * instead of seeing four identical "Design - PDP" rows. */
+      const typeLabel = PAGE_LABEL[page.type];
+      const variant = page.label?.trim();
+      const label = variant ? `${typeLabel} · ${variant}` : typeLabel;
       if (pd) {
         pageTasks.push({
           id: designId,
           project_id: project.id,
-          title: `Design – ${label}`,
+          title: `Design - ${label}`,
           type: "core_deliverable",
           discipline: "design",
           phase: "design",
+          phase_history: [{ phase: "design", enteredAt: nowIso }],
           assigned_to: pd.id,
           status: "todo",
           due_date: designDue,
@@ -296,10 +330,11 @@ export function createProject(input: CreateProjectInput): Project {
         pageTasks.push({
           id: devId,
           project_id: project.id,
-          title: `Build – ${label}`,
+          title: `Build - ${label}`,
           type: "core_deliverable",
           discipline: "development",
           phase: "development",
+          phase_history: [{ phase: "development", enteredAt: nowIso }],
           assigned_to: pdv.id,
           status: "todo",
           due_date: devDue,
@@ -324,7 +359,7 @@ export function updateProjectStatus(id: string, status: ProjectStatus): void {
   write(LS_PROJECTS, next);
 
   /* Slipped-project Slack ping. Fires once on the transition into
-   * "slipped" — no re-ping if it was already slipped. Goes to the pod's
+   * "slipped", no re-ping if it was already slipped. Goes to the pod's
    * Slack channel, fire-and-forget, silent on failure. */
   if (
     before &&
@@ -346,7 +381,7 @@ export function updateProjectStatus(id: string, status: ProjectStatus): void {
           delivery_date: before.delivery_date,
           slip_reason: before.slip_reason,
         }),
-      }).catch(() => {});
+      }).catch((err) => console.error("[pods-v2] slip-notify failed:", err));
     }
   }
 }
@@ -371,7 +406,7 @@ export function updateTaskStatus(taskId: string, status: Task["status"]): void {
   const task = all.find((t) => t.id === taskId);
   write(LS_TASKS, all.map((t) => (t.id === taskId ? { ...t, status } : t)));
 
-  /* Pod ↔ portal phase sync — when a core deliverable's design or dev
+  /* Pod ↔ portal phase sync, when a core deliverable's design or dev
    * half flips to done, mark the matching scope item on the linked
    * client portal so the portal's phase advances automatically. Fire-
    * and-forget; failures don't block the local mutation.
@@ -389,13 +424,34 @@ export function updateTaskStatus(taskId: string, status: Task["status"]): void {
       project_id: task.project_id,
       deliverable_type: task.deliverable_type,
       discipline: task.discipline,
-    }).catch(() => {});
+    }).catch((err) => console.error("[pods-v2] portal phase sync failed:", err));
   }
+}
+
+/** Append an entry to a Task's phase_history if the phase has actually
+ * changed. Per-visit spans are intentional, a task that re-enters
+ * External Design Review three times records three spans, not one
+ * collapsed total. The revision-loop count is the signal. */
+function withPhaseTransition(task: Task, nextPhase: Task["phase"]): Task {
+  if (!nextPhase) return { ...task, phase: undefined };
+  const history = task.phase_history ?? [];
+  const last = history[history.length - 1];
+  if (last && last.phase === nextPhase) {
+    return { ...task, phase: nextPhase };
+  }
+  return {
+    ...task,
+    phase: nextPhase,
+    phase_history: [
+      ...history,
+      { phase: nextPhase as Phase, enteredAt: new Date().toISOString() },
+    ],
+  };
 }
 
 export function updateTaskPhase(taskId: string, phase: Task["phase"]): void {
   const all = getTasks();
-  write(LS_TASKS, all.map((t) => (t.id === taskId ? { ...t, phase } : t)));
+  write(LS_TASKS, all.map((t) => (t.id === taskId ? withPhaseTransition(t, phase) : t)));
 }
 
 export function updateTaskPriority(taskId: string, priority: Task["priority"]): void {
@@ -431,7 +487,7 @@ export function updateTaskTestResult(
  * /pods-v2 mount so a freshly-seeded localStorage picks up everyone's
  * existing photos instead of showing initials.
  *
- * Cloud is the source of truth here — local URLs that aren't in the
+ * Cloud is the source of truth here, local URLs that aren't in the
  * cloud map get cleared, and cloud URLs override local. That's the
  * right call for "this should match across devices" UX. */
 export async function hydrateTeamAvatarsFromCloud(): Promise<boolean> {
@@ -481,7 +537,7 @@ export async function hydrateTeamAvatarsFromCloud(): Promise<boolean> {
  * portal's per-deliverable phase ladder.
  *
  * Lookup chain: project → onboarding_id → assigned_portal_id → portal.
- * Match scope item by `type` (canonical PageType — "pdp", "homepage")
+ * Match scope item by `type` (canonical PageType, "pdp", "homepage")
  * since that's the field shared between pods-v2 and the portal scope.
  * Falls back to substring match on description if `type` isn't set
  * (legacy string-only scope items). */
@@ -512,7 +568,7 @@ async function syncPortalDeliverable(input: {
     const desc = (item as { description?: string }).description?.toLowerCase() || "";
     const matchesDesc = !itemType && desc.includes(matchType.toLowerCase());
     if (matchesType || matchesDesc) {
-      // Already set — don't no-op churn the portal
+      // Already set, don't no-op churn the portal
       if ((item as Record<string, unknown>)[flag] === true) return item;
       touched = true;
       return { ...item, [flag]: true };
@@ -534,7 +590,7 @@ async function syncPortalDeliverable(input: {
  * mount; safe to call repeatedly.
  *
  * Why client-side: pods data lives in localStorage; a server cron
- * can't see it. Per-admin browser scan is good enough — the staleness
+ * can't see it. Per-admin browser scan is good enough, the staleness
  * threshold is 48h, not minutes, so we don't need second-by-second
  * precision. */
 export function scanAndNotifyStaleTickets(): void {
@@ -552,7 +608,7 @@ export function scanAndNotifyStaleTickets(): void {
 
   let touched = false;
   const updated = tasks.map((t) => {
-    // Only tickets — core deliverables don't get stale pings (they
+    // Only tickets, core deliverables don't get stale pings (they
     // have due_dates, not age clocks)
     const isTicket =
       t.type === "revision" ||
@@ -563,7 +619,7 @@ export function scanAndNotifyStaleTickets(): void {
     if (!isTicket) return t;
     if (t.status === "done") return t;
     if (t.stale_pinged_at) return t; // already pinged once
-    if (t.waiting_on) return t; // paused — clock isn't running
+    if (t.waiting_on) return t; // paused, clock isn't running
 
     const created = new Date(t.created_at).getTime();
     const banked = t.paused_total_ms || 0;
@@ -573,7 +629,7 @@ export function scanAndNotifyStaleTickets(): void {
     const effectiveAgeMs = now - created - banked - livePauseMs;
     if (effectiveAgeMs < FORTY_EIGHT_H_MS) return t;
 
-    // Stale — fire the ping
+    // Stale, fire the ping
     const project = projectById.get(t.project_id);
     const pod = project ? podById.get(project.pod_id) : undefined;
     if (pod?.slack_channel_id) {
@@ -588,7 +644,7 @@ export function scanAndNotifyStaleTickets(): void {
           owner_name: owner,
           age_hours: Math.floor(effectiveAgeMs / 3_600_000),
         }),
-      }).catch(() => {});
+      }).catch((err) => console.error("[pods-v2] stale-notify failed:", err));
     }
     touched = true;
     return { ...t, stale_pinged_at: new Date().toISOString() };
@@ -697,7 +753,7 @@ export function addBlocker(
 
   /* Fire-and-forget Slack ping when the pod has a channel configured.
    * Failure (no channel, network error, missing token) is intentionally
-   * silent — the blocker is already saved locally; the channel post is
+   * silent, the blocker is already saved locally; the channel post is
    * a nice-to-have, not a correctness gate. */
   if (pod.slack_channel_id && typeof window !== "undefined") {
     fetch("/api/pods/blocker-notify", {
@@ -711,7 +767,7 @@ export function addBlocker(
         owner_name: owner,
         raised_by: input.raised_by,
       }),
-    }).catch(() => {});
+    }).catch((err) => console.error("[pods-v2] blocker-notify failed:", err));
   }
 }
 
@@ -759,7 +815,7 @@ export function deleteBlocker(podId: string, blockerId: string): void {
   write(LS_PODS, next);
 }
 
-/* Pause a ticket — the age clock stops escalating until resumed. The
+/* Pause a ticket, the age clock stops escalating until resumed. The
  * `waiting_on` reason is captured for UI context. */
 export function pauseTask(taskId: string, waitingOn: "client" | "internal"): void {
   const all = getTasks();
@@ -774,7 +830,7 @@ export function pauseTask(taskId: string, waitingOn: "client" | "internal"): voi
   );
 }
 
-/* Resume a paused ticket — bank the elapsed pause duration into
+/* Resume a paused ticket, bank the elapsed pause duration into
  * paused_total_ms so future age calcs skip it. */
 export function resumeTask(taskId: string): void {
   const all = getTasks();
@@ -784,7 +840,7 @@ export function resumeTask(taskId: string): void {
     all.map((t) => {
       if (t.id !== taskId) return t;
       if (!t.paused_at) {
-        // Was flagged waiting but not actually paused — just clear the flag
+        // Was flagged waiting but not actually paused, just clear the flag
         return { ...t, waiting_on: undefined };
       }
       const elapsed = nowMs - new Date(t.paused_at).getTime();
@@ -800,8 +856,7 @@ export function resumeTask(taskId: string): void {
 
 /* Create a paired design + dev deliverable. Both tasks reference the
  * same project, deliverable_type and points. Each links to its other
- * half via `paired_task_id`. Points represent the whole deliverable —
- * not doubled across the two halves.
+ * half via `paired_task_id`. Points represent the whole deliverable, * not doubled across the two halves.
  *
  * Same-type discount: if the project already has a deliverable of this
  * type (any other PDP, etc.), the new one comes in at half points. The
@@ -823,7 +878,7 @@ function cycleWeekDate(
   return k.toISOString().slice(0, 10);
 }
 
-/** Last day of the 12-week Conversion Engine cycle — Thu of M3 W4. */
+/** Last day of the 12-week Conversion Engine cycle, Thu of M3 W4. */
 export function conversionEngineDeliveryDate(kickoffYMD: string): string {
   return cycleWeekDate(kickoffYMD, 3, 4, "thu");
 }
@@ -832,10 +887,10 @@ export function conversionEngineDeliveryDate(kickoffYMD: string): string {
  * the default per-page design+build tasks createProject seeded (their
  * due dates assume a 10/15/20-day bucket, not 12 weeks). For each of
  * the 3 months, per deliverable:
- *   W1 — Dan: Strategy + Wireframe (asset_prep, due Fri W1)
- *   W2 — Designer pair: Design (core_deliverable, paired, due Thu W2)
- *   W3 — Dev pair: Build (core_deliverable, paired, due Thu W3)
- *   W4 — Designer + Dev: Test/Prep (asset_prep, due Thu W4)
+ *   W1, Dan: Strategy + Wireframe (asset_prep, due Fri W1)
+ *   W2, Designer pair: Design (core_deliverable, paired, due Thu W2)
+ *   W3, Dev pair: Build (core_deliverable, paired, due Thu W3)
+ *   W4, Designer + Dev: Test/Prep (asset_prep, due Thu W4)
  *
  * Capacity model: M1 W2/W3 carry full deliverable points. M2/M3
  * iteration cycles carry no points (variant tests, not new builds) so
@@ -880,8 +935,7 @@ export function seedConversionEngineCycle(input: {
     ),
   );
 
-  /* Drop the default M1 design+build tasks createProject just seeded —
-   * their due dates assume a short bucket. The cycle seeder below
+  /* Drop the default M1 design+build tasks createProject just seeded, * their due dates assume a short bucket. The cycle seeder below
    * recreates them with proper week dates and the cycle field set. */
   const allTasks = getTasks().filter(
     (t) => !(t.project_id === project.id && t.type === "core_deliverable"),
@@ -903,12 +957,12 @@ export function seedConversionEngineCycle(input: {
       const fullSuffix = `${label}${variant}`;
       const points = pagePts[dIdx];
 
-      // W1 — Dan: Strategy + Wireframe
+      // W1, Dan: Strategy + Wireframe
       if (dan) {
         newTasks.push({
           id: uid(),
           project_id: project.id,
-          title: `Strategy – ${fullSuffix}`,
+          title: `Strategy - ${fullSuffix}`,
           type: "asset_prep",
           discipline: "strategy",
           assigned_to: dan.id,
@@ -920,7 +974,7 @@ export function seedConversionEngineCycle(input: {
         newTasks.push({
           id: uid(),
           project_id: project.id,
-          title: `Wireframe – ${fullSuffix}`,
+          title: `Wireframe - ${fullSuffix}`,
           type: "asset_prep",
           discipline: "strategy",
           assigned_to: dan.id,
@@ -931,8 +985,8 @@ export function seedConversionEngineCycle(input: {
         });
       }
 
-      // W2 — Designer: Design.  W3 — Dev: Build. Paired.
-      // M1 carries full points, M2/M3 carry half — variant-test
+      // W2, Designer: Design.  W3, Dev: Build. Paired.
+      // M1 carries full points, M2/M3 carry half, variant-test
       // iterations on the same deliverable cost less than a fresh
       // build but aren't free either. Capacity meter is now time-
       // window scoped (capacityUsed takes start/end YMD), so summing
@@ -945,10 +999,11 @@ export function seedConversionEngineCycle(input: {
         newTasks.push({
           id: designId,
           project_id: project.id,
-          title: `Design – ${fullSuffix}`,
+          title: `Design - ${fullSuffix}`,
           type: "core_deliverable",
           discipline: "design",
           phase: "design",
+          phase_history: [{ phase: "design", enteredAt: nowIso }],
           assigned_to: designer.id,
           status: "todo",
           due_date: cycleWeekDate(project.kickoff_date, mIdx, 2, "thu"),
@@ -963,10 +1018,11 @@ export function seedConversionEngineCycle(input: {
         newTasks.push({
           id: buildId,
           project_id: project.id,
-          title: `Build – ${fullSuffix}`,
+          title: `Build - ${fullSuffix}`,
           type: "core_deliverable",
           discipline: "development",
           phase: "development",
+          phase_history: [{ phase: "development", enteredAt: nowIso }],
           assigned_to: dev.id,
           status: "todo",
           due_date: cycleWeekDate(project.kickoff_date, mIdx, 3, "thu"),
@@ -978,12 +1034,12 @@ export function seedConversionEngineCycle(input: {
         });
       }
 
-      // W4 — Designer + Dev: Test / Prep
+      // W4, Designer + Dev: Test / Prep
       if (designer) {
         newTasks.push({
           id: uid(),
           project_id: project.id,
-          title: `Test/Prep – ${fullSuffix}`,
+          title: `Test/Prep - ${fullSuffix}`,
           type: "asset_prep",
           discipline: "design",
           assigned_to: designer.id,
@@ -997,7 +1053,7 @@ export function seedConversionEngineCycle(input: {
         newTasks.push({
           id: uid(),
           project_id: project.id,
-          title: `QA/Prep – ${fullSuffix}`,
+          title: `QA/Prep - ${fullSuffix}`,
           type: "asset_prep",
           discipline: "development",
           assigned_to: dev.id,
@@ -1047,7 +1103,7 @@ export function addPairedDeliverable(input: {
   const design: Task = {
     id: designId,
     project_id: input.project_id,
-    title: `Design – ${label}`,
+    title: `Design - ${label}`,
     type: "core_deliverable",
     discipline: "design",
     assigned_to: input.designer_id,
@@ -1055,6 +1111,7 @@ export function addPairedDeliverable(input: {
     due_date: project ? taskDueDateFor(project, "design") : now.slice(0, 10),
     created_at: now,
     phase: "design",
+    phase_history: [{ phase: "design", enteredAt: now }],
     deliverable_type: input.deliverable_type,
     points: effectivePoints,
     paired_task_id: devId,
@@ -1062,7 +1119,7 @@ export function addPairedDeliverable(input: {
   const dev: Task = {
     id: devId,
     project_id: input.project_id,
-    title: `Build – ${label}`,
+    title: `Build - ${label}`,
     type: "core_deliverable",
     discipline: "development",
     assigned_to: input.dev_id,
@@ -1070,6 +1127,7 @@ export function addPairedDeliverable(input: {
     due_date: project ? taskDueDateFor(project, "development") : now.slice(0, 10),
     created_at: now,
     phase: "development",
+    phase_history: [{ phase: "development", enteredAt: now }],
     deliverable_type: input.deliverable_type,
     points: effectivePoints,
     paired_task_id: designId,
@@ -1124,7 +1182,7 @@ export function moveClientToPod(clientId: string, targetPodId: string): void {
   );
 }
 
-/* Park a client — strip the pod assignment without deleting anything.
+/* Park a client, strip the pod assignment without deleting anything.
  * The client stays in the system, their projects flip to `queued`
  * status, and open tasks become un-assigned (assigned_to = "") so they
  * don't render in any pod's columns. Useful for capacity rejigging
@@ -1170,7 +1228,7 @@ export function reassignTask(taskId: string, memberId: string): void {
 
 export function deleteTask(taskId: string): void {
   const all = getTasks();
-  /* Explicit Supabase delete — the collection mirror is additive only
+  /* Explicit Supabase delete, the collection mirror is additive only
    * (see sync.ts), so genuine removals have to call this directly to
    * propagate. localStorage is updated first as the always-correct
    * cache; Supabase delete is fire-and-forget. */
@@ -1201,8 +1259,8 @@ export interface AddTaskInput {
 
 export interface AddPairedTasksInput {
   project_id: string;
-  /** Common label for the deliverable. Becomes "Design – {label}" and
-   * "Build – {label}" on the two paired tasks. */
+  /** Common label for the deliverable. Becomes "Design, {label}" and
+   * "Build, {label}" on the two paired tasks. */
   label: string;
   designer_id: string;
   dev_id: string;
@@ -1223,7 +1281,7 @@ export function addPairedTasks(input: AddPairedTasksInput): { designTaskId: stri
   const design: Task = {
     id: designId,
     project_id: input.project_id,
-    title: `Design – ${input.label}`,
+    title: `Design - ${input.label}`,
     type: "core_deliverable",
     discipline: "design",
     assigned_to: input.designer_id,
@@ -1237,7 +1295,7 @@ export function addPairedTasks(input: AddPairedTasksInput): { designTaskId: stri
   const dev: Task = {
     id: devId,
     project_id: input.project_id,
-    title: `Build – ${input.label}`,
+    title: `Build - ${input.label}`,
     type: "core_deliverable",
     discipline: "development",
     assigned_to: input.dev_id,
@@ -1376,235 +1434,6 @@ function buildSeedPods(): Pod[] {
   });
 }
 
-/**
- * Seed dummy projects + clients across the three pods so views render
- * meaningfully on first load. Only runs once.
- */
-function buildSeedProjectsAndClients(pods: Pod[]): {
-  clients: Client[];
-  projects: Project[];
-  tasks: Task[];
-} {
-  const today = new Date();
-  const ymd = (offsetDays: number): string => {
-    const d = new Date(today);
-    d.setDate(d.getDate() + offsetDays);
-    return d.toISOString().slice(0, 10);
-  };
-
-  const findPod = (name: string) => pods.find((p) => p.name === name)!;
-  const primaryDesigner = (pod: Pod) =>
-    pod.members.find((m) => m.role === "primary_designer")!;
-  const primaryDev = (pod: Pod) =>
-    pod.members.find((m) => m.role === "primary_dev")!;
-  const secondaryDesigner = (pod: Pod) =>
-    pod.members.find((m) => m.role === "secondary_designer")!;
-  const secondaryDev = (pod: Pod) =>
-    pod.members.find((m) => m.role === "secondary_dev")!;
-
-  const pod1 = findPod("Pod 1");
-  const pod2 = findPod("Pod 2");
-  const pod3 = findPod("Pod 3");
-
-  const seedClients: Array<{
-    name: string;
-    pod: Pod;
-    brand_warm: boolean;
-    retainer: RetainerTier;
-  }> = [
-    { name: "Acme Skincare", pod: pod1, brand_warm: true, retainer: "8k" },
-    { name: "Glow & Co", pod: pod1, brand_warm: false, retainer: "none" },
-    { name: "Northwind Beauty", pod: pod1, brand_warm: false, retainer: "12k" },
-    { name: "Boreal Coffee", pod: pod2, brand_warm: false, retainer: "none" },
-    { name: "Hadron Apparel", pod: pod2, brand_warm: true, retainer: "8k" },
-    { name: "Quartz Goods", pod: pod3, brand_warm: false, retainer: "none" },
-    { name: "Rivulet Pet", pod: pod3, brand_warm: true, retainer: "12k" },
-  ];
-
-  const clients: Client[] = seedClients.map((c) => ({
-    id: uid(),
-    name: c.name,
-    pod_id: c.pod.id,
-    brand_warm: c.brand_warm,
-    retainer_tier: c.retainer,
-    portal_slug: c.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-  }));
-
-  const projects: Project[] = [];
-  const tasks: Task[] = [];
-
-  function pushProject(args: {
-    name: string;
-    client: Client;
-    pod: Pod;
-    pages: ProjectPage[];
-    kickoffOffset: number; // days from today
-    deliveryOffset: number;
-    is_rush?: boolean;
-    status?: ProjectStatus;
-  }) {
-    const points = adjustedPoints(args.pages, args.client.brand_warm);
-    const bucket = bucketFromPoints(points);
-    // Snap kickoff to nearest Monday in the spec'd direction.
-    const kickoffYMD = snapToDay(ymd(args.kickoffOffset), 1);
-    const deliveryYMD = snapToDay(ymd(args.deliveryOffset), 4);
-    const project: Project = {
-      id: uid(),
-      name: args.name,
-      client_id: args.client.id,
-      pod_id: args.pod.id,
-      bucket,
-      points,
-      pages: args.pages,
-      kickoff_date: kickoffYMD,
-      delivery_date: deliveryYMD,
-      is_rush: !!args.is_rush,
-      status: args.status ?? "in_progress",
-    };
-    projects.push(project);
-
-    // Core tasks (primary lane) — split by discipline with proper due dates.
-    const pd = primaryDesigner(args.pod);
-    const pdv = primaryDev(args.pod);
-    const designDue = taskDueDateFor(project, "design");
-    const devDue = taskDueDateFor(project, "development");
-    const created = new Date(`${project.kickoff_date}T09:00:00`).toISOString();
-    args.pages.forEach((page, i) => {
-      tasks.push({
-        id: uid(),
-        project_id: project.id,
-        title: `Design — ${page.type.toUpperCase()}`,
-        type: "core_deliverable",
-        discipline: "design",
-        phase: i === 0 ? "design" : "onboarding",
-        assigned_to: pd.id,
-        status: i === 0 ? "in_progress" : "todo",
-        due_date: designDue,
-        created_at: created,
-      });
-      tasks.push({
-        id: uid(),
-        project_id: project.id,
-        title: `Build — ${page.type.toUpperCase()}`,
-        type: "core_deliverable",
-        discipline: "development",
-        phase: "onboarding",
-        assigned_to: pdv.id,
-        status: "todo",
-        due_date: devDue,
-        created_at: created,
-      });
-    });
-
-    // Secondary fill — tickets timestamped at kickoff
-    const sd = secondaryDesigner(args.pod);
-    const sdv = secondaryDev(args.pod);
-    if (sd && !sd.is_placeholder) {
-      tasks.push({
-        id: uid(),
-        project_id: project.id,
-        title: `Revisions round 1 — ${args.name}`,
-        type: "revision",
-        discipline: "design",
-        assigned_to: sd.id,
-        status: "todo",
-        due_date: designDue,
-        created_at: created,
-      });
-    }
-    if (sdv) {
-      tasks.push({
-        id: uid(),
-        project_id: project.id,
-        title: `Desktop QA — ${args.name}`,
-        type: "desktop_fix",
-        discipline: "development",
-        assigned_to: sdv.id,
-        status: "todo",
-        due_date: devDue,
-        created_at: created,
-      });
-    }
-  }
-
-  pushProject({
-    name: "PDP rebuild Q2",
-    client: clients[0],
-    pod: pod1,
-    pages: [
-      { type: "pdp", weight: "heavy" },
-      { type: "cart", weight: "medium" },
-    ],
-    kickoffOffset: -7,
-    deliveryOffset: 3,
-  });
-  pushProject({
-    name: "Homepage refresh",
-    client: clients[1],
-    pod: pod1,
-    pages: [
-      { type: "homepage", weight: "heavy" },
-      { type: "navigation", weight: "light" },
-    ],
-    kickoffOffset: 0,
-    deliveryOffset: 10,
-  });
-  pushProject({
-    name: "Listicle — winter campaign",
-    client: clients[2],
-    pod: pod1,
-    pages: [{ type: "listicle", weight: "medium" }],
-    kickoffOffset: 7,
-    deliveryOffset: 17,
-  });
-  pushProject({
-    name: "Quiz funnel build",
-    client: clients[3],
-    pod: pod2,
-    pages: [
-      { type: "quiz", weight: "heavy" },
-      { type: "advertorial", weight: "heavy" },
-    ],
-    kickoffOffset: -14,
-    deliveryOffset: 0,
-  });
-  pushProject({
-    name: "Cart + checkout polish",
-    client: clients[4],
-    pod: pod2,
-    pages: [
-      { type: "cart", weight: "medium" },
-      { type: "policies", weight: "light" },
-    ],
-    kickoffOffset: 0,
-    deliveryOffset: 10,
-  });
-  pushProject({
-    name: "PDP A/B test variant",
-    client: clients[5],
-    pod: pod3,
-    pages: [{ type: "pdp", weight: "heavy" }],
-    kickoffOffset: -3,
-    deliveryOffset: 7,
-    is_rush: true,
-  });
-  pushProject({
-    name: "Full funnel revamp",
-    client: clients[6],
-    pod: pod3,
-    pages: [
-      { type: "pdp", weight: "heavy" },
-      { type: "homepage", weight: "heavy" },
-      { type: "advertorial", weight: "heavy" },
-      { type: "listicle", weight: "medium" },
-    ],
-    kickoffOffset: 7,
-    deliveryOffset: 27,
-  });
-
-  return { clients, projects, tasks };
-}
-
 /** Snap a YYYY-MM-DD forward to the next occurrence of `targetDow` (0-6). */
 function snapToDay(ymd: string, targetDow: number): string {
   const d = new Date(`${ymd}T12:00:00`);
@@ -1615,7 +1444,7 @@ function snapToDay(ymd: string, targetDow: number): string {
 /**
  * Initialise the data store on first load.
  *
- * Pods + members are the real team structure — always seeded if
+ * Pods + members are the real team structure, always seeded if
  * missing so the org is visible. Clients/projects/tasks are
  * user-created (no demo data).
  *
@@ -1634,13 +1463,13 @@ export function ensureSeed(): void {
     localStorage.setItem(LS_CLEAN, "1");
   }
 
-  // Pod team structure is always seeded if missing — independent of any
-  // other sentinel — so admins always land on the real team grid.
+  // Pod team structure is always seeded if missing, independent of any
+  // other sentinel, so admins always land on the real team grid.
   if (!localStorage.getItem(LS_PODS)) {
     write(LS_PODS, buildSeedPods());
   } else {
     /* Back-fill default Slack channel ids onto pods that were seeded
-     * before slack_channel_id existed. Only writes when missing — never
+     * before slack_channel_id existed. Only writes when missing, never
      * overwrites a channel an admin set manually. */
     {
       const pods = getPods();
@@ -1691,7 +1520,7 @@ export function ensureSeed(): void {
   }
 }
 
-/* Org-level CRO leads — separate from pod members. Returns the current
+/* Org-level CRO leads, separate from pod members. Returns the current
  * list, seeding Dan if the store is empty. */
 export function getCroLeads(): PodMember[] {
   return read<PodMember>(LS_CRO_LEADS);
@@ -1723,7 +1552,7 @@ export function updateCroLeadAvatar(memberId: string, avatarUrl: string | undefi
     }),
   );
 
-  /* Same cloud-pin pattern as updateMemberAvatar — persists the URL so
+  /* Same cloud-pin pattern as updateMemberAvatar, persists the URL so
    * Dan's photo doesn't reset when localStorage gets cleared. */
   if (touchedName && typeof window !== "undefined") {
     import("./team-avatars").then(({ croLeadAvatarKey, saveTeamAvatar }) => {
@@ -1732,8 +1561,7 @@ export function updateCroLeadAvatar(memberId: string, avatarUrl: string | undefi
   }
 }
 
-/** Wipe all client / project / task data. Pods + members are kept —
- * the team structure is real, only the work data is reset. */
+/** Wipe all client / project / task data. Pods + members are kept, * the team structure is real, only the work data is reset. */
 export function resetAndReseed(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(LS_CLIENTS);

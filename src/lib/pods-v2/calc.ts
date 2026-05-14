@@ -1,4 +1,4 @@
-// ─── Pure calculation helpers — pod operating-system rules ──────────
+// ─── Pure calculation helpers, pod operating-system rules ──────────
 
 import {
   Bucket,
@@ -15,7 +15,7 @@ import {
 /* Per-page effective points after the same-type discount: the first
  * page of each type is full price, subsequent ones (e.g. 2nd PDP, 3rd
  * PDP) are half because the design system + dev infrastructure get
- * reused. Order matters — caller passes pages in their final order. */
+ * reused. Order matters, caller passes pages in their final order. */
 export function effectivePagePoints(pages: ProjectPage[]): number[] {
   const seen = new Set<string>();
   return pages.map((p) => {
@@ -38,7 +38,7 @@ export function adjustedPoints(pages: ProjectPage[], brandWarm: boolean): number
   return brandWarm ? raw * 0.5 : raw;
 }
 
-/** Auto-bucket from points: ≤6=A, 7–10=B, 11–20=C, 21+=Bespoke. */
+/** Auto-bucket from points: ≤6=A, 7,10=B, 11,20=C, 21+=Bespoke. */
 export function bucketFromPoints(points: number): Bucket {
   if (points <= 6) return "A";
   if (points <= 10) return "B";
@@ -68,7 +68,7 @@ function formatYMD(d: Date): string {
  * the next Monday counts. If signed Friday after 5pm or weekend, push to
  * the Monday after that.
  *
- * Rush mode bypasses the Monday rule — kickoff = signoff_date, snapped
+ * Rush mode bypasses the Monday rule, kickoff = signoff_date, snapped
  * forward to the next weekday if signoff lands on Sat/Sun. Used by the
  * Rush exception flow on Assign-to-Pod when a project genuinely can't
  * wait for the next Monday window.
@@ -89,7 +89,7 @@ export function kickoffMondayFor(
     return formatYMD(d);
   }
 
-  // If sign-off IS Monday and before 5pm — kick off same day.
+  // If sign-off IS Monday and before 5pm, kick off same day.
   if (dow === MONDAY && signoffHour < 17) return formatYMD(d);
 
   // Otherwise advance to next Monday.
@@ -126,11 +126,11 @@ export function deliveryThursdayFor(
   rush = false,
 ): string | null {
   const dur = BUCKET_DURATIONS[bucket];
-  if (dur === null) return null; // Bespoke — no auto delivery
+  if (dur === null) return null; // Bespoke, no auto delivery
   const effective = rush ? Math.ceil(dur / 2) : dur;
   const d = parseDate(kickoffYMD);
   d.setDate(d.getDate() + effective);
-  // Snap to nearest Thursday (forward) — defensive in case durations drift.
+  // Snap to nearest Thursday (forward), defensive in case durations drift.
   while (d.getDay() !== THURSDAY) d.setDate(d.getDate() + 1);
   return formatYMD(d);
 }
@@ -176,13 +176,13 @@ export function retainerValueGbp(tier: RetainerTier): number {
  * Task-based: we sum points across the design half of each paired
  * deliverable (the design + dev pair share the same `points` value, so
  * counting design only avoids double-counting). Done tasks still count
- * toward capacity — they represent committed work. Deleting a task
+ * toward capacity, they represent committed work. Deleting a task
  * removes it from the sum automatically.
  *
  * Tickets (revisions, bugs, asset_prep, etc.) carry no `points` and
- * don't count — they're variable-effort work, not scoped capacity.
+ * don't count, they're variable-effort work, not scoped capacity.
  *
- * Optional time window — when `windowStart`/`windowEnd` are passed,
+ * Optional time window, when `windowStart`/`windowEnd` are passed,
  * only tasks whose due_date falls inside [start, end] (inclusive) are
  * summed. Lets callers compute "this month" vs "next month" capacity
  * forward-projections off the same task graph.

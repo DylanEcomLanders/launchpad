@@ -28,11 +28,11 @@ interface Props {
   onStart: () => void;
   onDone: () => void;
   onKill: (reason: string) => void;
-  /** Optional — if omitted, the Promote button is hidden (used on
+  /** Optional, if omitted, the Promote button is hidden (used on
    * team-facing surfaces where only leadership promotes). */
   onPromote?: () => void;
   /** Patch the ticket with new fields (e.g. add screenshots).
-   * Optional — when omitted, the card is read-only for screenshots. */
+   * Optional, when omitted, the card is read-only for screenshots. */
   onUpdate?: (patch: Partial<Ticket>) => void;
 }
 
@@ -120,7 +120,7 @@ export function TicketCard({
         }
       }}
     >
-      {/* Header row — type, age, in-progress chip */}
+      {/* Header row, type, age, in-progress chip */}
       <div className="flex items-center gap-2 mb-1.5">
         <span
           className="text-[9px] font-semibold uppercase tracking-wider"
@@ -136,7 +136,7 @@ export function TicketCard({
         {shifted >= 3 && (
           <span
             className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-50 text-amber-700"
-            title="Shifted 3+ times — kill or promote"
+            title="Shifted 3+ times, kill or promote"
           >
             ⚠ shifted {shifted}×
           </span>
@@ -186,7 +186,7 @@ export function TicketCard({
         </div>
       )}
 
-      {/* Actions — appear on hover */}
+      {/* Actions, appear on hover */}
       {!killing && (
         <div className="mt-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           {!inProgress && (

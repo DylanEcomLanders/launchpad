@@ -13,6 +13,7 @@ import {
   type DeadlineChangeEntry,
   type PhaseEntry,
 } from "@/lib/task-board/phases";
+import { PhaseTimeline } from "./phase-timeline";
 
 export interface TaskDetailTask {
   id: string;
@@ -72,7 +73,7 @@ export function TaskDetailDrawer({
   const attemptDeadlineChange = (field: DeadlineField, prev: string | undefined, next: string) => {
     if (!onUpdateDeadline) return;
     if (prev && prev !== next) {
-      // Existing deadline being moved — require a reason
+      // Existing deadline being moved, require a reason
       setPendingChange({ field, prev, next });
       setReasonDraft("");
     } else {
@@ -168,7 +169,7 @@ export function TaskDetailDrawer({
           <div className="min-w-0 pr-3">
             <h2 className="text-base font-semibold text-[#1A1A1A] break-words">{task.title || "Untitled task"}</h2>
             <p className="text-xs text-[#AAA] mt-1">
-              {task.client || "—"}
+              {task.client || ","}
               {computedAssignee && <> · {computedAssignee}</>}
             </p>
           </div>
@@ -267,42 +268,10 @@ export function TaskDetailDrawer({
         {/* Timeline */}
         <section className="px-6 py-5">
           <h3 className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA] mb-3">Phase timeline</h3>
-          {spans.length === 0 ? (
-            <p className="text-xs text-[#AAA]">No phase history yet. Set a phase to start the timer.</p>
-          ) : (
-            <ol className="relative space-y-4 before:absolute before:left-[5px] before:top-1.5 before:bottom-1.5 before:w-px before:bg-[#E5E5EA]">
-              {spans.map((span, i) => {
-                const meta = phaseMeta(span.phase);
-                if (!meta) return null;
-                return (
-                  <li key={i} className="relative pl-6">
-                    <span
-                      className="absolute left-0 top-1.5 size-2.5 rounded-full ring-2 ring-white"
-                      style={{ background: meta.color }}
-                    />
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span
-                        className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                        style={{ background: meta.bg, color: meta.color }}
-                      >
-                        {meta.label}
-                      </span>
-                      <span className="text-xs font-medium text-[#1A1A1A] tabular-nums">
-                        {formatDurationMs(span.durationMs)}
-                      </span>
-                      {span.isCurrent && <span className="text-[10px] text-[#AAA]">· in progress</span>}
-                    </div>
-                    <p className="text-[10px] text-[#AAA] mt-1">
-                      {new Date(span.enteredAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                      {span.exitedAt && (
-                        <> → {new Date(span.exitedAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</>
-                      )}
-                    </p>
-                  </li>
-                );
-              })}
-            </ol>
-          )}
+          <PhaseTimeline
+            history={task.phaseHistory}
+            emptyLabel="No phase history yet. Set a phase to start the timer."
+          />
         </section>
       </div>
     </div>
@@ -380,7 +349,7 @@ function DeadlineRow({
   // Hold a local draft so chevron-clicks / month nav inside the native date
   // picker don't immediately fire the parent's onChange (which pops the
   // "why is it changing?" modal). Only commit on blur, when the user has
-  // actually finalised a date — and only when it differs from the original.
+  // actually finalised a date, and only when it differs from the original.
   // If the parent rejects the change, the draft resets to the prop value.
   const [draft, setDraft] = useState(value || "");
   useEffect(() => {
@@ -393,7 +362,7 @@ function DeadlineRow({
     if (onChange && next && next !== original) {
       onChange(next);
     }
-    // Always snap back to the prop value — the parent will re-sync via
+    // Always snap back to the prop value, the parent will re-sync via
     // useEffect once (and if) the change is accepted.
     setDraft(original);
   };

@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { onboardingStore, type OnboardingSubmission } from "@/lib/onboarding";
 import {
   ArrowLeftIcon,
   CheckIcon,
@@ -9,19 +10,15 @@ import {
   ChevronUpIcon,
   ExclamationTriangleIcon,
   LinkIcon,
-  PencilSquareIcon,
   PlusIcon,
   ArrowTopRightOnSquareIcon,
   ArrowDownTrayIcon,
-  DocumentArrowUpIcon,
   EyeIcon,
 } from "@heroicons/react/24/outline";
 import {
-  BRIEF_FIELDS,
   BUCKETS,
   ENGAGEMENT_CYCLES,
   ENGAGEMENT_DELIVERABLES,
-  QA_GATE_LABEL,
   assetCategoriesForKind,
   cycleForDay,
   ownerColor,
@@ -31,7 +28,6 @@ import {
   type CustomDeliverable,
   type CycleNumber,
   type DeliverableStatus,
-  type EngagementBrief,
   type OwnerRole,
   type QAGateKey,
   type StageId,
@@ -43,6 +39,14 @@ import type {
   EngagementDeliverableState,
   MockEngagement,
 } from "@/lib/engagement-mocks";
+import { phaseMeta } from "@/lib/task-board/phases";
+import { PhaseTimeline } from "@/components/task-board/phase-timeline";
+import { type MustDoGateKey } from "@/components/engagements/must-do-modal";
+import { MustDosRow } from "@/components/engagements/must-dos-row";
+import { GeneratedDocs } from "@/components/engagements/generated-docs";
+import { BriefIntakePanel } from "@/components/engagements/brief-intake-panel";
+import type { MustDoGate, PageType } from "@/lib/pods-v2/types";
+import { PAGE_LABEL } from "@/lib/pods-v2/types";
 
 type DeliverableMap = Map<string, EngagementDeliverableState>;
 
@@ -217,10 +221,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
     engagement.deliverables.forEach((d) => m.set(d.templateId, { ...d }));
     return m;
   });
-  const [brief, setBrief] = useState<EngagementBrief>(engagement.brief);
-  const [briefOpen, setBriefOpen] = useState(false);
-  const [editingBriefField, setEditingBriefField] = useState<keyof EngagementBrief | null>(null);
-  const [briefDraft, setBriefDraft] = useState<string>("");
+  const brief = engagement.brief;
   const [customDeliverables, setCustomDeliverables] = useState<CustomDeliverable[]>(engagement.customDeliverables);
   const [assets, setAssets] = useState<EngagementAsset[]>(engagement.assets);
   const [activity, setActivity] = useState<EngagementActivity[]>(engagement.activity);
@@ -230,7 +231,36 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
   const [assetDraft, setAssetDraft] = useState({ label: "", url: "" });
   const [viewCycle, setViewCycle] = useState<CycleNumber>(() => cycleForDay(engagement.currentDay));
   const [addingDeliverableIn, setAddingDeliverableIn] = useState<{ cycle: CycleNumber; stage: Exclude<StageId, "audit"> } | null>(null);
-  const [newDeliverableDraft, setNewDeliverableDraft] = useState<{ name: string; owner: OwnerRole; dueDay: string }>({ name: "", owner: "Pod", dueDay: "" });
+  const [newDeliverableDraft, setNewDeliverableDraft] = useState<{
+    type: string;
+    label: string;
+    owner: OwnerRole;
+    week: WeekInCycle;
+  }>({ type: "pdp", label: "", owner: "Pod", week: 3 });
+  const [expandedTimeline, setExpandedTimeline] = useState<string | null>(null);
+  const [intakeOpen, setIntakeOpen] = useState(true);
+  const [intake, setIntake] = useState<OnboardingSubmission | null>(null);
+  const [wins, setWins] = useState(engagement.wins ?? []);
+  const [addingWin, setAddingWin] = useState(false);
+  const [winDraft, setWinDraft] = useState({ title: "", metric: "", day: "", notes: "" });
+  const [mustDos, setMustDos] = useState<NonNullable<typeof engagement.mustDos>>(engagement.mustDos ?? {});
+  const [openMustDo, setOpenMustDo] = useState<MustDoGateKey | null>(null);
+
+  /* Lazy-fetch the source OnboardingSubmission so the Intake panel can
+   * show the full intake form (40+ fields). Only fires when an
+   * onboardingSubmissionId is linked on the engagement, bucket mocks
+   * and pre-link clients skip this entirely. Cloud + localStorage both
+   * served by onboardingStore.getAll. */
+  useEffect(() => {
+    if (!engagement.onboardingSubmissionId) return;
+    let cancelled = false;
+    onboardingStore.getAll().then((all) => {
+      if (cancelled) return;
+      const match = all.find((s) => s.id === engagement.onboardingSubmissionId);
+      if (match) setIntake(match);
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [engagement.onboardingSubmissionId]);
 
   const currentDay = engagement.currentDay;
   const currentCycle = cycleForDay(currentDay);
@@ -245,7 +275,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
   }, [engagement.startDate]);
 
   /* For bucket engagements, dueDay is measured in working days from
-   * kickoff Monday — skip weekends when resolving to a calendar date.
+   * kickoff Monday, skip weekends when resolving to a calendar date.
    * Retainers use straight calendar days (90-day product). */
   const dateForDay = (day: number): Date => {
     const d = new Date(engagement.startDate);
@@ -383,35 +413,34 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
     });
   };
 
-  const handleSaveBriefField = (key: keyof EngagementBrief) => {
-    const trimmed = briefDraft.trim();
-    const nextBrief: EngagementBrief = { ...brief, [key]: trimmed || undefined };
-    setBrief(nextBrief);
-    setEditingBriefField(null);
-    setBriefDraft("");
-    /* Persist back to the pods-v2 Client row so the brief survives a
-     * reload + shows up on every device. Falls through silently when this
-     * isn't a pods-v2 Client (e.g. a localStorage-only engagement created
-     * before the bridge landed). */
-    import("@/lib/pods-v2/data").then(({ getClientById, updateClientBrief }) => {
-      const exists = getClientById(engagement.id);
-      if (exists) updateClientBrief(engagement.id, nextBrief);
-    });
+
+  const handleSaveMustDo = (key: MustDoGateKey, patch: Partial<MustDoGate>) => {
+    setMustDos((prev) => ({ ...prev, [key]: { ...(prev[key] ?? {}), ...patch } }));
+    import("@/lib/pods-v2/data").then(({ getClientById, setClientMustDoGate }) => {
+      if (getClientById(engagement.id)) setClientMustDoGate(engagement.id, key, patch);
+    }).catch(() => {});
   };
 
-  const startEditingBriefField = (key: keyof EngagementBrief) => {
-    setBriefDraft(brief[key] ?? "");
-    setEditingBriefField(key);
-  };
-
-  const handleToggleGate = (templateId: string, gateKey: QAGateKey) => {
-    setCustomDeliverables((prev) =>
-      prev.map((cd) =>
-        cd.id === templateId
-          ? { ...cd, gates: { ...(cd.gates ?? {}), [gateKey]: !(cd.gates?.[gateKey] ?? false) } }
-          : cd,
-      ),
-    );
+  const handleAddWin = () => {
+    const title = winDraft.title.trim();
+    if (!title) return;
+    const dayNum = parseInt(winDraft.day, 10);
+    const newWin = {
+      id: `win-${Date.now()}`,
+      title,
+      shippedAtDay: Number.isFinite(dayNum) && dayNum > 0 ? dayNum : currentDay,
+      metric: winDraft.metric.trim() || undefined,
+      notes: winDraft.notes.trim() || undefined,
+    };
+    setWins((prev) => [newWin, ...prev]);
+    setAddingWin(false);
+    setWinDraft({ title: "", metric: "", day: "", notes: "" });
+    /* Persist to the pods-v2 Client row when this engagement is backed
+     * by one. Bucket mocks / pre-link engagements skip persistence, the
+     * win lives only in this session, which is fine for the demo. */
+    import("@/lib/pods-v2/data").then(({ getClientById, addClientWin }) => {
+      if (getClientById(engagement.id)) addClientWin(engagement.id, newWin);
+    }).catch(() => {});
   };
 
   const handleAddAsset = (categoryId: string) => {
@@ -442,16 +471,24 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
   const viewCycleDef = ENGAGEMENT_CYCLES.find((c) => c.number === viewCycle)!;
   const handleAddCustomDeliverable = () => {
     if (!addingDeliverableIn) return;
-    const dueDayNum = parseInt(newDeliverableDraft.dueDay, 10);
-    if (!newDeliverableDraft.name.trim() || isNaN(dueDayNum) || dueDayNum < 1 || dueDayNum > 90) return;
-    const week = weekInCycleForDay(dueDayNum) as WeekInCycle;
+    const { type, label, owner, week } = newDeliverableDraft;
+    if (!type) return;
+    /* Compute dueDay = engagement working day that lands on the chosen
+     * week's Thursday in the selected cycle. Engagement template uses
+     * 30 days per cycle and a 7-day week, with Thursday at day 4 of
+     * each week (W1=4, W2=11, W3=18, W4=25). Keeps every new
+     * deliverable on the cadence the team already runs to. */
+    const dueDayNum = (addingDeliverableIn.cycle - 1) * 30 + (week - 1) * 7 + 4;
+    const typeLabel = PAGE_LABEL[type as PageType] ?? type;
+    const variant = label.trim();
+    const name = variant ? `${typeLabel} · ${variant}` : typeLabel;
     const newItem: CustomDeliverable = {
       id: `custom-${Date.now()}`,
-      name: newDeliverableDraft.name.trim(),
+      name,
       cycle: addingDeliverableIn.cycle,
       stage: addingDeliverableIn.stage,
       weekInCycle: week,
-      owner: newDeliverableDraft.owner,
+      owner,
       dueDay: dueDayNum,
     };
     setCustomDeliverables((prev) => [...prev, newItem]);
@@ -470,7 +507,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
       ...prev,
     ]);
     setAddingDeliverableIn(null);
-    setNewDeliverableDraft({ name: "", owner: "Pod", dueDay: "" });
+    setNewDeliverableDraft({ type: "pdp", label: "", owner: "Pod", week: 3 });
 
     /* Write back: if this engagement is a pods-v2 Client, also create
      * the matching pod Task(s) so the pod board picks it up. Build /
@@ -684,154 +721,118 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
         </div>
       </header>
 
-      {/* Metrics strip - CVR + AOV baseline vs current */}
-      {engagement.metrics && (engagement.metrics.cvrBaseline != null || engagement.metrics.aovBaseline != null) && (
-        <section className="mb-5 rounded-lg border border-[#E5E5EA] bg-white p-4">
-          <div className="flex items-baseline justify-between mb-3">
-            <h2 className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
-              Metrics
-            </h2>
-            {engagement.metrics.metricsUpdatedAt && (
-              <span className="text-[10px] text-[#999]">
-                Updated {new Date(engagement.metrics.metricsUpdatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-              </span>
-            )}
+      {/* Parked-engagement nudge. When the linked Client has no pod
+       * assigned (engagement.podNumber === 0), the engagement is sat in
+       * /pods-v2 purgatory. The PM needs to pick a pod via the
+       * Assign-to-pod modal there to seed the build tasks. */}
+      {engagement.podNumber === 0 && (
+        <section className="mb-5 rounded-lg border border-[#FFB300] bg-[#FFF8E1] px-4 py-3 flex items-center justify-between gap-4">
+          <div className="flex items-baseline gap-3">
+            <ExclamationTriangleIcon className="size-4 text-[#E65100] shrink-0" />
+            <div>
+              <p className="text-[12px] font-semibold text-[#E65100]">
+                Not assigned to a pod yet
+              </p>
+              <p className="text-[11px] text-[#7A4A00] mt-0.5">
+                Pick a pod from purgatory to spin up the build tasks. The brief, intake, and roadmap are ready to go.
+              </p>
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <MetricCell
-              label="Conversion rate"
-              unit="%"
-              baseline={engagement.metrics.cvrBaseline}
-              current={engagement.metrics.cvrCurrent}
-              precision={1}
-            />
-            <MetricCell
-              label="Average order value"
-              unit="£"
-              unitPosition="prefix"
-              baseline={engagement.metrics.aovBaseline}
-              current={engagement.metrics.aovCurrent}
-              precision={0}
-            />
-          </div>
+          <Link
+            href="/pods-v2"
+            className="shrink-0 inline-flex items-center gap-1 text-[12px] font-semibold text-white bg-[#E65100] hover:bg-[#BF360C] px-3 py-1.5 rounded"
+          >
+            Assign to pod <ArrowTopRightOnSquareIcon className="size-3" />
+          </Link>
         </section>
       )}
 
-      {/* Brief panel - collapsible client brief, inline editable */}
-      <section className="mb-5 rounded-lg border border-[#E5E5EA] bg-white">
-        <button
-          onClick={() => setBriefOpen((o) => !o)}
-          className="w-full flex items-baseline justify-between px-4 py-3 hover:bg-[#FAFAFA] rounded-lg transition-colors"
-        >
-          <div className="flex items-baseline gap-3">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
-              Brief
-            </span>
-            {brief.primaryGoal && (
-              <span className="text-[12px] text-[#666] truncate max-w-[600px]">
-                {brief.primaryGoal}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {!briefOpen && brief.primaryContact && (
-              <span className="text-[11px] text-[#999]">
-                {brief.primaryContact.split(" · ")[0]}
-              </span>
-            )}
-            {briefOpen ? <ChevronUpIcon className="size-3.5 text-[#999]" /> : <ChevronDownIcon className="size-3.5 text-[#999]" />}
-          </div>
-        </button>
+      {/* Metrics strip, single-row per metric: label · baseline · current · delta% */}
+      {engagement.metrics && (engagement.metrics.cvrBaseline != null || engagement.metrics.aovBaseline != null) && (
+        <section className="mb-5 rounded-lg border border-[#E5E5EA] bg-white divide-y divide-[#F0F0F0]">
+          <MetricRow
+            label="Conversion rate"
+            unit="%"
+            baseline={engagement.metrics.cvrBaseline}
+            current={engagement.metrics.cvrCurrent}
+            precision={1}
+          />
+          <MetricRow
+            label="Average order value"
+            unit="£"
+            unitPosition="prefix"
+            baseline={engagement.metrics.aovBaseline}
+            current={engagement.metrics.aovCurrent}
+            precision={0}
+          />
+          {engagement.metrics.metricsUpdatedAt && (
+            <div className="px-4 py-1.5 text-[10px] text-[#999]">
+              Updated {new Date(engagement.metrics.metricsUpdatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+            </div>
+          )}
+        </section>
+      )}
 
-        {briefOpen && (
-          <div className="px-4 pb-4 pt-1 border-t border-[#E5E5EA]">
-            {(["core", "voice", "context"] as const).map((groupId) => {
-              const groupFields = BRIEF_FIELDS.filter((f) => f.group === groupId);
-              const groupLabel = groupId === "core" ? "Essentials" : groupId === "voice" ? "Voice + positioning" : "Context + risks";
+      <MustDosRow
+        mustDos={mustDos}
+        openGate={openMustDo}
+        onOpen={(key) => setOpenMustDo(key)}
+        onClose={() => setOpenMustDo(null)}
+        onSave={handleSaveMustDo}
+      />
+
+      <BriefIntakePanel
+        brief={brief}
+        intake={intake}
+        open={intakeOpen}
+        onToggle={() => setIntakeOpen((o) => !o)}
+      />
+
+      {/* Scoped deliverables preview. When the engagement is parked
+       * (no project yet, customDeliverables empty) but the PM has
+       * already scoped pages in the inbox, show that list here so it's
+       * visible on the engagement page before pod assignment seeds the
+       * actual tasks. Once a pod is assigned, the regular cycle tables
+       * render below and this preview disappears. */}
+      {customDeliverables.length === 0 && (intake?.deliverables?.length ?? 0) > 0 && (
+        <section className="mb-5 rounded-lg border border-[#E5E5EA] bg-white">
+          <div className="px-4 py-3 border-b border-[#E5E5EA] flex items-baseline justify-between">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
+              Scoped deliverables
+            </span>
+            <span className="text-[10px] text-[#999] tabular-nums">
+              {intake!.deliverables!.length} {intake!.deliverables!.length === 1 ? "item" : "items"} · awaiting pod assignment
+            </span>
+          </div>
+          <ul className="divide-y divide-[#F0F0F0]">
+            {intake!.deliverables!.map((d, i) => {
+              const typeLabel = PAGE_LABEL[d.type as PageType] ?? d.type;
               return (
-                <div key={groupId} className="mt-4 first:mt-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#999] mb-2">
-                    {groupLabel}
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-                    {groupFields.map((field) => {
-                      const value = brief[field.key];
-                      const isEditing = editingBriefField === field.key;
-                      const isUrl = (field.key === "websiteUrl" || field.key === "shopifyUrl") && value;
-                      return (
-                        <div key={field.key} className="group">
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#999] mb-0.5">
-                            {field.label}
-                          </p>
-                          {isEditing ? (
-                            <div className="flex items-start gap-1.5">
-                              {field.multiline ? (
-                                <textarea
-                                  value={briefDraft}
-                                  onChange={(e) => setBriefDraft(e.target.value)}
-                                  className="flex-1 text-[12px] px-2 py-1.5 border border-[#1B1B1B] rounded focus:outline-none bg-white min-h-[60px] resize-y"
-                                  autoFocus
-                                />
-                              ) : (
-                                <input
-                                  value={briefDraft}
-                                  onChange={(e) => setBriefDraft(e.target.value)}
-                                  className="flex-1 text-[12px] px-2 py-1.5 border border-[#1B1B1B] rounded focus:outline-none bg-white"
-                                  autoFocus
-                                />
-                              )}
-                              <button
-                                onClick={() => handleSaveBriefField(field.key)}
-                                className="text-[10px] font-semibold text-white bg-[#1B1B1B] px-2.5 py-1.5 rounded hover:bg-black shrink-0"
-                              >
-                                Save
-                              </button>
-                              <button
-                                onClick={() => { setEditingBriefField(null); setBriefDraft(""); }}
-                                className="text-[14px] text-[#999] hover:text-[#1B1B1B] leading-none px-1 shrink-0"
-                              >
-                                ×
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex items-start gap-1.5">
-                              {value ? (
-                                isUrl ? (
-                                  <a
-                                    href={value}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[12px] text-[#1B1B1B] hover:underline flex-1 break-all"
-                                  >
-                                    {value}
-                                  </a>
-                                ) : (
-                                  <p className="text-[12px] text-[#1B1B1B] flex-1 whitespace-pre-line leading-snug">
-                                    {value}
-                                  </p>
-                                )
-                              ) : (
-                                <p className="text-[12px] text-[#BBB] italic flex-1">Not set</p>
-                              )}
-                              <button
-                                onClick={() => startEditingBriefField(field.key)}
-                                className="opacity-0 group-hover:opacity-100 text-[#999] hover:text-[#1B1B1B] transition-opacity shrink-0"
-                                title="Edit"
-                              >
-                                <PencilSquareIcon className="size-3.5" />
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                <li key={d.id} className="px-4 py-2.5 flex items-baseline justify-between gap-3">
+                  <div className="flex items-baseline gap-3">
+                    <span className="text-[10px] font-semibold tabular-nums text-[#999] w-4">
+                      {i + 1}
+                    </span>
+                    <span className="text-[13px] font-medium text-[#1B1B1B]">{typeLabel}</span>
+                    {d.label?.trim() && (
+                      <span className="text-[12px] text-[#666]">· {d.label.trim()}</span>
+                    )}
                   </div>
-                </div>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
+                    Pending pod
+                  </span>
+                </li>
               );
             })}
+          </ul>
+          <div className="px-4 py-2.5 bg-[#FAFAFA] text-[11px] text-[#666] flex items-baseline justify-between">
+            <span>Delivery dates lock in when a pod is assigned.</span>
+            <Link href="/pods-v2" className="font-medium text-[#1B1B1B] hover:underline">
+              Open purgatory →
+            </Link>
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* Cycle tabs - pills · only render for retainers (buckets have one cycle) */}
       {engagement.kind === "retainer" && (
@@ -933,10 +934,16 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                       blocked: "bg-[#C62828] border-[#C62828]",
                       todo: "bg-white border-[#999]",
                     };
+                    const custom = customDeliverables.find((cd) => cd.id === d.id);
+                    const currentPhase = custom?.phase;
+                    const currentPhaseMeta = currentPhase ? phaseMeta(currentPhase) : null;
+                    const phaseHistory = custom?.phaseHistory;
+                    const hasPhaseHistory = (phaseHistory?.length ?? 0) > 0;
+                    const timelineOpen = expandedTimeline === d.id;
 
                     return (
+                      <div key={d.id}>
                       <div
-                        key={d.id}
                         className={`group grid grid-cols-[24px_minmax(0,1.4fr)_70px_170px_minmax(0,1fr)] items-center gap-3 px-3 py-2 ${
                           idx > 0 ? "border-t border-[#E5E5EA]" : ""
                         } ${state.status === "done" ? "bg-[#FAFAFA]" : ""}`}
@@ -966,33 +973,29 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                             </p>
                           )}
                           {(() => {
-                            // Gates + test result render only on custom deliverables (build/dev/test)
+                            // Phase pill + test chip render only on custom deliverables.
+                            // QA gates were lifted out to a project-level Must dos row 2026-05-14.
                             if (stage.id === "audit") return null;
-                            const custom = customDeliverables.find((cd) => cd.id === d.id);
                             if (!custom) return null;
-                            const gates = custom.gates;
                             const test = custom.testResult;
-                            if (!gates && !test) return null;
+                            if (!test && !currentPhaseMeta && !hasPhaseHistory) return null;
                             return (
                               <div className="flex flex-wrap items-center gap-1 mt-1.5">
-                                {gates &&
-                                  (Object.keys(QA_GATE_LABEL) as QAGateKey[]).map((key) => {
-                                    const ticked = gates[key] === true;
-                                    return (
-                                      <button
-                                        key={key}
-                                        onClick={() => handleToggleGate(d.id, key)}
-                                        className={`inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full border transition-colors ${
-                                          ticked
-                                            ? "border-[#1B5E20] bg-[#E8F5E9] text-[#1B5E20]"
-                                            : "border-[#E5E5EA] bg-white text-[#999] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"
-                                        }`}
-                                      >
-                                        <span className="text-[9px]">{ticked ? "✓" : "○"}</span>
-                                        {QA_GATE_LABEL[key]}
-                                      </button>
-                                    );
-                                  })}
+                                {currentPhaseMeta && (
+                                  <button
+                                    onClick={() => setExpandedTimeline(timelineOpen ? null : d.id)}
+                                    className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full border hover:opacity-80 transition-opacity"
+                                    style={{ background: currentPhaseMeta.bg, color: currentPhaseMeta.color, borderColor: currentPhaseMeta.bg }}
+                                    title={hasPhaseHistory ? "View phase timeline" : currentPhaseMeta.label}
+                                  >
+                                    {currentPhaseMeta.label}
+                                    {hasPhaseHistory && (
+                                      <span className="text-[8px] opacity-70">
+                                        {timelineOpen ? "▴" : "▾"}
+                                      </span>
+                                    )}
+                                  </button>
+                                )}
                                 {test && (() => {
                                   const styles: Record<string, { bg: string; fg: string; label: string }> = {
                                     pending: { bg: "#F5F5F5", fg: "#666", label: "Test pending" },
@@ -1005,14 +1008,9 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                                     <span
                                       className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded"
                                       style={{ background: s.bg, color: s.fg }}
-                                      title={test.notes ?? undefined}
+                                      title={test.significancePct != null ? `${test.significancePct}% sig${test.notes ? `. ${test.notes}` : ""}` : test.notes ?? undefined}
                                     >
                                       {s.label}
-                                      {test.significancePct != null && (
-                                        <span className="opacity-70 normal-case font-medium">
-                                          · {test.significancePct}% sig
-                                        </span>
-                                      )}
                                     </span>
                                   );
                                 })()}
@@ -1129,6 +1127,15 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                           )}
                         </div>
                       </div>
+                      {timelineOpen && hasPhaseHistory && (
+                        <div className="px-3 py-3 border-t border-[#E5E5EA] bg-[#FAFBFD]">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#999] mb-2">
+                            Phase timeline
+                          </p>
+                          <PhaseTimeline history={phaseHistory} compact />
+                        </div>
+                      )}
+                      </div>
                     );
                   })}
                   {stageDeliverables.length === 0 && (
@@ -1149,47 +1156,69 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                 </div>
 
                 {canAdd && isAddingHere && (
-                  <div className="mt-3 rounded-md border border-[#1B1B1B] bg-white p-2 flex items-center gap-1.5">
-                    <input
-                      value={newDeliverableDraft.name}
-                      onChange={(e) => setNewDeliverableDraft((d) => ({ ...d, name: e.target.value }))}
-                      placeholder="Deliverable name"
-                      className="flex-1 text-[12px] px-2 py-1.5 border border-[#E5E5EA] rounded focus:outline-none focus:border-[#1B1B1B]"
-                      autoFocus
-                    />
-                    <select
-                      value={newDeliverableDraft.owner}
-                      onChange={(e) => setNewDeliverableDraft((d) => ({ ...d, owner: e.target.value as OwnerRole }))}
-                      className="text-[12px] px-2 py-1.5 border border-[#E5E5EA] rounded focus:outline-none focus:border-[#1B1B1B] bg-white"
-                    >
-                      <option value="Pod">Pod</option>
-                      <option value="Design">Design</option>
-                      <option value="CRO">CRO</option>
-                      <option value="PM">PM</option>
-                      <option value="Dylan">Dylan</option>
-                    </select>
-                    <input
-                      value={newDeliverableDraft.dueDay}
-                      onChange={(e) => setNewDeliverableDraft((d) => ({ ...d, dueDay: e.target.value }))}
-                      placeholder={`Day ${ENGAGEMENT_CYCLES.find(c => c.number === viewCycle)?.startDay}-${ENGAGEMENT_CYCLES.find(c => c.number === viewCycle)?.endDay}`}
-                      type="number"
-                      min="1"
-                      max="90"
-                      className="w-24 text-[12px] px-2 py-1.5 border border-[#E5E5EA] rounded focus:outline-none focus:border-[#1B1B1B] tabular-nums"
-                    />
-                    <button
-                      onClick={handleAddCustomDeliverable}
-                      disabled={!newDeliverableDraft.name.trim() || !newDeliverableDraft.dueDay}
-                      className="text-[12px] font-semibold text-white bg-[#1B1B1B] hover:bg-black px-3 py-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Add
-                    </button>
-                    <button
-                      onClick={() => { setAddingDeliverableIn(null); setNewDeliverableDraft({ name: "", owner: "Pod", dueDay: "" }); }}
-                      className="text-[16px] text-[#999] px-1.5 hover:text-[#1B1B1B] leading-none"
-                    >
-                      ×
-                    </button>
+                  <div className="mt-3 rounded-md border border-[#1B1B1B] bg-white p-3 space-y-2">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <select
+                        value={newDeliverableDraft.type}
+                        onChange={(e) => setNewDeliverableDraft((d) => ({ ...d, type: e.target.value }))}
+                        className="text-[12px] px-2 py-1.5 border border-[#E5E5EA] rounded focus:outline-none focus:border-[#1B1B1B] bg-white"
+                        autoFocus
+                      >
+                        {(Object.keys(PAGE_LABEL) as PageType[]).map((t) => (
+                          <option key={t} value={t}>{PAGE_LABEL[t]}</option>
+                        ))}
+                      </select>
+                      <input
+                        value={newDeliverableDraft.label}
+                        onChange={(e) => setNewDeliverableDraft((d) => ({ ...d, label: e.target.value }))}
+                        placeholder="Variant label (optional, e.g. Whitening Strips)"
+                        className="flex-1 min-w-[180px] text-[12px] px-2 py-1.5 border border-[#E5E5EA] rounded focus:outline-none focus:border-[#1B1B1B]"
+                      />
+                      <select
+                        value={newDeliverableDraft.owner}
+                        onChange={(e) => setNewDeliverableDraft((d) => ({ ...d, owner: e.target.value as OwnerRole }))}
+                        className="text-[12px] px-2 py-1.5 border border-[#E5E5EA] rounded focus:outline-none focus:border-[#1B1B1B] bg-white"
+                      >
+                        <option value="Pod">Pod</option>
+                        <option value="Design">Design</option>
+                        <option value="CRO">CRO</option>
+                        <option value="PM">PM</option>
+                        <option value="Dylan">Dylan</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">Lands on</span>
+                        <select
+                          value={newDeliverableDraft.week}
+                          onChange={(e) => setNewDeliverableDraft((d) => ({ ...d, week: parseInt(e.target.value, 10) as WeekInCycle }))}
+                          className="text-[12px] px-2 py-1.5 border border-[#E5E5EA] rounded focus:outline-none focus:border-[#1B1B1B] bg-white"
+                        >
+                          <option value={1}>W1 Thursday</option>
+                          <option value={2}>W2 Thursday</option>
+                          <option value={3}>W3 Thursday</option>
+                          <option value={4}>W4 Thursday</option>
+                        </select>
+                        <span className="text-[10px] text-[#999]">
+                          (M{addingDeliverableIn.cycle} · day {(addingDeliverableIn.cycle - 1) * 30 + (newDeliverableDraft.week - 1) * 7 + 4})
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => { setAddingDeliverableIn(null); setNewDeliverableDraft({ type: "pdp", label: "", owner: "Pod", week: 3 }); }}
+                          className="text-[11px] text-[#999] hover:text-[#1B1B1B] px-2 py-1.5"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleAddCustomDeliverable}
+                          disabled={!newDeliverableDraft.type}
+                          className="text-[12px] font-semibold text-white bg-[#1B1B1B] hover:bg-black px-3 py-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Add deliverable
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1198,14 +1227,73 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
         </div>
       </section>
 
-      {/* Wins log - what shipped + what it moved */}
-      {engagement.wins && engagement.wins.length > 0 && (
-        <section className="mb-6">
-          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-[#999] mb-3">
+      {/* Wins log, manual entries only. Add via the button; auto-derive
+       * from test_result winners removed 2026-05-14 because the wins
+       * appeared from nowhere with no clear input path. */}
+      <section className="mb-6">
+        <div className="flex items-baseline justify-between mb-3">
+          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
             Wins
           </h2>
+          <button
+            onClick={() => setAddingWin(true)}
+            className="inline-flex items-center gap-1 text-[11px] font-medium text-[#666] hover:text-[#1B1B1B]"
+          >
+            <PlusIcon className="size-3" />
+            Add win
+          </button>
+        </div>
+        {addingWin && (
+          <div className="mb-3 rounded-md border border-[#1B1B1B] bg-white p-3 space-y-2">
+            <input
+              autoFocus
+              value={winDraft.title}
+              onChange={(e) => setWinDraft((d) => ({ ...d, title: e.target.value }))}
+              placeholder="What shipped (e.g. New PDP layout, hero variant B)"
+              className="w-full text-[13px] px-2 py-1.5 border border-[#E5E5EA] rounded focus:outline-none focus:border-[#1B1B1B]"
+            />
+            <div className="grid grid-cols-[1fr_120px] gap-2">
+              <input
+                value={winDraft.metric}
+                onChange={(e) => setWinDraft((d) => ({ ...d, metric: e.target.value }))}
+                placeholder="Impact (e.g. +18% CVR, £4.2K extra MRR)"
+                className="text-[12px] px-2 py-1.5 border border-[#E5E5EA] rounded focus:outline-none focus:border-[#1B1B1B]"
+              />
+              <input
+                value={winDraft.day}
+                onChange={(e) => setWinDraft((d) => ({ ...d, day: e.target.value }))}
+                placeholder={`Day (current: ${currentDay})`}
+                inputMode="numeric"
+                className="text-[12px] px-2 py-1.5 border border-[#E5E5EA] rounded focus:outline-none focus:border-[#1B1B1B] tabular-nums"
+              />
+            </div>
+            <textarea
+              value={winDraft.notes}
+              onChange={(e) => setWinDraft((d) => ({ ...d, notes: e.target.value }))}
+              placeholder="Notes (optional)"
+              rows={2}
+              className="w-full text-[12px] px-2 py-1.5 border border-[#E5E5EA] rounded focus:outline-none focus:border-[#1B1B1B] resize-y"
+            />
+            <div className="flex items-center justify-end gap-2">
+              <button
+                onClick={() => { setAddingWin(false); setWinDraft({ title: "", metric: "", day: "", notes: "" }); }}
+                className="text-[11px] text-[#999] hover:text-[#1B1B1B] px-2 py-1"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddWin}
+                disabled={!winDraft.title.trim()}
+                className="text-[11px] font-semibold text-white bg-[#1B1B1B] hover:bg-black px-3 py-1.5 rounded disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Save win
+              </button>
+            </div>
+          </div>
+        )}
+        {wins.length > 0 ? (
           <div className="rounded-md border border-[#E5E5EA] bg-white overflow-hidden">
-            {engagement.wins
+            {wins
               .slice()
               .sort((a, b) => b.shippedAtDay - a.shippedAtDay)
               .map((win, idx) => (
@@ -1232,8 +1320,12 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                 </div>
               ))}
           </div>
-        </section>
-      )}
+        ) : !addingWin && (
+          <p className="text-[12px] text-[#999] italic">No wins logged yet. Click Add win to record one.</p>
+        )}
+      </section>
+
+      <GeneratedDocs engagementId={engagement.id} />
 
       {/* Resources - card grid with populated / empty states · scoped to active cycle */}
       <section className="mb-6">
@@ -1412,7 +1504,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
   );
 }
 
-function MetricCell({
+function MetricRow({
   label,
   unit,
   unitPosition = "suffix",
@@ -1438,47 +1530,39 @@ function MetricCell({
   const negative = delta != null && delta < 0;
 
   return (
-    <div className="rounded-md border border-[#E5E5EA] bg-white p-3">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#999] mb-2">
+    <div className="grid grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))] items-baseline gap-3 px-4 py-2.5">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-[#999]">
         {label}
       </p>
-      <div className="flex items-baseline gap-3">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">Baseline</p>
-          <p className="text-[16px] font-semibold tabular-nums text-[#666] mt-0.5">
-            {baseline != null ? fmt(baseline) : "—"}
-          </p>
-        </div>
-        <span className="text-[14px] text-[#999]">→</span>
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">Current</p>
-          <p className="text-[20px] font-semibold tabular-nums text-[#1B1B1B] mt-0.5">
-            {current != null ? fmt(current) : "—"}
-          </p>
-        </div>
-        {delta != null && (
-          <div className="ml-auto text-right">
-            <p
-              className={`text-[12px] font-semibold tabular-nums ${
-                positive ? "text-[#1B5E20]" : negative ? "text-[#C62828]" : "text-[#666]"
-              }`}
-            >
-              {positive ? "+" : ""}
-              {fmt(delta)}
-            </p>
+      <div className="flex items-baseline gap-2">
+        <span className="text-[9px] font-semibold uppercase tracking-wider text-[#BBB]">Base</span>
+        <span className="text-[13px] font-medium tabular-nums text-[#666]">
+          {baseline != null ? fmt(baseline) : "-"}
+        </span>
+      </div>
+      <div className="flex items-baseline gap-2">
+        <span className="text-[9px] font-semibold uppercase tracking-wider text-[#BBB]">Now</span>
+        <span className="text-[14px] font-semibold tabular-nums text-[#1B1B1B]">
+          {current != null ? fmt(current) : "-"}
+        </span>
+      </div>
+      <div className="flex items-baseline gap-2 justify-end tabular-nums">
+        {delta != null ? (
+          <>
+            <span className={`text-[12px] font-semibold ${positive ? "text-[#1B5E20]" : negative ? "text-[#C62828]" : "text-[#666]"}`}>
+              {positive ? "+" : ""}{fmt(delta)}
+            </span>
             {deltaPct != null && (
-              <p
-                className={`text-[10px] tabular-nums ${
-                  positive ? "text-[#1B5E20]" : negative ? "text-[#C62828]" : "text-[#999]"
-                }`}
-              >
-                {positive ? "+" : ""}
-                {deltaPct.toFixed(0)}%
-              </p>
+              <span className={`text-[11px] font-medium ${positive ? "text-[#1B5E20]" : negative ? "text-[#C62828]" : "text-[#999]"}`}>
+                ({positive ? "+" : ""}{deltaPct.toFixed(0)}%)
+              </span>
             )}
-          </div>
+          </>
+        ) : (
+          <span className="text-[12px] text-[#BBB]">-</span>
         )}
       </div>
     </div>
   );
 }
+

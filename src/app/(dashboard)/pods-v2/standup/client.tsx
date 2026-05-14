@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
   ensureSeed,
@@ -18,7 +19,7 @@ import {
 } from "@/lib/pods-v2/types";
 import { todayYMD, formatDayMonth } from "@/lib/dates";
 
-/* Standup view — what changed in the last 24h, scoped to the whole
+/* Standup view, what changed in the last 24h, scoped to the whole
  * agency. Five lanes: tasks created, blockers raised, blockers
  * resolved, projects shipping in next 48h, slipped projects (active).
  *
@@ -26,6 +27,10 @@ import { todayYMD, formatDayMonth } from "@/lib/dates";
  * with "open one screen, get the whole picture." Designed for the
  * Monday + daily standup; readable in 30 seconds. */
 export default function StandupClient() {
+  /* Same team-flavour detection as /pods-v2 index, keeps the back link
+   * inside the (team) layout when mounted at /team/pods/standup. */
+  const pathname = usePathname();
+  const linkBase = pathname?.startsWith("/team/pods") ? "/team/pods" : "/pods-v2";
   const [pods, setPods] = useState<Pod[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -152,7 +157,7 @@ export default function StandupClient() {
           </p>
         </div>
         <Link
-          href="/pods-v2"
+          href={linkBase}
           className="text-[11px] text-[#7A7A7A] hover:text-[#1B1B1B] hover:underline"
         >
           ← All pods

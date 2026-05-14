@@ -228,7 +228,7 @@ export interface CustomDeliverable {
   stage: Exclude<StageId, "audit">;
   weekInCycle: WeekInCycle;
   owner: OwnerRole;
-  /** Optional specific assignee name — set when the deliverable came
+  /** Optional specific assignee name, set when the deliverable came
    * from a pods-v2 Task (resolved via PodMember.role + pod_id). Surfaces
    * as a hover tooltip on the owner badge while the badge itself stays
    * generic role-coloured. */
@@ -236,6 +236,14 @@ export interface CustomDeliverable {
   dueDay: number;
   gates?: QAGates;
   testResult?: DeliverableTestResult;
+  /** Current pods-v2 task phase (e.g. "external-design-review"). When the
+   * deliverable was spawned from a pod Task this gives clients/PMs a
+   * granular signal beyond the 3 QA gates. */
+  phase?: string;
+  /** Per-visit phase history for the phase-timeline drawer. Each entry
+   * into a phase is its own span, revisits are kept separate so the
+   * revision-loop count is visible. */
+  phaseHistory?: import("@/lib/task-board/phases").PhaseEntry[];
 }
 
 export interface EngagementMetrics {

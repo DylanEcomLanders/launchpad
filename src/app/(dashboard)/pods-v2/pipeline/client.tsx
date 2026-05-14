@@ -427,9 +427,9 @@ function TableView({
                     </span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-[#7A7A7A]">{pod?.name ?? "—"}</td>
+                <td className="px-4 py-3 text-[#7A7A7A]">{pod?.name ?? ","}</td>
                 <td className="px-4 py-3">
-                  <div>{client?.name ?? "—"}</div>
+                  <div>{client?.name ?? ","}</div>
                   {client?.brand_warm && (
                     <div className="text-[10px] font-medium text-orange-700">Warm</div>
                   )}
