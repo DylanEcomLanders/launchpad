@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "NODE_OPTIONS='--max-old-space-size=8192' next dev",
+    "build": "NODE_OPTIONS='--max-old-space-size=8192' next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "NODE_OPTIONS='--max-old-space-size=8192' eslint",
+    "typecheck": "NODE_OPTIONS='--max-old-space-size=8192' tsc --noEmit"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",

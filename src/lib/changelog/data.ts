@@ -37,6 +37,16 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-67",
+    date: "18 May 2026",
+    version: "0.44.1",
+    title: "Cap Node heap to stop build memory spikes",
+    changes: [
+      { type: "fixed", text: "Local builds were spiking past available RAM and freezing the laptop during routine Claude-driven changes. Root cause: with no NODE_OPTIONS cap set, next build, tsc, and eslint each grew their heap unbounded, and when run concurrently against the larger client files (conversion-pack/presentation.tsx at 5,190 lines and tools/client-portal/[id]/page.tsx at 5,187 lines, each a single module with 20+ sub-component declarations) the summed working memory blew past the 18GB physical RAM ceiling. macOS responded with aggressive memory compression + swap thrashing, which presents in Activity Monitor as 'Claude' using 60-70GB (that figure is RSS + compressed + swapped, not real RAM). Fix: dev, build, lint, and a new typecheck script now prefix NODE_OPTIONS='--max-old-space-size=8192' inline in package.json so every Node process spawned by npm run is capped at an 8GB heap. Caps the worst case instead of letting one runaway worker pull the whole system into swap. A process that genuinely needs more than 8GB will now error with 'JavaScript heap out of memory' rather than freezing the OS, which is a useful signal that a file (likely one of the 5K-line ones) needs splitting. Vercel inherits the cap via the same scripts but current production builds sit well under 8GB so deploys are unaffected. Also nuked the stale .next/dev cache (1GB, last touched 8 days before the fix and pre-dated 8+ feature commits) to force a clean rebuild against current code" },
+      { type: "added", text: "New npm run typecheck script that runs tsc --noEmit with the same 8GB heap cap. Use this in place of 'npx tsc --noEmit' going forward so the pre-push type check inherits the memory cap and matches the pattern used by the other scripts. CLAUDE.md still mandates the type check before every push to main, this just gives it a safer execution path" },
+    ],
+  },
+  {
     id: "cl-66",
     date: "14 May 2026",
     version: "0.44.0",
