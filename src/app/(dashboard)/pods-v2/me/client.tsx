@@ -272,13 +272,34 @@ function Section({
               className={`flex items-center gap-3 px-3 py-2 ${i > 0 ? "border-t border-[#EDEDEF]" : ""}`}
             >
               <button
-                onClick={() => {
-                  const next =
-                    t.status === "todo"
+                onClick={(e) => {
+                  /* Plain click cycles forward. Shift-click / right-click
+                   * steps back so a mistaken tick can be undone, but
+                   * `todo` is the start of the line so shift-click there
+                   * is a no-op (never wrap forward into done). */
+                  const back = e.shiftKey;
+                  const next = back
+                    ? t.status === "in_progress"
+                      ? "todo"
+                      : t.status === "done"
+                        ? "in_progress"
+                        : t.status
+                    : t.status === "todo"
                       ? "in_progress"
                       : t.status === "in_progress"
                         ? "done"
                         : "todo";
+                  updateTaskStatus(t.id, next);
+                  onMutate();
+                }}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  const next =
+                    t.status === "in_progress"
+                      ? "todo"
+                      : t.status === "done"
+                        ? "in_progress"
+                        : t.status;
                   updateTaskStatus(t.id, next);
                   onMutate();
                 }}
@@ -287,7 +308,7 @@ function Section({
                     ? "border-blue-500 bg-white"
                     : "border-[#D5D5DC] bg-white hover:border-[#1B1B1B]"
                 }`}
-                title="Cycle status"
+                title="Click to advance · Shift-click or right-click to step back"
               >
                 {t.status === "in_progress" && (
                   <span className="size-1.5 rounded-full bg-blue-500" />

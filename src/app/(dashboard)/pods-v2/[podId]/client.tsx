@@ -13,6 +13,7 @@ import { ClockIcon } from "@heroicons/react/24/solid";
 import { useRole } from "@/components/auth-gate";
 import {
   addTask,
+  createProject,
   deleteTask,
   ensureSeed,
   getClientsForPod,
@@ -113,6 +114,20 @@ const STATUS_CYCLE: Record<TaskStatus, TaskStatus> = {
   todo: "in_progress",
   in_progress: "done",
   done: "todo",
+};
+
+/* Reverse cycle for shift-click / right-click on the status pip. Lets
+ * the user back out of an in_progress design task without first having
+ * to fight through the handoff modal on the way to done, which was the
+ * "I can't untick this design" bug.
+ *
+ * Asymmetric on purpose: `todo` is the start of the line so shift-click
+ * is a no-op there (never wrap forward to `done`, that'd let admins skip
+ * the design handoff gate by accident). */
+const STATUS_CYCLE_BACK: Record<TaskStatus, TaskStatus> = {
+  todo: "todo",
+  in_progress: "todo",
+  done: "in_progress",
 };
 
 const PHASE_PILL: Record<TaskPhase, string> = {
@@ -592,6 +607,8 @@ export default function PodDetailClient({ podId }: { podId: string }) {
         tasks={filteredTasks}
         projectById={projectById}
         clientById={clientById}
+        clients={clients}
+        podId={pod.id}
         today={today}
         onMutate={refresh}
         defaultTaskType="core_deliverable"
@@ -716,6 +733,8 @@ function SwimLane({
   tasks,
   projectById,
   clientById,
+  clients,
+  podId,
   today,
   onMutate,
   defaultTaskType,
@@ -728,6 +747,8 @@ function SwimLane({
   tasks: Task[];
   projectById: Map<string, Project>;
   clientById: Map<string, Client>;
+  clients: Client[];
+  podId: string;
   today: string;
   onMutate: () => void;
   defaultTaskType: TaskType;
@@ -804,6 +825,8 @@ function SwimLane({
                   defaultType={defaultTaskType}
                   projects={Array.from(projectById.values())}
                   clientById={clientById}
+                  clients={clients}
+                  podId={podId}
                   onMutate={onMutate}
                   isAdmin={isAdmin}
                 />
@@ -914,12 +937,17 @@ function PrimaryTaskRow({
       }`}
       ref={ref}
     >
-      {/* Status circle, click to cycle. Design core deliverables open
-       * a handoff checklist when transitioning to done. */}
+      {/* Status circle. Plain click cycles forward
+       * (todo → in_progress → done → todo). Shift-click or right-click
+       * cycles backward, which is the escape hatch for "this got
+       * accidentally ticked, set it back" without fighting through the
+       * design → dev handoff modal that gates forward motion into done. */}
       <button
-        onClick={() => {
-          const next = STATUS_CYCLE[task.status];
+        onClick={(e) => {
+          const back = e.shiftKey;
+          const next = back ? STATUS_CYCLE_BACK[task.status] : STATUS_CYCLE[task.status];
           const isDesignHandoff =
+            !back &&
             next === "done" &&
             task.type === "core_deliverable" &&
             task.discipline === "design";
@@ -930,6 +958,12 @@ function PrimaryTaskRow({
           updateTaskStatus(task.id, next);
           onMutate();
         }}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          const next = STATUS_CYCLE_BACK[task.status];
+          updateTaskStatus(task.id, next);
+          onMutate();
+        }}
         className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
           task.status === "done"
             ? "border-emerald-500 bg-emerald-500 text-white"
@@ -937,7 +971,7 @@ function PrimaryTaskRow({
               ? "border-blue-500 bg-white text-blue-500"
               : "border-[#D5D5DC] bg-white hover:border-[#1B1B1B]"
         }`}
-        title={`Cycle status (current: ${task.status === "done" ? "Done" : task.status === "in_progress" ? "In progress" : "To do"})`}
+        title={`Current: ${task.status === "done" ? "Done" : task.status === "in_progress" ? "In progress" : "To do"}. Click to advance · Shift-click or right-click to step back.`}
       >
         {task.status === "done" && (
           <svg viewBox="0 0 12 12" className="size-3" fill="currentColor">
@@ -1871,6 +1905,8 @@ function AddTaskInline({
   defaultType,
   projects,
   clientById,
+  clients,
+  podId,
   onMutate,
   isAdmin,
 }: {
@@ -1879,6 +1915,14 @@ function AddTaskInline({
   defaultType: TaskType;
   projects: Project[];
   clientById: Map<string, Client>;
+  /** All clients on this pod (with or without projects). Used to surface
+   * "Create project for X" options for clients that have a roster entry
+   * but no project rows yet, so an admin can add a deliverable straight
+   * onto a fresh retainer without bouncing through /pods-v2/new-project. */
+  clients: Client[];
+  /** Current pod id. Needed to auto-create a project when the picker
+   * selects a project-less client. */
+  podId: string;
   onMutate: () => void;
   isAdmin: boolean;
 }) {
@@ -1927,10 +1971,41 @@ function AddTaskInline({
     );
   }, [allMembers, isPrimaryMode, memberIsDesigner, memberIsSecondary]);
 
+  /* Picker options: every project on this pod, plus a "+ New project for
+   * <client>" pseudo-option for each pod client that has no projects yet
+   * (e.g. Harvestory just had a Client row but no Project, so it was
+   * invisible to the form). The `new:<clientId>` value triggers an
+   * on-the-fly createProject before addPairedDeliverable runs. */
+  const projectOptions = useMemo(() => {
+    type Option =
+      | { kind: "project"; value: string; label: string }
+      | { kind: "new"; value: string; clientId: string; label: string };
+    const opts: Option[] = projects.map((p) => {
+      const client = clientById.get(p.client_id);
+      return {
+        kind: "project" as const,
+        value: p.id,
+        label: `${p.name} · ${client?.name ?? ","}`,
+      };
+    });
+    const clientsWithProjects = new Set(projects.map((p) => p.client_id));
+    for (const c of clients) {
+      if (!clientsWithProjects.has(c.id)) {
+        opts.push({
+          kind: "new",
+          value: `new:${c.id}`,
+          clientId: c.id,
+          label: `+ New project for ${c.name}`,
+        });
+      }
+    }
+    return opts;
+  }, [projects, clients, clientById]);
+
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [type, setType] = useState<TaskType>(memberIsPrimary ? defaultType : secondaryDefault);
-  const [projectId, setProjectId] = useState(projects[0]?.id ?? "");
+  const [projectId, setProjectId] = useState(projectOptions[0]?.value ?? "");
   const [deliverableType, setDeliverableType] = useState<PageType>("pdp");
   const [variantLabel, setVariantLabel] = useState("");
 
@@ -1973,9 +2048,9 @@ function AddTaskInline({
       </div>
 
       {isPrimaryMode ? (
-        projects.length === 0 ? (
+        projectOptions.length === 0 ? (
           <div className="rounded-md border border-amber-200 bg-amber-50 px-2.5 py-2 text-[11px] text-amber-800">
-            No projects on this pod yet. Create one via{" "}
+            No clients or projects on this pod yet. Create one via{" "}
             <Link href="/pods-v2/new-project" className="font-medium underline hover:text-amber-900">
               + New project
             </Link>{" "}
@@ -2008,14 +2083,11 @@ function AddTaskInline({
               onChange={(e) => setProjectId(e.target.value)}
               className={`${selectClass} !py-1 !text-[11px] mt-1.5`}
             >
-              {projects.map((p) => {
-                const client = clientById.get(p.client_id);
-                return (
-                  <option key={p.id} value={p.id}>
-                    {p.name} · {client?.name ?? ","}
-                  </option>
-                );
-              })}
+              {projectOptions.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
             </select>
             <div className="mt-1.5 text-[10px] text-[#7A7A7A]">
               Creates two paired tasks: <strong>Design, {PAGE_LABEL[deliverableType]}</strong> for{" "}
@@ -2056,14 +2128,11 @@ function AddTaskInline({
               onChange={(e) => setProjectId(e.target.value)}
               className={`${selectClass} !py-1 !text-[11px]`}
             >
-              {projects.map((p) => {
-                const client = clientById.get(p.client_id);
-                return (
-                  <option key={p.id} value={p.id}>
-                    {p.name} · {client?.name ?? ","}
-                  </option>
-                );
-              })}
+              {projectOptions.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
             </select>
           </div>
         </>
@@ -2078,12 +2147,42 @@ function AddTaskInline({
         </button>
         <button
           onClick={() => {
+            /* Resolve the picker value to a concrete project id. If the
+             * user picked a "+ New project for <client>" option, create
+             * a stub project for that client first (no pages, default
+             * kickoff/delivery dates derived from today), then thread its
+             * id into addPairedDeliverable. Keeps Harvestory-style retainer
+             * clients addressable from the inline form without bouncing
+             * through /pods-v2/new-project. */
+            const resolveProjectId = (): string | null => {
+              if (!projectId) return null;
+              if (projectId.startsWith("new:")) {
+                const cid = projectId.slice(4);
+                const cl = clients.find((c) => c.id === cid);
+                if (!cl) return null;
+                const todayYMD = new Date().toISOString().slice(0, 10);
+                const proj = createProject({
+                  name: "Initial build",
+                  client_id: cid,
+                  pod_id: podId,
+                  pages: [],
+                  signoff_date: todayYMD,
+                  is_rush: false,
+                  brand_warm: !!cl.brand_warm,
+                });
+                return proj.id;
+              }
+              return projectId;
+            };
+
             if (isPrimaryMode) {
-              if (!projectId || !pairPartner) return;
+              if (!pairPartner) return;
+              const resolved = resolveProjectId();
+              if (!resolved) return;
               const designerId = memberIsDesigner ? member.id : pairPartner.id;
               const devId = memberIsDesigner ? pairPartner.id : member.id;
               const { design, dev } = addPairedDeliverable({
-                project_id: projectId,
+                project_id: resolved,
                 deliverable_type: deliverableType,
                 designer_id: designerId,
                 dev_id: devId,
@@ -2101,9 +2200,11 @@ function AddTaskInline({
               }
               setVariantLabel("");
             } else {
-              if (!title.trim() || !projectId) return;
+              if (!title.trim()) return;
+              const resolved = resolveProjectId();
+              if (!resolved) return;
               addTask({
-                project_id: projectId,
+                project_id: resolved,
                 title: title.trim(),
                 type,
                 assigned_to: member.id,
@@ -2112,7 +2213,7 @@ function AddTaskInline({
             reset();
             onMutate();
           }}
-          disabled={(isPrimaryMode && (!pairPartner || projects.length === 0))}
+          disabled={(isPrimaryMode && (!pairPartner || projectOptions.length === 0))}
           className="rounded bg-[#1B1B1B] px-2 py-1 text-[11px] font-medium text-white hover:bg-[#2D2D2D] disabled:opacity-50"
         >
           {isPrimaryMode ? "Add deliverable" : "Add"}

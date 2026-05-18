@@ -758,6 +758,140 @@ export function updateMemberAvatar(memberId: string, avatarUrl: string | undefin
   }
 }
 
+/* ── Roster editing ─────────────────────────────────────────────
+ *
+ * Members are no longer hardcoded to a pod, the admin "Manage roster"
+ * UI calls these to move people around, swap timezones, change roles,
+ * etc. Stable member IDs (see SEED_POD_DEFINITIONS) mean `avatar_url`
+ * and any `task.assigned_to` references travel with the member; the
+ * legacy `business_settings.avatars` pod_name+role map is kept in sync
+ * here too so older hydration paths don't end up pointing at the wrong
+ * slot after a move. */
+
+/** Move a member to a different pod. Keeps the member's role unless
+ * `newRole` is provided. Re-points the legacy avatar slot so a later
+ * hydrate doesn't misalign Jack ↔ Brandon. No-op if member or pod is
+ * unknown, or if the move is a no-op. */
+export function moveMemberToPod(
+  memberId: string,
+  targetPodId: string,
+  newRole?: PodMemberRole,
+): void {
+  const pods = getPods();
+  const source = pods.find((p) => p.members.some((m) => m.id === memberId));
+  const target = pods.find((p) => p.id === targetPodId);
+  if (!source || !target) return;
+  const member = source.members.find((m) => m.id === memberId);
+  if (!member) return;
+
+  const finalRole = newRole ?? member.role;
+  if (source.id === target.id && finalRole === member.role) return;
+
+  const moved: PodMember = { ...member, pod_id: target.id, role: finalRole };
+  const next = pods.map((p) => {
+    if (p.id === source.id) {
+      return { ...p, members: p.members.filter((m) => m.id !== memberId) };
+    }
+    if (p.id === target.id) {
+      return { ...p, members: [...p.members.filter((m) => m.id !== memberId), moved] };
+    }
+    return p;
+  });
+  write(LS_PODS, next);
+
+  /* Re-point the legacy avatar slot map so any pre-stable-ID hydrate
+   * still resolves to the right URL. Best-effort, silent on failure. */
+  if (typeof window !== "undefined" && member.avatar_url) {
+    import("./team-avatars").then(({ podMemberAvatarKey, saveTeamAvatar }) => {
+      saveTeamAvatar(podMemberAvatarKey(source.name, member.role), undefined);
+      saveTeamAvatar(podMemberAvatarKey(target.name, finalRole), member.avatar_url);
+    });
+  }
+}
+
+/** Swap two members' positions (pod + role). Used by the roster UI when
+ * the admin clicks two slots in sequence. Either or both members can be
+ * placeholders. */
+export function swapMembers(memberAId: string, memberBId: string): void {
+  if (memberAId === memberBId) return;
+  const pods = getPods();
+  let a: PodMember | undefined;
+  let b: PodMember | undefined;
+  let aPod: Pod | undefined;
+  let bPod: Pod | undefined;
+  for (const p of pods) {
+    for (const m of p.members) {
+      if (m.id === memberAId) {
+        a = m;
+        aPod = p;
+      } else if (m.id === memberBId) {
+        b = m;
+        bPod = p;
+      }
+    }
+  }
+  if (!a || !b || !aPod || !bPod) return;
+
+  const aNew: PodMember = { ...a, pod_id: bPod.id, role: b.role };
+  const bNew: PodMember = { ...b, pod_id: aPod.id, role: a.role };
+
+  const next = pods.map((p) => {
+    if (p.id === aPod!.id && p.id === bPod!.id) {
+      return {
+        ...p,
+        members: p.members.map((m) =>
+          m.id === a!.id ? aNew : m.id === b!.id ? bNew : m,
+        ),
+      };
+    }
+    if (p.id === aPod!.id) {
+      return {
+        ...p,
+        members: [...p.members.filter((m) => m.id !== a!.id), bNew],
+      };
+    }
+    if (p.id === bPod!.id) {
+      return {
+        ...p,
+        members: [...p.members.filter((m) => m.id !== b!.id), aNew],
+      };
+    }
+    return p;
+  });
+  write(LS_PODS, next);
+
+  /* Re-point the legacy avatar slot map for both moved slots. */
+  if (typeof window !== "undefined") {
+    import("./team-avatars").then(({ podMemberAvatarKey, saveTeamAvatar }) => {
+      saveTeamAvatar(podMemberAvatarKey(aPod!.name, a!.role), b!.avatar_url);
+      saveTeamAvatar(podMemberAvatarKey(bPod!.name, b!.role), a!.avatar_url);
+    });
+  }
+}
+
+/** Rename a member or toggle their placeholder state. Used by the
+ * roster UI when a "TO HIRE" slot is filled or someone gets renamed. */
+export function updateMemberDetails(
+  memberId: string,
+  patch: { name?: string; is_placeholder?: boolean; role?: PodMemberRole },
+): void {
+  const pods = getPods();
+  const next = pods.map((p) => ({
+    ...p,
+    members: p.members.map((m) =>
+      m.id === memberId
+        ? {
+            ...m,
+            ...(patch.name !== undefined ? { name: patch.name.trim() || m.name } : {}),
+            ...(patch.is_placeholder !== undefined ? { is_placeholder: patch.is_placeholder } : {}),
+            ...(patch.role !== undefined ? { role: patch.role } : {}),
+          }
+        : m,
+    ),
+  }));
+  write(LS_PODS, next);
+}
+
 /* ── Pod blockers ───────────────────────────────────────────────── */
 
 export function addBlocker(
@@ -1486,62 +1620,103 @@ const POD_DEFAULT_SLACK_CHANNELS: Record<string, string> = {
   "Pod 3": "C0B2PPN424A",
 };
 
+/* Stable pod + member IDs. We used to mint random UUIDs per browser
+ * which made avatars and task assignments unstable across devices, and
+ * forced us to key avatars by pod_name+role (which then broke the moment
+ * anyone wanted to move a person to a different pod). Stable IDs let
+ * `member.avatar_url` and `task.assigned_to` survive a move, and let
+ * future reassignment UIs just write the new pod_id onto the member. */
 const SEED_POD_DEFINITIONS: Array<{
+  id: string;
   name: string;
   tagline: string;
-  members: Array<{ name: string; role: PodMemberRole; placeholder?: boolean }>;
+  members: Array<{
+    id: string;
+    name: string;
+    role: PodMemberRole;
+    placeholder?: boolean;
+  }>;
 }> = [
   {
+    id: "pod-1",
     name: "Pod 1",
     tagline: "Barnaby's pod",
     members: [
-      { name: "Barnaby", role: "primary_designer" },
-      { name: "Victoria", role: "secondary_designer" },
-      { name: "Angel", role: "primary_dev" },
-      { name: "Kaye", role: "secondary_dev" },
+      { id: "member-barnaby", name: "Barnaby", role: "primary_designer" },
+      { id: "member-victoria", name: "Victoria", role: "secondary_designer" },
+      { id: "member-angel", name: "Angel", role: "primary_dev" },
+      { id: "member-kaye", name: "Kaye", role: "secondary_dev" },
     ],
   },
   {
+    id: "pod-2",
     name: "Pod 2",
     tagline: "Jack's pod",
     members: [
-      { name: "Jack", role: "primary_designer" },
-      { name: "Anastasia", role: "secondary_designer" },
-      { name: "Ian", role: "primary_dev" },
-      { name: "Clien", role: "secondary_dev" },
+      { id: "member-jack", name: "Jack", role: "primary_designer" },
+      { id: "member-anastasia", name: "Anastasia", role: "secondary_designer" },
+      { id: "member-ian", name: "Ian", role: "primary_dev" },
+      { id: "member-clien", name: "Clien", role: "secondary_dev" },
     ],
   },
   {
+    id: "pod-3",
     name: "Pod 3",
     tagline: "Brandon's pod",
     members: [
-      { name: "Brandon", role: "primary_designer" },
-      { name: "TO HIRE", role: "secondary_designer", placeholder: true },
-      { name: "Hitesh", role: "primary_dev" },
-      { name: "Ashish", role: "secondary_dev" },
+      { id: "member-brandon", name: "Brandon", role: "primary_designer" },
+      {
+        id: "member-pod-3-secondary-designer",
+        name: "TO HIRE",
+        role: "secondary_designer",
+        placeholder: true,
+      },
+      { id: "member-hitesh", name: "Hitesh", role: "primary_dev" },
+      { id: "member-ashish", name: "Ashish", role: "secondary_dev" },
     ],
   },
 ];
 
 function buildSeedPods(): Pod[] {
-  return SEED_POD_DEFINITIONS.map((def) => {
-    const podId = uid();
-    return {
-      id: podId,
-      name: def.name,
-      tagline: def.tagline,
-      capacity_points_per_month: 40,
-      slack_channel_id: POD_DEFAULT_SLACK_CHANNELS[def.name],
-      members: def.members.map((m) => ({
-        id: uid(),
-        name: m.name,
-        role: m.role,
-        pod_id: podId,
-        is_placeholder: !!m.placeholder,
-      })),
-    };
-  });
+  return SEED_POD_DEFINITIONS.map((def) => ({
+    id: def.id,
+    name: def.name,
+    tagline: def.tagline,
+    capacity_points_per_month: 40,
+    slack_channel_id: POD_DEFAULT_SLACK_CHANNELS[def.name],
+    members: def.members.map((m) => ({
+      id: m.id,
+      name: m.name,
+      role: m.role,
+      pod_id: def.id,
+      is_placeholder: !!m.placeholder,
+    })),
+  }));
 }
+
+/** Map of seed-name → stable member id, used by the one-time migration
+ * to rewrite random per-browser UUIDs onto the stable ids and rewire
+ * any task.assigned_to references. Keep in lockstep with
+ * SEED_POD_DEFINITIONS above. */
+const STABLE_MEMBER_ID_BY_NAME: Record<string, string> = {
+  Barnaby: "member-barnaby",
+  Victoria: "member-victoria",
+  Angel: "member-angel",
+  Kaye: "member-kaye",
+  Jack: "member-jack",
+  Anastasia: "member-anastasia",
+  Ian: "member-ian",
+  Clien: "member-clien",
+  Brandon: "member-brandon",
+  Hitesh: "member-hitesh",
+  Ashish: "member-ashish",
+};
+
+const STABLE_POD_ID_BY_NAME: Record<string, string> = {
+  "Pod 1": "pod-1",
+  "Pod 2": "pod-2",
+  "Pod 3": "pod-3",
+};
 
 /** Snap a YYYY-MM-DD forward to the next occurrence of `targetDow` (0-6). */
 function snapToDay(ymd: string, targetDow: number): string {
@@ -1574,8 +1749,11 @@ export function ensureSeed(): void {
 
   // Pod team structure is always seeded if missing, independent of any
   // other sentinel, so admins always land on the real team grid.
+  // Initial seed bypasses the Supabase mirror so a fresh browser doesn't
+  // overwrite a populated cloud (with real avatars / OOO etc.) before
+  // bootstrapPodsSync gets a chance to pull it down.
   if (!localStorage.getItem(LS_PODS)) {
-    write(LS_PODS, buildSeedPods());
+    localStorage.setItem(LS_PODS, JSON.stringify(buildSeedPods()));
   } else {
     /* Back-fill default Slack channel ids onto pods that were seeded
      * before slack_channel_id existed. Only writes when missing, never
@@ -1619,6 +1797,90 @@ export function ensureSeed(): void {
         write(LS_TASKS, fixed);
       }
     }
+
+    /* Migration: rewrite random per-browser pod + member UUIDs onto the
+     * stable ids defined in SEED_POD_DEFINITIONS. Pre-stable seeds
+     * coupled avatars to pod_name+role because ids weren't durable,
+     * which broke as soon as anyone wanted to reassign a member between
+     * pods. After this migration:
+     *   - Pod 1/2/3 have ids "pod-1" / "pod-2" / "pod-3"
+     *   - Each known member has id "member-<lowercase-name>"
+     *   - All `client.pod_id`, `project.pod_id`, `task.assigned_to`
+     *     references are rewritten to point at the stable ids.
+     *
+     * Pulls Supabase-stored avatars from the legacy `business_settings`
+     * map (keyed by pod_name+role) onto the migrated member rows when
+     * the member doesn't already have an avatar_url. That's the recovery
+     * path for photos uploaded before this migration, including Dan's,
+     * so we don't lose any existing pictures. */
+    const needsIdMigration = getPods().some(
+      (p) =>
+        !p.id.startsWith("pod-") ||
+        p.members.some((m) => !m.id.startsWith("member-")),
+    );
+    if (needsIdMigration) {
+      const podIdRewrites: Record<string, string> = {};
+      const memberIdRewrites: Record<string, string> = {};
+      const podsBefore = getPods();
+
+      const migratedPods = podsBefore.map((p) => {
+        const stablePodId = STABLE_POD_ID_BY_NAME[p.name] ?? p.id;
+        if (stablePodId !== p.id) podIdRewrites[p.id] = stablePodId;
+
+        const migratedMembers = p.members.map((m) => {
+          const stableMemberId =
+            STABLE_MEMBER_ID_BY_NAME[m.name] ??
+            (m.is_placeholder
+              ? `member-${stablePodId}-${m.role}`
+              : m.id);
+          if (stableMemberId !== m.id) memberIdRewrites[m.id] = stableMemberId;
+          return { ...m, id: stableMemberId, pod_id: stablePodId };
+        });
+
+        return { ...p, id: stablePodId, members: migratedMembers };
+      });
+      write(LS_PODS, migratedPods);
+
+      if (Object.keys(podIdRewrites).length > 0) {
+        const clients = getClients();
+        write(
+          LS_CLIENTS,
+          clients.map((c) =>
+            podIdRewrites[c.pod_id] ? { ...c, pod_id: podIdRewrites[c.pod_id] } : c,
+          ),
+        );
+        const projects = getProjects();
+        write(
+          LS_PROJECTS,
+          projects.map((proj) =>
+            podIdRewrites[proj.pod_id]
+              ? { ...proj, pod_id: podIdRewrites[proj.pod_id] }
+              : proj,
+          ),
+        );
+      }
+      if (Object.keys(memberIdRewrites).length > 0) {
+        const tasks = getTasks();
+        write(
+          LS_TASKS,
+          tasks.map((t) =>
+            memberIdRewrites[t.assigned_to]
+              ? { ...t, assigned_to: memberIdRewrites[t.assigned_to] }
+              : t,
+          ),
+        );
+      }
+
+      /* Explicitly delete the now-orphaned random-UUID rows from Supabase
+       * so dedupe doesn't have to guess which version wins on the next
+       * bootstrap. Best-effort, silent. */
+      const oldPodIds = Object.keys(podIdRewrites);
+      if (oldPodIds.length > 0 && typeof window !== "undefined") {
+        import("./sync").then(({ mirrorDeleteFromSupabase }) => {
+          mirrorDeleteFromSupabase("pods_v2_pods", oldPodIds);
+        });
+      }
+    }
   }
 
   // Seed the org-level CRO lead (Dan) on first load.
@@ -1645,7 +1907,13 @@ function ensureCroLeads(): PodMember[] {
     pod_id: "*",
     is_placeholder: false,
   };
-  write(LS_CRO_LEADS, [dan]);
+  /* Skip the Supabase mirror on initial seed. If we used `write` here a
+   * fresh browser would immediately upsert an avatar-less Dan into the
+   * cloud and trample any avatar the cloud already has. bootstrapPodsSync
+   * will hydrate Dan's real row (avatar and all) on the next mount. */
+  if (typeof window !== "undefined") {
+    localStorage.setItem(LS_CRO_LEADS, JSON.stringify([dan]));
+  }
   return [dan];
 }
 

@@ -11,13 +11,19 @@ import {
   getClients,
   getPods,
   getProjects,
+  moveMemberToPod,
+  swapMembers,
+  updateMemberDetails,
 } from "@/lib/pods-v2/data";
 import {
   Client,
   Pod,
+  PodMember,
+  PodMemberRole,
   Project,
   RETAINER_SCOPE,
   RETAINER_VALUE_GBP,
+  ROLE_LABEL,
   RetainerTier,
   SlipReason,
 } from "@/lib/pods-v2/types";
@@ -32,6 +38,7 @@ import {
   BrandWarmBadge,
   BucketBadge,
   CapacityMeter,
+  MemberAvatar,
   StatusBadge,
 } from "../components";
 
@@ -467,6 +474,9 @@ export default function AdminClient() {
         </p>
       </div>
 
+      {/* POD ROSTER · move people between pods */}
+      <RosterEditor pods={pods} onMutate={() => setPods(getPods())} />
+
       {/* CROSS-POD CLIENT ROSTER */}
       <div className="mt-10">
         <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
@@ -532,6 +542,213 @@ export default function AdminClient() {
           })}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Roster editor ──────────────────────────────────────────────────
+
+/* Lets admins move members between pods, swap pairs (e.g. secondaries
+ * by timezone), change a member's role, and rename / un-placeholder a
+ * TO-HIRE slot. Click a member to select; click another slot to swap;
+ * use the inline controls for one-off edits. Avatars stay attached to
+ * the member through any move because IDs are stable. */
+function RosterEditor({ pods, onMutate }: { pods: Pod[]; onMutate: () => void }) {
+  const [selected, setSelected] = useState<string | null>(null);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+
+  function handleClick(memberId: string) {
+    if (!selected) {
+      setSelected(memberId);
+      return;
+    }
+    if (selected === memberId) {
+      setSelected(null);
+      return;
+    }
+    swapMembers(selected, memberId);
+    setSelected(null);
+    onMutate();
+  }
+
+  function moveTo(memberId: string, targetPodId: string) {
+    moveMemberToPod(memberId, targetPodId);
+    onMutate();
+  }
+
+  function changeRole(memberId: string, role: PodMemberRole) {
+    updateMemberDetails(memberId, { role });
+    onMutate();
+  }
+
+  function commitRename(member: PodMember) {
+    const next = renameValue.trim();
+    if (!next || next === member.name) {
+      setRenamingId(null);
+      setRenameValue("");
+      return;
+    }
+    updateMemberDetails(member.id, {
+      name: next,
+      is_placeholder: next.toUpperCase() === "TO HIRE",
+    });
+    setRenamingId(null);
+    setRenameValue("");
+    onMutate();
+  }
+
+  return (
+    <div className="mt-10">
+      <div className="flex items-baseline justify-between gap-3">
+        <div>
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+            Pod roster
+          </h2>
+          <p className="mt-0.5 text-xs text-[#7A7A7A]">
+            Click a member to select, then click another to swap. Use the move
+            buttons to send a member to a different pod, or change role inline.
+            Avatars and task assignments follow the member.
+          </p>
+        </div>
+        {selected && (
+          <button
+            onClick={() => setSelected(null)}
+            className="rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-[11px] font-medium text-[#7A7A7A] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"
+          >
+            Cancel selection
+          </button>
+        )}
+      </div>
+
+      <div className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-3">
+        {pods.map((pod) => (
+          <div
+            key={pod.id}
+            className="rounded-xl border border-[#E5E5EA] bg-white p-4 shadow-[var(--shadow-soft)]"
+          >
+            <div className="mb-2 flex items-baseline justify-between">
+              <div>
+                <div className="text-sm font-semibold text-[#1B1B1B]">
+                  {pod.name}
+                </div>
+                <div className="text-[11px] text-[#7A7A7A]">{pod.tagline}</div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {pod.members.map((m) => {
+                const isSelected = selected === m.id;
+                const isRenaming = renamingId === m.id;
+                return (
+                  <div
+                    key={m.id}
+                    className={`rounded-lg border px-2.5 py-2 transition-colors ${
+                      isSelected
+                        ? "border-[#1B1B1B] bg-[#1B1B1B]/[0.03]"
+                        : "border-[#EDEDEF] bg-white hover:border-[#C5C5C5]"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => handleClick(m.id)}
+                        className="shrink-0"
+                        title={
+                          selected
+                            ? selected === m.id
+                              ? "Click to deselect"
+                              : `Swap with ${pods.flatMap((pp) => pp.members).find((x) => x.id === selected)?.name ?? "selected"}`
+                            : "Click to select for swap"
+                        }
+                      >
+                        <MemberAvatar member={m} size="sm" />
+                      </button>
+                      <div className="min-w-0 flex-1">
+                        {isRenaming ? (
+                          <input
+                            autoFocus
+                            value={renameValue}
+                            onChange={(e) => setRenameValue(e.target.value)}
+                            onBlur={() => commitRename(m)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") commitRename(m);
+                              if (e.key === "Escape") {
+                                setRenamingId(null);
+                                setRenameValue("");
+                              }
+                            }}
+                            className="w-full rounded-md border border-[#1B1B1B] bg-white px-1.5 py-0.5 text-xs"
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setRenamingId(m.id);
+                              setRenameValue(m.name);
+                            }}
+                            className="block w-full truncate text-left text-sm font-medium text-[#1B1B1B] hover:underline"
+                            title="Click to rename"
+                          >
+                            {m.name}
+                            {m.is_placeholder && (
+                              <span className="ml-1.5 rounded-md border border-amber-200 bg-amber-50 px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-800">
+                                Placeholder
+                              </span>
+                            )}
+                          </button>
+                        )}
+                        <select
+                          value={m.role}
+                          onChange={(e) =>
+                            changeRole(m.id, e.target.value as PodMemberRole)
+                          }
+                          className="mt-0.5 w-full rounded-md border border-transparent bg-transparent px-0 py-0 text-[11px] text-[#7A7A7A] hover:border-[#E5E5EA] focus:border-[#1B1B1B] focus:outline-none"
+                        >
+                          {(
+                            [
+                              "primary_designer",
+                              "secondary_designer",
+                              "primary_dev",
+                              "secondary_dev",
+                            ] as PodMemberRole[]
+                          ).map((r) => (
+                            <option key={r} value={r}>
+                              {ROLE_LABEL[r]}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-center gap-1">
+                      {pods
+                        .filter((other) => other.id !== pod.id)
+                        .map((other) => (
+                          <button
+                            key={other.id}
+                            type="button"
+                            onClick={() => moveTo(m.id, other.id)}
+                            className="rounded-md border border-[#E5E5EA] bg-white px-1.5 py-0.5 text-[10px] font-medium text-[#7A7A7A] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"
+                          >
+                            → {other.name}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                );
+              })}
+              {pod.members.length === 0 && (
+                <div className="rounded-lg border border-dashed border-[#E5E5EA] bg-white px-3 py-4 text-center text-[11px] text-[#A0A0A0]">
+                  No members. Move someone in from another pod.
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="mt-2 text-[11px] text-[#A0A0A0]">
+        Tip: to swap two secondaries by timezone, click one, then click the
+        other. Roles + pods swap in one click.
+      </p>
     </div>
   );
 }

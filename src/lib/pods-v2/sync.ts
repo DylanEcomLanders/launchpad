@@ -136,12 +136,35 @@ export async function bootstrapPodsSync(): Promise<boolean> {
           resolved = kept as Array<Record<string, unknown> & { id: string }>;
         }
       }
+
+      /* Avatar preservation: cloud-wins is the right rule for most data,
+       * but for avatar URLs we've been bitten by a fresh browser pushing
+       * an avatar-less seed up and wiping the cloud copy. So if cloud
+       * has no avatar_url for a slot but local does, keep the local URL
+       * and push it back up.
+       *
+       * Slots are keyed by stable member id (post-migration). Pre-
+       * migration browsers will still see this branch run; mismatched
+       * random IDs simply fail the lookup, no harm done. */
+      if (lsKey === "launchpad-pods-v2-pods") {
+        resolved = preserveLocalAvatarsForPods(resolved as PodLike[], lsKey) as Array<
+          Record<string, unknown> & { id: string }
+        >;
+      } else if (lsKey === "launchpad-pods-v2-cro-leads") {
+        resolved = preserveLocalAvatarsForCros(resolved as CroLike[], lsKey) as Array<
+          Record<string, unknown> & { id: string }
+        >;
+      }
+
       const localRaw = window.localStorage.getItem(lsKey);
       const cloudJson = JSON.stringify(resolved);
       if (localRaw !== cloudJson) {
         window.localStorage.setItem(lsKey, cloudJson);
         touchedAny = true;
       }
+      /* Mirror the merged result back up so the cloud heals from any
+       * earlier avatar-wipe write. Best-effort, additive. */
+      await mirrorToSupabase(table, resolved);
       continue;
     }
 
@@ -177,7 +200,72 @@ interface PodLike {
   id: string;
   name?: string;
   slack_channel_id?: string;
-  members?: Array<{ is_placeholder?: boolean; avatar_url?: string }>;
+  members?: Array<{ id?: string; is_placeholder?: boolean; avatar_url?: string }>;
+}
+
+interface CroLike {
+  id: string;
+  avatar_url?: string;
+}
+
+/* Read local pods, overlay any local avatar_url onto cloud rows whose
+ * member slot has none. This is the read-side fix for the "fresh browser
+ * wiped Dan / Jack's photo" class of bug, paired with the additive seed
+ * write in ensureSeed. */
+function preserveLocalAvatarsForPods(cloudPods: PodLike[], lsKey: string): PodLike[] {
+  if (typeof window === "undefined") return cloudPods;
+  const localRaw = window.localStorage.getItem(lsKey);
+  if (!localRaw) return cloudPods;
+  let local: PodLike[] = [];
+  try {
+    local = JSON.parse(localRaw);
+  } catch {
+    return cloudPods;
+  }
+  /* Build a member-id → avatar_url map from local. Stable IDs make this
+   * a direct lookup; legacy random-UUID seeds simply miss and fall back
+   * to whatever cloud says. */
+  const localAvatarsById = new Map<string, string>();
+  for (const p of local) {
+    for (const m of p.members ?? []) {
+      const id = (m as { id?: string }).id;
+      const url = (m as { avatar_url?: string }).avatar_url;
+      if (id && url) localAvatarsById.set(id, url);
+    }
+  }
+  if (localAvatarsById.size === 0) return cloudPods;
+  return cloudPods.map((p) => ({
+    ...p,
+    members: (p.members ?? []).map((m) => {
+      const id = (m as { id?: string }).id;
+      const url = (m as { avatar_url?: string }).avatar_url;
+      if (!id || url) return m;
+      const localUrl = localAvatarsById.get(id);
+      return localUrl ? { ...m, avatar_url: localUrl } : m;
+    }),
+  }));
+}
+
+function preserveLocalAvatarsForCros(cloudCros: CroLike[], lsKey: string): CroLike[] {
+  if (typeof window === "undefined") return cloudCros;
+  const localRaw = window.localStorage.getItem(lsKey);
+  if (!localRaw) return cloudCros;
+  let local: CroLike[] = [];
+  try {
+    local = JSON.parse(localRaw);
+  } catch {
+    return cloudCros;
+  }
+  const localById = new Map<string, string>();
+  for (const c of local) {
+    if (c.id && c.avatar_url) localById.set(c.id, c.avatar_url);
+  }
+  if (localById.size === 0) return cloudCros;
+  return cloudCros.map((c) => {
+    if (c.avatar_url) return c;
+    const localUrl = localById.get(c.id);
+    return localUrl ? { ...c, avatar_url: localUrl } : c;
+  });
 }
 
 function dedupePodsByName(pods: PodLike[]): { kept: PodLike[]; drop: string[] } {

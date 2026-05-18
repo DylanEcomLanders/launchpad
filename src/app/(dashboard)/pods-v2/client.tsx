@@ -1698,8 +1698,35 @@ function CroPipeline({
                               className={`group flex items-center gap-3 px-4 py-2 hover:bg-[#F7F8FA] ${isDone ? "opacity-50" : ""}`}
                             >
                               <button
-                                onClick={() => {
-                                  const next = isDone ? "todo" : t.status === "in_progress" ? "done" : "in_progress";
+                                onClick={(e) => {
+                                  /* Forward cycle on plain click. Shift-click /
+                                   * right-click steps back so a mistaken tick
+                                   * can be reverted without spinning through
+                                   * the rest of the cycle. `todo` is the start
+                                   * of the line so shift-click is a no-op
+                                   * there (never wraps forward to done). */
+                                  const back = e.shiftKey;
+                                  const next = back
+                                    ? isDone
+                                      ? "in_progress"
+                                      : t.status === "in_progress"
+                                        ? "todo"
+                                        : t.status
+                                    : isDone
+                                      ? "todo"
+                                      : t.status === "in_progress"
+                                        ? "done"
+                                        : "in_progress";
+                                  updateTaskStatus(t.id, next);
+                                  onMutate();
+                                }}
+                                onContextMenu={(e) => {
+                                  e.preventDefault();
+                                  const next = isDone
+                                    ? "in_progress"
+                                    : t.status === "in_progress"
+                                      ? "todo"
+                                      : t.status;
                                   updateTaskStatus(t.id, next);
                                   onMutate();
                                 }}
@@ -1710,7 +1737,7 @@ function CroPipeline({
                                       ? "border-blue-500 bg-white text-blue-500"
                                       : "border-[#D5D5DC] bg-white hover:border-[#1B1B1B]"
                                 }`}
-                                title="Cycle status"
+                                title="Click to advance · Shift-click or right-click to step back"
                               >
                                 {isDone && (
                                   <svg viewBox="0 0 12 12" className="size-3" fill="currentColor">
