@@ -37,6 +37,17 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-68",
+    date: "19 May 2026",
+    version: "0.44.2",
+    title: "Pods client roster routes to engagement, team mirror at /team/engagements",
+    changes: [
+      { type: "improved", text: "Pods admin · clicking a client in the cross-pod roster on /pods-v2/admin now opens the client engagement at /engagements/[id] instead of the legacy /tools/client-portal page. The portal was a vestige of the pre-engagement architecture and never had the brief, intake, deliverables, or pod context that PMs actually need when they pop into a client card. Caption under the roster updated to 'Click into a client to open their engagement' so the affordance matches the destination" },
+      { type: "improved", text: "Pods · individual client cards inside a pod (the per-pod roster on /pods-v2/[podId] and /team/pods/[podId]) now route to the engagement page too. Admin-context cards link to /engagements/[id], team-context cards link to /team/engagements/[id] so team members stay inside the team hub instead of bouncing off the AuthGate redirect that protects /engagements/*" },
+      { type: "added", text: "Team-side engagement detail at /team/engagements/[id]. New route reuses the existing EngagementDetailClient component but mounts it inside the (team) layout so the TeamSidebar and team chrome stay consistent. Pathname-aware logic inside the detail client hides admin-only chrome when in the team route: the Delete client button, the 'Pick a pod from purgatory' nudge that only renders for parked engagements (podNumber === 0), and the inline 'Open purgatory' link on the scoped deliverables preview are all suppressed for team. Back link swaps from 'All clients' → /engagements (admin) to 'Back to pods' → /team/pods (team), and the post-delete router.push redirect uses the same base so the admin flow still lands on the engagement list after a delete" },
+    ],
+  },
+  {
     id: "cl-67",
     date: "18 May 2026",
     version: "0.44.1",

@@ -2511,9 +2511,11 @@ function ClientCard({
   const [unassignOpen, setUnassignOpen] = useState(false);
   const [metricsOpen, setMetricsOpen] = useState(false);
   const tier = TIER_PILL[client.retainer_tier];
-  const portalHref = client.portal_slug
-    ? `/tools/client-portal?client=${client.portal_slug}`
-    : "/tools/client-portal";
+  const cardPathname = usePathname();
+  const inTeamRoute = cardPathname?.startsWith("/team/pods") ?? false;
+  const engagementHref = inTeamRoute
+    ? `/team/engagements/${client.id}`
+    : `/engagements/${client.id}`;
 
   const cvrDelta =
     client.cvr_baseline != null && client.cvr_current != null
@@ -2527,7 +2529,7 @@ function ClientCard({
   return (
     <div className="group relative rounded-xl border border-[#E5E5EA] bg-white p-4 shadow-[var(--shadow-soft)] transition-colors hover:border-[#1B1B1B]/30">
       <div className="flex items-start justify-between gap-2">
-        <Link href={portalHref} className="block min-w-0 flex-1">
+        <Link href={engagementHref} className="block min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <span className="text-sm font-semibold leading-tight">
               {client.name}

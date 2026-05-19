@@ -483,7 +483,7 @@ export default function AdminClient() {
           Client roster · all pods
         </h2>
         <p className="mt-0.5 text-xs text-[#7A7A7A]">
-          Click into a client to open their portal.
+          Click into a client to open their engagement.
         </p>
         <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {clients.length === 0 && (
@@ -493,13 +493,10 @@ export default function AdminClient() {
           )}
           {clients.map((c) => {
             const pod = podById.get(c.pod_id);
-            const portalHref = c.portal_slug
-              ? `/tools/client-portal?client=${c.portal_slug}`
-              : "/tools/client-portal";
             return (
               <Link
                 key={c.id}
-                href={portalHref}
+                href={`/engagements/${c.id}`}
                 className="group rounded-xl border border-[#E5E5EA] bg-white p-4 shadow-[var(--shadow-soft)] transition-colors hover:border-[#1B1B1B]/30"
               >
                 <div className="flex items-start justify-between gap-2">

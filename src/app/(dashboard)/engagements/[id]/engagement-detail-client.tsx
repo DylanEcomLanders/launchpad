@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { onboardingStore, type OnboardingSubmission } from "@/lib/onboarding";
 import {
@@ -259,6 +259,13 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
   const [deleteStage, setDeleteStage] = useState<"closed" | "confirm-1" | "confirm-2">("closed");
   const [deleteTyped, setDeleteTyped] = useState("");
   const router = useRouter();
+  /* Team mirror at /team/engagements/[id] reuses this same client, so
+   * detect the team route and hide admin-only chrome (delete, purgatory
+   * nudge) + swap back-links to stay inside the team hub. */
+  const pathname = usePathname();
+  const inTeamRoute = pathname?.startsWith("/team/") ?? false;
+  const backHref = inTeamRoute ? "/team/pods" : "/engagements";
+  const podsHref = inTeamRoute ? "/team/pods" : "/pods-v2";
 
   /** Stamp a timestamped note onto the engagement. Optimistic local
    *  state update + cloud-side write through addClientNote for
@@ -300,7 +307,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
   const handleConfirmDelete = () => {
     const source = detectEngagementSource(engagement.id);
     trashEngagement(engagement, source);
-    router.push("/engagements");
+    router.push(backHref);
   };
 
   /* Lazy-fetch the source OnboardingSubmission so the Intake panel can
@@ -770,23 +777,25 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
     <div className="px-6 py-6 max-w-[1400px] mx-auto">
       <div className="flex items-center justify-between mb-4">
         <Link
-          href="/engagements"
+          href={backHref}
           className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#666] hover:text-[#1B1B1B]"
         >
           <ArrowLeftIcon className="size-3" />
-          All clients
+          {inTeamRoute ? "Back to pods" : "All clients"}
         </Link>
-        <button
-          type="button"
-          onClick={() => {
-            setDeleteTyped("");
-            setDeleteStage("confirm-1");
-          }}
-          className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#999] hover:text-[#C62828] hover:bg-[#FFEBEE] px-2 py-1 rounded transition-colors"
-        >
-          <TrashIcon className="size-3" />
-          Delete client
-        </button>
+        {!inTeamRoute && (
+          <button
+            type="button"
+            onClick={() => {
+              setDeleteTyped("");
+              setDeleteStage("confirm-1");
+            }}
+            className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#999] hover:text-[#C62828] hover:bg-[#FFEBEE] px-2 py-1 rounded transition-colors"
+          >
+            <TrashIcon className="size-3" />
+            Delete client
+          </button>
+        )}
       </div>
 
       <header className="mb-5 pb-4 border-b border-[#E5E5EA]">
@@ -857,7 +866,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
        * assigned (engagement.podNumber === 0), the engagement is sat in
        * /pods-v2 purgatory. The PM needs to pick a pod via the
        * Assign-to-pod modal there to seed the build tasks. */}
-      {engagement.podNumber === 0 && (
+      {engagement.podNumber === 0 && !inTeamRoute && (
         <section className="mb-5 rounded-lg border border-[#FFB300] bg-[#FFF8E1] px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-baseline gap-3">
             <ExclamationTriangleIcon className="size-4 text-[#E65100] shrink-0" />
@@ -871,7 +880,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
             </div>
           </div>
           <Link
-            href="/pods-v2"
+            href={podsHref}
             className="shrink-0 inline-flex items-center gap-1 text-[12px] font-semibold text-white bg-[#E65100] hover:bg-[#BF360C] px-3 py-1.5 rounded"
           >
             Assign to pod <ArrowTopRightOnSquareIcon className="size-3" />
@@ -959,9 +968,11 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
           </ul>
           <div className="px-4 py-2.5 bg-[#FAFAFA] text-[11px] text-[#666] flex items-baseline justify-between">
             <span>Delivery dates lock in when a pod is assigned.</span>
-            <Link href="/pods-v2" className="font-medium text-[#1B1B1B] hover:underline">
-              Open purgatory →
-            </Link>
+            {!inTeamRoute && (
+              <Link href={podsHref} className="font-medium text-[#1B1B1B] hover:underline">
+                Open purgatory →
+              </Link>
+            )}
           </div>
         </section>
       )}
