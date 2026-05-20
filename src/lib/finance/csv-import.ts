@@ -32,6 +32,7 @@
 
 import type {
   InvoiceIssued,
+  InvoiceLineItem,
   InvoiceStatus,
   InvoiceCurrency,
   InvoiceSourceSystem,
@@ -48,15 +49,35 @@ export interface ParseError {
 
 export interface ParsedRow {
   row: number;
-  invoice: Omit<
-    InvoiceIssued,
-    "id" | "created_at" | "updated_at" | "client_id" | "items"
-  > & { items: never[] };
+  invoice: Omit<InvoiceIssued, "id" | "created_at" | "updated_at" | "client_id">;
   clientName: string;
   clientEmail?: string;
   clientContactName?: string;
   clientAddress?: string;
   clientCountry: string;
+}
+
+/* Synthetic line item for imported invoices. The unit price is chosen
+ * so calculateVatBreakdown returns the same totals as the CSV snapshot:
+ *
+ *   standard_20 / manual → unit_price = NET (calc adds 20%)
+ *   inclusive_20         → unit_price = GROSS (calc extracts 20%)
+ *   everything else      → unit_price = GROSS (no VAT)
+ */
+function syntheticLineItem(
+  net: number,
+  gross: number,
+  treatment: VatTreatment,
+): InvoiceLineItem {
+  const unitPrice =
+    treatment === "standard_20" || treatment === "manual" ? net : gross;
+  return {
+    id: `imported-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+    type: "custom",
+    name: "Services rendered",
+    quantity: 1,
+    unitPrice,
+  };
 }
 
 export interface ParseResult {
@@ -296,7 +317,7 @@ export function parseInvoiceCsv(text: string): ParseResult {
         invoice_date: issueDate,
         due_date: dueDate,
         paid_date: paymentDate,
-        items: [],
+        items: [syntheticLineItem(net, gross, treatment)],
         currency,
         gross_amount: gross,
         vat_amount: vat,

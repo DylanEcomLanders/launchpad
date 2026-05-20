@@ -153,7 +153,6 @@ export async function POST(req: NextRequest) {
       ...row.invoice,
       id: uid(),
       client_id: client.id,
-      items: [], // imported invoices have no line items; totals are precomputed
       created_at: now,
       updated_at: now,
     };
