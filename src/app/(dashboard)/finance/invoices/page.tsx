@@ -86,10 +86,11 @@ export default function ReceivablesListPage() {
       enriched.filter((i) => i.status === "sent" || i.status === "overdue"),
     );
     const overdue = sumGbp(enriched.filter((i) => i.status === "overdue"));
-    const monthStart = new Date();
-    monthStart.setDate(1);
-    monthStart.setHours(0, 0, 0, 0);
-    const monthStartISO = monthStart.toISOString().slice(0, 10);
+    // Use UTC throughout so "first of month" doesn't roll back a day
+    // in non-UTC timezones (e.g. local midnight May 1 in BST = April 30
+    // 23:00 UTC, which would silently include April 30 invoices).
+    const now = new Date();
+    const monthStartISO = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-01`;
     const paidThisMonth = sumGbp(
       enriched.filter(
         (i) => i.status === "paid" && i.paid_date && i.paid_date >= monthStartISO,

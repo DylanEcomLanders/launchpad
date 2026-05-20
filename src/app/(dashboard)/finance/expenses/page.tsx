@@ -61,10 +61,11 @@ export default function ExpensesListPage() {
   }, [enriched, statusFilter, categoryFilter, query]);
 
   const summary = useMemo(() => {
-    const monthStart = new Date();
-    monthStart.setDate(1);
-    monthStart.setHours(0, 0, 0, 0);
-    const monthStartISO = monthStart.toISOString().slice(0, 10);
+    // Use UTC throughout so "first of month" doesn't roll back a day
+    // in non-UTC timezones (e.g. local midnight May 1 in BST = April 30
+    // 23:00 UTC, which would silently include April 30 expenses).
+    const now = new Date();
+    const monthStartISO = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-01`;
     const paidThisMonth = enriched
       .filter((e) => e.status === "paid" && e.date_paid && e.date_paid >= monthStartISO)
       .reduce((s, e) => s + e.amount, 0);
