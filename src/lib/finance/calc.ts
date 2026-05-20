@@ -154,9 +154,14 @@ export function computePeriodTotals(
   let vatPaidInput = 0;
   const expensesByCategory: Record<string, number> = {};
 
+  // Always compute reclaimable input VAT off the tagged expenses — even
+  // when not yet VAT-registered — so the dashboard can show a pre-
+  // registration estimate of what would be reclaimable on day one. The
+  // `vatRegistered` flag affects messaging / threshold warnings but not
+  // the maths.
   for (const exp of paidExpenses) {
     expensesGross += exp.amount;
-    const reclaimableVat = options.vatRegistered && exp.vat_included
+    const reclaimableVat = exp.vat_included
       ? (exp.vat_amount ?? exp.amount - exp.amount / (1 + 0.2))
       : 0;
     vatPaidInput += reclaimableVat;

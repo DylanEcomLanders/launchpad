@@ -9,16 +9,16 @@ export default function FinanceLayout({
 }) {
   return (
     <FinanceGate>
-      <div className="max-w-6xl mx-auto px-6 md:px-12 py-10 md:py-14">
-        <header className="mb-2">
-          <p className="text-[11px] uppercase tracking-[0.14em] text-[#A0A0A0] font-semibold mb-1">
-            Founder access
-          </p>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[#1B1B1B]">
+      <div className="max-w-6xl mx-auto px-6 md:px-12 py-5 md:py-6">
+        {/* Title + tabs share one row to reclaim vertical space.
+         * "Founder access" eyebrow dropped since the passcode gate
+         * already conveys that. */}
+        <header className="flex items-center justify-between gap-4 mb-4 border-b border-[#EEEEF1]">
+          <h1 className="text-xl font-semibold tracking-tight text-[#1B1B1B] pb-3 shrink-0">
             Finance
           </h1>
+          <FinanceNav />
         </header>
-        <FinanceNav />
         <FinanceConfigCheck />
         {children}
       </div>

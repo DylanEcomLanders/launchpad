@@ -26,10 +26,8 @@ import {
   type CompanyProfile,
   type ExpenseCategory,
 } from "@/lib/finance/types";
-import { selectClass, inputClass, labelClass } from "@/lib/form-styles";
+import { inputClass } from "@/lib/form-styles";
 import {
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   Tooltip,
@@ -38,8 +36,22 @@ import {
   PieChart,
   Pie,
   Cell,
-  Legend,
+  Area,
+  AreaChart,
+  ComposedChart,
+  Line,
 } from "recharts";
+import {
+  BanknotesIcon,
+  CreditCardIcon,
+  ScaleIcon,
+  ChartPieIcon,
+  ReceiptPercentIcon,
+  ArrowPathIcon,
+  CalendarDaysIcon,
+  ChartBarIcon,
+  ArrowTrendingUpIcon,
+} from "@heroicons/react/24/outline";
 
 type PeriodKey = "month" | "quarter" | "tax_year" | "custom";
 
@@ -115,6 +127,37 @@ export default function FinanceDashboardPage() {
   const vatThreshold = useMemo(() => computeVatThresholdStatus(invoices), [invoices]);
   const committed = useMemo(() => computeCommittedOutflow(expenses, 3), [expenses]);
 
+  /* Last-N-months series, computed once and sliced for the sparklines
+   * (last 6) + the main chart (last 12). Always uses the full dataset
+   * regardless of the page-level period filter so the chart's purpose
+   * stays "trend context" — the KPI tiles above show the filtered value
+   * for the selected period, the chart shows the rolling 12mo trend.
+   * Same pattern as Stripe / Wise dashboards.
+   *
+   * IMPORTANT: end the range at today, not at a sentinel like 2099, or
+   * `.slice(-12)` will grab 12 months of empty 2099 entries. */
+  const trailingSeries = useMemo(() => {
+    const today = new Date();
+    const endISO = today.toISOString().slice(0, 10);
+    const start = new Date(today);
+    start.setUTCFullYear(start.getUTCFullYear() - 2);
+    const startISO = start.toISOString().slice(0, 10);
+    const all = computeMonthlySeries(invoices, expenses, {
+      start: startISO,
+      end: endISO,
+    });
+    return all.slice(-12);
+  }, [invoices, expenses]);
+
+  const sparkSeries = useMemo(() => {
+    const last6 = trailingSeries.slice(-6);
+    return {
+      revenue: last6.map((m) => ({ value: m.revenue })),
+      expenses: last6.map((m) => ({ value: m.expenses })),
+      grossProfit: last6.map((m) => ({ value: m.revenue - m.expenses })),
+    };
+  }, [trailingSeries]);
+
   const expenseSlices = useMemo(() => {
     return (Object.entries(totals.expensesByCategory) as [ExpenseCategory, number][])
       .filter(([, v]) => v > 0)
@@ -132,132 +175,306 @@ export default function FinanceDashboardPage() {
 
   return (
     <div>
+      {/* Compact VAT threshold chip — keeps the message visible without
+       * eating 70+px of vertical space. Full detail (HMRC reg deadline,
+       * headroom, etc) lives on the VAT return tab. */}
       {!profile?.vat_registered && vatThreshold.status !== "ok" && (
         <div
-          className={`mb-6 px-4 py-3 rounded-lg text-sm border ${
+          className={`mb-3 flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] border w-fit ${
             vatThreshold.status === "exceeded"
               ? "bg-red-50 border-red-200 text-red-800"
               : "bg-amber-50 border-amber-200 text-amber-900"
           }`}
         >
-          <strong>
+          <span className="size-1.5 rounded-full bg-current shrink-0" />
+          <span className="font-semibold">
             {vatThreshold.status === "exceeded"
-              ? "VAT registration is now mandatory."
-              : "You're approaching the VAT registration threshold."}
-          </strong>{" "}
-          Rolling 12-month taxable turnover is {fmtMoney(vatThreshold.rolling12mNet)}.
-          HMRC requires registration when turnover exceeds {fmtMoney(vatThreshold.threshold)} in any rolling 12 months.{" "}
-          {vatThreshold.status === "exceeded"
-            ? "Register within 30 days of crossing the threshold, then toggle 'VAT registered' on in Settings."
-            : `${fmtMoney(vatThreshold.threshold - vatThreshold.rolling12mNet)} of headroom remaining.`}
+              ? "VAT registration mandatory"
+              : "Approaching VAT threshold"}
+          </span>
+          <span className="opacity-80">
+            Rolling 12mo turnover {fmtMoney(vatThreshold.rolling12mNet)} / {fmtMoney(vatThreshold.threshold)}
+          </span>
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
-        <div className="flex flex-wrap items-end gap-3">
-          <div>
-            <label className={labelClass}>Period</label>
-            <select
-              value={periodKey}
-              onChange={(e) => setPeriodKey(e.target.value as PeriodKey)}
-              className={`${selectClass} w-48`}
-            >
-              <option value="month">Current month</option>
-              <option value="quarter">Current quarter</option>
-              <option value="tax_year">Current UK tax year</option>
-              <option value="custom">Custom</option>
-            </select>
-          </div>
+      {/* Period selector — iOS-style segmented pill bar instead of dropdown */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+        <PeriodPills value={periodKey} onChange={setPeriodKey} />
+        <div className="flex items-center gap-3">
           {periodKey === "custom" && (
-            <>
-              <div>
-                <label className={labelClass}>From</label>
-                <input
-                  type="date"
-                  value={customStart}
-                  onChange={(e) => setCustomStart(e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className={labelClass}>To</label>
-                <input
-                  type="date"
-                  value={customEnd}
-                  onChange={(e) => setCustomEnd(e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-            </>
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={customStart}
+                onChange={(e) => setCustomStart(e.target.value)}
+                className={`${inputClass} h-9`}
+              />
+              <span className="text-xs text-[#9A9AA3]">to</span>
+              <input
+                type="date"
+                value={customEnd}
+                onChange={(e) => setCustomEnd(e.target.value)}
+                className={`${inputClass} h-9`}
+              />
+            </div>
           )}
-        </div>
-        <div className="text-xs text-[#7A7A7A]">
-          {range.start} → {range.end}
+          <div className="text-[11px] text-[#9A9AA3] tabular-nums hidden md:block">
+            {range.start} → {range.end}
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+      {/* Hero row: 4 headline KPIs with icon chips + inline sparklines */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
         <Tile
           label="Revenue (net)"
           value={fmtMoney(totals.revenueNet)}
           sub={`${fmtMoney(totals.revenueGross)} gross`}
+          size="hero"
+          icon={BanknotesIcon}
+          sparkline={sparkSeries.revenue}
+          sparklineColor="#1B1B1B"
         />
         <Tile
           label="Expenses"
           value={fmtMoney(totals.expensesGross)}
           sub={`${totals.expenseCount} items paid`}
+          size="hero"
+          icon={CreditCardIcon}
+          sparkline={sparkSeries.expenses}
+          sparklineColor="#7A7A7A"
         />
         <Tile
           label="Gross profit"
           value={fmtMoney(totals.grossProfit)}
           accent={totals.grossProfit >= 0 ? "green" : "red"}
+          size="hero"
+          icon={ScaleIcon}
+          sparkline={sparkSeries.grossProfit}
+          sparklineColor={totals.grossProfit >= 0 ? "#047857" : "#B91C1C"}
         />
         <Tile
           label="Net profit (after tax est.)"
           value={fmtMoney(totals.netProfitAfterTax)}
           sub={`${fmtMoney(totals.corporationTax)} CT estimate`}
           accent={totals.netProfitAfterTax >= 0 ? "green" : "red"}
+          size="hero"
+          icon={ChartPieIcon}
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-        <Tile
-          label="VAT collected"
-          value={fmtMoney(totals.vatCollected)}
-          sub={profile?.vat_registered ? "From UK invoices" : "Not VAT registered"}
-        />
-        <Tile
-          label="VAT paid (input)"
-          value={fmtMoney(totals.vatPaidInput)}
-          sub={profile?.vat_registered ? "Reclaimable from expenses" : "—"}
-        />
-        <Tile
-          label="VAT owed"
-          value={fmtMoney(totals.vatOwed)}
-          sub="Collected minus reclaimable"
-          accent={totals.vatOwed > 0 ? "amber" : undefined}
-        />
+      {/* VAT row — shown when registered OR when there's any tagged VAT
+       * data (pre-registration estimate). Sub-labels switch to clarify
+       * which mode we're in. */}
+      {(profile?.vat_registered ||
+        totals.vatCollected > 0 ||
+        totals.vatPaidInput > 0) && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+          <Tile
+            label="VAT collected"
+            value={fmtMoney(totals.vatCollected)}
+            sub={profile?.vat_registered ? "From UK invoices" : "Estimate (pre-registration)"}
+            icon={ReceiptPercentIcon}
+          />
+          <Tile
+            label="VAT paid (input)"
+            value={fmtMoney(totals.vatPaidInput)}
+            sub={profile?.vat_registered ? "Reclaimable from expenses" : "Would be reclaimable once registered"}
+            icon={ReceiptPercentIcon}
+          />
+          <Tile
+            label={profile?.vat_registered ? "VAT owed" : "VAT owed (estimate)"}
+            value={fmtMoney(totals.vatOwed)}
+            sub="Collected minus reclaimable"
+            accent={totals.vatOwed > 0 ? "amber" : undefined}
+            icon={ReceiptPercentIcon}
+          />
+        </div>
+      )}
+
+      {/* Charts: bar + donut */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-3">
+        <div className="lg:col-span-2 bg-white border border-[#EEEEF1] rounded-2xl p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+          <CardHeader
+            icon={ArrowTrendingUpIcon}
+            title="Revenue vs expenses"
+            eyebrow="Last 12 months, GBP"
+          />
+          {/* Inline legend chips, kept above the chart so the plot itself stays uncluttered */}
+          <div className="flex items-center gap-5 mb-3 -mt-1">
+            <span className="inline-flex items-center gap-2 text-[11px] text-[#5A5A63]">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
+              Revenue
+            </span>
+            <span className="inline-flex items-center gap-2 text-[11px] text-[#5A5A63]">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" />
+              Expenses
+            </span>
+          </div>
+          {trailingSeries.length === 0 ? (
+            <p className="text-sm text-[#A0A0A0] py-12 text-center">
+              No invoice or expense data yet
+            </p>
+          ) : (
+            <div
+              className="relative rounded-xl"
+              style={{
+                /* Subtle dot-grid background that gives the chart that "premium dashboard" feel.
+                 * Pattern: 1px dots on a 14px grid, faded almost out so they only catch the eye
+                 * when looking at the chart's negative space. */
+                backgroundImage:
+                  "radial-gradient(circle, rgba(16,24,40,0.07) 1px, transparent 1px)",
+                backgroundSize: "14px 14px",
+                backgroundPosition: "8px 8px",
+              }}
+            >
+              <ResponsiveContainer width="100%" height={200}>
+                <ComposedChart data={trailingSeries} margin={{ top: 12, right: 12, left: -4, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="revFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#10B981" stopOpacity={0.28} />
+                      <stop offset="65%" stopColor="#10B981" stopOpacity={0.05} />
+                      <stop offset="100%" stopColor="#10B981" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="expFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#F59E0B" stopOpacity={0.22} />
+                      <stop offset="65%" stopColor="#F59E0B" stopOpacity={0.04} />
+                      <stop offset="100%" stopColor="#F59E0B" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid vertical={false} stroke="transparent" />
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fontSize: 11, fill: "#9A9AA3" }}
+                    axisLine={false}
+                    tickLine={false}
+                    padding={{ left: 12, right: 12 }}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "#9A9AA3" }}
+                    tickFormatter={(v) => (v >= 1000 ? `£${(v / 1000).toFixed(0)}k` : `£${v}`)}
+                    axisLine={false}
+                    tickLine={false}
+                    width={48}
+                  />
+                  <Tooltip
+                    cursor={{
+                      stroke: "#1B1B1B",
+                      strokeWidth: 1,
+                      strokeDasharray: "3 3",
+                      opacity: 0.3,
+                    }}
+                    content={<DateLabelTooltip />}
+                  />
+                  {/* Filled area underneath each line for the reference's "soft hill" feel */}
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="none"
+                    fill="url(#revFill)"
+                    isAnimationActive={false}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="expenses"
+                    stroke="none"
+                    fill="url(#expFill)"
+                    isAnimationActive={false}
+                  />
+                  {/* Strokes drawn on top so they sit cleanly above the gradient fills */}
+                  <Line
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#10B981"
+                    strokeWidth={2.4}
+                    dot={false}
+                    activeDot={{ r: 5, stroke: "#fff", strokeWidth: 2, fill: "#10B981" }}
+                    isAnimationActive={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="expenses"
+                    stroke="#F59E0B"
+                    strokeWidth={2.4}
+                    dot={false}
+                    activeDot={{ r: 5, stroke: "#fff", strokeWidth: 2, fill: "#F59E0B" }}
+                    isAnimationActive={false}
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white border border-[#EEEEF1] rounded-2xl p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2.5">
+              <span className="inline-flex items-center justify-center size-8 rounded-xl bg-[#F4F4F7] text-[#1B1B1B]">
+                <ChartPieIcon className="size-4" />
+              </span>
+              <h3 className="text-[15px] font-semibold text-[#1B1B1B] tracking-tight">
+                Expense breakdown
+              </h3>
+            </div>
+            <button
+              type="button"
+              className="size-7 inline-flex items-center justify-center rounded-lg text-[#9A9AA3] hover:bg-[#F4F4F7] transition-colors"
+              aria-label="More"
+            >
+              <span className="text-lg leading-none tracking-tighter">···</span>
+            </button>
+          </div>
+          {expenseSlices.length === 0 ? (
+            <p className="text-sm text-[#A0A0A0] py-8 text-center">No expenses</p>
+          ) : (
+            <>
+              <DonutChart slices={expenseSlices} />
+              <div className="mt-3 space-y-1.5">
+                {expenseSlices.slice(0, 4).map((s) => {
+                  const total = expenseSlices.reduce((sum, x) => sum + x.value, 0);
+                  const pct = total > 0 ? (s.value / total) * 100 : 0;
+                  return (
+                    <div key={s.name} className="flex items-center gap-2 text-[11px]">
+                      <span
+                        className="w-2 h-2 rounded-full shrink-0"
+                        style={{ background: s.color }}
+                      />
+                      <span className="text-[#1B1B1B] flex-1 truncate font-medium">{s.name}</span>
+                      <span className="tabular-nums text-[#9A9AA3] font-medium">{pct.toFixed(1)}%</span>
+                      <span className="tabular-nums text-[#1B1B1B] font-semibold w-[64px] text-right">{fmtMoney(s.value)}</span>
+                    </div>
+                  );
+                })}
+                {expenseSlices.length > 4 && (
+                  <div className="text-[10px] text-[#9A9AA3] pt-0.5">
+                    +{expenseSlices.length - 4} more
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8">
-        <Tile
-          label="Committed recurring (monthly)"
+      {/* Compact forecast strip — three inline stats in a single card to
+       * keep the dashboard at one viewport. The detail (per-frequency
+       * breakdown etc) lives on the Expenses page. */}
+      <div className="bg-white border border-[#EEEEF1] rounded-2xl p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)] grid grid-cols-3 divide-x divide-[#EEEEF1]">
+        <ForecastInline
+          icon={ArrowPathIcon}
+          label="Recurring (monthly)"
           value={fmtMoney(committed.monthlyTotal)}
-          sub={`${fmtMoney(committed.byFrequency.monthly || 0)} monthly · ${fmtMoney(committed.byFrequency.quarterly || 0)} qtrly · ${fmtMoney(committed.byFrequency.annual || 0)} ann (normalised)`}
         />
-        <Tile
-          label={`Projected outflow (next ${committed.monthsProjected}mo)`}
+        <ForecastInline
+          icon={CalendarDaysIcon}
+          label={`Projected (next ${committed.monthsProjected}mo)`}
           value={fmtMoney(committed.projectedTotal)}
-          sub="From recurring expenses only"
         />
-        <Tile
+        <ForecastInline
+          icon={ChartBarIcon}
           label="Rolling 12mo turnover"
           value={fmtMoney(vatThreshold.rolling12mNet)}
-          sub={
-            vatThreshold.status === "exceeded"
-              ? `Over VAT threshold (${fmtMoney(vatThreshold.threshold)})`
-              : `Headroom ${fmtMoney(vatThreshold.threshold - vatThreshold.rolling12mNet)}`
-          }
           accent={
             vatThreshold.status === "exceeded"
               ? "red"
@@ -267,100 +484,44 @@ export default function FinanceDashboardPage() {
           }
         />
       </div>
+    </div>
+  );
+}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="lg:col-span-2 bg-white border border-[#E5E5EA] rounded-xl p-5 shadow-[var(--shadow-soft)]">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
-            Revenue vs expenses (monthly)
-          </h3>
-          {monthly.length === 0 ? (
-            <p className="text-sm text-[#A0A0A0] py-12 text-center">
-              No data in this period
-            </p>
-          ) : (
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={monthly}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
-                <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#7A7A7A" }} />
-                <YAxis
-                  tick={{ fontSize: 11, fill: "#7A7A7A" }}
-                  tickFormatter={(v) => `£${(v / 1000).toFixed(0)}k`}
-                />
-                <Tooltip
-                  contentStyle={{
-                    background: "white",
-                    border: "1px solid #E5E5EA",
-                    borderRadius: 8,
-                    fontSize: 12,
-                  }}
-                  formatter={(v) => fmtMoney(Number(v) || 0)}
-                />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="revenue" fill="#1B1B1B" name="Revenue" />
-                <Bar dataKey="expenses" fill="#EC4899" name="Expenses" />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </div>
-
-        <div className="bg-white border border-[#E5E5EA] rounded-xl p-5 shadow-[var(--shadow-soft)]">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
-            Expenses by category
-          </h3>
-          {expenseSlices.length === 0 ? (
-            <p className="text-sm text-[#A0A0A0] py-12 text-center">No expenses</p>
-          ) : (
-            <>
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie
-                    data={expenseSlices}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={40}
-                    outerRadius={80}
-                    paddingAngle={2}
-                  >
-                    {expenseSlices.map((s, i) => (
-                      <Cell key={i} fill={s.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      background: "white",
-                      border: "1px solid #E5E5EA",
-                      borderRadius: 8,
-                      fontSize: 12,
-                    }}
-                    formatter={(v) => fmtMoney(Number(v) || 0)}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="mt-4 space-y-1.5">
-                {expenseSlices.map((s) => (
-                  <div key={s.name} className="flex items-center gap-2 text-xs">
-                    <span
-                      className="w-2 h-2 rounded-full shrink-0"
-                      style={{ background: s.color }}
-                    />
-                    <span className="text-[#7A7A7A] flex-1 truncate">{s.name}</span>
-                    <span className="tabular-nums">{fmtMoney(s.value)}</span>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-900">
-        <strong>Estimate only.</strong> Corporation Tax is calculated using current UK rates
-        (19% under £50k, marginal relief £50k–£250k, 25% over £250k). VAT figures assume the
-        company {profile?.vat_registered ? "is" : "is not"} VAT registered. Confirm all figures
-        with your accountant before submitting to HMRC.
-      </div>
+/* Pill-bar segmented control matching the screenshot aesthetic.
+ * Sits in a F7F8FA pillow with rounded-full; active pill is a white
+ * card with a soft shadow so it pops out of the row. */
+function PeriodPills({
+  value,
+  onChange,
+}: {
+  value: PeriodKey;
+  onChange: (k: PeriodKey) => void;
+}) {
+  const options: { key: PeriodKey; label: string }[] = [
+    { key: "month", label: "Month" },
+    { key: "quarter", label: "Quarter" },
+    { key: "tax_year", label: "Tax year" },
+    { key: "custom", label: "Custom" },
+  ];
+  return (
+    <div className="inline-flex items-center gap-1 p-1 bg-[#F4F4F7] rounded-full border border-[#EEEEF1] w-fit">
+      {options.map((o) => {
+        const active = value === o.key;
+        return (
+          <button
+            key={o.key}
+            onClick={() => onChange(o.key)}
+            className={`px-3.5 py-1.5 rounded-full text-[12px] font-medium transition-all ${
+              active
+                ? "bg-white text-[#1B1B1B] shadow-[0_1px_3px_rgba(16,24,40,0.08)]"
+                : "text-[#7A7A7A] hover:text-[#1B1B1B]"
+            }`}
+          >
+            {o.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -370,11 +531,19 @@ function Tile({
   value,
   sub,
   accent,
+  size,
+  icon: Icon,
+  sparkline,
+  sparklineColor = "#1B1B1B",
 }: {
   label: string;
   value: string;
   sub?: string;
   accent?: "green" | "red" | "amber";
+  size?: "hero";
+  icon?: React.ComponentType<{ className?: string }>;
+  sparkline?: { value: number }[];
+  sparklineColor?: string;
 }) {
   const color =
     accent === "green"
@@ -384,11 +553,265 @@ function Tile({
         : accent === "amber"
           ? "text-[#B45309]"
           : "text-[#1B1B1B]";
+  const hero = size === "hero";
   return (
-    <div className="bg-white border border-[#E5E5EA] rounded-xl p-4 shadow-[var(--shadow-soft)]">
-      <div className="text-[11px] uppercase tracking-wider text-[#7A7A7A] mb-1">{label}</div>
-      <div className={`text-xl md:text-2xl font-semibold tabular-nums ${color}`}>{value}</div>
-      {sub && <div className="text-[11px] text-[#A0A0A0] mt-1">{sub}</div>}
+    <div
+      className={`relative bg-white border border-[#EEEEF1] rounded-2xl ${
+        hero ? "p-4" : "p-4"
+      } shadow-[0_1px_2px_rgba(16,24,40,0.04)] hover:shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_32px_rgba(16,24,40,0.08)] transition-shadow overflow-hidden`}
+    >
+      <div className="flex items-start justify-between mb-2.5">
+        <div className="flex items-center gap-2">
+          {Icon && (
+            <span className="inline-flex items-center justify-center size-7 rounded-lg bg-[#F4F4F7] text-[#1B1B1B]">
+              <Icon className="size-3.5" />
+            </span>
+          )}
+          <div className="text-[10.5px] uppercase tracking-[0.06em] text-[#9A9AA3] font-semibold">
+            {label}
+          </div>
+        </div>
+      </div>
+      <div
+        className={`${
+          hero ? "text-[22px] md:text-[26px]" : "text-[20px] md:text-[22px]"
+        } font-semibold tabular-nums tracking-[-0.02em] leading-none ${color}`}
+      >
+        {value}
+      </div>
+      {sub && (
+        <div className="text-[11px] text-[#9A9AA3] mt-1.5 leading-snug">{sub}</div>
+      )}
+      {sparkline && sparkline.length > 1 && hero && (
+        <div className="absolute right-3 bottom-3 w-[88px] h-[32px] opacity-90 pointer-events-none">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={sparkline} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id={`sl-${sparklineColor.replace("#", "")}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={sparklineColor} stopOpacity={0.22} />
+                  <stop offset="100%" stopColor={sparklineColor} stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <Area
+                type="monotone"
+                dataKey="value"
+                stroke={sparklineColor}
+                strokeWidth={1.5}
+                fill={`url(#sl-${sparklineColor.replace("#", "")})`}
+                isAnimationActive={false}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* Premium donut with center content + active-segment glow + per-slice
+ * tooltip pill. Bigger and chunkier than the recharts default. */
+function DonutChart({
+  slices,
+}: {
+  slices: { name: string; value: number; color: string }[];
+}) {
+  const [activeIdx, setActiveIdx] = useState<number | null>(null);
+  const total = slices.reduce((s, x) => s + x.value, 0);
+  const active = activeIdx !== null ? slices[activeIdx] : null;
+  const activePct = active && total > 0 ? (active.value / total) * 100 : 0;
+  return (
+    <div className="relative">
+      <ResponsiveContainer width="100%" height={180}>
+        <PieChart>
+          <defs>
+            {slices.map((s, i) => (
+              <filter
+                key={i}
+                id={`glow-${i}`}
+                x="-30%"
+                y="-30%"
+                width="160%"
+                height="160%"
+              >
+                <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                <feMerge>
+                  <feMergeNode in="coloredBlur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            ))}
+          </defs>
+          <Pie
+            data={slices}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            innerRadius={52}
+            outerRadius={80}
+            paddingAngle={2}
+            strokeWidth={0}
+            cornerRadius={5}
+            onMouseEnter={(_, idx) => setActiveIdx(idx)}
+            onMouseLeave={() => setActiveIdx(null)}
+          >
+            {slices.map((s, i) => (
+              <Cell
+                key={i}
+                fill={s.color}
+                opacity={activeIdx === null || activeIdx === i ? 1 : 0.35}
+                style={{
+                  filter: activeIdx === i ? `url(#glow-${i})` : "none",
+                  transition: "opacity 200ms, filter 200ms",
+                }}
+              />
+            ))}
+          </Pie>
+        </PieChart>
+      </ResponsiveContainer>
+      {/* Center content overlaid on the donut hole */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+        {active ? (
+          <>
+            <div
+              className="text-[9.5px] uppercase tracking-[0.06em] font-semibold mb-0.5"
+              style={{ color: active.color }}
+            >
+              {active.name}
+            </div>
+            <div className="text-[17px] font-semibold tabular-nums tracking-tight text-[#1B1B1B] leading-none">
+              {fmtMoney(active.value)}
+            </div>
+            <div className="text-[10px] text-[#9A9AA3] mt-1 tabular-nums">
+              {activePct.toFixed(1)}% of total
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="text-[9.5px] uppercase tracking-[0.06em] text-[#9A9AA3] font-semibold mb-0.5">
+              Total
+            </div>
+            <div className="text-[17px] font-semibold tabular-nums tracking-tight text-[#1B1B1B] leading-none">
+              {fmtMoney(total)}
+            </div>
+            <div className="text-[10px] text-[#9A9AA3] mt-1">
+              across {slices.length} categor{slices.length === 1 ? "y" : "ies"}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* Premium chart tooltip modelled on the reference design:
+ *  - Dark rounded card
+ *  - Period label at top (small, muted)
+ *  - Total in large white type (revenue + expenses for the month)
+ *  - Revenue + expense rows with colored dots and amounts in soft pills
+ * Always rendered on a dark background so it works on either theme. */
+function DateLabelTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: Array<{ name?: string; value?: number; dataKey?: string }>;
+  label?: string;
+}) {
+  if (!active || !payload || payload.length === 0) return null;
+  const revenue = Number(payload.find((p) => p.dataKey === "revenue")?.value ?? 0);
+  const expenses = Number(payload.find((p) => p.dataKey === "expenses")?.value ?? 0);
+  const total = revenue + expenses;
+  return (
+    <div
+      className="pointer-events-none rounded-2xl px-4 py-3 min-w-[200px]"
+      style={{
+        background: "#1B1B1B",
+        boxShadow: "0 12px 32px rgba(16,24,40,0.18), 0 0 0 1px rgba(255,255,255,0.04)",
+      }}
+    >
+      <div className="text-[10.5px] uppercase tracking-[0.08em] text-white/50 font-medium mb-1">
+        {label}
+      </div>
+      <div className="text-[22px] font-semibold tabular-nums tracking-tight leading-none text-white mb-3">
+        {fmtMoney(total)}
+      </div>
+      <div className="flex items-center gap-2 text-[11px] mb-1.5">
+        <span className="w-2 h-2 rounded-full bg-[#10B981]" />
+        <span className="text-white/70">Revenue</span>
+        <span className="ml-auto tabular-nums font-medium text-white bg-white/10 px-2 py-0.5 rounded-md">
+          {fmtMoney(revenue)}
+        </span>
+      </div>
+      <div className="flex items-center gap-2 text-[11px]">
+        <span className="w-2 h-2 rounded-full bg-[#F59E0B]" />
+        <span className="text-white/70">Expenses</span>
+        <span className="ml-auto tabular-nums font-medium text-white bg-white/10 px-2 py-0.5 rounded-md">
+          {fmtMoney(expenses)}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* Compact inline forecast stat for the bottom strip. One per column in
+ * the 3-col compact card, separated by vertical dividers. */
+function ForecastInline({
+  icon: Icon,
+  label,
+  value,
+  accent,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+  accent?: "red" | "amber";
+}) {
+  const color =
+    accent === "red"
+      ? "text-[#B91C1C]"
+      : accent === "amber"
+        ? "text-[#B45309]"
+        : "text-[#1B1B1B]";
+  return (
+    <div className="flex items-center gap-3 px-3 first:pl-0 last:pr-0">
+      <span className="inline-flex items-center justify-center size-9 rounded-xl bg-[#F4F4F7] text-[#1B1B1B] shrink-0">
+        <Icon className="size-4" />
+      </span>
+      <div className="min-w-0">
+        <div className="text-[10.5px] uppercase tracking-[0.06em] text-[#9A9AA3] font-semibold truncate">
+          {label}
+        </div>
+        <div className={`text-[18px] font-semibold tabular-nums tracking-tight leading-tight ${color}`}>
+          {value}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* Shared card header: icon chip on left + title, optional eyebrow text
+ * on right (e.g. "Monthly, GBP" or "7 total"). Used by the chart cards
+ * to give them a consistent identity. */
+function CardHeader({
+  icon: Icon,
+  title,
+  eyebrow,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  eyebrow?: string;
+}) {
+  return (
+    <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center gap-2.5">
+        <span className="inline-flex items-center justify-center size-8 rounded-xl bg-[#F4F4F7] text-[#1B1B1B]">
+          <Icon className="size-4" />
+        </span>
+        <h3 className="text-[15px] font-semibold text-[#1B1B1B] tracking-tight">{title}</h3>
+      </div>
+      {eyebrow && <span className="text-[11px] text-[#9A9AA3]">{eyebrow}</span>}
     </div>
   );
 }
