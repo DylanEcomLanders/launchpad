@@ -101,16 +101,16 @@ const navSections: NavSection[] = [
     icon: <BanknotesIcon className="size-4" />,
     defaultOpen: false,
     roles: ["admin"],
+    badge: "PRIVATE",
     group: "ops",
     items: [
+      { label: "Money (founder)", href: "/finance" },
       { label: "Price List", href: "/internal/pricing" },
       { label: "Price Calculator", href: "/tools/price-calculator" },
       { label: "Revenue", href: "/sales-engine/revenue" },
       { label: "Turnaround Times", href: "/internal/turnarounds" },
-      { label: "Invoice Generator", href: "/tools/invoice-generator" },
       { label: "Payment Link", href: "/tools/payment-link" },
       { label: "Dev Hours Log", href: "/tools/dev-hours" },
-      { label: "Expenses", href: "/tools/expenses" },
     ],
   },
   {
@@ -123,7 +123,6 @@ const navSections: NavSection[] = [
       { label: "Overview", href: "/company" },
       { label: "People", href: "/company/people" },
       { label: "Org Structure", href: "/company/structure" },
-      { label: "Invoices", href: "/company/invoices" },
       { label: "Hiring", href: "/company/hiring" },
     ],
   },
@@ -139,6 +138,7 @@ const navSections: NavSection[] = [
       { label: "Conversion Engine Sheet", href: "/internal/cheatsheet/conversion-engine" },
       { label: "Articles", href: "/sales-engine/articles" },
       { label: "Calendar", href: "/sales-engine/calendar" },
+      { label: "Content Calendar", href: "/content-calendar" },
       { label: "Lead Magnets", href: "/sales-engine/lead-magnets" },
       { label: "Leads (Outreach)", href: "/sales-engine/leads" },
       { label: "Quiz Leads", href: "/sales-engine/quiz-leads" },
@@ -539,7 +539,7 @@ export function Sidebar() {
               onClick={() => setMobileOpen(false)}
               className="text-[11px] text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
             >
-              Launchpad v0.20.0
+              Launchpad v0.45.1
             </Link>
           </div>
         )}

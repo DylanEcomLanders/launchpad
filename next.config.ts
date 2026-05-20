@@ -25,6 +25,30 @@ const nextConfig: NextConfig = {
         destination: "/conversion-pack",
         permanent: true,
       },
+      // Finance module rollup — legacy invoice generator, expenses
+      // tracker, and company invoices module are now sub-sections of
+      // the founder-gated /finance module. Data migrates via the
+      // "Import legacy data" button on /finance/settings.
+      {
+        source: "/tools/invoice-generator",
+        destination: "/finance/invoices/new",
+        permanent: true,
+      },
+      {
+        source: "/tools/expenses",
+        destination: "/finance/expenses",
+        permanent: true,
+      },
+      {
+        source: "/company/invoices",
+        destination: "/finance/expenses",
+        permanent: true,
+      },
+      {
+        source: "/company/invoices/:id",
+        destination: "/finance/expenses",
+        permanent: true,
+      },
     ];
   },
 };
