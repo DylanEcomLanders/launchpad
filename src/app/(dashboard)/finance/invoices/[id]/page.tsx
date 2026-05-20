@@ -14,6 +14,8 @@ import {
   XMarkIcon,
   PlusIcon,
   EnvelopeIcon,
+  DocumentIcon,
+  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import {
   invoicesIssuedStore,
@@ -82,7 +84,7 @@ export default function InvoiceDetailPage() {
     };
   }, []);
 
-  async function updateStatus(status: InvoiceStatus) {
+  async function updateStatus(status: InvoiceStatus, reason?: string) {
     if (!invoice) return;
     const updates: Partial<InvoiceIssued> = {
       status,
@@ -90,8 +92,26 @@ export default function InvoiceDetailPage() {
     };
     if (status === "sent" && !invoice.sent_date) updates.sent_date = nowISO();
     if (status === "paid" && !invoice.paid_date) updates.paid_date = todayISO();
+    if (status === "disputed") {
+      updates.disputed_at = nowISO();
+      if (reason !== undefined) updates.disputed_reason = reason;
+    } else {
+      // Clear dispute metadata when moving back out of disputed state.
+      updates.disputed_at = undefined;
+      updates.disputed_reason = undefined;
+    }
     const updated = await invoicesIssuedStore.update(invoice.id, updates);
     if (updated) setInvoice(updated);
+  }
+
+  async function markDisputed() {
+    if (!invoice) return;
+    const reason = window.prompt(
+      "Reason for dispute (optional, shown on the invoice detail):",
+      invoice.disputed_reason || "",
+    );
+    if (reason === null) return; // user cancelled
+    await updateStatus("disputed", reason);
   }
 
   async function downloadPdf() {
@@ -280,7 +300,7 @@ export default function InvoiceDetailPage() {
               onClick={() => updateStatus("sent")}
               className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#6366F1] text-white text-sm rounded-lg hover:opacity-90"
             >
-              <PaperAirplaneIcon className="size-4" /> Mark sent
+              <PaperAirplaneIcon className="size-4" /> Mark due
             </button>
           )}
           {!editing && (derivedStatus === "sent" || derivedStatus === "overdue") && (
@@ -289,6 +309,22 @@ export default function InvoiceDetailPage() {
               className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#047857] text-white text-sm rounded-lg hover:opacity-90"
             >
               <CheckIcon className="size-4" /> Mark paid
+            </button>
+          )}
+          {!editing && derivedStatus !== "disputed" && derivedStatus !== "paid" && (
+            <button
+              onClick={markDisputed}
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E5E5EA] text-[#92400E] text-sm rounded-lg hover:bg-amber-50"
+            >
+              Mark disputed
+            </button>
+          )}
+          {!editing && derivedStatus === "disputed" && (
+            <button
+              onClick={() => updateStatus("sent")}
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E5E5EA] text-[#1B1B1B] text-sm rounded-lg hover:bg-[#F7F8FA]"
+            >
+              Resolve dispute
             </button>
           )}
           {!editing && (
@@ -432,16 +468,45 @@ export default function InvoiceDetailPage() {
 
             <div className="space-y-6">
               <Card title="Status">
-                <KV label="Current" value={INVOICE_STATUS_LABELS[derivedStatus]} />
+                <div>
+                  <div className="text-[11px] uppercase tracking-wider text-[#A0A0A0] mb-1">
+                    Change to
+                  </div>
+                  <select
+                    value={derivedStatus}
+                    onChange={(e) => {
+                      const next = e.target.value as InvoiceStatus;
+                      if (next === "disputed") {
+                        markDisputed();
+                      } else {
+                        updateStatus(next);
+                      }
+                    }}
+                    className={selectClass}
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="sent">Due</option>
+                    <option value="paid">Paid</option>
+                    {derivedStatus === "overdue" && (
+                      <option value="overdue">Overdue (auto)</option>
+                    )}
+                    <option value="disputed">Disputed</option>
+                  </select>
+                </div>
                 {invoice.sent_date && <KV label="Sent" value={fmtDateUK(invoice.sent_date)} />}
                 {invoice.paid_date && <KV label="Paid" value={fmtDateUK(invoice.paid_date)} />}
-                {derivedStatus !== "draft" && derivedStatus !== "paid" && (
-                  <button
-                    onClick={() => updateStatus("draft")}
-                    className="text-xs text-[#7A7A7A] hover:text-[#1B1B1B] underline mt-2"
-                  >
-                    Revert to draft
-                  </button>
+                {invoice.disputed_at && (
+                  <KV label="Disputed" value={fmtDateUK(invoice.disputed_at)} />
+                )}
+                {invoice.disputed_reason && (
+                  <div>
+                    <div className="text-[11px] uppercase tracking-wider text-[#A0A0A0] mb-0.5">
+                      Reason
+                    </div>
+                    <div className="text-sm text-[#1B1B1B] whitespace-pre-wrap">
+                      {invoice.disputed_reason}
+                    </div>
+                  </div>
                 )}
               </Card>
 
@@ -449,6 +514,11 @@ export default function InvoiceDetailPage() {
                 <KV label="Treatment" value={VAT_TREATMENT_LABELS[invoice.vat_treatment]} />
                 <KV label="VAT charged" value={fmtMoney(breakdown.vatAmount)} />
               </Card>
+
+              <InvoiceAttachmentCard
+                invoice={invoice}
+                onUpdated={(updated) => setInvoice(updated)}
+              />
 
               {(invoice.bank_name || invoice.account_number) && (
                 <Card title="Payment">
@@ -805,6 +875,129 @@ function EditInvoiceForm({
         </button>
       </div>
     </div>
+  );
+}
+
+function InvoiceAttachmentCard({
+  invoice,
+  onUpdated,
+}: {
+  invoice: InvoiceIssued;
+  onUpdated: (next: InvoiceIssued) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [opening, setOpening] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setUploading(true);
+    setError("");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("folder", "invoices");
+      const res = await fetch("/api/finance/upload", { method: "POST", body: fd });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
+      const updated = await invoicesIssuedStore.update(invoice.id, {
+        attachment_url: json.url,
+        attachment_path: json.path,
+        attachment_name: file.name,
+        updated_at: nowISO(),
+      });
+      if (updated) onUpdated(updated);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function openAttachment() {
+    if (!invoice.attachment_path) return;
+    setOpening(true);
+    try {
+      const res = await fetch("/api/finance/sign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path: invoice.attachment_path }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
+      window.open(json.url, "_blank", "noopener");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not open attachment");
+    } finally {
+      setOpening(false);
+    }
+  }
+
+  async function removeAttachment() {
+    if (!invoice.attachment_path) return;
+    if (!confirm(`Remove attachment "${invoice.attachment_name}"?`)) return;
+    const updated = await invoicesIssuedStore.update(invoice.id, {
+      attachment_url: undefined,
+      attachment_path: undefined,
+      attachment_name: undefined,
+      updated_at: nowISO(),
+    });
+    if (updated) onUpdated(updated);
+  }
+
+  return (
+    <Card title="Attachment">
+      {invoice.attachment_name ? (
+        <div className="space-y-2">
+          <button
+            onClick={openAttachment}
+            disabled={opening}
+            className="inline-flex items-center gap-2 text-sm text-[#1B1B1B] underline hover:opacity-80 disabled:opacity-40"
+          >
+            {opening ? (
+              <ArrowPathIcon className="size-4 animate-spin" />
+            ) : (
+              <DocumentIcon className="size-4" />
+            )}
+            {invoice.attachment_name}
+          </button>
+          <p className="text-[11px] text-[#A0A0A0]">
+            Signed on click, expires 15min
+          </p>
+          <button
+            onClick={removeAttachment}
+            className="text-xs text-[#7A7A7A] hover:text-red-600 underline"
+          >
+            Remove
+          </button>
+        </div>
+      ) : (
+        <div>
+          <p className="text-[11px] text-[#A0A0A0] mb-2">
+            Signed PO, payment confirmation, contract reference, etc.
+          </p>
+          <label className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E5E5EA] text-[#1B1B1B] text-sm rounded-lg hover:bg-[#F7F8FA] cursor-pointer">
+            <input
+              type="file"
+              accept="application/pdf,image/*"
+              onChange={handleFile}
+              className="hidden"
+              disabled={uploading}
+            />
+            {uploading ? (
+              <>
+                <ArrowPathIcon className="size-4 animate-spin" /> Uploading...
+              </>
+            ) : (
+              <>Attach file</>
+            )}
+          </label>
+        </div>
+      )}
+      {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
+    </Card>
   );
 }
 

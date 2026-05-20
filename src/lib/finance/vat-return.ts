@@ -86,9 +86,15 @@ export function computeVatReturn(
 ): VatReturn {
   const basis: VatBasis = options.basis ?? "accruals";
 
-  /* ── Sales side ── */
+  /* ── Sales side ──
+   * Exclude draft (not billed) and disputed (parked). Disputed
+   * invoices reappear in calculations once their status is changed
+   * back to due / paid after the dispute is resolved. */
   const recognisedSales = invoices.filter(
-    (i) => i.status !== "draft" && inRange(i.invoice_date, range),
+    (i) =>
+      i.status !== "draft" &&
+      i.status !== "disputed" &&
+      inRange(i.invoice_date, range),
   );
 
   let box1 = 0;

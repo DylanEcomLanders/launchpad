@@ -99,7 +99,10 @@ export async function reserveInvoiceNumber(): Promise<string> {
 /* ── Derived status ── */
 
 export function deriveInvoiceStatus(inv: InvoiceIssued): InvoiceIssued["status"] {
-  if (inv.status === "paid" || inv.status === "draft") return inv.status;
+  // disputed / paid / draft are sticky — never auto-flipped to overdue.
+  if (inv.status === "paid" || inv.status === "draft" || inv.status === "disputed") {
+    return inv.status;
+  }
   if (inv.due_date && inv.due_date < todayISO()) return "overdue";
   return inv.status;
 }

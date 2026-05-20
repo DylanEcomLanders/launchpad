@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-71",
+    date: "20 May 2026",
+    version: "0.45.2",
+    title: "Finance: Disputed status, Due relabel, invoice attachments",
+    changes: [
+      { type: "added", text: "Disputed status on invoices issued. Use it to park an invoice that needs correcting (wrong amount, wrong line items, client disputing) without polluting revenue / VAT / dashboard calcs. Mark Disputed prompts for an optional reason that surfaces on the detail page. Disputed invoices are excluded from: revenue + VAT collected in computePeriodTotals, monthly time series on the dashboard, rolling 12mo turnover for the VAT threshold warning, and Boxes 1 / 6 of the VAT return. They stay visible in the invoice list (with a yellow badge) and filterable. 'Resolve dispute' button flips it back to Due, clearing disputed_at + disputed_reason" },
+      { type: "improved", text: "Renamed the 'Sent' label to 'Due' across the invoice list filter, detail badge, status dropdown, and Mark button. The underlying status value stays 'sent' (no data migration), only the human label changes — for the recipient an issued invoice IS due, the founder asked for that vocabulary. sent_date field name preserved since it still captures the date we sent it" },
+      { type: "added", text: "Status dropdown on the invoice detail page lets you flip to any status (Draft / Due / Paid / Disputed) from one control, instead of having to use the conditional Mark buttons. Overdue stays auto-derived from due_date passing and is shown as a non-selectable option. Picking Disputed triggers the reason prompt, picking anything else clears dispute metadata" },
+      { type: "added", text: "Invoice attachment slot. Receivable invoices now have an optional file attachment (signed PO, payment confirmation, contract reference, etc) separate from the auto-generated PDF. Upload via the Attachment card on /finance/invoices/[id]. Stored in the same private finance-documents bucket as expense receipts. View opens a fresh 15min signed URL on click — link doesn't sit live in the DOM. Remove clears it. Mirrors the existing pattern on expenses" },
+    ],
+  },
+  {
     id: "cl-70",
     date: "20 May 2026",
     version: "0.45.1",

@@ -3,7 +3,7 @@
  * company profile. All stored as jsonb blobs in finance_* tables.
  */
 
-export type InvoiceStatus = "draft" | "sent" | "paid" | "overdue";
+export type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "disputed";
 
 export type VatTreatment =
   | "uk_standard"        // 20% added (UK B2B/B2C)
@@ -42,8 +42,15 @@ export interface InvoiceIssued {
   status: InvoiceStatus;
   sent_date?: string;
   paid_date?: string;
+  disputed_at?: string;
+  disputed_reason?: string;
   pdf_url?: string;              // signed URL or storage path
   pdf_path?: string;             // raw storage path for signing later
+  /* Optional external attachment (signed PO, payment confirmation,
+   * contract reference, etc). Separate from the auto-generated PDF. */
+  attachment_url?: string;
+  attachment_path?: string;
+  attachment_name?: string;
   created_at: string;
   updated_at: string;
 }
@@ -129,11 +136,15 @@ export interface CompanyProfile {
 
 /* ── Display / labelling ── */
 
+/* "Due" is the label, "sent" is the underlying status value. We keep
+ * sent_date as the field name since it captures when we sent it; the
+ * label change is a vocabulary fix for the founder. */
 export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
   draft: "Draft",
-  sent: "Sent",
+  sent: "Due",
   paid: "Paid",
   overdue: "Overdue",
+  disputed: "Disputed",
 };
 
 export const INVOICE_STATUS_BADGE: Record<
@@ -144,6 +155,7 @@ export const INVOICE_STATUS_BADGE: Record<
   sent: { bg: "#E0E7FF", text: "#3730A3", dot: "#6366F1" },
   paid: { bg: "#D1FAE5", text: "#047857", dot: "#10B981" },
   overdue: { bg: "#FEE2E2", text: "#B91C1C", dot: "#EF4444" },
+  disputed: { bg: "#FEF3C7", text: "#92400E", dot: "#D97706" },
 };
 
 export const EXPENSE_CATEGORY_LABELS: Record<ExpenseCategory, string> = {

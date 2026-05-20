@@ -85,8 +85,12 @@ export function computePeriodTotals(
   range: DateRange,
   options: { vatRegistered: boolean } = { vatRegistered: false },
 ): PeriodTotals {
+  // Exclude draft (not yet billed) and disputed (parked, awaiting correction).
   const recognised = invoices.filter(
-    (i) => i.status !== "draft" && inRange(i.invoice_date, range),
+    (i) =>
+      i.status !== "draft" &&
+      i.status !== "disputed" &&
+      inRange(i.invoice_date, range),
   );
 
   let revenueNet = 0;
@@ -201,7 +205,7 @@ export function computeMonthlySeries(
   );
 
   for (const inv of invoices) {
-    if (inv.status === "draft") continue;
+    if (inv.status === "draft" || inv.status === "disputed") continue;
     const m = inv.invoice_date?.slice(0, 7);
     if (!m || !byMonth[m]) continue;
     const b = calculateVatBreakdown(
@@ -289,7 +293,7 @@ export function computeVatThresholdStatus(
 
   let total = 0;
   for (const inv of invoices) {
-    if (inv.status === "draft") continue;
+    if (inv.status === "draft" || inv.status === "disputed") continue;
     if (!inv.invoice_date) continue;
     if (inv.invoice_date < cutoffISO || inv.invoice_date > todayISO) continue;
     const breakdown = calculateVatBreakdown(
