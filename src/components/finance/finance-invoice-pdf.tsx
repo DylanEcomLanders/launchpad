@@ -6,144 +6,283 @@ import { fmtMoney } from "@/lib/finance/data";
 import { calculateVatBreakdown } from "@/lib/finance/vat";
 import type { InvoiceIssued, CompanyProfile } from "@/lib/finance/types";
 
+/* ── Visual language ─────────────────────────────────────────────────
+ * Modern + restrained. Smaller type, tighter spacing, lighter weights.
+ * Reference points: Stripe / Linear / Notion invoices.
+ *
+ * Type scale (pt):
+ *   14    invoice number / total due (hero values, semibold)
+ *   10    party name (semibold)
+ *    9    body text, addresses, line items
+ *    8    metadata values
+ *    6.5  uppercase labels with letter spacing
+ *
+ * Colour palette:
+ *   #111  near-black for primary text
+ *   #555  mid grey for secondary text
+ *   #999  light grey for labels / footer
+ *   #EAEAEA  hairline borders
+ *   no fills, no rounded boxes
+ * ─────────────────────────────────────────────────────────────────── */
+
+const ink = "#111111";
+const mid = "#555555";
+const muted = "#999999";
+const hairline = "#EAEAEA";
+
 const s = StyleSheet.create({
   page: {
     fontFamily: "PlusJakartaSans",
     backgroundColor: "#FFFFFF",
-    paddingHorizontal: 48,
-    paddingTop: 48,
-    paddingBottom: 80,
+    paddingHorizontal: 56,
+    paddingTop: 52,
+    paddingBottom: 60,
+    color: ink,
   },
-  header: {
+
+  /* ── Hero ── */
+  hero: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 32,
-    paddingBottom: 20,
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#E5E5E5",
-  },
-  title: { fontSize: 24, fontWeight: 800, color: "#0A0A0A", letterSpacing: -0.5 },
-  infoStrip: {
-    flexDirection: "row",
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    backgroundColor: "#FAFAFA",
-    borderRadius: 4,
     marginBottom: 24,
   },
-  infoCell: { flex: 1, paddingHorizontal: 4 },
-  infoLabel: {
-    fontSize: 7,
-    fontWeight: 700,
-    color: "#6B6B6B",
-    letterSpacing: 1,
+  heroRight: {
+    alignItems: "flex-end",
+  },
+  heroLabel: {
+    fontSize: 6.5,
+    fontWeight: 600,
+    color: muted,
+    letterSpacing: 1.4,
     textTransform: "uppercase",
     marginBottom: 3,
   },
-  infoValue: { fontSize: 10, fontWeight: 600, color: "#0A0A0A" },
-  metaRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 32 },
-  metaCol: { maxWidth: "48%" },
+  heroNumber: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: ink,
+    letterSpacing: -0.2,
+  },
+
+  /* ── Meta strip (issued/due/terms) ── */
+  metaStrip: {
+    flexDirection: "row",
+    borderTopWidth: 0.5,
+    borderTopColor: hairline,
+    borderBottomWidth: 0.5,
+    borderBottomColor: hairline,
+    paddingVertical: 12,
+    marginBottom: 28,
+  },
+  metaCell: {
+    flex: 1,
+    paddingRight: 12,
+  },
   metaLabel: {
-    fontSize: 8,
-    fontWeight: 700,
-    color: "#6B6B6B",
-    letterSpacing: 1,
+    fontSize: 6.5,
+    fontWeight: 600,
+    color: muted,
+    letterSpacing: 1.4,
     textTransform: "uppercase",
-    marginBottom: 3,
+    marginBottom: 4,
   },
-  metaValueBold: {
+  metaValue: {
+    fontSize: 9,
+    fontWeight: 500,
+    color: ink,
+  },
+
+  /* ── Addresses (From / Bill To) ── */
+  partyRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 32,
+  },
+  partyCol: {
+    width: "48%",
+  },
+  partyLabel: {
+    fontSize: 6.5,
+    fontWeight: 600,
+    color: muted,
+    letterSpacing: 1.4,
+    textTransform: "uppercase",
+    marginBottom: 6,
+  },
+  partyName: {
     fontSize: 10,
     fontWeight: 600,
-    color: "#0A0A0A",
-    marginBottom: 10,
+    color: ink,
+    marginBottom: 4,
+  },
+  partyLine: {
+    fontSize: 9,
+    fontWeight: 400,
+    color: mid,
     lineHeight: 1.5,
   },
-  addressLine: {
-    fontSize: 10,
-    fontWeight: 400,
-    color: "#0A0A0A",
-    lineHeight: 1.45,
-  },
-  metaTinyMuted: { fontSize: 8.5, fontWeight: 400, color: "#6B6B6B", marginTop: 6 },
-  sectionLabel: {
+  partyMeta: {
     fontSize: 8,
-    fontWeight: 700,
-    color: "#6B6B6B",
-    letterSpacing: 1,
-    textTransform: "uppercase",
-    marginBottom: 8,
+    fontWeight: 400,
+    color: muted,
+    marginTop: 6,
+    lineHeight: 1.55,
   },
-  tableHeader: {
+
+  /* ── Line items ── */
+  itemsHeader: {
     flexDirection: "row",
-    backgroundColor: "#F5F5F5",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingBottom: 6,
+    borderBottomWidth: 0.5,
+    borderBottomColor: ink,
   },
-  tableRow: {
+  itemsHeaderText: {
+    fontSize: 6.5,
+    fontWeight: 600,
+    color: ink,
+    letterSpacing: 1.4,
+    textTransform: "uppercase",
+  },
+  itemRow: {
     flexDirection: "row",
     paddingVertical: 9,
-    paddingHorizontal: 12,
     borderBottomWidth: 0.5,
-    borderBottomColor: "#F0F0F0",
+    borderBottomColor: hairline,
   },
-  tableRowAlt: { backgroundColor: "#FAFAFA" },
-  colDesc: { flex: 1 },
-  colQty: { width: 50, textAlign: "center" },
-  colPrice: { width: 80, textAlign: "right" },
-  colAmount: { width: 80, textAlign: "right" },
-  thText: {
-    fontSize: 8,
-    fontWeight: 700,
-    color: "#6B6B6B",
-    letterSpacing: 1,
-    textTransform: "uppercase",
+  colDesc: { flex: 1, paddingRight: 12 },
+  colQty: { width: 36, textAlign: "center" },
+  colPrice: { width: 72, textAlign: "right" },
+  colAmount: { width: 84, textAlign: "right" },
+  itemText: {
+    fontSize: 9,
+    fontWeight: 500,
+    color: ink,
   },
-  tdText: { fontSize: 9.5, fontWeight: 400, color: "#0A0A0A" },
-  tdMuted: { fontSize: 9.5, fontWeight: 400, color: "#6B6B6B" },
-  totalsSection: { marginTop: 16, alignItems: "flex-end" },
+  itemMuted: {
+    fontSize: 9,
+    fontWeight: 400,
+    color: mid,
+  },
+
+  /* ── Totals ── */
+  totalsWrap: {
+    marginTop: 16,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
+  totalsPanel: {
+    width: 220,
+  },
   totalsRow: {
     flexDirection: "row",
-    justifyContent: "flex-end",
-    width: 240,
-    paddingVertical: 5,
+    justifyContent: "space-between",
+    paddingVertical: 4,
   },
-  totalsLabel: { fontSize: 9.5, fontWeight: 400, color: "#6B6B6B", flex: 1 },
-  totalsValue: { fontSize: 9.5, fontWeight: 500, color: "#0A0A0A", width: 100, textAlign: "right" },
-  totalsFinalRow: {
+  totalsLabel: {
+    fontSize: 9,
+    fontWeight: 400,
+    color: mid,
+  },
+  totalsValue: {
+    fontSize: 9,
+    fontWeight: 500,
+    color: ink,
+  },
+  totalDivider: {
+    borderTopWidth: 0.5,
+    borderTopColor: ink,
+    marginTop: 6,
+    paddingTop: 8,
+  },
+  totalFinalLabel: {
+    fontSize: 10,
+    fontWeight: 600,
+    color: ink,
+  },
+  totalFinalValue: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: ink,
+    letterSpacing: -0.2,
+  },
+
+  /* ── VAT note ── */
+  vatNote: {
+    marginTop: 16,
+    paddingTop: 10,
+    borderTopWidth: 0.5,
+    borderTopColor: hairline,
+    fontSize: 8,
+    color: muted,
+    lineHeight: 1.55,
+  },
+
+  /* ── Payment + notes ── */
+  paymentSection: {
+    marginTop: 36,
+    paddingTop: 18,
+    borderTopWidth: 0.5,
+    borderTopColor: hairline,
+  },
+  paymentLabel: {
+    fontSize: 6.5,
+    fontWeight: 600,
+    color: muted,
+    letterSpacing: 1.4,
+    textTransform: "uppercase",
+    marginBottom: 10,
+  },
+  paymentGrid: {
     flexDirection: "row",
-    justifyContent: "flex-end",
-    width: 240,
-    paddingVertical: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#0A0A0A",
-    marginTop: 4,
+    flexWrap: "wrap",
   },
-  totalsFinalLabel: { fontSize: 11, fontWeight: 700, color: "#0A0A0A", flex: 1 },
-  totalsFinalValue: {
-    fontSize: 11,
-    fontWeight: 700,
-    color: "#0A0A0A",
-    width: 100,
+  paymentField: {
+    width: "50%",
+    marginBottom: 8,
+  },
+  paymentFieldLabel: {
+    fontSize: 6.5,
+    fontWeight: 600,
+    color: muted,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+    marginBottom: 2,
+  },
+  paymentFieldValue: {
+    fontSize: 9,
+    fontWeight: 500,
+    color: ink,
+  },
+  notesText: {
+    fontSize: 8.5,
+    fontWeight: 400,
+    color: mid,
+    marginTop: 6,
+    lineHeight: 1.55,
+  },
+
+  /* ── Footer ── */
+  footer: {
+    position: "absolute",
+    bottom: 28,
+    left: 56,
+    right: 56,
+    paddingTop: 10,
+    borderTopWidth: 0.5,
+    borderTopColor: hairline,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  footerLeft: {
+    fontSize: 7,
+    color: muted,
+  },
+  footerRight: {
+    fontSize: 7,
+    color: muted,
     textAlign: "right",
   },
-  vatNote: {
-    marginTop: 12,
-    padding: 10,
-    backgroundColor: "#FAFAFA",
-    borderLeftWidth: 2,
-    borderLeftColor: "#0A0A0A",
-    fontSize: 8.5,
-    color: "#0A0A0A",
-    lineHeight: 1.5,
-  },
-  paymentBox: { marginTop: 32, padding: 16, backgroundColor: "#F5F5F5", borderRadius: 4 },
-  paymentRow: { flexDirection: "row", marginBottom: 4 },
-  paymentLabel: { fontSize: 9, fontWeight: 600, color: "#6B6B6B", width: 100 },
-  paymentValue: { fontSize: 9, fontWeight: 400, color: "#0A0A0A" },
-  notesText: { fontSize: 9, fontWeight: 400, color: "#6B6B6B", marginTop: 8, lineHeight: 1.5 },
-  footer: { position: "absolute", bottom: 36, left: 48, right: 48 },
-  footerText: { fontSize: 8, color: "#AAAAAA", textAlign: "center" },
 });
 
 interface Props {
@@ -158,111 +297,151 @@ export function FinanceInvoicePdf({ invoice, profile }: Props) {
     invoice.vat_amount_override,
   );
 
-  const hasPaymentDetails =
-    invoice.bank_name ||
-    invoice.account_name ||
-    invoice.sort_code ||
-    invoice.account_number;
+  const method = invoice.payment_method ?? "online";
+  const hasBankDetails =
+    !!invoice.bank_name ||
+    !!invoice.account_name ||
+    !!invoice.sort_code ||
+    !!invoice.account_number;
+  const showOnline = method === "online";
+  const showBank = method === "bank_transfer" && hasBankDetails;
+  const hasPaymentSection = showOnline || showBank;
+
+  const paymentFields: Array<{ label: string; value: string }> = [];
+  if (invoice.bank_name) paymentFields.push({ label: "Bank", value: invoice.bank_name });
+  if (invoice.account_name)
+    paymentFields.push({ label: "Account name", value: invoice.account_name });
+  if (invoice.sort_code) paymentFields.push({ label: "Sort code", value: invoice.sort_code });
+  if (invoice.account_number)
+    paymentFields.push({ label: "Account number", value: invoice.account_number });
 
   return (
     <Document>
       <Page size="A4" style={s.page}>
-        <View style={s.header}>
-          <PdfLogo height={13} />
-          <Text style={s.title}>INVOICE</Text>
+        {/* ── Hero ── */}
+        <View style={s.hero}>
+          <PdfLogo height={14} />
+          <View style={s.heroRight}>
+            <Text style={s.heroLabel}>Invoice</Text>
+            <Text style={s.heroNumber}>{invoice.invoice_number}</Text>
+          </View>
         </View>
 
-        <View style={s.infoStrip}>
-          <View style={s.infoCell}>
-            <Text style={s.infoLabel}>Invoice Number</Text>
-            <Text style={s.infoValue}>{invoice.invoice_number}</Text>
+        {/* ── Meta strip ── */}
+        <View style={s.metaStrip}>
+          <View style={s.metaCell}>
+            <Text style={s.metaLabel}>Issued</Text>
+            <Text style={s.metaValue}>{formatDate(invoice.invoice_date)}</Text>
           </View>
-          <View style={s.infoCell}>
-            <Text style={s.infoLabel}>Issued</Text>
-            <Text style={s.infoValue}>{formatDate(invoice.invoice_date)}</Text>
-          </View>
-          <View style={s.infoCell}>
-            <Text style={s.infoLabel}>Due</Text>
-            <Text style={s.infoValue}>{formatDate(invoice.due_date)}</Text>
+          <View style={s.metaCell}>
+            <Text style={s.metaLabel}>Due</Text>
+            <Text style={s.metaValue}>{formatDate(invoice.due_date)}</Text>
           </View>
           {invoice.payment_term ? (
-            <View style={[s.infoCell, { flex: 1.6 }]}>
-              <Text style={s.infoLabel}>Payment Terms</Text>
-              <Text style={s.infoValue}>{invoice.payment_term}</Text>
+            <View style={[s.metaCell, { flex: 1.6 }]}>
+              <Text style={s.metaLabel}>Payment terms</Text>
+              <Text style={s.metaValue}>{invoice.payment_term}</Text>
             </View>
           ) : null}
         </View>
 
-        <View style={s.metaRow}>
-          <View style={s.metaCol}>
-            <Text style={s.metaLabel}>From</Text>
-            <Text style={s.metaValueBold}>{profile.legal_name}</Text>
+        {/* ── From / Bill To ── */}
+        <View style={s.partyRow}>
+          <View style={s.partyCol}>
+            <Text style={s.partyLabel}>From</Text>
+            <Text style={s.partyName}>{profile.legal_name}</Text>
             {profile.address_lines.map((line, i) => (
-              <Text key={i} style={s.addressLine}>
+              <Text key={i} style={s.partyLine}>
                 {line}
               </Text>
             ))}
-            <Text style={s.metaTinyMuted}>
+            <Text style={s.partyMeta}>
               Company No. {profile.company_number}
-              {profile.vat_number ? ` · VAT ${profile.vat_number}` : ""}
+              {profile.vat_number ? `\nVAT ${profile.vat_number}` : ""}
+              {profile.email ? `\n${profile.email}` : ""}
             </Text>
-            {profile.email ? <Text style={s.addressLine}>{profile.email}</Text> : null}
           </View>
 
-          <View style={s.metaCol}>
-            <Text style={s.metaLabel}>Bill To</Text>
-            <Text style={s.metaValueBold}>{invoice.client_name}</Text>
+          <View style={s.partyCol}>
+            <Text style={s.partyLabel}>Bill to</Text>
+            <Text style={s.partyName}>{invoice.client_name}</Text>
             {invoice.contact_name ? (
-              <Text style={s.addressLine}>{invoice.contact_name}</Text>
-            ) : null}
-            {invoice.client_email ? (
-              <Text style={s.addressLine}>{invoice.client_email}</Text>
+              <Text style={s.partyLine}>{invoice.contact_name}</Text>
             ) : null}
             {invoice.client_address ? (
-              <Text style={s.addressLine}>{invoice.client_address}</Text>
+              <Text style={s.partyLine}>{invoice.client_address}</Text>
+            ) : null}
+            {invoice.client_email ? (
+              <Text style={s.partyMeta}>{invoice.client_email}</Text>
             ) : null}
           </View>
         </View>
 
+        {/* ── Line items ── */}
         <View>
-          <View style={s.tableHeader}>
-            <Text style={[s.thText, s.colDesc]}>Description</Text>
-            <Text style={[s.thText, s.colQty]}>Qty</Text>
-            <Text style={[s.thText, s.colPrice]}>Price</Text>
-            <Text style={[s.thText, s.colAmount]}>Amount</Text>
+          <View style={s.itemsHeader}>
+            <Text style={[s.itemsHeaderText, s.colDesc]}>Description</Text>
+            <Text style={[s.itemsHeaderText, s.colQty]}>Qty</Text>
+            <Text style={[s.itemsHeaderText, s.colPrice]}>Unit price</Text>
+            <Text style={[s.itemsHeaderText, s.colAmount]}>Amount</Text>
           </View>
 
-          {invoice.items.map((item, idx) => (
-            <View
-              key={item.id}
-              style={[s.tableRow, idx % 2 === 1 ? s.tableRowAlt : {}]}
-            >
-              <Text style={[s.tdText, s.colDesc]}>{item.name}</Text>
-              <Text style={[s.tdMuted, s.colQty]}>{item.quantity}</Text>
-              <Text style={[s.tdMuted, s.colPrice]}>{fmtMoney(item.unitPrice)}</Text>
-              <Text style={[s.tdText, s.colAmount]}>
+          {invoice.items.map((item) => (
+            <View key={item.id} style={s.itemRow}>
+              <Text style={[s.itemText, s.colDesc]}>{item.name}</Text>
+              <Text style={[s.itemMuted, s.colQty]}>{item.quantity}</Text>
+              <Text style={[s.itemMuted, s.colPrice]}>{fmtMoney(item.unitPrice)}</Text>
+              <Text style={[s.itemText, s.colAmount]}>
                 {fmtMoney(item.quantity * item.unitPrice)}
               </Text>
             </View>
           ))}
         </View>
 
-        <View style={s.totalsSection}>
-          <View style={s.totalsRow}>
-            <Text style={s.totalsLabel}>Subtotal</Text>
-            <Text style={s.totalsValue}>{fmtMoney(breakdown.subtotal)}</Text>
-          </View>
-          {breakdown.vatAmount > 0 && (
-            <View style={s.totalsRow}>
-              <Text style={s.totalsLabel}>
-                VAT ({Math.round(breakdown.vatRate * 100)}%)
-              </Text>
-              <Text style={s.totalsValue}>{fmtMoney(breakdown.vatAmount)}</Text>
-            </View>
-          )}
-          <View style={s.totalsFinalRow}>
-            <Text style={s.totalsFinalLabel}>Total</Text>
-            <Text style={s.totalsFinalValue}>{fmtMoney(breakdown.total)}</Text>
+        {/* ── Totals ── */}
+        <View style={s.totalsWrap}>
+          <View style={s.totalsPanel}>
+            {invoice.vat_treatment === "inclusive_20" ? (
+              // Inclusive: line items are at gross. Show Subtotal as
+              // gross with a muted "of which VAT" line below so the
+              // customer sees the breakdown without the math looking
+              // broken. Total = Subtotal in this mode.
+              <>
+                <View style={s.totalsRow}>
+                  <Text style={s.totalsLabel}>Subtotal (incl. VAT)</Text>
+                  <Text style={s.totalsValue}>{fmtMoney(breakdown.total)}</Text>
+                </View>
+                <View style={s.totalsRow}>
+                  <Text style={s.totalsLabel}>
+                    of which VAT ({Math.round(breakdown.vatRate * 100)}%)
+                  </Text>
+                  <Text style={s.totalsValue}>{fmtMoney(breakdown.vatAmount)}</Text>
+                </View>
+                <View style={[s.totalsRow, s.totalDivider]}>
+                  <Text style={s.totalFinalLabel}>Total due</Text>
+                  <Text style={s.totalFinalValue}>{fmtMoney(breakdown.total)}</Text>
+                </View>
+              </>
+            ) : (
+              <>
+                <View style={s.totalsRow}>
+                  <Text style={s.totalsLabel}>Subtotal</Text>
+                  <Text style={s.totalsValue}>{fmtMoney(breakdown.subtotal)}</Text>
+                </View>
+                {breakdown.vatAmount > 0 && (
+                  <View style={s.totalsRow}>
+                    <Text style={s.totalsLabel}>
+                      VAT ({Math.round(breakdown.vatRate * 100)}%)
+                    </Text>
+                    <Text style={s.totalsValue}>{fmtMoney(breakdown.vatAmount)}</Text>
+                  </View>
+                )}
+                <View style={[s.totalsRow, s.totalDivider]}>
+                  <Text style={s.totalFinalLabel}>Total due</Text>
+                  <Text style={s.totalFinalValue}>{fmtMoney(breakdown.total)}</Text>
+                </View>
+              </>
+            )}
           </View>
         </View>
 
@@ -272,48 +451,52 @@ export function FinanceInvoicePdf({ invoice, profile }: Props) {
           </View>
         )}
 
-        {hasPaymentDetails && (
-          <View style={s.paymentBox}>
-            <Text style={[s.sectionLabel, { marginBottom: 10 }]}>Payment Details</Text>
-            {invoice.bank_name ? (
-              <View style={s.paymentRow}>
-                <Text style={s.paymentLabel}>Bank</Text>
-                <Text style={s.paymentValue}>{invoice.bank_name}</Text>
+        {/* ── Payment + notes ── */}
+        {(hasPaymentSection || invoice.notes) && (
+          <View style={s.paymentSection}>
+            {showOnline && (
+              <View>
+                <Text style={s.paymentLabel}>Payment</Text>
+                <Text
+                  style={{
+                    fontSize: 9,
+                    fontWeight: 500,
+                    color: ink,
+                    lineHeight: 1.55,
+                  }}
+                >
+                  This invoice is payable via Whop. You&rsquo;ll receive a separate Whop invoice with the secure payment link.
+                </Text>
               </View>
-            ) : null}
-            {invoice.account_name ? (
-              <View style={s.paymentRow}>
-                <Text style={s.paymentLabel}>Account Name</Text>
-                <Text style={s.paymentValue}>{invoice.account_name}</Text>
+            )}
+            {showBank && (
+              <View>
+                <Text style={s.paymentLabel}>Pay by bank transfer</Text>
+                <View style={s.paymentGrid}>
+                  {paymentFields.map((f) => (
+                    <View key={f.label} style={s.paymentField}>
+                      <Text style={s.paymentFieldLabel}>{f.label}</Text>
+                      <Text style={s.paymentFieldValue}>{f.value}</Text>
+                    </View>
+                  ))}
+                </View>
               </View>
+            )}
+            {invoice.notes ? (
+              <Text style={s.notesText}>{invoice.notes}</Text>
             ) : null}
-            {invoice.sort_code ? (
-              <View style={s.paymentRow}>
-                <Text style={s.paymentLabel}>Sort Code</Text>
-                <Text style={s.paymentValue}>{invoice.sort_code}</Text>
-              </View>
-            ) : null}
-            {invoice.account_number ? (
-              <View style={s.paymentRow}>
-                <Text style={s.paymentLabel}>Account Number</Text>
-                <Text style={s.paymentValue}>{invoice.account_number}</Text>
-              </View>
-            ) : null}
-            {invoice.notes ? <Text style={s.notesText}>{invoice.notes}</Text> : null}
           </View>
         )}
 
-        {!hasPaymentDetails && invoice.notes ? (
-          <View style={{ marginTop: 32 }}>
-            <Text style={s.sectionLabel}>Notes</Text>
-            <Text style={s.notesText}>{invoice.notes}</Text>
-          </View>
-        ) : null}
-
+        {/* ── Footer ── */}
         <View style={s.footer} fixed>
-          <Text style={s.footerText}>
-            {profile.legal_name} · {profile.address_lines.join(", ")} · Company No.{" "}
-            {profile.company_number}
+          <Text style={s.footerLeft}>
+            {profile.legal_name}
+            {profile.website ? ` · ${profile.website}` : ""}
+          </Text>
+          <Text style={s.footerRight}>
+            Company No. {profile.company_number}
+            {profile.vat_number ? ` · VAT ${profile.vat_number}` : ""}
           </Text>
         </View>
       </Page>

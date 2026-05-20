@@ -539,7 +539,7 @@ export function Sidebar() {
               onClick={() => setMobileOpen(false)}
               className="text-[11px] text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
             >
-              Launchpad v0.45.3
+              Launchpad v0.46.0
             </Link>
           </div>
         )}

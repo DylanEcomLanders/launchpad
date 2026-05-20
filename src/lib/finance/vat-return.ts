@@ -60,10 +60,13 @@ export interface VatReturn {
 }
 
 const TREATMENT_LABELS: Record<string, string> = {
-  uk_standard: "UK standard (20%)",
+  standard_20: "Standard 20% (added)",
+  inclusive_20: "Standard 20% (inclusive)",
+  outside_scope: "Outside scope",
   reverse_charge: "Reverse charge",
   zero_rated: "Zero-rated",
-  not_registered: "Not VAT registered",
+  exempt: "Exempt",
+  pre_vat_registration: "Pre-VAT registration",
   manual: "Manual VAT override",
 };
 

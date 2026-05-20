@@ -19,9 +19,29 @@ export function suggestVatTreatment(
   clientCountry: string,
   vatRegistered: boolean,
 ): VatTreatment {
-  if (!vatRegistered) return "not_registered";
-  if (clientCountry === "GB" || clientCountry === "UK") return "uk_standard";
+  if (!vatRegistered) return "pre_vat_registration";
+  if (clientCountry === "GB" || clientCountry === "UK") return "standard_20";
   return "reverse_charge";
+}
+
+/* UI-facing VAT mode. Maps to a vat_treatment value below depending
+ * on the client's country, so the form is a 3-button picker rather
+ * than the 8-option enum. */
+export type VatMode = "off" | "inclusive" | "exclusive";
+
+export function deriveVatTreatment(mode: VatMode, clientCountry: string): VatTreatment {
+  if (mode === "inclusive") return "inclusive_20";
+  if (mode === "exclusive") return "standard_20";
+  // off — pick the most accurate "no VAT" treatment from context
+  if (clientCountry === "GB" || clientCountry === "UK") return "pre_vat_registration";
+  return "reverse_charge";
+}
+
+/** Reverse — for hydrating the picker when loading an existing invoice. */
+export function vatTreatmentToMode(treatment: VatTreatment): VatMode {
+  if (treatment === "inclusive_20") return "inclusive";
+  if (treatment === "standard_20" || treatment === "manual") return "exclusive";
+  return "off";
 }
 
 export interface VatBreakdown {
@@ -41,51 +61,81 @@ export function calculateVatBreakdown(
   treatment: VatTreatment,
   manualOverride?: number,
 ): VatBreakdown {
-  const subtotal = round2(calculateLineSubtotal(items));
+  const lineTotal = round2(calculateLineSubtotal(items));
 
   switch (treatment) {
-    case "uk_standard": {
-      const vatAmount = round2(subtotal * UK_VAT_RATE);
+    case "standard_20": {
+      const vatAmount = round2(lineTotal * UK_VAT_RATE);
       return {
-        subtotal,
+        subtotal: lineTotal,
         vatRate: UK_VAT_RATE,
         vatAmount,
-        total: round2(subtotal + vatAmount),
+        total: round2(lineTotal + vatAmount),
         noteForInvoice: null,
+      };
+    }
+    case "inclusive_20": {
+      // Prices entered are gross. Extract the VAT component so HMRC
+      // reporting (Box 1, Box 6) and the customer's reclaim figures
+      // stay correct. subtotal = net, vatAmount = VAT, total = gross.
+      const net = round2(lineTotal / (1 + UK_VAT_RATE));
+      const vatAmount = round2(lineTotal - net);
+      return {
+        subtotal: net,
+        vatRate: UK_VAT_RATE,
+        vatAmount,
+        total: lineTotal,
+        noteForInvoice: "All prices on this invoice include 20% UK VAT.",
       };
     }
     case "reverse_charge":
       return {
-        subtotal,
+        subtotal: lineTotal,
         vatRate: 0,
         vatAmount: 0,
-        total: subtotal,
+        total: lineTotal,
         noteForInvoice:
           "Reverse charge: customer to account for VAT to HMRC (Article 196 VAT Directive 2006/112/EC).",
       };
     case "zero_rated":
       return {
-        subtotal,
+        subtotal: lineTotal,
         vatRate: 0,
         vatAmount: 0,
-        total: subtotal,
-        noteForInvoice: "Zero-rated for VAT (outside the scope of UK VAT).",
+        total: lineTotal,
+        noteForInvoice: "Zero-rated supply for VAT purposes.",
       };
-    case "not_registered":
+    case "outside_scope":
       return {
-        subtotal,
+        subtotal: lineTotal,
         vatRate: 0,
         vatAmount: 0,
-        total: subtotal,
+        total: lineTotal,
+        noteForInvoice: "Outside the scope of UK VAT.",
+      };
+    case "exempt":
+      return {
+        subtotal: lineTotal,
+        vatRate: 0,
+        vatAmount: 0,
+        total: lineTotal,
+        noteForInvoice: "Exempt from VAT.",
+      };
+    case "pre_vat_registration":
+      return {
+        subtotal: lineTotal,
+        vatRate: 0,
+        vatAmount: 0,
+        total: lineTotal,
         noteForInvoice: null,
       };
     case "manual": {
       const vatAmount = round2(manualOverride ?? 0);
       return {
-        subtotal,
-        vatRate: subtotal > 0 ? vatAmount / subtotal : 0,
+        subtotal: lineTotal,
+        vatRate: lineTotal > 0 ? vatAmount / lineTotal : 0,
         vatAmount,
-        total: round2(subtotal + vatAmount),
+        total: round2(lineTotal + vatAmount),
         noteForInvoice: null,
       };
     }

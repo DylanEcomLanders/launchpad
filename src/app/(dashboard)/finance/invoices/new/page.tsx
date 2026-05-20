@@ -8,7 +8,11 @@ import { ArrowPathIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { paymentTerms, type PaymentTerm } from "@/lib/config";
 import { inputClass, selectClass, labelClass, textareaClass } from "@/lib/form-styles";
 import { fmtMoney } from "@/lib/finance/data";
-import { calculateVatBreakdown, suggestVatTreatment } from "@/lib/finance/vat";
+import {
+  calculateVatBreakdown,
+  deriveVatTreatment,
+  type VatMode,
+} from "@/lib/finance/vat";
 import {
   invoiceDeliverables,
   deliverableCategories,
@@ -21,27 +25,16 @@ import {
   nowISO,
   uid,
 } from "@/lib/finance/data";
+import { VatModePicker } from "@/components/finance/vat-mode-picker";
+import { ClientPicker } from "@/components/finance/client-picker";
+import type { Client } from "@/lib/finance/types";
 import { loadCompanyProfile } from "@/lib/finance/profile";
 import type {
   InvoiceLineItem,
   InvoiceIssued,
-  VatTreatment,
+  InvoicePaymentMethod,
   CompanyProfile,
 } from "@/lib/finance/types";
-import { VAT_TREATMENT_LABELS } from "@/lib/finance/types";
-
-/* Common ISO2 country codes used by Ecomlanders clients. */
-const COMMON_COUNTRIES: { code: string; label: string }[] = [
-  { code: "GB", label: "United Kingdom" },
-  { code: "US", label: "United States" },
-  { code: "IE", label: "Ireland" },
-  { code: "AU", label: "Australia" },
-  { code: "CA", label: "Canada" },
-  { code: "NZ", label: "New Zealand" },
-  { code: "DE", label: "Germany" },
-  { code: "FR", label: "France" },
-  { code: "NL", label: "Netherlands" },
-];
 
 export default function NewInvoicePage() {
   const router = useRouter();
@@ -57,6 +50,9 @@ export default function NewInvoicePage() {
     "100% Upfront — Due Upon Receipt",
   );
 
+  // Client selection — snapshots into the invoice on save so historical
+  // PDFs render correctly even if the client's details change later.
+  const [clientId, setClientId] = useState<string | undefined>(undefined);
   const [clientName, setClientName] = useState("");
   const [contactName, setContactName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
@@ -66,10 +62,10 @@ export default function NewInvoicePage() {
   const [items, setItems] = useState<InvoiceLineItem[]>([]);
   const [selectedDeliverable, setSelectedDeliverable] = useState("");
 
-  const [vatTreatment, setVatTreatment] = useState<VatTreatment>("not_registered");
+  const [vatMode, setVatMode] = useState<VatMode>("off");
   const [vatTouched, setVatTouched] = useState(false);
-  const [vatOverride, setVatOverride] = useState<string>("0");
 
+  const [paymentMethod, setPaymentMethod] = useState<InvoicePaymentMethod>("online");
   const [bankName, setBankName] = useState("");
   const [accountName, setAccountName] = useState("");
   const [sortCode, setSortCode] = useState("");
@@ -84,7 +80,12 @@ export default function NewInvoicePage() {
       const p = await loadCompanyProfile();
       if (cancelled) return;
       setProfile(p);
-      setVatTreatment(suggestVatTreatment("GB", p.vat_registered));
+      // Default VAT mode: inclusive when company is VAT registered and
+      // client is UK (matches Ecomlanders' "for now, prices include VAT"
+      // transition strategy). User can flip to off / exclusive manually.
+      const isUK = clientCountry === "GB" || clientCountry === "UK";
+      setVatMode(p.vat_registered && isUK ? "inclusive" : "off");
+      setPaymentMethod(p.default_payment_method || "online");
       setBankName(p.default_bank_name || "");
       setAccountName(p.default_account_name || "");
       setSortCode(p.default_sort_code || "");
@@ -98,11 +99,12 @@ export default function NewInvoicePage() {
     };
   }, []);
 
-  /* Re-suggest VAT treatment when country or VAT registration changes,
-   * unless the user has already overridden it manually. */
+  /* Auto-flip VAT mode when country changes. UK + VAT-registered =
+   * inclusive (default), otherwise off. User overrides win. */
   useEffect(() => {
     if (vatTouched || !profile) return;
-    setVatTreatment(suggestVatTreatment(clientCountry, profile.vat_registered));
+    const isUK = clientCountry === "GB" || clientCountry === "UK";
+    setVatMode(profile.vat_registered && isUK ? "inclusive" : "off");
   }, [clientCountry, profile, vatTouched]);
 
   const addDeliverable = () => {
@@ -143,14 +145,14 @@ export default function NewInvoicePage() {
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...updates } : i)));
   };
 
+  const vatTreatment = useMemo(
+    () => deriveVatTreatment(vatMode, clientCountry),
+    [vatMode, clientCountry],
+  );
+
   const breakdown = useMemo(
-    () =>
-      calculateVatBreakdown(
-        items,
-        vatTreatment,
-        vatTreatment === "manual" ? Number(vatOverride) || 0 : undefined,
-      ),
-    [items, vatTreatment, vatOverride],
+    () => calculateVatBreakdown(items, vatTreatment),
+    [items, vatTreatment],
   );
 
   const canSave = clientName.trim() && items.length > 0;
@@ -170,6 +172,7 @@ export default function NewInvoicePage() {
       const invoice: InvoiceIssued = {
         id: uid(),
         invoice_number: finalNumber,
+        client_id: clientId,
         client_name: clientName.trim(),
         contact_name: contactName.trim() || undefined,
         client_email: clientEmail.trim() || undefined,
@@ -179,13 +182,27 @@ export default function NewInvoicePage() {
         due_date: dueDate,
         payment_term: paymentTerm || undefined,
         items,
+        currency: "GBP",
+        gross_amount: breakdown.total,
+        vat_amount: breakdown.vatAmount,
+        net_amount: breakdown.subtotal,
+        gbp_equivalent: breakdown.total, // GBP-native
         vat_treatment: vatTreatment,
-        vat_amount_override:
-          vatTreatment === "manual" ? Number(vatOverride) || 0 : undefined,
-        bank_name: bankName.trim() || undefined,
-        account_name: accountName.trim() || undefined,
-        sort_code: sortCode.trim() || undefined,
-        account_number: accountNumber.trim() || undefined,
+        payment_method: paymentMethod,
+        source_system: "direct",
+        bank_account_received_into:
+          paymentMethod === "online" ? "whop_balance" : "tide",
+        // Only persist bank fields when method is bank_transfer; keeps
+        // the data shape clean and ensures the PDF never shows stale
+        // bank details on a Whop-only invoice.
+        bank_name:
+          paymentMethod === "bank_transfer" ? bankName.trim() || undefined : undefined,
+        account_name:
+          paymentMethod === "bank_transfer" ? accountName.trim() || undefined : undefined,
+        sort_code:
+          paymentMethod === "bank_transfer" ? sortCode.trim() || undefined : undefined,
+        account_number:
+          paymentMethod === "bank_transfer" ? accountNumber.trim() || undefined : undefined,
         notes: notes.trim() || undefined,
         status,
         sent_date: status === "sent" ? now : undefined,
@@ -281,62 +298,30 @@ export default function NewInvoicePage() {
           <h3 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
             Client
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>Client / company name</label>
-              <input
-                type="text"
-                value={clientName}
-                onChange={(e) => setClientName(e.target.value)}
-                placeholder="e.g. Nutribloom"
-                className={inputClass}
-              />
+          <ClientPicker
+            clientId={clientId}
+            onSelect={(c: Client | null) => {
+              setClientId(c?.id);
+              setClientName(c?.name || "");
+              setContactName(c?.contact_name || "");
+              setClientEmail(c?.email || "");
+              setClientAddress(c?.address || "");
+              setClientCountry(c?.country || "GB");
+            }}
+          />
+          {clientId && (
+            <div className="mt-3 px-4 py-3 bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg text-xs text-[#7A7A7A]">
+              <div className="text-sm font-medium text-[#1B1B1B]">{clientName}</div>
+              {contactName && <div>{contactName}</div>}
+              {clientEmail && <div>{clientEmail}</div>}
+              {clientAddress && (
+                <div className="whitespace-pre-wrap mt-1">{clientAddress}</div>
+              )}
+              <div className="mt-1 text-[10px] text-[#A0A0A0]">
+                Country {clientCountry}. Snapshot will be written to the invoice on save.
+              </div>
             </div>
-            <div>
-              <label className={labelClass}>Contact name</label>
-              <input
-                type="text"
-                value={contactName}
-                onChange={(e) => setContactName(e.target.value)}
-                placeholder="e.g. Sarah Jones"
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Email</label>
-              <input
-                type="email"
-                value={clientEmail}
-                onChange={(e) => setClientEmail(e.target.value)}
-                placeholder="sarah@example.com"
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Country</label>
-              <select
-                value={clientCountry}
-                onChange={(e) => setClientCountry(e.target.value)}
-                className={selectClass}
-              >
-                {COMMON_COUNTRIES.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="md:col-span-2">
-              <label className={labelClass}>Billing address</label>
-              <textarea
-                value={clientAddress}
-                onChange={(e) => setClientAddress(e.target.value)}
-                placeholder="123 Main St&#10;London, UK"
-                rows={2}
-                className={textareaClass}
-              />
-            </div>
-          </div>
+          )}
         </section>
 
         <section>
@@ -461,43 +446,19 @@ export default function NewInvoicePage() {
           <h3 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
             VAT
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>VAT treatment</label>
-              <select
-                value={vatTreatment}
-                onChange={(e) => {
-                  setVatTreatment(e.target.value as VatTreatment);
-                  setVatTouched(true);
-                }}
-                className={selectClass}
-              >
-                {Object.entries(VAT_TREATMENT_LABELS).map(([k, label]) => (
-                  <option key={k} value={k}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-              {profile && !profile.vat_registered && vatTreatment === "uk_standard" && (
-                <p className="text-[11px] text-amber-700 mt-2">
-                  Profile is marked as not VAT registered. Update in /finance/settings before charging VAT.
-                </p>
-              )}
-            </div>
-            {vatTreatment === "manual" && (
-              <div>
-                <label className={labelClass}>Manual VAT amount (£)</label>
-                <input
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  value={vatOverride}
-                  onChange={(e) => setVatOverride(e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-            )}
-          </div>
+          <VatModePicker
+            mode={vatMode}
+            onChange={(next) => {
+              setVatMode(next);
+              setVatTouched(true);
+            }}
+            clientCountry={clientCountry}
+          />
+          {vatMode !== "off" && profile && !profile.vat_registered && (
+            <p className="text-[11px] text-amber-700 mt-2">
+              Heads-up: profile is marked as not VAT registered. Update in Settings before sending.
+            </p>
+          )}
         </section>
 
         {items.length > 0 && (
@@ -533,49 +494,69 @@ export default function NewInvoicePage() {
 
         <section>
           <h3 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
-            Payment details
+            Payment method
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>Bank name</label>
-              <input
-                type="text"
-                value={bankName}
-                onChange={(e) => setBankName(e.target.value)}
-                placeholder="e.g. Barclays"
-                className={inputClass}
-              />
+            <div className="md:col-span-2">
+              <label className={labelClass}>How does this client pay?</label>
+              <select
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value as InvoicePaymentMethod)}
+                className={selectClass}
+              >
+                <option value="online">Whop (online)</option>
+                <option value="bank_transfer">Bank transfer (Tide)</option>
+              </select>
+              <p className="text-[11px] text-[#A0A0A0] mt-1">
+                {paymentMethod === "online"
+                  ? "PDF will say payment is processed via Whop. The Whop invoice is handled separately."
+                  : "Bank details below print on the invoice PDF."}
+              </p>
             </div>
-            <div>
-              <label className={labelClass}>Account name</label>
-              <input
-                type="text"
-                value={accountName}
-                onChange={(e) => setAccountName(e.target.value)}
-                placeholder="e.g. Ecomlanders Ltd"
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Sort code</label>
-              <input
-                type="text"
-                value={sortCode}
-                onChange={(e) => setSortCode(e.target.value)}
-                placeholder="XX-XX-XX"
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Account number</label>
-              <input
-                type="text"
-                value={accountNumber}
-                onChange={(e) => setAccountNumber(e.target.value)}
-                placeholder="XXXXXXXX"
-                className={inputClass}
-              />
-            </div>
+            {paymentMethod === "bank_transfer" && (
+              <>
+                <div>
+                  <label className={labelClass}>Bank name</label>
+                  <input
+                    type="text"
+                    value={bankName}
+                    onChange={(e) => setBankName(e.target.value)}
+                    placeholder="e.g. Tide"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Account name</label>
+                  <input
+                    type="text"
+                    value={accountName}
+                    onChange={(e) => setAccountName(e.target.value)}
+                    placeholder="e.g. Ecomlanders Ltd"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Sort code</label>
+                  <input
+                    type="text"
+                    value={sortCode}
+                    onChange={(e) => setSortCode(e.target.value)}
+                    placeholder="XX-XX-XX"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Account number</label>
+                  <input
+                    type="text"
+                    value={accountNumber}
+                    onChange={(e) => setAccountNumber(e.target.value)}
+                    placeholder="XXXXXXXX"
+                    className={inputClass}
+                  />
+                </div>
+              </>
+            )}
           </div>
           <div className="mt-4">
             <label className={labelClass}>Notes</label>

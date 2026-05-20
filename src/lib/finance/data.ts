@@ -11,6 +11,7 @@ import type {
   Expense,
   FinanceDocument,
   CompanyProfile,
+  Client,
 } from "./types";
 
 export const invoicesIssuedStore = createFinanceStore<InvoiceIssued>(
@@ -24,6 +25,8 @@ export const documentsStore = createFinanceStore<FinanceDocument>("finance_docum
 export const companyProfileStore = createFinanceStore<CompanyProfile>(
   "finance_company_profile",
 );
+
+export const clientsStore = createFinanceStore<Client>("finance_clients");
 
 /* ── Helpers ── */
 

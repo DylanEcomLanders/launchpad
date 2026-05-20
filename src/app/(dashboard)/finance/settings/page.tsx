@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ArrowPathIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { loadCompanyProfile, saveCompanyProfile } from "@/lib/finance/profile";
+import type { InvoicePaymentMethod } from "@/lib/finance/types";
 import { inputClass, labelClass, textareaClass } from "@/lib/form-styles";
 
 interface MigrationResult {
@@ -29,6 +30,7 @@ export default function FinanceSettingsPage() {
   const [vatNumber, setVatNumber] = useState("");
   const [email, setEmail] = useState("");
   const [website, setWebsite] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<InvoicePaymentMethod>("online");
   const [bankName, setBankName] = useState("");
   const [accountName, setAccountName] = useState("");
   const [sortCode, setSortCode] = useState("");
@@ -48,6 +50,7 @@ export default function FinanceSettingsPage() {
       setVatNumber(p.vat_number || "");
       setEmail(p.email || "");
       setWebsite(p.website || "");
+      setPaymentMethod(p.default_payment_method || "online");
       setBankName(p.default_bank_name || "");
       setAccountName(p.default_account_name || "");
       setSortCode(p.default_sort_code || "");
@@ -72,6 +75,7 @@ export default function FinanceSettingsPage() {
         vat_number: vatRegistered ? vatNumber.trim() || null : null,
         email: email.trim() || undefined,
         website: website.trim() || undefined,
+        default_payment_method: paymentMethod,
         default_bank_name: bankName.trim() || undefined,
         default_account_name: accountName.trim() || undefined,
         default_sort_code: sortCode.trim() || undefined,
@@ -215,46 +219,66 @@ export default function FinanceSettingsPage() {
 
         <section>
           <h3 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
-            Default payment details (pre-fill on new invoices)
+            Default payment method (pre-fill on new invoices)
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>Bank name</label>
-              <input
-                type="text"
-                value={bankName}
-                onChange={(e) => setBankName(e.target.value)}
-                className={inputClass}
-              />
+            <div className="md:col-span-2">
+              <label className={labelClass}>Default method</label>
+              <select
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value as InvoicePaymentMethod)}
+                className={selectClass}
+              >
+                <option value="online">Whop (online)</option>
+                <option value="bank_transfer">Bank transfer (Tide)</option>
+              </select>
+              <p className="text-[11px] text-[#A0A0A0] mt-1">
+                {paymentMethod === "online"
+                  ? "PDF will say payment is processed via Whop; you handle the Whop invoice separately."
+                  : "Bank details below will print on every invoice."}
+              </p>
             </div>
-            <div>
-              <label className={labelClass}>Account name</label>
-              <input
-                type="text"
-                value={accountName}
-                onChange={(e) => setAccountName(e.target.value)}
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Sort code</label>
-              <input
-                type="text"
-                value={sortCode}
-                onChange={(e) => setSortCode(e.target.value)}
-                placeholder="XX-XX-XX"
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Account number</label>
-              <input
-                type="text"
-                value={accountNumber}
-                onChange={(e) => setAccountNumber(e.target.value)}
-                className={inputClass}
-              />
-            </div>
+            {paymentMethod === "bank_transfer" && (
+              <>
+                <div>
+                  <label className={labelClass}>Bank name</label>
+                  <input
+                    type="text"
+                    value={bankName}
+                    onChange={(e) => setBankName(e.target.value)}
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Account name</label>
+                  <input
+                    type="text"
+                    value={accountName}
+                    onChange={(e) => setAccountName(e.target.value)}
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Sort code</label>
+                  <input
+                    type="text"
+                    value={sortCode}
+                    onChange={(e) => setSortCode(e.target.value)}
+                    placeholder="XX-XX-XX"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Account number</label>
+                  <input
+                    type="text"
+                    value={accountNumber}
+                    onChange={(e) => setAccountNumber(e.target.value)}
+                    className={inputClass}
+                  />
+                </div>
+              </>
+            )}
             <div className="md:col-span-2">
               <label className={labelClass}>Default payment terms</label>
               <select

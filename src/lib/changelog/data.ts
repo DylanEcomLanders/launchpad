@@ -37,6 +37,20 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-73",
+    date: "20 May 2026",
+    version: "0.46.0",
+    title: "Finance: clients table, CSV bulk import, new VAT/source/currency schema",
+    changes: [
+      { type: "added", text: "Bulk invoice importer at /finance/import. Upload a CSV (invoice_number, client_name, issue_date, due_date, gross_amount, vat_amount, net_amount, vat_treatment, source_system, status required; everything else optional) and the server parses, upserts clients by name, snapshots client fields onto each invoice, and creates the records. Idempotent on invoice_number so re-running the same file skips already-imported rows. Returns per-row error detail (with row + field) so you can fix bad data and re-run. Built for the planned 213-row historical migration but generic enough for any CSV-formatted invoice source" },
+      { type: "added", text: "Clients master table (finance_clients) + ClientPicker component on the New Invoice form. Dropdown of existing clients with '+ Create new client' inline form; selecting a client snapshots name / contact / email / address / country onto the invoice (so historical PDFs render correctly even if the client's address changes later). Storage / RLS follow the same service-role-only pattern as the other finance_* tables (migration 017)" },
+      { type: "added", text: "New invoice fields aligned to the import spec: currency (GBP/USD/EUR/AUD/CAD, default GBP), gross_amount + vat_amount + net_amount snapshots (computed from line items for in-app invoices, taken directly from the CSV for imported ones), gbp_equivalent (the gross in GBP for multi-currency tracking), source_system (stripe / wise / whop / direct / manual), source_transaction_id, bank_account_received_into (tide / wise_gbp / wise_usd / wise_eur / whop_balance / other), tide_transaction_id. All optional except currency + the amounts which now always populate on save" },
+      { type: "added", text: "void status on InvoiceIssued. Cancelled-and-won't-be-paid state, distinct from disputed (which is parked pending correction). Adds the standard four-state lifecycle the import spec expects: draft / sent / paid / void" },
+      { type: "improved", text: "Renamed vat_treatment enum values to match the import spec exactly: uk_standard → standard_20, uk_inclusive → inclusive_20, not_registered → pre_vat_registration. Added outside_scope and exempt as new options. Updated everywhere they're referenced (vat.ts, calc.ts, vat-return.ts, types.ts, badges, filters, PDF rendering). No data migration needed since the only existing rows were the in-dev samples which were patched in place" },
+      { type: "added", text: "Migration 017_create_finance_clients.sql. Run in the Supabase SQL editor before using the importer or the new client picker. Creates the finance_clients table with RLS enabled but no anon policy — service-role only, same as the other finance_* tables post-016" },
+    ],
+  },
+  {
     id: "cl-72",
     date: "20 May 2026",
     version: "0.45.3",

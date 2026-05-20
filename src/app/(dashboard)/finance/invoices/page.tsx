@@ -57,8 +57,12 @@ export default function ReceivablesListPage() {
     const q = query.trim().toLowerCase();
     let rows = enriched.filter((i) => {
       if (statusFilter !== "all" && i.status !== statusFilter) return false;
-      if (vatFilter === "vat" && i.vat_treatment !== "uk_standard" && i.vat_treatment !== "manual") return false;
-      if (vatFilter === "no_vat" && (i.vat_treatment === "uk_standard" || i.vat_treatment === "manual")) return false;
+      const treatmentHasVat =
+        i.vat_treatment === "standard_20" ||
+        i.vat_treatment === "inclusive_20" ||
+        i.vat_treatment === "manual";
+      if (vatFilter === "vat" && !treatmentHasVat) return false;
+      if (vatFilter === "no_vat" && treatmentHasVat) return false;
       if (!q) return true;
       const hay = `${i.invoice_number} ${i.client_name}`.toLowerCase();
       return hay.includes(q);

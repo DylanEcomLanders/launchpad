@@ -16,7 +16,9 @@ import {
   EnvelopeIcon,
   DocumentIcon,
   ArrowPathIcon,
+  EyeIcon,
 } from "@heroicons/react/24/outline";
+import { InvoicePdfModal } from "@/components/finance/invoice-pdf-modal";
 import {
   invoicesIssuedStore,
   fmtMoney,
@@ -35,9 +37,11 @@ import {
   type InvoiceIssued,
   type InvoiceStatus,
   type InvoiceLineItem,
-  type VatTreatment,
+  type InvoicePaymentMethod,
   type CompanyProfile,
 } from "@/lib/finance/types";
+import { deriveVatTreatment, vatTreatmentToMode } from "@/lib/finance/vat";
+import { VatModePicker } from "@/components/finance/vat-mode-picker";
 import { inputClass, selectClass, labelClass, textareaClass } from "@/lib/form-styles";
 
 export default function InvoiceDetailPage() {
@@ -47,8 +51,7 @@ export default function InvoiceDetailPage() {
   const [profile, setProfile] = useState<CompanyProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
-  const [previewing, setPreviewing] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
   const [sendSuccess, setSendSuccess] = useState(false);
@@ -56,7 +59,6 @@ export default function InvoiceDetailPage() {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<InvoiceIssued | null>(null);
   const [saving, setSaving] = useState(false);
-  const previewBlobUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -74,15 +76,6 @@ export default function InvoiceDetailPage() {
       cancelled = true;
     };
   }, [params.id]);
-
-  // Revoke object URLs on unmount.
-  useEffect(() => {
-    return () => {
-      if (previewBlobUrlRef.current) {
-        URL.revokeObjectURL(previewBlobUrlRef.current);
-      }
-    };
-  }, []);
 
   async function updateStatus(status: InvoiceStatus, reason?: string) {
     if (!invoice) return;
@@ -131,22 +124,6 @@ export default function InvoiceDetailPage() {
       setError(err instanceof Error ? err.message : "PDF generation failed");
     } finally {
       setDownloading(false);
-    }
-  }
-
-  async function generatePreview() {
-    if (!invoice || !profile || previewUrl) return;
-    setPreviewing(true);
-    try {
-      const blob = await pdf(<FinanceInvoicePdf invoice={invoice} profile={profile} />).toBlob();
-      const url = URL.createObjectURL(blob);
-      if (previewBlobUrlRef.current) URL.revokeObjectURL(previewBlobUrlRef.current);
-      previewBlobUrlRef.current = url;
-      setPreviewUrl(url);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Preview generation failed");
-    } finally {
-      setPreviewing(false);
     }
   }
 
@@ -218,15 +195,12 @@ export default function InvoiceDetailPage() {
       const updated = await invoicesIssuedStore.update(draft.id, updates);
       if (updated) {
         setInvoice(updated);
-        // Invalidate any cached preview since data changed.
-        if (previewBlobUrlRef.current) {
-          URL.revokeObjectURL(previewBlobUrlRef.current);
-          previewBlobUrlRef.current = null;
-        }
-        setPreviewUrl(null);
       }
       setEditing(false);
       setDraft(null);
+      // Auto-open the preview modal so the founder can immediately
+      // grab the freshly-rendered PDF with the updated details.
+      setPreviewOpen(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed");
     } finally {
@@ -325,6 +299,14 @@ export default function InvoiceDetailPage() {
               className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E5E5EA] text-[#1B1B1B] text-sm rounded-lg hover:bg-[#F7F8FA]"
             >
               Resolve dispute
+            </button>
+          )}
+          {!editing && (
+            <button
+              onClick={() => setPreviewOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E5E5EA] text-[#1B1B1B] text-sm rounded-lg hover:bg-[#F7F8FA]"
+            >
+              <EyeIcon className="size-4" /> Preview
             </button>
           )}
           {!editing && (
@@ -447,23 +429,6 @@ export default function InvoiceDetailPage() {
                 </Card>
               )}
 
-              <Card title="PDF preview">
-                {!previewUrl ? (
-                  <button
-                    onClick={generatePreview}
-                    disabled={previewing}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E5E5EA] text-[#1B1B1B] text-sm rounded-lg hover:bg-[#F7F8FA] disabled:opacity-40"
-                  >
-                    {previewing ? "Rendering..." : "Generate preview"}
-                  </button>
-                ) : (
-                  <iframe
-                    src={previewUrl}
-                    className="w-full h-[640px] border border-[#E5E5EA] rounded-lg bg-white"
-                    title="Invoice PDF preview"
-                  />
-                )}
-              </Card>
             </div>
 
             <div className="space-y-6">
@@ -511,7 +476,10 @@ export default function InvoiceDetailPage() {
               </Card>
 
               <Card title="VAT">
-                <KV label="Treatment" value={VAT_TREATMENT_LABELS[invoice.vat_treatment]} />
+                <KV
+                  label="VAT"
+                  value={VAT_TREATMENT_LABELS[invoice.vat_treatment]}
+                />
                 <KV label="VAT charged" value={fmtMoney(breakdown.vatAmount)} />
               </Card>
 
@@ -520,23 +488,41 @@ export default function InvoiceDetailPage() {
                 onUpdated={(updated) => setInvoice(updated)}
               />
 
-              {(invoice.bank_name || invoice.account_number) && (
-                <Card title="Payment">
-                  {invoice.bank_name && <KV label="Bank" value={invoice.bank_name} />}
-                  {invoice.account_name && (
-                    <KV label="Account name" value={invoice.account_name} />
-                  )}
-                  {invoice.sort_code && <KV label="Sort code" value={invoice.sort_code} />}
-                  {invoice.account_number && (
-                    <KV label="Account #" value={invoice.account_number} />
-                  )}
-                  {invoice.payment_term && <KV label="Terms" value={invoice.payment_term} />}
-                </Card>
-              )}
+              <Card title="Payment">
+                <KV
+                  label="Method"
+                  value={
+                    invoice.payment_method === "bank_transfer"
+                      ? "Bank transfer"
+                      : "Whop (online)"
+                  }
+                />
+                {invoice.bank_name && <KV label="Bank" value={invoice.bank_name} />}
+                {invoice.account_name && (
+                  <KV label="Account name" value={invoice.account_name} />
+                )}
+                {invoice.sort_code && <KV label="Sort code" value={invoice.sort_code} />}
+                {invoice.account_number && (
+                  <KV label="Account #" value={invoice.account_number} />
+                )}
+                {invoice.payment_term && <KV label="Terms" value={invoice.payment_term} />}
+              </Card>
             </div>
           </div>
         </>
       )}
+
+      <InvoicePdfModal
+        open={previewOpen && !!profile}
+        onClose={() => setPreviewOpen(false)}
+        document={
+          invoice && profile ? (
+            <FinanceInvoicePdf invoice={invoice} profile={profile} />
+          ) : null
+        }
+        filename={`${invoice.invoice_number}-${invoice.client_name.replace(/\s+/g, "-")}.pdf`}
+        title={`Invoice ${invoice.invoice_number}`}
+      />
     </div>
   );
 }
@@ -642,7 +628,19 @@ function EditInvoiceForm({
             <input
               type="text"
               value={draft.client_country}
-              onChange={(e) => update("client_country", e.target.value.toUpperCase())}
+              onChange={(e) => {
+                const country = e.target.value.toUpperCase();
+                // Re-derive vat_treatment so the off-state correctly
+                // switches between pre_vat_registration (UK) and
+                // reverse_charge (non-UK). The VAT mode picker stays
+                // on the same position.
+                const currentMode = vatTreatmentToMode(draft.vat_treatment);
+                setDraft({
+                  ...draft,
+                  client_country: country,
+                  vat_treatment: deriveVatTreatment(currentMode, country),
+                });
+              }}
               maxLength={2}
               className={inputClass}
             />
@@ -749,35 +747,13 @@ function EditInvoiceForm({
         <h3 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
           VAT
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className={labelClass}>VAT treatment</label>
-            <select
-              value={draft.vat_treatment}
-              onChange={(e) => update("vat_treatment", e.target.value as VatTreatment)}
-              className={selectClass}
-            >
-              {Object.entries(VAT_TREATMENT_LABELS).map(([k, label]) => (
-                <option key={k} value={k}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
-          {draft.vat_treatment === "manual" && (
-            <div>
-              <label className={labelClass}>Manual VAT (£)</label>
-              <input
-                type="number"
-                min={0}
-                step={0.01}
-                value={draft.vat_amount_override ?? 0}
-                onChange={(e) => update("vat_amount_override", parseFloat(e.target.value) || 0)}
-                className={inputClass}
-              />
-            </div>
-          )}
-        </div>
+        <VatModePicker
+          mode={vatTreatmentToMode(draft.vat_treatment)}
+          onChange={(next) =>
+            update("vat_treatment", deriveVatTreatment(next, draft.client_country))
+          }
+          clientCountry={draft.client_country}
+        />
       </section>
 
       <section>
@@ -808,45 +784,67 @@ function EditInvoiceForm({
 
       <section>
         <h3 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
-          Payment details
+          Payment method
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className={labelClass}>Bank name</label>
-            <input
-              type="text"
-              value={draft.bank_name || ""}
-              onChange={(e) => update("bank_name", e.target.value)}
-              className={inputClass}
-            />
+          <div className="md:col-span-2">
+            <label className={labelClass}>How does this client pay?</label>
+            <select
+              value={draft.payment_method ?? "online"}
+              onChange={(e) =>
+                update("payment_method", e.target.value as InvoicePaymentMethod)
+              }
+              className={selectClass}
+            >
+              <option value="online">Whop (online)</option>
+              <option value="bank_transfer">Bank transfer (Tide)</option>
+            </select>
+            <p className="text-[11px] text-[#A0A0A0] mt-1">
+              {(draft.payment_method ?? "online") === "online"
+                ? "PDF will say payment is processed via Whop."
+                : "Bank details below print on the PDF."}
+            </p>
           </div>
-          <div>
-            <label className={labelClass}>Account name</label>
-            <input
-              type="text"
-              value={draft.account_name || ""}
-              onChange={(e) => update("account_name", e.target.value)}
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label className={labelClass}>Sort code</label>
-            <input
-              type="text"
-              value={draft.sort_code || ""}
-              onChange={(e) => update("sort_code", e.target.value)}
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label className={labelClass}>Account number</label>
-            <input
-              type="text"
-              value={draft.account_number || ""}
-              onChange={(e) => update("account_number", e.target.value)}
-              className={inputClass}
-            />
-          </div>
+          {(draft.payment_method ?? "online") === "bank_transfer" && (
+            <>
+              <div>
+                <label className={labelClass}>Bank name</label>
+                <input
+                  type="text"
+                  value={draft.bank_name || ""}
+                  onChange={(e) => update("bank_name", e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Account name</label>
+                <input
+                  type="text"
+                  value={draft.account_name || ""}
+                  onChange={(e) => update("account_name", e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Sort code</label>
+                <input
+                  type="text"
+                  value={draft.sort_code || ""}
+                  onChange={(e) => update("sort_code", e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Account number</label>
+                <input
+                  type="text"
+                  value={draft.account_number || ""}
+                  onChange={(e) => update("account_number", e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+            </>
+          )}
           <div className="md:col-span-2">
             <label className={labelClass}>Notes</label>
             <textarea
