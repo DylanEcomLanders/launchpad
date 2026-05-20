@@ -7,6 +7,8 @@ import {
   CheckCircleIcon,
   UsersIcon,
   DocumentTextIcon,
+  BuildingStorefrontIcon,
+  BanknotesIcon,
 } from "@heroicons/react/24/outline";
 
 interface InvoiceImportResult {
@@ -22,11 +24,30 @@ interface ClientImportResult {
   errors: string[];
 }
 
+interface SupplierImportResult {
+  imported: number;
+  skipped: number;
+  errors: string[];
+}
+
+interface ExpenseImportResult {
+  imported: number;
+  skipped: number;
+  suppliersCreated: number;
+  errors: string[];
+}
+
 const INVOICE_HEADER =
   "invoice_number,client_name,client_email,client_contact_name,client_address,client_country,issue_date,due_date,payment_date,currency,gross_amount,vat_amount,net_amount,gbp_equivalent,vat_treatment,source_system,source_transaction_id,bank_account_received_into,tide_transaction_id,status,notes";
 
 const CLIENT_HEADER =
   "customer,inferred_country,first_payment,last_payment,payment_count,total_gbp,sources_used,notes";
+
+const SUPPLIER_HEADER =
+  "supplier,first_transaction,last_transaction,transaction_count,total_spent,avg_per_transaction,default_category,default_vat_treatment,country,is_vat_registered,is_recurring,notes";
+
+const EXPENSE_HEADER =
+  "temp_id,expense_number,issue_date,payment_date,supplier,description,category,currency,amount_gbp,vat_amount_gbp,net_amount_gbp,vat_treatment,source_system,paid_from,status,tax_year";
 
 export default function ImportPage() {
   return (
@@ -34,7 +55,7 @@ export default function ImportPage() {
       <div>
         <h2 className="text-xl font-semibold text-[#1B1B1B] mb-1">Bulk import</h2>
         <p className="text-sm text-[#7A7A7A]">
-          Two-stage CSV import. Run clients first (so invoices can match by name) then invoices. Both endpoints are idempotent on the natural key (client name / invoice number).
+          Four-stage CSV import. Run masters first (clients, suppliers) so the transactional imports (invoices, expenses) can match by name. All four endpoints are idempotent on the natural key.
         </p>
       </div>
 
@@ -54,6 +75,24 @@ export default function ImportPage() {
         endpoint="/api/finance/import-invoices"
         headerReference={INVOICE_HEADER}
         ResultRenderer={InvoiceResult}
+      />
+
+      <ImportSection
+        title="Stage 3: Suppliers"
+        subtitle="Upload suppliers_master.csv. Skipped on duplicate name. Run this before expenses so the expense import can match suppliers by name."
+        icon={<BuildingStorefrontIcon className="size-5 text-[#7A7A7A]" />}
+        endpoint="/api/finance/import-suppliers"
+        headerReference={SUPPLIER_HEADER}
+        ResultRenderer={SupplierResult}
+      />
+
+      <ImportSection
+        title="Stage 4: Expenses"
+        subtitle="Upload expenses_master_clean.csv. Blank expense_numbers are auto-assigned (EXP-YYYY-NNN, counter resets per UK tax year). Skipped on duplicate expense_number."
+        icon={<BanknotesIcon className="size-5 text-[#7A7A7A]" />}
+        endpoint="/api/finance/import-expenses"
+        headerReference={EXPENSE_HEADER}
+        ResultRenderer={ExpenseResult}
       />
     </div>
   );
@@ -182,6 +221,39 @@ function InvoiceResult({ result }: { result: InvoiceImportResult }) {
         <li>{result.imported} invoice{result.imported === 1 ? "" : "s"} created</li>
         <li>{result.clientsCreated} new client{result.clientsCreated === 1 ? "" : "s"}</li>
         <li>{result.skipped} skipped (invoice_number already exists)</li>
+      </ul>
+      {result.errors.length > 0 && <ErrorDetails errors={result.errors} />}
+    </div>
+  );
+}
+
+function SupplierResult({ result }: { result: SupplierImportResult }) {
+  return (
+    <div className="px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-md text-xs text-emerald-900">
+      <div className="flex items-center gap-1.5 font-medium mb-1">
+        <CheckCircleIcon className="size-4" />
+        Import complete
+      </div>
+      <ul className="ml-5 list-disc space-y-0.5">
+        <li>{result.imported} supplier{result.imported === 1 ? "" : "s"} created</li>
+        <li>{result.skipped} skipped (name already exists)</li>
+      </ul>
+      {result.errors.length > 0 && <ErrorDetails errors={result.errors} />}
+    </div>
+  );
+}
+
+function ExpenseResult({ result }: { result: ExpenseImportResult }) {
+  return (
+    <div className="px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-md text-xs text-emerald-900">
+      <div className="flex items-center gap-1.5 font-medium mb-1">
+        <CheckCircleIcon className="size-4" />
+        Import complete
+      </div>
+      <ul className="ml-5 list-disc space-y-0.5">
+        <li>{result.imported} expense{result.imported === 1 ? "" : "s"} created</li>
+        <li>{result.suppliersCreated} new supplier{result.suppliersCreated === 1 ? "" : "s"}</li>
+        <li>{result.skipped} skipped (expense_number already exists)</li>
       </ul>
       {result.errors.length > 0 && <ErrorDetails errors={result.errors} />}
     </div>

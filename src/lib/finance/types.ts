@@ -169,8 +169,14 @@ export type ExpenseCategory =
   | "software"
   | "office"
   | "marketing"
+  | "advertising"            // paid ads (LinkedIn, X, Meta etc)
+  | "platform_fee"           // Stripe/Whop/Shopify processing fees
+  | "bank_fee"               // monthly/transactional bank charges
   | "professional_services"
   | "travel"
+  | "fuel"                   // petrol/diesel (subset of travel for reclaim tracking)
+  | "food_drink"             // client meals, team lunches, subsistence
+  | "entertainment"          // limited deductibility, separate from food_drink
   | "tax"
   | "other";
 
@@ -178,16 +184,75 @@ export type RecurringFrequency = "monthly" | "quarterly" | "annual";
 
 export type ExpenseStatus = "due" | "paid" | "overdue" | "disputed";
 
+/* Input-VAT semantics (mirror of invoice-side VatTreatment but framed for
+ * money going out). uk_20_reclaimable = supplier charged us 20% UK VAT
+ * which we can reclaim as input tax on the next VAT return. */
+export type ExpenseVatTreatment =
+  | "uk_20_reclaimable"      // UK VAT charged, reclaimable input
+  | "reverse_charge"         // non-UK B2B, we account for both sides
+  | "outside_scope"
+  | "zero_rated"
+  | "exempt"
+  | "pre_vat_registration"   // pre-registration, no reclaim
+  | "review_needed"          // flagged for manual classification
+  | "manual";                // override, see vat_amount_override
+
+/* Where the money left from. Differs from BankAccountReceivedInto because
+ * platform-fee deductions never hit our bank account at all — they're
+ * netted off the inbound payout. Keeping these separate avoids polluting
+ * the receivables enum with deduction concepts. */
+export type ExpenseSourceSystem =
+  | "tide_bank"
+  | "stripe_fees"
+  | "whop_fees"
+  | "shopify_fees"
+  | "wise"
+  | "card"
+  | "manual";
+
+export type ExpensePaidFrom =
+  | "tide"
+  | "wise_gbp"
+  | "wise_usd"
+  | "wise_eur"
+  | "stripe_deduction"
+  | "whop_deduction"
+  | "shopify_deduction"
+  | "card"
+  | "other";
+
 export interface Expense {
   id: string;
-  supplier_name: string;
+  supplier_id?: string;          // FK into finance_suppliers
+  supplier_name: string;         // snapshot for historical fidelity
   description?: string;
   category: ExpenseCategory;
-  amount: number;                // Gross amount paid/owed
+
+  /* ── Legacy single-amount fields ──
+   * Kept populated alongside the new amount_gbp split so any existing
+   * UI that reads .amount / .vat_included / .date_due / .date_paid keeps
+   * working after the bulk import lands. */
+  amount: number;                // Gross amount paid/owed (legacy mirror of amount_gbp)
   vat_included: boolean;
-  vat_amount?: number;           // Input VAT we can reclaim (if VAT registered)
-  date_due: string;              // YYYY-MM-DD
-  date_paid?: string;
+  vat_amount?: number;           // legacy mirror of vat_amount_gbp
+  date_due: string;              // YYYY-MM-DD (legacy mirror of issue_date)
+  date_paid?: string;            // legacy mirror of payment_date
+
+  /* ── New explicit shape (matches expenses_master_clean.csv) ── */
+  expense_number?: string;       // EXP-YYYY-NNN, tax-year-aware
+  issue_date?: string;           // YYYY-MM-DD — when the expense was incurred
+  payment_date?: string;         // YYYY-MM-DD — when it actually left the account
+  currency?: InvoiceCurrency;    // defaults GBP
+  amount_native?: number;        // gross in `currency`
+  amount_gbp?: number;           // gross in GBP (= amount_native if currency=GBP)
+  vat_amount_gbp?: number;       // input VAT we can reclaim, in GBP
+  net_amount_gbp?: number;       // amount_gbp - vat_amount_gbp
+  vat_treatment?: ExpenseVatTreatment;
+  vat_amount_override?: number;  // only used when vat_treatment === "manual"
+  source_system?: ExpenseSourceSystem;
+  paid_from?: ExpensePaidFrom;
+  tax_year?: string;             // e.g. "2025/26"
+
   status: ExpenseStatus;
   disputed_at?: string;
   disputed_reason?: string;
@@ -200,6 +265,29 @@ export interface Expense {
   /* migration breadcrumbs */
   legacy_source?: "company_invoices" | "tools_expenses";
   legacy_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/* ── Suppliers ──
+ * Master list of vendors we pay. Each Expense references a Supplier via
+ * supplier_id AND snapshots supplier_name onto the expense itself so
+ * renaming a supplier doesn't rewrite history. */
+export interface Supplier {
+  id: string;
+  name: string;
+  country?: string;              // ISO2 or free-form ("IE/US" for split entities)
+  default_category?: ExpenseCategory;
+  default_vat_treatment?: ExpenseVatTreatment;
+  is_vat_registered?: string;    // free-form ("Yes", "Yes (reverse charge)", "Check")
+  is_recurring?: string;         // free-form ("Monthly subscription", "Ad-hoc")
+  notes?: string;
+  /* Denormalised aggregates populated by the bulk import. */
+  first_transaction?: string;    // YYYY-MM-DD
+  last_transaction?: string;     // YYYY-MM-DD
+  transaction_count?: number;
+  total_spent?: number;          // GBP
+  avg_per_transaction?: number;  // GBP
   created_at: string;
   updated_at: string;
 }
@@ -277,9 +365,48 @@ export const EXPENSE_CATEGORY_LABELS: Record<ExpenseCategory, string> = {
   software: "Software / SaaS",
   office: "Office",
   marketing: "Marketing",
+  advertising: "Advertising",
+  platform_fee: "Platform Fees",
+  bank_fee: "Bank Fees",
   professional_services: "Professional Services",
   travel: "Travel",
+  fuel: "Fuel",
+  food_drink: "Food & Drink",
+  entertainment: "Entertainment",
   tax: "Tax",
+  other: "Other",
+};
+
+export const EXPENSE_VAT_TREATMENT_LABELS: Record<ExpenseVatTreatment, string> = {
+  uk_20_reclaimable: "UK 20% (reclaimable input VAT)",
+  reverse_charge: "Reverse charge (non-UK B2B)",
+  outside_scope: "Outside scope of UK VAT",
+  zero_rated: "Zero-rated",
+  exempt: "Exempt",
+  pre_vat_registration: "Pre-VAT registration",
+  review_needed: "Review needed",
+  manual: "Manual override",
+};
+
+export const EXPENSE_SOURCE_SYSTEM_LABELS: Record<ExpenseSourceSystem, string> = {
+  tide_bank: "Tide (bank)",
+  stripe_fees: "Stripe fees",
+  whop_fees: "Whop fees",
+  shopify_fees: "Shopify fees",
+  wise: "Wise",
+  card: "Card",
+  manual: "Manual entry",
+};
+
+export const EXPENSE_PAID_FROM_LABELS: Record<ExpensePaidFrom, string> = {
+  tide: "Tide",
+  wise_gbp: "Wise GBP",
+  wise_usd: "Wise USD",
+  wise_eur: "Wise EUR",
+  stripe_deduction: "Stripe (netted off payout)",
+  whop_deduction: "Whop (netted off payout)",
+  shopify_deduction: "Shopify (netted off payout)",
+  card: "Card",
   other: "Other",
 };
 
