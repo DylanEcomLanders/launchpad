@@ -25,6 +25,7 @@ const STATUS_BADGE: Record<ExpenseStatus, { bg: string; text: string; label: str
   due: { bg: "#FEF3C7", text: "#B45309", label: "Due" },
   paid: { bg: "#D1FAE5", text: "#047857", label: "Paid" },
   overdue: { bg: "#FEE2E2", text: "#B91C1C", label: "Overdue" },
+  disputed: { bg: "#FEF3C7", text: "#92400E", label: "Disputed" },
 };
 
 export default function ExpensesListPage() {
@@ -152,6 +153,7 @@ export default function ExpensesListPage() {
             <option value="due">Due</option>
             <option value="paid">Paid</option>
             <option value="overdue">Overdue</option>
+            <option value="disputed">Disputed</option>
           </select>
           <select
             value={categoryFilter}

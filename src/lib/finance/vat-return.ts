@@ -122,8 +122,11 @@ export function computeVatReturn(
     });
   }
 
-  /* ── Purchases side ── */
+  /* ── Purchases side ──
+   * Exclude disputed expenses from purchases (and therefore from
+   * Boxes 4 / 7 of the VAT return). They re-enter once resolved. */
   const recognisedPurchases = expenses.filter((e) => {
+    if (e.status === "disputed") return false;
     const date = basis === "cash" ? e.date_paid : e.date_due;
     return inRange(date, range);
   });

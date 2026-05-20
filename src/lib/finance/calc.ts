@@ -106,7 +106,10 @@ export function computePeriodTotals(
   }
   const revenueGross = round2(revenueNet + vatCollected);
 
-  const paidExpenses = expenses.filter((e) => inRange(e.date_paid, range));
+  // Exclude disputed expenses from totals — they're parked pending resolution.
+  const paidExpenses = expenses.filter(
+    (e) => e.status !== "disputed" && inRange(e.date_paid, range),
+  );
 
   let expensesGross = 0;
   let vatPaidInput = 0;
@@ -217,6 +220,7 @@ export function computeMonthlySeries(
   }
 
   for (const exp of expenses) {
+    if (exp.status === "disputed") continue;
     if (!exp.date_paid) continue;
     const m = exp.date_paid.slice(0, 7);
     if (!byMonth[m]) continue;
@@ -344,6 +348,7 @@ export function computeCommittedOutflow(
   const byFrequency: Record<string, number> = { monthly: 0, quarterly: 0, annual: 0 };
   for (const exp of expenses) {
     if (!exp.recurring) continue;
+    if (exp.status === "disputed") continue;
     let monthlyEquivalent = 0;
     if (exp.recurring === "monthly") monthlyEquivalent = exp.amount;
     else if (exp.recurring === "quarterly") monthlyEquivalent = exp.amount / 3;

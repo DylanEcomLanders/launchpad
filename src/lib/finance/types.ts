@@ -68,7 +68,7 @@ export type ExpenseCategory =
 
 export type RecurringFrequency = "monthly" | "quarterly" | "annual";
 
-export type ExpenseStatus = "due" | "paid" | "overdue";
+export type ExpenseStatus = "due" | "paid" | "overdue" | "disputed";
 
 export interface Expense {
   id: string;
@@ -81,6 +81,8 @@ export interface Expense {
   date_due: string;              // YYYY-MM-DD
   date_paid?: string;
   status: ExpenseStatus;
+  disputed_at?: string;
+  disputed_reason?: string;
   recurring?: RecurringFrequency;
   recurring_next_date?: string;  // next projected occurrence
   file_url?: string;

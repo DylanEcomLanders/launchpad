@@ -108,7 +108,8 @@ export function deriveInvoiceStatus(inv: InvoiceIssued): InvoiceIssued["status"]
 }
 
 export function deriveExpenseStatus(exp: Expense): Expense["status"] {
-  if (exp.status === "paid") return "paid";
+  // Sticky states (never auto-flipped to overdue).
+  if (exp.status === "paid" || exp.status === "disputed") return exp.status;
   if (exp.date_due && exp.date_due < todayISO()) return "overdue";
   return "due";
 }

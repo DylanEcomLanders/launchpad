@@ -37,6 +37,16 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-72",
+    date: "20 May 2026",
+    version: "0.45.3",
+    title: "Finance: Disputed status on expenses + PATCH null-as-delete fix",
+    changes: [
+      { type: "added", text: "Disputed status on expenses, mirroring the invoice flow. Mark Disputed prompts for an optional reason that surfaces on the detail page. Disputed expenses are excluded from: period totals (gross profit / expense category breakdown), monthly time series, committed recurring outflow projection, and Boxes 4 / 7 of the VAT return. List page gets a yellow Disputed badge and a Disputed filter option. Detail page gets a Status 'Change to' dropdown plus Mark Disputed / Resolve Dispute header buttons. Use this for supplier invoices you're querying without polluting the books" },
+      { type: "fixed", text: "PATCH /api/finance/store/[table]/[id] now treats null values as field deletions on the JSONB blob. Previously, passing `{ disputed_reason: undefined }` to expensesStore.update silently kept the old value because JSON.stringify strips undefined and the server-side merge re-applied the existing field. Resolving a dispute would leave stale disputed_at + disputed_reason visible on the detail page. Now both the server merge and the client-store wrapper handle this: client converts undefined to null on the wire, server deletes the key when value is null. Spotted by the smoke test of the new resolve-dispute flow" },
+    ],
+  },
+  {
     id: "cl-71",
     date: "20 May 2026",
     version: "0.45.2",

@@ -74,7 +74,18 @@ export async function PATCH(req: NextRequest, ctx: RouteParams) {
     const current = (existing as Record<string, unknown>).data as Record<string, unknown>;
     const { id: _ignore, ...patch } = updates as Record<string, unknown>;
     void _ignore;
-    const merged = { ...current, ...patch };
+    // Convention: a key with value `null` in the patch means "delete this
+    // field from the stored data". Lets clients clear optional fields,
+    // since JSON.stringify strips undefined and would otherwise leave
+    // stale values in place.
+    const merged: Record<string, unknown> = { ...current };
+    for (const [k, v] of Object.entries(patch)) {
+      if (v === null) {
+        delete merged[k];
+      } else {
+        merged[k] = v;
+      }
+    }
     const { error: updErr } = await sb.from(table).update({ data: merged }).eq("id", id);
     if (updErr) return NextResponse.json({ error: updErr.message }, { status: 500 });
     return NextResponse.json({ item: { ...merged, id } });

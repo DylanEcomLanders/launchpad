@@ -50,10 +50,18 @@ export function createFinanceStore<T extends Identified>(table: string): Finance
   }
 
   async function update(id: string, updates: Partial<T>): Promise<T | null> {
+    // Convert `undefined` values to `null` in the wire payload so the
+    // server can interpret them as explicit field deletions. Plain
+    // JSON.stringify strips undefined, which would otherwise leave the
+    // old value in place after a "clear" intent.
+    const wire: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(updates as Record<string, unknown>)) {
+      wire[k] = v === undefined ? null : v;
+    }
     const res = await fetch(`${base}/${encodeURIComponent(id)}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updates),
+      body: JSON.stringify(wire),
     });
     if (res.status === 404) return null;
     if (!res.ok) throw await asError(res, `update(${table}, ${id})`);

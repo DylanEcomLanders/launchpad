@@ -25,6 +25,7 @@ import {
   EXPENSE_CATEGORY_LABELS,
   type Expense,
   type ExpenseCategory,
+  type ExpenseStatus,
   type RecurringFrequency,
 } from "@/lib/finance/types";
 import { inputClass, selectClass, labelClass, textareaClass } from "@/lib/form-styles";
@@ -58,6 +59,8 @@ export default function ExpenseDetailPage() {
     const updated = await expensesStore.update(expense.id, {
       status: "paid",
       date_paid: expense.date_paid || todayISO(),
+      disputed_at: undefined,
+      disputed_reason: undefined,
       updated_at: nowISO(),
     });
     if (updated) setExpense(updated);
@@ -68,8 +71,39 @@ export default function ExpenseDetailPage() {
     const updated = await expensesStore.update(expense.id, {
       status: "due",
       date_paid: undefined,
+      disputed_at: undefined,
+      disputed_reason: undefined,
       updated_at: nowISO(),
     });
+    if (updated) setExpense(updated);
+  }
+
+  async function changeStatus(next: ExpenseStatus) {
+    if (!expense) return;
+    if (next === "disputed") {
+      const reason = window.prompt(
+        "Reason for dispute (optional, shown on the expense detail):",
+        expense.disputed_reason || "",
+      );
+      if (reason === null) return;
+      const updated = await expensesStore.update(expense.id, {
+        status: "disputed",
+        disputed_at: nowISO(),
+        disputed_reason: reason,
+        updated_at: nowISO(),
+      });
+      if (updated) setExpense(updated);
+      return;
+    }
+    const updates: Partial<Expense> = {
+      status: next,
+      disputed_at: undefined,
+      disputed_reason: undefined,
+      updated_at: nowISO(),
+    };
+    if (next === "paid" && !expense.date_paid) updates.date_paid = todayISO();
+    if (next === "due") updates.date_paid = undefined;
+    const updated = await expensesStore.update(expense.id, updates);
     if (updated) setExpense(updated);
   }
 
@@ -221,7 +255,7 @@ export default function ExpenseDetailPage() {
               <ForwardIcon className="size-4" /> {rolling ? "Rolling..." : "Roll forward"}
             </button>
           )}
-          {!editing && status !== "paid" && (
+          {!editing && status !== "paid" && status !== "disputed" && (
             <button
               onClick={markPaid}
               className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#047857] text-white text-sm rounded-lg hover:opacity-90"
@@ -235,6 +269,22 @@ export default function ExpenseDetailPage() {
               className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E5E5EA] text-[#1B1B1B] text-sm rounded-lg hover:bg-[#F7F8FA]"
             >
               Mark unpaid
+            </button>
+          )}
+          {!editing && status !== "disputed" && status !== "paid" && (
+            <button
+              onClick={() => changeStatus("disputed")}
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E5E5EA] text-[#92400E] text-sm rounded-lg hover:bg-amber-50"
+            >
+              Mark disputed
+            </button>
+          )}
+          {!editing && status === "disputed" && (
+            <button
+              onClick={() => changeStatus("due")}
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E5E5EA] text-[#1B1B1B] text-sm rounded-lg hover:bg-[#F7F8FA]"
+            >
+              Resolve dispute
             </button>
           )}
           {!editing && (
@@ -308,14 +358,36 @@ export default function ExpenseDetailPage() {
 
           <div className="space-y-6">
             <Card title="Status">
-              <KV
-                label="Current"
-                value={
-                  status === "paid" ? "Paid" : status === "overdue" ? "Overdue" : "Due"
-                }
-              />
+              <div>
+                <div className="text-[11px] uppercase tracking-wider text-[#A0A0A0] mb-1">
+                  Change to
+                </div>
+                <select
+                  value={status}
+                  onChange={(e) => changeStatus(e.target.value as ExpenseStatus)}
+                  className={selectClass}
+                >
+                  <option value="due">Due</option>
+                  <option value="paid">Paid</option>
+                  {status === "overdue" && <option value="overdue">Overdue (auto)</option>}
+                  <option value="disputed">Disputed</option>
+                </select>
+              </div>
               <KV label="Date due" value={fmtDateUK(expense.date_due)} />
               {expense.date_paid && <KV label="Date paid" value={fmtDateUK(expense.date_paid)} />}
+              {expense.disputed_at && (
+                <KV label="Disputed" value={fmtDateUK(expense.disputed_at)} />
+              )}
+              {expense.disputed_reason && (
+                <div>
+                  <div className="text-[11px] uppercase tracking-wider text-[#A0A0A0] mb-0.5">
+                    Reason
+                  </div>
+                  <div className="text-sm text-[#1B1B1B] whitespace-pre-wrap">
+                    {expense.disputed_reason}
+                  </div>
+                </div>
+              )}
             </Card>
 
             {expense.recurring && (
