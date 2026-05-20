@@ -25,6 +25,7 @@ import { financeServerClient, FinanceConfigError } from "@/lib/finance/server-su
 import {
   parseInvoiceCsv,
   assignTaxYearInvoiceNumbers,
+  maxInvoiceNumbersByTaxYear,
   findClient,
 } from "@/lib/finance/csv-import";
 import type { Client, InvoiceIssued } from "@/lib/finance/types";
@@ -42,18 +43,21 @@ export async function POST(req: NextRequest) {
 
   let csvText = "";
   let dryRun = false;
+  let strictMatch = false;
   const contentType = req.headers.get("content-type") || "";
   try {
     if (contentType.includes("application/json")) {
       const body = await req.json();
       csvText = String(body?.csv || "");
       dryRun = Boolean(body?.dry_run);
+      strictMatch = Boolean(body?.strict_match);
     } else {
       const form = await req.formData();
       const file = form.get("file") as File | null;
       if (!file) return NextResponse.json({ error: "No file" }, { status: 400 });
       csvText = await file.text();
       dryRun = String(form.get("dry_run") || "") === "true";
+      strictMatch = String(form.get("strict_match") || "") === "true";
     }
   } catch {
     return NextResponse.json({ error: "Could not read CSV" }, { status: 400 });
@@ -64,9 +68,6 @@ export async function POST(req: NextRequest) {
   }
 
   const parsed = parseInvoiceCsv(csvText);
-
-  // Fill in any blank invoice_numbers using UK-tax-year-aware sequencing.
-  assignTaxYearInvoiceNumbers(parsed.rows, "EL");
 
   let sb;
   try {
@@ -111,8 +112,13 @@ export async function POST(req: NextRequest) {
         const d = r.data as Record<string, unknown>;
         return (d?.invoice_number as string) || null;
       })
-      .filter(Boolean),
+      .filter(Boolean) as string[],
   );
+
+  // Compute the next-number baseline per tax year so this batch
+  // continues from EL-YYYY-(maxN + 1) instead of starting over at 001.
+  const startCounters = maxInvoiceNumbersByTaxYear(existingInvoiceNumbers, "EL");
+  assignTaxYearInvoiceNumbers(parsed.rows, "EL", startCounters);
 
   let imported = 0;
   let skipped = 0;
@@ -171,9 +177,17 @@ export async function POST(req: NextRequest) {
       continue;
     }
 
-    // Upsert client by name.
+    // Upsert client by name. When strict_match is on, fail the row
+    // instead of auto-creating — useful for two-stage imports where
+    // every client should already exist from a prior Stage-1 run.
     let client: Client | undefined = matchedClient ?? undefined;
     if (!client) {
+      if (strictMatch) {
+        errors.push(
+          `Row ${row.row}: no client match for "${row.clientName}" (strict mode, would have auto-created)`,
+        );
+        continue;
+      }
       const now = nowISO();
       const newClient: Client = {
         id: uid(),

@@ -124,6 +124,7 @@ const ALLOWED_SOURCES: Set<InvoiceSourceSystem> = new Set([
   "stripe",
   "wise",
   "whop",
+  "shopify",
   "tide_direct",
   "direct",
   "manual",
@@ -135,6 +136,7 @@ const ALLOWED_BANK_ACCOUNTS: Set<BankAccountReceivedInto> = new Set([
   "wise_usd",
   "wise_eur",
   "whop_balance",
+  "shopify_payments",
   "other",
 ]);
 
@@ -164,6 +166,8 @@ function deriveBankAccount(
       return "other";
     case "whop":
       return "whop_balance";
+    case "shopify":
+      return "shopify_payments";
     case "tide_direct":
     case "direct":
       return "tide";
@@ -184,10 +188,16 @@ function ukTaxYearStart(isoDate: string): number {
  * sequential numbering: sort by date ASC, walk through, assign
  * EL-YYYY-NNN where YYYY is the tax-year-start year and NNN resets at
  * each tax-year boundary. Rows with non-blank invoice_number are left
- * alone. Mutates the input array in place. */
+ * alone. Mutates the input array in place.
+ *
+ * `startCounters` lets the caller continue numbering from an existing
+ * baseline (e.g. {2025: 166, 2026: 33} after the first batch landed),
+ * so a subsequent import gets EL-2025-167 / EL-2026-034 onwards instead
+ * of duplicating numbers. */
 export function assignTaxYearInvoiceNumbers(
   rows: ParsedRow[],
   prefix = "EL",
+  startCounters: Record<number, number> = {},
 ): void {
   // Sort by date ASC (oldest first), preserving stable order on ties.
   const indexed = rows.map((r, i) => ({ r, i }));
@@ -195,13 +205,34 @@ export function assignTaxYearInvoiceNumbers(
     const cmp = a.r.invoice.invoice_date.localeCompare(b.r.invoice.invoice_date);
     return cmp !== 0 ? cmp : a.i - b.i;
   });
-  const counters: Record<number, number> = {};
+  const counters: Record<number, number> = { ...startCounters };
   for (const { r } of indexed) {
     if (r.invoice.invoice_number && r.invoice.invoice_number.trim() !== "") continue;
     const yearStart = ukTaxYearStart(r.invoice.invoice_date);
     counters[yearStart] = (counters[yearStart] ?? 0) + 1;
     r.invoice.invoice_number = `${prefix}-${yearStart}-${String(counters[yearStart]).padStart(3, "0")}`;
   }
+}
+
+/* Parse an existing pool of invoice_numbers (e.g. "EL-2025-145",
+ * "EL-2026-007") and return { taxYearStartYear: maxNNN } so the next
+ * import can continue numbering without clashes. Ignores any numbers
+ * that don't match the EL-YYYY-NNN pattern. */
+export function maxInvoiceNumbersByTaxYear(
+  invoiceNumbers: Iterable<string>,
+  prefix = "EL",
+): Record<number, number> {
+  const result: Record<number, number> = {};
+  const re = new RegExp(`^${prefix}-(\\d{4})-(\\d+)$`);
+  for (const num of invoiceNumbers) {
+    const m = num.match(re);
+    if (!m) continue;
+    const y = Number(m[1]);
+    const n = Number(m[2]);
+    if (!Number.isFinite(y) || !Number.isFinite(n)) continue;
+    if (!result[y] || n > result[y]) result[y] = n;
+  }
+  return result;
 }
 
 /* ── CSV parsing ──
@@ -457,22 +488,51 @@ export function parseInvoiceCsv(text: string): ParseResult {
 }
 
 /* ── Client matching ──
- * Match by name first (case-insensitive). If multiple matches, prefer
- * the one with the same email. If no match, returns null and caller
- * creates a new client. */
+ * Match order:
+ *   1. Exact name match (case-insensitive)
+ *   2. Email match (candidate.email == existing.email)
+ *   3. If candidate.name looks like an email, try matching it against
+ *      existing.email (handles the "looxeshop@gmail.com lookup against
+ *      already-imported 'Looxe LLC' client whose email field captured
+ *      the storefront email" case)
+ *
+ * Returns null if no match — caller decides whether to auto-create or
+ * fail loudly. */
 export function findClient(
   candidate: { name: string; email?: string },
   existing: Client[],
 ): Client | null {
-  const lower = candidate.name.trim().toLowerCase();
-  const matches = existing.filter((c) => c.name.trim().toLowerCase() === lower);
-  if (matches.length === 0) return null;
-  if (matches.length === 1) return matches[0];
-  if (candidate.email) {
-    const byEmail = matches.find(
-      (c) => (c.email || "").toLowerCase() === candidate.email!.toLowerCase(),
+  const lowerName = candidate.name.trim().toLowerCase();
+  const lowerEmail = candidate.email?.trim().toLowerCase();
+
+  // 1) Exact name match
+  const byName = existing.filter((c) => c.name.trim().toLowerCase() === lowerName);
+  if (byName.length === 1) return byName[0];
+  if (byName.length > 1) {
+    if (lowerEmail) {
+      const byEmailDisambig = byName.find(
+        (c) => (c.email || "").toLowerCase() === lowerEmail,
+      );
+      if (byEmailDisambig) return byEmailDisambig;
+    }
+    return byName[0];
+  }
+
+  // 2) Email match (candidate.email vs existing.email)
+  if (lowerEmail) {
+    const byEmail = existing.find(
+      (c) => (c.email || "").toLowerCase() === lowerEmail,
     );
     if (byEmail) return byEmail;
   }
-  return matches[0];
+
+  // 3) Name-as-email match (candidate.name is an email, try against existing.email)
+  if (/@/.test(candidate.name)) {
+    const byNameAsEmail = existing.find(
+      (c) => (c.email || "").toLowerCase() === lowerName,
+    );
+    if (byNameAsEmail) return byNameAsEmail;
+  }
+
+  return null;
 }

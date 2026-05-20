@@ -26,11 +26,13 @@ export type InvoiceCurrency =
 
 /* Where the invoice (or its payment) originated. Used for reconciliation
  * against bank deposits and source-system transactions.
- * `tide_direct` = direct bank deposit straight into Tide, no processor. */
+ * `tide_direct` = direct bank deposit straight into Tide, no processor.
+ * `shopify` = Ecomlanders' own Shopify storefront (Shopify Payments). */
 export type InvoiceSourceSystem =
   | "stripe"
   | "wise"
   | "whop"
+  | "shopify"
   | "tide_direct"
   | "direct"   // founder-issued, not via a payment processor
   | "manual";  // legacy / hand-recorded
@@ -41,6 +43,7 @@ export type BankAccountReceivedInto =
   | "wise_usd"
   | "wise_eur"
   | "whop_balance"
+  | "shopify_payments"
   | "other";
 
 /* ── Clients ──
