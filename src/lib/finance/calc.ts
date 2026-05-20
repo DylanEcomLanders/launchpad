@@ -6,6 +6,41 @@
 import type { InvoiceIssued, Expense } from "./types";
 import { calculateVatBreakdown } from "./vat";
 
+/* ── GBP-normalised totals for an invoice ──
+ *
+ * Used by dashboard / VAT return / threshold rollups so multi-currency
+ * data (USD/EUR via Stripe/Wise) folds correctly into a single GBP
+ * picture. Stored snapshot fields take precedence over re-deriving from
+ * line items, because for non-GBP rows the snapshot fields are in GBP
+ * (HMRC convention) while line items are in native currency.
+ *
+ * For invoices created in-app (always GBP), the snapshot fields are
+ * populated from calculateVatBreakdown at save time, so this stays
+ * consistent.
+ */
+function invoiceTotalsGbp(inv: InvoiceIssued): {
+  netGbp: number;
+  vatGbp: number;
+  grossGbp: number;
+} {
+  // Snapshot fields are populated on save (in-app) or by the CSV
+  // importer (which records GBP for non-GBP invoices). Fall back to
+  // calc for older invoices that pre-date the snapshot fields.
+  if (
+    typeof inv.gbp_equivalent === "number" &&
+    typeof inv.vat_amount === "number" &&
+    typeof inv.net_amount === "number"
+  ) {
+    return {
+      netGbp: inv.net_amount,
+      vatGbp: inv.vat_amount,
+      grossGbp: inv.gbp_equivalent,
+    };
+  }
+  const b = calculateVatBreakdown(inv.items, inv.vat_treatment, inv.vat_amount_override);
+  return { netGbp: b.subtotal, vatGbp: b.vatAmount, grossGbp: b.total };
+}
+
 export interface DateRange {
   start: string; // YYYY-MM-DD inclusive
   end: string;   // YYYY-MM-DD inclusive
@@ -96,13 +131,9 @@ export function computePeriodTotals(
   let revenueNet = 0;
   let vatCollected = 0;
   for (const inv of recognised) {
-    const b = calculateVatBreakdown(
-      inv.items,
-      inv.vat_treatment,
-      inv.vat_amount_override,
-    );
-    revenueNet += b.subtotal;
-    vatCollected += b.vatAmount;
+    const t = invoiceTotalsGbp(inv);
+    revenueNet += t.netGbp;
+    vatCollected += t.vatGbp;
   }
   const revenueGross = round2(revenueNet + vatCollected);
 
@@ -211,12 +242,8 @@ export function computeMonthlySeries(
     if (inv.status === "draft" || inv.status === "disputed") continue;
     const m = inv.invoice_date?.slice(0, 7);
     if (!m || !byMonth[m]) continue;
-    const b = calculateVatBreakdown(
-      inv.items,
-      inv.vat_treatment,
-      inv.vat_amount_override,
-    );
-    byMonth[m].revenue = round2(byMonth[m].revenue + b.subtotal);
+    const t = invoiceTotalsGbp(inv);
+    byMonth[m].revenue = round2(byMonth[m].revenue + t.netGbp);
   }
 
   for (const exp of expenses) {
@@ -300,12 +327,7 @@ export function computeVatThresholdStatus(
     if (inv.status === "draft" || inv.status === "disputed") continue;
     if (!inv.invoice_date) continue;
     if (inv.invoice_date < cutoffISO || inv.invoice_date > todayISO) continue;
-    const breakdown = calculateVatBreakdown(
-      inv.items,
-      inv.vat_treatment,
-      inv.vat_amount_override,
-    );
-    total += breakdown.subtotal;
+    total += invoiceTotalsGbp(inv).netGbp;
   }
   total = round2(total);
 

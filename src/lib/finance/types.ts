@@ -112,11 +112,16 @@ export interface InvoiceIssued {
   /* ── Source tracking & reconciliation ──
    * source_system tells us where the invoice originated; the source_id
    * + bank_account_received_into + tide_transaction_id together let us
-   * reconcile against bank statements. */
+   * reconcile against bank statements. fee_gbp captures the payment
+   * processor fee deducted (Stripe / Wise / Whop) so net-after-fee
+   * cashflow is accurate. */
   source_system?: InvoiceSourceSystem;
   source_transaction_id?: string;
   bank_account_received_into?: BankAccountReceivedInto;
   tide_transaction_id?: string;
+  fee_gbp?: number;
+  /* Client classification for VAT decision-making + segmentation. */
+  client_type?: "B2B" | "B2C";
 
   /* ── State & metadata ── */
   notes?: string;

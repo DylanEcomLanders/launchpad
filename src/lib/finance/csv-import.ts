@@ -63,18 +63,25 @@ export interface ParsedRow {
  *   standard_20 / manual → unit_price = NET (calc adds 20%)
  *   inclusive_20         → unit_price = GROSS (calc extracts 20%)
  *   everything else      → unit_price = GROSS (no VAT)
+ *
+ * Note on multi-currency: gross is in native currency. For non-GBP
+ * invoices the net/vat values supplied in the CSV are typically in
+ * GBP (HMRC convention) so they will only match the calc's native
+ * total for GBP invoices. The native-currency synthetic still
+ * displays correctly on the PDF.
  */
 function syntheticLineItem(
   net: number,
   gross: number,
   treatment: VatTreatment,
+  description?: string,
 ): InvoiceLineItem {
   const unitPrice =
     treatment === "standard_20" || treatment === "manual" ? net : gross;
   return {
     id: `imported-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
     type: "custom",
-    name: "Services rendered",
+    name: description?.trim() || "Services rendered",
     quantity: 1,
     unitPrice,
   };
@@ -223,10 +230,17 @@ export function parseInvoiceCsv(text: string): ParseResult {
     const invoiceNumber = pick(obj, "invoice_number");
     const clientName = pick(obj, "client_name");
     const issueDate = pick(obj, "issue_date", "invoice_date");
-    const dueDate = pick(obj, "due_date");
-    const grossStr = pick(obj, "gross_amount", "amount");
-    const vatStr = pick(obj, "vat_amount");
-    const netStr = pick(obj, "net_amount");
+    // due_date defaults to issue_date when not provided (common for paid-
+    // on-issue Stripe/Whop checkouts where there's no formal due date).
+    const dueDateExplicit = pick(obj, "due_date");
+    // Accept either gross_amount (single-currency) or gross_native +
+    // gross_gbp (the founder's CSV uses the latter for multi-currency
+    // tracking). vat/net_amount likewise have _gbp aliases since the
+    // founder always stores those in GBP.
+    const grossStr = pick(obj, "gross_amount", "gross_native", "amount");
+    const grossGbpStr = pick(obj, "gbp_equivalent", "gross_gbp");
+    const vatStr = pick(obj, "vat_amount", "vat_amount_gbp");
+    const netStr = pick(obj, "net_amount", "net_amount_gbp");
     const treatment = pick(obj, "vat_treatment") as VatTreatment | undefined;
     const source = pick(obj, "source_system") as InvoiceSourceSystem | undefined;
     const status = (pick(obj, "status") || "paid") as InvoiceStatus;
@@ -243,20 +257,25 @@ export function parseInvoiceCsv(text: string): ParseResult {
       result.errors.push({ row: rowNumber, field: "issue_date", message: "Required" });
       continue;
     }
-    if (!dueDate) {
-      result.errors.push({ row: rowNumber, field: "due_date", message: "Required" });
-      continue;
-    }
+    const dueDate = dueDateExplicit || issueDate;
 
     const gross = parseNumber(grossStr);
     const vat = parseNumber(vatStr) ?? 0;
     const net = parseNumber(netStr);
     if (gross === null) {
-      result.errors.push({ row: rowNumber, field: "gross_amount", message: "Invalid number" });
+      result.errors.push({
+        row: rowNumber,
+        field: "gross_amount",
+        message: "Invalid number (looked for gross_amount, gross_native, amount)",
+      });
       continue;
     }
     if (net === null) {
-      result.errors.push({ row: rowNumber, field: "net_amount", message: "Invalid number" });
+      result.errors.push({
+        row: rowNumber,
+        field: "net_amount",
+        message: "Invalid number (looked for net_amount, net_amount_gbp)",
+      });
       continue;
     }
     if (!treatment || !ALLOWED_VAT_TREATMENTS.has(treatment)) {
@@ -287,18 +306,24 @@ export function parseInvoiceCsv(text: string): ParseResult {
     /* Optional fields ----------------------------------------------------- */
     const currencyRaw = (pick(obj, "currency") || "GBP").toUpperCase() as InvoiceCurrency;
     const currency = ALLOWED_CURRENCIES.has(currencyRaw) ? currencyRaw : "GBP";
-    const gbpEquivalentParsed = parseNumber(pick(obj, "gbp_equivalent"));
     const gbpEquivalent =
-      gbpEquivalentParsed !== null ? gbpEquivalentParsed : currency === "GBP" ? gross : gross;
+      parseNumber(grossGbpStr) ?? (currency === "GBP" ? gross : gross);
     const paymentDate = pick(obj, "payment_date", "paid_date");
-    const sourceTxnId = pick(obj, "source_transaction_id");
-    const bankRaw = pick(obj, "bank_account_received_into") as
-      | BankAccountReceivedInto
-      | undefined;
+    const sourceTxnId = pick(obj, "source_transaction_id", "source_reference");
+    const bankRaw = pick(
+      obj,
+      "bank_account_received_into",
+      "bank_received_into",
+    ) as BankAccountReceivedInto | undefined;
     const bankAccount =
       bankRaw && ALLOWED_BANK_ACCOUNTS.has(bankRaw) ? bankRaw : undefined;
     const tideTxnId = pick(obj, "tide_transaction_id");
     const notes = pick(obj, "notes");
+    const description = pick(obj, "description");
+    const feeGbp = parseNumber(pick(obj, "fee_gbp"));
+    const clientTypeRaw = pick(obj, "client_type")?.toUpperCase();
+    const clientType: "B2B" | "B2C" | undefined =
+      clientTypeRaw === "B2B" ? "B2B" : clientTypeRaw === "B2C" ? "B2C" : undefined;
 
     const clientEmail = pick(obj, "client_email");
     const clientContactName = pick(obj, "client_contact_name", "contact_name");
@@ -317,7 +342,7 @@ export function parseInvoiceCsv(text: string): ParseResult {
         invoice_date: issueDate,
         due_date: dueDate,
         paid_date: paymentDate,
-        items: [syntheticLineItem(net, gross, treatment)],
+        items: [syntheticLineItem(net, gross, treatment, description)],
         currency,
         gross_amount: gross,
         vat_amount: vat,
@@ -328,6 +353,8 @@ export function parseInvoiceCsv(text: string): ParseResult {
         source_transaction_id: sourceTxnId,
         bank_account_received_into: bankAccount,
         tide_transaction_id: tideTxnId,
+        fee_gbp: feeGbp ?? undefined,
+        client_type: clientType,
         notes,
         status,
       },

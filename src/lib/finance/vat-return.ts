@@ -106,11 +106,29 @@ export function computeVatReturn(
   const sales: SalesRow[] = [];
 
   for (const inv of recognisedSales) {
-    const b = calculateVatBreakdown(inv.items, inv.vat_treatment, inv.vat_amount_override);
-    box1 += b.vatAmount;
-    box6 += b.subtotal;
+    // Multi-currency-safe: prefer stored GBP snapshots over re-deriving
+    // from line items (which would be in native currency for non-GBP
+    // invoices). HMRC requires all VAT-return figures in GBP.
+    const hasGbpSnapshot =
+      typeof inv.gbp_equivalent === "number" &&
+      typeof inv.vat_amount === "number" &&
+      typeof inv.net_amount === "number";
+    const net = hasGbpSnapshot ? inv.net_amount : 0;
+    const vat = hasGbpSnapshot ? inv.vat_amount : 0;
+    const gross = hasGbpSnapshot ? inv.gbp_equivalent : 0;
+    let netFallback = net;
+    let vatFallback = vat;
+    let grossFallback = gross;
+    if (!hasGbpSnapshot) {
+      const b = calculateVatBreakdown(inv.items, inv.vat_treatment, inv.vat_amount_override);
+      netFallback = b.subtotal;
+      vatFallback = b.vatAmount;
+      grossFallback = b.total;
+    }
+    box1 += vatFallback;
+    box6 += netFallback;
     if (inv.vat_treatment === "reverse_charge") {
-      reverseChargeTotal += b.subtotal;
+      reverseChargeTotal += netFallback;
     }
     sales.push({
       invoice_number: inv.invoice_number,
@@ -118,9 +136,9 @@ export function computeVatReturn(
       client_name: inv.client_name,
       client_country: inv.client_country,
       treatment: TREATMENT_LABELS[inv.vat_treatment] ?? inv.vat_treatment,
-      net: round2(b.subtotal),
-      vat: round2(b.vatAmount),
-      gross: round2(b.total),
+      net: round2(netFallback),
+      vat: round2(vatFallback),
+      gross: round2(grossFallback),
       is_reverse_charge: inv.vat_treatment === "reverse_charge",
     });
   }
