@@ -137,6 +137,72 @@ const ALLOWED_BANK_ACCOUNTS: Set<BankAccountReceivedInto> = new Set([
   "other",
 ]);
 
+/* Auto-derive the bank account from source + currency when the CSV
+ * doesn't specify it. Mirrors the four real-world flows:
+ *   stripe       → "other"        (sits in Stripe balance until payout)
+ *   wise + GBP   → "wise_gbp"
+ *   wise + USD   → "wise_usd"
+ *   wise + EUR   → "wise_eur"
+ *   wise + other → "other"        (less common currencies pool)
+ *   whop         → "whop_balance"
+ *   tide_direct  → "tide"
+ *   direct       → "tide"         (founder-issued, lands in Tide)
+ */
+function deriveBankAccount(
+  source: InvoiceSourceSystem | undefined,
+  currency: InvoiceCurrency,
+): BankAccountReceivedInto | undefined {
+  if (!source) return undefined;
+  switch (source) {
+    case "stripe":
+      return "other";
+    case "wise":
+      if (currency === "GBP") return "wise_gbp";
+      if (currency === "USD") return "wise_usd";
+      if (currency === "EUR") return "wise_eur";
+      return "other";
+    case "whop":
+      return "whop_balance";
+    case "tide_direct":
+    case "direct":
+      return "tide";
+    default:
+      return undefined;
+  }
+}
+
+/* UK tax year starts 6 April. Returns the start-year string used in the
+ * invoice number prefix: "EL-2024-..." for dates in 2024/25, etc. */
+function ukTaxYearStart(isoDate: string): number {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  const beforeApril6 = m < 4 || (m === 4 && d < 6);
+  return beforeApril6 ? y - 1 : y;
+}
+
+/* Fills blank invoice_numbers in a ParsedRow[] using tax-year-aware
+ * sequential numbering: sort by date ASC, walk through, assign
+ * EL-YYYY-NNN where YYYY is the tax-year-start year and NNN resets at
+ * each tax-year boundary. Rows with non-blank invoice_number are left
+ * alone. Mutates the input array in place. */
+export function assignTaxYearInvoiceNumbers(
+  rows: ParsedRow[],
+  prefix = "EL",
+): void {
+  // Sort by date ASC (oldest first), preserving stable order on ties.
+  const indexed = rows.map((r, i) => ({ r, i }));
+  indexed.sort((a, b) => {
+    const cmp = a.r.invoice.invoice_date.localeCompare(b.r.invoice.invoice_date);
+    return cmp !== 0 ? cmp : a.i - b.i;
+  });
+  const counters: Record<number, number> = {};
+  for (const { r } of indexed) {
+    if (r.invoice.invoice_number && r.invoice.invoice_number.trim() !== "") continue;
+    const yearStart = ukTaxYearStart(r.invoice.invoice_date);
+    counters[yearStart] = (counters[yearStart] ?? 0) + 1;
+    r.invoice.invoice_number = `${prefix}-${yearStart}-${String(counters[yearStart]).padStart(3, "0")}`;
+  }
+}
+
 /* ── CSV parsing ──
  * Handles quoted fields with commas and escaped quotes. Not a full RFC
  * 4180 parser but good enough for the kind of CSVs Stripe/Wise/Whop emit. */
@@ -227,41 +293,54 @@ export function parseInvoiceCsv(text: string): ParseResult {
     });
 
     /* Required fields ----------------------------------------------------- */
-    const invoiceNumber = pick(obj, "invoice_number");
-    const clientName = pick(obj, "client_name");
-    const issueDate = pick(obj, "issue_date", "invoice_date");
+    // invoice_number is optional in the CSV — if blank, assignTaxYearInvoiceNumbers
+    // fills it in after parsing using the UK tax-year cohort.
+    const invoiceNumber = pick(obj, "invoice_number") || "";
+    const clientName = pick(obj, "client_name", "customer");
+    // Accept "date" alias for the founder's import format (their CSV
+    // uses `date` rather than `issue_date`).
+    const issueDate = pick(obj, "issue_date", "invoice_date", "date");
     // due_date defaults to issue_date when not provided (common for paid-
     // on-issue Stripe/Whop checkouts where there's no formal due date).
     const dueDateExplicit = pick(obj, "due_date");
     // Accept either gross_amount (single-currency) or gross_native +
     // gross_gbp (the founder's CSV uses the latter for multi-currency
-    // tracking). vat/net_amount likewise have _gbp aliases since the
-    // founder always stores those in GBP.
+    // tracking). vat/net likewise have _gbp aliases since the founder
+    // always stores those in GBP.
     const grossStr = pick(obj, "gross_amount", "gross_native", "amount");
     const grossGbpStr = pick(obj, "gbp_equivalent", "gross_gbp");
     const vatStr = pick(obj, "vat_amount", "vat_amount_gbp");
-    const netStr = pick(obj, "net_amount", "net_amount_gbp");
-    const treatment = pick(obj, "vat_treatment") as VatTreatment | undefined;
+    const netStr = pick(obj, "net_amount", "net_amount_gbp", "net_gbp");
+    // vat_treatment defaults to pre_vat_registration for blank rows
+    // (matches the bulk historical import use-case).
+    const treatmentRaw = pick(obj, "vat_treatment");
+    const treatment = (treatmentRaw || "pre_vat_registration") as VatTreatment;
     const source = pick(obj, "source_system") as InvoiceSourceSystem | undefined;
     const status = (pick(obj, "status") || "paid") as InvoiceStatus;
 
-    if (!invoiceNumber) {
-      result.errors.push({ row: rowNumber, field: "invoice_number", message: "Required" });
-      continue;
-    }
     if (!clientName) {
-      result.errors.push({ row: rowNumber, field: "client_name", message: "Required" });
+      result.errors.push({
+        row: rowNumber,
+        field: "client_name",
+        message: "Required (looked for client_name, customer)",
+      });
       continue;
     }
     if (!issueDate) {
-      result.errors.push({ row: rowNumber, field: "issue_date", message: "Required" });
+      result.errors.push({
+        row: rowNumber,
+        field: "issue_date",
+        message: "Required (looked for issue_date, invoice_date, date)",
+      });
       continue;
     }
     const dueDate = dueDateExplicit || issueDate;
 
     const gross = parseNumber(grossStr);
     const vat = parseNumber(vatStr) ?? 0;
-    const net = parseNumber(netStr);
+    // net defaults to gross when not provided and vat is 0 (typical for
+    // pre_vat_registration imports where net == gross).
+    const netParsed = parseNumber(netStr);
     if (gross === null) {
       result.errors.push({
         row: rowNumber,
@@ -270,15 +349,8 @@ export function parseInvoiceCsv(text: string): ParseResult {
       });
       continue;
     }
-    if (net === null) {
-      result.errors.push({
-        row: rowNumber,
-        field: "net_amount",
-        message: "Invalid number (looked for net_amount, net_amount_gbp)",
-      });
-      continue;
-    }
-    if (!treatment || !ALLOWED_VAT_TREATMENTS.has(treatment)) {
+    const net = netParsed !== null ? netParsed : gross - vat;
+    if (!ALLOWED_VAT_TREATMENTS.has(treatment)) {
       result.errors.push({
         row: rowNumber,
         field: "vat_treatment",
@@ -314,9 +386,14 @@ export function parseInvoiceCsv(text: string): ParseResult {
       obj,
       "bank_account_received_into",
       "bank_received_into",
+      "paid_into",
     ) as BankAccountReceivedInto | undefined;
+    // Derive from source+currency when the CSV doesn't specify (the
+    // historical import has blank paid_into for all 213 rows).
     const bankAccount =
-      bankRaw && ALLOWED_BANK_ACCOUNTS.has(bankRaw) ? bankRaw : undefined;
+      bankRaw && ALLOWED_BANK_ACCOUNTS.has(bankRaw)
+        ? bankRaw
+        : deriveBankAccount(source, currency);
     const tideTxnId = pick(obj, "tide_transaction_id");
     const notes = pick(obj, "notes");
     const description = pick(obj, "description");

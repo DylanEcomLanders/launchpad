@@ -13,15 +13,25 @@ export type InvoiceStatus =
 
 export type InvoicePaymentMethod = "online" | "bank_transfer";
 
-/* Currency codes seen historically across Stripe / Wise / Whop / direct. */
-export type InvoiceCurrency = "GBP" | "USD" | "EUR" | "AUD" | "CAD";
+/* Currency codes seen historically across Stripe / Wise / Whop / direct.
+ * Extended set covers everything in the historical import (incl. MYR/SEK). */
+export type InvoiceCurrency =
+  | "GBP"
+  | "USD"
+  | "EUR"
+  | "AUD"
+  | "CAD"
+  | "MYR"   // Malaysian Ringgit
+  | "SEK";  // Swedish Krona
 
 /* Where the invoice (or its payment) originated. Used for reconciliation
- * against bank deposits and source-system transactions. */
+ * against bank deposits and source-system transactions.
+ * `tide_direct` = direct bank deposit straight into Tide, no processor. */
 export type InvoiceSourceSystem =
   | "stripe"
   | "wise"
   | "whop"
+  | "tide_direct"
   | "direct"   // founder-issued, not via a payment processor
   | "manual";  // legacy / hand-recorded
 
@@ -44,8 +54,16 @@ export interface Client {
   contact_name?: string;
   email?: string;
   address?: string;
-  country: string;   // ISO2, defaults "GB"
+  country?: string;   // ISO2; optional since historical imports often lack country info
   notes?: string;
+  /* Denormalised LTV / payment-history fields populated by the bulk
+   * import. Useful for "top clients" lists and segmentation without
+   * having to re-aggregate every invoice on every page render. */
+  first_payment_date?: string;
+  last_payment_date?: string;
+  payment_count?: number;
+  lifetime_value?: number;       // sum of gbp_equivalent across their invoices
+  sources?: string[];            // distinct source_system values, e.g. ["stripe", "whop"]
   created_at: string;
   updated_at: string;
 }
