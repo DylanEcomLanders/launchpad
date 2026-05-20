@@ -311,7 +311,12 @@ export function parseInvoiceCsv(text: string): ParseResult {
     const grossStr = pick(obj, "gross_amount", "gross_native", "amount");
     const grossGbpStr = pick(obj, "gbp_equivalent", "gross_gbp");
     const vatStr = pick(obj, "vat_amount", "vat_amount_gbp");
-    const netStr = pick(obj, "net_amount", "net_amount_gbp", "net_gbp");
+    // IMPORTANT: do NOT alias `net_gbp` here. In Ecomlanders' historical
+    // reconciliation CSV, `net_gbp` = gross minus PROCESSOR FEES (which
+    // is a cashflow figure, not an accounting one). Our `net_amount`
+    // field means gross MINUS VAT, which is a different concept.
+    // Processor fees live in fee_gbp; never conflate the two.
+    const netStr = pick(obj, "net_amount", "net_amount_gbp");
     // vat_treatment defaults to pre_vat_registration for blank rows
     // (matches the bulk historical import use-case).
     const treatmentRaw = pick(obj, "vat_treatment");
@@ -350,7 +355,10 @@ export function parseInvoiceCsv(text: string): ParseResult {
       });
       continue;
     }
-    const net = netParsed !== null ? netParsed : gross - vat;
+    // When VAT is zero, net always equals gross (there's nothing to
+    // subtract). Defending against CSVs that supply a different
+    // "net" value that actually means post-fee cashflow.
+    const net = vat === 0 ? gross : netParsed !== null ? netParsed : gross - vat;
     if (!ALLOWED_VAT_TREATMENTS.has(treatment)) {
       result.errors.push({
         row: rowNumber,
