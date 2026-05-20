@@ -124,6 +124,7 @@ const ALLOWED_SOURCES: Set<InvoiceSourceSystem> = new Set([
   "stripe",
   "wise",
   "whop",
+  "tide_direct",
   "direct",
   "manual",
 ]);
