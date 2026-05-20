@@ -365,22 +365,30 @@ export default function InvoiceDetailPage() {
         />
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-2 space-y-4">
               <Card title="Client">
-                <KV label="Name" value={invoice.client_name} />
-                {invoice.contact_name && <KV label="Contact" value={invoice.contact_name} />}
-                {invoice.client_email && <KV label="Email" value={invoice.client_email} />}
-                {invoice.client_address && (
-                  <KV label="Address" value={invoice.client_address} multiline />
-                )}
-                <KV label="Country" value={invoice.client_country} />
+                <div className="text-sm text-[#1B1B1B]">
+                  <div className="font-medium">{invoice.client_name}</div>
+                  {invoice.contact_name && (
+                    <div className="text-[#555]">{invoice.contact_name}</div>
+                  )}
+                  {invoice.client_email && (
+                    <div className="text-[#555]">{invoice.client_email}</div>
+                  )}
+                  {invoice.client_address && (
+                    <div className="text-[#555] whitespace-pre-wrap leading-snug mt-1.5">
+                      {invoice.client_address}
+                    </div>
+                  )}
+                  <div className="text-[11px] text-[#999] mt-1.5">{invoice.client_country}</div>
+                </div>
               </Card>
 
               <Card title="Line items">
                 <div className="overflow-x-auto -mx-4">
                   <table className="w-full text-sm">
-                    <thead className="text-[10px] uppercase tracking-wider text-[#7A7A7A] border-b border-[#E5E5EA]">
+                    <thead className="text-[10px] uppercase tracking-wider text-[#999] border-b border-[#E5E5EA]">
                       <tr>
                         <th className="text-left px-4 py-2 font-semibold">Description</th>
                         <th className="text-center px-4 py-2 font-semibold">Qty</th>
@@ -390,13 +398,13 @@ export default function InvoiceDetailPage() {
                     </thead>
                     <tbody>
                       {invoice.items.map((item) => (
-                        <tr key={item.id} className="border-b border-[#F0F0F0]">
-                          <td className="px-4 py-3">{item.name}</td>
-                          <td className="px-4 py-3 text-center text-[#7A7A7A]">{item.quantity}</td>
-                          <td className="px-4 py-3 text-right text-[#7A7A7A] tabular-nums">
+                        <tr key={item.id} className="border-b border-[#F4F4F6] last:border-0">
+                          <td className="px-4 py-2.5">{item.name}</td>
+                          <td className="px-4 py-2.5 text-center text-[#7A7A7A]">{item.quantity}</td>
+                          <td className="px-4 py-2.5 text-right text-[#7A7A7A] tabular-nums">
                             {fmtMoney(item.unitPrice)}
                           </td>
-                          <td className="px-4 py-3 text-right tabular-nums">
+                          <td className="px-4 py-2.5 text-right tabular-nums">
                             {fmtMoney(item.quantity * item.unitPrice)}
                           </td>
                         </tr>
@@ -405,7 +413,7 @@ export default function InvoiceDetailPage() {
                   </table>
                 </div>
 
-                <div className="mt-4 space-y-2 max-w-xs ml-auto">
+                <div className="mt-3 space-y-1 max-w-[200px] ml-auto">
                   <Row label="Subtotal" value={fmtMoney(breakdown.subtotal)} />
                   {breakdown.vatAmount > 0 && (
                     <Row
@@ -417,7 +425,7 @@ export default function InvoiceDetailPage() {
                 </div>
 
                 {breakdown.noteForInvoice && (
-                  <p className="mt-4 pt-4 border-t border-[#E5E5EA] text-[11px] text-[#7A7A7A]">
+                  <p className="mt-3 pt-3 border-t border-[#F4F4F6] text-[11px] text-[#7A7A7A]">
                     {breakdown.noteForInvoice}
                   </p>
                 )}
@@ -425,88 +433,119 @@ export default function InvoiceDetailPage() {
 
               {invoice.notes && (
                 <Card title="Notes">
-                  <p className="text-sm text-[#1B1B1B] whitespace-pre-wrap">{invoice.notes}</p>
+                  <p className="text-sm text-[#1B1B1B] whitespace-pre-wrap leading-relaxed">
+                    {invoice.notes}
+                  </p>
                 </Card>
               )}
 
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4">
               <Card title="Status">
-                <div>
-                  <div className="text-[11px] uppercase tracking-wider text-[#A0A0A0] mb-1">
-                    Change to
-                  </div>
-                  <select
-                    value={derivedStatus}
-                    onChange={(e) => {
-                      const next = e.target.value as InvoiceStatus;
-                      if (next === "disputed") {
-                        markDisputed();
-                      } else {
-                        updateStatus(next);
-                      }
-                    }}
-                    className={selectClass}
-                  >
-                    <option value="draft">Draft</option>
-                    <option value="sent">Due</option>
-                    <option value="paid">Paid</option>
-                    {derivedStatus === "overdue" && (
-                      <option value="overdue">Overdue (auto)</option>
-                    )}
-                    <option value="disputed">Disputed</option>
-                  </select>
-                </div>
-                {invoice.sent_date && <KV label="Sent" value={fmtDateUK(invoice.sent_date)} />}
-                {invoice.paid_date && <KV label="Paid" value={fmtDateUK(invoice.paid_date)} />}
-                {invoice.disputed_at && (
-                  <KV label="Disputed" value={fmtDateUK(invoice.disputed_at)} />
-                )}
+                <select
+                  value={derivedStatus}
+                  onChange={(e) => {
+                    const next = e.target.value as InvoiceStatus;
+                    if (next === "disputed") {
+                      markDisputed();
+                    } else {
+                      updateStatus(next);
+                    }
+                  }}
+                  className={selectClass}
+                >
+                  <option value="draft">Draft</option>
+                  <option value="sent">Due</option>
+                  <option value="paid">Paid</option>
+                  {derivedStatus === "overdue" && (
+                    <option value="overdue">Overdue (auto)</option>
+                  )}
+                  <option value="disputed">Disputed</option>
+                  <option value="void">Void</option>
+                </select>
+                <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[12px] mt-2">
+                  {invoice.sent_date && (
+                    <>
+                      <dt className="text-[#999]">Sent</dt>
+                      <dd className="text-[#1B1B1B] text-right">{fmtDateUK(invoice.sent_date)}</dd>
+                    </>
+                  )}
+                  {invoice.paid_date && (
+                    <>
+                      <dt className="text-[#999]">Paid</dt>
+                      <dd className="text-[#1B1B1B] text-right">{fmtDateUK(invoice.paid_date)}</dd>
+                    </>
+                  )}
+                  {invoice.disputed_at && (
+                    <>
+                      <dt className="text-[#999]">Disputed</dt>
+                      <dd className="text-[#1B1B1B] text-right">{fmtDateUK(invoice.disputed_at)}</dd>
+                    </>
+                  )}
+                </dl>
                 {invoice.disputed_reason && (
-                  <div>
-                    <div className="text-[11px] uppercase tracking-wider text-[#A0A0A0] mb-0.5">
-                      Reason
-                    </div>
-                    <div className="text-sm text-[#1B1B1B] whitespace-pre-wrap">
-                      {invoice.disputed_reason}
-                    </div>
-                  </div>
+                  <p className="text-[12px] text-[#1B1B1B] whitespace-pre-wrap mt-2 pt-2 border-t border-[#F4F4F6]">
+                    <span className="text-[#999]">Reason:</span> {invoice.disputed_reason}
+                  </p>
                 )}
               </Card>
 
-              <Card title="VAT">
-                <KV
-                  label="VAT"
-                  value={VAT_TREATMENT_LABELS[invoice.vat_treatment]}
-                />
-                <KV label="VAT charged" value={fmtMoney(breakdown.vatAmount)} />
+              <Card title="VAT & Payment">
+                <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-[12px]">
+                  <dt className="text-[#999]">Treatment</dt>
+                  <dd className="text-[#1B1B1B] text-right">
+                    {VAT_TREATMENT_LABELS[invoice.vat_treatment]}
+                  </dd>
+                  {breakdown.vatAmount > 0 && (
+                    <>
+                      <dt className="text-[#999]">VAT charged</dt>
+                      <dd className="text-[#1B1B1B] text-right tabular-nums">
+                        {fmtMoney(breakdown.vatAmount)}
+                      </dd>
+                    </>
+                  )}
+                  <dt className="text-[#999]">Method</dt>
+                  <dd className="text-[#1B1B1B] text-right">
+                    {invoice.payment_method === "bank_transfer" ? "Bank transfer" : "Whop (online)"}
+                  </dd>
+                  {invoice.bank_name && (
+                    <>
+                      <dt className="text-[#999]">Bank</dt>
+                      <dd className="text-[#1B1B1B] text-right">{invoice.bank_name}</dd>
+                    </>
+                  )}
+                  {invoice.account_name && (
+                    <>
+                      <dt className="text-[#999]">Account</dt>
+                      <dd className="text-[#1B1B1B] text-right">{invoice.account_name}</dd>
+                    </>
+                  )}
+                  {invoice.sort_code && (
+                    <>
+                      <dt className="text-[#999]">Sort code</dt>
+                      <dd className="text-[#1B1B1B] text-right tabular-nums">{invoice.sort_code}</dd>
+                    </>
+                  )}
+                  {invoice.account_number && (
+                    <>
+                      <dt className="text-[#999]">Account #</dt>
+                      <dd className="text-[#1B1B1B] text-right tabular-nums">{invoice.account_number}</dd>
+                    </>
+                  )}
+                  {invoice.payment_term && (
+                    <>
+                      <dt className="text-[#999]">Terms</dt>
+                      <dd className="text-[#1B1B1B] text-right">{invoice.payment_term}</dd>
+                    </>
+                  )}
+                </dl>
               </Card>
 
               <InvoiceAttachmentCard
                 invoice={invoice}
                 onUpdated={(updated) => setInvoice(updated)}
               />
-
-              <Card title="Payment">
-                <KV
-                  label="Method"
-                  value={
-                    invoice.payment_method === "bank_transfer"
-                      ? "Bank transfer"
-                      : "Whop (online)"
-                  }
-                />
-                {invoice.bank_name && <KV label="Bank" value={invoice.bank_name} />}
-                {invoice.account_name && (
-                  <KV label="Account name" value={invoice.account_name} />
-                )}
-                {invoice.sort_code && <KV label="Sort code" value={invoice.sort_code} />}
-                {invoice.account_number && (
-                  <KV label="Account #" value={invoice.account_number} />
-                )}
-                {invoice.payment_term && <KV label="Terms" value={invoice.payment_term} />}
-              </Card>
             </div>
           </div>
         </>
@@ -572,68 +611,47 @@ function EditInvoiceForm({
   }
 
   return (
-    <div className="space-y-8 max-w-3xl">
-      <section>
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
-          Edit invoice
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className={labelClass}>Invoice number</label>
+    <div className="space-y-6 max-w-3xl">
+      <FormSection title="Details">
+        <FormGrid>
+          <FormField label="Invoice number" full>
             <input
               type="text"
               value={draft.invoice_number}
               onChange={(e) => update("invoice_number", e.target.value)}
-              className={inputClass}
+              className={compactInput}
             />
-          </div>
-          <div>
-            <label className={labelClass}>Client name</label>
+          </FormField>
+          <FormField label="Client name">
             <input
               type="text"
               value={draft.client_name}
               onChange={(e) => update("client_name", e.target.value)}
-              className={inputClass}
+              className={compactInput}
             />
-          </div>
-          <div>
-            <label className={labelClass}>Contact name</label>
+          </FormField>
+          <FormField label="Contact name">
             <input
               type="text"
               value={draft.contact_name || ""}
               onChange={(e) => update("contact_name", e.target.value)}
-              className={inputClass}
+              className={compactInput}
             />
-          </div>
-          <div>
-            <label className={labelClass}>Client email</label>
+          </FormField>
+          <FormField label="Client email">
             <input
               type="email"
               value={draft.client_email || ""}
               onChange={(e) => update("client_email", e.target.value)}
-              className={inputClass}
+              className={compactInput}
             />
-          </div>
-          <div className="md:col-span-2">
-            <label className={labelClass}>Client address</label>
-            <textarea
-              value={draft.client_address || ""}
-              onChange={(e) => update("client_address", e.target.value)}
-              rows={2}
-              className={textareaClass}
-            />
-          </div>
-          <div>
-            <label className={labelClass}>Country (ISO2)</label>
+          </FormField>
+          <FormField label="Country (ISO2)">
             <input
               type="text"
               value={draft.client_country}
               onChange={(e) => {
                 const country = e.target.value.toUpperCase();
-                // Re-derive vat_treatment so the off-state correctly
-                // switches between pre_vat_registration (UK) and
-                // reverse_charge (non-UK). The VAT mode picker stays
-                // on the same position.
                 const currentMode = vatTreatmentToMode(draft.vat_treatment);
                 setDraft({
                   ...draft,
@@ -642,64 +660,64 @@ function EditInvoiceForm({
                 });
               }}
               maxLength={2}
-              className={inputClass}
+              className={compactInput}
             />
-          </div>
-          <div>
-            <label className={labelClass}>Payment terms</label>
-            <input
-              type="text"
-              value={draft.payment_term || ""}
-              onChange={(e) => update("payment_term", e.target.value)}
-              className={inputClass}
+          </FormField>
+          <FormField label="Client address" full>
+            <textarea
+              value={draft.client_address || ""}
+              onChange={(e) => update("client_address", e.target.value)}
+              rows={2}
+              className={compactTextarea}
             />
-          </div>
-          <div>
-            <label className={labelClass}>Invoice date</label>
+          </FormField>
+          <FormField label="Invoice date">
             <input
               type="date"
               value={draft.invoice_date}
               onChange={(e) => update("invoice_date", e.target.value)}
-              className={inputClass}
+              className={compactInput}
             />
-          </div>
-          <div>
-            <label className={labelClass}>Due date</label>
+          </FormField>
+          <FormField label="Due date">
             <input
               type="date"
               value={draft.due_date}
               onChange={(e) => update("due_date", e.target.value)}
-              className={inputClass}
+              className={compactInput}
             />
-          </div>
-        </div>
-      </section>
+          </FormField>
+          <FormField label="Payment terms" full>
+            <input
+              type="text"
+              value={draft.payment_term || ""}
+              onChange={(e) => update("payment_term", e.target.value)}
+              className={compactInput}
+            />
+          </FormField>
+        </FormGrid>
+      </FormSection>
 
-      <section>
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
-          Line items
-        </h3>
+      <FormSection title="Line items">
         {draft.items.length > 0 && (
-          <div className="border border-[#E5E5EA] rounded-lg overflow-hidden mb-4">
-            <div className="hidden md:grid grid-cols-[1fr_70px_120px_120px_36px] gap-2 px-4 py-2.5 bg-[#F3F3F5] text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+          <div className="border border-[#E5E5EA] rounded-md overflow-hidden mb-3">
+            <div className="hidden md:grid grid-cols-[1fr_60px_100px_100px_28px] gap-2 px-3 py-2 bg-[#F7F8FA] text-[10px] font-semibold uppercase tracking-[0.08em] text-[#999]">
               <span>Description</span>
               <span className="text-center">Qty</span>
               <span className="text-right">Unit price</span>
               <span className="text-right">Amount</span>
               <span />
             </div>
-            {draft.items.map((item, idx) => (
+            {draft.items.map((item) => (
               <div
                 key={item.id}
-                className={`grid grid-cols-1 md:grid-cols-[1fr_70px_120px_120px_36px] gap-2 px-4 py-3 border-t border-[#EDEDEF] items-center ${
-                  idx % 2 === 1 ? "bg-[#F7F8FA]" : ""
-                }`}
+                className="grid grid-cols-1 md:grid-cols-[1fr_60px_100px_100px_28px] gap-2 px-3 py-2 border-t border-[#F4F4F6] items-center"
               >
                 <input
                   type="text"
                   value={item.name}
                   onChange={(e) => updateItem(item.id, { name: e.target.value })}
-                  className={`${inputClass} text-sm`}
+                  className={compactInput}
                 />
                 <input
                   type="number"
@@ -710,7 +728,7 @@ function EditInvoiceForm({
                       quantity: Math.max(1, parseInt(e.target.value) || 1),
                     })
                   }
-                  className={`${inputClass} text-center text-sm`}
+                  className={`${compactInput} text-center`}
                 />
                 <input
                   type="number"
@@ -720,9 +738,9 @@ function EditInvoiceForm({
                   onChange={(e) =>
                     updateItem(item.id, { unitPrice: parseFloat(e.target.value) || 0 })
                   }
-                  className={`${inputClass} text-right text-sm`}
+                  className={`${compactInput} text-right`}
                 />
-                <span className="text-sm font-medium text-right px-3 tabular-nums">
+                <span className="text-sm text-right px-2 tabular-nums">
                   {fmtMoney(item.quantity * item.unitPrice)}
                 </span>
                 <button
@@ -737,137 +755,117 @@ function EditInvoiceForm({
         )}
         <button
           onClick={addCustomItem}
-          className="flex items-center gap-1.5 text-sm text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
         >
           <PlusIcon className="size-3.5" /> Add line item
         </button>
-      </section>
+      </FormSection>
 
-      <section>
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
-          VAT
-        </h3>
-        <VatModePicker
-          mode={vatTreatmentToMode(draft.vat_treatment)}
-          onChange={(next) =>
-            update("vat_treatment", deriveVatTreatment(next, draft.client_country))
-          }
-          clientCountry={draft.client_country}
-        />
-      </section>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FormSection title="VAT">
+          <VatModePicker
+            mode={vatTreatmentToMode(draft.vat_treatment)}
+            onChange={(next) =>
+              update("vat_treatment", deriveVatTreatment(next, draft.client_country))
+            }
+            clientCountry={draft.client_country}
+          />
+        </FormSection>
 
-      <section>
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
-          Totals (live)
-        </h3>
-        <div className="bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg p-5 space-y-2 max-w-xs ml-auto">
-          <div className="flex justify-between text-sm">
-            <span className="text-[#7A7A7A]">Subtotal</span>
-            <span className="font-medium tabular-nums">{fmtMoney(breakdown.subtotal)}</span>
-          </div>
-          {breakdown.vatAmount > 0 && (
+        <FormSection title="Totals (live)">
+          <div className="border border-[#E5E5EA] rounded-md p-3 space-y-1.5">
             <div className="flex justify-between text-sm">
-              <span className="text-[#7A7A7A]">
-                VAT ({Math.round(breakdown.vatRate * 100)}%)
-              </span>
-              <span className="font-medium tabular-nums">
-                {fmtMoney(breakdown.vatAmount)}
-              </span>
+              <span className="text-[#999]">Subtotal</span>
+              <span className="tabular-nums">{fmtMoney(breakdown.subtotal)}</span>
             </div>
-          )}
-          <div className="flex justify-between text-base pt-2 border-t border-[#E5E5EA]">
-            <span className="font-semibold">Total</span>
-            <span className="font-bold tabular-nums">{fmtMoney(breakdown.total)}</span>
+            {breakdown.vatAmount > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-[#999]">
+                  VAT ({Math.round(breakdown.vatRate * 100)}%)
+                </span>
+                <span className="tabular-nums">{fmtMoney(breakdown.vatAmount)}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-sm pt-1.5 border-t border-[#F4F4F6]">
+              <span className="font-semibold">Total</span>
+              <span className="font-semibold tabular-nums">{fmtMoney(breakdown.total)}</span>
+            </div>
           </div>
-        </div>
-      </section>
+        </FormSection>
+      </div>
 
-      <section>
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
-          Payment method
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="md:col-span-2">
-            <label className={labelClass}>How does this client pay?</label>
+      <FormSection title="Payment & notes">
+        <FormGrid>
+          <FormField label="Method" full>
             <select
               value={draft.payment_method ?? "online"}
               onChange={(e) =>
                 update("payment_method", e.target.value as InvoicePaymentMethod)
               }
-              className={selectClass}
+              className={compactInput}
             >
               <option value="online">Whop (online)</option>
               <option value="bank_transfer">Bank transfer (Tide)</option>
             </select>
-            <p className="text-[11px] text-[#A0A0A0] mt-1">
-              {(draft.payment_method ?? "online") === "online"
-                ? "PDF will say payment is processed via Whop."
-                : "Bank details below print on the PDF."}
-            </p>
-          </div>
+          </FormField>
           {(draft.payment_method ?? "online") === "bank_transfer" && (
             <>
-              <div>
-                <label className={labelClass}>Bank name</label>
+              <FormField label="Bank name">
                 <input
                   type="text"
                   value={draft.bank_name || ""}
                   onChange={(e) => update("bank_name", e.target.value)}
-                  className={inputClass}
+                  className={compactInput}
                 />
-              </div>
-              <div>
-                <label className={labelClass}>Account name</label>
+              </FormField>
+              <FormField label="Account name">
                 <input
                   type="text"
                   value={draft.account_name || ""}
                   onChange={(e) => update("account_name", e.target.value)}
-                  className={inputClass}
+                  className={compactInput}
                 />
-              </div>
-              <div>
-                <label className={labelClass}>Sort code</label>
+              </FormField>
+              <FormField label="Sort code">
                 <input
                   type="text"
                   value={draft.sort_code || ""}
                   onChange={(e) => update("sort_code", e.target.value)}
-                  className={inputClass}
+                  className={compactInput}
                 />
-              </div>
-              <div>
-                <label className={labelClass}>Account number</label>
+              </FormField>
+              <FormField label="Account number">
                 <input
                   type="text"
                   value={draft.account_number || ""}
                   onChange={(e) => update("account_number", e.target.value)}
-                  className={inputClass}
+                  className={compactInput}
                 />
-              </div>
+              </FormField>
             </>
           )}
-          <div className="md:col-span-2">
-            <label className={labelClass}>Notes</label>
+          <FormField label="Notes" full>
             <textarea
               value={draft.notes || ""}
               onChange={(e) => update("notes", e.target.value)}
               rows={2}
-              className={textareaClass}
+              className={compactTextarea}
             />
-          </div>
-        </div>
-      </section>
+          </FormField>
+        </FormGrid>
+      </FormSection>
 
-      <div className="flex justify-end gap-3 pt-4 border-t border-[#E5E5EA]">
+      <div className="flex justify-end gap-2 pt-4 border-t border-[#E5E5EA]">
         <button
           onClick={onCancel}
-          className="px-5 py-3 text-sm text-[#7A7A7A] hover:text-[#1B1B1B]"
+          className="px-4 py-2 text-sm text-[#7A7A7A] hover:text-[#1B1B1B]"
         >
           Cancel
         </button>
         <button
           onClick={onSave}
           disabled={saving}
-          className="px-6 py-3 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
+          className="px-5 py-2 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
         >
           {saving ? "Saving..." : "Save changes"}
         </button>
@@ -1001,11 +999,57 @@ function InvoiceAttachmentCard({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white border border-[#E5E5EA] rounded-xl p-5 shadow-[var(--shadow-soft)]">
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
+    <div className="bg-white border border-[#E5E5EA] rounded-lg p-4 shadow-[var(--shadow-soft)]">
+      <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#999] mb-2.5">
         {title}
       </h3>
-      <div className="space-y-2">{children}</div>
+      <div>{children}</div>
+    </div>
+  );
+}
+
+/* Compact form primitives used in EditInvoiceForm. Smaller inputs +
+ * tighter inline labels than the global form-styles, so admin forms
+ * feel less bulky. */
+const compactInput =
+  "w-full px-3 py-2 bg-white border border-[#E5E5EA] rounded-md text-sm focus:outline-none focus:border-[#1B1B1B] focus:ring-1 focus:ring-[#1B1B1B]/10 transition-all placeholder:text-[#C5C5C5]";
+const compactTextarea =
+  "w-full px-3 py-2 bg-white border border-[#E5E5EA] rounded-md text-sm focus:outline-none focus:border-[#1B1B1B] focus:ring-1 focus:ring-[#1B1B1B]/10 transition-all resize-none placeholder:text-[#C5C5C5]";
+
+function FormSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section>
+      <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#999] mb-3">
+        {title}
+      </h3>
+      {children}
+    </section>
+  );
+}
+
+function FormGrid({ children }: { children: React.ReactNode }) {
+  return <div className="grid grid-cols-1 md:grid-cols-2 gap-3">{children}</div>;
+}
+
+function FormField({
+  label,
+  full,
+  children,
+}: {
+  label: string;
+  full?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={full ? "md:col-span-2" : ""}>
+      <label className="block text-[11px] font-medium text-[#7A7A7A] mb-1">{label}</label>
+      {children}
     </div>
   );
 }
