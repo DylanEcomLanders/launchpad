@@ -24,16 +24,24 @@ function invoiceTotalsGbp(inv: InvoiceIssued): {
   grossGbp: number;
 } {
   // Snapshot fields are populated on save (in-app) or by the CSV
-  // importer (which records GBP for non-GBP invoices). Fall back to
-  // calc for older invoices that pre-date the snapshot fields.
+  // importer. gross_amount / net_amount / vat_amount are in NATIVE
+  // currency; gbp_equivalent is the gross translated to GBP at the
+  // time of the source transaction. For GBP invoices native == GBP
+  // and the values pass through unchanged. For USD/EUR/MYR/SEK we
+  // scale net + vat by the gbp_equivalent / gross_amount ratio so
+  // every rollup is consistently in GBP. Falls back to live calc
+  // for older invoices that pre-date the snapshot fields.
   if (
     typeof inv.gbp_equivalent === "number" &&
     typeof inv.vat_amount === "number" &&
-    typeof inv.net_amount === "number"
+    typeof inv.net_amount === "number" &&
+    typeof inv.gross_amount === "number" &&
+    inv.gross_amount > 0
   ) {
+    const ratio = inv.gbp_equivalent / inv.gross_amount;
     return {
-      netGbp: inv.net_amount,
-      vatGbp: inv.vat_amount,
+      netGbp: round2(inv.net_amount * ratio),
+      vatGbp: round2(inv.vat_amount * ratio),
       grossGbp: inv.gbp_equivalent,
     };
   }

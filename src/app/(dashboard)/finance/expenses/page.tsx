@@ -60,6 +60,29 @@ export default function ExpensesListPage() {
       .sort((a, b) => (a.date_due > b.date_due ? -1 : 1));
   }, [enriched, statusFilter, categoryFilter, query]);
 
+  /* Build the category pill bar: one pill per category that has rows in
+   * the current dataset, ordered by descending count. "All" is always
+   * first. Count badge updates as the underlying dataset changes (but
+   * is computed before status / search filters apply, so it represents
+   * the total available in that category rather than current-view). */
+  const categoryPills = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const e of enriched) {
+      counts[e.category] = (counts[e.category] ?? 0) + 1;
+    }
+    const present = (Object.entries(counts) as [ExpenseCategory, number][])
+      .filter(([, n]) => n > 0)
+      .sort((a, b) => b[1] - a[1]);
+    return [
+      { key: "all" as const, label: "All", count: enriched.length },
+      ...present.map(([cat, count]) => ({
+        key: cat,
+        label: EXPENSE_CATEGORY_LABELS[cat],
+        count,
+      })),
+    ];
+  }, [enriched]);
+
   const summary = useMemo(() => {
     // Use UTC throughout so "first of month" doesn't roll back a day
     // in non-UTC timezones (e.g. local midnight May 1 in BST = April 30
@@ -134,6 +157,39 @@ export default function ExpensesListPage() {
         <SummaryCard label="Monthly recurring" amount={summary.recurringMonthly} />
       </div>
 
+      {/* Category pill bar — horizontal scroll on narrow viewports, sorted by row count desc */}
+      {hydrated && categoryPills.length > 1 && (
+        <div className="mb-3 -mx-1 overflow-x-auto">
+          <div className="flex items-center gap-1.5 px-1 py-1 min-w-max">
+            {categoryPills.map((p) => {
+              const active = categoryFilter === p.key;
+              return (
+                <button
+                  key={p.key}
+                  onClick={() =>
+                    setCategoryFilter(p.key as "all" | ExpenseCategory)
+                  }
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
+                    active
+                      ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
+                      : "bg-white text-[#1B1B1B] border-[#E5E5EA] hover:bg-[#F7F8FA]"
+                  }`}
+                >
+                  {p.label}
+                  <span
+                    className={`text-[10px] tabular-nums font-semibold px-1.5 py-0.5 rounded-full ${
+                      active ? "bg-white/20 text-white" : "bg-[#F0F1F4] text-[#7A7A7A]"
+                    }`}
+                  >
+                    {p.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative w-64">
@@ -155,18 +211,6 @@ export default function ExpensesListPage() {
             <option value="paid">Paid</option>
             <option value="overdue">Overdue</option>
             <option value="disputed">Disputed</option>
-          </select>
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value as "all" | ExpenseCategory)}
-            className={`${selectClass} w-44`}
-          >
-            <option value="all">All categories</option>
-            {Object.entries(EXPENSE_CATEGORY_LABELS).map(([k, label]) => (
-              <option key={k} value={k}>
-                {label}
-              </option>
-            ))}
           </select>
         </div>
         <div className="flex items-center gap-2">

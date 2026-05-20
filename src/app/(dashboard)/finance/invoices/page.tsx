@@ -28,12 +28,18 @@ interface EnrichedInvoice extends InvoiceIssued {
   total: number;
 }
 
+/* "uk" = client_country === "GB" (or blank, since GB is the default for
+ * legacy rows). "intl" = anything else. "all" = no filter. Plus per-country
+ * codes (USD invoices to "US", etc) for finer slicing. */
+type CountryFilter = "all" | "uk" | "intl" | string;
+
 export default function ReceivablesListPage() {
   const [invoices, setInvoices] = useState<InvoiceIssued[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | InvoiceStatus>("all");
   const [vatFilter, setVatFilter] = useState<"all" | "vat" | "no_vat">("all");
+  const [countryFilter, setCountryFilter] = useState<CountryFilter>("all");
   const [sortKey, setSortKey] = useState<SortKey>("invoice_date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
@@ -63,6 +69,16 @@ export default function ReceivablesListPage() {
         i.vat_treatment === "manual";
       if (vatFilter === "vat" && !treatmentHasVat) return false;
       if (vatFilter === "no_vat" && treatmentHasVat) return false;
+      const country = (i.client_country || "GB").toUpperCase();
+      if (countryFilter === "uk" && country !== "GB") return false;
+      if (countryFilter === "intl" && country === "GB") return false;
+      if (
+        countryFilter !== "all" &&
+        countryFilter !== "uk" &&
+        countryFilter !== "intl" &&
+        country !== countryFilter
+      )
+        return false;
       if (!q) return true;
       const hay = `${i.invoice_number} ${i.client_name}`.toLowerCase();
       return hay.includes(q);
@@ -97,6 +113,31 @@ export default function ReceivablesListPage() {
       ),
     );
     return { outstanding, overdue, paidThisMonth };
+  }, [enriched]);
+
+  /* Build the country pill bar: All, UK, International, then one pill
+   * per non-UK country code present in the dataset (ordered by count
+   * desc). UK includes anything with country="GB" OR blank (default). */
+  const countryPills = useMemo(() => {
+    const counts: Record<string, number> = {};
+    let ukCount = 0;
+    let intlCount = 0;
+    for (const i of enriched) {
+      const c = (i.client_country || "GB").toUpperCase();
+      counts[c] = (counts[c] ?? 0) + 1;
+      if (c === "GB") ukCount++;
+      else intlCount++;
+    }
+    const perCountry = Object.entries(counts)
+      .filter(([c]) => c !== "GB")
+      .sort((a, b) => b[1] - a[1])
+      .map(([code, count]) => ({ key: code, label: code, count }));
+    return [
+      { key: "all", label: "All", count: enriched.length },
+      { key: "uk", label: "UK", count: ukCount },
+      { key: "intl", label: "International", count: intlCount },
+      ...perCountry,
+    ];
   }, [enriched]);
 
   function toggleSort(key: SortKey) {
@@ -163,6 +204,37 @@ export default function ReceivablesListPage() {
         <SummaryCard label="Overdue" amount={summary.overdue} accent="red" />
         <SummaryCard label="Paid this month" amount={summary.paidThisMonth} accent="green" />
       </div>
+
+      {/* Country pill bar — All / UK / International / per-country */}
+      {hydrated && countryPills.length > 1 && (
+        <div className="mb-3 -mx-1 overflow-x-auto">
+          <div className="flex items-center gap-1.5 px-1 py-1 min-w-max">
+            {countryPills.map((p) => {
+              const active = countryFilter === p.key;
+              return (
+                <button
+                  key={p.key}
+                  onClick={() => setCountryFilter(p.key)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
+                    active
+                      ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
+                      : "bg-white text-[#1B1B1B] border-[#E5E5EA] hover:bg-[#F7F8FA]"
+                  }`}
+                >
+                  {p.label}
+                  <span
+                    className={`text-[10px] tabular-nums font-semibold px-1.5 py-0.5 rounded-full ${
+                      active ? "bg-white/20 text-white" : "bg-[#F0F1F4] text-[#7A7A7A]"
+                    }`}
+                  >
+                    {p.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
         <div className="flex flex-wrap items-center gap-2">
