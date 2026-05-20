@@ -78,19 +78,23 @@ export default function ReceivablesListPage() {
   }, [enriched, statusFilter, vatFilter, query, sortKey, sortDir]);
 
   const summary = useMemo(() => {
-    const outstanding = enriched
-      .filter((i) => i.status === "sent" || i.status === "overdue")
-      .reduce((s, i) => s + i.total, 0);
-    const overdue = enriched
-      .filter((i) => i.status === "overdue")
-      .reduce((s, i) => s + i.total, 0);
+    // Always sum in GBP using the stored gbp_equivalent (snapshot from
+    // source statement). Mixing native currencies would be meaningless.
+    const sumGbp = (rows: typeof enriched) =>
+      rows.reduce((s, i) => s + (i.gbp_equivalent ?? i.total), 0);
+    const outstanding = sumGbp(
+      enriched.filter((i) => i.status === "sent" || i.status === "overdue"),
+    );
+    const overdue = sumGbp(enriched.filter((i) => i.status === "overdue"));
     const monthStart = new Date();
     monthStart.setDate(1);
     monthStart.setHours(0, 0, 0, 0);
     const monthStartISO = monthStart.toISOString().slice(0, 10);
-    const paidThisMonth = enriched
-      .filter((i) => i.status === "paid" && i.paid_date && i.paid_date >= monthStartISO)
-      .reduce((s, i) => s + i.total, 0);
+    const paidThisMonth = sumGbp(
+      enriched.filter(
+        (i) => i.status === "paid" && i.paid_date && i.paid_date >= monthStartISO,
+      ),
+    );
     return { outstanding, overdue, paidThisMonth };
   }, [enriched]);
 
@@ -268,7 +272,12 @@ export default function ReceivablesListPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right font-medium text-[#1B1B1B] tabular-nums">
-                      {fmtMoney(i.total)}
+                      {fmtMoney(i.total, i.currency)}
+                      {i.currency !== "GBP" && i.gbp_equivalent !== i.total && (
+                        <div className="text-[10px] font-normal text-[#999] mt-0.5">
+                          ≈ {fmtMoney(i.gbp_equivalent, "GBP")}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );

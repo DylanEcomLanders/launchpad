@@ -356,10 +356,10 @@ export default function InvoiceDetailPage() {
                           <td className="px-4 py-2.5">{item.name}</td>
                           <td className="px-4 py-2.5 text-center text-[#7A7A7A]">{item.quantity}</td>
                           <td className="px-4 py-2.5 text-right text-[#7A7A7A] tabular-nums">
-                            {fmtMoney(item.unitPrice)}
+                            {fmtMoney(item.unitPrice, invoice.currency)}
                           </td>
                           <td className="px-4 py-2.5 text-right tabular-nums">
-                            {fmtMoney(item.quantity * item.unitPrice)}
+                            {fmtMoney(item.quantity * item.unitPrice, invoice.currency)}
                           </td>
                         </tr>
                       ))}
@@ -367,17 +367,39 @@ export default function InvoiceDetailPage() {
                   </table>
                 </div>
 
-                <div className="mt-3 space-y-1 max-w-[200px] ml-auto">
-                  <Row label="Subtotal" value={fmtMoney(breakdown.subtotal)} />
+                <div className="mt-3 space-y-1 max-w-[220px] ml-auto">
+                  <Row
+                    label="Subtotal"
+                    value={fmtMoney(breakdown.subtotal, invoice.currency)}
+                  />
                   {breakdown.vatAmount > 0 && (
                     <Row
                       label={`VAT (${Math.round(breakdown.vatRate * 100)}%)`}
-                      value={fmtMoney(breakdown.vatAmount)}
+                      value={fmtMoney(breakdown.vatAmount, invoice.currency)}
                     />
                   )}
-                  <Row label="Total" value={fmtMoney(breakdown.total)} bold />
+                  <Row
+                    label="Total"
+                    value={fmtMoney(breakdown.total, invoice.currency)}
+                    bold
+                  />
+                  {invoice.currency !== "GBP" && (
+                    <div className="flex justify-between text-[11px] text-[#999] pt-1">
+                      <span>≈ GBP equivalent</span>
+                      <span className="tabular-nums">
+                        {fmtMoney(invoice.gbp_equivalent, "GBP")}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
+                {invoice.currency !== "GBP" && (
+                  <p className="mt-3 pt-3 border-t border-[#F4F4F6] text-[11px] text-[#999]">
+                    Amounts billed in {invoice.currency}. GBP equivalent recorded from{" "}
+                    {invoice.source_system || "the source"} statement at the time of the
+                    transaction; no live FX conversion applied.
+                  </p>
+                )}
                 {breakdown.noteForInvoice && (
                   <p className="mt-3 pt-3 border-t border-[#F4F4F6] text-[11px] text-[#7A7A7A]">
                     {breakdown.noteForInvoice}
@@ -455,7 +477,7 @@ export default function InvoiceDetailPage() {
                     <>
                       <dt className="text-[#999]">VAT charged</dt>
                       <dd className="text-[#1B1B1B] text-right tabular-nums">
-                        {fmtMoney(breakdown.vatAmount)}
+                        {fmtMoney(breakdown.vatAmount, invoice.currency)}
                       </dd>
                     </>
                   )}
@@ -695,7 +717,7 @@ function EditInvoiceForm({
                   className={`${compactInput} text-right`}
                 />
                 <span className="text-sm text-right px-2 tabular-nums">
-                  {fmtMoney(item.quantity * item.unitPrice)}
+                  {fmtMoney(item.quantity * item.unitPrice, draft.currency)}
                 </span>
                 <button
                   onClick={() => removeItem(item.id)}
@@ -726,23 +748,29 @@ function EditInvoiceForm({
           />
         </FormSection>
 
-        <FormSection title="Totals (live)">
+        <FormSection title={`Totals (live, ${draft.currency})`}>
           <div className="border border-[#E5E5EA] rounded-md p-3 space-y-1.5">
             <div className="flex justify-between text-sm">
               <span className="text-[#999]">Subtotal</span>
-              <span className="tabular-nums">{fmtMoney(breakdown.subtotal)}</span>
+              <span className="tabular-nums">
+                {fmtMoney(breakdown.subtotal, draft.currency)}
+              </span>
             </div>
             {breakdown.vatAmount > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-[#999]">
                   VAT ({Math.round(breakdown.vatRate * 100)}%)
                 </span>
-                <span className="tabular-nums">{fmtMoney(breakdown.vatAmount)}</span>
+                <span className="tabular-nums">
+                  {fmtMoney(breakdown.vatAmount, draft.currency)}
+                </span>
               </div>
             )}
             <div className="flex justify-between text-sm pt-1.5 border-t border-[#F4F4F6]">
               <span className="font-semibold">Total</span>
-              <span className="font-semibold tabular-nums">{fmtMoney(breakdown.total)}</span>
+              <span className="font-semibold tabular-nums">
+                {fmtMoney(breakdown.total, draft.currency)}
+              </span>
             </div>
           </div>
         </FormSection>

@@ -390,9 +390,9 @@ export function FinanceInvoicePdf({ invoice, profile }: Props) {
             <View key={item.id} style={s.itemRow}>
               <Text style={[s.itemText, s.colDesc]}>{item.name}</Text>
               <Text style={[s.itemMuted, s.colQty]}>{item.quantity}</Text>
-              <Text style={[s.itemMuted, s.colPrice]}>{fmtMoney(item.unitPrice)}</Text>
+              <Text style={[s.itemMuted, s.colPrice]}>{fmtMoney(item.unitPrice, invoice.currency)}</Text>
               <Text style={[s.itemText, s.colAmount]}>
-                {fmtMoney(item.quantity * item.unitPrice)}
+                {fmtMoney(item.quantity * item.unitPrice, invoice.currency)}
               </Text>
             </View>
           ))}
@@ -409,36 +409,36 @@ export function FinanceInvoicePdf({ invoice, profile }: Props) {
               <>
                 <View style={s.totalsRow}>
                   <Text style={s.totalsLabel}>Subtotal (incl. VAT)</Text>
-                  <Text style={s.totalsValue}>{fmtMoney(breakdown.total)}</Text>
+                  <Text style={s.totalsValue}>{fmtMoney(breakdown.total, invoice.currency)}</Text>
                 </View>
                 <View style={s.totalsRow}>
                   <Text style={s.totalsLabel}>
                     of which VAT ({Math.round(breakdown.vatRate * 100)}%)
                   </Text>
-                  <Text style={s.totalsValue}>{fmtMoney(breakdown.vatAmount)}</Text>
+                  <Text style={s.totalsValue}>{fmtMoney(breakdown.vatAmount, invoice.currency)}</Text>
                 </View>
                 <View style={[s.totalsRow, s.totalDivider]}>
                   <Text style={s.totalFinalLabel}>Total due</Text>
-                  <Text style={s.totalFinalValue}>{fmtMoney(breakdown.total)}</Text>
+                  <Text style={s.totalFinalValue}>{fmtMoney(breakdown.total, invoice.currency)}</Text>
                 </View>
               </>
             ) : (
               <>
                 <View style={s.totalsRow}>
                   <Text style={s.totalsLabel}>Subtotal</Text>
-                  <Text style={s.totalsValue}>{fmtMoney(breakdown.subtotal)}</Text>
+                  <Text style={s.totalsValue}>{fmtMoney(breakdown.subtotal, invoice.currency)}</Text>
                 </View>
                 {breakdown.vatAmount > 0 && (
                   <View style={s.totalsRow}>
                     <Text style={s.totalsLabel}>
                       VAT ({Math.round(breakdown.vatRate * 100)}%)
                     </Text>
-                    <Text style={s.totalsValue}>{fmtMoney(breakdown.vatAmount)}</Text>
+                    <Text style={s.totalsValue}>{fmtMoney(breakdown.vatAmount, invoice.currency)}</Text>
                   </View>
                 )}
                 <View style={[s.totalsRow, s.totalDivider]}>
                   <Text style={s.totalFinalLabel}>Total due</Text>
-                  <Text style={s.totalFinalValue}>{fmtMoney(breakdown.total)}</Text>
+                  <Text style={s.totalFinalValue}>{fmtMoney(breakdown.total, invoice.currency)}</Text>
                 </View>
               </>
             )}
