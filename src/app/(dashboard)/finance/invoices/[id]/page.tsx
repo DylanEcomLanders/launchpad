@@ -8,8 +8,6 @@ import {
   ArrowDownTrayIcon,
   ArrowLeftIcon,
   TrashIcon,
-  CheckIcon,
-  PaperAirplaneIcon,
   PencilSquareIcon,
   XMarkIcon,
   PlusIcon,
@@ -260,83 +258,39 @@ export default function InvoiceDetailPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {!editing && (
-            <button
-              onClick={startEdit}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E5E5EA] text-[#1B1B1B] text-sm rounded-lg hover:bg-[#F7F8FA]"
-            >
-              <PencilSquareIcon className="size-4" /> Edit
-            </button>
-          )}
-          {!editing && derivedStatus === "draft" && (
-            <button
-              onClick={() => updateStatus("sent")}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#6366F1] text-white text-sm rounded-lg hover:opacity-90"
-            >
-              <PaperAirplaneIcon className="size-4" /> Mark due
-            </button>
-          )}
-          {!editing && (derivedStatus === "sent" || derivedStatus === "overdue") && (
-            <button
-              onClick={() => updateStatus("paid")}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#047857] text-white text-sm rounded-lg hover:opacity-90"
-            >
-              <CheckIcon className="size-4" /> Mark paid
-            </button>
-          )}
-          {!editing && derivedStatus !== "disputed" && derivedStatus !== "paid" && (
-            <button
-              onClick={markDisputed}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E5E5EA] text-[#92400E] text-sm rounded-lg hover:bg-amber-50"
-            >
-              Mark disputed
-            </button>
-          )}
-          {!editing && derivedStatus === "disputed" && (
-            <button
-              onClick={() => updateStatus("sent")}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E5E5EA] text-[#1B1B1B] text-sm rounded-lg hover:bg-[#F7F8FA]"
-            >
-              Resolve dispute
-            </button>
-          )}
-          {!editing && (
-            <button
+        {!editing && (
+          <div className="inline-flex items-center divide-x divide-[#E5E5EA] border border-[#E5E5EA] rounded-lg bg-white overflow-hidden shadow-[var(--shadow-soft)]">
+            <ToolbarButton onClick={startEdit} icon={<PencilSquareIcon className="size-4" />}>
+              Edit
+            </ToolbarButton>
+            <ToolbarButton
               onClick={() => setPreviewOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E5E5EA] text-[#1B1B1B] text-sm rounded-lg hover:bg-[#F7F8FA]"
+              icon={<EyeIcon className="size-4" />}
             >
-              <EyeIcon className="size-4" /> Preview
-            </button>
-          )}
-          {!editing && (
-            <button
+              Preview
+            </ToolbarButton>
+            <ToolbarButton
               onClick={sendToClient}
+              icon={<EnvelopeIcon className="size-4" />}
               disabled={sending}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E5E5EA] text-[#1B1B1B] text-sm rounded-lg hover:bg-[#F7F8FA] disabled:opacity-40"
             >
-              <EnvelopeIcon className="size-4" /> {sending ? "Sending..." : "Email client"}
-            </button>
-          )}
-          {!editing && (
-            <button
+              {sending ? "Sending..." : "Email"}
+            </ToolbarButton>
+            <ToolbarButton
               onClick={downloadPdf}
+              icon={<ArrowDownTrayIcon className="size-4" />}
               disabled={downloading}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#1B1B1B] text-white text-sm rounded-lg hover:opacity-90 disabled:opacity-40"
             >
-              <ArrowDownTrayIcon className="size-4" />{" "}
-              {downloading ? "Generating..." : "Download PDF"}
-            </button>
-          )}
-          {!editing && (
-            <button
+              {downloading ? "..." : "PDF"}
+            </ToolbarButton>
+            <ToolbarButton
               onClick={handleDelete}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E5E5EA] text-red-600 text-sm rounded-lg hover:bg-red-50"
-            >
-              <TrashIcon className="size-4" />
-            </button>
-          )}
-        </div>
+              icon={<TrashIcon className="size-4" />}
+              danger
+              title="Delete invoice"
+            />
+          </div>
+        )}
       </div>
 
       {error && (
@@ -994,6 +948,38 @@ function InvoiceAttachmentCard({
       )}
       {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
     </Card>
+  );
+}
+
+function ToolbarButton({
+  onClick,
+  icon,
+  children,
+  disabled,
+  danger,
+  title,
+}: {
+  onClick: () => void;
+  icon: React.ReactNode;
+  children?: React.ReactNode;
+  disabled?: boolean;
+  danger?: boolean;
+  title?: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm transition-colors disabled:opacity-40 ${
+        danger
+          ? "text-red-600 hover:bg-red-50"
+          : "text-[#1B1B1B] hover:bg-[#F7F8FA]"
+      }`}
+    >
+      {icon}
+      {children}
+    </button>
   );
 }
 
