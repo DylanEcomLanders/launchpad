@@ -37,6 +37,20 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-74",
+    date: "22 May 2026",
+    version: "0.47.0",
+    title: "R&D Tracker: initiatives, sub-points, and a team ideas inbox",
+    changes: [
+      { type: "added", text: "New /rd module that splits into two jobs. The top half is Initiatives, a two-column grid of cards for the operational projects Dylan owns (design system, dev system, internal tools, onboarding flows). Each card shows owner first name, relative time since last touched, a progress bar driven by sub-point completion, done-of-total count, and a Stale red label that replaces the percent when an active initiative hasn't been touched in 14+ days. Sorts active first by % complete descending so the closest-to-finish work surfaces; parked, shipped, and killed initiatives drop into collapsible sections underneath. The bottom half is Ideas from the team, a soft-grey inbox of white cards where anyone can drop a one-line idea with a why-this-matters paragraph and an optional type, designed for weekly review" },
+      { type: "added", text: "Initiative detail at /rd/[id]. Editable name (click to edit inline), status pill that opens a dropdown (Active / Parked / Shipped / Killed), type badge that opens a dropdown (Design blue, Dev teal, Ops purple, Offer amber, Tooling green), owner text. North Star single-liner for the one-sentence definition of done. Sub-points list with checkbox toggle, inline title edit, expandable notes per row, drag-to-reorder via native HTML5 DnD, and delete with confirm. New sub-point row at the bottom adds on Enter. Meta footer shows created date, last touched, and a backlink to the originating idea if this initiative was promoted from the inbox" },
+      { type: "added", text: "Idea detail at /rd/ideas/[id]. Editable title and why, status dropdown, type dropdown that accepts Unsure as a null option, submitter and submission time read-only. Big Promote to Initiative button that opens a modal pre-filled with the idea's title as the initiative name and the why as the north star. Confirming creates the initiative with promoted_from_idea_id set, flips the idea's status to promoted, and redirects to the new initiative so the team can start adding sub-points immediately" },
+      { type: "added", text: "R&D entry pinned to both sidebars (admin and team). LightBulbIcon, sits next to Pods in the admin nav and below Payments in the team nav. /rd and /rd/* are whitelisted in auth-gate.tsx so team-role members can navigate in to drop ideas without being kicked back to /team" },
+      { type: "added", text: "Migration 019_create_rd_tracker.sql. Three tables (rd_initiatives, rd_subpoints, rd_ideas) using the same { id text pk, data jsonb, updated_at } pattern as pods_v2_*. RLS enabled with anon policies so the existing service-role-less Supabase client works. Indexes on updated_at to support the stale-flag query path. Run in the Supabase SQL editor before deploying — migrations don't auto-apply" },
+      { type: "added", text: "rd lib at src/lib/rd. types.ts holds Initiative, Subpoint, Idea, status enums, and RD_TYPE_META for badge colours. data.ts wraps createStore() per table plus derived helpers (progressPct, lastTouchedISO, isStale at 14 days, timeAgo formatter matching the /tools/issues one, firstName, sortSubpoints by position, nextPosition for appending). Stores use create/update/remove only — never saveAll — so multi-device writes from the team are additive and don't risk wiping each other (per the MEMORY note on solo-store vs multi-device sync)" },
+    ],
+  },
+  {
     id: "cl-73",
     date: "20 May 2026",
     version: "0.46.0",

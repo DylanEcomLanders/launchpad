@@ -15,6 +15,7 @@ import {
   PhotoIcon,
   Squares2X2Icon,
   BanknotesIcon,
+  LightBulbIcon,
 } from "@heroicons/react/24/solid";
 import { Logo } from "@/components/logo";
 
@@ -47,6 +48,14 @@ const navItems: NavItem[] = [
     label: "Payments",
     href: "/team/payments",
     icon: <BanknotesIcon className="size-4" />,
+  },
+  {
+    /* R&D Tracker — same /rd route as the admin sidebar. Team role is
+     * whitelisted in auth-gate.tsx so they can drop ideas into the
+     * inbox. */
+    label: "R&D",
+    href: "/rd",
+    icon: <LightBulbIcon className="size-4" />,
   },
 ];
 

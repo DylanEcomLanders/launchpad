@@ -21,6 +21,7 @@ import {
   WrenchScrewdriverIcon,
   PuzzlePieceIcon,
   Squares2X2Icon,
+  LightBulbIcon,
 } from "@heroicons/react/24/solid";
 import { LogoMark } from "@/components/logo";
 import { AppSwitcher } from "@/components/app-switcher";
@@ -177,6 +178,14 @@ const agentsItem = {
   label: "Agents",
   href: "/agents",
   icon: <WrenchScrewdriverIcon className="size-4" />,
+};
+/* R&D Tracker — internal accountability + team idea inbox. Sits with
+ * the pinned top-level cluster (rather than inside a collapsible
+ * section) because the team needs one-click access to drop ideas. */
+const rdItem = {
+  label: "R&D",
+  href: "/rd",
+  icon: <LightBulbIcon className="size-4" />,
 };
 
 export function Sidebar() {
@@ -436,6 +445,7 @@ export function Sidebar() {
             {renderTopLink(offerItem)}
             {renderTopLink(engagementsItem)}
             {renderTopLink(podsItem)}
+            {renderTopLink(rdItem)}
           </div>
 
           {renderDivider()}
@@ -539,7 +549,7 @@ export function Sidebar() {
               onClick={() => setMobileOpen(false)}
               className="text-[11px] text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
             >
-              Launchpad v0.46.0
+              Launchpad v0.47.0
             </Link>
           </div>
         )}

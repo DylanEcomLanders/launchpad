@@ -26,9 +26,10 @@ export function useRole() {
   return useContext(RoleContext);
 }
 
-/** Team role can only see /team/*, /portal/*, /tasks (the team task board)
- * and /pods-v2 (their pod's work in flight). Everything else kicks them
- * back to /team. */
+/** Team role can only see /team/*, /portal/*, /tasks (the team task board),
+ * /pods-v2 (their pod's work in flight), and /rd (the R&D tracker — team
+ * needs to drop ideas into the inbox). Everything else kicks them back
+ * to /team. */
 function isTeamAllowedPath(pathname: string): boolean {
   return (
     pathname === "/team" ||
@@ -36,7 +37,9 @@ function isTeamAllowedPath(pathname: string): boolean {
     pathname.startsWith("/portal/") ||
     pathname === "/tasks" ||
     pathname === "/pods-v2" ||
-    pathname.startsWith("/pods-v2/")
+    pathname.startsWith("/pods-v2/") ||
+    pathname === "/rd" ||
+    pathname.startsWith("/rd/")
   );
 }
 
