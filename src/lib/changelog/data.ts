@@ -48,6 +48,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "added", text: "Submit invoice link added to the team sidebar (DocumentTextIcon), positioned between Payments and R&D so the path from the payment-structure doc to the form is a one-tap shortcut" },
       { type: "improved", text: "Team-submitted invoices land as standard 'due' Expense rows so they show up in the existing /finance/expenses queue alongside everything else. No new UI on the finance side needed" },
       { type: "removed", text: "Slack ops ping on /api/team-invoice/submit. Submissions surface in /finance/expenses where Dylan reviews them anyway, so the ping was redundant noise. Slack imports stripped from the route too" },
+      { type: "removed", text: "R&D entry from the team sidebar. The team hub stays focused on pod delivery work; R&D is admin/cro-only for now. The /rd route is still whitelisted in auth-gate so direct links keep working if shared, but the team hub no longer surfaces it" },
     ],
   },
   {
