@@ -3,7 +3,9 @@
  * Expense row in finance_expenses. Team role doesn't have direct
  * access to finance_* (RLS denies anon) so this route is the bridge:
  * validates the launchpad-role cookie, builds an Expense with sensible
- * defaults, writes via the service-role client, then pings Slack ops.
+ * defaults, writes via the service-role client. No Slack ping —
+ * submissions are reviewed in /finance/expenses where they land as
+ * standard 'due' rows alongside everything else.
  *
  * Defaults applied:
  *   category         = "contractor"   (per payment-structure model)
@@ -23,7 +25,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { financeServerClient, FinanceConfigError } from "@/lib/finance/server-supabase";
-import { postSlackMessage, getOpsChannelId, getAppUrl } from "@/lib/slack-bot";
 
 interface SubmitPayload {
   name: string;
@@ -149,64 +150,6 @@ export async function POST(req: NextRequest) {
     }
     const msg = err instanceof Error ? err.message : "Submit failed";
     return NextResponse.json({ error: msg }, { status: 500 });
-  }
-
-  // ── Slack ping ────────────────────────────────────────────────
-  /* Best-effort. If Slack is misconfigured we still return success so
-   * the team's submission isn't blocked by a missing webhook. */
-  try {
-    const opsChannel = getOpsChannelId();
-    if (opsChannel) {
-      const appUrl = getAppUrl();
-      const amountStr = new Intl.NumberFormat("en-GB", {
-        style: "currency",
-        currency: "GBP",
-        minimumFractionDigits: 2,
-      }).format(amount);
-      await postSlackMessage(
-        opsChannel,
-        `New team invoice: ${name} for ${amountStr}`,
-        [
-          {
-            type: "header",
-            text: { type: "plain_text", text: `🧾 Team invoice: ${name}` },
-          },
-          {
-            type: "section",
-            fields: [
-              { type: "mrkdwn", text: `*Amount:*\n${amountStr}` },
-              { type: "mrkdwn", text: `*Invoice date:*\n${date}` },
-              { type: "mrkdwn", text: `*Tax year:*\n${taxYear || "—"}` },
-              { type: "mrkdwn", text: `*File:*\n${body.file_name || "(none attached)"}` },
-            ],
-          },
-          ...(body.notes
-            ? [
-                {
-                  type: "section",
-                  text: {
-                    type: "mrkdwn",
-                    text: `*Notes:*\n${body.notes.slice(0, 400)}${body.notes.length > 400 ? "..." : ""}`,
-                  },
-                },
-              ]
-            : []),
-          {
-            type: "actions",
-            elements: [
-              {
-                type: "button",
-                text: { type: "plain_text", text: "Review in Finance" },
-                url: `${appUrl}/finance/expenses`,
-                style: "primary",
-              },
-            ],
-          },
-        ],
-      );
-    }
-  } catch {
-    // Slack ping is best-effort; don't fail the submission on it
   }
 
   return NextResponse.json({ success: true, id });
