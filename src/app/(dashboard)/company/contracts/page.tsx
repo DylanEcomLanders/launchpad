@@ -11,13 +11,15 @@
  */
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { DocumentTextIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
+import { DocumentTextIcon, ShieldCheckIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { agreementStore } from "@/lib/agreements/data";
 import { peopleStore } from "@/lib/company/data";
 import type { Agreement, AgreementStatus } from "@/lib/agreements/types";
 import { AGREEMENT_STATUS_META, AGREEMENT_KIND_LABEL } from "@/lib/agreements/types";
 import type { Person } from "@/lib/company/types";
+import { QuickAddAgreementModal } from "@/components/agreements/quick-add-modal";
 
 const STATUS_ORDER: AgreementStatus[] = [
   "team_signed",
@@ -29,9 +31,11 @@ const STATUS_ORDER: AgreementStatus[] = [
 ];
 
 export default function ContractsListPage() {
+  const router = useRouter();
   const [agreements, setAgreements] = useState<Agreement[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
 
   useEffect(() => {
     Promise.all([agreementStore.getAll(), peopleStore.getAll()]).then(([a, p]) => {
@@ -40,6 +44,20 @@ export default function ContractsListPage() {
       setLoading(false);
     });
   }, []);
+
+  function onQuickAddCreated(created: Agreement[]) {
+    setQuickAddOpen(false);
+    /* Optimistic: merge the new agreements into local state so the
+     * list reflects the change without waiting for a refetch. */
+    setAgreements((prev) => [...created, ...prev]);
+    /* If we created exactly one agreement, deep-link straight to its
+     * detail page (the user is most likely about to copy the signing
+     * URL). If we created two (typical NDA + contract case), stay on
+     * the list so they can copy both URLs at their own pace. */
+    if (created.length === 1) {
+      router.push(`/company/contracts/${created[0].id}`);
+    }
+  }
 
   const peopleById = useMemo(() => {
     const m = new Map<string, Person>();
@@ -98,12 +116,13 @@ export default function ContractsListPage() {
             <DocumentTextIcon className="size-4" />
             Templates
           </Link>
-          <Link
-            href="/company/people"
+          <button
+            onClick={() => setQuickAddOpen(true)}
             className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#1B1B1B] text-white text-[13px] font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
           >
-            Manage people
-          </Link>
+            <PlusIcon className="size-4" />
+            New agreement
+          </button>
         </div>
       </div>
 
@@ -114,10 +133,18 @@ export default function ContractsListPage() {
             No agreements yet
           </div>
           <div className="text-[13px] text-[#7A7A7A] mb-5 max-w-md mx-auto">
-            Add a person at <Link href="/company/people" className="underline">/company/people</Link> or
-            convert a candidate at <Link href="/company/hiring" className="underline">/company/hiring</Link>.
-            Their profile page lets you generate an NDA and a contract.
+            Click <strong>New agreement</strong> above to spin up an NDA and contract
+            from just name, role, and compensation. Or convert a candidate at{" "}
+            <Link href="/company/hiring" className="underline">/company/hiring</Link>{" "}
+            for the full hiring flow.
           </div>
+          <button
+            onClick={() => setQuickAddOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#1B1B1B] text-white text-[13px] font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
+          >
+            <PlusIcon className="size-4" />
+            New agreement
+          </button>
         </div>
       ) : (
         STATUS_ORDER.map((status) => {
@@ -168,6 +195,14 @@ export default function ContractsListPage() {
           );
         })
       )}
+
+      <QuickAddAgreementModal
+        open={quickAddOpen}
+        onClose={() => setQuickAddOpen(false)}
+        existingPeople={people}
+        existingAgreements={agreements}
+        onCreated={onQuickAddCreated}
+      />
     </div>
   );
 }
