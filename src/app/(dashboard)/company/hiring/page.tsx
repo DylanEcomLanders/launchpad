@@ -29,6 +29,8 @@ import {
 } from "@/lib/company/types";
 import { inputClass, labelClass, selectClass, textareaClass } from "@/lib/form-styles";
 import { CANDIDATE_STATUS_BADGE } from "@/lib/company/ui";
+import { GenerateAgreementsModal } from "@/components/agreements/generate-modal";
+import type { Agreement } from "@/lib/agreements/types";
 
 export default function HiringPage() {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -39,6 +41,9 @@ export default function HiringPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [composeFor, setComposeFor] = useState<CandidateStatus | null>(null);
   const [showAddRole, setShowAddRole] = useState(false);
+  /* Person we just promoted from a candidate; opens the agreements
+   * modal pre-filled so Dylan generates NDA + contract in the same flow. */
+  const [hiredPerson, setHiredPerson] = useState<Person | null>(null);
 
   useEffect(() => {
     Promise.all([candidatesStore.getAll(), openRolesStore.getAll()]).then(([c, r]) => {
@@ -115,7 +120,19 @@ export default function HiringPage() {
     };
     await peopleStore.create(person);
     await patchCandidate(c.id, { status: "hired" });
-    alert(`Created person: ${person.full_name}`);
+    /* Open the agreements modal so NDA + contract can be generated in
+     * the same beat. The modal can be cancelled if not needed yet — the
+     * Person row is already created either way. */
+    setHiredPerson(person);
+  }
+
+  function onAgreementsCreated(created: Agreement[]) {
+    setHiredPerson(null);
+    if (created.length === 1) {
+      window.location.href = `/company/contracts/${created[0].id}`;
+    } else if (created.length > 1) {
+      window.location.href = `/company/contracts`;
+    }
   }
 
   async function addRole(r: OpenRole) {
@@ -249,6 +266,19 @@ export default function HiringPage() {
           onPatch={(u) => patchCandidate(selected.id, u)}
           onDelete={() => removeCandidate(selected.id)}
           onConvert={() => convertToPerson(selected)}
+        />
+      )}
+
+      {/* Post-hire agreements modal — opens automatically after a candidate
+          is converted to a Person so NDA + contract can be generated in
+          the same beat. Skippable; the Person row exists either way. */}
+      {hiredPerson && (
+        <GenerateAgreementsModal
+          open={!!hiredPerson}
+          onClose={() => setHiredPerson(null)}
+          person={hiredPerson}
+          existing={[]}
+          onCreated={onAgreementsCreated}
         />
       )}
     </div>

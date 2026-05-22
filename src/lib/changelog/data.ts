@@ -37,6 +37,25 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-76",
+    date: "23 May 2026",
+    version: "0.49.0",
+    title: "Team agreements: spin up an NDA and contract on every hire, sign in-app, counter-sign in admin",
+    changes: [
+      { type: "added", text: "New /company/contracts module covering the whole lifecycle: editable master templates, per-person agreement records, public signing pages, and counter-sign from admin. Two kinds — NDA and Contract — share the same underlying table (company_agreements) with a polymorphic kind field. Each agreement snapshots the active template at creation, so editing the master later only affects future agreements, never already-signed ones" },
+      { type: "added", text: "Templates editor at /company/contracts/templates. Edit document title, intro paragraph, numbered clauses (heading + body + optional employment-type gate), outro, and a revision label. Mustache-style {{ placeholders }} for person_full_name, person_job_title, person_employment_type, start_date, effective_date, comp_amount, comp_currency, comp_frequency. Sticky save bar so long edits don't require scroll-back. Yellow disclaimer banner reminds you to run the seeded clauses past a solicitor before sending — they're a sensible UK micro-agency starting point, not legal advice" },
+      { type: "added", text: "Sensible default templates seeded on first run via ensureTemplate(). NDA covers confidentiality, recipient obligations, exclusions, term + return of info, no grant of rights, remedies, governing law (England + Wales). Contract covers engagement + services, working pattern (separate clauses for employee vs contractor, gated via only_for), compensation, payment cycle aligned to the 28th-of-month team invoice flow, IP assignment, confidentiality cross-reference, conflicts of interest, termination, governing law" },
+      { type: "added", text: "Hiring flow now opens a Generate Agreements modal automatically after Convert to Person, pre-filled with role + employment type + comp + start date. Tick NDA, Contract, or both, submit, and the agreements are created in draft and you're redirected to the contract detail (if one) or the list (if two)" },
+      { type: "added", text: "Backfill: new Agreements tab on every Person profile (/company/people/[id]) lists existing agreements with status pills and offers a Generate button for any that don't exist yet. Existing team members hired before this feature can have their paper trail backfilled in a few clicks" },
+      { type: "added", text: "Per-agreement detail at /company/contracts/[id]. Shows the rendered document with placeholders resolved, both signature blocks (team member + Company), Mark as sent action, copy-to-clipboard signing link, counter-sign panel that opens a signature pad when the team member has signed, terminate flow with optional reason capture, and delete. Status pill colours: draft (grey), sent (amber), awaiting-counter (orange), signed/active (green), terminated (red)" },
+      { type: "added", text: "Public signing at /agreement/[id]. One route serves both NDAs and contracts; the page adapts copy based on agreement.kind. Renders the snapshotted document with placeholders resolved, scroll-to-read full clauses, agreement checkbox, full-name confirmation, signature pad, submit. After signing shows confirmation + the rendered document so the signer has visual proof the submission went through. Already-signed visits show the same view as confirmation" },
+      { type: "added", text: "Admin contracts list at /company/contracts. All agreements grouped by status with team_signed and sent surfaced first (those are the ones needing action). Header summary counts: N total, N awaiting your counter-sign, N awaiting team member. Templates + Manage people buttons in the top-right" },
+      { type: "added", text: "Migration 020_create_agreements.sql. Two tables (company_agreements, company_agreement_templates) using the { id text pk, data jsonb, updated_at } pattern with RLS + anon policies + updated_at indexes. Run in the Supabase SQL editor before merging — migrations don't auto-apply" },
+      { type: "added", text: "agreements lib at src/lib/agreements. types.ts holds Agreement, AgreementTemplate, status enums, AGREEMENT_STATUS_META for badge colours. defaults.ts holds the seeded NDA + Contract template content. data.ts wraps createStore() per table plus ensureTemplate() which seeds the default content on first read. render.ts resolves Mustache placeholders against a snapshotted agreement and filters clauses by only_for so a single template covers both employment types" },
+      { type: "added", text: "Sidebar entry: Contracts added under the Company collapsible section. Company sub-tab strip in /company/* layout also gets a Contracts tab between Hiring and the end, with a ShieldCheck icon" },
+    ],
+  },
+  {
     id: "cl-75",
     date: "22 May 2026",
     version: "0.48.0",

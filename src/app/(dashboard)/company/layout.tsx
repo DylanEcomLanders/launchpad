@@ -10,6 +10,7 @@ import {
   Squares2X2Icon,
   DocumentTextIcon,
   BriefcaseIcon,
+  ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 
 const TABS = [
@@ -18,6 +19,7 @@ const TABS = [
   { href: "/company/structure", label: "Structure", icon: Squares2X2Icon },
   { href: "/company/invoices", label: "Invoices", icon: DocumentTextIcon },
   { href: "/company/hiring", label: "Hiring", icon: BriefcaseIcon },
+  { href: "/company/contracts", label: "Contracts", icon: ShieldCheckIcon },
 ];
 
 const COMPANY_PASSWORD = "Football2026";

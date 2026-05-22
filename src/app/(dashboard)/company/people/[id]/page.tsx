@@ -10,6 +10,10 @@ import {
   PhotoIcon,
 } from "@heroicons/react/24/outline";
 import { peopleStore, uid, nowISO, fmtDateUK, fmtMoney } from "@/lib/company/data";
+import { agreementStore } from "@/lib/agreements/data";
+import type { Agreement } from "@/lib/agreements/types";
+import { AGREEMENT_STATUS_META, AGREEMENT_KIND_LABEL } from "@/lib/agreements/types";
+import { GenerateAgreementsModal } from "@/components/agreements/generate-modal";
 import {
   type Person,
   type CompensationChange,
@@ -22,7 +26,7 @@ import { inputClass, labelClass, selectClass, textareaClass } from "@/lib/form-s
 import { initials, deptColor, STATUS_BADGE } from "@/lib/company/ui";
 import { useRole } from "@/components/auth-gate";
 
-type Tab = "overview" | "financial" | "performance";
+type Tab = "overview" | "financial" | "performance" | "agreements";
 
 export default function PersonProfilePage() {
   const params = useParams();
@@ -74,6 +78,7 @@ export default function PersonProfilePage() {
   const isAdmin = role === "admin";
   const tabs: { id: Tab; label: string; visible: boolean }[] = [
     { id: "overview", label: "Overview", visible: true },
+    { id: "agreements", label: "Agreements", visible: isAdmin },
     { id: "financial", label: "Financial", visible: isAdmin },
     { id: "performance", label: "Performance", visible: isAdmin },
   ];
@@ -153,6 +158,9 @@ export default function PersonProfilePage() {
 
       {tab === "overview" && (
         <OverviewTab person={person} allPeople={allPeople} onPatch={patch} />
+      )}
+      {tab === "agreements" && isAdmin && (
+        <AgreementsTab person={person} />
       )}
       {tab === "financial" && isAdmin && (
         <FinancialTab person={person} onPatch={patch} />
@@ -830,3 +838,107 @@ function FieldSelect({
     </div>
   );
 }
+
+/* ─────────────── Agreements tab ─────────────── */
+
+function AgreementsTab({ person }: { person: Person }) {
+  const router = useRouter();
+  const [agreements, setAgreements] = useState<Agreement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  useEffect(() => {
+    agreementStore.getAll().then((all) => {
+      setAgreements(all.filter((a) => a.person_id === person.id));
+      setLoading(false);
+    });
+  }, [person.id]);
+
+  const hasNda = agreements.some((a) => a.kind === "nda");
+  const hasContract = agreements.some((a) => a.kind === "contract");
+  const canGenerateMore = !hasNda || !hasContract;
+
+  function onCreated(created: Agreement[]) {
+    setAgreements((prev) => [...created, ...prev]);
+    setModalOpen(false);
+    if (created.length === 1) {
+      router.push(`/company/contracts/${created[0].id}`);
+    }
+  }
+
+  if (loading) {
+    return <div className="h-24 bg-[#F7F8FA] rounded-xl animate-pulse" />;
+  }
+
+  return (
+    <div>
+      {agreements.length === 0 ? (
+        <div className="bg-[#F7F8FA] border border-dashed border-[#E5E5EA] rounded-xl p-8 text-center">
+          <p className="text-sm text-[#1B1B1B] font-medium mb-1">
+            No agreements yet for {person.full_name}.
+          </p>
+          <p className="text-xs text-[#7A7A7A] mb-5 max-w-md mx-auto">
+            Generate an NDA, a contract, or both. Each captures a snapshot of
+            the current master template so future edits don&apos;t rewrite it.
+          </p>
+          <button
+            onClick={() => setModalOpen(true)}
+            className="px-3.5 py-2 bg-[#1B1B1B] text-white text-sm font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
+          >
+            Generate agreements
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {agreements.map((a) => {
+            const meta = AGREEMENT_STATUS_META[a.status];
+            return (
+              <Link
+                key={a.id}
+                href={`/company/contracts/${a.id}`}
+                className="flex items-center justify-between gap-3 bg-white border border-[#E5E5EA] rounded-xl p-4 hover:border-[#1B1B1B]/30 hover:shadow-[var(--shadow-soft)] transition-all"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-[#F3F3F5] text-[#1B1B1B]">
+                    {AGREEMENT_KIND_LABEL[a.kind]}
+                  </span>
+                  <div>
+                    <div className="text-[14px] font-medium text-[#1B1B1B]">
+                      {a.template_body.title}
+                    </div>
+                    <div className="text-[11px] text-[#7A7A7A] mt-0.5">
+                      {a.template_revision}
+                    </div>
+                  </div>
+                </div>
+                <span
+                  className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded shrink-0"
+                  style={{ background: meta.bg, color: meta.fg }}
+                >
+                  {meta.label}
+                </span>
+              </Link>
+            );
+          })}
+          {canGenerateMore && (
+            <button
+              onClick={() => setModalOpen(true)}
+              className="w-full py-3 border border-dashed border-[#E5E5EA] rounded-xl text-[13px] text-[#7A7A7A] hover:border-[#1B1B1B] hover:text-[#1B1B1B] transition-colors"
+            >
+              + Generate {!hasNda && !hasContract ? "agreements" : !hasNda ? "NDA" : "contract"}
+            </button>
+          )}
+        </div>
+      )}
+
+      <GenerateAgreementsModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        person={person}
+        existing={agreements}
+        onCreated={onCreated}
+      />
+    </div>
+  );
+}
+
