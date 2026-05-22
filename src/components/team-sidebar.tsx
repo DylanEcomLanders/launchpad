@@ -16,6 +16,7 @@ import {
   Squares2X2Icon,
   BanknotesIcon,
   LightBulbIcon,
+  DocumentTextIcon,
 } from "@heroicons/react/24/solid";
 import { Logo } from "@/components/logo";
 
@@ -48,6 +49,14 @@ const navItems: NavItem[] = [
     label: "Payments",
     href: "/team/payments",
     icon: <BanknotesIcon className="size-4" />,
+  },
+  {
+    /* Native invoice submission — replaces the old ClickUp form linked
+     * from /team/payments. Submissions create finance_expenses rows
+     * (contractor, due) via /api/team-invoice/submit. */
+    label: "Submit invoice",
+    href: "/team/invoice",
+    icon: <DocumentTextIcon className="size-4" />,
   },
   {
     /* R&D Tracker — same /rd route as the admin sidebar. Team role is

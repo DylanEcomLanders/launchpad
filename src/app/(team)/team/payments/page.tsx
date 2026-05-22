@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { DecorativeBlocks } from "@/components/decorative-blocks";
 
 export const metadata = {
@@ -301,23 +302,23 @@ export default function TeamPaymentsPage() {
             />
           </div>
 
-          {/* Invoice form CTA */}
-          <a
-            href="https://forms.clickup.com/90152130658/f/2kyqrp32-855/7BOKI2R7YH72RYJY4R"
-            target="_blank"
-            rel="noopener noreferrer"
+          {/* Invoice form CTA — now native at /team/invoice. Submissions
+              land directly in finance_expenses as 'due' contractor rows and
+              ping ops in Slack. */}
+          <Link
+            href="/team/invoice"
             className="mt-5 flex items-center justify-between gap-4 p-5 rounded-lg bg-[#1B1B1B] text-white hover:bg-[#2A2A2A] transition-colors group"
           >
             <div className="flex flex-col gap-1">
               <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#A0A0A0]">Submit invoice</div>
               <div className="text-base md:text-lg font-bold tracking-tight text-white">Open the invoice form</div>
-              <div className="text-xs text-[#BBB] mt-1">ClickUp form · opens in a new tab</div>
+              <div className="text-xs text-[#BBB] mt-1">Native form · attaches your PDF and lands with finance</div>
             </div>
             <div className="font-mono text-xs uppercase tracking-[0.14em] text-white flex items-center gap-2 group-hover:gap-3 transition-all shrink-0">
               Open
-              <span aria-hidden>↗</span>
+              <span aria-hidden>→</span>
             </div>
-          </a>
+          </Link>
           <Aside>
             Double-check your numbers before sending. Once an invoice is paid, fixing errors is messier than catching them beforehand. If a project&apos;s pay looks off — wrong tier, missing rebate, rush surcharge missed — flag it to Alister before invoicing.
           </Aside>

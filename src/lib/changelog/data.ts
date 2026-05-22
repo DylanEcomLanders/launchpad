@@ -37,6 +37,19 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-75",
+    date: "22 May 2026",
+    version: "0.48.0",
+    title: "Team invoice submission lives inside Launchpad, expenses bypass ClickUp",
+    changes: [
+      { type: "added", text: "New /team/invoice form replaces the ClickUp invoice link in /team/payments. Four required fields (name, amount, invoice date, PDF/image attachment) plus an optional notes textarea. Name is remembered across submissions via the same launchpad-current-user-name localStorage key the R&D tracker uses. Submit is gated until a file is attached, the file uploads on selection so the submit click is fast, and the success state offers Submit another or Back to payments without forcing a page reload" },
+      { type: "added", text: "Two new API routes behind the form. POST /api/team-invoice/upload accepts a PDF/PNG/JPG/WebP up to 25MB, validates the launchpad-role cookie is team/admin/cro, uploads to the existing finance-documents bucket under a team-invoices/ folder, and returns a 24h signed URL plus the storage path so Dylan can re-open the file from the Slack ping without re-signing. POST /api/team-invoice/submit takes the metadata, builds a finance_expenses row server-side via the service-role client (defaults: category=contractor, status=due, vat_treatment=outside_scope, currency=GBP, tax_year auto-derived from the UK April 6 boundary), inserts it, then best-effort pings #ops in Slack with a header card showing name + amount + date + tax year + a button to /finance/expenses. Slack failure doesn't fail the submission" },
+      { type: "improved", text: "/team/payments invoice CTA now links to the internal form instead of the external ClickUp form. Same dark CTA styling, copy updated to 'Native form, attaches your PDF and lands with finance'. ClickUp form URL is no longer referenced anywhere in the codebase, so when you're ready to retire the ClickUp form on their end the only thing to do is delete the form there" },
+      { type: "added", text: "Submit invoice link added to the team sidebar (DocumentTextIcon), positioned between Payments and R&D so the path from the payment-structure doc to the form is a one-tap shortcut" },
+      { type: "improved", text: "Team-submitted invoices land as standard 'due' Expense rows so they show up in the existing /finance/expenses queue alongside everything else. No new UI on the finance side needed — the Slack ping is the inbound signal, the queue is where you review and pay" },
+    ],
+  },
+  {
     id: "cl-74",
     date: "22 May 2026",
     version: "0.47.0",
