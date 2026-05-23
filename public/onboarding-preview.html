@@ -57,17 +57,12 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ink-3);
+    color: var(--ink);
   }
-  .brand .dot {
-    width: 8px;
-    height: 8px;
-    background: var(--accent);
-    border-radius: 2px;
+  .brand img {
+    height: 18px;
+    width: auto;
+    display: block;
   }
   .step-indicator {
     font-size: 11px;
@@ -588,7 +583,7 @@
 
 <div class="topbar">
   <div class="topbar-inner">
-    <div class="brand"><span class="dot"></span><span>Ecom Landers</span></div>
+    <div class="brand"><img src="/el-logo.svg" alt="Ecom Landers" /></div>
     <div class="step-indicator"><span id="stepNum">1</span> of <span id="stepTotal">12</span></div>
   </div>
   <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
@@ -600,13 +595,8 @@
     <!-- 1. WELCOME -->
     <section class="slide active" data-step="1">
       <div class="welcome">
-        <h1>Tell us how you sell.</h1>
-        <p class="lede">Twelve short steps. We learn how your brand works, what you have running, and what you're aiming at. The faster we understand your funnel, the faster we move on it.</p>
-        <div class="meta">
-          <div class="meta-tile"><strong>~15 min</strong>12 steps, no fluff</div>
-          <div class="meta-tile"><strong>Saves as you go</strong>Close the tab, come back</div>
-          <div class="meta-tile"><strong>Visual</strong>Rate designs, pick apps</div>
-        </div>
+        <h1>Onboarding</h1>
+        <p class="lede">12 short questions about your brand, store, and what you're building. Takes about 15 minutes. Progress saves automatically, so you can close the tab and come back anytime.</p>
       </div>
     </section>
 
