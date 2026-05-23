@@ -1,0 +1,1588 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ecom Landers — Onboarding (Preview)</title>
+<style>
+  :root {
+    --bg: #FAFAFA;
+    --card: #FFFFFF;
+    --ink: #1A1A1A;
+    --ink-2: #555;
+    --ink-3: #777;
+    --ink-4: #AAA;
+    --line: #E5E5EA;
+    --line-2: #F0F0F0;
+    --accent: #1B1B1B;
+    --accent-hover: #2D2D2D;
+    --love: #10B981;
+    --meh: #F59E0B;
+    --avoid: #EF4444;
+    --soft: #F3F3F5;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Top progress bar ─────────────────────────────── */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+  .topbar-inner {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 18px 24px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .brand .dot {
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+  .step-indicator {
+    font-size: 11px;
+    color: var(--ink-4);
+    font-variant-numeric: tabular-nums;
+  }
+  .progress {
+    height: 4px;
+    background: var(--line-2);
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent) 0%, #444 100%);
+    width: 0%;
+    transition: width 380ms cubic-bezier(.4,0,.2,1);
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* ── Slide layout ─────────────────────────────────── */
+  main {
+    flex: 1;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    padding: 40px 20px 120px;
+  }
+  .deck {
+    width: 100%;
+    max-width: 680px;
+    position: relative;
+  }
+  .slide {
+    display: none;
+    animation: slideIn 340ms cubic-bezier(.2,.7,.3,1);
+  }
+  .slide.active { display: block; }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  /* Subtle stagger so fields/cards arrive a beat after the header.
+   * Compounds nicely with the slide-level fade-in without feeling
+   * fussy. */
+  .slide.active .fields,
+  .slide.active .design-grid,
+  .slide.active #appsByCategory,
+  .slide.active .summary,
+  .slide.active .welcome .meta {
+    animation: rise 380ms cubic-bezier(.2,.7,.3,1) 60ms both;
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin-bottom: 12px;
+  }
+  h1.slide-title {
+    font-size: 30px;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 14px;
+  }
+  .lede {
+    color: var(--ink-3);
+    font-size: 15px;
+    line-height: 1.55;
+    margin: 0 0 28px;
+    max-width: 560px;
+  }
+
+  /* ── Fields ───────────────────────────────────────── */
+  .fields { display: flex; flex-direction: column; gap: 18px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 560px) {
+    .row { grid-template-columns: 1fr; }
+    h1.slide-title { font-size: 24px; }
+  }
+  .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .field .hint {
+    display: block;
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-bottom: 8px;
+  }
+  input[type="text"], input[type="url"], input[type="email"], textarea, select {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 14px;
+    color: var(--ink);
+    font-family: inherit;
+    transition: border-color 120ms, box-shadow 120ms;
+  }
+  textarea { min-height: 96px; resize: vertical; }
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(27,27,27,0.06);
+  }
+  ::placeholder { color: #CCC; }
+
+  /* ── Chip groups ──────────────────────────────────── */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: all 120ms;
+    user-select: none;
+  }
+  .chip:hover { border-color: #BBB; }
+  .chip.on {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  /* ── Design pick cards (love / meh / avoid) ───────── */
+  .design-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 560px) {
+    .design-grid { grid-template-columns: 1fr; }
+  }
+  .design-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 120ms, transform 120ms;
+  }
+  .design-card:hover { border-color: #CFCFCF; }
+  .design-card.love { border-color: var(--love); box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
+  .design-card.meh { border-color: var(--meh); box-shadow: 0 0 0 3px rgba(245,158,11,0.1); }
+  .design-card.avoid { border-color: var(--avoid); box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+  .design-thumb {
+    aspect-ratio: 4 / 3;
+    background: var(--soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .design-thumb svg { width: 100%; height: 100%; display: block; }
+  .design-meta {
+    padding: 10px 12px 12px;
+  }
+  .design-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .design-subtitle {
+    font-size: 11px;
+    color: var(--ink-3);
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  .design-actions { display: flex; gap: 4px; }
+  .react-btn {
+    flex: 1;
+    padding: 7px 0;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink-3);
+    cursor: pointer;
+    transition: all 100ms;
+    letter-spacing: 0.02em;
+  }
+  .react-btn:hover { border-color: #BBB; color: var(--ink); }
+  .react-btn.on-love { background: var(--love); border-color: var(--love); color: #fff; }
+  .react-btn.on-meh { background: var(--meh); border-color: var(--meh); color: #fff; }
+  .react-btn.on-avoid { background: var(--avoid); border-color: var(--avoid); color: #fff; }
+
+  /* ── App picker ───────────────────────────────────── */
+  .apps-search-wrap {
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .apps-search {
+    padding-left: 36px !important;
+  }
+  .apps-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ink-4);
+    pointer-events: none;
+  }
+  .apps-category {
+    margin-bottom: 16px;
+  }
+  .apps-category-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin-bottom: 8px;
+    padding-left: 2px;
+  }
+  .apps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  @media (max-width: 560px) { .apps-grid { grid-template-columns: repeat(2, 1fr); } }
+  .apps-empty {
+    padding: 30px 20px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--ink-4);
+  }
+  .app-tile {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 120ms;
+    text-align: left;
+  }
+  .app-tile:hover { border-color: #BBB; }
+  .app-tile.on {
+    background: #111;
+    color: #fff;
+    border-color: #111;
+  }
+  .app-tile .name { font-size: 13px; font-weight: 600; }
+  .app-tile .category { font-size: 11px; color: var(--ink-4); }
+  .app-tile.on .category { color: rgba(255,255,255,0.6); }
+
+  .app-row {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .app-row-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .app-row-head .name { font-size: 14px; font-weight: 600; }
+  .app-row-head .category { font-size: 11px; color: var(--ink-4); }
+  .verdict-group {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .verdict {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-3);
+    cursor: pointer;
+    text-align: center;
+    transition: all 100ms;
+  }
+  .verdict:hover { border-color: #BBB; color: var(--ink); }
+  .verdict.on-keep { background: var(--love); color: #fff; border-color: var(--love); }
+  .verdict.on-replace { background: var(--avoid); color: #fff; border-color: var(--avoid); }
+  .verdict.on-unsure { background: var(--meh); color: #fff; border-color: var(--meh); }
+  .app-row textarea { min-height: 56px; }
+
+  /* ── File upload (preview-only, captures names) ───── */
+  .file-drop {
+    border: 1.5px dashed var(--line);
+    border-radius: 12px;
+    background: var(--card);
+    padding: 18px;
+    text-align: center;
+    transition: border-color 120ms, background 120ms;
+  }
+  .file-drop.drag {
+    border-color: var(--accent);
+    background: #FAFAFA;
+  }
+  .file-input { display: none; }
+  .file-label {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 14px 18px;
+    border-radius: 10px;
+  }
+  .file-label-prim {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .file-label-sec {
+    font-size: 11px;
+    color: var(--ink-3);
+  }
+  .file-list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .file-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    background: var(--soft);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+  .file-list .remove {
+    background: none;
+    border: 0;
+    color: var(--ink-4);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 4px;
+  }
+  .file-list .remove:hover { color: var(--avoid); }
+
+  /* ── Review summary ───────────────────────────────── */
+  .summary {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 4px 0;
+  }
+  .summary-section {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line-2);
+  }
+  .summary-section:last-child { border-bottom: 0; }
+  .summary-section h4 {
+    margin: 0 0 6px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-4);
+    font-weight: 600;
+  }
+  .summary-section p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--ink);
+    white-space: pre-wrap;
+  }
+  .summary-section .empty { color: var(--ink-4); font-style: italic; }
+  .summary-list { margin: 0; padding-left: 18px; font-size: 13px; }
+  .summary-list li { margin-bottom: 4px; }
+
+  /* ── Footer / nav ─────────────────────────────────── */
+  .nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(250,250,250,0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-top: 1px solid var(--line);
+    padding: 14px 20px;
+    z-index: 10;
+  }
+  .nav-inner {
+    max-width: 680px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .btn {
+    padding: 11px 22px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 120ms;
+    font-family: inherit;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-secondary {
+    background: transparent;
+    color: var(--ink-2);
+    border-color: var(--line);
+  }
+  .btn-secondary:hover { border-color: #999; color: var(--ink); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-3);
+    border: 0;
+    font-size: 12px;
+  }
+  .btn-ghost:hover { color: var(--ink); }
+  .kbd-hint {
+    font-size: 11px;
+    color: var(--ink-4);
+    display: none;
+  }
+  @media (min-width: 700px) { .kbd-hint { display: inline; } }
+  kbd {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10px;
+    color: var(--ink-2);
+  }
+
+  /* ── Welcome slide tweaks ─────────────────────────── */
+  .welcome {
+    text-align: center;
+    padding: 40px 0 0;
+  }
+  .welcome h1 {
+    font-size: 38px;
+    margin-bottom: 16px;
+  }
+  .welcome .lede { margin-left: auto; margin-right: auto; }
+  .welcome .meta {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    max-width: 520px;
+    margin: 32px auto 0;
+    font-size: 12px;
+    color: var(--ink-3);
+  }
+  .welcome .meta-tile {
+    padding: 14px 16px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    text-align: left;
+  }
+  .welcome .meta-tile strong {
+    color: var(--ink);
+    font-weight: 600;
+    display: block;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+    white-space: nowrap;
+  }
+  @media (max-width: 520px) {
+    .welcome .meta { grid-template-columns: 1fr; }
+  }
+
+  /* ── Done slide ───────────────────────────────────── */
+  .done {
+    text-align: center;
+    padding: 60px 0 0;
+  }
+  .done .check {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--love);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 22px;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand"><span class="dot"></span><span>Ecom Landers</span></div>
+    <div class="step-indicator"><span id="stepNum">1</span> of <span id="stepTotal">12</span></div>
+  </div>
+  <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<main>
+  <div class="deck" id="deck">
+
+    <!-- 1. WELCOME -->
+    <section class="slide active" data-step="1">
+      <div class="welcome">
+        <h1>Tell us how you sell.</h1>
+        <p class="lede">Twelve short steps. We learn how your brand works, what you have running, and what you're aiming at. The faster we understand your funnel, the faster we move on it.</p>
+        <div class="meta">
+          <div class="meta-tile"><strong>~15 min</strong>12 steps, no fluff</div>
+          <div class="meta-tile"><strong>Saves as you go</strong>Close the tab, come back</div>
+          <div class="meta-tile"><strong>Visual</strong>Rate designs, pick apps</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. BRAND BASICS -->
+    <section class="slide" data-step="2">
+      <div class="eyebrow">Step 1 of 12</div>
+      <h1 class="slide-title">First, the basics.</h1>
+      <p class="lede">Your name and email so we can reach you, plus the elevator pitch.</p>
+      <div class="fields">
+        <div class="row">
+          <div class="field">
+            <label>Your name</label>
+            <input type="text" data-key="primary_contact" placeholder="Your full name" />
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" data-key="email" placeholder="you@brand.com" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Company or brand name</label>
+            <input type="text" data-key="company_name" placeholder="e.g., Ecom Landers" />
+          </div>
+          <div class="field">
+            <label>Website</label>
+            <input type="url" data-key="website_url" placeholder="https://" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Brief description</label>
+          <span class="hint">One paragraph. What do you sell and who do you sell to?</span>
+          <textarea data-key="brief_description" placeholder="We make..."></textarea>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Who has final approval?</label>
+            <span class="hint">Name + role. Could be you.</span>
+            <input type="text" data-key="approval_decision_maker" placeholder="e.g., Jane (Founder)" />
+          </div>
+          <div class="field">
+            <label>Timezone (optional)</label>
+            <input type="text" data-key="timezone" placeholder="e.g., GMT, EST" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. CUSTOMER & COMPETITORS -->
+    <section class="slide" data-step="3">
+      <div class="eyebrow">Step 2 of 12</div>
+      <h1 class="slide-title">Who buys from you, and who else are they looking at?</h1>
+      <p class="lede">The more specific you get, the more we can lean into what matters.</p>
+      <div class="fields">
+        <div class="field">
+          <label>Target customer</label>
+          <span class="hint">Demographics, lifestyle, purchase triggers.</span>
+          <textarea data-key="target_customer" placeholder="e.g., Women 28-45, health-conscious, follow wellness creators on Instagram, buy on impulse but read reviews first..."></textarea>
+        </div>
+        <div class="field">
+          <label>Top 3 competitors</label>
+          <span class="hint">URLs or brand names. Direct or indirect, both useful.</span>
+          <textarea data-key="top_competitors"></textarea>
+        </div>
+        <div class="field">
+          <label>Your USPs</label>
+          <span class="hint">What sets you apart that a customer would actually notice?</span>
+          <textarea data-key="usps"></textarea>
+        </div>
+        <div class="field">
+          <label>Main products or offers to focus on</label>
+          <span class="hint">The SKUs, bundles, or services we're working around.</span>
+          <textarea data-key="main_products" placeholder="e.g., Hero SKU is the 30-day starter pack..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. PROJECT SPECIFICS (NEW) -->
+    <section class="slide" data-step="4">
+      <div class="eyebrow">Step 3 of 12 · Project</div>
+      <h1 class="slide-title">What are we building, and for whom?</h1>
+      <p class="lede">The pages, the traffic, the moving parts.</p>
+      <div class="fields">
+        <div class="field">
+          <label>Product or page URL(s)</label>
+          <span class="hint">The page we're building, rebuilding, or testing.</span>
+          <textarea data-key="product_url" placeholder="https://yourstore.com/products/..."></textarea>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Page type</label>
+            <span class="hint">Select all that apply.</span>
+            <div class="chips" data-chips="page_type" data-multi="1">
+              <div class="chip" data-val="PDP">PDP</div>
+              <div class="chip" data-val="Advertorial">Advertorial</div>
+              <div class="chip" data-val="Hero Lander">Hero Lander</div>
+              <div class="chip" data-val="Listicle">Listicle</div>
+              <div class="chip" data-val="Homepage">Homepage</div>
+              <div class="chip" data-val="Bundle Builder">Bundle Builder</div>
+              <div class="chip" data-val="Collection Page">Collection Page</div>
+              <div class="chip" data-val="Cart / Checkout">Cart / Checkout</div>
+              <div class="chip" data-val="Other">Other</div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Traffic source</label>
+            <span class="hint">Where does cold traffic come from?</span>
+            <div class="chips" data-chips="traffic_source" data-multi="1">
+              <div class="chip" data-val="Meta (cold)">Meta (cold)</div>
+              <div class="chip" data-val="Google">Google</div>
+              <div class="chip" data-val="Email">Email</div>
+              <div class="chip" data-val="Organic">Organic</div>
+              <div class="chip" data-val="TikTok">TikTok</div>
+              <div class="chip" data-val="Mixed">Mixed</div>
+              <div class="chip" data-val="Other">Other</div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Amazon ASIN(s)</label>
+            <span class="hint">If you also sell on Amazon.</span>
+            <input type="text" data-key="amazon_asins" placeholder="e.g., B09XYZ1234" />
+          </div>
+          <div class="field">
+            <label>Meta page name</label>
+            <span class="hint">So we can find your running ads.</span>
+            <input type="text" data-key="meta_page_name" placeholder="e.g., Ecomlanders on Meta" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Anything to prioritise or exclude?</label>
+          <span class="hint">Specific direction. Be opinionated.</span>
+          <textarea data-key="specific_direction" placeholder="e.g., push the subscription angle, avoid medical claims, do not test cart upsell yet..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. GOALS -->
+    <section class="slide" data-step="5">
+      <div class="eyebrow">Step 4 of 12</div>
+      <h1 class="slide-title">What does winning look like?</h1>
+      <p class="lede">We work backwards from the outcome. Be honest about the constraints too.</p>
+      <div class="fields">
+        <div class="field">
+          <label>Primary goal</label>
+          <span class="hint">Pick the one metric that matters most right now.</span>
+          <div class="chips" data-chips="primary_goal_chip">
+            <div class="chip" data-val="Increase CVR">Increase CVR</div>
+            <div class="chip" data-val="Raise AOV">Raise AOV</div>
+            <div class="chip" data-val="Scale revenue">Scale revenue</div>
+            <div class="chip" data-val="Lower CAC">Lower CAC</div>
+            <div class="chip" data-val="Grow LTV">Grow LTV</div>
+            <div class="chip" data-val="Email/SMS capture">Email/SMS capture</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Current metrics to track</label>
+          <span class="hint">Your baseline. CVR, AOV, ROAS, anything you watch.</span>
+          <textarea data-key="current_metrics" placeholder="e.g., current PDP CVR is 1.8%, AOV £64, Meta ROAS 1.7x..."></textarea>
+        </div>
+        <div class="field">
+          <label>What does success look like in your words?</label>
+          <textarea data-key="success_definition" placeholder="e.g., If we hit 3.2% CVR on the new PDP by end of Q3 with AOV holding above $68, that's a clear win."></textarea>
+        </div>
+        <div class="field">
+          <label>Timeline expectations</label>
+          <span class="hint">Hard launch dates, campaign deadlines, seasonal moments.</span>
+          <textarea data-key="timeline_expectations"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. RISK & BOTTLENECKS (NEW) -->
+    <section class="slide" data-step="6">
+      <div class="eyebrow">Step 5 of 12 · Risk</div>
+      <h1 class="slide-title">What's not working, and what could trip us up?</h1>
+      <p class="lede">Be candid. The faster we know the friction, the less we waste cycles on it.</p>
+      <div class="fields">
+        <div class="field">
+          <label>Known conversion challenges</label>
+          <span class="hint">Low mobile CVR, cart abandonment, weak email capture, etc.</span>
+          <textarea data-key="conversion_challenges" placeholder="e.g., mobile CVR is half of desktop, big drop at cart..."></textarea>
+        </div>
+        <div class="field">
+          <label>Common objections or negative feedback</label>
+          <span class="hint">What customers push back on most.</span>
+          <textarea data-key="common_objections" placeholder="e.g., 'too expensive', 'wasn't sure how to use it', delivery time complaints..."></textarea>
+        </div>
+        <div class="field">
+          <label>Compliance restrictions</label>
+          <span class="hint">Supplements, finance, skincare, alcohol. Anything regulated.</span>
+          <textarea data-key="compliance_restrictions" placeholder="e.g., can't make health claims, no before/afters without disclaimer..."></textarea>
+        </div>
+        <div class="field">
+          <label>Previous agencies or consultants</label>
+          <span class="hint">What worked, what didn't. We can learn from the scars.</span>
+          <textarea data-key="previous_agencies" placeholder="e.g., worked with X for 6 months, design was good but no test rigour..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. DESIGN VIBES -->
+    <section class="slide" data-step="7">
+      <div class="eyebrow">Step 6 of 12 · Design</div>
+      <h1 class="slide-title">What vibe are you going for?</h1>
+      <p class="lede">Pick as many as feel right. Wrong answers don't exist here.</p>
+      <div class="fields">
+        <div class="field">
+          <label>Brand feel</label>
+          <div class="chips" data-chips="vibe_chips" data-multi="1">
+            <div class="chip" data-val="Minimal">Minimal</div>
+            <div class="chip" data-val="Bold & loud">Bold & loud</div>
+            <div class="chip" data-val="Premium">Premium</div>
+            <div class="chip" data-val="Luxury">Luxury</div>
+            <div class="chip" data-val="Editorial">Editorial</div>
+            <div class="chip" data-val="Playful">Playful</div>
+            <div class="chip" data-val="Bright & energetic">Bright & energetic</div>
+            <div class="chip" data-val="Dark / moody">Dark / moody</div>
+            <div class="chip" data-val="Organic / natural">Organic / natural</div>
+            <div class="chip" data-val="Tech / clinical">Tech / clinical</div>
+            <div class="chip" data-val="Retro">Retro</div>
+            <div class="chip" data-val="Conversion-first">Conversion-first</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Brands whose look you love</label>
+          <span class="hint">Names or URLs. Doesn't need to be your category.</span>
+          <textarea data-key="design_inspiration" placeholder="e.g., Aesop, Glossier, Liquid Death, Olipop..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. DESIGN LOVE / AVOID -->
+    <section class="slide" data-step="8">
+      <div class="eyebrow">Step 7 of 12 · Design</div>
+      <h1 class="slide-title">Rate these. Quickly.</h1>
+      <p class="lede">For each one, tap Love, Meh, or Avoid. This calibrates our direction faster than any brief.</p>
+      <div class="design-grid" id="designGrid"></div>
+      <div style="margin-top: 22px;">
+        <div class="field">
+          <label>Anything to add?</label>
+          <span class="hint">Specific elements you love or hate from above.</span>
+          <textarea data-key="design_notes" placeholder="e.g., love the typography on #3, hate the bright colors on #5..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. VOICE -->
+    <section class="slide" data-step="9">
+      <div class="eyebrow">Step 8 of 12 · Voice</div>
+      <h1 class="slide-title">How should you sound?</h1>
+      <p class="lede">Voice is half the conversion lift. Pick a few that fit.</p>
+      <div class="fields">
+        <div class="field">
+          <label>Tone</label>
+          <div class="chips" data-chips="tone_chips" data-multi="1">
+            <div class="chip" data-val="Authoritative">Authoritative</div>
+            <div class="chip" data-val="Conversational">Conversational</div>
+            <div class="chip" data-val="Playful">Playful</div>
+            <div class="chip" data-val="Premium">Premium</div>
+            <div class="chip" data-val="Bold">Bold</div>
+            <div class="chip" data-val="Warm">Warm</div>
+            <div class="chip" data-val="Educational">Educational</div>
+            <div class="chip" data-val="Witty">Witty</div>
+            <div class="chip" data-val="Calm">Calm</div>
+            <div class="chip" data-val="Aspirational">Aspirational</div>
+            <div class="chip" data-val="Direct">Direct</div>
+            <div class="chip" data-val="Cheeky">Cheeky</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Core value props or benefits to highlight</label>
+          <span class="hint">Bullet list, the headline-worthy ones.</span>
+          <textarea data-key="core_value_props" placeholder="e.g., 30-day money-back, made in the UK, no synthetic anything..."></textarea>
+        </div>
+        <div class="field">
+          <label>Reviews, testimonials, or press to use</label>
+          <span class="hint">Links to a Yotpo / Loox export, press features, UGC archive.</span>
+          <textarea data-key="reviews_testimonials" placeholder="e.g., https://docs.google.com/.../reviews, featured in Vogue Jan 2026..."></textarea>
+        </div>
+        <div class="field">
+          <label>Words and claims to avoid</label>
+          <span class="hint">Compliance, brand guardrails, things customers have pushed back on.</span>
+          <textarea data-key="words_to_avoid" placeholder="e.g., no 'miracle', no 'cure', avoid mentioning competitor X..."></textarea>
+        </div>
+        <div class="field">
+          <label>Lines you love</label>
+          <span class="hint">Copy from any brand (yours or others) that lands.</span>
+          <textarea data-key="copy_examples"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. APP STACK PICKER -->
+    <section class="slide" data-step="10">
+      <div class="eyebrow">Step 9 of 12 · Tech</div>
+      <h1 class="slide-title">What's installed on your store?</h1>
+      <p class="lede">Tap every app you're currently running. We'll go deeper on each one next.</p>
+      <div class="apps-search-wrap">
+        <input type="text" id="appsSearch" class="apps-search" placeholder="Search apps..." autocomplete="off" />
+        <span class="apps-search-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </span>
+      </div>
+      <div id="appsByCategory"></div>
+      <div style="margin-top: 18px;">
+        <div class="field">
+          <label>Other apps not listed</label>
+          <input type="text" data-key="other_apps" placeholder="App name, what it does..." />
+        </div>
+      </div>
+    </section>
+
+    <!-- 11. APP DEEP DIVE -->
+    <section class="slide" data-step="11">
+      <div class="eyebrow">Step 10 of 12 · Tech</div>
+      <h1 class="slide-title">For each app: keep, replace, or unsure?</h1>
+      <p class="lede">We'll flag duplicates, recommend swaps, and make sure nothing critical gets broken in dev.</p>
+      <div id="appDeepDive"></div>
+      <div id="appDeepDiveEmpty" style="text-align: center; padding: 40px 20px; color: var(--ink-4); font-size: 13px;">
+        Pick some apps on the previous step to fill this in.
+      </div>
+    </section>
+
+    <!-- 12. ACCESS + ASSETS -->
+    <section class="slide" data-step="12">
+      <div class="eyebrow">Step 11 of 12 · Access</div>
+      <h1 class="slide-title">Access and assets.</h1>
+      <p class="lede">The boring but essential stuff. Get this right and we move faster.</p>
+      <div class="fields">
+        <div class="field">
+          <label>myshopify URL + collaborator code</label>
+          <input type="text" data-key="myshopify_url" placeholder="yourstore.myshopify.com / code: XXXX" />
+        </div>
+        <div class="field">
+          <label>Analytics / heatmap tools running</label>
+          <span class="hint">GA4, Clarity, Hotjar, Intelligems, Triple Whale, etc.</span>
+          <textarea data-key="analytics_software"></textarea>
+        </div>
+        <div class="field">
+          <label>Existing landing pages / funnels to review</label>
+          <span class="hint">Links to anything we should look at before designing.</span>
+          <textarea data-key="existing_landing_pages" placeholder="e.g., https://yourstore.com/pages/v1-pdp"></textarea>
+        </div>
+        <div class="field">
+          <label>Tracking pixels, tags, surveys</label>
+          <span class="hint">What's set up. Meta pixel, GA4, Clarity, post-purchase surveys, etc.</span>
+          <textarea data-key="tracking_pixels" placeholder="e.g., Meta pixel + Conversions API live, GA4 partial, no PPS yet..."></textarea>
+        </div>
+        <div class="field">
+          <label>Other integrations to know about</label>
+          <span class="hint">3PL, ERP, helpdesk, loyalty — anything we shouldn't break.</span>
+          <textarea data-key="other_integrations" placeholder="e.g., ShipBob 3PL, Gorgias helpdesk, Smile.io loyalty..."></textarea>
+        </div>
+        <div class="field">
+          <label>Brand assets link</label>
+          <span class="hint">Google Drive, Dropbox, Figma file, anywhere we can pull logos, fonts, photography.</span>
+          <input type="url" data-key="brand_assets_link" placeholder="https://" />
+        </div>
+        <div class="field">
+          <label>Upload additional assets</label>
+          <span class="hint">Files we'll need that don't live in a shared drive. PDFs, images, anything.</span>
+          <div class="file-drop" id="fileDropZone">
+            <input type="file" id="fileInput" multiple class="file-input" />
+            <label for="fileInput" class="file-label">
+              <span class="file-label-prim">Click to upload</span>
+              <span class="file-label-sec">or drag files in</span>
+            </label>
+            <ul class="file-list" id="fileList"></ul>
+          </div>
+          <span class="hint" style="margin-top: 6px;">Files are listed here in the preview. The live form uploads them for real.</span>
+        </div>
+        <div class="field">
+          <label>Anything else we should know?</label>
+          <textarea data-key="additional_info" placeholder="e.g., we're mid-rebrand, our checkout is broken on mobile Safari, we have a launch on the 14th..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13. REVIEW -->
+    <section class="slide" data-step="13">
+      <div class="eyebrow">Step 12 of 12</div>
+      <h1 class="slide-title">Quick review.</h1>
+      <p class="lede">Skim it, edit anything by jumping back, then submit when it's ready.</p>
+      <div class="summary" id="summary"></div>
+      <div style="margin-top: 24px; display: flex; gap: 10px; justify-content: center;">
+        <button class="btn btn-secondary" onclick="goTo(2)">Edit answers</button>
+        <button class="btn btn-primary" onclick="submitForm()">Submit brief</button>
+      </div>
+    </section>
+
+    <!-- 14. DONE -->
+    <section class="slide" data-step="14">
+      <div class="done">
+        <div class="check">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+        <h1 class="slide-title">Brief received.</h1>
+        <p class="lede">Your brief is with the team. We'll spin up a Slack channel and request store access shortly. All updates will run through there.</p>
+        <div style="margin-top: 30px;">
+          <button class="btn btn-secondary" onclick="resetAll()">Start a new brief</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<div class="nav">
+  <div class="nav-inner">
+    <button class="btn btn-ghost" id="backBtn" onclick="back()">← Back</button>
+    <span class="kbd-hint"><kbd>←</kbd> <kbd>→</kbd> to navigate</span>
+    <button class="btn btn-primary" id="nextBtn" onclick="next()">Continue</button>
+  </div>
+</div>
+
+<script>
+/* ─── Data ─────────────────────────────────────────── */
+const LS_KEY = 'ecomlanders-onboarding-preview';
+let state = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+let stepIdx = 0;
+const slides = Array.from(document.querySelectorAll('.slide'));
+const TOTAL_USER_STEPS = 12;
+
+const DESIGNS = [
+  { id: 'minimal',    name: 'Aesop-style minimal',    subtitle: 'Calm, spacious, single hero shot',    svg: minimalSVG() },
+  { id: 'bold',       name: 'Liquid Death bold',      subtitle: 'Loud type, flat colour, no apology',  svg: boldSVG() },
+  { id: 'premium',    name: 'Maison-style premium',   subtitle: 'Dark, serif italics, museum-quiet',    svg: premiumSVG() },
+  { id: 'editorial',  name: 'Magazine editorial',     subtitle: 'Long-form, columns, considered',       svg: editorialSVG() },
+  { id: 'playful',    name: 'Glossier playful',       subtitle: 'Pastel gradients, rounded, friendly',  svg: playfulSVG() },
+  { id: 'conversion', name: 'Conversion-led',         subtitle: 'Urgency badges, reviews, hard sell',   svg: conversionSVG() },
+];
+
+const APPS = [
+  { id: 'klaviyo', name: 'Klaviyo', category: 'Email/SMS' },
+  { id: 'postscript', name: 'Postscript', category: 'SMS' },
+  { id: 'attentive', name: 'Attentive', category: 'SMS' },
+  { id: 'recharge', name: 'ReCharge', category: 'Subscriptions' },
+  { id: 'loop_subs', name: 'Loop Subs', category: 'Subscriptions' },
+  { id: 'yotpo', name: 'Yotpo', category: 'Reviews' },
+  { id: 'judgeme', name: 'Judge.me', category: 'Reviews' },
+  { id: 'loox', name: 'Loox', category: 'Reviews' },
+  { id: 'stamped', name: 'Stamped', category: 'Reviews' },
+  { id: 'rebuy', name: 'Rebuy', category: 'Upsell' },
+  { id: 'vitals', name: 'Vitals', category: 'Multi-tool' },
+  { id: 'octane', name: 'Octane AI', category: 'Quiz' },
+  { id: 'searchanise', name: 'Searchanise', category: 'Search' },
+  { id: 'boost', name: 'Boost AI', category: 'Search/Filter' },
+  { id: 'gempages', name: 'GemPages', category: 'Page builder' },
+  { id: 'pagefly', name: 'PageFly', category: 'Page builder' },
+  { id: 'shogun', name: 'Shogun', category: 'Page builder' },
+  { id: 'replo', name: 'Replo', category: 'Page builder' },
+  { id: 'loop_returns', name: 'Loop Returns', category: 'Returns' },
+  { id: 'triple_whale', name: 'Triple Whale', category: 'Analytics' },
+  { id: 'northbeam', name: 'Northbeam', category: 'Analytics' },
+  { id: 'elevar', name: 'Elevar', category: 'Tracking' },
+];
+
+/* ─── Render helpers ───────────────────────────────── */
+function renderDesigns() {
+  const grid = document.getElementById('designGrid');
+  if (!grid) return;
+  state.design_reactions = state.design_reactions || {};
+  grid.innerHTML = DESIGNS.map(d => {
+    const reaction = state.design_reactions[d.id];
+    return `
+      <div class="design-card ${reaction || ''}" data-design="${d.id}">
+        <div class="design-thumb">${d.svg}</div>
+        <div class="design-meta">
+          <div class="design-name">${d.name}</div>
+          <div class="design-subtitle">${d.subtitle}</div>
+          <div class="design-actions">
+            <button class="react-btn ${reaction === 'love' ? 'on-love' : ''}" data-react="love">Love</button>
+            <button class="react-btn ${reaction === 'meh' ? 'on-meh' : ''}" data-react="meh">Meh</button>
+            <button class="react-btn ${reaction === 'avoid' ? 'on-avoid' : ''}" data-react="avoid">Avoid</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  grid.querySelectorAll('.react-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const card = btn.closest('.design-card');
+      const id = card.dataset.design;
+      const react = btn.dataset.react;
+      const current = state.design_reactions[id];
+      state.design_reactions[id] = current === react ? null : react;
+      save();
+      renderDesigns();
+    });
+  });
+}
+
+/* App-stack search state — lives outside React-y state because it's
+ * purely transient UI filter, not persisted. */
+let appsSearchTerm = '';
+
+function renderApps() {
+  const container = document.getElementById('appsByCategory');
+  if (!container) return;
+  state.apps_installed = state.apps_installed || [];
+
+  const term = appsSearchTerm.trim().toLowerCase();
+  const filtered = term
+    ? APPS.filter(a =>
+        a.name.toLowerCase().includes(term) ||
+        a.category.toLowerCase().includes(term)
+      )
+    : APPS;
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="apps-empty">No apps match "${escapeHtml(appsSearchTerm)}". Add it as "Other" below.</div>`;
+    return;
+  }
+
+  /* Group filtered apps by category, preserving the source-array
+   * ordering within each group. Category labels render only when a
+   * group has at least one visible app — keeps the UI tight while
+   * searching. */
+  const groups = new Map();
+  for (const app of filtered) {
+    const list = groups.get(app.category) || [];
+    list.push(app);
+    groups.set(app.category, list);
+  }
+
+  container.innerHTML = Array.from(groups.entries()).map(([cat, apps]) => `
+    <div class="apps-category">
+      <div class="apps-category-label">${escapeHtml(cat)}</div>
+      <div class="apps-grid">
+        ${apps.map(a => {
+          const on = state.apps_installed.includes(a.id);
+          return `
+            <button type="button" class="app-tile ${on ? 'on' : ''}" data-app="${a.id}">
+              <span class="name">${escapeHtml(a.name)}</span>
+              <span class="category">${escapeHtml(a.category)}</span>
+            </button>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  container.querySelectorAll('.app-tile').forEach(tile => {
+    tile.addEventListener('click', () => {
+      const id = tile.dataset.app;
+      if (state.apps_installed.includes(id)) {
+        state.apps_installed = state.apps_installed.filter(x => x !== id);
+      } else {
+        state.apps_installed.push(id);
+      }
+      save();
+      renderApps();
+    });
+  });
+
+  /* Wire the search input on first render. The input is a sibling of
+   * the container above so we look it up by id each time. Re-binding
+   * the listener on every render is wasteful so we guard with a flag
+   * on the element itself. */
+  const search = document.getElementById('appsSearch');
+  if (search && !search.dataset.wired) {
+    search.dataset.wired = '1';
+    search.value = appsSearchTerm;
+    search.addEventListener('input', (e) => {
+      appsSearchTerm = e.target.value;
+      renderApps();
+    });
+  }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[c]);
+}
+
+function renderAppDeepDive() {
+  const wrap = document.getElementById('appDeepDive');
+  const empty = document.getElementById('appDeepDiveEmpty');
+  if (!wrap) return;
+  state.apps_installed = state.apps_installed || [];
+  state.app_verdicts = state.app_verdicts || {};
+  state.app_notes = state.app_notes || {};
+  if (state.apps_installed.length === 0) {
+    wrap.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  wrap.innerHTML = state.apps_installed.map(id => {
+    const app = APPS.find(a => a.id === id);
+    if (!app) return '';
+    const verdict = state.app_verdicts[id];
+    const note = state.app_notes[id] || '';
+    return `
+      <div class="app-row" data-app="${id}">
+        <div class="app-row-head">
+          <div>
+            <div class="name">${app.name}</div>
+            <div class="category">${app.category}</div>
+          </div>
+        </div>
+        <div class="verdict-group">
+          <button class="verdict ${verdict === 'keep' ? 'on-keep' : ''}" data-v="keep">Keep</button>
+          <button class="verdict ${verdict === 'replace' ? 'on-replace' : ''}" data-v="replace">Replace</button>
+          <button class="verdict ${verdict === 'unsure' ? 'on-unsure' : ''}" data-v="unsure">Not sure</button>
+        </div>
+        <textarea data-note="${id}" placeholder="Why? (optional)">${note}</textarea>
+      </div>
+    `;
+  }).join('');
+  wrap.querySelectorAll('.verdict').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const row = btn.closest('.app-row');
+      const id = row.dataset.app;
+      const v = btn.dataset.v;
+      state.app_verdicts[id] = state.app_verdicts[id] === v ? null : v;
+      save();
+      renderAppDeepDive();
+    });
+  });
+  wrap.querySelectorAll('textarea[data-note]').forEach(ta => {
+    ta.addEventListener('input', e => {
+      state.app_notes[ta.dataset.note] = ta.value;
+      save();
+    });
+  });
+}
+
+function renderSummary() {
+  const root = document.getElementById('summary');
+  if (!root) return;
+  const e = (key, fallback = '') => state[key] || fallback;
+  const designs = state.design_reactions || {};
+  const designRows = Object.entries(designs).filter(([,v]) => v);
+  const apps = state.apps_installed || [];
+  const verdicts = state.app_verdicts || {};
+  const files = state.uploaded_files || [];
+
+  /* Small helper: render a section only when there's content. Keeps
+   * the summary scannable instead of a wall of "Nothing yet". */
+  const section = (heading, content, empty = 'Nothing yet') => {
+    const has = content && content.trim();
+    return `
+      <div class="summary-section">
+        <h4>${heading}</h4>
+        <p class="${has ? '' : 'empty'}">${has ? content : empty}</p>
+      </div>`;
+  };
+
+  root.innerHTML = `
+    ${section('Contact', `${e('primary_contact','—')} · <span style="color:var(--ink-3)">${e('email','no email')}</span>`)}
+    <div class="summary-section">
+      <h4>Brand</h4>
+      <p>${e('company_name','—')} · <span style="color:var(--ink-3)">${e('website_url','no url')}</span></p>
+    </div>
+    ${section('Pitch', e('brief_description'))}
+    ${section('Decision maker', e('approval_decision_maker'))}
+    ${section('Target customer', e('target_customer'))}
+    ${section('Competitors', e('top_competitors'))}
+    ${section('USPs', e('usps'))}
+    ${section('Main products', e('main_products'))}
+    ${section('Pages we are building', e('product_url'))}
+    ${section('Page types', e('page_type'), 'Nothing picked')}
+    ${section('Traffic source', e('traffic_source'), 'Nothing picked')}
+    ${section('Specific direction', e('specific_direction'))}
+    ${section('Primary goal', e('primary_goal_chip'), 'Nothing picked')}
+    ${section('Current metrics', e('current_metrics'))}
+    ${section('Success definition', e('success_definition'))}
+    ${section('Timeline', e('timeline_expectations'))}
+    ${section('Conversion challenges', e('conversion_challenges'))}
+    ${section('Common objections', e('common_objections'))}
+    ${section('Compliance restrictions', e('compliance_restrictions'))}
+    ${section('Previous agencies', e('previous_agencies'))}
+    ${section('Design vibe', e('vibe_chips'), 'Nothing picked')}
+    ${section('Design inspiration', e('design_inspiration'))}
+    <div class="summary-section">
+      <h4>Design reactions</h4>
+      ${designRows.length ? `<ul class="summary-list">${designRows.map(([id,v]) => {
+        const d = DESIGNS.find(x => x.id === id);
+        return `<li><strong style="color: var(--${v})">${v.toUpperCase()}</strong> ${d ? d.name : id}</li>`;
+      }).join('')}</ul>` : '<p class="empty">No reactions yet</p>'}
+    </div>
+    ${section('Tone', e('tone_chips'), 'Nothing picked')}
+    ${section('Core value props', e('core_value_props'))}
+    ${section('Reviews / press', e('reviews_testimonials'))}
+    ${section('Words to avoid', e('words_to_avoid'))}
+    <div class="summary-section">
+      <h4>Apps installed (${apps.length})</h4>
+      ${apps.length ? `<ul class="summary-list">${apps.map(id => {
+        const a = APPS.find(x => x.id === id);
+        const v = verdicts[id];
+        const tag = v ? ` <span style="font-size:11px; color: var(--${v === 'keep' ? 'love' : v === 'replace' ? 'avoid' : 'meh'}); font-weight: 600;">${v.toUpperCase()}</span>` : '';
+        return `<li>${a ? a.name : id}${tag}</li>`;
+      }).join('')}</ul>` : '<p class="empty">None picked</p>'}
+    </div>
+    <div class="summary-section">
+      <h4>Access</h4>
+      <p class="${e('myshopify_url') ? '' : 'empty'}">${e('myshopify_url','No store URL yet')}</p>
+    </div>
+    ${section('Analytics', e('analytics_software'))}
+    ${section('Existing landing pages', e('existing_landing_pages'))}
+    ${section('Tracking / pixels', e('tracking_pixels'))}
+    ${section('Other integrations', e('other_integrations'))}
+    ${section('Brand assets link', e('brand_assets_link'))}
+    <div class="summary-section">
+      <h4>Files attached (${files.length})</h4>
+      ${files.length ? `<ul class="summary-list">${files.map(f => `<li>${escapeHtml(f.name)} <span style="color:var(--ink-4); font-size:11px;">${formatBytes(f.size)}</span></li>`).join('')}</ul>` : '<p class="empty">None attached</p>'}
+    </div>
+    ${section('Anything else', e('additional_info'))}
+  `;
+}
+
+/* ─── File capture (preview-only) ─────────────────────────────── */
+function formatBytes(n) {
+  if (n == null) return '';
+  if (n < 1024) return n + ' B';
+  if (n < 1024 * 1024) return (n / 1024).toFixed(0) + ' KB';
+  return (n / 1024 / 1024).toFixed(1) + ' MB';
+}
+function renderFileList() {
+  const list = document.getElementById('fileList');
+  const input = document.getElementById('fileInput');
+  const drop = document.getElementById('fileDropZone');
+  if (!list || !input) return;
+  state.uploaded_files = state.uploaded_files || [];
+
+  function paint() {
+    list.innerHTML = state.uploaded_files.map((f, i) =>
+      `<li><span>${escapeHtml(f.name)} <span style="color:var(--ink-4)">· ${formatBytes(f.size)}</span></span><button class="remove" data-i="${i}" type="button">Remove</button></li>`
+    ).join('');
+    list.querySelectorAll('button[data-i]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const i = Number(btn.dataset.i);
+        state.uploaded_files.splice(i, 1);
+        save();
+        paint();
+      });
+    });
+  }
+  paint();
+
+  /* Re-binding once per slide visit is wasteful so we guard the input
+   * with a flag. */
+  if (!input.dataset.wired) {
+    input.dataset.wired = '1';
+    input.addEventListener('change', e => {
+      const files = Array.from(e.target.files || []);
+      for (const f of files) {
+        state.uploaded_files.push({ name: f.name, size: f.size, type: f.type });
+      }
+      save();
+      paint();
+      input.value = '';
+    });
+  }
+  if (drop && !drop.dataset.wired) {
+    drop.dataset.wired = '1';
+    ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => {
+      e.preventDefault();
+      drop.classList.add('drag');
+    }));
+    ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => {
+      e.preventDefault();
+      drop.classList.remove('drag');
+    }));
+    drop.addEventListener('drop', e => {
+      const files = Array.from(e.dataTransfer.files || []);
+      for (const f of files) {
+        state.uploaded_files.push({ name: f.name, size: f.size, type: f.type });
+      }
+      save();
+      paint();
+    });
+  }
+}
+
+/* ─── Input wiring ─────────────────────────────────── */
+function wireInputs() {
+  document.querySelectorAll('[data-key]').forEach(el => {
+    const key = el.dataset.key;
+    if (state[key] != null) el.value = state[key];
+    el.addEventListener('input', () => {
+      state[key] = el.value;
+      save();
+    });
+  });
+  document.querySelectorAll('[data-chips]').forEach(group => {
+    const key = group.dataset.chips;
+    const multi = group.dataset.multi === '1';
+    const current = (state[key] || '').split(',').map(s => s.trim()).filter(Boolean);
+    group.querySelectorAll('.chip').forEach(chip => {
+      if (current.includes(chip.dataset.val)) chip.classList.add('on');
+      chip.addEventListener('click', () => {
+        let values = (state[key] || '').split(',').map(s => s.trim()).filter(Boolean);
+        const v = chip.dataset.val;
+        if (multi) {
+          values = values.includes(v) ? values.filter(x => x !== v) : [...values, v];
+        } else {
+          values = values.includes(v) ? [] : [v];
+        }
+        state[key] = values.join(', ');
+        save();
+        group.querySelectorAll('.chip').forEach(c => {
+          c.classList.toggle('on', values.includes(c.dataset.val));
+        });
+      });
+    });
+  });
+}
+
+/* ─── Navigation ───────────────────────────────────── */
+function update() {
+  slides.forEach((s, i) => s.classList.toggle('active', i === stepIdx));
+  const userStep = Math.max(1, Math.min(stepIdx, TOTAL_USER_STEPS));
+  document.getElementById('stepNum').textContent = userStep;
+  document.getElementById('stepTotal').textContent = TOTAL_USER_STEPS;
+  const pct = (stepIdx / (slides.length - 1)) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  document.getElementById('backBtn').style.visibility = stepIdx === 0 || stepIdx === slides.length - 1 ? 'hidden' : 'visible';
+  const nextBtn = document.getElementById('nextBtn');
+  if (stepIdx === 0) {
+    nextBtn.textContent = "Let's start →";
+    nextBtn.style.visibility = 'visible';
+  } else if (stepIdx === slides.length - 2) {
+    nextBtn.style.visibility = 'hidden';
+  } else if (stepIdx === slides.length - 1) {
+    nextBtn.style.visibility = 'hidden';
+  } else {
+    nextBtn.textContent = 'Continue →';
+    nextBtn.style.visibility = 'visible';
+  }
+
+  // Lazy renders — data-step values shifted when we added the
+  // Project specifics (4) and Risk & bottlenecks (6) slides.
+  const step = slides[stepIdx].dataset.step;
+  if (step === '8') renderDesigns();
+  if (step === '10') renderApps();
+  if (step === '11') renderAppDeepDive();
+  if (step === '12') renderFileList();
+  if (step === '13') renderSummary();
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function next() {
+  if (stepIdx < slides.length - 1) { stepIdx++; update(); }
+}
+function back() {
+  if (stepIdx > 0) { stepIdx--; update(); }
+}
+function goTo(stepNum) {
+  const idx = slides.findIndex(s => s.dataset.step == stepNum);
+  if (idx >= 0) { stepIdx = idx; update(); }
+}
+function submitForm() {
+  stepIdx = slides.length - 1;
+  update();
+}
+function resetAll() {
+  if (!confirm('Clear everything and start over?')) return;
+  localStorage.removeItem(LS_KEY);
+  state = {};
+  stepIdx = 0;
+  document.querySelectorAll('[data-key]').forEach(el => el.value = '');
+  document.querySelectorAll('.chip.on').forEach(el => el.classList.remove('on'));
+  update();
+}
+function save() { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+
+document.addEventListener('keydown', e => {
+  if (e.target.matches('input, textarea')) return;
+  if (e.key === 'ArrowRight') next();
+  if (e.key === 'ArrowLeft') back();
+});
+
+/* ─── SVG mockups for design picker ────────────────── */
+function minimalSVG() {
+  return `<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+    <rect width="200" height="150" fill="#FAFAFA"/>
+    <rect x="20" y="20" width="60" height="2" fill="#1A1A1A"/>
+    <rect x="20" y="34" width="100" height="8" fill="#1A1A1A"/>
+    <rect x="20" y="48" width="80" height="3" fill="#999"/>
+    <rect x="20" y="58" width="70" height="3" fill="#999"/>
+    <rect x="130" y="34" width="50" height="60" fill="#E5E5EA"/>
+    <rect x="20" y="120" width="60" height="10" rx="2" fill="#1A1A1A"/>
+  </svg>`;
+}
+function boldSVG() {
+  return `<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+    <rect width="200" height="150" fill="#FFE94A"/>
+    <rect x="10" y="14" width="180" height="20" fill="#000"/>
+    <rect x="14" y="20" width="80" height="8" fill="#FFE94A"/>
+    <rect x="10" y="40" width="180" height="14" fill="#000"/>
+    <rect x="14" y="44" width="120" height="6" fill="#FFE94A"/>
+    <circle cx="50" cy="90" r="22" fill="#FF4D00"/>
+    <rect x="90" y="76" width="90" height="6" fill="#000"/>
+    <rect x="90" y="86" width="70" height="6" fill="#000"/>
+    <rect x="90" y="96" width="80" height="6" fill="#000"/>
+    <rect x="10" y="122" width="180" height="16" fill="#000"/>
+    <rect x="76" y="127" width="48" height="6" fill="#FFE94A"/>
+  </svg>`;
+}
+function premiumSVG() {
+  return `<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+    <rect width="200" height="150" fill="#0B0B0B"/>
+    <text x="100" y="38" text-anchor="middle" fill="#D4AF74" font-family="serif" font-size="11" font-style="italic">M A I S O N</text>
+    <rect x="60" y="50" width="80" height="60" fill="#1F1F1F"/>
+    <rect x="76" y="62" width="48" height="36" fill="#332B22"/>
+    <rect x="86" y="115" width="28" height="3" fill="#D4AF74"/>
+    <rect x="70" y="124" width="60" height="10" rx="0" fill="none" stroke="#D4AF74" stroke-width="1"/>
+  </svg>`;
+}
+function editorialSVG() {
+  return `<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+    <rect width="200" height="150" fill="#F5F0E8"/>
+    <rect x="14" y="14" width="172" height="50" fill="#C8B79E"/>
+    <text x="22" y="44" fill="#1A1A1A" font-family="Georgia, serif" font-size="13" font-weight="700">The Ritual Journal</text>
+    <rect x="14" y="70" width="80" height="3" fill="#1A1A1A"/>
+    <rect x="14" y="80" width="80" height="3" fill="#1A1A1A"/>
+    <rect x="14" y="90" width="60" height="3" fill="#1A1A1A"/>
+    <rect x="14" y="100" width="80" height="3" fill="#1A1A1A"/>
+    <rect x="14" y="110" width="70" height="3" fill="#1A1A1A"/>
+    <rect x="14" y="120" width="80" height="3" fill="#1A1A1A"/>
+    <rect x="104" y="70" width="82" height="60" fill="#1A1A1A"/>
+  </svg>`;
+}
+function playfulSVG() {
+  return `<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="g1" x1="0" x2="1">
+        <stop offset="0" stop-color="#FFB5E8"/>
+        <stop offset="1" stop-color="#B5DEFF"/>
+      </linearGradient>
+    </defs>
+    <rect width="200" height="150" fill="url(#g1)"/>
+    <circle cx="100" cy="55" r="28" fill="#FFFFFF"/>
+    <circle cx="100" cy="55" r="20" fill="#FF6BCB"/>
+    <rect x="40" y="95" width="120" height="10" rx="5" fill="#FFFFFF"/>
+    <rect x="55" y="111" width="90" height="6" rx="3" fill="#FFFFFF" opacity="0.7"/>
+    <rect x="60" y="125" width="80" height="14" rx="7" fill="#000"/>
+  </svg>`;
+}
+function conversionSVG() {
+  return `<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+    <rect width="200" height="150" fill="#FFFFFF"/>
+    <rect x="0" y="0" width="200" height="16" fill="#FF3B30"/>
+    <text x="100" y="11" text-anchor="middle" fill="#fff" font-size="7" font-weight="700">SAVE 30% TODAY ONLY</text>
+    <rect x="14" y="24" width="80" height="60" fill="#F3F3F5"/>
+    <rect x="102" y="26" width="84" height="6" fill="#1A1A1A"/>
+    <rect x="102" y="36" width="60" height="6" fill="#1A1A1A"/>
+    <g transform="translate(102,48)">
+      <polygon points="0,0 2,5 7,5 3,8 5,13 0,10 -5,13 -3,8 -7,5 -2,5" fill="#FFB800"/>
+      <polygon points="12,0 14,5 19,5 15,8 17,13 12,10 7,13 9,8 5,5 10,5" fill="#FFB800"/>
+      <polygon points="24,0 26,5 31,5 27,8 29,13 24,10 19,13 21,8 17,5 22,5" fill="#FFB800"/>
+      <polygon points="36,0 38,5 43,5 39,8 41,13 36,10 31,13 33,8 29,5 34,5" fill="#FFB800"/>
+      <polygon points="48,0 50,5 55,5 51,8 53,13 48,10 43,13 45,8 41,5 46,5" fill="#FFB800"/>
+      <text x="62" y="11" fill="#777" font-size="7">2,481 reviews</text>
+    </g>
+    <rect x="102" y="68" width="50" height="4" fill="#999"/>
+    <rect x="102" y="76" width="40" height="4" fill="#999"/>
+    <rect x="102" y="90" width="84" height="14" rx="2" fill="#10B981"/>
+    <text x="144" y="100" text-anchor="middle" fill="#fff" font-size="7" font-weight="700">ADD TO CART · $24</text>
+    <rect x="14" y="100" width="80" height="22" fill="#FFF3CD" stroke="#FFB800"/>
+    <text x="54" y="113" text-anchor="middle" fill="#1A1A1A" font-size="7" font-weight="700">🔥 124 sold today</text>
+    <rect x="14" y="130" width="172" height="14" fill="#F3F3F5"/>
+    <text x="100" y="140" text-anchor="middle" fill="#1A1A1A" font-size="6">FREE SHIPPING · 60-DAY GUARANTEE · SECURE CHECKOUT</text>
+  </svg>`;
+}
+
+/* ─── Init ────────────────────────────────────────── */
+wireInputs();
+update();
+</script>
+</body>
+</html>
