@@ -521,43 +521,106 @@
     color: var(--ink-2);
   }
 
-  /* ── Welcome slide tweaks ─────────────────────────── */
+  /* ── Welcome slide ─────────────────────────────────── */
   .welcome {
     text-align: center;
-    padding: 40px 0 0;
+    padding: 24px 0 0;
+  }
+  .welcome .eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin-bottom: 14px;
   }
   .welcome h1 {
-    font-size: 38px;
-    margin-bottom: 16px;
+    font-size: 44px;
+    margin-bottom: 14px;
+    letter-spacing: -0.025em;
   }
-  .welcome .lede { margin-left: auto; margin-right: auto; }
-  .welcome .meta {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    max-width: 520px;
-    margin: 32px auto 0;
-    font-size: 12px;
-    color: var(--ink-3);
+  .welcome .lede {
+    margin: 0 auto;
+    max-width: 460px;
+    font-size: 15px;
+    line-height: 1.55;
   }
-  .welcome .meta-tile {
-    padding: 14px 16px;
+  .welcome-card {
+    margin: 36px auto 0;
+    max-width: 540px;
     background: var(--card);
     border: 1px solid var(--line);
-    border-radius: 12px;
+    border-radius: 14px;
     text-align: left;
+    overflow: hidden;
   }
-  .welcome .meta-tile strong {
-    color: var(--ink);
+  .welcome-card-head {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line-2);
+    font-size: 11px;
     font-weight: 600;
-    display: block;
-    font-size: 15px;
-    letter-spacing: -0.01em;
-    margin-bottom: 4px;
-    white-space: nowrap;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
   }
-  @media (max-width: 520px) {
-    .welcome .meta { grid-template-columns: 1fr; }
+  .welcome-card ol {
+    list-style: none;
+    margin: 0;
+    padding: 6px 0;
+    counter-reset: step;
+  }
+  .welcome-card li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 18px;
+    font-size: 14px;
+    color: var(--ink);
+    border-bottom: 1px solid var(--line-2);
+  }
+  .welcome-card li:last-child { border-bottom: 0; }
+  .welcome-card li .chapter {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .welcome-card li .num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--soft);
+    color: var(--ink-3);
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .welcome-card li .steps {
+    font-size: 11px;
+    color: var(--ink-4);
+    font-variant-numeric: tabular-nums;
+  }
+  .welcome-foot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 24px auto 0;
+    font-size: 12px;
+    color: var(--ink-3);
+    flex-wrap: wrap;
+  }
+  .welcome-foot .dot-sep {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--ink-4);
+  }
+  @media (max-width: 560px) {
+    .welcome h1 { font-size: 34px; }
   }
 
   /* ── Done slide ───────────────────────────────────── */
@@ -609,8 +672,49 @@
     <!-- 1. WELCOME -->
     <section class="slide active" data-step="1">
       <div class="welcome">
+        <div class="eyebrow">Welcome</div>
         <h1>Onboarding</h1>
-        <p class="lede">12 short questions about your brand, store, and what you're building. Takes about 15 minutes. Progress saves automatically, so you can close the tab and come back anytime.</p>
+        <p class="lede">A few questions so we can hit the ground running on your build.</p>
+        <div class="welcome-card">
+          <div class="welcome-card-head">What we'll cover</div>
+          <ol>
+            <li>
+              <span class="chapter"><span class="num">1</span>Brand &amp; customer</span>
+              <span class="steps">Steps 1-2</span>
+            </li>
+            <li>
+              <span class="chapter"><span class="num">2</span>Project specifics</span>
+              <span class="steps">Step 3</span>
+            </li>
+            <li>
+              <span class="chapter"><span class="num">3</span>Goals &amp; risks</span>
+              <span class="steps">Steps 4-5</span>
+            </li>
+            <li>
+              <span class="chapter"><span class="num">4</span>Design direction</span>
+              <span class="steps">Steps 6-7</span>
+            </li>
+            <li>
+              <span class="chapter"><span class="num">5</span>Voice</span>
+              <span class="steps">Step 8</span>
+            </li>
+            <li>
+              <span class="chapter"><span class="num">6</span>Tech stack</span>
+              <span class="steps">Steps 9-10</span>
+            </li>
+            <li>
+              <span class="chapter"><span class="num">7</span>Access &amp; assets</span>
+              <span class="steps">Step 11</span>
+            </li>
+          </ol>
+        </div>
+        <div class="welcome-foot">
+          <span>~15 min</span>
+          <span class="dot-sep"></span>
+          <span>Autosaves as you go</span>
+          <span class="dot-sep"></span>
+          <span>Close and come back anytime</span>
+        </div>
       </div>
     </section>
 
