@@ -50,6 +50,7 @@ import { type MustDoGateKey } from "@/components/engagements/must-do-modal";
 import { MustDosRow } from "@/components/engagements/must-dos-row";
 import { GeneratedDocs } from "@/components/engagements/generated-docs";
 import { BriefIntakePanel } from "@/components/engagements/brief-intake-panel";
+import { StrategySandbox } from "@/components/engagements/strategy-sandbox";
 import type { MustDoGate, PageType } from "@/lib/pods-v2/types";
 import { PAGE_LABEL } from "@/lib/pods-v2/types";
 
@@ -928,6 +929,8 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
         open={intakeOpen}
         onToggle={() => setIntakeOpen((o) => !o)}
       />
+
+      <StrategySandbox clientId={engagement.id} clientName={engagement.brand} />
 
       {/* Scoped deliverables preview. When the engagement is parked
        * (no project yet, customDeliverables empty) but the PM has

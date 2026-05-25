@@ -41,12 +41,13 @@ import { formatDayMonth, todayYMD } from "@/lib/dates";
 import { formatTimeInPhase } from "@/lib/task-board/phases";
 import { CapacityMeter, MemberAvatar } from "./components";
 import { WeeksView } from "./WeeksView";
+import { StrategyView } from "./StrategyView";
 import { onboardingStore, type OnboardingSubmission } from "@/lib/onboarding";
 import { getPortalById } from "@/lib/portal/data";
 import type { PortalData, ScopeItem } from "@/lib/portal/types";
 import { useRole } from "@/components/auth-gate";
 
-type View = "overview" | "pipeline";
+type View = "overview" | "pipeline" | "strategy";
 
 export default function PodsIndexClient() {
   const role = useRole();
@@ -284,6 +285,16 @@ export default function PodsIndexClient() {
         >
           Pipeline
         </button>
+        <button
+          onClick={() => setView("strategy")}
+          className={`rounded-md px-3 py-1.5 transition-colors ${
+            view === "strategy"
+              ? "bg-[#1B1B1B] text-white"
+              : "text-[#7A7A7A] hover:text-[#1B1B1B]"
+          }`}
+        >
+          Strategy
+        </button>
       </div>
 
       {view === "overview" ? (
@@ -303,7 +314,7 @@ export default function PodsIndexClient() {
           isAdmin={isAdmin}
           linkBase={linkBase}
         />
-      ) : (
+      ) : view === "pipeline" ? (
         <div className="mt-6">
           <WeeksView
             projects={visibleProjects}
@@ -312,6 +323,8 @@ export default function PodsIndexClient() {
             today={today}
           />
         </div>
+      ) : (
+        <StrategyView />
       )}
 
       {isAdmin && (
