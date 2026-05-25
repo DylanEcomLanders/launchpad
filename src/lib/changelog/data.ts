@@ -37,6 +37,15 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-77",
+    date: "25 May 2026",
+    version: "0.49.1",
+    title: "Swipe File capture fix: stop timing out on heavy Shopify pages",
+    changes: [
+      { type: "fixed", text: "Adding a URL to the Swipe File (e.g. gruns.co/pages/first-order-gut-health) was failing with 'Capture failed: Unexpected token B, Bad Gateway is not valid JSON'. The route fires two parallel Firecrawl screenshot calls (desktop + mobile), each with a 60s internal Firecrawl timeout plus ~4s of explicit waits and a full-page scroll script to trigger lazy-loaded content. On heavy Shopify product/landing pages that combined runtime regularly blew past Vercel's default serverless function limit, so the function was killed at the edge and Vercel returned an HTML 'Bad Gateway' page that the client tried to parse as JSON. Fix is three parts: (1) /api/swipe-file/route.ts now exports maxDuration = 300 so the function has up to 5 min to finish on the Pro plan, (2) the Firecrawl per-call timeout is tightened from 60s to 45s so a single hung capture can't silently eat the whole window, and (3) the client (/team/swipe-file page) now reads the response as text first and only JSON.parses if the body looks like JSON, so any future edge-level error surfaces as 'Capture failed (HTTP 502)' instead of the cryptic 'Unexpected token B' message" },
+    ],
+  },
+  {
     id: "cl-76",
     date: "23 May 2026",
     version: "0.49.0",

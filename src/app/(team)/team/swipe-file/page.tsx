@@ -40,8 +40,14 @@ export default function SwipeFilePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: urlInput.trim() }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+      // Edge-level failures (timeout, 502, 504) return HTML, not JSON.
+      // Read as text first so we can surface a useful message either way.
+      const raw = await res.text();
+      let data: any = null;
+      try { data = raw ? JSON.parse(raw) : null; } catch { /* not JSON */ }
+      if (!res.ok || !data) {
+        throw new Error(data?.error || `Capture failed (HTTP ${res.status})`);
+      }
       setEntries((prev) => [data, ...prev]);
       setUrlInput("");
     } catch (err) {

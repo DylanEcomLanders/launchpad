@@ -7,6 +7,11 @@ const BUCKET = "swipe-file";
 const FIRECRAWL_KEY = process.env.FIRECRAWL_API_KEY || "";
 const FIRECRAWL_URL = "https://api.firecrawl.dev/v1/scrape";
 
+// Two parallel Firecrawl captures + uploads on slow Shopify pages can run
+// well past Vercel's default 10s/60s function limit. When the function dies
+// the edge returns an HTML "Bad Gateway" that the client can't parse as JSON.
+export const maxDuration = 300;
+
 // ── GET: list all swipe entries ──────────────────────────────────────────────
 export async function GET() {
   if (!isSupabaseConfigured()) return NextResponse.json([]);
@@ -112,7 +117,7 @@ export async function POST(req: NextRequest) {
             { type: "wait", milliseconds: 400 },
             { type: "screenshot", fullPage: true },
           ],
-          timeout: 60_000,
+          timeout: 45_000,
         }),
       });
       const json = await res.json();
