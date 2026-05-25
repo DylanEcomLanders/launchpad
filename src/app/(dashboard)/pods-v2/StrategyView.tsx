@@ -3,8 +3,8 @@
 /* Strategy view: third toggle option on /pods-v2.
  *
  * Two tracked touchpoints:
- *   - Briefs: one row per onboarding submission (auto-populated when
- *     PM assigns an onboarding to a pod, or added manually).
+ *   - Briefs: one row per onboarding (auto-created when PM assigns to
+ *     a pod, or added manually here).
  *   - Results: one row per live test.
  *
  * Wired interactions:
@@ -14,8 +14,7 @@
  *   - Three-dot row menu → Remove
  *   - "View" on brief row → onboarding popup with deliverable list
  *
- * Mock data + local state only. Production would swap to real fetch +
- * Supabase mutators.
+ * Reads + writes go through src/lib/strategy/data.ts (Supabase).
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -29,59 +28,32 @@ import {
   TrashIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import {
+  createBrief,
+  createResult,
+  listBriefs,
+  listResults,
+  removeBrief as apiRemoveBrief,
+  removeResult as apiRemoveResult,
+  updateBrief,
+  updateResult,
+} from "@/lib/strategy/data";
+import type {
+  BriefDeliverable,
+  BriefStatus,
+  ResultStatus,
+  StrategyBrief,
+  StrategyResult,
+} from "@/lib/strategy/types";
 
 type PodId = "Pod 1" | "Pod 2" | "Pod 3";
-type BriefStatus = "needs_brief" | "drafting" | "in_review" | "approved";
-type ResultStatus = "running" | "ready" | "overdue";
 
-interface Deliverable {
-  type: string;
-  label?: string;
-}
-
-interface BriefRow {
-  id: string;
-  client: string;
-  pod: PodId;
-  status: BriefStatus;
-  onboarding_received: string;
-  is_overdue?: boolean;
-  deliverables: Deliverable[];
-  retainer?: string;
-  done?: boolean;
-}
-
-interface ResultRow {
-  id: string;
-  client: string;
-  pod: PodId;
-  project: string;
-  live_since: string;
-  live_days: number;
-  status: ResultStatus;
-  done?: boolean;
-}
-
-// ─── Mock data ───────────────────────────────────────────────────────
-
-const BRIEFS_INITIAL: BriefRow[] = [
-  { id: "b1", client: "Trip CBD", pod: "Pod 3", status: "needs_brief", onboarding_received: "25 May", retainer: "Bucket B", deliverables: [{ type: "Quiz", label: "Skin-type segmentation" }, { type: "PDP", label: "CBD Oil 1000mg" }, { type: "PDP", label: "Gummies bundle" }, { type: "Homepage" }] },
-  { id: "b2", client: "Loop Earplugs", pod: "Pod 2", status: "drafting", onboarding_received: "15 May", is_overdue: true, retainer: "8k retainer", deliverables: [{ type: "PDP", label: "Quiet bundle" }, { type: "PDP", label: "Engage bundle" }, { type: "PDP", label: "Experience bundle" }, { type: "Quiz", label: "Use-case segmentation" }] },
-  { id: "b3", client: "Hydrant", pod: "Pod 2", status: "drafting", onboarding_received: "21 May", retainer: "8k retainer", deliverables: [{ type: "Email", label: "Welcome 1" }, { type: "Email", label: "Welcome 2" }, { type: "Email", label: "Welcome 3" }, { type: "Email", label: "Lifecycle 1" }, { type: "Email", label: "Lifecycle 2" }] },
-  { id: "b4", client: "Pact Coffee", pod: "Pod 1", status: "in_review", onboarding_received: "12 May", retainer: "8k retainer", deliverables: [{ type: "Page", label: "Subscription landing" }, { type: "PDP", label: "Checkout cart updates" }] },
-  { id: "b5", client: "Beam", pod: "Pod 3", status: "approved", onboarding_received: "5 May", retainer: "Bucket C", done: true, deliverables: [{ type: "PDP", label: "Sleep gummies" }, { type: "Homepage" }] },
-];
-
-const RESULTS_INITIAL: ResultRow[] = [
-  { id: "r1", client: "Loop Earplugs", pod: "Pod 2", project: "Bundle angle B", live_since: "11 May", live_days: 14, status: "overdue" },
-  { id: "r2", client: "Hydrant", pod: "Pod 2", project: "Free shipping floor test", live_since: "16 May", live_days: 9, status: "ready" },
-  { id: "r3", client: "Pact Coffee", pod: "Pod 1", project: "Subscription upsell variant", live_since: "20 May", live_days: 5, status: "running" },
-  { id: "r4", client: "Three Spirit", pod: "Pod 1", project: "Quiz funnel A/B", live_since: "19 May", live_days: 6, status: "running" },
-  { id: "r5", client: "Hydrant", pod: "Pod 2", project: "Hero hook variant", live_since: "1 May", live_days: 24, status: "running", done: true },
-];
+type BriefRow = StrategyBrief;
+type ResultRow = StrategyResult;
+type Deliverable = BriefDeliverable;
 
 const BRIEF_ORDER: Record<BriefStatus, number> = { needs_brief: 0, drafting: 1, in_review: 2, approved: 3 };
-const RESULT_ORDER: Record<ResultStatus, number> = { overdue: 0, ready: 1, running: 2 };
+const RESULT_ORDER: Record<ResultStatus, number> = { overdue: 0, ready: 1, running: 2, read: 3 };
 
 const BRIEF_STATUS_LABEL: Record<BriefStatus, string> = {
   needs_brief: "Needs brief",
@@ -94,20 +66,34 @@ const RESULT_STATUS_LABEL: Record<ResultStatus, string> = {
   running: "Running",
   ready: "Ready to read",
   overdue: "Read overdue",
+  read: "Read",
 };
 
 const POD_OPTIONS: PodId[] = ["Pod 1", "Pod 2", "Pod 3"];
 
-const newId = () => `n${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
 const todayShort = () =>
   new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 
 export function StrategyView() {
-  const [briefs, setBriefs] = useState<BriefRow[]>(BRIEFS_INITIAL);
-  const [results, setResults] = useState<ResultRow[]>(RESULTS_INITIAL);
+  const [briefs, setBriefs] = useState<BriefRow[]>([]);
+  const [results, setResults] = useState<ResultRow[]>([]);
   const [popupBriefId, setPopupBriefId] = useState<string | null>(null);
   const [addBriefOpen, setAddBriefOpen] = useState(false);
   const [addResultOpen, setAddResultOpen] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const [b, r] = await Promise.all([listBriefs(), listResults()]);
+      if (!cancelled) {
+        setBriefs(b);
+        setResults(r);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const activeBriefs = briefs.filter((b) => !b.done).sort((a, b) => BRIEF_ORDER[a.status] - BRIEF_ORDER[b.status]);
   const doneBriefs = briefs.filter((b) => b.done);
@@ -119,13 +105,37 @@ export function StrategyView() {
     activeBriefs.filter((b) => b.status === "needs_brief" || (b.status === "drafting" && b.is_overdue)).length +
     activeResults.filter((r) => r.status === "overdue" || r.status === "ready").length;
 
-  const toggleBriefDone = (id: string) => setBriefs((p) => p.map((b) => (b.id === id ? { ...b, done: !b.done } : b)));
-  const removeBrief = (id: string) => setBriefs((p) => p.filter((b) => b.id !== id));
-  const addBrief = (b: Omit<BriefRow, "id">) => setBriefs((p) => [{ ...b, id: newId() }, ...p]);
+  const toggleBriefDone = async (id: string) => {
+    const current = briefs.find((b) => b.id === id);
+    if (!current) return;
+    const next = !current.done;
+    setBriefs((p) => p.map((b) => (b.id === id ? { ...b, done: next } : b)));
+    await updateBrief(id, { done: next, done_at: next ? new Date().toISOString() : undefined });
+  };
+  const removeBrief = async (id: string) => {
+    setBriefs((p) => p.filter((b) => b.id !== id));
+    await apiRemoveBrief(id);
+  };
+  const addBrief = async (b: Omit<BriefRow, "id" | "created_at" | "updated_at" | "done">) => {
+    const created = await createBrief(b);
+    if (created) setBriefs((p) => [created, ...p]);
+  };
 
-  const toggleResultDone = (id: string) => setResults((p) => p.map((r) => (r.id === id ? { ...r, done: !r.done } : r)));
-  const removeResult = (id: string) => setResults((p) => p.filter((r) => r.id !== id));
-  const addResult = (r: Omit<ResultRow, "id">) => setResults((p) => [{ ...r, id: newId() }, ...p]);
+  const toggleResultDone = async (id: string) => {
+    const current = results.find((r) => r.id === id);
+    if (!current) return;
+    const next = !current.done;
+    setResults((p) => p.map((r) => (r.id === id ? { ...r, done: next } : r)));
+    await updateResult(id, { done: next, done_at: next ? new Date().toISOString() : undefined });
+  };
+  const removeResult = async (id: string) => {
+    setResults((p) => p.filter((r) => r.id !== id));
+    await apiRemoveResult(id);
+  };
+  const addResult = async (r: Omit<ResultRow, "id" | "created_at" | "updated_at" | "done">) => {
+    const created = await createResult(r);
+    if (created) setResults((p) => [created, ...p]);
+  };
 
   const popupBrief = briefs.find((b) => b.id === popupBriefId) ?? null;
 
@@ -309,9 +319,9 @@ function BriefTableRow({
     <tr className="group hover:bg-[#FAFAFB]">
       <td className="px-2 py-2"><TickButton onClick={onTick} /></td>
       <td className="px-3 py-2 text-[12px] font-semibold text-[#1B1B1B] whitespace-nowrap">
-        <a href="#" className="hover:text-violet-700 hover:underline">{b.client}</a>
+        <a href="#" className="hover:text-violet-700 hover:underline">{b.client_name}</a>
       </td>
-      <td className="px-3 py-2 text-[11px] text-[#7A7A7A] whitespace-nowrap">{b.pod}</td>
+      <td className="px-3 py-2 text-[11px] text-[#7A7A7A] whitespace-nowrap">{b.pod_id}</td>
       <td className="px-3 py-2">{briefStatusPill(b)}</td>
       <td className={`px-3 py-2 text-[11px] tabular-nums whitespace-nowrap ${b.is_overdue ? "font-semibold text-rose-700" : "text-[#7A7A7A]"}`}>{b.onboarding_received}</td>
       <td className="px-3 py-2">
@@ -334,9 +344,9 @@ function ResultTableRow({ r, onTick, onRemove }: { r: ResultRow; onTick: () => v
     <tr className="group hover:bg-[#FAFAFB]">
       <td className="px-2 py-2"><TickButton onClick={onTick} /></td>
       <td className="px-3 py-2 text-[12px] font-semibold text-[#1B1B1B] whitespace-nowrap">
-        <a href="#" className="hover:text-emerald-700 hover:underline">{r.client}</a>
+        <a href="#" className="hover:text-emerald-700 hover:underline">{r.client_name}</a>
       </td>
-      <td className="px-3 py-2 text-[11px] text-[#7A7A7A] whitespace-nowrap">{r.pod}</td>
+      <td className="px-3 py-2 text-[11px] text-[#7A7A7A] whitespace-nowrap">{r.pod_id}</td>
       <td className="px-3 py-2 text-[12px] text-[#1B1B1B]">{r.project}</td>
       <td className="px-3 py-2">{resultStatusPill(r)}</td>
       <td className="px-3 py-2 text-[11px] text-[#7A7A7A] tabular-nums whitespace-nowrap">{r.live_since}</td>
@@ -350,8 +360,8 @@ function DoneBriefRow({ b, onUntick }: { b: BriefRow; onUntick: () => void }) {
   return (
     <tr className="group hover:bg-[#FAFAFB]">
       <td className="px-2 py-2"><DoneTickButton onClick={onUntick} /></td>
-      <td className="px-3 py-2 text-[12px] font-medium text-[#7A7A7A] line-through whitespace-nowrap">{b.client}</td>
-      <td className="px-3 py-2 text-[11px] text-[#A0A0A0] whitespace-nowrap">{b.pod}</td>
+      <td className="px-3 py-2 text-[12px] font-medium text-[#7A7A7A] line-through whitespace-nowrap">{b.client_name}</td>
+      <td className="px-3 py-2 text-[11px] text-[#A0A0A0] whitespace-nowrap">{b.pod_id}</td>
       <td className="px-3 py-2"><span className="inline-flex items-center rounded border border-[#E5E5EA] bg-[#FAFAFB] px-1.5 py-0.5 text-[10px] font-medium text-[#A0A0A0]">{BRIEF_STATUS_LABEL[b.status]}</span></td>
       <td className="px-3 py-2 text-[11px] text-[#A0A0A0] tabular-nums whitespace-nowrap">{b.onboarding_received}</td>
       <td className="px-3 py-2 text-[10px] text-[#A0A0A0]">{b.deliverables.length} deliverables</td>
@@ -364,8 +374,8 @@ function DoneResultRow({ r, onUntick }: { r: ResultRow; onUntick: () => void }) 
   return (
     <tr className="group hover:bg-[#FAFAFB]">
       <td className="px-2 py-2"><DoneTickButton onClick={onUntick} /></td>
-      <td className="px-3 py-2 text-[12px] font-medium text-[#7A7A7A] line-through whitespace-nowrap">{r.client}</td>
-      <td className="px-3 py-2 text-[11px] text-[#A0A0A0] whitespace-nowrap">{r.pod}</td>
+      <td className="px-3 py-2 text-[12px] font-medium text-[#7A7A7A] line-through whitespace-nowrap">{r.client_name}</td>
+      <td className="px-3 py-2 text-[11px] text-[#A0A0A0] whitespace-nowrap">{r.pod_id}</td>
       <td className="px-3 py-2 text-[12px] text-[#A0A0A0] line-through">{r.project}</td>
       <td className="px-3 py-2"><span className="inline-flex items-center rounded border border-[#E5E5EA] bg-[#FAFAFB] px-1.5 py-0.5 text-[10px] font-medium text-[#A0A0A0]">Read</span></td>
       <td className="px-3 py-2 text-[11px] text-[#A0A0A0] tabular-nums whitespace-nowrap">{r.live_since}</td>
@@ -468,9 +478,9 @@ function OnboardingPopup({ brief, onClose }: { brief: BriefRow; onClose: () => v
       <div className="w-full max-w-lg overflow-hidden rounded-xl border border-[#E5E5EA] bg-white shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between border-b border-[#F0F0F0] px-5 py-4">
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-violet-700">Onboarding · {brief.client}</div>
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-violet-700">Onboarding · {brief.client_name}</div>
             <div className="mt-0.5 text-[16px] font-semibold text-[#1B1B1B]">{brief.deliverables.length} deliverables</div>
-            <div className="mt-0.5 text-[11px] text-[#7A7A7A]">{brief.pod} · {brief.retainer ?? "—"} · Received {brief.onboarding_received}</div>
+            <div className="mt-0.5 text-[11px] text-[#7A7A7A]">{brief.pod_id} · {brief.retainer ?? "—"} · Received {brief.onboarding_received}</div>
           </div>
           <button onClick={onClose} className="rounded p-1 text-[#A0A0A0] hover:bg-[#F3F3F5] hover:text-[#1B1B1B]">
             <XMarkIcon className="h-4 w-4" />
@@ -488,7 +498,7 @@ function OnboardingPopup({ brief, onClose }: { brief: BriefRow; onClose: () => v
           </ul>
         </div>
         <div className="flex items-center justify-between border-t border-[#F0F0F0] bg-[#FAFAFB] px-5 py-3">
-          <a href="#" className="text-[11px] font-medium text-[#1B1B1B] hover:underline">Open {brief.client} engagement →</a>
+          <a href="#" className="text-[11px] font-medium text-[#1B1B1B] hover:underline">Open {brief.client_name} engagement →</a>
           <button onClick={onClose} className="rounded-md border border-[#E5E5EA] bg-white px-2.5 py-1 text-[11px] font-medium text-[#1B1B1B] hover:border-[#1B1B1B]">Close</button>
         </div>
       </div>
@@ -529,7 +539,7 @@ function FormField({ label, children }: { label: string; children: React.ReactNo
 
 const inputClass = "w-full rounded border border-[#E5E5EA] bg-white px-2.5 py-1.5 text-[12px] text-[#1B1B1B] focus:border-[#1B1B1B] focus:outline-none";
 
-function AddBriefModal({ onClose, onSave }: { onClose: () => void; onSave: (b: Omit<BriefRow, "id">) => void }) {
+function AddBriefModal({ onClose, onSave }: { onClose: () => void; onSave: (b: Omit<BriefRow, "id" | "created_at" | "updated_at" | "done">) => void }) {
   const [client, setClient] = useState("");
   const [pod, setPod] = useState<PodId>("Pod 1");
   const [status, setStatus] = useState<BriefStatus>("needs_brief");
@@ -539,9 +549,11 @@ function AddBriefModal({ onClose, onSave }: { onClose: () => void; onSave: (b: O
 
   const save = () => {
     if (!client.trim()) return;
+    const name = client.trim();
     onSave({
-      client: client.trim(),
-      pod,
+      client_id: `manual-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+      client_name: name,
+      pod_id: pod,
       status,
       onboarding_received: received,
       retainer: retainer.trim() || undefined,
@@ -589,7 +601,7 @@ function AddBriefModal({ onClose, onSave }: { onClose: () => void; onSave: (b: O
   );
 }
 
-function AddResultModal({ onClose, onSave }: { onClose: () => void; onSave: (r: Omit<ResultRow, "id">) => void }) {
+function AddResultModal({ onClose, onSave }: { onClose: () => void; onSave: (r: Omit<ResultRow, "id" | "created_at" | "updated_at" | "done">) => void }) {
   const [client, setClient] = useState("");
   const [pod, setPod] = useState<PodId>("Pod 1");
   const [project, setProject] = useState("");
@@ -599,9 +611,11 @@ function AddResultModal({ onClose, onSave }: { onClose: () => void; onSave: (r: 
 
   const save = () => {
     if (!client.trim() || !project.trim()) return;
+    const name = client.trim();
     onSave({
-      client: client.trim(),
-      pod,
+      client_id: `manual-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+      client_name: name,
+      pod_id: pod,
       project: project.trim(),
       status,
       live_since: liveSince,

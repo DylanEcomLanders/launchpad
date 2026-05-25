@@ -2,21 +2,24 @@
 
 /* Per-client strategy sandbox.
  *
- * Lives on the engagement page, sits between BriefIntakePanel and the
+ * Lives on the engagement page between BriefIntakePanel and the
  * cycle/project sections. The strategist's localised space for one
  * client.
  *
  * Two things:
- *   1. Resources - drop files, paste Google Docs / Loom / URL links.
- *      Uploaded docs get a "Generate branded version" button.
- *   2. Notes - free-form scratchpad, autosaves.
+ *   1. Resources - paste Google Doc / Loom / link URLs, or upload
+ *      files. Uploaded files get a "Generate branded version" button.
+ *   2. Notes - dated entries (Cmd+Enter to save), append-only-ish with
+ *      delete per entry.
  *
- * State persists to localStorage keyed by client id. Production will
- * swap to Supabase (a `strategy_sandbox` row per client, or a JSONB
- * column on the existing Client).
+ * Reads + writes go through src/lib/strategy/data.ts (Supabase). No
+ * localStorage. Multi-device safe: additive only + explicit delete.
+ *
+ * File uploads route through POST /api/strategy-resources/upload, the
+ * returned storage path is persisted on the resource row.
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -29,59 +32,20 @@ import {
   SparklesIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
-
-type ResourceKind = "doc" | "loom" | "link" | "file";
-
-interface Resource {
-  id: string;
-  title: string;
-  kind: ResourceKind;
-  url?: string;
-  added_at: string; // ISO
-  added_by?: string;
-  /** True when the resource is an uploaded file we can re-render with
-   * Ecom Landers branding. Pasted links don't get the button. */
-  brandable?: boolean;
-}
-
-interface NoteEntry {
-  id: string;
-  content: string;
-  created_at: string; // ISO
-}
-
-interface SandboxState {
-  resources: Resource[];
-  entries: NoteEntry[];
-}
-
-const EMPTY: SandboxState = { resources: [], entries: [] };
-
-const storageKey = (clientId: string) => `strategy-sandbox-${clientId}`;
-
-function loadState(clientId: string): SandboxState {
-  if (typeof window === "undefined") return EMPTY;
-  try {
-    const raw = window.localStorage.getItem(storageKey(clientId));
-    if (!raw) return EMPTY;
-    const parsed = JSON.parse(raw);
-    const resources = Array.isArray(parsed.resources) ? parsed.resources : [];
-    // Migrate legacy single-string notes into one entry.
-    let entries: NoteEntry[] = Array.isArray(parsed.entries) ? parsed.entries : [];
-    if (entries.length === 0 && typeof parsed.notes === "string" && parsed.notes.trim()) {
-      entries = [
-        {
-          id: `migrated-${Date.now()}`,
-          content: parsed.notes,
-          created_at: new Date().toISOString(),
-        },
-      ];
-    }
-    return { resources, entries };
-  } catch {
-    return EMPTY;
-  }
-}
+import {
+  createNote,
+  createResource,
+  listNotesForClient,
+  listResourcesForClient,
+  removeNote,
+  removeResource,
+  signedUrlForResource,
+} from "@/lib/strategy/data";
+import type {
+  ResourceKind,
+  StrategyNote,
+  StrategyResource,
+} from "@/lib/strategy/types";
 
 function detectKind(url: string): ResourceKind {
   const u = url.toLowerCase();
@@ -93,7 +57,6 @@ function detectKind(url: string): ResourceKind {
 function inferTitleFromUrl(url: string): string {
   try {
     const u = new URL(url);
-    // Trim "/" and any trailing slugs to get a readable hint
     const path = u.pathname.replace(/\/+$/, "");
     const last = path.split("/").filter(Boolean).pop();
     return `${u.hostname}${last ? ` · ${last}` : ""}`;
@@ -119,8 +82,6 @@ function formatRelative(iso: string): string {
   });
 }
 
-const newId = () => `r${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
-
 const RESOURCE_TONE: Record<ResourceKind, string> = {
   doc: "border-blue-200 bg-blue-50 text-blue-700",
   loom: "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700",
@@ -143,82 +104,108 @@ export function StrategySandbox({
   clientName: string;
 }) {
   const [open, setOpen] = useState(true);
-  const [state, setState] = useState<SandboxState>(EMPTY);
-  const [hydrated, setHydrated] = useState(false);
+  const [resources, setResources] = useState<StrategyResource[]>([]);
+  const [notes, setNotes] = useState<StrategyNote[]>([]);
   const [urlInput, setUrlInput] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [savedLabel, setSavedLabel] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Hydrate from localStorage once.
+  // Hydrate from Supabase on mount + on client change.
   useEffect(() => {
-    setState(loadState(clientId));
-    setHydrated(true);
+    let cancelled = false;
+    (async () => {
+      const [r, n] = await Promise.all([
+        listResourcesForClient(clientId),
+        listNotesForClient(clientId),
+      ]);
+      if (!cancelled) {
+        setResources(r);
+        setNotes(n);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [clientId]);
 
-  // Persist on change (debounced via setTimeout).
-  useEffect(() => {
-    if (!hydrated) return;
-    const timer = window.setTimeout(() => {
-      try {
-        window.localStorage.setItem(storageKey(clientId), JSON.stringify(state));
-        setSavedLabel("Saved");
-        window.setTimeout(() => setSavedLabel(null), 1500);
-      } catch {
-        // ignore
-      }
-    }, 250);
-    return () => window.clearTimeout(timer);
-  }, [state, hydrated, clientId]);
+  const flashSaved = () => {
+    setSavedLabel("Saved");
+    window.setTimeout(() => setSavedLabel(null), 1500);
+  };
 
-  const addUrl = () => {
+  const addUrl = async () => {
     const url = urlInput.trim();
     if (!url) return;
     const kind = detectKind(url);
-    const resource: Resource = {
-      id: newId(),
+    const created = await createResource({
+      client_id: clientId,
       title: inferTitleFromUrl(url),
       kind,
       url,
-      added_at: new Date().toISOString(),
-    };
-    setState((s) => ({ ...s, resources: [resource, ...s.resources] }));
-    setUrlInput("");
+    });
+    if (created) {
+      setResources((rs) => [created, ...rs]);
+      setUrlInput("");
+      flashSaved();
+    }
   };
 
-  const onFileChosen = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onFileChosen = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    const resource: Resource = {
-      id: newId(),
-      title: file.name,
-      kind: "file",
-      added_at: new Date().toISOString(),
-      brandable: true,
-    };
-    setState((s) => ({ ...s, resources: [resource, ...s.resources] }));
     e.target.value = "";
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("client_id", clientId);
+      const res = await fetch("/api/strategy-resources/upload", {
+        method: "POST",
+        body: fd,
+      });
+      const json = await res.json();
+      if (!res.ok || !json.file_path) {
+        alert(json.error || "Upload failed");
+        return;
+      }
+      const created = await createResource({
+        client_id: clientId,
+        title: file.name,
+        kind: "file",
+        file_path: json.file_path,
+        brandable: true,
+      });
+      if (created) {
+        setResources((rs) => [created, ...rs]);
+        flashSaved();
+      }
+    } finally {
+      setUploading(false);
+    }
   };
 
-  const removeResource = (id: string) =>
-    setState((s) => ({ ...s, resources: s.resources.filter((r) => r.id !== id) }));
+  const onRemoveResource = async (id: string) => {
+    const ok = await removeResource(id);
+    if (ok) {
+      setResources((rs) => rs.filter((r) => r.id !== id));
+    }
+  };
 
-  const addEntry = (content: string) => {
+  const onAddNote = async (content: string) => {
     const trimmed = content.trim();
     if (!trimmed) return;
-    const entry: NoteEntry = {
-      id: newId(),
-      content: trimmed,
-      created_at: new Date().toISOString(),
-    };
-    setState((s) => ({ ...s, entries: [entry, ...s.entries] }));
+    const created = await createNote({ client_id: clientId, content: trimmed });
+    if (created) {
+      setNotes((ns) => [created, ...ns]);
+      flashSaved();
+    }
   };
-  const removeEntry = (id: string) =>
-    setState((s) => ({ ...s, entries: s.entries.filter((e) => e.id !== id) }));
 
-  const headerCount = useMemo(
-    () => `${state.resources.length} resource${state.resources.length === 1 ? "" : "s"}`,
-    [state.resources.length],
-  );
+  const onRemoveNote = async (id: string) => {
+    const ok = await removeNote(id);
+    if (ok) setNotes((ns) => ns.filter((n) => n.id !== id));
+  };
 
   return (
     <section className="mb-5 rounded-lg border border-[#E5E5EA] bg-white">
@@ -232,7 +219,7 @@ export function StrategySandbox({
           </span>
           <span className="text-[13px] font-semibold text-[#1B1B1B]">Sandbox</span>
           <span className="text-[10px] text-[#A0A0A0]">
-            · {headerCount} for {clientName}
+            · {resources.length} resource{resources.length === 1 ? "" : "s"} for {clientName}
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -256,7 +243,7 @@ export function StrategySandbox({
                 Resources
               </span>
               <span className="text-[10px] tabular-nums text-[#A0A0A0]">
-                {state.resources.length}
+                {resources.length}
               </span>
             </div>
 
@@ -284,10 +271,11 @@ export function StrategySandbox({
               <span className="text-[10px] text-[#A0A0A0]">or</span>
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="inline-flex items-center gap-1 rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-[11px] font-medium text-[#1B1B1B] hover:border-[#1B1B1B]"
+                disabled={uploading}
+                className="inline-flex items-center gap-1 rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-[11px] font-medium text-[#1B1B1B] hover:border-[#1B1B1B] disabled:opacity-50"
               >
                 <PaperClipIcon className="h-3 w-3" />
-                Upload
+                {uploading ? "Uploading…" : "Upload"}
               </button>
               <input
                 ref={fileInputRef}
@@ -298,17 +286,17 @@ export function StrategySandbox({
             </div>
 
             {/* List */}
-            {state.resources.length === 0 ? (
+            {resources.length === 0 ? (
               <div className="rounded-md border border-dashed border-[#E5E5EA] bg-white px-3 py-4 text-center text-[11px] italic text-[#A0A0A0]">
                 Nothing here yet. Drop a brief, paste a Loom, link a Google Doc.
               </div>
             ) : (
               <div className="space-y-1.5">
-                {state.resources.map((r) => (
+                {resources.map((r) => (
                   <ResourceRowView
                     key={r.id}
                     r={r}
-                    onRemove={() => removeResource(r.id)}
+                    onRemove={() => onRemoveResource(r.id)}
                   />
                 ))}
               </div>
@@ -322,14 +310,14 @@ export function StrategySandbox({
                 Notes
               </span>
               <span className="text-[10px] tabular-nums text-[#A0A0A0]">
-                {state.entries.length}
+                {notes.length}
               </span>
             </div>
             <NotesEntries
-              entries={state.entries}
+              entries={notes}
               clientName={clientName}
-              onAdd={addEntry}
-              onRemove={removeEntry}
+              onAdd={onAddNote}
+              onRemove={onRemoveNote}
             />
           </div>
         </div>
@@ -373,7 +361,7 @@ function NotesEntries({
   onAdd,
   onRemove,
 }: {
-  entries: NoteEntry[];
+  entries: StrategyNote[];
   clientName: string;
   onAdd: (content: string) => void;
   onRemove: (id: string) => void;
@@ -452,7 +440,7 @@ function ResourceRowView({
   r,
   onRemove,
 }: {
-  r: Resource;
+  r: StrategyResource;
   onRemove: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -468,6 +456,17 @@ function ResourceRowView({
     return () => document.removeEventListener("mousedown", handler);
   }, [menuOpen]);
 
+  const openResource = async () => {
+    if (r.url) {
+      window.open(r.url, "_blank", "noopener");
+      return;
+    }
+    if (r.file_path) {
+      const signed = await signedUrlForResource(r.file_path);
+      if (signed) window.open(signed, "_blank", "noopener");
+    }
+  };
+
   return (
     <div className="group flex items-center gap-2.5 rounded-md border border-[#EDEDEF] bg-white px-2.5 py-2">
       <div
@@ -476,20 +475,12 @@ function ResourceRowView({
         {RESOURCE_ICON[r.kind]}
       </div>
       <div className="min-w-0 flex-1">
-        {r.url ? (
-          <a
-            href={r.url}
-            target="_blank"
-            rel="noreferrer"
-            className="block truncate text-[12px] font-medium text-[#1B1B1B] hover:text-violet-700 hover:underline"
-          >
-            {r.title}
-          </a>
-        ) : (
-          <div className="truncate text-[12px] font-medium text-[#1B1B1B]">
-            {r.title}
-          </div>
-        )}
+        <button
+          onClick={openResource}
+          className="block w-full truncate text-left text-[12px] font-medium text-[#1B1B1B] hover:text-violet-700 hover:underline"
+        >
+          {r.title}
+        </button>
         <div className="text-[10px] text-[#A0A0A0]">
           {r.kind === "doc"
             ? "Google Doc"
@@ -505,7 +496,7 @@ function ResourceRowView({
       </div>
       {r.brandable && (
         <button
-          onClick={() => alert("Branded version would generate here.")}
+          onClick={() => alert("Branded version would generate here. v1 plan: serve a branded HTML wrapper at /share/strategy/{token}.")}
           className="inline-flex items-center gap-1 rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-[10px] font-medium text-[#1B1B1B] hover:border-[#1B1B1B]"
         >
           <SparklesIcon className="h-3 w-3" />
