@@ -195,7 +195,15 @@ export function StrategySandbox({
   const onAddNote = async (content: string) => {
     const trimmed = content.trim();
     if (!trimmed) return;
-    const created = await createNote({ client_id: clientId, content: trimmed });
+    // Author from launchpad-role cookie. Until per-user identity lands,
+    // role labels (admin / cro / team) are the best signal of "who".
+    const roleMatch = document.cookie.match(/launchpad-role=([^;]+)/);
+    const author = roleMatch ? decodeURIComponent(roleMatch[1]) : undefined;
+    const created = await createNote({
+      client_id: clientId,
+      content: trimmed,
+      author,
+    });
     if (created) {
       setNotes((ns) => [created, ...ns]);
       flashSaved();
@@ -412,9 +420,16 @@ function NotesEntries({
               className="group rounded-md border border-[#EDEDEF] bg-white px-2.5 py-2"
             >
               <div className="flex items-baseline justify-between gap-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
-                  {formatEntryDate(e.created_at)}
-                </span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+                    {formatEntryDate(e.created_at)}
+                  </span>
+                  {e.author && (
+                    <span className="text-[10px] text-[#A0A0A0]">
+                      · by {e.author}
+                    </span>
+                  )}
+                </div>
                 <button
                   onClick={() => onRemove(e.id)}
                   title="Delete"
@@ -431,6 +446,32 @@ function NotesEntries({
         </ul>
       )}
     </div>
+  );
+}
+
+// ─── Branded share button ───────────────────────────────────────────
+
+function BrandedShareButton({ resourceId }: { resourceId: string }) {
+  const [copied, setCopied] = useState(false);
+  const onClick = async () => {
+    const url = `${window.location.origin}/share/strategy/${resourceId}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      window.open(url, "_blank", "noopener");
+    }
+  };
+  return (
+    <button
+      onClick={onClick}
+      title="Copies the branded share URL to your clipboard"
+      className="inline-flex items-center gap-1 rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-[10px] font-medium text-[#1B1B1B] hover:border-[#1B1B1B]"
+    >
+      <SparklesIcon className="h-3 w-3" />
+      {copied ? "Link copied" : "Branded share link"}
+    </button>
   );
 }
 
@@ -495,13 +536,7 @@ function ResourceRowView({
         </div>
       </div>
       {r.brandable && (
-        <button
-          onClick={() => alert("Branded version would generate here. v1 plan: serve a branded HTML wrapper at /share/strategy/{token}.")}
-          className="inline-flex items-center gap-1 rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-[10px] font-medium text-[#1B1B1B] hover:border-[#1B1B1B]"
-        >
-          <SparklesIcon className="h-3 w-3" />
-          Generate branded version
-        </button>
+        <BrandedShareButton resourceId={r.id} />
       )}
       <div ref={ref} className="relative">
         <button

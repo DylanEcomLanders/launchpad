@@ -42,6 +42,7 @@ import { formatTimeInPhase } from "@/lib/task-board/phases";
 import { CapacityMeter, MemberAvatar } from "./components";
 import { WeeksView } from "./WeeksView";
 import { StrategyView } from "./StrategyView";
+import { createBrief as createStrategyBrief } from "@/lib/strategy/data";
 import { onboardingStore, type OnboardingSubmission } from "@/lib/onboarding";
 import { getPortalById } from "@/lib/portal/data";
 import type { PortalData, ScopeItem } from "@/lib/portal/types";
@@ -979,6 +980,25 @@ function AssignToPodModal({
         items: items.map((it) => ({ type: it.type, label: it.label })),
       });
     }
+
+    /* Auto-create a strategy brief row so the strategist sees the new
+     * onboarding land on the Pod Overview Strategy toggle. Fire and
+     * forget; failure here should not block the pod assignment flow. */
+    const podName = pods.find((p) => p.id === podId)?.name ?? "Pod ?";
+    const todayLabel = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+    createStrategyBrief({
+      client_id: client.id,
+      client_name: client.name,
+      pod_id: podName,
+      status: "needs_brief",
+      onboarding_received: todayLabel,
+      onboarding_submission_id: onboarding.id,
+      deliverables: items.map((it) => ({
+        type: PAGE_LABEL[it.type] ?? it.type,
+        label: it.label?.trim() || undefined,
+      })),
+      retainer: conversionEngine ? "8k retainer" : "Project only",
+    }).catch((err) => console.error("[strategy] auto-create brief:", err));
 
     setSubmitting(false);
     onComplete();

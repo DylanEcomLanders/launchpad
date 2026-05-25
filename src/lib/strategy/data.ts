@@ -205,6 +205,22 @@ export async function removeResult(id: string): Promise<boolean> {
 
 // ─── Resources (per client) ──────────────────────────────────────────
 
+export async function getResource(id: string): Promise<StrategyResource | null> {
+  if (!isSupabaseConfigured()) return null;
+  try {
+    const { data, error } = await supabase
+      .from(TABLE_RESOURCES)
+      .select("data")
+      .eq("id", id)
+      .maybeSingle();
+    if (error) throw error;
+    return (data?.data as StrategyResource) ?? null;
+  } catch (err) {
+    console.error("[strategy] getResource:", err);
+    return null;
+  }
+}
+
 export async function listResourcesForClient(
   clientId: string,
 ): Promise<StrategyResource[]> {
