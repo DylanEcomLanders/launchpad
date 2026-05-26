@@ -17,7 +17,6 @@ import {
   BookOpenIcon,
   BuildingOffice2Icon,
   RocketLaunchIcon,
-  ArchiveBoxIcon,
   WrenchScrewdriverIcon,
   PuzzlePieceIcon,
   Squares2X2Icon,
@@ -42,8 +41,8 @@ interface NavSection {
   badge?: string;
   /* Visual grouping — sections within the same group render together,
    * separated by a hairline divider from the next group. Order matters
-   * (top-down): lifecycle → ops → shelved. */
-  group: "lifecycle" | "ops" | "shelved";
+   * (top-down): lifecycle → ops. */
+  group: "lifecycle" | "ops";
 }
 
 const teamZones = [
@@ -68,11 +67,8 @@ const navSections: NavSection[] = [
     defaultOpen: true,
     group: "lifecycle",
     items: [
-      { label: "Audits", href: "/sales-engine/audits" },
-      { label: "Social", href: "/sales-engine/social" },
       { label: "Portfolio", href: "/sales-engine/portfolio" },
       { label: "Case Studies", href: "/sales-engine/case-studies" },
-      { label: "Proposals", href: "/sales-engine/proposals" },
     ],
   },
   {
@@ -82,8 +78,6 @@ const navSections: NavSection[] = [
     group: "lifecycle",
     items: [
       { label: "Onboarding", href: "/tools/onboarding-inbox" },
-      { label: "Portals", href: "/tools/client-portal" },
-      { label: "Task Board", href: "/tools/task-board" },
     ],
   },
   {
@@ -92,8 +86,6 @@ const navSections: NavSection[] = [
     defaultOpen: false,
     group: "lifecycle",
     items: [
-      { label: "Operations Wiki", href: "/tools/ops-wiki" },
-      { label: "Tickets", href: "/tools/issues" },
       { label: "Feedback", href: "/tools/feedback" },
     ],
   },
@@ -128,31 +120,33 @@ const navSections: NavSection[] = [
       { label: "Contracts", href: "/company/contracts" },
     ],
   },
-  {
-    title: "Shelved",
-    icon: <ArchiveBoxIcon className="size-4" />,
-    defaultOpen: false,
-    roles: ["admin"],
-    badge: "PARKED",
-    group: "shelved",
-    items: [
-      { label: "Ecomlanders Cheat Sheet", href: "/internal/cheatsheet" },
-      { label: "Conversion Engine Sheet", href: "/internal/cheatsheet/conversion-engine" },
-      { label: "Articles", href: "/sales-engine/articles" },
-      { label: "Calendar", href: "/sales-engine/calendar" },
-      { label: "Content Calendar", href: "/content-calendar" },
-      { label: "Lead Magnets", href: "/sales-engine/lead-magnets" },
-      { label: "Leads (Outreach)", href: "/sales-engine/leads" },
-      { label: "Quiz Leads", href: "/sales-engine/quiz-leads" },
-      { label: "Scout", href: "/sales-engine/scout" },
-      { label: "Resources (Referrals)", href: "/sales-engine/resources" },
-      { label: "Pipeline", href: "/sales-engine/pipeline" },
-      { label: "Funnel Playbook", href: "/tools/funnel-knowledge" },
-      { label: "Funnels", href: "/tools/funnel-builder" },
-      { label: "Deck Builder", href: "/sales-engine/deck-builder" },
-      { label: "Referral Programme", href: "/referral-programme" },
-    ],
-  },
+];
+
+/* Shelved tools — listed on /shelved as a read-only catalogue. Code stays
+ * in git so we can promote items back into the sidebar if needed; we just
+ * don't link to them here. */
+export const shelvedItems: NavItem[] = [
+  { label: "Audits", href: "/sales-engine/audits" },
+  { label: "Social", href: "/sales-engine/social" },
+  { label: "Proposals", href: "/sales-engine/proposals" },
+  { label: "Portals", href: "/tools/client-portal" },
+  { label: "Task Board", href: "/tools/task-board" },
+  { label: "Tickets", href: "/tools/issues" },
+  { label: "Ecomlanders Cheat Sheet", href: "/internal/cheatsheet" },
+  { label: "Conversion Engine Sheet", href: "/internal/cheatsheet/conversion-engine" },
+  { label: "Articles", href: "/sales-engine/articles" },
+  { label: "Calendar", href: "/sales-engine/calendar" },
+  { label: "Content Calendar", href: "/content-calendar" },
+  { label: "Lead Magnets", href: "/sales-engine/lead-magnets" },
+  { label: "Leads (Outreach)", href: "/sales-engine/leads" },
+  { label: "Quiz Leads", href: "/sales-engine/quiz-leads" },
+  { label: "Scout", href: "/sales-engine/scout" },
+  { label: "Resources (Referrals)", href: "/sales-engine/resources" },
+  { label: "Pipeline", href: "/sales-engine/pipeline" },
+  { label: "Funnel Playbook", href: "/tools/funnel-knowledge" },
+  { label: "Funnels", href: "/tools/funnel-builder" },
+  { label: "Deck Builder", href: "/sales-engine/deck-builder" },
+  { label: "Referral Programme", href: "/referral-programme" },
 ];
 
 const homeItem = {
@@ -179,6 +173,11 @@ const agentsItem = {
   label: "Agents",
   href: "/agents",
   icon: <WrenchScrewdriverIcon className="size-4" />,
+};
+const wikiItem = {
+  label: "Wiki",
+  href: "/tools/ops-wiki",
+  icon: <BookOpenIcon className="size-4" />,
 };
 /* R&D Tracker — internal accountability + team idea inbox. Sits with
  * the pinned top-level cluster (rather than inside a collapsible
@@ -446,6 +445,7 @@ export function Sidebar() {
             {renderTopLink(offerItem)}
             {renderTopLink(engagementsItem)}
             {renderTopLink(podsItem)}
+            {renderTopLink(wikiItem)}
             {renderTopLink(rdItem)}
           </div>
 
@@ -458,11 +458,6 @@ export function Sidebar() {
 
           {/* Ops: Money, Company */}
           {visibleSections.filter((s) => s.group === "ops").map((section) => renderSection(section))}
-
-          {renderDivider()}
-
-          {/* Shelved — parked tools, default-collapsed */}
-          {visibleSections.filter((s) => s.group === "shelved").map((section) => renderSection(section))}
 
           {renderDivider()}
 
@@ -544,13 +539,21 @@ export function Sidebar() {
 
         {/* Footer */}
         {!collapsed && (
-          <div className="px-4 py-3">
+          <div className="px-4 py-3 flex items-center gap-2">
             <Link
               href="/changelog"
               onClick={() => setMobileOpen(false)}
               className="text-[11px] text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
             >
               Launchpad v0.49.0
+            </Link>
+            <span className="text-[10px] text-[#D5D5D5]">·</span>
+            <Link
+              href="/shelved"
+              onClick={() => setMobileOpen(false)}
+              className="text-[11px] text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
+            >
+              Shelved
             </Link>
           </div>
         )}
