@@ -36,7 +36,7 @@ export default function WikiIndexPage() {
     <div className="max-w-3xl mx-auto px-8 py-12">
       <header className="mb-12">
         <p className="text-[11px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-2">
-          Wiki · Ecomlanders
+          Ecomlanders Wiki
         </p>
         <h1 className="text-3xl font-semibold text-[#1B1B1B] tracking-tight mb-5">
           The ops manual

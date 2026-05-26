@@ -128,6 +128,7 @@ const navSections: NavSection[] = [
  * in git so we can promote items back into the sidebar if needed; we just
  * don't link to them here. */
 export const shelvedItems: NavItem[] = [
+  { label: "Wiki (legacy)", href: "/tools/ops-wiki" },
   { label: "Audits", href: "/sales-engine/audits" },
   { label: "Social", href: "/sales-engine/social" },
   { label: "Proposals", href: "/sales-engine/proposals" },
@@ -178,7 +179,7 @@ const agentsItem = {
 };
 const wikiItem = {
   label: "Wiki",
-  href: "/tools/ops-wiki",
+  href: "/wiki-v2",
   icon: <BookOpenIcon className="size-4" />,
 };
 /* R&D Tracker — internal accountability + team idea inbox. Sits with
