@@ -130,13 +130,16 @@ export async function POST(req: NextRequest) {
   };
 
   // ── Insert via service-role client ────────────────────────────
+  // finance_expenses schema is { id, data jsonb, created_at } — no
+  // top-level updated_at column. The updated_at timestamp lives inside
+  // the data blob (set above). Don't add it as a column or Supabase
+  // rejects the insert with "Could not find the 'updated_at' column".
   try {
     const sb = financeServerClient();
     const { error } = await sb.from("finance_expenses").insert({
       id,
       data: expense,
       created_at: now,
-      updated_at: now,
     });
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

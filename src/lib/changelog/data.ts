@@ -37,6 +37,15 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-78",
+    date: "26 May 2026",
+    version: "0.49.2",
+    title: "Submit invoice: fix schema error blocking team submissions",
+    changes: [
+      { type: "fixed", text: "Submitting a team invoice at /team/invoice was failing with 'Could not find the updated_at column of finance_expenses in the schema cache'. The /api/team-invoice/submit route was writing { id, data, created_at, updated_at } as top-level columns, but the finance_expenses table (per migration 015) only has { id text pk, data jsonb, created_at timestamptz } — updated_at lives inside the data jsonb blob, not as a column. The working /api/finance/import-expenses route already handles it correctly. Dropped the stray updated_at column from the insert call and added a comment explaining the schema shape so this doesn't regress next time. Alister and the rest of the pod can submit invoices for the 28th cycle again" },
+    ],
+  },
+  {
     id: "cl-77",
     date: "25 May 2026",
     version: "0.49.1",
