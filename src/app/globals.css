@@ -386,3 +386,201 @@ h1, h2, h3, h4, h5, h6 {
 .animate-pulse-soft {
   animation: pulse-soft 2.4s ease-in-out infinite;
 }
+
+/* ── Wiki v2 article styling ──
+ * Numbered H2 sections via CSS counters + a callout treatment for
+ * blockquotes (used for "What we are not" style asides). The counter
+ * gives every H2 a "01", "02" prefix automatically based on document
+ * order so authors don't have to track numbering by hand. */
+.wiki-article {
+  counter-reset: section;
+}
+.wiki-article h2 {
+  counter-increment: section;
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+  margin-top: 3rem;
+}
+.wiki-article h2::before {
+  content: counter(section, decimal-leading-zero);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #A0A0A0;
+  flex-shrink: 0;
+  /* Optical alignment with the heading baseline */
+  position: relative;
+  top: -0.25rem;
+}
+.wiki-article h2:first-of-type {
+  margin-top: 2rem;
+}
+
+/* ── Blockquote variants ──
+ * Default = pull-quote (single statement / quote). When the blockquote
+ * contains a list, it switches to the "eyebrow + card" callout used for
+ * checklists and anti-pattern lists like "What we are not". The variant
+ * is picked structurally so markdown authors don't need any custom syntax. */
+.wiki-article blockquote {
+  background: #F7FAFF;
+  border-left: 3px solid #1B1B1B;
+  border-radius: 0;
+  padding: 1rem 1.5rem;
+  margin: 2.5rem 0;
+  font-style: normal;
+  quotes: none;
+}
+.wiki-article blockquote::before,
+.wiki-article blockquote::after {
+  content: none;
+}
+.wiki-article blockquote p {
+  margin: 0;
+  color: #3A3A3A;
+}
+.wiki-article blockquote p + p {
+  margin-top: 0.5rem;
+}
+.wiki-article blockquote strong {
+  font-weight: 600;
+  color: #1B1B1B;
+}
+
+/* Eyebrow card variant — triggered by presence of a list inside the quote */
+.wiki-article blockquote:has(> ul, > ol) {
+  background: #FAFAFB;
+  border: 1px solid #EDEDEF;
+  border-left: 1px solid #EDEDEF;
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.5rem;
+}
+.wiki-article blockquote:has(> ul, > ol) > p:first-child > strong:only-child {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #7A7A7A;
+  margin-bottom: 0.5rem;
+}
+.wiki-article blockquote:has(> ul, > ol) ul {
+  margin: 0.75rem 0 0;
+  padding-left: 1.25rem;
+}
+.wiki-article blockquote:has(> ul, > ol) li {
+  color: #3A3A3A;
+  margin: 0.35rem 0;
+}
+
+/* ── Wiki tables ──
+ * Borderless outer frame, uppercase tracking-wider header row, hairline
+ * dividers between rows. Numbers stay tabular for clean column alignment. */
+.wiki-article table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 2.5rem 0;
+  font-size: 0.875rem;
+}
+.wiki-article thead th {
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #7A7A7A;
+  padding: 0.65rem 1rem 0.85rem;
+  border-bottom: 1px solid #EDEDEF;
+}
+.wiki-article tbody td {
+  padding: 0.95rem 1rem;
+  color: #3A3A3A;
+  border-bottom: 1px solid #F3F3F5;
+  vertical-align: top;
+  font-variant-numeric: tabular-nums;
+}
+.wiki-article tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Wiki task lists ──
+ * GFM checkboxes styled as clean square inputs. Read-only by design,
+ * useful for playbooks and process checklists. */
+.wiki-article ul.contains-task-list {
+  list-style: none;
+  padding-left: 0;
+}
+.wiki-article li.task-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.3rem 0;
+  margin: 0;
+  color: #3A3A3A;
+}
+.wiki-article li.task-list-item::marker {
+  content: none;
+}
+.wiki-article li.task-list-item > input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.05rem;
+  height: 1.05rem;
+  border: 1.5px solid #D5D5D5;
+  border-radius: 0.25rem;
+  background: #fff;
+  margin: 0;
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+  position: relative;
+  cursor: default;
+}
+.wiki-article li.task-list-item > input[type="checkbox"]:checked {
+  background: #1B1B1B;
+  border-color: #1B1B1B;
+}
+.wiki-article li.task-list-item > input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 0px;
+  width: 5px;
+  height: 9px;
+  border-right: 2px solid white;
+  border-bottom: 2px solid white;
+  transform: rotate(45deg);
+}
+
+
+/* ── Wiki v2 inline comment highlights ──
+ * Subtle yellow underline on text with an open comment thread, muted
+ * grey for resolved threads. Click target is the entire highlighted
+ * span; CommentLayer wires the click. */
+.wv2-hl {
+  background-color: rgba(255, 230, 110, 0.35);
+  border-bottom: 1.5px solid rgba(224, 201, 95, 0.85);
+  padding: 0 1px;
+  cursor: pointer;
+  border-radius: 1px;
+  transition: background-color 0.15s ease;
+}
+.wv2-hl:hover {
+  background-color: rgba(255, 230, 110, 0.55);
+}
+.wv2-hl-resolved {
+  background-color: rgba(200, 200, 200, 0.2);
+  border-bottom-color: rgba(170, 170, 170, 0.6);
+}
+.wv2-hl-resolved:hover {
+  background-color: rgba(200, 200, 200, 0.35);
+}
+
+/* Side panel slide-in animation */
+@keyframes wv2-slide-in-right {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+.animate-slide-in-right {
+  animation: wv2-slide-in-right 180ms ease-out;
+}
