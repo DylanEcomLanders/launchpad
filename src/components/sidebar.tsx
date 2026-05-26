@@ -21,10 +21,12 @@ import {
   PuzzlePieceIcon,
   Squares2X2Icon,
   LightBulbIcon,
+  LockClosedIcon,
+  ArrowRightIcon,
 } from "@heroicons/react/24/solid";
 import { LogoMark } from "@/components/logo";
-import { AppSwitcher } from "@/components/app-switcher";
 import { useRole } from "@/components/auth-gate";
+import { CommandPalette, type CommandItem } from "@/components/command-palette";
 
 interface NavItem {
   label: string;
@@ -208,6 +210,69 @@ export function Sidebar() {
   const visibleSections = navSections.filter((s) => !s.roles || (role !== "team" && s.roles.includes(role)));
   const [now, setNow] = useState(() => new Date());
   const [onboardingCount, setOnboardingCount] = useState(0);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [pods, setPods] = useState<{ id: string; tagline: string; label: string; tile: string; bg: string; fg: string }[]>([]);
+
+  /* Pull pods client-side so we can render identity tiles in the sidebar.
+   * Each pod gets a fixed brand colour by index (P1/P2/P3) so the tiles
+   * stay stable across reloads instead of jittering with hash-derived
+   * hues. Number lives in the tile, the lead's name is the label. */
+  useEffect(() => {
+    const palette = [
+      { bg: "#FEE4D8", fg: "#C2410C" }, // warm peach
+      { bg: "#DBEAFE", fg: "#1D4ED8" }, // soft blue
+      { bg: "#DCFCE7", fg: "#15803D" }, // mint
+    ];
+    (async () => {
+      try {
+        const mod = await import("@/lib/pods-v2/data");
+        const all = mod.getPods();
+        setPods(
+          all.slice(0, 3).map((p, i) => {
+            const num = p.name.replace(/[^0-9]/g, "") || String(i + 1);
+            return {
+              id: p.id,
+              tagline: p.tagline,
+              label: `Pod ${num}`,
+              tile: num,
+              bg: palette[i % palette.length].bg,
+              fg: palette[i % palette.length].fg,
+            };
+          }),
+        );
+      } catch {}
+    })();
+  }, []);
+
+  /* Global ⌘K / Ctrl+K to open the palette anywhere in the app. */
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((v) => !v);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  /* Build the searchable index: pinned items + every visible lane child
+   * + shelved items (marked so they render with the Shelved badge). */
+  const paletteItems: CommandItem[] = [
+    { label: homeItem.label, href: homeItem.href, group: "Pinned", icon: homeItem.icon },
+    { label: offerItem.label, href: offerItem.href, group: "Pinned", icon: offerItem.icon },
+    { label: engagementsItem.label, href: engagementsItem.href, group: "Pinned", icon: engagementsItem.icon, keywords: ["engagements"] },
+    { label: podsItem.label, href: podsItem.href, group: "Pinned", icon: podsItem.icon },
+    { label: wikiItem.label, href: wikiItem.href, group: "Pinned", icon: wikiItem.icon, keywords: ["ops wiki", "operations"] },
+    { label: rdItem.label, href: rdItem.href, group: "Pinned", icon: rdItem.icon, keywords: ["research", "ideas"] },
+    { label: agentsItem.label, href: agentsItem.href, group: "Pinned", icon: agentsItem.icon },
+    ...visibleSections.flatMap((s) =>
+      s.items.map((i) => ({ label: i.label, href: i.href, group: s.title }))
+    ),
+    { label: "Team Hub", href: "/team", group: "Pinned" },
+    { label: "Changelog", href: "/changelog", group: "Pinned" },
+    ...(role === "admin" ? [{ label: "Settings", href: "/settings", group: "Pinned" }] : []),
+  ];
 
   /* Accordion: opening a section closes every other one. Clicking the
    * currently-open section closes it (so user can still get to a fully
@@ -258,11 +323,11 @@ export function Sidebar() {
         href={item.href}
         onClick={() => setMobileOpen(false)}
         className={`
-          relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all duration-200 mb-0.5
+          relative flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] transition-all duration-150 mb-0.5
           ${
             isActive(item.href)
-              ? "bg-white text-[#1B1B1B] font-medium shadow-[var(--shadow-nav-active)]"
-              : "text-[#7A7A7A] hover:bg-white/60 hover:text-[#1B1B1B]"
+              ? "bg-white text-[#0E0F11] font-medium"
+              : "text-[#A1A1AA] hover:bg-white/[0.06] hover:text-white"
           }
         `}
       >
@@ -274,48 +339,44 @@ export function Sidebar() {
 
   /* Collapsible section with header + accordion items. */
   function renderSection(section: NavSection) {
+    const sectionHasActive = section.items.some((i) => !i.external && isActive(i.href));
     return (
-      <div key={section.title} className="mb-1">
+      <div key={section.title} className="mb-0.5">
         {!collapsed ? (
           <button
             onClick={() => toggleSection(section.title)}
-            className="flex items-center justify-between w-full px-5 py-1.5 group"
+            className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md hover:bg-white/[0.06] transition-colors group"
           >
             <div className="flex items-center gap-2">
-              <span className="text-[#7A7A7A]">{section.icon}</span>
-              <span className="text-[12px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+              <span className="text-[13px] text-[#A1A1AA] group-hover:text-white transition-colors">
                 {section.title}
               </span>
+              {sectionHasActive && !openSections[section.title] && (
+                <span className="size-1.5 rounded-full bg-white" />
+              )}
               {section.badge && (
                 <span
-                  className={`text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${
-                    section.badge === "ADMIN"
-                      ? "bg-[#FFEFE0] text-[#D97746]"
-                      : section.badge === "PARKED"
-                      ? "bg-[#F0F0F0] text-[#999]"
-                      : "bg-amber-100 text-amber-600"
-                  }`}
+                  title={section.badge}
+                  className="flex items-center justify-center size-3.5 rounded-[3px] bg-white/[0.06] text-[#71717A]"
                 >
-                  {section.badge}
+                  <LockClosedIcon className="size-2.5" />
                 </span>
               )}
             </div>
             <ChevronDownIcon
-              className={`size-3 text-[#C5C5C5] transition-transform duration-200 ${
+              className={`size-3 text-white/30 group-hover:text-white/60 transition-all duration-200 ${
                 openSections[section.title] ? "" : "-rotate-90"
               }`}
             />
           </button>
         ) : (
-          <div className="flex justify-center py-2">
-            <span className="text-[#7A7A7A]" title={section.title}>
-              {section.icon}
-            </span>
+          <div className="flex justify-center py-1.5" title={section.title}>
+            <span className={`size-1.5 rounded-full ${sectionHasActive ? "bg-white" : "bg-white/20"}`} />
           </div>
         )}
 
         {!collapsed && openSections[section.title] && (
-          <div className="ml-7 pl-3 mt-0.5 mb-3 border-l border-[#E5E5EA]">
+          <div className="mt-0.5 mb-2 space-y-0.5">
             {section.items.map((item) => {
               const active = !item.external && isActive(item.href);
               if (item.external) {
@@ -326,7 +387,7 @@ export function Sidebar() {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-1.5 px-3 py-[6px] text-[13px] rounded-md transition-all duration-150 text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
+                    className="flex items-center gap-1.5 pl-9 pr-2.5 py-1.5 text-[13px] rounded-md transition-all duration-150 text-[#A1A1AA] hover:text-white hover:bg-white/[0.06]"
                   >
                     {item.label}
                     <svg
@@ -349,11 +410,11 @@ export function Sidebar() {
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
                   className={`
-                    block px-3 py-[6px] text-[13px] rounded-md transition-all duration-150
+                    block pl-9 pr-2.5 py-1.5 text-[13px] rounded-md transition-all duration-150
                     ${
                       active
-                        ? "text-[#1B1B1B] font-medium bg-white shadow-[var(--shadow-soft)]"
-                        : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
+                        ? "text-[#0E0F11] font-medium bg-white"
+                        : "text-[#A1A1AA] hover:text-white hover:bg-white/[0.06]"
                     }
                   `}
                 >
@@ -368,12 +429,17 @@ export function Sidebar() {
   }
 
   function renderDivider() {
-    if (collapsed) return <div className="mx-3 my-2 border-t border-[#EDEDEF]" />;
-    return <div className="mx-5 my-3 border-t border-[#EDEDEF]" />;
+    return <div className={collapsed ? "my-2" : "my-3"} />;
   }
 
   return (
     <>
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        items={paletteItems}
+      />
+
       {/* Mobile hamburger */}
       <button
         onClick={() => setMobileOpen(true)}
@@ -397,7 +463,7 @@ export function Sidebar() {
           ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0
           fixed md:relative z-50 md:z-0
-          h-screen bg-[#F7F8FA]
+          h-screen bg-[#0E0F11] text-white
           flex flex-col
           transition-all duration-200 ease-in-out
           ${collapsed ? "md:w-16" : "md:w-56"}
@@ -407,22 +473,21 @@ export function Sidebar() {
         {/* Logo area */}
         <div className="flex items-center justify-between px-4 h-14">
           {!collapsed && (
-            <div className="flex items-center gap-2">
-              <Link href="/" className="flex items-center" onClick={() => setMobileOpen(false)}>
-                <LogoMark size={18} />
-              </Link>
-              <AppSwitcher collapsed={collapsed} />
-            </div>
+            <Link href="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
+              <LogoMark size={18} />
+              <span className="text-[12px] font-medium text-white tracking-tight">Launchpad</span>
+              <span className="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]" title="Live" />
+            </Link>
           )}
           {collapsed && (
-            <Link href="/" className="mx-auto" onClick={() => setMobileOpen(false)}>
+            <Link href="/" className="mx-auto text-white" onClick={() => setMobileOpen(false)}>
               <LogoMark size={18} />
             </Link>
           )}
 
           <button
             onClick={() => setMobileOpen(false)}
-            className="p-1 rounded-lg md:hidden"
+            className="p-1 rounded-lg md:hidden text-white"
             aria-label="Close menu"
           >
             <XMarkIcon className="size-[18px]" />
@@ -430,15 +495,46 @@ export function Sidebar() {
 
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-1.5 rounded-lg hover:bg-white hover:shadow-[var(--shadow-soft)] hidden md:block transition-all duration-200"
+            className="p-1.5 rounded-md hover:bg-white/[0.08] hidden md:block transition-colors"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            {collapsed ? <ChevronRightIcon className="size-3.5 text-[#7A7A7A]" /> : <ChevronLeftIcon className="size-3.5 text-[#7A7A7A]" />}
+            {collapsed ? <ChevronRightIcon className="size-3.5 text-[#A1A1AA]" /> : <ChevronLeftIcon className="size-3.5 text-[#A1A1AA]" />}
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto scrollbar-thin py-2">
+        <nav className="flex-1 overflow-y-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {/* Search trigger — opens command palette on click or ⌘K */}
+          {!collapsed && (
+            <div className="px-3 mb-1 mt-1">
+              <button
+                onClick={() => setPaletteOpen(true)}
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-white/[0.04] hover:bg-white/[0.08] text-[13px] text-[#A1A1AA] hover:text-white transition-colors"
+              >
+                <svg className="size-3.5 shrink-0" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75">
+                  <circle cx="9" cy="9" r="6" />
+                  <path d="m14 14 3 3" strokeLinecap="round" />
+                </svg>
+                <span className="flex-1 text-left">Search</span>
+                <kbd className="text-[10px] font-mono text-[#71717A] tracking-tight">⌘K</kbd>
+              </button>
+            </div>
+          )}
+          {collapsed && (
+            <div className="px-3 mb-1 mt-1 flex justify-center">
+              <button
+                onClick={() => setPaletteOpen(true)}
+                className="p-2 rounded-lg hover:bg-white/[0.08] transition-colors"
+                title="Search (⌘K)"
+              >
+                <svg className="size-3.5 text-[#A1A1AA]" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="9" cy="9" r="6" />
+                  <path d="m14 14 3 3" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+          )}
+
           {/* Pinned daily drivers — Mission Control, Offer, Pods */}
           <div className="px-3 mb-1 mt-2 space-y-0.5">
             {renderTopLink(homeItem)}
@@ -449,30 +545,91 @@ export function Sidebar() {
             {renderTopLink(rdItem)}
           </div>
 
+          {/* Pod identity tiles — quick jump into each pod with its
+            * brand colour. Sits between the pinned cluster and the
+            * lifecycle lanes so it reads as "the pods I work in" rather
+            * than another lane. */}
+          {pods.length > 0 && !collapsed && (
+            <div className="px-3 mt-4">
+              <div className="px-2.5 mb-0.5 text-[13px] text-[#A1A1AA]">
+                Pods
+              </div>
+              <div className="space-y-0.5">
+                {pods.map((p) => {
+                  const href = `/pods-v2/${p.id}`;
+                  const active = isActive(href);
+                  return (
+                    <Link
+                      key={p.id}
+                      href={href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] transition-all ${
+                        active
+                          ? "bg-white text-[#0E0F11] font-medium"
+                          : "text-[#A1A1AA] hover:bg-white/[0.06] hover:text-white"
+                      }`}
+                    >
+                      <span
+                        className="size-4 rounded-[5px] flex items-center justify-center text-[10px] font-semibold shrink-0"
+                        style={{ backgroundColor: p.bg, color: p.fg }}
+                      >
+                        {p.tile}
+                      </span>
+                      <span className="truncate">{p.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          {pods.length > 0 && collapsed && (
+            <div className="mt-3 mb-1 flex flex-col items-center gap-1.5">
+              {pods.map((p) => {
+                const href = `/pods-v2/${p.id}`;
+                return (
+                  <Link
+                    key={p.id}
+                    href={href}
+                    onClick={() => setMobileOpen(false)}
+                    title={p.tagline}
+                    className="size-5 rounded-md flex items-center justify-center text-[11px] font-semibold transition-transform hover:scale-110"
+                    style={{ backgroundColor: p.bg, color: p.fg }}
+                  >
+                    {p.tile}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+
           {renderDivider()}
 
           {/* Lifecycle: Acquire, Deliver, Operate */}
-          {visibleSections.filter((s) => s.group === "lifecycle").map((section) => renderSection(section))}
+          <div className="px-3">
+            {visibleSections.filter((s) => s.group === "lifecycle").map((section) => renderSection(section))}
+          </div>
 
           {renderDivider()}
 
           {/* Ops: Money, Company */}
-          {visibleSections.filter((s) => s.group === "ops").map((section) => renderSection(section))}
+          <div className="px-3">
+            {visibleSections.filter((s) => s.group === "ops").map((section) => renderSection(section))}
+          </div>
 
           {renderDivider()}
 
           {/* Standalone bottom links — Agents, Settings */}
           <div className="px-3 mb-1">{renderTopLink(agentsItem)}</div>
           {!collapsed && role === "admin" && (
-            <div className="px-5 mt-2 space-y-1">
+            <div className="px-3 mt-1">
               <Link
                 href="/settings"
                 onClick={() => setMobileOpen(false)}
                 className={`
-                  flex items-center gap-2 px-2.5 py-1.5 text-[12px] font-semibold uppercase tracking-wider rounded-md transition-all duration-150
+                  flex items-center gap-2 px-2.5 py-1.5 text-[13px] rounded-md transition-all duration-150
                   ${pathname === "/settings"
-                    ? "text-[#1B1B1B] bg-white shadow-[var(--shadow-soft)]"
-                    : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
+                    ? "text-[#0E0F11] font-medium bg-white"
+                    : "text-[#A1A1AA] hover:text-white hover:bg-white/[0.06]"
                   }
                 `}
               >
@@ -488,24 +645,27 @@ export function Sidebar() {
             <Link
               href="/team"
               onClick={() => setMobileOpen(false)}
-              className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[12px] font-semibold transition-all duration-150 border ${
+              className={`group flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] transition-all duration-150 ${
                 pathname === "/team"
-                  ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
-                  : "bg-transparent text-[#1B1B1B] border-[#1B1B1B]/20 hover:border-[#1B1B1B] hover:bg-white"
+                  ? "bg-white text-[#0E0F11] font-medium"
+                  : "bg-gradient-to-r from-white/[0.04] to-white/[0.01] hover:from-white/[0.08] hover:to-white/[0.03] text-white border border-white/[0.06] hover:border-white/[0.12]"
               }`}
             >
-              <UserGroupIcon className="size-3.5" />
-              Team Hub
+              <UserGroupIcon className="size-4" />
+              <span className="flex-1">Team Hub</span>
+              <ArrowRightIcon className={`size-3 transition-all duration-200 ${
+                pathname === "/team" ? "opacity-100" : "opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5"
+              }`} />
             </Link>
           </div>
         )}
 
         {/* Team Timezones */}
         {!collapsed && (
-          <div className="mx-3 mb-2 px-3 py-3 rounded-lg bg-white shadow-[var(--shadow-soft)]">
-            <div className="flex items-center gap-1.5 mb-2">
-              <ClockIcon className="size-3 text-[#A0A0A0]" />
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+          <div className="mx-3 mb-2 px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/[0.04]">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <ClockIcon className="size-3 text-[#71717A]" />
+              <span className="text-[10px] font-medium uppercase tracking-wider text-[#71717A]">
                 Team
               </span>
             </div>
@@ -515,10 +675,10 @@ export function Sidebar() {
                   key={z.tz}
                   className="flex items-center justify-between text-[11px]"
                 >
-                  <span className="text-[#7A7A7A]">
+                  <span className="text-[#A1A1AA]">
                     {z.flag} {z.label}
                   </span>
-                  <span className="tabular-nums text-[#A0A0A0]">
+                  <span className="tabular-nums text-[#71717A]">
                     {now.toLocaleTimeString("en-GB", {
                       timeZone: z.tz,
                       hour: "2-digit",
@@ -533,7 +693,7 @@ export function Sidebar() {
         )}
         {collapsed && (
           <div className="py-3 flex justify-center">
-            <ClockIcon className="size-3.5 text-[#A0A0A0]" />
+            <ClockIcon className="size-3.5 text-[#71717A]" />
           </div>
         )}
 
@@ -543,15 +703,15 @@ export function Sidebar() {
             <Link
               href="/changelog"
               onClick={() => setMobileOpen(false)}
-              className="text-[11px] text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
+              className="text-[11px] text-[#71717A] hover:text-white transition-colors"
             >
               Launchpad v0.49.0
             </Link>
-            <span className="text-[10px] text-[#D5D5D5]">·</span>
+            <span className="text-[10px] text-[#3F3F46]">·</span>
             <Link
               href="/shelved"
               onClick={() => setMobileOpen(false)}
-              className="text-[11px] text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
+              className="text-[11px] text-[#71717A] hover:text-white transition-colors"
             >
               Shelved
             </Link>

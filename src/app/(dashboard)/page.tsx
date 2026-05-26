@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { TicketIcon } from "@heroicons/react/24/solid";
+import { useMemo, useState } from "react";
 import {
   PhotoIcon,
   TrophyIcon,
@@ -14,17 +13,6 @@ import {
   ChatBubbleOvalLeftIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
-import {
-  ageLabel,
-  ageLevel,
-  isStale,
-  sortOpenTickets,
-  AGE_COLORS,
-  TICKET_TYPE_COLORS,
-  TICKET_TYPE_LABELS,
-  type Ticket,
-} from "@/lib/tickets/types";
-import { loadTickets } from "@/lib/tickets/data";
 
 /* ── Toolkit ──
  * Centralised quick-access hub for client-facing assets and internal
@@ -87,8 +75,6 @@ const toolkitStages: ToolkitStage[] = [
 ];
 
 export default function MissionControl() {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [hydrated, setHydrated] = useState(false);
   const [toolkitQuery, setToolkitQuery] = useState("");
 
   const filteredStages = useMemo(() => {
@@ -103,18 +89,6 @@ export default function MissionControl() {
       ),
     }));
   }, [toolkitQuery]);
-
-  useEffect(() => {
-    loadTickets().then((t) => {
-      setTickets(t);
-      setHydrated(true);
-    });
-  }, []);
-
-  const openTickets = sortOpenTickets(
-    tickets.filter((t) => t.status === "open" || t.status === "in_progress"),
-  );
-  const staleCount = openTickets.filter((t) => isStale(t.raised_at)).length;
 
   const today = new Date();
   const dateStr = today.toLocaleDateString("en-GB", {
@@ -165,60 +139,6 @@ export default function MissionControl() {
         </div>
       </div>
 
-      {/* ── Today's tickets ──────────────────── */}
-      <div>
-        <div className="flex items-baseline justify-between gap-2 mb-3">
-          <div className="flex items-baseline gap-2">
-            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
-              Tickets
-            </h2>
-            <span className="text-[11px] tabular-nums text-[#A0A0A0]">
-              {openTickets.length} open
-            </span>
-            {staleCount > 0 && (
-              <span className="text-[11px] font-bold tabular-nums text-[#DC2626]">
-                · {staleCount} stale
-              </span>
-            )}
-          </div>
-          <Link
-            href="/tools/task-board"
-            className="text-[11px] font-semibold text-[#7A7A7A] hover:text-[#1B1B1B] flex items-center gap-1"
-          >
-            <TicketIcon className="size-3" />
-            Open triage
-          </Link>
-        </div>
-
-        <div className="rounded-xl border border-[#E5E5EA] bg-white overflow-hidden">
-          {!hydrated ? (
-            <p className="text-[11px] text-[#BBB] text-center py-8">
-              Loading tickets…
-            </p>
-          ) : openTickets.length === 0 ? (
-            <p className="text-[12px] text-[#A0A0A0] text-center py-8">
-              No open tickets. Inbox zero.
-            </p>
-          ) : (
-            <ul>
-              {openTickets.slice(0, 8).map((t, i) => (
-                <li
-                  key={t.id}
-                  className={`px-4 py-3 ${i > 0 ? "border-t border-[#F3F3F5]" : ""}`}
-                >
-                  <TicketRow ticket={t} />
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        {openTickets.length > 8 && (
-          <p className="text-[11px] text-[#A0A0A0] text-center mt-2">
-            + {openTickets.length - 8} more in the task board panel
-          </p>
-        )}
-      </div>
     </div>
   );
 }
@@ -272,45 +192,3 @@ function ToolkitTileLink({ tile }: { tile: ToolkitTile }) {
   );
 }
 
-function TicketRow({ ticket }: { ticket: Ticket }) {
-  const colours = AGE_COLORS[ageLevel(ticket.raised_at)];
-  return (
-    <div className="flex items-start gap-3">
-      <span
-        className="mt-1 size-1.5 rounded-full shrink-0"
-        style={{ backgroundColor: colours.border }}
-      />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 mb-0.5">
-          <span
-            className="text-[9px] font-semibold uppercase tracking-wider"
-            style={{ color: TICKET_TYPE_COLORS[ticket.type] }}
-          >
-            {TICKET_TYPE_LABELS[ticket.type]}
-          </span>
-          {ticket.status === "in_progress" && (
-            <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">
-              In progress
-            </span>
-          )}
-          <span
-            className="ml-auto text-[10px] font-semibold tabular-nums"
-            style={{ color: colours.badge }}
-          >
-            {ageLabel(ticket.raised_at)}
-          </span>
-        </div>
-        <p className="text-[13px] leading-snug text-[#1A1A1A]">
-          {ticket.title}
-        </p>
-        {(ticket.client_id || ticket.assigned_to) && (
-          <p className="mt-0.5 text-[11px] text-[#7A7A7A]">
-            {ticket.client_id && <span>{ticket.client_id}</span>}
-            {ticket.client_id && ticket.assigned_to && <span> · </span>}
-            {ticket.assigned_to && <span>→ {ticket.assigned_to}</span>}
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
