@@ -58,6 +58,38 @@ export interface PodBlocker {
 
 export type RetainerTier = "none" | "8k" | "12k";
 
+// ─── Clients v2: engagement lifecycle (spec §1.2, §1.9, §2.7) ─────
+// All fields below are added to Client as optional so existing rows stay
+// valid. Stored in the pods_v2_clients JSONB (no migration needed).
+
+/** Sprint = one-off, points→bucket→fixed duration (§1.2a). Retainer = 90-day
+ * Conversion Engine partnership (§1.2b). Defaults to retainer when the client
+ * carries a retainer_tier, sprint otherwise. */
+export type EngagementKind = "retainer" | "sprint";
+
+/** 90-day retainer renewal lifecycle (§1.9). `refresh_due` = inside the Day
+ * 60-90 window where the Day-75 conversation drives the manual renewal call. */
+export type RenewalStatus =
+  | "active"
+  | "refresh_due"
+  | "renewed"
+  | "winding_down"
+  | "churned";
+
+/** CSM relationship-health inputs, scored from real delivery signals rather
+ * than vibes (§2.7). Lower is better on every axis. Weights live in calc.ts
+ * (healthScore) and are provisional/tunable — see DECISIONS.md #6. */
+export interface HealthSignals {
+  /** Cumulative working days a deliverable sat client-side awaiting assets/approval. */
+  client_delay_days: number;
+  /** Average working days the client takes to approve a deliverable. */
+  approval_lag_days: number;
+  /** Days since the last meaningful client touch (call, approval, message). */
+  engagement_gap_days: number;
+  /** Open blockers attributable to the client relationship. */
+  open_blockers: number;
+}
+
 export interface Client {
   id: string;
   name: string;
@@ -116,6 +148,28 @@ export interface Client {
    *  rendered. Optional author field for when a multi-user setup wants
    *  to attribute notes; otherwise blank reads as "team". */
   notes?: ClientNote[];
+
+  // ─── Clients v2 engagement lifecycle (§1.2, §1.9, §2.7) ─────────
+  /** Sprint vs Retainer. When unset, derive from retainer_tier (see
+   * engagementKindOf in calc.ts) so existing rows behave sensibly. */
+  engagement_kind?: EngagementKind;
+  /** YYYY-MM-DD anchor for Day 1 of the engagement (§1.6 brief-lock start).
+   * Falls back to kickoff_date when unset — see DECISIONS.md #5. Drives the
+   * Day-45 check-in and Day-75 refresh countdowns for retainers (§1.9). */
+  engagement_start?: string;
+  /** 90-day renewal state (§1.9). Defaults to "active" for retainers. */
+  renewal_status?: RenewalStatus;
+  /** CSM's next scheduled client touch, YYYY-MM-DD (§3.3 weekly / Day-45). */
+  next_check_in?: string;
+  /** Free-text relationship risks surfaced on the CSM client profile (§2.7). */
+  risk_flags?: string[];
+  /** Notes seeded from onboarding — the handoff fix so context isn't lost
+   * between sale and delivery (§3.2). */
+  onboarding_notes?: string[];
+  /** Strategist's one-line applied thesis for the client (§2.1, §3.2). */
+  strategy_thesis?: string;
+  /** CSM health inputs (§2.7). Scored via healthScore() in calc.ts. */
+  health_signals?: HealthSignals;
 }
 
 export interface ClientNote {
@@ -474,4 +528,108 @@ export const PAGE_VALUE_GBP: Record<PageWeight, number> = {
   heavy: 4000,
   medium: 2500,
   light: 1200,
+};
+
+// ─── Strategist: tests + hypotheses (spec §1.8, §4.1) ─────────────
+// Powers the Strategist Dashboard's Tests-in-Flight panel and the
+// Hypothesis Library. NOT a standalone Test Management Module (see
+// DECISIONS.md #1): this is the data the strategist reads and calls,
+// per the §1.8 calling rules, with no system cap on live tests
+// (locked decision #5).
+
+/** Full test state machine (§1.8). No system-imposed cap on how many
+ * sit in `live` at once — strategist judgement (locked #5). */
+export type TestStatus =
+  | "setup"
+  | "live"
+  | "analysing"
+  | "won"
+  | "lost"
+  | "inconclusive"
+  | "archived";
+
+/** A success-metric guardrail (e.g. RPV, bounce) and its current read
+ * (§1.8 step 4). A breach drives the "stop & revert" calling rule. */
+export interface TestGuardrail {
+  name: string;
+  status: "ok" | "breach";
+}
+
+/** Variant configuration shape (§1.8 step 2). */
+export type TestVariant = "A/B" | "Split URL" | "Multivariate";
+
+/** Testing is standardised on Intelligems + Visually, strategist picks
+ * per engagement (§1.8 tooling / locked #8). */
+export type TestTool = "Intelligems" | "Visually";
+
+export interface PodTest {
+  id: string;
+  name: string;
+  client_id: string;
+  pod_id: string;
+  /** Optional link to the hypothesis this test validates. */
+  hypothesis_id?: string;
+  /** Short-form hypothesis statement (§1.8 step 1). */
+  hypothesis: string;
+  status: TestStatus;
+  /** Statistical confidence 0-100; null while in setup. */
+  confidence: number | null;
+  /** Days the test has been live. */
+  days_running: number;
+  /** Minimum runtime target before a call can be made (§1.8 step 5). */
+  min_runtime_days: number;
+  /** Primary success metric, e.g. "ATC rate" (§1.8 step 4). */
+  primary_metric: string;
+  guardrails: TestGuardrail[];
+  variant: TestVariant;
+  /** Traffic allocation, e.g. "50/50", "90/10" (§1.8 step 3). */
+  traffic: string;
+  tool: TestTool;
+  /** Progress to sample-size target, 0-100 (§1.8 step 5). */
+  sample_target_pct: number;
+  /** Lift vs control in %, set once called. Negative = control won. */
+  lift_pct?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Outcome of a hypothesis once tested (§4.1 Hypothesis Library). */
+export type HypothesisOutcome =
+  | "untested"
+  | "testing"
+  | "won"
+  | "lost"
+  | "inconclusive";
+
+export interface PodHypothesis {
+  id: string;
+  statement: string;
+  /** Searchable tags, e.g. ["pdp", "scarcity"] (§4.1 search by tag). */
+  tags: string[];
+  client_id?: string;
+  outcome: HypothesisOutcome;
+  /** Link to the test that validated/refuted it. */
+  linked_test_id?: string;
+  /** Short result summary, e.g. "+11.4% CVR, 96% conf". */
+  result_note?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export const TEST_STATUS_LABEL: Record<TestStatus, string> = {
+  setup: "Setup",
+  live: "Live",
+  analysing: "Analysing",
+  won: "Won",
+  lost: "Lost",
+  inconclusive: "Inconclusive",
+  archived: "Archived",
+};
+
+export const HYPOTHESIS_OUTCOME_LABEL: Record<HypothesisOutcome, string> = {
+  untested: "Untested",
+  testing: "Testing",
+  won: "Won",
+  lost: "Lost",
+  inconclusive: "Inconclusive",
 };

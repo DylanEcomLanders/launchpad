@@ -252,3 +252,134 @@ export function kicksOffThisWeek(project: Project, referenceYMD: string): boolea
 export function isMidWeekKickoff(project: Project): boolean {
   return !isMonday(project.kickoff_date) && !project.is_rush;
 }
+
+// ─── Clients v2 engagement lifecycle (spec §1.9) ──────────────────
+
+import type {
+  Client,
+  EngagementKind,
+  HealthSignals,
+  PodTest,
+} from "./types";
+
+/** Sprint vs retainer for a client. Explicit engagement_kind wins; else
+ * derive from retainer_tier (any tier ⇒ retainer) — DECISIONS.md #4. */
+export function engagementKindOf(client: Client): EngagementKind {
+  if (client.engagement_kind) return client.engagement_kind;
+  return client.retainer_tier && client.retainer_tier !== "none"
+    ? "retainer"
+    : "sprint";
+}
+
+/** YYYY-MM-DD start anchor: engagement_start, else kickoff_date — DECISIONS.md #5. */
+export function engagementStartOf(client: Client): string | null {
+  return client.engagement_start ?? client.kickoff_date ?? null;
+}
+
+/** Whole days between two YYYY-MM-DD dates (b − a). */
+export function daysBetween(aYMD: string, bYMD: string): number {
+  const a = Date.parse(`${aYMD}T00:00:00Z`);
+  const b = Date.parse(`${bYMD}T00:00:00Z`);
+  return Math.round((b - a) / 86_400_000);
+}
+
+/** Day-in-engagement (1-indexed) for `today`. Null if no start anchor. */
+export function engagementDay(client: Client, todayYMD: string): number | null {
+  const start = engagementStartOf(client);
+  if (!start) return null;
+  return daysBetween(start, todayYMD) + 1;
+}
+
+/** Days remaining to the Day-75 strategy-refresh conversation (§1.9).
+ * Positive = days until; 0/negative = due/overdue. Retainers only. */
+export function daysToRefresh(client: Client, todayYMD: string): number | null {
+  if (engagementKindOf(client) !== "retainer") return null;
+  const day = engagementDay(client, todayYMD);
+  if (day == null) return null;
+  return 75 - day;
+}
+
+export type EngagementWindow =
+  | "onboarding" // Days 1-14
+  | "first_wave" // Days 15-30
+  | "iteration" // Days 31-60
+  | "compound" // Days 61-75
+  | "transition"; // Days 76-90+
+
+export const ENGAGEMENT_WINDOW_LABEL: Record<EngagementWindow, string> = {
+  onboarding: "Onboarding",
+  first_wave: "First wave",
+  iteration: "Iteration",
+  compound: "Compound + synthesis",
+  transition: "Transition / wind-down",
+};
+
+/** Map a day-in-engagement onto the §1.9 macro-cycle window. */
+export function engagementWindow(day: number): EngagementWindow {
+  if (day <= 14) return "onboarding";
+  if (day <= 30) return "first_wave";
+  if (day <= 60) return "iteration";
+  if (day <= 75) return "compound";
+  return "transition";
+}
+
+// ─── CSM relationship health (spec §2.7) ──────────────────────────
+// Provisional weights — see DECISIONS.md #6. Easy to tune; the bands are
+// what the CSM dashboard colours off.
+
+export function healthScore(s: HealthSignals): number {
+  const delay = Math.min(30, s.client_delay_days * 3); // up to -30
+  const lag = Math.min(25, s.approval_lag_days * 5); // up to -25
+  const gap = Math.min(30, s.engagement_gap_days * 3); // up to -30
+  const blockers = Math.min(15, s.open_blockers * 8); // up to -15
+  return Math.max(0, Math.round(100 - delay - lag - gap - blockers));
+}
+
+export type HealthBand = "green" | "amber" | "red";
+
+export function healthBand(score: number): HealthBand {
+  if (score >= 75) return "green";
+  if (score >= 50) return "amber";
+  return "red";
+}
+
+// ─── Test calling rules (spec §1.8) ───────────────────────────────
+
+export type CallTone = "ship" | "revert" | "inconclusive" | "continue" | "setup";
+
+export interface TestCall {
+  action: string;
+  tone: CallTone;
+  why: string;
+}
+
+/** Recommended call for a test, straight from the §1.8 calling-rules table.
+ * The strategist makes the final judgement (no auto-action). */
+export function callTest(t: PodTest): TestCall {
+  if (t.status === "setup")
+    return { action: "Not live yet", tone: "setup", why: "In setup / QA" };
+  const breach = t.guardrails.some((g) => g.status === "breach");
+  if (breach)
+    return { action: "Stop & revert", tone: "revert", why: "Guardrail breach (§1.8)" };
+  if (t.confidence != null && t.confidence >= 95 && t.days_running >= t.min_runtime_days)
+    return {
+      action: "Stop & ship variant",
+      tone: "ship",
+      why: "95%+ confidence, min runtime met",
+    };
+  if (t.confidence != null && t.confidence < 50 && t.days_running > 28)
+    return { action: "Stop & revert", tone: "revert", why: "<50% confidence past 4 weeks" };
+  if (t.days_running >= t.min_runtime_days && (t.confidence == null || t.confidence < 95))
+    return {
+      action: "Stop inconclusive",
+      tone: "inconclusive",
+      why: "Runtime hit, no significance",
+    };
+  return { action: "Continue running", tone: "continue", why: "Directional, under runtime target" };
+}
+
+/** A test that needs the strategist's attention now (a clear call to make). */
+export function needsCall(t: PodTest): boolean {
+  const tone = callTest(t).tone;
+  return tone === "ship" || tone === "revert" || tone === "inconclusive";
+}

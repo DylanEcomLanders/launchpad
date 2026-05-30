@@ -27,6 +27,8 @@ export const POD_KEY_TO_TABLE: Record<string, string> = {
   "launchpad-pods-v2-projects": "pods_v2_projects",
   "launchpad-pods-v2-tasks": "pods_v2_tasks",
   "launchpad-pods-v2-cro-leads": "pods_v2_cro_leads",
+  "launchpad-pods-v2-strategist-tests": "pods_v2_strategist_tests",
+  "launchpad-pods-v2-hypotheses": "pods_v2_hypotheses",
 };
 
 /** Mirror an entire collection to Supabase, ADDITIVE ONLY.

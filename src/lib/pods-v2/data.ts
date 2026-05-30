@@ -19,6 +19,11 @@ import {
   RetainerTier,
   Task,
   TaskDiscipline,
+  PodTest,
+  PodHypothesis,
+  HealthSignals,
+  EngagementKind,
+  RenewalStatus,
 } from "./types";
 import {
   adjustedPoints,
@@ -34,6 +39,8 @@ const LS_CLIENTS = "launchpad-pods-v2-clients";
 const LS_PROJECTS = "launchpad-pods-v2-projects";
 const LS_TASKS = "launchpad-pods-v2-tasks";
 const LS_CRO_LEADS = "launchpad-pods-v2-cro-leads";
+const LS_STRATEGIST_TESTS = "launchpad-pods-v2-strategist-tests";
+const LS_HYPOTHESES = "launchpad-pods-v2-hypotheses";
 const LS_SEEDED = "launchpad-pods-v2-seeded-v4";
 /* Bumped when we want every browser to wipe its old fake-seed data on
  * the next page load. Any browser without this sentinel runs the
@@ -1945,4 +1952,123 @@ export function resetAndReseed(): void {
   localStorage.removeItem(LS_PROJECTS);
   localStorage.removeItem(LS_TASKS);
   ensureSeed();
+}
+
+// ─── Clients v2: engagement-lifecycle patch (§1.9, §2.7) ──────────
+
+/** Patch the engagement-lifecycle fields on a client. Pass only what
+ * changed; undefined fields are left untouched. Used by the Clients v2
+ * lifecycle editor and the CSM dashboard. */
+export function updateClientLifecycle(
+  clientId: string,
+  patch: {
+    engagement_kind?: EngagementKind;
+    engagement_start?: string;
+    renewal_status?: RenewalStatus;
+    next_check_in?: string;
+    risk_flags?: string[];
+    onboarding_notes?: string[];
+    strategy_thesis?: string;
+    health_signals?: HealthSignals;
+  },
+): void {
+  const all = getClients();
+  const next = all.map((c) => (c.id === clientId ? { ...c, ...patch } : c));
+  write(LS_CLIENTS, next);
+}
+
+// ─── Strategist: tests (§1.8, §4.1) ───────────────────────────────
+
+export function getTests(): PodTest[] {
+  return read<PodTest>(LS_STRATEGIST_TESTS);
+}
+
+export function getTestsForClient(clientId: string): PodTest[] {
+  return getTests().filter((t) => t.client_id === clientId);
+}
+
+export function getTestsForPod(podId: string): PodTest[] {
+  return getTests().filter((t) => t.pod_id === podId);
+}
+
+export function createTest(
+  input: Omit<PodTest, "id" | "created_at" | "updated_at"> & { id?: string },
+): PodTest {
+  const now = new Date().toISOString();
+  const test: PodTest = {
+    ...input,
+    id: input.id ?? uid(),
+    created_at: now,
+    updated_at: now,
+  };
+  const all = getTests();
+  all.push(test);
+  write(LS_STRATEGIST_TESTS, all);
+  return test;
+}
+
+/** Patch a test (status, confidence, guardrails, lift, etc.). Stamps
+ * updated_at. Used by the strategist's Tests-in-Flight panel. */
+export function updateTest(
+  testId: string,
+  patch: Partial<Omit<PodTest, "id" | "created_at">>,
+): void {
+  const all = getTests();
+  const next = all.map((t) =>
+    t.id === testId ? { ...t, ...patch, updated_at: new Date().toISOString() } : t,
+  );
+  write(LS_STRATEGIST_TESTS, next);
+}
+
+export function deleteTest(testId: string): void {
+  const all = getTests().filter((t) => t.id !== testId);
+  write(LS_STRATEGIST_TESTS, all);
+  if (typeof window !== "undefined") {
+    import("./sync").then(({ mirrorDeleteFromSupabase }) => {
+      mirrorDeleteFromSupabase("pods_v2_strategist_tests", [testId]);
+    });
+  }
+}
+
+// ─── Strategist: hypothesis library (§4.1) ────────────────────────
+
+export function getHypotheses(): PodHypothesis[] {
+  return read<PodHypothesis>(LS_HYPOTHESES);
+}
+
+export function createHypothesis(
+  input: Omit<PodHypothesis, "id" | "created_at" | "updated_at"> & { id?: string },
+): PodHypothesis {
+  const now = new Date().toISOString();
+  const hyp: PodHypothesis = {
+    ...input,
+    id: input.id ?? uid(),
+    created_at: now,
+    updated_at: now,
+  };
+  const all = getHypotheses();
+  all.push(hyp);
+  write(LS_HYPOTHESES, all);
+  return hyp;
+}
+
+export function updateHypothesis(
+  id: string,
+  patch: Partial<Omit<PodHypothesis, "id" | "created_at">>,
+): void {
+  const all = getHypotheses();
+  const next = all.map((h) =>
+    h.id === id ? { ...h, ...patch, updated_at: new Date().toISOString() } : h,
+  );
+  write(LS_HYPOTHESES, next);
+}
+
+export function deleteHypothesis(id: string): void {
+  const all = getHypotheses().filter((h) => h.id !== id);
+  write(LS_HYPOTHESES, all);
+  if (typeof window !== "undefined") {
+    import("./sync").then(({ mirrorDeleteFromSupabase }) => {
+      mirrorDeleteFromSupabase("pods_v2_hypotheses", [id]);
+    });
+  }
 }
