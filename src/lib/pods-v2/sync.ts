@@ -92,7 +92,16 @@ async function pullTable<T>(table: string): Promise<T[] | null> {
   try {
     const { data, error } = await supabase.from(table).select("id, data");
     if (error) {
-      console.error(`[pods-v2/sync] pullTable(${table}) returned error:`, error);
+      /* A missing relation (Postgres 42P01) just means the migration for
+       * this collection hasn't been pasted into Supabase yet — an expected,
+       * non-error state. The data layer falls back to localStorage cleanly,
+       * so log it quietly instead of spamming the console. Real failures
+       * (auth, network) still surface as errors. */
+      if ((error as { code?: string }).code === "42P01") {
+        console.info(`[pods-v2/sync] ${table} not migrated yet — using localStorage fallback.`);
+      } else {
+        console.error(`[pods-v2/sync] pullTable(${table}) returned error:`, error);
+      }
       return null;
     }
     return (data || []).map((row) => ({
