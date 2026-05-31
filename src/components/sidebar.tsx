@@ -26,6 +26,7 @@ import {
   BeakerIcon,
   HeartIcon,
   CheckCircleIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/react/24/solid";
 import { LogoMark } from "@/components/logo";
 import { useRole } from "@/components/auth-gate";
@@ -162,6 +163,12 @@ const myWorkItem = {
   href: "/my-work",
   icon: <CheckCircleIcon className="size-4" />,
 };
+/* Risk / Triage — the PM's home. Agency-wide urgency-sorted deliverables. */
+const riskItem = {
+  label: "Risk",
+  href: "/risk",
+  icon: <ExclamationTriangleIcon className="size-4" />,
+};
 const homeItem = {
   label: "Mission Control",
   href: "/",
@@ -286,6 +293,7 @@ export function Sidebar() {
     { label: homeItem.label, href: homeItem.href, group: "Pinned", icon: homeItem.icon },
     { label: offerItem.label, href: offerItem.href, group: "Pinned", icon: offerItem.icon },
     { label: myWorkItem.label, href: myWorkItem.href, group: "Pinned", icon: myWorkItem.icon, keywords: ["my work", "today", "operator", "what do i do next"] },
+    { label: riskItem.label, href: riskItem.href, group: "Pinned", icon: riskItem.icon, keywords: ["risk", "triage", "at risk", "slipping", "overdue", "pm"] },
     { label: engagementsItem.label, href: engagementsItem.href, group: "Pinned", icon: engagementsItem.icon, keywords: ["engagements"] },
     { label: csmItem.label, href: csmItem.href, group: "Pinned", icon: csmItem.icon, keywords: ["csm", "client success", "renewal", "health", "day 75"] },
     { label: podsItem.label, href: podsItem.href, group: "Pinned", icon: podsItem.icon },
@@ -590,6 +598,7 @@ export function Sidebar() {
           {/* Pinned daily drivers — Mission Control, Offer, Pods */}
           <div className="px-3 mb-1 mt-2 space-y-0.5">
             {renderTopLink(myWorkItem)}
+            {renderTopLink(riskItem)}
             {renderTopLink(homeItem)}
             {renderTopLink(offerItem)}
             {renderTopLink(engagementsItem)}
