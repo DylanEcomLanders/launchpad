@@ -23,10 +23,6 @@ import {
   LightBulbIcon,
   LockClosedIcon,
   ArrowRightIcon,
-  BeakerIcon,
-  HeartIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
 } from "@heroicons/react/24/solid";
 import { LogoMark } from "@/components/logo";
 import { useRole } from "@/components/auth-gate";
@@ -156,19 +152,6 @@ export const shelvedItems: NavItem[] = [
   { label: "Referral Programme", href: "/referral-programme" },
 ];
 
-/* My Work — operator-first front door (launchpad-build-brief North Star).
- * Sits first in the pinned cluster: the first thing anyone sees on login. */
-const myWorkItem = {
-  label: "My Work",
-  href: "/my-work",
-  icon: <CheckCircleIcon className="size-4" />,
-};
-/* Risk / Triage — the PM's home. Agency-wide urgency-sorted deliverables. */
-const riskItem = {
-  label: "Risk",
-  href: "/risk",
-  icon: <ExclamationTriangleIcon className="size-4" />,
-};
 const homeItem = {
   label: "Mission Control",
   href: "/",
@@ -188,19 +171,6 @@ const engagementsItem = {
   label: "Clients",
   href: "/engagements",
   icon: <Squares2X2Icon className="size-4" />,
-};
-/* Role-lensed views over the same delivery data (Pod OS v2). Strategist
- * sits under Pods (§4.1), Client Success under Clients (§4.6). Rendered as
- * indented sub-links beneath their parent in the pinned cluster. */
-const strategistItem = {
-  label: "Strategist",
-  href: "/pods-v2/strategist",
-  icon: <BeakerIcon className="size-4" />,
-};
-const csmItem = {
-  label: "Client Success",
-  href: "/engagements/csm",
-  icon: <HeartIcon className="size-4" />,
 };
 const agentsItem = {
   label: "Agents",
@@ -292,12 +262,8 @@ export function Sidebar() {
   const paletteItems: CommandItem[] = [
     { label: homeItem.label, href: homeItem.href, group: "Pinned", icon: homeItem.icon },
     { label: offerItem.label, href: offerItem.href, group: "Pinned", icon: offerItem.icon },
-    { label: myWorkItem.label, href: myWorkItem.href, group: "Pinned", icon: myWorkItem.icon, keywords: ["my work", "today", "operator", "what do i do next"] },
-    { label: riskItem.label, href: riskItem.href, group: "Pinned", icon: riskItem.icon, keywords: ["risk", "triage", "at risk", "slipping", "overdue", "pm"] },
     { label: engagementsItem.label, href: engagementsItem.href, group: "Pinned", icon: engagementsItem.icon, keywords: ["engagements"] },
-    { label: csmItem.label, href: csmItem.href, group: "Pinned", icon: csmItem.icon, keywords: ["csm", "client success", "renewal", "health", "day 75"] },
     { label: podsItem.label, href: podsItem.href, group: "Pinned", icon: podsItem.icon },
-    { label: strategistItem.label, href: strategistItem.href, group: "Pinned", icon: strategistItem.icon, keywords: ["strategist", "tests", "hypothesis", "briefs"] },
     { label: wikiItem.label, href: wikiItem.href, group: "Pinned", icon: wikiItem.icon, keywords: ["ops wiki", "operations"] },
     { label: rdItem.label, href: rdItem.href, group: "Pinned", icon: rdItem.icon, keywords: ["research", "ideas"] },
     { label: agentsItem.label, href: agentsItem.href, group: "Pinned", icon: agentsItem.icon },
@@ -368,31 +334,6 @@ export function Sidebar() {
       >
         {item.icon}
         {!collapsed && <span className="flex-1">{item.label}</span>}
-      </Link>
-    );
-  }
-
-  /* Indented role-view link nested under a pinned parent (Strategist under
-   * Pods, Client Success under Clients). Collapsed rail hides it to keep the
-   * icon column clean. */
-  function renderSubLink(item: { label: string; href: string; icon: React.ReactNode }) {
-    if (collapsed) return null;
-    return (
-      <Link
-        key={item.href}
-        href={item.href}
-        onClick={() => setMobileOpen(false)}
-        className={`
-          relative ml-3 flex items-center gap-2 border-l border-white/[0.08] pl-3 py-1 rounded-r-md text-[12px] transition-all duration-150 mb-0.5
-          ${
-            isActive(item.href)
-              ? "bg-white/[0.10] text-white font-medium"
-              : "text-[#71717A] hover:bg-white/[0.06] hover:text-white"
-          }
-        `}
-      >
-        <span className="opacity-80">{item.icon}</span>
-        <span className="flex-1">{item.label}</span>
       </Link>
     );
   }
@@ -597,14 +538,10 @@ export function Sidebar() {
 
           {/* Pinned daily drivers — Mission Control, Offer, Pods */}
           <div className="px-3 mb-1 mt-2 space-y-0.5">
-            {renderTopLink(myWorkItem)}
-            {renderTopLink(riskItem)}
             {renderTopLink(homeItem)}
             {renderTopLink(offerItem)}
             {renderTopLink(engagementsItem)}
-            {renderSubLink(csmItem)}
             {renderTopLink(podsItem)}
-            {renderSubLink(strategistItem)}
             {renderTopLink(wikiItem)}
             {renderTopLink(rdItem)}
           </div>
