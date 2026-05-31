@@ -170,6 +170,12 @@ export interface Client {
   strategy_thesis?: string;
   /** CSM health inputs (§2.7). Scored via healthScore() in calc.ts. */
   health_signals?: HealthSignals;
+  /** Operator-first resources-as-gates: which asset categories currently
+   * EXIST for this engagement (figma, audit, roadmap, analytics, preview…).
+   * A deliverable whose phase requires a category not present here reads
+   * "Blocked — missing resource". Keyed by asset-category id; absent/false
+   * = missing. This turns the passive resource checklist into hard gates. */
+  resources?: Record<string, boolean>;
 }
 
 export interface ClientNote {
@@ -323,6 +329,14 @@ export interface Task {
   created_at: string; // ISO timestamp
   /** Optional phase for core deliverables; tickets leave this undefined. */
   phase?: TaskPhase;
+  /** Operator-first Deliverable model: asset-category ids that must EXIST
+   * on the parent client before this deliverable can start its phase
+   * (e.g. ["figma","audit"] for a Design task). When a required resource
+   * is missing the deliverable reads "Blocked — missing resource" instead
+   * of going silently overdue, and the gap flags the PM. Empty/undefined
+   * = no gate. Defaults are derived per-discipline (see deliverable.ts)
+   * when this isn't set explicitly. */
+  resource_deps?: string[];
   /** Per-visit phase history. Every entry into a phase appends a new
    * row, revisits are kept as separate spans (not aggregated) so the
    * revision-loop count is visible in the timeline. Drives the shared
