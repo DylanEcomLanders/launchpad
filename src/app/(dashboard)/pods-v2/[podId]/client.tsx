@@ -45,7 +45,17 @@ import {
   capacityUsed,
   fourWeekWindow,
   isMidWeekKickoff,
+  engagementKindOf,
+  engagementDay,
 } from "@/lib/pods-v2/calc";
+import {
+  deliverableStatus,
+  riskLevel,
+  riskReason,
+  RISK_RANK,
+  type RiskLevel,
+  type DeliverableStatus,
+} from "@/lib/pods-v2/deliverable";
 import { PhaseTimeline } from "@/components/task-board/phase-timeline";
 import {
   Client,
@@ -269,6 +279,45 @@ export default function PodDetailClient({ podId }: { podId: string }) {
     }
     return counts;
   }, [projects, tasks]);
+
+  /* Per-client deliverables + risk, the data behind the roster cards'
+   * "what's due / what's at risk" strip. Brings the engagement's tracked
+   * deliverables right onto the pod view so nothing gets missed. Core
+   * deliverables + revisions only (the engagement-visible work); sorted by
+   * urgency (risk, then due date). Owner resolved to a person. */
+  const deliverablesByClient = useMemo(() => {
+    const projectClient = new Map<string, string>();
+    for (const p of projects) projectClient.set(p.id, p.client_id);
+    const memberName = new Map<string, string>();
+    pod?.members.forEach((m) => memberName.set(m.id, m.name));
+    const clientById = new Map<string, Client>();
+    for (const c of clients) clientById.set(c.id, c);
+
+    const map = new Map<string, ClientDeliverable[]>();
+    for (const t of tasks) {
+      if (t.type !== "core_deliverable" && t.type !== "revision") continue;
+      const cid = projectClient.get(t.project_id);
+      if (!cid) continue;
+      const client = clientById.get(cid) ?? null;
+      const entry: ClientDeliverable = {
+        task: t,
+        status: deliverableStatus(t, client),
+        risk: riskLevel(t, client, today),
+        reason: riskReason(t, client, today),
+        ownerName: memberName.get(t.assigned_to) ?? "Unassigned",
+      };
+      const arr = map.get(cid);
+      if (arr) arr.push(entry);
+      else map.set(cid, [entry]);
+    }
+    for (const arr of map.values()) {
+      arr.sort(
+        (a, b) =>
+          RISK_RANK[a.risk] - RISK_RANK[b.risk] || a.task.due_date.localeCompare(b.task.due_date),
+      );
+    }
+    return map;
+  }, [projects, tasks, clients, pod, today]);
 
   /* Apply filter state to allTasks. `filteredTasks` is what the swim
    * lane renders; `allTasks` stays in tact for capacity / revisions /
@@ -517,6 +566,8 @@ export default function PodDetailClient({ podId }: { podId: string }) {
         onMutate={refresh}
         canUnassign={isAdmin}
         revisionsByClient={revisionsByClient}
+        deliverablesByClient={deliverablesByClient}
+        today={today}
       />
 
       {/* FILTERS, narrow the swim lane to a single client or hide
@@ -2456,18 +2507,38 @@ function PodBlockersPanel({
   );
 }
 
+interface ClientDeliverable {
+  task: Task;
+  status: DeliverableStatus;
+  risk: RiskLevel;
+  reason: string;
+  ownerName: string;
+}
+
+const RISK_DOT: Record<RiskLevel, string> = {
+  red: "bg-rose-500",
+  amber: "bg-amber-400",
+  green: "bg-emerald-400",
+  blocked: "bg-[#C5C5C5]",
+  shipped: "bg-[#C5C5C5]",
+};
+
 function ClientRoster({
   clients,
   currentPodId,
   onMutate,
   canUnassign,
   revisionsByClient,
+  deliverablesByClient,
+  today,
 }: {
   clients: Client[];
   currentPodId: string;
   onMutate: () => void;
   canUnassign: boolean;
   revisionsByClient: Map<string, number>;
+  deliverablesByClient: Map<string, ClientDeliverable[]>;
+  today: string;
 }) {
   return (
     <div className="mt-10">
@@ -2483,6 +2554,8 @@ function ClientRoster({
             onMutate={onMutate}
             canUnassign={canUnassign}
             revisionCount={revisionsByClient.get(c.id) || 0}
+            deliverables={deliverablesByClient.get(c.id) || []}
+            today={today}
           />
         ))}
         {clients.length === 0 && (
@@ -2501,12 +2574,16 @@ function ClientCard({
   onMutate,
   canUnassign,
   revisionCount,
+  deliverables,
+  today,
 }: {
   client: Client;
   currentPodId: string;
   onMutate: () => void;
   canUnassign: boolean;
   revisionCount: number;
+  deliverables: ClientDeliverable[];
+  today: string;
 }) {
   const [unassignOpen, setUnassignOpen] = useState(false);
   const [metricsOpen, setMetricsOpen] = useState(false);
@@ -2516,6 +2593,18 @@ function ClientCard({
   const engagementHref = inTeamRoute
     ? `/team/engagements/${client.id}`
     : `/engagements/${client.id}`;
+
+  // Deliverable rollup for the card's tracking strip.
+  const liveDeliverables = deliverables.filter((d) => d.status !== "shipped");
+  const atRisk = deliverables.filter((d) => d.risk === "red" || d.risk === "amber").length;
+  const blockedCount = deliverables.filter((d) => d.risk === "blocked").length;
+  const shippedCount = deliverables.filter((d) => d.status === "shipped").length;
+  // Show the most urgent few; the rest live one tap away on the engagement.
+  const topDeliverables = liveDeliverables.slice(0, 3);
+  const overflow = liveDeliverables.length - topDeliverables.length;
+  // Retainer clock for the timeline pill.
+  const isRetainer = engagementKindOf(client) === "retainer";
+  const day = isRetainer ? engagementDay(client, today) : null;
 
   const cvrDelta =
     client.cvr_baseline != null && client.cvr_current != null
@@ -2643,6 +2732,72 @@ function ClientCard({
             <div className="mt-0.5 text-[10px] italic text-[#A0A0A0]">+ set</div>
           )}
         </button>
+      </div>
+
+      {/* Deliverables + timeline — the tracking strip that brings the
+          engagement's work onto the pod view so nothing gets missed. */}
+      <div className="mt-3 border-t border-[#F0F0F2] pt-3">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+            Deliverables
+          </span>
+          {day != null && (
+            <span
+              className={`rounded-md border px-1.5 py-0.5 text-[10px] font-medium tabular-nums ${
+                day > 75
+                  ? "border-rose-200 bg-rose-50 text-rose-700"
+                  : "border-[#E5E5EA] bg-[#FAFAFA] text-[#7A7A7A]"
+              }`}
+              title="Day in the 90-day engagement"
+            >
+              Day {Math.max(1, day)}/90
+            </span>
+          )}
+        </div>
+
+        {deliverables.length === 0 ? (
+          <div className="mt-1.5 rounded-md border border-dashed border-[#E5E5EA] bg-[#FAFAFA] px-2 py-1.5 text-[10px] text-[#A0A0A0]">
+            No deliverables yet
+          </div>
+        ) : (
+          <>
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-[#7A7A7A]">
+              <span>{liveDeliverables.length} live</span>
+              {atRisk > 0 && <span className="font-semibold text-rose-600">· {atRisk} at risk</span>}
+              {blockedCount > 0 && <span className="text-amber-700">· {blockedCount} blocked</span>}
+              {shippedCount > 0 && <span className="text-emerald-700">· {shippedCount} shipped</span>}
+            </div>
+
+            <div className="mt-1.5 space-y-1">
+              {topDeliverables.map((d) => (
+                <Link
+                  key={d.task.id}
+                  href={engagementHref}
+                  className="flex items-center gap-2 rounded-md px-1 py-0.5 hover:bg-[#FAFAFA]"
+                >
+                  <span className={`size-1.5 shrink-0 rounded-full ${RISK_DOT[d.risk]}`} />
+                  <span className="min-w-0 flex-1 truncate text-[11px] text-[#1B1B1B]">{d.task.title}</span>
+                  <span
+                    className={`shrink-0 text-[10px] tabular-nums ${
+                      d.risk === "red" ? "font-semibold text-rose-600" : "text-[#A0A0A0]"
+                    }`}
+                  >
+                    {d.reason}
+                  </span>
+                </Link>
+              ))}
+            </div>
+
+            {overflow > 0 && (
+              <Link
+                href={engagementHref}
+                className="mt-1 inline-block text-[10px] font-medium text-[#7A7A7A] hover:text-[#1B1B1B]"
+              >
+                +{overflow} more →
+              </Link>
+            )}
+          </>
+        )}
       </div>
 
       {metricsOpen && (
