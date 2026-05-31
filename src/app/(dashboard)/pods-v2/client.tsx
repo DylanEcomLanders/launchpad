@@ -42,6 +42,7 @@ import { formatTimeInPhase } from "@/lib/task-board/phases";
 import { CapacityMeter, MemberAvatar } from "./components";
 import { WeeksView } from "./WeeksView";
 import { StrategyView } from "./StrategyView";
+import { internalDue } from "@/lib/pods-v2/deliverable";
 import { createBrief as createStrategyBrief } from "@/lib/strategy/data";
 import { onboardingStore, type OnboardingSubmission } from "@/lib/onboarding";
 import { getPortalById } from "@/lib/portal/data";
@@ -405,66 +406,27 @@ function Overview({
 }) {
   return (
     <>
-      {/* HEALTH ROW, green/amber/red signal per pod, derived from
-       * existing data (capacity utilisation, slip count this quarter,
-       * blocker resolution time, OOO coverage). One line, three cells.
-       * Helps Dylan/Alister scan agency health in 2 seconds before
-       * diving into pod cards. */}
-      <PodHealthRow pods={pods} projectsByPod={projectsByPod} allTasks={allTasks} today={today} />
-
-      <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
         {pods.map((pod) => {
           const projects = projectsByPod[pod.id] ?? [];
-          /* Two windows so the meter shows current vs next-month load.
-           * `thisMonth` = next 4 weeks from today's Monday; `nextMonth`
-           * = the 4 weeks after that. Capacity is design-discipline
-           * points (paired tasks share one points value) whose due_date
-           * lands in each window. M2/M3 cycle tasks now carry half-
-           * points so they show up in the projection. */
-          const thisMonth = fourWeekWindow(today);
-          const nextMonthStart = (() => {
-            const d = new Date(`${thisMonth.end}T12:00:00`);
-            d.setDate(d.getDate() + 1);
-            return d.toISOString().slice(0, 10);
-          })();
-          const nextMonth = fourWeekWindow(nextMonthStart);
-          const used = capacityUsed(projects, allTasks, thisMonth.start, thisMonth.end);
-          const nextMonthUsed = capacityUsed(projects, allTasks, nextMonth.start, nextMonth.end);
-          /* Per-week load. Splits the rolling monthly view into the
-           *  current Mon-Sun window and the next, so the PM can see if
-           *  this week is overloaded even when the month overall looks
-           *  fine. Weekly cap (capacity_points_per_month / 4) is
-           *  derived inside CapacityMeter. */
-          const thisWeek = weekWindow(today);
-          const nextWeekStart = (() => {
-            const d = new Date(`${thisWeek.end}T12:00:00`);
-            d.setDate(d.getDate() + 1);
-            return d.toISOString().slice(0, 10);
-          })();
-          const nextWeek = weekWindow(nextWeekStart);
-          const thisWeekUsed = capacityUsed(projects, allTasks, thisWeek.start, thisWeek.end);
-          const nextWeekUsed = capacityUsed(projects, allTasks, nextWeek.start, nextWeek.end);
-          const midWeek = projects.filter(isMidWeekKickoff).length;
-          const rushCount = projects.filter(
-            (p) => p.is_rush && p.status !== "shipped" && p.status !== "slipped",
+          /* Simple, deadline-first signal per pod: what's due this week and
+           * what's behind its internal date (client − 1 working day). No
+           * capacity theatre — the pod page itself has the full week board. */
+          const podProjectIds = new Set(projects.map((p) => p.id));
+          const podTasks = allTasks.filter((t) => podProjectIds.has(t.project_id));
+          const wk = weekWindow(today);
+          const behind = podTasks.filter(
+            (t) => t.status !== "done" && t.waiting_on !== "client" && internalDue(t) < today,
           ).length;
-          const inFlight = projects.filter(
-            (p) => p.status === "in_progress" || p.status === "in_review",
+          const dueThisWeek = podTasks.filter(
+            (t) =>
+              t.type === "core_deliverable" &&
+              t.status !== "done" &&
+              t.due_date >= wk.start &&
+              t.due_date <= wk.end,
           ).length;
           const activeBlockers = (pod.blockers || []).filter((b) => !b.resolved_at).length;
-          /* Forward-looking signal: count Conversion Engine retainers
-           * (projects with at least one cycle-tagged task) that aren't
-           * already shipped/slipped, represents queued 90-day work
-           * beyond this month's capacity bar. */
-          const cycleProjectIds = new Set(
-            allTasks.filter((t) => t.cycle).map((t) => t.project_id),
-          );
-          const cycleRetainers = projects.filter(
-            (p) =>
-              cycleProjectIds.has(p.id) &&
-              p.status !== "shipped" &&
-              p.status !== "slipped",
-          ).length;
+          const clientCount = new Set(projects.map((p) => p.client_id)).size;
           return (
             <Link
               key={pod.id}
@@ -487,34 +449,21 @@ function Overview({
                 ))}
               </div>
 
-              <div className="mt-4">
-                <CapacityMeter
-                  used={used}
-                  total={pod.capacity_points_per_month}
-                  cycleRetainers={cycleRetainers}
-                  nextMonthUsed={nextMonthUsed}
-                  thisWeekUsed={thisWeekUsed}
-                  nextWeekUsed={nextWeekUsed}
-                />
+              <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-[#F0F0F2] bg-[#FAFAFB] px-3 py-2.5 text-[12px]">
+                <span className="text-[#7A7A7A]">
+                  <span className="font-semibold tabular-nums text-[#1B1B1B]">{dueThisWeek}</span> due this week
+                </span>
+                {behind > 0 ? (
+                  <span className="font-semibold tabular-nums text-rose-600">· {behind} behind</span>
+                ) : (
+                  <span className="text-emerald-700">· on track</span>
+                )}
+                {activeBlockers > 0 && (
+                  <span className="ml-auto tabular-nums text-amber-700">{activeBlockers} blocked</span>
+                )}
               </div>
-
-              <div className="mt-3 grid grid-cols-4 gap-2 text-xs">
-                <PodStat label="In flight" value={inFlight} />
-                <PodStat
-                  label="Rush"
-                  value={rushCount}
-                  alert={rushCount > 0}
-                />
-                <PodStat
-                  label="Mid-week"
-                  value={midWeek}
-                  alert={midWeek > 0}
-                />
-                <PodStat
-                  label="Blockers"
-                  value={activeBlockers}
-                  alert={activeBlockers > 0}
-                />
+              <div className="mt-2 text-[11px] text-[#A0A0A0]">
+                {clientCount} {clientCount === 1 ? "client" : "clients"}
               </div>
             </Link>
           );
@@ -526,23 +475,10 @@ function Overview({
        * formatted message to a Slack channel of choice. */}
       {isAdmin && <FridayDigestPanel pods={pods} projects={Object.values(projectsByPod).flat()} tasks={allTasks} clientById={clientById} today={today} />}
 
-      {/* CRO Pipeline, Dan's strategy work across all pods, separate
-       * from per-pod swim lanes since he's a shared resource. */}
-      <CroPipeline
-        croLeads={croLeads}
-        tasks={allTasks}
-        projectById={projectById}
-        clientById={clientById}
-        pods={pods}
-        today={today}
-        onMutate={refreshAll}
-        isAdmin={isAdmin}
-      />
-
-      {/* Purgatory, processed onboardings without assigned tasks. Admin
-       * only, assign-to-pod is a PM action and onboarding form data
-       * isn't relevant to delivery team members. */}
-      {isAdmin && (
+      {/* Onboarding purgatory — removed from the pod overview per feedback
+       * (kept behind a disabled guard rather than deleted; lives in the
+       * onboarding inbox). */}
+      {false && isAdmin && (
       <div className="mt-10">
         <div className="flex items-baseline justify-between gap-3">
           <div>
