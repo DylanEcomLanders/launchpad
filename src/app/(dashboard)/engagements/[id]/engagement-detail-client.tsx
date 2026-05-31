@@ -252,6 +252,11 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
   const [intakeOpen, setIntakeOpen] = useState(true);
   const [intake, setIntake] = useState<OnboardingSubmission | null>(null);
   const [wins, setWins] = useState(engagement.wins ?? []);
+  /* Retainer engagements split into Strategy / Build / Results tabs to keep
+   * the (large) page legible — VIP clients, lots going on. Buckets keep the
+   * single-scroll layout (useTabs=false ⇒ every group renders). */
+  const useTabs = engagement.kind === "retainer";
+  const [tab, setTab] = useState<"strategy" | "build" | "results">("strategy");
   const [addingWin, setAddingWin] = useState(false);
   const [winDraft, setWinDraft] = useState({ title: "", metric: "", day: "", notes: "" });
   const [notes, setNotes] = useState<NonNullable<typeof engagement.notes>>(engagement.notes ?? []);
@@ -924,6 +929,25 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
         onSave={handleSaveMustDo}
       />
 
+      {useTabs && (
+        <div className="mb-5 flex gap-1 border-b border-[#E5E5EA]">
+          {(["strategy", "build", "results"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`-mb-px border-b-2 px-4 py-2 text-[13px] font-medium capitalize transition-colors ${
+                tab === t
+                  ? "border-[#1B1B1B] text-[#1B1B1B]"
+                  : "border-transparent text-[#999] hover:text-[#1B1B1B]"
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div hidden={useTabs && tab !== "strategy"}>
       {/* Per-client delivery plan — retainer Month-1 conversion plan (VIP,
           30 days very visible) or sprint phase timeline. Padding-aware. */}
       <EngagementDeliveryPlan
@@ -989,7 +1013,9 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
           </div>
         </section>
       )}
+      </div>
 
+      <div hidden={useTabs && tab !== "build"}>
       {/* Cycle tabs - pills · only render for retainers (buckets have one cycle) */}
       {engagement.kind === "retainer" && (
       <section className="mb-5">
@@ -1411,7 +1437,9 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
           })}
         </div>
       </section>
+      </div>
 
+      <div hidden={useTabs && tab !== "results"}>
       {/* Wins log, manual entries only. Add via the button; auto-derive
        * from test_result winners removed 2026-05-14 because the wins
        * appeared from nowhere with no clear input path. */}
@@ -1509,7 +1537,9 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
           <p className="text-[12px] text-[#999] italic">No wins logged yet. Click Add win to record one.</p>
         )}
       </section>
+      </div>
 
+      <div hidden={useTabs && tab !== "strategy"}>
       <GeneratedDocs engagementId={engagement.id} />
 
       {/* Resources - card grid with populated / empty states · scoped to active cycle */}
@@ -1540,7 +1570,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                 className={`rounded-lg border p-4 transition-all flex flex-col bg-white ${
                   populated
                     ? "border-[#E5E5EA] hover:border-[#1B1B1B]"
-                    : "border-2 border-dashed border-[#E65100] hover:border-[#BF360C]"
+                    : "border border-dashed border-[#D5D5DA] hover:border-[#1B1B1B]"
                 }`}
               >
                 <div className="flex items-baseline justify-between mb-1">
@@ -1552,10 +1582,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
                       {items.length} {items.length === 1 ? "link" : "links"}
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-white bg-[#E65100] px-1.5 py-0.5 rounded">
-                      <ExclamationTriangleIcon className="size-2.5" />
-                      Missing
-                    </span>
+                    <span className="text-[10px] font-medium text-[#A0A0A0]">Not added yet</span>
                   )}
                 </div>
                 <p className="text-[12px] text-[#666] leading-snug mb-3">{cat.description}</p>
@@ -1661,7 +1688,9 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
           );
         })()}
       </section>
+      </div>
 
+      <div hidden={useTabs && tab !== "results"}>
       {/* Notes · timestamped log for ad-hoc context the PM / pod want
        *  to capture: client decisions, blocker recaps, "asked for X on
        *  Slack", etc. Persists to the pods-v2 Client.notes array for
@@ -1763,6 +1792,7 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
           )}
         </div>
       </section>
+      </div>
 
       {/* Delete client, two-step confirmation. Stage one is a plain
        *  modal with a Continue button; stage two requires typing the
