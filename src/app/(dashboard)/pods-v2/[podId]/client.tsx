@@ -532,6 +532,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
           clients={clients}
           members={pod.members}
           today={today}
+          onMutate={refresh}
         />
       </div>
 

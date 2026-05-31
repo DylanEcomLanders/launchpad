@@ -2072,3 +2072,24 @@ export function deleteHypothesis(id: string): void {
     });
   }
 }
+
+// ─── Slip accountability (pain point #7) ──────────────────────────
+
+/** Record (or clear) why a deliverable slipped past its internal date.
+ * Pass null to clear. Stamps slip_logged_at when set. */
+export function setTaskSlipReason(
+  taskId: string,
+  reason: import("./types").SlipReason | null,
+): void {
+  const all = getTasks();
+  const next = all.map((t) =>
+    t.id === taskId
+      ? {
+          ...t,
+          slip_reason: reason ?? undefined,
+          slip_logged_at: reason ? new Date().toISOString() : undefined,
+        }
+      : t,
+  );
+  write(LS_TASKS, next);
+}

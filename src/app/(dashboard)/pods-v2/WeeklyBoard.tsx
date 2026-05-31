@@ -18,8 +18,18 @@ import {
   clientDue,
   DELIVERABLE_STATUS_LABEL,
 } from "@/lib/pods-v2/deliverable";
-import type { Task, Project, Client, PodMember } from "@/lib/pods-v2/types";
+import { setTaskSlipReason } from "@/lib/pods-v2/data";
+import type { Task, Project, Client, PodMember, SlipReason } from "@/lib/pods-v2/types";
 import { Pill } from "@/components/pod-os/ui";
+
+const SLIP_REASON_LABEL: Record<SlipReason, string> = {
+  scope: "Scope grew",
+  capacity: "No capacity",
+  skill: "Skill gap",
+  dependency: "Waiting on dependency",
+  external: "External / client",
+};
+const SLIP_REASONS: SlipReason[] = ["scope", "capacity", "skill", "dependency", "external"];
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function fmt(ymd: string): string {
@@ -65,12 +75,14 @@ export function WeeklyBoard({
   clients,
   members,
   today,
+  onMutate,
 }: {
   tasks: Task[];
   projects: Project[];
   clients: Client[];
   members: PodMember[];
   today: string;
+  onMutate?: () => void;
 }) {
   const { monday, sunday } = weekBounds(today);
   const clientByProject = new Map<string, string>();
@@ -134,8 +146,8 @@ export function WeeklyBoard({
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <Column title="Tuesday" subtitle="Iterations & revisions" rows={tuesday} />
-        <Column title="Thursday" subtitle="Net-new deliverables" rows={thursday} />
+        <Column title="Tuesday" subtitle="Iterations & revisions" rows={tuesday} onMutate={onMutate} />
+        <Column title="Thursday" subtitle="Net-new deliverables" rows={thursday} onMutate={onMutate} />
       </div>
     </section>
   );
@@ -145,10 +157,12 @@ function Column({
   title,
   subtitle,
   rows,
+  onMutate,
 }: {
   title: string;
   subtitle: string;
   rows: Row[];
+  onMutate?: () => void;
 }) {
   return (
     <div className="rounded-lg border border-[#E5E5EA] bg-[#F7F8FA] p-2.5">
@@ -166,7 +180,7 @@ function Column({
       ) : (
         <div className="space-y-1.5">
           {rows.map((r) => (
-            <WeekCard key={r.task.id} row={r} />
+            <WeekCard key={r.task.id} row={r} onMutate={onMutate} />
           ))}
         </div>
       )}
@@ -174,7 +188,7 @@ function Column({
   );
 }
 
-function WeekCard({ row }: { row: Row }) {
+function WeekCard({ row, onMutate }: { row: Row; onMutate?: () => void }) {
   const { task, clientName, clientId, ownerName, behind, daysBehind, reason } = row;
   const status = deliverableStatus(task, null);
   return (
@@ -203,7 +217,39 @@ function WeekCard({ row }: { row: Row }) {
           internal {fmt(internalDue(task))} · client {fmt(clientDue(task))}
         </span>
       </div>
-      <div className="mt-1 text-[10px] text-[#A0A0A0]">{DELIVERABLE_STATUS_LABEL[status]}</div>
+      <div className="mt-1 flex items-center justify-between gap-2">
+        <span className="text-[10px] text-[#A0A0A0]">{DELIVERABLE_STATUS_LABEL[status]}</span>
+        {behind && (
+          <span
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            className="inline-flex items-center gap-1"
+          >
+            <span className="text-[10px] text-[#A0A0A0]">Why?</span>
+            <select
+              value={task.slip_reason ?? ""}
+              onChange={(e) => {
+                setTaskSlipReason(task.id, (e.target.value || null) as SlipReason | null);
+                onMutate?.();
+              }}
+              className={`rounded-md border px-1.5 py-0.5 text-[10px] font-medium focus:outline-none ${
+                task.slip_reason
+                  ? "border-rose-200 bg-rose-50 text-rose-700"
+                  : "border-[#E5E5EA] bg-white text-[#7A7A7A]"
+              }`}
+            >
+              <option value="">— pick —</option>
+              {SLIP_REASONS.map((r) => (
+                <option key={r} value={r}>
+                  {SLIP_REASON_LABEL[r]}
+                </option>
+              ))}
+            </select>
+          </span>
+        )}
+      </div>
     </Link>
   );
 }

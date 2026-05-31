@@ -337,6 +337,13 @@ export interface Task {
    * = no gate. Defaults are derived per-discipline (see deliverable.ts)
    * when this isn't set explicitly. */
   resource_deps?: string[];
+  /** Slip accountability: why a deliverable went past its internal date.
+   * Set via the one-tap "Why?" on the weekly board when something's behind,
+   * so slips are recorded (and roll up per pod/person) instead of slipping
+   * silently with no repercussion. */
+  slip_reason?: SlipReason;
+  /** ISO timestamp the slip reason was logged. */
+  slip_logged_at?: string;
   /** Per-visit phase history. Every entry into a phase appends a new
    * row, revisits are kept as separate spans (not aggregated) so the
    * revision-loop count is visible in the timeline. Drives the shared
