@@ -46,6 +46,7 @@ import type {
 } from "@/lib/engagement-mocks";
 import { phaseMeta } from "@/lib/task-board/phases";
 import { PhaseTimeline } from "@/components/task-board/phase-timeline";
+import { EngagementDeliveryPlan } from "./EngagementDeliveryPlan";
 import { type MustDoGateKey } from "@/components/engagements/must-do-modal";
 import { MustDosRow } from "@/components/engagements/must-dos-row";
 import { GeneratedDocs } from "@/components/engagements/generated-docs";
@@ -921,6 +922,15 @@ export default function EngagementDetailClient({ engagement }: { engagement: Moc
         onOpen={(key) => setOpenMustDo(key)}
         onClose={() => setOpenMustDo(null)}
         onSave={handleSaveMustDo}
+      />
+
+      {/* Per-client delivery plan — retainer Month-1 conversion plan (VIP,
+          30 days very visible) or sprint phase timeline. Padding-aware. */}
+      <EngagementDeliveryPlan
+        customDeliverables={customDeliverables}
+        kind={engagement.kind}
+        currentDay={currentDay}
+        startDate={engagement.startDate}
       />
 
       <BriefIntakePanel
