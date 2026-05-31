@@ -23,6 +23,7 @@ import {
   LightBulbIcon,
   LockClosedIcon,
   ArrowRightIcon,
+  CalendarDaysIcon,
 } from "@heroicons/react/24/solid";
 import { LogoMark } from "@/components/logo";
 import { useRole } from "@/components/auth-gate";
@@ -156,6 +157,13 @@ const homeItem = {
   label: "Mission Control",
   href: "/",
   icon: <HomeIcon className="size-4" />,
+};
+/* My Week — Dylan's private weekly planner. Admin-only (founder), same
+ * private posture as Finance. */
+const myWeekItem = {
+  label: "My Week",
+  href: "/my-week",
+  icon: <CalendarDaysIcon className="size-4" />,
 };
 const offerItem = {
   label: "Offer",
@@ -539,6 +547,7 @@ export function Sidebar() {
           {/* Pinned daily drivers — Mission Control, Offer, Pods */}
           <div className="px-3 mb-1 mt-2 space-y-0.5">
             {renderTopLink(homeItem)}
+            {role === "admin" && renderTopLink(myWeekItem)}
             {renderTopLink(offerItem)}
             {renderTopLink(engagementsItem)}
             {renderTopLink(podsItem)}
