@@ -427,6 +427,26 @@ function Overview({
           ).length;
           const activeBlockers = (pod.blockers || []).filter((b) => !b.resolved_at).length;
           const clientCount = new Set(projects.map((p) => p.client_id)).size;
+          /* Cross-pod headroom (#10): design points committed this week vs the
+           * 10 pts/week capacity rule, so leads can see which pod can take
+           * overflow. Plus a peek at next week for the Friday review (#9). */
+          const weeklyCap = Math.max(1, Math.round(pod.capacity_points_per_month / 4));
+          const weekPts = capacityUsed(projects, allTasks, wk.start, wk.end);
+          const headroomPct = Math.round((weekPts / weeklyCap) * 100);
+          const nextWeek = weekWindow(
+            (() => {
+              const d = new Date(`${wk.end}T12:00:00`);
+              d.setDate(d.getDate() + 1);
+              return d.toISOString().slice(0, 10);
+            })(),
+          );
+          const dueNextWeek = podTasks.filter(
+            (t) =>
+              t.type === "core_deliverable" &&
+              t.status !== "done" &&
+              t.due_date >= nextWeek.start &&
+              t.due_date <= nextWeek.end,
+          ).length;
           return (
             <Link
               key={pod.id}
@@ -462,8 +482,23 @@ function Overview({
                   <span className="ml-auto tabular-nums text-amber-700">{activeBlockers} blocked</span>
                 )}
               </div>
-              <div className="mt-2 text-[11px] text-[#A0A0A0]">
-                {clientCount} {clientCount === 1 ? "client" : "clients"}
+              <div className="mt-2 flex items-center justify-between text-[11px] text-[#A0A0A0]">
+                <span>
+                  {clientCount} {clientCount === 1 ? "client" : "clients"}
+                  {dueNextWeek > 0 && <span className="text-[#C5C5C5]"> · +{dueNextWeek} next week</span>}
+                </span>
+                <span
+                  className={`rounded-md px-1.5 py-0.5 font-medium tabular-nums ${
+                    headroomPct >= 100
+                      ? "bg-rose-50 text-rose-700"
+                      : headroomPct >= 85
+                        ? "bg-amber-50 text-amber-800"
+                        : "bg-emerald-50 text-emerald-700"
+                  }`}
+                  title="Design points committed this week vs the 10 pts/week capacity — headroom for overflow"
+                >
+                  {weekPts}/{weeklyCap} pts
+                </span>
               </div>
             </Link>
           );
