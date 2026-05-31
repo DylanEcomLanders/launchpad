@@ -56,12 +56,21 @@ export function resourceDepsFor(task: Task): string[] {
 }
 
 /** Which required resources are missing for this deliverable, given the
- * client's resource-availability map. Empty array = all gates satisfied. */
+ * client's resource-availability map. Empty array = all gates satisfied.
+ *
+ * Gate semantics: the gate only fires once an engagement is actually
+ * TRACKING resources (client.resources is defined). "Untracked" is not the
+ * same as "confirmed missing" — blocking every deliverable on a client
+ * nobody has set resources for yet would bury the due-date prioritisation
+ * that is My Work's whole point. The onboarding / resource-setup step seeds
+ * an explicit resources map (categories present=false) so new engagements
+ * gate from day one; existing untracked clients fall through to due-date
+ * risk until someone starts tracking. */
 export function missingResources(task: Task, client: Client | null): string[] {
+  if (!client?.resources) return []; // resources not tracked yet → no gate
   const deps = resourceDepsFor(task);
   if (deps.length === 0) return [];
-  const have = client?.resources ?? {};
-  return deps.filter((dep) => !have[dep]);
+  return deps.filter((dep) => !client.resources![dep]);
 }
 
 // ── Derived status ────────────────────────────────────────────────

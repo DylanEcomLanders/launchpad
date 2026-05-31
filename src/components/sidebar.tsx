@@ -25,6 +25,7 @@ import {
   ArrowRightIcon,
   BeakerIcon,
   HeartIcon,
+  CheckCircleIcon,
 } from "@heroicons/react/24/solid";
 import { LogoMark } from "@/components/logo";
 import { useRole } from "@/components/auth-gate";
@@ -154,6 +155,13 @@ export const shelvedItems: NavItem[] = [
   { label: "Referral Programme", href: "/referral-programme" },
 ];
 
+/* My Work — operator-first front door (launchpad-build-brief North Star).
+ * Sits first in the pinned cluster: the first thing anyone sees on login. */
+const myWorkItem = {
+  label: "My Work",
+  href: "/my-work",
+  icon: <CheckCircleIcon className="size-4" />,
+};
 const homeItem = {
   label: "Mission Control",
   href: "/",
@@ -277,6 +285,7 @@ export function Sidebar() {
   const paletteItems: CommandItem[] = [
     { label: homeItem.label, href: homeItem.href, group: "Pinned", icon: homeItem.icon },
     { label: offerItem.label, href: offerItem.href, group: "Pinned", icon: offerItem.icon },
+    { label: myWorkItem.label, href: myWorkItem.href, group: "Pinned", icon: myWorkItem.icon, keywords: ["my work", "today", "operator", "what do i do next"] },
     { label: engagementsItem.label, href: engagementsItem.href, group: "Pinned", icon: engagementsItem.icon, keywords: ["engagements"] },
     { label: csmItem.label, href: csmItem.href, group: "Pinned", icon: csmItem.icon, keywords: ["csm", "client success", "renewal", "health", "day 75"] },
     { label: podsItem.label, href: podsItem.href, group: "Pinned", icon: podsItem.icon },
@@ -580,6 +589,7 @@ export function Sidebar() {
 
           {/* Pinned daily drivers — Mission Control, Offer, Pods */}
           <div className="px-3 mb-1 mt-2 space-y-0.5">
+            {renderTopLink(myWorkItem)}
             {renderTopLink(homeItem)}
             {renderTopLink(offerItem)}
             {renderTopLink(engagementsItem)}
