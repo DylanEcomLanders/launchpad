@@ -58,6 +58,7 @@ import {
 } from "@/lib/pods-v2/deliverable";
 import { PhaseTimeline } from "@/components/task-board/phase-timeline";
 import { WeeksView } from "../WeeksView";
+import { WeeklyBoard } from "../WeeklyBoard";
 import {
   Client,
   PAGE_DEFAULT_WEIGHT,
@@ -320,6 +321,12 @@ export default function PodDetailClient({ podId }: { podId: string }) {
     return map;
   }, [projects, tasks, clients, pod, today]);
 
+  /* This pod's tasks (scoped via its projects), for the weekly board. */
+  const podTasks = useMemo(() => {
+    const ids = new Set(projects.map((p) => p.id));
+    return tasks.filter((t) => ids.has(t.project_id));
+  }, [projects, tasks]);
+
   /* Apply filter state to allTasks. `filteredTasks` is what the swim
    * lane renders; `allTasks` stays in tact for capacity / revisions /
    * cycle counts which are unaffected by what the user is currently
@@ -516,8 +523,20 @@ export default function PodDetailClient({ podId }: { podId: string }) {
         )}
       </div>
 
+      {/* THIS WEEK — the lead. Deadlines front and centre, Tue/Thu slots,
+          slips flagged red so nothing slides quietly. */}
+      <div className="mt-4">
+        <WeeklyBoard
+          tasks={podTasks}
+          projects={projects}
+          clients={clients}
+          members={pod.members}
+          today={today}
+        />
+      </div>
+
       {/* HEADER STRIP */}
-      <div className="mt-4 grid grid-cols-1 gap-5 lg:grid-cols-[1fr,360px]">
+      <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[1fr,360px]">
         <div className="rounded-2xl border border-[#E5E5EA] bg-white p-5 shadow-[var(--shadow-soft)]">
           <PodHeading name={pod.name} tagline={pod.tagline} />
           <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
