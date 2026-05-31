@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowRightIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { MOCK_ENGAGEMENTS, type MockEngagement } from "@/lib/engagement-mocks";
 import { loadEngagementsFromPods } from "@/lib/engagement-from-pods";
 import { loadLocalEngagements } from "@/lib/engagement-storage";
@@ -85,40 +86,32 @@ function computeHealth(eng: MockEngagement): EngagementHealth {
   return { overall, label, pct, done, total, overdue, blocked, missingResources };
 }
 
+/** The next thing due on an engagement: the soonest not-done deliverable.
+ * dueInDays is relative to the engagement's currentDay (negative = overdue). */
+function nextUp(eng: MockEngagement): { name: string; dueInDays: number } | null {
+  const stateById = new Map(eng.deliverables.map((d) => [d.templateId, d]));
+  const open = eng.customDeliverables
+    .filter((d) => (stateById.get(d.id)?.status ?? "todo") !== "done")
+    .filter((d) => typeof d.dueDay === "number")
+    .sort((a, b) => a.dueDay - b.dueDay);
+  if (open.length === 0) return null;
+  const d = open[0];
+  return { name: d.name, dueInDays: d.dueDay - eng.currentDay };
+}
+
+function dueLabel(dueInDays: number): string {
+  if (dueInDays < 0) return `${Math.abs(dueInDays)}d overdue`;
+  if (dueInDays === 0) return "due today";
+  if (dueInDays === 1) return "due tomorrow";
+  return `due in ${dueInDays}d`;
+}
+
 function toneDot(t: Tone): string {
   return t === "red" ? "bg-[#C62828]" : t === "amber" ? "bg-[#FFB300]" : "bg-[#00C853]";
 }
 
-function toneText(t: Tone): string {
-  return t === "red" ? "text-[#C62828]" : t === "amber" ? "text-[#E65100]" : "text-[#1B5E20]";
-}
-
-function toneTile(t: Tone): string {
-  return t === "red"
-    ? "bg-[#FFEBEE] text-[#C62828]"
-    : t === "amber"
-      ? "bg-[#FFF8E1] text-[#E65100]"
-      : "bg-[#F5F5F5] text-[#666]";
-}
-
-function HealthStat({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string | number;
-  tone: Tone;
-}) {
-  return (
-    <div className={`rounded px-1.5 py-1 ${toneTile(tone)}`}>
-      <p className="text-[9px] font-semibold uppercase tracking-wider opacity-70">{label}</p>
-      <p className="text-[13px] font-semibold tabular-nums leading-none mt-0.5">{value}</p>
-    </div>
-  );
-}
-
 export default function EngagementsPage() {
+  const router = useRouter();
   const [localEngagements, setLocalEngagements] = useState<MockEngagement[]>([]);
   const [podsEngagements, setPodsEngagements] = useState<MockEngagement[]>([]);
   const [trashedIds, setTrashedIds] = useState<Set<string>>(new Set());
@@ -164,14 +157,9 @@ export default function EngagementsPage() {
   }
   const trashedCount = trashedIds.size;
   const healths = allEngagements.map((eng) => ({ eng, health: computeHealth(eng) }));
-  const retainerHealths = healths.filter(({ eng }) => eng.kind === "retainer");
-  const bucketHealths = healths.filter(({ eng }) => eng.kind === "bucket");
   const overallTone = healths.reduce<Tone>((acc, h) => worseTone(acc, h.health.overall), "green");
   const totalOverdue = healths.reduce((sum, h) => sum + h.health.overdue, 0);
   const totalBlocked = healths.reduce((sum, h) => sum + h.health.blocked, 0);
-  const totalMissing = healths.reduce((sum, h) => sum + h.health.missingResources, 0);
-  const overallLabel =
-    overallTone === "red" ? "Action needed" : overallTone === "amber" ? "Watch" : "Healthy";
 
   return (
     <div className="px-6 py-6 max-w-[1400px] mx-auto">
@@ -226,169 +214,95 @@ export default function EngagementsPage() {
         </section>
       ) : (
       <>
-      {/* Agency Engagements Health */}
-      <section className="mb-6 rounded-lg border border-[#E5E5EA] bg-white p-4">
-        <div className="flex items-baseline justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <span className={`size-2 rounded-full ${toneDot(overallTone)}`} />
-            <h2 className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
-              Client health
-            </h2>
-            <span className={`text-[11px] font-semibold ${toneText(overallTone)}`}>
-              {overallLabel}
-            </span>
-          </div>
-          <span className="text-[10px] text-[#999]">
-            Active · Overdue · Blocked · Missing resources
-          </span>
-        </div>
-        <div className="grid grid-cols-4 gap-2">
-          <HealthStat label="Active" value={allEngagements.length} tone="green" />
-          <HealthStat
-            label="Overdue"
-            value={totalOverdue}
-            tone={totalOverdue >= 3 ? "red" : totalOverdue > 0 ? "amber" : "green"}
-          />
-          <HealthStat
-            label="Blocked"
-            value={totalBlocked}
-            tone={totalBlocked > 0 ? "red" : "green"}
-          />
-          <HealthStat
-            label="Missing"
-            value={totalMissing}
-            tone={totalMissing >= 6 ? "red" : totalMissing > 0 ? "amber" : "green"}
-          />
-        </div>
-      </section>
+      {/* One-line summary — calm, not a wall of tiles. */}
+      <div className="mb-4 flex items-center gap-2 text-[12px] text-[#666]">
+        <span className={`size-2 rounded-full ${toneDot(overallTone)}`} />
+        <span className="font-medium text-[#1B1B1B]">{allEngagements.length} clients</span>
+        {totalOverdue > 0 && <span className="text-[#C62828] font-semibold">· {totalOverdue} overdue</span>}
+        {totalBlocked > 0 && <span className="text-[#C62828] font-semibold">· {totalBlocked} blocked</span>}
+        {totalOverdue === 0 && totalBlocked === 0 && <span className="text-[#2E7D32]">· on track</span>}
+      </div>
 
-      {/* Retainers - primary section, full-size cards */}
-      <section className="mb-8">
-        <h2 className="text-[10px] font-semibold uppercase tracking-wider text-[#999] mb-3">
-          Conversion Engine retainers ({retainerHealths.length})
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {retainerHealths.map(({ eng, health }) => {
-            const cycle = cycleForDay(eng.currentDay);
-            const week = weekInCycleForDay(eng.currentDay);
-            return (
-              <Link
-                key={eng.id}
-                href={`/engagements/${eng.id}`}
-                className="group block rounded-lg border border-[#E5E5EA] bg-white p-5 hover:border-[#1B1B1B] hover:shadow-[0_4px_16px_rgba(0,0,0,0.04)] transition-all"
-              >
-                <div className="flex items-baseline justify-between mb-1">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
-                    Month {cycle} · Week {week} · Day {eng.currentDay} / 90
-                  </p>
-                  <span className={`text-[10px] font-semibold uppercase tracking-wider ${toneText(health.overall)}`}>
-                    <span className={`inline-block size-1.5 rounded-full mr-1 align-middle ${toneDot(health.overall)}`} />
-                    {health.label}
-                  </span>
-                </div>
-
-                <h3 className="text-base font-semibold text-[#1B1B1B] tracking-tight">
-                  {eng.brand}
-                </h3>
-                <p className="text-[12px] text-[#666] mt-0.5">{eng.vertical}</p>
-
-                <div className="mt-4 mb-2 h-1.5 bg-[#F5F5F5] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[#00C853] rounded-full transition-all"
-                    style={{ width: `${health.pct}%` }}
-                  />
-                </div>
-                <div className="flex items-baseline justify-between text-[11px] text-[#666] tabular-nums mb-3">
-                  <span>{health.done} / {health.total} done</span>
-                  <span>{health.pct}%</span>
-                </div>
-
-                <div className="grid grid-cols-3 gap-1.5">
-                  <HealthStat
-                    label="Overdue"
-                    value={health.overdue}
-                    tone={health.overdue >= 3 ? "red" : health.overdue > 0 ? "amber" : "green"}
-                  />
-                  <HealthStat
-                    label="Blocked"
-                    value={health.blocked}
-                    tone={health.blocked > 0 ? "red" : "green"}
-                  />
-                  <HealthStat
-                    label="Missing"
-                    value={health.missingResources}
-                    tone={health.missingResources >= 4 ? "red" : health.missingResources > 0 ? "amber" : "green"}
-                  />
-                </div>
-
-                <div className="mt-4 pt-3 border-t border-[#E5E5EA] flex items-center justify-between">
-                  <p className="text-[11px] text-[#999]">
-                    {eng.retainer}/mo · started {new Date(eng.startDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} · Pod {eng.podNumber}
-                  </p>
-                  <ArrowRightIcon className="size-3.5 text-[#999] group-hover:text-[#1B1B1B] group-hover:translate-x-0.5 transition-all" />
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Single projects - compact secondary section */}
-      {bucketHealths.length > 0 && (
-        <section>
-          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-[#999] mb-3">
-            Single projects ({bucketHealths.length})
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
-            {bucketHealths.map(({ eng, health }) => {
-              const week = weekInCycleForDay(eng.currentDay);
-              const bucketDef = eng.bucket ? BUCKETS.find((b) => b.size === eng.bucket) : null;
-              const totalDays = bucketDef?.workingDays ?? 0;
-              return (
-                <Link
-                  key={eng.id}
-                  href={`/engagements/${eng.id}`}
-                  className="group block rounded-lg border border-[#E5E5EA] bg-white p-3 hover:border-[#1B1B1B] hover:shadow-[0_4px_16px_rgba(0,0,0,0.04)] transition-all"
-                >
-                  <div className="flex items-baseline justify-between mb-1">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#1976D2] bg-[#E3F2FD] px-1.5 py-0.5 rounded">
-                      {bucketDef?.label ?? "Bucket"}
-                    </span>
-                    <span className={`text-[10px] font-semibold uppercase tracking-wider ${toneText(health.overall)}`}>
-                      <span className={`inline-block size-1.5 rounded-full mr-1 align-middle ${toneDot(health.overall)}`} />
-                      {health.label}
-                    </span>
-                  </div>
-                  <h3 className="text-[13px] font-semibold text-[#1B1B1B] tracking-tight mt-2">
-                    {eng.brand}
-                  </h3>
-                  <p className="text-[11px] text-[#666] mt-0.5 truncate">{eng.vertical}</p>
-
-                  <div className="mt-2.5 h-1 bg-[#F5F5F5] rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-[#00C853] rounded-full transition-all"
-                      style={{ width: `${health.pct}%` }}
-                    />
-                  </div>
-                  <div className="flex items-baseline justify-between text-[10px] text-[#666] tabular-nums mt-1">
-                    <span>Day {eng.currentDay}/{totalDays} · W{week}</span>
-                    <span>{health.done}/{health.total}</span>
-                  </div>
-
-                  <div className="mt-2 pt-2 border-t border-[#E5E5EA] flex items-baseline justify-between text-[10px] text-[#999]">
-                    <span>Pod {eng.podNumber}</span>
-                    <div className="flex items-center gap-1.5">
-                      {health.overdue > 0 && <span className="text-[#C62828] font-semibold">{health.overdue} overdue</span>}
-                      {health.blocked > 0 && <span className="text-[#C62828] font-semibold">{health.blocked} blocked</span>}
-                      {health.overdue === 0 && health.blocked === 0 && <span className="text-[#666]">{health.missingResources} missing</span>}
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-      )}
+      {/* Clients table — Google-Sheets-style: every client, where we are,
+          what's next, at a glance. Sorted worst-health first so slipping
+          clients surface, not hide. */}
+      <div className="overflow-x-auto rounded-lg border border-[#E5E5EA] bg-white">
+        <table className="w-full min-w-[760px] text-left text-[13px]">
+          <thead>
+            <tr className="border-b border-[#E5E5EA] text-[10px] font-semibold uppercase tracking-wider text-[#999]">
+              <th className="px-4 py-2.5 font-semibold">Client</th>
+              <th className="px-3 py-2.5 font-semibold">Type</th>
+              <th className="px-3 py-2.5 font-semibold">Pod</th>
+              <th className="px-3 py-2.5 font-semibold">Where we are</th>
+              <th className="px-3 py-2.5 font-semibold">Next up</th>
+              <th className="px-3 py-2.5 text-right font-semibold">Flags</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[...healths]
+              .sort((a, b) => b.health.overdue - a.health.overdue || a.eng.brand.localeCompare(b.eng.brand))
+              .map(({ eng, health }) => {
+                const isRetainer = eng.kind === "retainer";
+                const cycle = cycleForDay(eng.currentDay);
+                const week = weekInCycleForDay(eng.currentDay);
+                const bucketDef = eng.bucket ? BUCKETS.find((b) => b.size === eng.bucket) : null;
+                const totalDays = bucketDef?.workingDays ?? 0;
+                const next = nextUp(eng);
+                const typeLabel = isRetainer ? `Retainer ${eng.retainer}` : bucketDef?.label ?? "Sprint";
+                const where = isRetainer
+                  ? `Day ${eng.currentDay}/90 · M${cycle} W${week}`
+                  : `Day ${eng.currentDay}${totalDays ? `/${totalDays}` : ""} · W${week}`;
+                return (
+                  <tr
+                    key={eng.id}
+                    onClick={() => router.push(`/engagements/${eng.id}`)}
+                    className="cursor-pointer border-b border-[#F0F0F2] last:border-0 hover:bg-[#FAFAFB]"
+                  >
+                    <td className="px-4 py-3">
+                      <span className="inline-flex items-center gap-2">
+                        <span className={`size-1.5 rounded-full ${toneDot(health.overall)}`} />
+                        <span className="font-semibold text-[#1B1B1B]">{eng.brand}</span>
+                      </span>
+                    </td>
+                    <td className="px-3 py-3">
+                      <span
+                        className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[11px] font-medium ${
+                          isRetainer ? "border-[#1B1B1B]/15 bg-[#F3F3F5] text-[#1B1B1B]" : "border-blue-200 bg-blue-50 text-blue-700"
+                        }`}
+                      >
+                        {typeLabel}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-[#666] tabular-nums">Pod {eng.podNumber}</td>
+                    <td className="px-3 py-3 text-[#666] tabular-nums">
+                      {where}
+                      <span className="ml-1 text-[#C5C5C5]">· {health.done}/{health.total}</span>
+                    </td>
+                    <td className="px-3 py-3">
+                      {next ? (
+                        <span className="text-[#1B1B1B]">
+                          <span className="truncate">{next.name}</span>
+                          <span className={`ml-1.5 text-[11px] tabular-nums ${next.dueInDays < 0 ? "font-semibold text-[#C62828]" : "text-[#999]"}`}>
+                            {dueLabel(next.dueInDays)}
+                          </span>
+                        </span>
+                      ) : (
+                        <span className="text-[#C5C5C5]">—</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-3 text-right">
+                      <span className="inline-flex items-center justify-end gap-1.5 text-[11px] tabular-nums">
+                        {health.overdue > 0 && <span className="font-semibold text-[#C62828]">{health.overdue} overdue</span>}
+                        {health.blocked > 0 && <span className="font-semibold text-[#C62828]">{health.blocked} blocked</span>}
+                        {health.overdue === 0 && health.blocked === 0 && <span className="text-[#2E7D32]">on track</span>}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+          </tbody>
+        </table>
+      </div>
       </>
       )}
     </div>
