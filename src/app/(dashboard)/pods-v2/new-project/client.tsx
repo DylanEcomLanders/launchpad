@@ -34,6 +34,7 @@ import {
   kickoffMondayFor,
   rawPoints,
 } from "@/lib/pods-v2/calc";
+import { previousWorkingDay } from "@/lib/pods-v2/deliverable";
 import {
   inputClass,
   labelClass,
@@ -109,6 +110,17 @@ export default function IntakeClient() {
   const bucket = bucketFromPoints(totalPoints);
   const kickoff = kickoffMondayFor(signoffDate, signoffHour);
   const delivery = deliveryThursdayFor(kickoff, bucket);
+  /* Capacity-aware promise (#1): does the routed pod actually have room for
+   * these points this month? If not, the delivery date isn't realistic and
+   * we flag it BEFORE anyone promises it to a client. */
+  const podCap = pods.find((p) => p.id === suggestedPodId)?.capacity_points_per_month ?? 40;
+  const podUsed = suggestedPodId ? capacityUsed(getProjectsForPod(suggestedPodId)) : 0;
+  const projectedUsed = podUsed + totalPoints;
+  const capacityPct = Math.round((projectedUsed / podCap) * 100);
+  const overCapacity = projectedUsed > podCap;
+  const nearCapacity = !overCapacity && capacityPct >= 85;
+  /* Internal target = client ship date − 1 working day (the padding rule). */
+  const internalTarget = delivery ? previousWorkingDay(delivery) : null;
 
   function addPage() {
     setPages([...pages, { type: "pdp", weight: PAGE_DEFAULT_WEIGHT.pdp }]);
@@ -479,12 +491,37 @@ export default function IntakeClient() {
             </div>
             <div>
               <div className="text-[9px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
-                Delivery Thursday
+                Ship date (client)
               </div>
               <div className="mt-0.5 text-sm font-medium">
                 {delivery ? formatLongDate(delivery) : "Bespoke, set manually"}
               </div>
+              {internalTarget && (
+                <div className="text-[10px] text-[#A0A0A0]">
+                  internal target {formatLongDate(internalTarget)} (−1 day buffer)
+                </div>
+              )}
             </div>
+          </div>
+
+          {/* Capacity-aware promise check */}
+          <div
+            className={`mt-3 flex items-start gap-2 rounded-lg border px-3 py-2 text-[12px] ${
+              overCapacity
+                ? "border-rose-200 bg-rose-50 text-rose-800"
+                : nearCapacity
+                  ? "border-amber-200 bg-amber-50 text-amber-800"
+                  : "border-emerald-200 bg-emerald-50 text-emerald-800"
+            }`}
+          >
+            <span className="font-semibold tabular-nums">{projectedUsed}/{podCap} pts</span>
+            <span className="opacity-90">
+              {overCapacity
+                ? "· This pod is over capacity — that ship date isn't realistic. Route to a pod with headroom or push the date before promising the client."
+                : nearCapacity
+                  ? "· Near capacity (85%+). Doable but tight — keep an eye on it."
+                  : "· Capacity OK — this date is realistic to promise."}
+            </span>
           </div>
         </div>
 
