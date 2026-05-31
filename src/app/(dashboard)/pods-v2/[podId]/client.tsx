@@ -59,6 +59,7 @@ import {
 import { PhaseTimeline } from "@/components/task-board/phase-timeline";
 import { WeeksView } from "../WeeksView";
 import { WeeklyBoard } from "../WeeklyBoard";
+import { PodKanban } from "../PodKanban";
 import {
   Client,
   PAGE_DEFAULT_WEIGHT,
@@ -527,6 +528,19 @@ export default function PodDetailClient({ podId }: { podId: string }) {
           slips flagged red so nothing slides quietly. */}
       <div className="mt-4">
         <WeeklyBoard
+          tasks={podTasks}
+          projects={projects}
+          clients={clients}
+          members={pod.members}
+          today={today}
+          onMutate={refresh}
+        />
+      </div>
+
+      {/* PIPELINE — kanban by stage, with a "just mine" filter. Advancing a
+          card IS the status update (no forms), to drive adoption. */}
+      <div className="mt-4">
+        <PodKanban
           tasks={podTasks}
           projects={projects}
           clients={clients}
