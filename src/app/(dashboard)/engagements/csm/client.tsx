@@ -27,6 +27,7 @@ import {
   getTasks,
   getTests,
   addClientNote,
+  updateClientLifecycle,
 } from "@/lib/pods-v2/data";
 import { bootstrapPodsSync } from "@/lib/pods-v2/sync";
 import { seedPodOsV2DemoData } from "@/lib/pods-v2/demo-seed";
@@ -50,6 +51,7 @@ import {
   type RenewalStatus,
 } from "@/lib/pods-v2/types";
 import { Card, SectionHeader, StatTile, Pill, Meter, EmptyState, fmtDayMonth } from "@/components/pod-os/ui";
+import { EngagementLifecycle } from "@/components/pod-os/engagement-lifecycle";
 
 function todayYMD(): string {
   const d = new Date();
@@ -322,11 +324,9 @@ export default function CsmClient() {
       {open && (
         <ClientDrawer
           client={open.client}
+          today={today}
           score={open.score}
           band={open.band}
-          day={open.day}
-          refreshIn={open.refreshIn}
-          window={open.window ? ENGAGEMENT_WINDOW_LABEL[open.window] : null}
           tests={tests.filter((t) => t.client_id === open.client.id)}
           slips={slipsByClient[open.client.id] ?? []}
           onClose={() => setOpenId(null)}
@@ -339,22 +339,18 @@ export default function CsmClient() {
 
 function ClientDrawer({
   client,
+  today,
   score,
   band,
-  day,
-  refreshIn,
-  window,
   tests,
   slips,
   onClose,
   onNoteAdded,
 }: {
   client: Client;
+  today: string;
   score: number | null;
   band: HealthBand | null;
-  day: number | null;
-  refreshIn: number | null;
-  window: string | null;
   tests: PodTest[];
   slips: Task[];
   onClose: () => void;
@@ -362,6 +358,7 @@ function ClientDrawer({
 }) {
   const [note, setNote] = useState("");
   const signals = client.health_signals;
+  const kind = engagementKindOf(client);
 
   const submitNote = () => {
     const trimmed = note.trim();
@@ -410,14 +407,51 @@ function ClientDrawer({
           )}
         </div>
 
-        {day != null && (
-          <div className="mt-4 text-[12px] text-[#7A7A7A]">
-            {window && <span className="font-medium text-[#1B1B1B]">{window}</span>}
-            {refreshIn != null && (
-              <> · Day {day}/90 · refresh {refreshIn <= 0 ? "due now" : `in ${refreshIn}d`}</>
-            )}
+        {/* engagement lifecycle visual + editor */}
+        <div className="mt-4 rounded-lg border border-[#E5E5EA] bg-white p-3">
+          <EngagementLifecycle client={client} today={today} />
+          <div className="mt-3 grid grid-cols-2 gap-2 border-t border-[#F0F0F2] pt-3">
+            <label className="block">
+              <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+                Engagement
+              </span>
+              <select
+                value={kind}
+                onChange={(e) => {
+                  updateClientLifecycle(client.id, {
+                    engagement_kind: e.target.value as Client["engagement_kind"],
+                  });
+                  onNoteAdded();
+                }}
+                className="w-full rounded-md border border-[#E5E5EA] bg-white px-2 py-1.5 text-[12px] focus:border-[#1B1B1B] focus:outline-none"
+              >
+                <option value="retainer">Retainer</option>
+                <option value="sprint">Sprint</option>
+              </select>
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+                Renewal
+              </span>
+              <select
+                value={client.renewal_status ?? "active"}
+                onChange={(e) => {
+                  updateClientLifecycle(client.id, {
+                    renewal_status: e.target.value as RenewalStatus,
+                  });
+                  onNoteAdded();
+                }}
+                className="w-full rounded-md border border-[#E5E5EA] bg-white px-2 py-1.5 text-[12px] focus:border-[#1B1B1B] focus:outline-none"
+              >
+                {(Object.keys(RENEWAL_LABEL) as RenewalStatus[]).map((r) => (
+                  <option key={r} value={r}>
+                    {RENEWAL_LABEL[r]}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
-        )}
+        </div>
 
         {client.strategy_thesis && (
           <Section label="Strategy thesis">
