@@ -53,3 +53,33 @@ green ≥75 / amber ≥50 / red) as a tunable starting point. Flagged as provisi
 **additive-only** mirror + cloud-wins-on-hydrate behavior already proven for the other pods-v2
 collections (no destructive diff — respects the 2026-05-12 incident rule). Migration `023` creates
 them; until pasted into Supabase, the app uses the localStorage fallback.
+
+---
+
+## Operator-first build (launchpad-build-brief) — separate brief, branch `feat/operator-first-deliverable`
+
+### 8. The unified Deliverable IS pods-v2 Task (extend, don't invent)
+The brief's "two disconnected views with no shared object" is, on inspection, one object
+(`pods-v2 Task` — already person-owned, phased, pointed, clocked) plus a read-only projection
+(`engagement-from-pods.ts`). **Decision (approved via AskUserQuestion):** promote `Task` to the
+canonical Deliverable and add a thin lens layer (`deliverable.ts`) rather than standing up a new
+Deliverable table or migrating the working pod board. Lowest risk, honors "extend, don't replace".
+
+### 9. Brief's 5 statuses are DERIVED, not stored
+Not started / In progress / In review / Shipped / Blocked-client / Blocked-resource are computed from
+existing Task fields (`status`, `waiting_on`, `phase`) + the resource gate — no new status column, so
+existing data needs no backfill.
+
+### 10. Resource gate is opt-in per client ("untracked" ≠ "confirmed missing")
+Per-discipline default resource deps (design ⇒ figma+audit, etc.) only block once a client has a
+`resources` map (i.e. someone is tracking them). Without this, every deliverable on every
+not-yet-set-up client would block, burying the due-date prioritisation that is My Work's whole point.
+The onboarding/resource-setup step (a later PR) seeds an explicit resources map so new engagements
+gate from day one. The brief's Harvestory-blocks-on-missing-resource scenario fires once resources
+are tracked.
+
+### 11. My Work identity is a visible person-picker
+Launchpad has a single shared login + a coarse role (admin/cro/team), no per-user member identity.
+**Decision:** My Work uses a visible "I'm [person]" picker persisted to localStorage rather than
+inventing an auth identity system. Surfaced in the header, not hidden — flagged as the bridge until
+real per-user identity exists.
