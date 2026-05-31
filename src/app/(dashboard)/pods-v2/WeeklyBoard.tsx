@@ -19,6 +19,7 @@ import {
   DELIVERABLE_STATUS_LABEL,
 } from "@/lib/pods-v2/deliverable";
 import { setTaskSlipReason } from "@/lib/pods-v2/data";
+import { engagementKindOf } from "@/lib/pods-v2/calc";
 import type { Task, Project, Client, PodMember, SlipReason } from "@/lib/pods-v2/types";
 import { Pill } from "@/components/pod-os/ui";
 
@@ -67,6 +68,7 @@ interface Row {
   behind: boolean;
   daysBehind: number;
   reason: string;
+  isRetainer: boolean;
 }
 
 export function WeeklyBoard({
@@ -114,12 +116,16 @@ export function WeeklyBoard({
       behind,
       daysBehind,
       reason: riskReason(t, client, today),
+      isRetainer: client ? engagementKindOf(client) === "retainer" : false,
     };
   }
 
   const rows = tasks.map(toRow).filter((r): r is Row => r !== null);
+  // Retainers are VIP (#8): within the same risk band, they sort first.
   const sortRows = (a: Row, b: Row) =>
-    Number(b.behind) - Number(a.behind) || a.task.due_date.localeCompare(b.task.due_date);
+    Number(b.behind) - Number(a.behind) ||
+    Number(b.isRetainer) - Number(a.isRetainer) ||
+    a.task.due_date.localeCompare(b.task.due_date);
   const tuesday = rows.filter((r) => ITERATION_TYPES.has(r.task.type)).sort(sortRows);
   const thursday = rows.filter((r) => r.task.type === "core_deliverable").sort(sortRows);
 
@@ -189,7 +195,7 @@ function Column({
 }
 
 function WeekCard({ row, onMutate }: { row: Row; onMutate?: () => void }) {
-  const { task, clientName, clientId, ownerName, behind, daysBehind, reason } = row;
+  const { task, clientName, clientId, ownerName, behind, daysBehind, reason, isRetainer } = row;
   const status = deliverableStatus(task, null);
   return (
     <Link
@@ -207,6 +213,7 @@ function WeekCard({ row, onMutate }: { row: Row; onMutate?: () => void }) {
         )}
       </div>
       <div className="mt-1 flex flex-wrap items-center gap-1">
+        {isRetainer && <Pill tone="emerald">Retainer</Pill>}
         <Pill tone="default">{ownerName}</Pill>
         <Pill tone="muted">{DISCIPLINE_LABEL[task.discipline] ?? task.discipline}</Pill>
         <span className="text-[10px] text-[#7A7A7A]">· {clientName}</span>
