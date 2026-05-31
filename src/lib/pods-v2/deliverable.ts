@@ -117,6 +117,34 @@ export function daysUntil(dueYMD: string, todayYMD: string): number {
   return Math.round((b - a) / 86_400_000);
 }
 
+// ── 1-day deadline padding (internal sits a working day before client) ──
+// Decision (this session): the stored Task.due_date is the CLIENT-facing
+// ship date. The team's INTERNAL target is one working day earlier — which
+// lands on the Wednesday before a Thursday ship, matching the Wed 3pm review
+// gate. All risk/at-risk math runs against the internal date, so there's
+// always a day of buffer before the client ever sees a slip.
+
+/** The working day immediately before `ymd` (skips Sat/Sun). */
+export function previousWorkingDay(ymd: string): string {
+  const d = new Date(`${ymd}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() - 1);
+  while (d.getUTCDay() === 0 || d.getUTCDay() === 6) {
+    d.setUTCDate(d.getUTCDate() - 1);
+  }
+  return d.toISOString().slice(0, 10);
+}
+
+/** Client-facing ship date for a deliverable (the stored due_date). */
+export function clientDue(task: Task): string {
+  return task.due_date;
+}
+
+/** Internal target = client date − 1 working day. What the team works to and
+ * what at-risk is measured against. */
+export function internalDue(task: Task): string {
+  return previousWorkingDay(task.due_date);
+}
+
 /** "Final phase" = the deliverable is in launch or a review gate; being a
  * couple of days out there is fine, whereas being a couple of days out in
  * early design is red. */
@@ -131,10 +159,12 @@ export function riskLevel(
   if (status === "shipped") return "shipped";
   if (isBlocked(status)) return "blocked";
 
-  const d = daysUntil(task.due_date, todayYMD);
+  // Measured against the INTERNAL target (client date − 1 working day) so
+  // the buffer is real: we read "at risk" a day before the client would.
+  const d = daysUntil(internalDue(task), todayYMD);
   const inFinalPhase = task.phase ? FINAL_PHASES.includes(task.phase) : false;
 
-  if (d < 0) return "red"; // overdue — can't make the date
+  if (d < 0) return "red"; // past internal target — eating into client buffer
   if (d <= 2 && !inFinalPhase) return "red";
   if (d <= 4) return "amber";
   return "green";
@@ -154,9 +184,11 @@ export function riskReason(
   }
   if (status === "blocked_client") return "Waiting on client";
   if (status === "shipped") return "Shipped";
-  const d = daysUntil(task.due_date, todayYMD);
-  if (d < 0) return `${Math.abs(d)}d overdue`;
-  if (d === 0) return "Due today";
-  if (d === 1) return "Due tomorrow";
-  return `Due in ${d}d`;
+  // Against the internal target — so "overdue" means we're into the client
+  // buffer, not that the client deadline has passed.
+  const d = daysUntil(internalDue(task), todayYMD);
+  if (d < 0) return `${Math.abs(d)}d behind internal`;
+  if (d === 0) return "Internal due today";
+  if (d === 1) return "Internal due tomorrow";
+  return `Internal in ${d}d`;
 }

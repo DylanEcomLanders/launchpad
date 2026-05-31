@@ -57,6 +57,7 @@ import {
   type DeliverableStatus,
 } from "@/lib/pods-v2/deliverable";
 import { PhaseTimeline } from "@/components/task-board/phase-timeline";
+import { WeeksView } from "../WeeksView";
 import {
   Client,
   PAGE_DEFAULT_WEIGHT,
@@ -558,6 +559,21 @@ export default function PodDetailClient({ podId }: { podId: string }) {
 
       {/* BLOCKERS, pod-wide blockers visible to everyone */}
       <PodBlockersPanel pod={pod} onMutate={refresh} isAdmin={isAdmin} />
+
+      {/* WEEKLY CADENCE — this pod's rolling weeks (Kicking off Mon · In
+          flight · Shipping Thu) so the pod can see what lands when and hit
+          the dates. Reuses the shared WeeksView, scoped to this pod. */}
+      <div className="mt-10">
+        <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+          Weekly cadence
+        </h2>
+        <WeeksView
+          projects={projects}
+          podById={new Map([[pod.id, pod]])}
+          clientById={new Map(clients.map((c) => [c.id, c]))}
+          today={today}
+        />
+      </div>
 
       {/* CLIENT ROSTER, moved up */}
       <ClientRoster
