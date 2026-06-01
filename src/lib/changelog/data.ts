@@ -62,6 +62,7 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Strategy-driven deliverables now grey out until they're ready: a design task reads 'Awaiting brief' until the strategist rules on it, and its paired build task reads 'Not started' while the design is unapproved — so the delivery board only highlights work that's genuinely actionable" },
       { type: "improved", text: "Sales Engine is no longer reachable in-app — Acquisition and Portfolio links point at the real tools, and the old sales-engine surface redirects away rather than showing a half-built area" },
       { type: "fixed", text: "Workspace Overview pod cards no longer sit flush against each other — spacing restored so each pod reads as its own card" },
+      { type: "fixed", text: "Quotes: the Generate link button no longer fails silently. It always responds — if the client name or a line item is missing it says so inline, and if the save itself hiccups it shows a clear retry message instead of doing nothing" },
     ],
   },
   {

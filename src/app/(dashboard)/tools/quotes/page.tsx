@@ -53,6 +53,7 @@ export default function QuotesPage() {
   const [lines, setLines] = useState<QuoteLine[]>([blankLine()]);
   const [saving, setSaving] = useState(false);
   const [newLink, setNewLink] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -87,13 +88,21 @@ export default function QuotesPage() {
     setIncludes([...DEFAULT_INCLUDES]);
     setFootnote("");
     setLines([blankLine()]);
+    setError(null);
     setBuilding(false);
   }
 
   async function generate() {
-    if (!clientName.trim()) return;
+    setError(null);
+    if (!clientName.trim()) {
+      setError("Add a client name first.");
+      return;
+    }
     const validLines = lines.filter((l) => l.description.trim());
-    if (validLines.length === 0) return;
+    if (validLines.length === 0) {
+      setError("Add at least one line item with a description.");
+      return;
+    }
     setSaving(true);
     setNewLink(null);
     try {
@@ -109,7 +118,11 @@ export default function QuotesPage() {
         setNewLink(`${window.location.origin}/quote/${quote.token}`);
         resetBuilder();
         refresh();
+      } else {
+        setError("Couldn't generate the link just now. Give it a second and try again.");
       }
+    } catch {
+      setError("Couldn't generate the link just now. Give it a second and try again.");
     } finally {
       setSaving(false);
     }
@@ -335,13 +348,16 @@ export default function QuotesPage() {
               />
             </Field>
 
-            <button
-              disabled={saving || !clientName.trim() || !lines.some((l) => l.description.trim())}
-              onClick={generate}
-              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
-            >
-              {saving ? "Generating…" : "Generate quote link"}
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                disabled={saving}
+                onClick={generate}
+                className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+              >
+                {saving ? "Generating…" : "Generate quote link"}
+              </button>
+              {error && <span className="text-xs font-medium text-rose-600">{error}</span>}
+            </div>
           </div>
         </div>
       ) : (
