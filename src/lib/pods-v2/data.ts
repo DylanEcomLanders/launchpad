@@ -2219,6 +2219,102 @@ export function updateClientLifecycle(
   write(LS_CLIENTS, next);
 }
 
+// ─── Client pause (waiting-on-client) ─────────────────────────────
+
+/** Pause a client because we're waiting on them (slow revisions, sitting on
+ * approvals). Stamps paused_at; while set, the derive layer treats the whole
+ * engagement as paused so nothing reads overdue/at-risk. No-op if already
+ * paused. */
+export function pauseClient(clientId: string): void {
+  const all = getClients();
+  const now = new Date().toISOString();
+  write(
+    LS_CLIENTS,
+    all.map((c) =>
+      c.id === clientId && !c.paused_at ? { ...c, paused_at: now } : c,
+    ),
+  );
+}
+
+/** Resume a paused client. Banks the elapsed pause into paused_total_ms AND
+ * shifts every OPEN (non-done) deliverable's due date forward by the whole
+ * working-day-agnostic calendar days lost, so deadlines stay honest instead
+ * of showing a wall of overdue the moment work restarts. Done tasks are left
+ * untouched (history). No-op if not paused. */
+export function resumeClient(clientId: string): void {
+  const all = getClients();
+  const client = all.find((c) => c.id === clientId);
+  if (!client?.paused_at) return;
+
+  const pausedMs = Math.max(0, Date.now() - new Date(client.paused_at).getTime());
+  const pausedDays = Math.round(pausedMs / 86_400_000);
+
+  write(
+    LS_CLIENTS,
+    all.map((c) =>
+      c.id === clientId
+        ? {
+            ...c,
+            paused_at: undefined,
+            paused_total_ms: (c.paused_total_ms || 0) + pausedMs,
+          }
+        : c,
+    ),
+  );
+
+  // Shift open deliverables forward by the days lost.
+  if (pausedDays > 0) {
+    const projectIds = new Set(getProjectsForClient(clientId).map((p) => p.id));
+    const tasks = getTasks();
+    write(
+      LS_TASKS,
+      tasks.map((t) => {
+        if (!projectIds.has(t.project_id) || t.status === "done") return t;
+        const d = new Date(`${t.due_date}T12:00:00`);
+        d.setDate(d.getDate() + pausedDays);
+        return { ...t, due_date: d.toISOString().slice(0, 10) };
+      }),
+    );
+  }
+}
+
+// ─── Linked briefs (multiple briefs per client) ───────────────────
+
+/** Attach an extra brief (label + optional URL) alongside the core structured
+ * brief. Clients sometimes redo onboarding or send supplementary context. */
+export function addLinkedBrief(
+  clientId: string,
+  input: { label: string; url?: string },
+): void {
+  const all = getClients();
+  const entry = {
+    id: uid(),
+    label: input.label.trim(),
+    url: input.url?.trim() || undefined,
+    added_at: new Date().toISOString(),
+  };
+  write(
+    LS_CLIENTS,
+    all.map((c) =>
+      c.id === clientId
+        ? { ...c, linked_briefs: [...(c.linked_briefs ?? []), entry] }
+        : c,
+    ),
+  );
+}
+
+export function removeLinkedBrief(clientId: string, briefId: string): void {
+  const all = getClients();
+  write(
+    LS_CLIENTS,
+    all.map((c) =>
+      c.id === clientId
+        ? { ...c, linked_briefs: (c.linked_briefs ?? []).filter((b) => b.id !== briefId) }
+        : c,
+    ),
+  );
+}
+
 // ─── Strategist: tests (§1.8, §4.1) ───────────────────────────────
 
 export function getTests(): PodTest[] {

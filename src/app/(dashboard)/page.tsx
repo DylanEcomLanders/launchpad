@@ -45,7 +45,7 @@ const toolkitStages: ToolkitStage[] = [
     badgeText: "#1D4ED8",
     tiles: [
       { title: "Portfolio", subtitle: "Live page library", href: "/portfolio", icon: PhotoIcon },
-      { title: "Case studies", subtitle: "Results & outcomes", href: "/sales-engine/case-studies", icon: TrophyIcon },
+      { title: "Case studies", subtitle: "Results & outcomes", href: "/case-studies", icon: TrophyIcon },
       { title: "Price list", subtitle: "Surfaces & retainers", href: "/internal/pricing", icon: TagIcon },
       { title: "Sales deck", subtitle: "Conversion engine", href: "/conversion-pack", icon: PresentationChartLineIcon },
       { title: "Cheat sheet", subtitle: "Conversion engine", href: "/internal/cheatsheet/conversion-engine", icon: BookmarkIcon },

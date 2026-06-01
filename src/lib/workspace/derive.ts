@@ -128,8 +128,13 @@ function toDeliverable(
   projectName: string,
   members: Map<string, ResolvedMember>,
   todayYMD: string,
+  clientPaused = false,
 ): DeliverableVM {
   const owner = members.get(task.assigned_to);
+  // A paused client freezes all its open work: force the 'paused' state so
+  // nothing reads overdue/at-risk while we wait on the client.
+  const state: DeadlineState =
+    clientPaused && task.status !== "done" ? "paused" : deadlineState(task, todayYMD);
   return {
     id: task.id,
     title: task.title,
@@ -140,7 +145,7 @@ function toDeliverable(
     ownerAvatar: owner?.avatar_url,
     dueDate: task.due_date,
     daysToDue: daysBetween(todayYMD, task.due_date),
-    state: deadlineState(task, todayYMD),
+    state,
     projectName,
     waitingOn: task.waiting_on,
     isCore: task.type === "core_deliverable",
@@ -199,6 +204,9 @@ export interface ClientVM {
   testsNeedingCall: PodTest[];
   openCount: number;
   doneCount: number;
+  /** Client-level pause: while true, the whole engagement is frozen (we're
+   * waiting on the client) and reads as paused rather than overdue/at-risk. */
+  paused: boolean;
 }
 
 export function buildClientVM(
@@ -214,9 +222,10 @@ export function buildClientVM(
   const projectName = new Map(clientProjects.map((p) => [p.id, p.name]));
   const projectIds = new Set(clientProjects.map((p) => p.id));
   const clientTasks = tasks.filter((t) => projectIds.has(t.project_id));
+  const paused = !!client.paused_at;
 
   const deliverables = clientTasks.map((t) =>
-    toDeliverable(t, projectName.get(t.project_id) ?? "Project", members, todayYMD),
+    toDeliverable(t, projectName.get(t.project_id) ?? "Project", members, todayYMD, paused),
   );
 
   const lanes: Record<Lane, LaneSummary> = {
@@ -270,6 +279,7 @@ export function buildClientVM(
     testsNeedingCall,
     openCount: open.length,
     doneCount: deliverables.length - open.length,
+    paused,
   };
 }
 

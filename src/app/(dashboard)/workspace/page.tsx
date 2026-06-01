@@ -202,7 +202,7 @@ export default function WorkspaceOverview() {
           <div className="space-y-3">
             {podVMs.length === 0 && <EmptyState>No pods yet.</EmptyState>}
             {podVMs.map((p) => (
-              <Link key={p.pod.id} href={`/workspace/pods/${p.pod.id}`}>
+              <Link key={p.pod.id} href={`/workspace/pods/${p.pod.id}`} className="block">
                 <Card className="px-5 py-4 transition-shadow hover:shadow-md">
                   <div className="flex items-center justify-between">
                     <div>
@@ -254,7 +254,7 @@ export default function WorkspaceOverview() {
         ) : (
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
             {clientVMs.map((c) => (
-              <Link key={c.client.id} href={`/workspace/clients/${c.client.id}`}>
+              <Link key={c.client.id} href={`/workspace/clients/${c.client.id}`} className="block">
                 <Card className="flex items-center justify-between px-4 py-3 transition-shadow hover:shadow-md">
                   <div className="flex items-center gap-2">
                     <HealthDot band={c.band} />

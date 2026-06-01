@@ -27,6 +27,11 @@ import {
   deleteTest,
   assignParkedClientToPod,
   recomputeProjectBucket,
+  pauseClient,
+  resumeClient,
+  addLinkedBrief,
+  removeLinkedBrief,
+  addTask,
 } from "@/lib/pods-v2/data";
 import type { EngagementKind } from "@/lib/pods-v2/types";
 import {
@@ -144,6 +149,7 @@ export default function WorkspaceClientDetail() {
               {c.name}
             </h1>
             {c.brand_warm && <Pill tone="amber">Brand-warm</Pill>}
+            {vm.paused && <Pill tone="amber" dot>Paused</Pill>}
           </div>
           <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm text-slate-500">
             <Link
@@ -164,23 +170,42 @@ export default function WorkspaceClientDetail() {
             )}
           </div>
         </div>
-        <div className="text-right">
-          {vm.day != null && (
-            <div className="font-heading text-lg font-semibold text-slate-900">
-              Day {vm.day}
-              <span className="text-sm font-normal text-slate-400">/90</span>
-            </div>
+        <div className="flex items-center gap-3">
+          {!isParked && (
+            <PauseControl
+              clientId={clientId}
+              paused={vm.paused}
+              pausedAt={c.paused_at}
+              onChanged={data.reload}
+            />
           )}
-          {vm.nextDeadline && (
-            <div className="mt-1 text-xs text-slate-500">
-              Next:{" "}
-              <span className="font-medium text-slate-700">
-                {formatDue(vm.nextDeadline.dueDate)}
-              </span>
-            </div>
-          )}
+          <div className="text-right">
+            {vm.day != null && (
+              <div className="font-heading text-lg font-semibold text-slate-900">
+                Day {vm.day}
+                <span className="text-sm font-normal text-slate-400">/90</span>
+              </div>
+            )}
+            {!vm.paused && vm.nextDeadline && (
+              <div className="mt-1 text-xs text-slate-500">
+                Next:{" "}
+                <span className="font-medium text-slate-700">
+                  {formatDue(vm.nextDeadline.dueDate)}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Paused banner */}
+      {vm.paused && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <span className="font-medium">Engagement paused.</span> Deadlines are
+          frozen while we wait on the client, so nothing reads as overdue.
+          Resume to shift every open deadline forward by the time lost.
+        </div>
+      )}
 
       {/* Objective — front and centre, editable */}
       <ObjectiveCard
@@ -189,8 +214,13 @@ export default function WorkspaceClientDetail() {
         onSaved={data.reload}
       />
 
-      {/* Client brief — the 14-field intake, collapsible + editable */}
-      <BriefPanel clientId={clientId} brief={c.brief ?? {}} onSaved={data.reload} />
+      {/* Client brief — the 14-field intake + any linked extra briefs */}
+      <BriefPanel
+        clientId={clientId}
+        brief={c.brief ?? {}}
+        linkedBriefs={c.linked_briefs ?? []}
+        onSaved={data.reload}
+      />
 
       {isParked ? (
         /* Parked client (from onboarding, no pod yet): the one action that
@@ -241,6 +271,14 @@ export default function WorkspaceClientDetail() {
               ))}
             </div>
           </section>
+
+          {/* Amends — secondary tickets, not core deliverables */}
+          <AmendsSection
+            vm={vm}
+            pod={pod}
+            projects={clientProjects}
+            onChanged={data.reload}
+          />
         </>
       )}
 
@@ -382,10 +420,12 @@ const BRIEF_FIELDS: { key: keyof ClientBrief; label: string; long?: boolean }[] 
 function BriefPanel({
   clientId,
   brief,
+  linkedBriefs,
   onSaved,
 }: {
   clientId: string;
   brief: ClientBrief;
+  linkedBriefs: { id: string; label: string; url?: string; added_at: string }[];
   onSaved: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -396,6 +436,17 @@ function BriefPanel({
   useEffect(() => setDraft(brief), [brief]);
 
   const filledCount = BRIEF_FIELDS.filter((f) => (brief[f.key] ?? "").toString().trim()).length;
+
+  async function addBrief(label: string, url?: string) {
+    addLinkedBrief(clientId, { label, url });
+    await new Promise((r) => setTimeout(r, 50));
+    onSaved();
+  }
+  async function removeBrief(id: string) {
+    removeLinkedBrief(clientId, id);
+    await new Promise((r) => setTimeout(r, 50));
+    onSaved();
+  }
 
   async function save() {
     setBusy(true);
@@ -421,6 +472,7 @@ function BriefPanel({
           </span>
           <span className="text-xs text-slate-400">
             {filledCount}/{BRIEF_FIELDS.length} filled
+            {linkedBriefs.length > 0 && ` · ${linkedBriefs.length} linked`}
           </span>
         </div>
         <span className="text-slate-400">{open ? "−" : "+"}</span>
@@ -490,6 +542,54 @@ function BriefPanel({
               </button>
             </div>
           )}
+
+          {/* Linked briefs — extra onboarding forms / supplementary docs */}
+          <div className="mt-5 border-t border-slate-100 pt-4">
+            <div className="mb-2 text-[11px] font-medium uppercase tracking-wide text-slate-400">
+              Linked briefs
+            </div>
+            <div className="space-y-2">
+              {linkedBriefs.length === 0 ? (
+                <p className="text-xs text-slate-300">
+                  No extra briefs. Add one if the client redid onboarding or sent more context.
+                </p>
+              ) : (
+                linkedBriefs.map((b) => (
+                  <div
+                    key={b.id}
+                    className="flex items-center justify-between gap-2 rounded-lg border border-slate-100 px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-medium text-slate-800">{b.label}</div>
+                      {b.url && (
+                        <a
+                          href={b.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-sky-600 hover:underline"
+                        >
+                          Open
+                        </a>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => removeBrief(b.id)}
+                      className="shrink-0 text-xs text-slate-300 hover:text-rose-500"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))
+              )}
+              <InlineAdd
+                placeholder="Brief label (e.g. Re-onboarding May, Brand deck)"
+                secondaryPlaceholder="Link (optional)"
+                ctaLabel="+ Link another brief"
+                addLabel="Link brief"
+                onAdd={addBrief}
+              />
+            </div>
+          </div>
         </div>
       )}
     </Card>
@@ -1433,41 +1533,77 @@ function DeliverableRow({
   const isDesign = lane === "design";
   const isDev = lane === "development";
 
+  // "Not ready" = visible but locked. A design deliverable whose brief
+  // decision is still pending isn't workable until Attach brief / No brief
+  // needed is set in Strategy. A dev deliverable isn't workable until the
+  // paired design is client-approved. Both render greyed so the team can see
+  // what's queued without starting it.
+  const designPending = isDesign && !done && d.needsBrief === undefined;
+  const devLocked = isDev && d.state === "awaiting_approval";
+  const notReady = designPending || devLocked;
+
   return (
-    <div className={`flex items-start gap-2.5 px-3 py-2.5 ${done ? "opacity-60" : ""}`}>
+    <div
+      className={`flex items-start gap-2.5 px-3 py-2.5 ${
+        done ? "opacity-60" : notReady ? "opacity-50" : ""
+      }`}
+    >
       <div className="pt-0.5">
-        <Checkbox checked={done} onChange={onToggle} title="Toggle done" />
+        {notReady ? (
+          // Locked placeholder instead of a tickable checkbox.
+          <span
+            className="flex h-4 w-4 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-slate-300"
+            title="Not ready yet"
+          >
+            <svg viewBox="0 0 12 12" className="h-2 w-2" fill="currentColor">
+              <rect x="3" y="5" width="6" height="5" rx="1" />
+              <path d="M4 5V4a2 2 0 0 1 4 0v1" fill="none" stroke="currentColor" strokeWidth="1" />
+            </svg>
+          </span>
+        ) : (
+          <Checkbox checked={done} onChange={onToggle} title="Toggle done" />
+        )}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
           <span
             className={`text-sm ${
-              done ? "text-slate-500 line-through" : "font-medium text-slate-800"
+              done
+                ? "text-slate-500 line-through"
+                : notReady
+                  ? "font-medium text-slate-400"
+                  : "font-medium text-slate-800"
             }`}
           >
             {d.title}
           </span>
-          {!done && <DeadlinePill state={d.state} daysToDue={d.daysToDue} />}
+          {!done && !notReady && <DeadlinePill state={d.state} daysToDue={d.daysToDue} />}
+          {designPending && <Pill tone="neutral">Awaiting brief</Pill>}
+          {devLocked && <Pill tone="neutral">Not started</Pill>}
         </div>
 
         <div className="mt-1.5 flex items-center justify-between">
           <OwnerChip name={d.ownerName} avatarUrl={d.ownerAvatar} size="xs" />
           <span className="text-[11px] text-slate-400">
-            {d.state === "awaiting_approval"
-              ? "dev starts on approval"
-              : d.waitingOn
-                ? `waiting · ${d.waitingOn}`
-                : formatDue(d.dueDate)}
+            {designPending
+              ? "ready once brief is set"
+              : devLocked
+                ? "starts on client approval"
+                : d.waitingOn
+                  ? `waiting · ${d.waitingOn}`
+                  : formatDue(d.dueDate)}
           </span>
         </div>
 
-        {/* Brief flag on design tasks that still need one */}
-        {isDesign && !done && d.needsBrief && (
+        {/* Brief flag on design tasks that need one but it's not attached */}
+        {isDesign && !done && d.needsBrief === true && (
           <div className="mt-1 text-[11px] font-medium text-amber-600">Needs brief</div>
         )}
 
-        {/* Client-approval control on design tasks */}
-        {isDesign && (
+        {/* Client-approval control — only once the design is actually ready
+            (brief decided). No point approving a deliverable still awaiting
+            its brief decision. */}
+        {isDesign && !designPending && (
           <div className="mt-2">
             {d.designApprovedAt ? (
               <div className="flex items-center gap-2 text-[11px] text-emerald-600">
@@ -1489,15 +1625,218 @@ function DeliverableRow({
             )}
           </div>
         )}
-
-        {/* Dev task awaiting-approval hint */}
-        {isDev && d.state === "awaiting_approval" && (
-          <div className="mt-1 text-[11px] text-sky-600">
-            Clock starts when the paired design is approved
-          </div>
-        )}
       </div>
     </div>
+  );
+}
+
+// ─── Pause control ──────────────────────────────────────────────────
+
+function PauseControl({
+  clientId,
+  paused,
+  pausedAt,
+  onChanged,
+}: {
+  clientId: string;
+  paused: boolean;
+  pausedAt?: string;
+  onChanged: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+
+  const pausedDays = pausedAt
+    ? Math.max(0, Math.round((Date.now() - new Date(pausedAt).getTime()) / 86_400_000))
+    : 0;
+
+  async function toggle() {
+    setBusy(true);
+    try {
+      if (paused) resumeClient(clientId);
+      else pauseClient(clientId);
+      await new Promise((r) => setTimeout(r, 60));
+      onChanged();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <button
+      onClick={toggle}
+      disabled={busy}
+      title={
+        paused
+          ? "Resume — shifts open deadlines forward by the days paused"
+          : "Pause while waiting on the client — freezes deadlines"
+      }
+      className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 ${
+        paused
+          ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+          : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+      }`}
+    >
+      {paused
+        ? `Resume${pausedDays > 0 ? ` (+${pausedDays}d)` : ""}`
+        : "Pause (waiting on client)"}
+    </button>
+  );
+}
+
+// ─── Amends (secondary tickets) ─────────────────────────────────────
+
+function AmendsSection({
+  vm,
+  pod,
+  projects,
+  onChanged,
+}: {
+  vm: ClientVM;
+  pod: Pod | null;
+  projects: Project[];
+  onChanged: () => void;
+}) {
+  const [adding, setAdding] = useState(false);
+  const [title, setTitle] = useState("");
+  const [assignee, setAssignee] = useState("");
+  const [deliverable, setDeliverable] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  // Amends = non-core tickets on this client's project.
+  const amends = vm.deliverables.filter((d) => !d.isCore);
+
+  // Page options to optionally tie an amend to a deliverable.
+  const pageOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const d of vm.deliverables) {
+      if (d.isCore) set.add(d.title.replace(/^(Design|Build) - /, ""));
+    }
+    return Array.from(set);
+  }, [vm.deliverables]);
+
+  const members = pod?.members.filter((m) => !m.is_placeholder) ?? [];
+
+  async function add() {
+    const project = projects[0];
+    if (!project || !title.trim()) return;
+    setBusy(true);
+    try {
+      const label = deliverable ? `${title.trim()} · ${deliverable}` : title.trim();
+      addTask({
+        project_id: project.id,
+        title: label,
+        type: "revision",
+        assigned_to: assignee || members[0]?.id || "",
+      });
+      await new Promise((r) => setTimeout(r, 60));
+      setAdding(false);
+      setTitle("");
+      setAssignee("");
+      setDeliverable("");
+      onChanged();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function toggle(id: string, currentlyDone: boolean) {
+    updateTaskStatus(id, currentlyDone ? "todo" : "done");
+    await new Promise((r) => setTimeout(r, 50));
+    onChanged();
+  }
+
+  return (
+    <section>
+      <SectionTitle
+        action={
+          <button
+            onClick={() => setAdding((a) => !a)}
+            className="text-xs font-medium text-slate-500 hover:text-slate-800"
+          >
+            + Add amend
+          </button>
+        }
+      >
+        Amends &amp; tickets
+      </SectionTitle>
+      <Card className="divide-y divide-slate-100">
+        {amends.length === 0 && !adding && (
+          <div className="px-5 py-6 text-center text-sm text-slate-400">
+            No amends. Add revision tickets for the secondaries here.
+          </div>
+        )}
+
+        {amends.map((a) => {
+          const done = a.status === "done";
+          return (
+            <div key={a.id} className={`flex items-center gap-3 px-5 py-3 ${done ? "opacity-55" : ""}`}>
+              <Checkbox checked={done} onChange={() => toggle(a.id, done)} title="Toggle done" />
+              <span
+                className={`flex-1 text-sm ${
+                  done ? "text-slate-500 line-through" : "font-medium text-slate-800"
+                }`}
+              >
+                {a.title}
+              </span>
+              <OwnerChip name={a.ownerName} avatarUrl={a.ownerAvatar} size="xs" />
+            </div>
+          );
+        })}
+
+        {adding && (
+          <div className="space-y-2 px-5 py-4">
+            <input
+              autoFocus
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Amend (e.g. PDP hero spacing, fix mobile CTA)"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                value={assignee}
+                onChange={(e) => setAssignee(e.target.value)}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+              >
+                <option value="">Assign to…</option>
+                {members.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={deliverable}
+                onChange={(e) => setDeliverable(e.target.value)}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+              >
+                <option value="">No specific page</option>
+                {pageOptions.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                disabled={busy || !title.trim()}
+                onClick={add}
+                className="rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+              >
+                {busy ? "Adding..." : "Add amend"}
+              </button>
+              <button
+                onClick={() => setAdding(false)}
+                className="text-xs text-slate-400 hover:text-slate-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </Card>
+    </section>
   );
 }
 

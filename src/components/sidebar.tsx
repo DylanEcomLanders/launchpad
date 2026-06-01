@@ -67,8 +67,11 @@ const navSections: NavSection[] = [
     defaultOpen: true,
     group: "lifecycle",
     items: [
-      { label: "Portfolio", href: "/sales-engine/portfolio" },
-      { label: "Case Studies", href: "/sales-engine/case-studies" },
+      // Point at the dashboard/public versions, NOT the /sales-engine shell
+      // (Sales Engine is a non-accessible surface).
+      { label: "Portfolio", href: "/tools/portfolio" },
+      { label: "Case Studies", href: "/case-studies" },
+      { label: "Quotes", href: "/tools/quotes" },
     ],
   },
   {
@@ -100,7 +103,7 @@ const navSections: NavSection[] = [
       { label: "Money (founder)", href: "/finance" },
       { label: "Price List", href: "/internal/pricing" },
       { label: "Price Calculator", href: "/tools/price-calculator" },
-      { label: "Revenue", href: "/sales-engine/revenue" },
+      { label: "Revenue", href: "/tools/revenue" },
       { label: "Turnaround Times", href: "/internal/turnarounds" },
       { label: "Payment Link", href: "/tools/payment-link" },
       { label: "Dev Hours Log", href: "/tools/dev-hours" },

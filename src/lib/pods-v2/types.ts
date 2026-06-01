@@ -176,6 +176,22 @@ export interface Client {
    * "Blocked — missing resource". Keyed by asset-category id; absent/false
    * = missing. This turns the passive resource checklist into hard gates. */
   resources?: Record<string, boolean>;
+
+  /** Client-level pause. When we're waiting on the client (slow revisions,
+   * sitting on approvals), pausing stops the whole engagement reading as
+   * overdue/at-risk — it's not us behind, it's them. `paused_at` is the ISO
+   * timestamp the current pause began (unset = not paused). `paused_total_ms`
+   * banks elapsed pause time across cycles so that on RESUME we shift every
+   * open deliverable's due date forward by the days lost, keeping deadlines
+   * honest rather than dumping a wall of "overdue" the moment work restarts. */
+  paused_at?: string;
+  paused_total_ms?: number;
+
+  /** Additional briefs linked to the client beyond the core structured
+   * `brief`. Clients sometimes redo the onboarding form or send extra
+   * context; each entry is a label + URL the pod can open. The core brief
+   * stays the structured 14-field record; these are supplementary. */
+  linked_briefs?: { id: string; label: string; url?: string; added_at: string }[];
 }
 
 export interface ClientNote {
