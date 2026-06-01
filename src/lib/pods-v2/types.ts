@@ -369,6 +369,31 @@ export interface Task {
   /** Other half of a design+dev deliverable pair, design task points to
    * its dev counterpart, and vice versa. */
   paired_task_id?: string;
+  /** Weight of the deliverable (heavy/medium/light). Carried on the task so
+   * the dev turnaround + heavy-first scheduling can be computed without
+   * re-deriving from the project page mix. Set when a deliverable is added
+   * via the strategy area. */
+  weight?: PageWeight;
+  /** Approval-gated dev clock. A dev (Build) task's deadline doesn't start
+   * ticking until the client approves the paired design. While this is
+   * unset on a dev task, the task reads "Awaiting approval" and is excluded
+   * from overdue / at-risk / week-strip counts (its due_date is a
+   * placeholder until the clock starts). Set by the manual "Client approved"
+   * button on the design half, which stamps the approval date and rewrites
+   * the dev half's due_date to approval + bucket turnaround. */
+  design_approved_at?: string; // YYYY-MM-DD the client approved the design
+  /** True on a Build task whose deadline is gated on design approval. When
+   * true and `design_approved_at` is unset, the task is "awaiting approval".
+   * Set on dev tasks spawned from the strategy area. */
+  approval_gated?: boolean;
+  /** Strategy brief decision for this deliverable. Two-role flow:
+   *   - Alister adds the deliverable; this is left `undefined` = decision
+   *     pending (Aanchal hasn't ruled yet).
+   *   - Aanchal then either "Attach brief" => true (a brief resource is
+   *     linked) or "No brief needed" => false.
+   * Surfaces as: pending = "Brief?" prompt with two buttons; true+no link =
+   * amber "Needs brief"; true+link = "Brief attached"; false = "No brief". */
+  needs_brief?: boolean;
   /** Conversion Engine cycle position. Engagements run as 3 monthly
    * cycles of W1 strategy → W2 design → W3 build → W4 test/prep. Tasks
    * created outside that flow leave this undefined. */
@@ -610,6 +635,9 @@ export interface PodTest {
   sample_target_pct: number;
   /** Lift vs control in %, set once called. Negative = control won. */
   lift_pct?: number;
+  /** Link to the test itself, the experiment setup or its results
+   * (Intelligems / Visually / a results doc). Clickable from the test row. */
+  link?: string;
   created_at: string;
   updated_at: string;
 }

@@ -236,6 +236,51 @@ export function weekWindow(fromYMD: string): { start: string; end: string } {
   return { start, end: formatYMD(d) };
 }
 
+/** Add `n` working days (Mon-Fri) to a YMD date, returning a YMD string.
+ *  Weekends are skipped; n=0 returns the same date (snapped forward off a
+ *  weekend). Used by the approval-gated dev clock. */
+export function addWorkingDays(fromYMD: string, n: number): string {
+  const d = parseDate(fromYMD);
+  // If we start on a weekend, roll forward to Monday first.
+  while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);
+  let added = 0;
+  while (added < n) {
+    d.setDate(d.getDate() + 1);
+    if (d.getDay() !== 0 && d.getDay() !== 6) added++;
+  }
+  return formatYMD(d);
+}
+
+/** Working-day dev turnaround per bucket: A=4, B=6, C=8. Bespoke defaults
+ *  to C's 8 (the longest standard build) unless overridden. The dev clock
+ *  runs from client design-approval, not project kickoff. */
+export const DEV_TURNAROUND_DAYS: Record<Bucket, number> = {
+  A: 4,
+  B: 6,
+  C: 8,
+  Bespoke: 8,
+};
+
+/** Dev deadline for an approved design: approval date + bucket working days.
+ *  `heavyFastTrack` forces the ~4-day target used for the first 1-2 heavy
+ *  deliverables of a build, so clients see early value even on big projects. */
+export function devDueFromApproval(
+  approvalYMD: string,
+  bucket: Bucket,
+  heavyFastTrack = false,
+): string {
+  const days = heavyFastTrack ? Math.min(4, DEV_TURNAROUND_DAYS[bucket]) : DEV_TURNAROUND_DAYS[bucket];
+  return addWorkingDays(approvalYMD, days);
+}
+
+/** Inclusive [start, end] YMD window for the Mon-Sun week AFTER the week
+ *  containing `fromYMD`. Powers the "next week" capacity stat. */
+export function nextWeekWindow(fromYMD: string): { start: string; end: string } {
+  const d = parseDate(fromYMD);
+  d.setDate(d.getDate() + 7);
+  return weekWindow(formatYMD(d));
+}
+
 /** True if a project is shipping in the same week as `referenceYMD`. */
 export function shipsThisWeek(project: Project, referenceYMD: string): boolean {
   const week = weekDays(referenceYMD);

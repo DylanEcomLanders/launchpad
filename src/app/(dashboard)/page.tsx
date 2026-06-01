@@ -41,7 +41,7 @@ const toolkitStages: ToolkitStage[] = [
     number: "01",
     name: "Pitch",
     descriptor: "Sales & prospect-facing assets",
-    badgeBg: "#DBEAFE",
+    badgeBg: "#EFF6FF",
     badgeText: "#1D4ED8",
     tiles: [
       { title: "Portfolio", subtitle: "Live page library", href: "/portfolio", icon: PhotoIcon },
@@ -55,7 +55,7 @@ const toolkitStages: ToolkitStage[] = [
     number: "02",
     name: "Onboard",
     descriptor: "From signed to kicked off",
-    badgeBg: "#D1FAE5",
+    badgeBg: "#ECFDF5",
     badgeText: "#047857",
     tiles: [
       { title: "Onboarding form", subtitle: "Client intake", href: "/onboard", icon: ClipboardDocumentCheckIcon },
@@ -66,7 +66,7 @@ const toolkitStages: ToolkitStage[] = [
     number: "03",
     name: "Deliver",
     descriptor: "Live engagement",
-    badgeBg: "#EDE9FE",
+    badgeBg: "#F5F3FF",
     badgeText: "#6D28D9",
     tiles: [
       { title: "Feedback form", subtitle: "In-flight check-ins", href: "/tools/feedback", icon: ChatBubbleOvalLeftIcon },
@@ -98,47 +98,42 @@ export default function MissionControl() {
   });
 
   return (
-    <div className="px-6 py-8 max-w-[1200px] mx-auto">
-      {/* ── Header ──────────────────────────── */}
-      <header className="mb-8">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+    <div className="mx-auto max-w-[1240px] px-6 pb-20 pt-8">
+      {/* ── Header ── matches Workspace Overview ── */}
+      <div className="mb-8">
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
           {dateStr}
         </p>
-        <h1 className="mt-1 text-[28px] font-semibold tracking-tight text-[#1B1B1B]">
+        <h1 className="mt-1 font-heading text-2xl font-semibold tracking-tight text-slate-900">
           Mission Control
         </h1>
-      </header>
+        <p className="mt-1 text-sm text-slate-500">
+          Everything you need, organised by client stage.
+        </p>
+      </div>
 
-      {/* ── Toolkit ──────────────────────────── */}
-      <div className="mb-10">
-        <div className="flex items-baseline justify-between gap-3 mb-1 flex-wrap">
-          <div>
-            <h2 className="text-base font-semibold tracking-tight text-[#1B1B1B]">
-              Toolkit
-            </h2>
-            <p className="text-[12px] text-[#7A7A7A] mt-0.5">
-              Everything you need, organised by client stage
-            </p>
-          </div>
-          <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-[#A0A0A0] pointer-events-none" />
-            <input
-              type="text"
-              value={toolkitQuery}
-              onChange={(e) => setToolkitQuery(e.target.value)}
-              placeholder="Search tools..."
-              className="pl-8 pr-3 py-1.5 text-[12px] bg-white border border-[#E5E5EA] rounded-md focus:outline-none focus:border-[#1B1B1B] w-[220px]"
-            />
-          </div>
-        </div>
-
-        <div className="mt-5 space-y-6">
-          {filteredStages.map((stage) => (
-            <ToolkitStageBlock key={stage.name} stage={stage} />
-          ))}
+      {/* ── Toolkit ── */}
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-slate-500">
+          Toolkit
+        </h2>
+        <div className="relative">
+          <MagnifyingGlassIcon className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={toolkitQuery}
+            onChange={(e) => setToolkitQuery(e.target.value)}
+            placeholder="Search tools..."
+            className="w-[220px] rounded-lg border border-slate-200 bg-white py-1.5 pl-8 pr-3 text-sm outline-none focus:border-slate-400"
+          />
         </div>
       </div>
 
+      <div className="space-y-7">
+        {filteredStages.map((stage) => (
+          <ToolkitStageBlock key={stage.name} stage={stage} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -146,29 +141,27 @@ export default function MissionControl() {
 function ToolkitStageBlock({ stage }: { stage: ToolkitStage }) {
   return (
     <div>
-      {/* Stage header — pill badge + descriptor */}
-      <div className="flex items-baseline gap-3 mb-3">
+      {/* Stage header — soft pill badge + descriptor */}
+      <div className="mb-3 flex items-baseline gap-3">
         <span
-          className="inline-flex items-center px-2 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider"
+          className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
           style={{ background: stage.badgeBg, color: stage.badgeText }}
         >
           {stage.number} · {stage.name}
         </span>
-        <span className="text-[12px] text-[#7A7A7A]">{stage.descriptor}</span>
+        <span className="text-xs text-slate-400">{stage.descriptor}</span>
       </div>
 
       {/* Tile grid — auto-fit min 180px so it reflows naturally */}
       <div
-        className="grid gap-2.5"
+        className="grid gap-3"
         style={{ gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}
       >
         {stage.tiles.map((tile) => (
           <ToolkitTileLink key={tile.title} tile={tile} />
         ))}
         {stage.tiles.length === 0 && (
-          <p className="text-[11px] text-[#BBB] py-3">
-            No matching tools.
-          </p>
+          <p className="py-3 text-xs text-slate-300">No matching tools.</p>
         )}
       </div>
     </div>
@@ -179,13 +172,13 @@ function ToolkitTileLink({ tile }: { tile: ToolkitTile }) {
   return (
     <Link
       href={tile.href}
-      className="bg-white border-[0.5px] border-[#E5E5EA] rounded-xl p-[14px] hover:border-[#1B1B1B] transition-colors flex flex-col"
+      className="flex flex-col rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-shadow hover:shadow-md"
     >
-      <tile.icon className="size-4 text-[#7A7A7A] mb-2" />
-      <p className="text-[14px] font-medium text-[#1B1B1B] leading-snug">
+      <tile.icon className="mb-2 size-4 text-slate-400" />
+      <p className="font-heading text-sm font-medium leading-snug text-slate-900">
         {tile.title}
       </p>
-      <p className="text-[12px] text-[#7A7A7A] mt-0.5 leading-snug">
+      <p className="mt-0.5 text-xs leading-snug text-slate-500">
         {tile.subtitle}
       </p>
     </Link>

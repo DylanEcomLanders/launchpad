@@ -608,7 +608,7 @@ export default function OnboardingInboxPage() {
                                 assigned_at: new Date().toISOString(),
                                 assigned_by: "pm",
                               });
-                              router.push(`/engagements/${result.clientId}`);
+                              router.push(`/workspace/clients/${result.clientId}`);
                             } catch (err) {
                               console.error("Failed to spawn engagement:", err);
                             }
@@ -858,10 +858,10 @@ function ApprovedLinkRow({ submissionId }: { submissionId: string }) {
   return (
     <div className="mb-2">
       <Link
-        href={`/engagements/${clientId}`}
+        href={`/workspace/clients/${clientId}`}
         className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 hover:underline"
       >
-        Open client engagement <ArrowTopRightOnSquareIcon className="size-3" />
+        Open client in Workspace <ArrowTopRightOnSquareIcon className="size-3" />
       </Link>
     </div>
   );

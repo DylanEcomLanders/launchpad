@@ -128,87 +128,114 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
   };
 
   return (
-    <div className="px-6 py-6 max-w-[1400px] mx-auto">
-      {/* Header */}
-      <header className="mb-8 border-b border-[#F0F0F0] pb-4">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#BBB]">
-          Internal · Sales Hub
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight text-[#1B1B1B] mt-1">
-          Conversion Engine
-        </h1>
-        <p className="text-sm text-[#666] mt-1">
-          The{" "}
-          <span className={`font-semibold ${isPreviewing ? "text-white bg-[#00C853] px-1 rounded" : "text-[#1B1B1B]"}`}>
-            {activeTier.price}
-          </span>{" "}
-          post-click partnership — everything you need to sell, handle objections, and close.
-        </p>
-      </header>
+    <div className="max-w-[1400px] mx-auto">
+      {/* ── Dark hero: above-the-fold pricing focus ── */}
+      <section className="relative overflow-hidden rounded-b-2xl bg-[#0B0B0D] px-6 pb-10 pt-8 md:px-10">
+        {/* Soft radial glow backdrop */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-32 -top-40 h-[480px] w-[480px] rounded-full opacity-60 blur-3xl"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(99,102,241,0.18) 0%, rgba(99,102,241,0.05) 40%, transparent 70%)",
+          }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-[0.4]"
+          style={{
+            background:
+              "radial-gradient(120% 80% at 50% -10%, rgba(255,255,255,0.06) 0%, transparent 55%)",
+          }}
+        />
 
-      {/* Pricing block */}
-      <section className="mb-6">
-        <h2 className="text-[10px] font-semibold uppercase tracking-wider text-[#999] mb-3">
-          § Pricing — always quote both
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {/* Buy-in card */}
-          <div
-            className={`rounded-lg border bg-[#1B1B1B] text-white p-5 transition-all ${
-              isPreviewing ? "border-[#00C853] ring-2 ring-[#00C853]/30" : "border-[#1B1B1B]"
-            }`}
-          >
-            <div className="flex items-baseline justify-between mb-3">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-white/50">
-                The buy-in
+        <div className="relative">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">
+            Internal · Sales Hub
+          </p>
+          <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight text-white md:text-4xl">
+            Conversion Engine
+          </h1>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-white/55">
+            The post-click partnership. Always quote both: lead with the buy-in,
+            let the premium anchor it.
+          </p>
+
+          {/* Two pricing cards: Regular (buy-in, highlighted) + Pro (anchor) */}
+          <div className="mt-7 grid grid-cols-1 gap-4 md:max-w-3xl md:grid-cols-2">
+            {/* Regular — the buy-in, highlighted as the recommended pick */}
+            <div
+              className={`group relative overflow-hidden rounded-2xl p-[1px] transition-all ${
+                isPreviewing
+                  ? "bg-gradient-to-b from-[#34D399]/70 to-[#34D399]/10"
+                  : "bg-gradient-to-b from-indigo-400/60 via-indigo-500/20 to-transparent"
+              }`}
+            >
+              <div className="relative rounded-2xl bg-[#141417] p-5">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-white/80">
+                    Regular
+                  </span>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${
+                      isPreviewing
+                        ? "bg-[#34D399] text-[#0B0B0D]"
+                        : "bg-indigo-500/90 text-white"
+                    }`}
+                  >
+                    {isPreviewing ? "Previewing" : "Lead with this"}
+                  </span>
+                </div>
+                <p className="font-heading text-4xl font-semibold tracking-tight text-white">
+                  {activeTier.price}
+                  <span className="ml-1.5 text-sm font-normal text-white/40">/mo</span>
+                </p>
+                <p className="mt-3 text-[12px] leading-relaxed text-white/60">
+                  The full Conversion Engine in its standard shape. Roadmap, monthly
+                  builds, A/B test programme, monthly report, dedicated Slack.
+                </p>
+                <p className="mt-3 text-[11px] italic text-white/35">
+                  &ldquo;Your full conversion team for less than one senior hire.&rdquo;
+                </p>
+              </div>
+            </div>
+
+            {/* Pro — the anchor, quieter dark card */}
+            <div
+              className={`relative overflow-hidden rounded-2xl border bg-[#141417]/60 p-5 transition-all ${
+                isPreviewing ? "border-[#34D399]/40" : "border-white/10"
+              }`}
+            >
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-white/55">
+                  Pro
+                </span>
+                <span className="rounded-full border border-white/15 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white/45">
+                  {isPreviewing ? "Previewing" : "Quote alongside"}
+                </span>
+              </div>
+              <p className="font-heading text-4xl font-semibold tracking-tight text-white/90">
+                {activeTier.anchor}
+                <span className="ml-1.5 text-sm font-normal text-white/35">/mo</span>
               </p>
-              <p className="text-[10px] font-medium text-white/60">
-                {isPreviewing ? "Previewing" : "Lead with this"}
+              <p className="mt-3 text-[12px] leading-relaxed text-white/50">
+                Same system, more of it. 48h design / 5d build, dedicated strategist,
+                ad-to-page alignment, quarterly reviews.
+              </p>
+              <p className="mt-3 text-[11px] italic text-white/30">
+                &ldquo;For brands scaling past 8 figures who need speed and depth.&rdquo;
               </p>
             </div>
-            <p className="text-3xl font-semibold tracking-tight">
-              {activeTier.price}
-              <span className="text-sm font-normal text-white/60 ml-1">/mo</span>
-            </p>
-            <p className="text-[12px] leading-snug text-white/70 mt-2">
-              The full Conversion Engine in its standard shape. Roadmap, monthly builds,
-              A/B test programme, monthly report, dedicated Slack.
-            </p>
-            <p className="text-[11px] text-white/50 mt-3 italic">
-              &ldquo;Your full conversion team for less than one senior hire.&rdquo;
-            </p>
           </div>
-          {/* Anchor */}
-          <div
-            className={`rounded-lg border bg-[#FAFAFA] p-5 transition-all ${
-              isPreviewing ? "border-[#00C853] ring-2 ring-[#00C853]/30" : "border-[#E5E5EA]"
-            }`}
-          >
-            <div className="flex items-baseline justify-between mb-3">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
-                The anchor
-              </p>
-              <p className="text-[10px] font-medium text-[#999]">
-                {isPreviewing ? "Previewing" : "Quote alongside"}
-              </p>
-            </div>
-            <p className="text-3xl font-semibold tracking-tight text-[#1B1B1B]">
-              {activeTier.anchor}<span className="text-sm font-normal text-[#999] ml-1">/mo</span>
-            </p>
-            <p className="text-[12px] leading-snug text-[#666] mt-2">
-              Same system, more of it. 48h design / 5d build, dedicated strategist, ad-to-page
-              alignment, quarterly reviews.
-            </p>
-            <p className="text-[11px] text-[#999] mt-3 italic">
-              &ldquo;For brands scaling past 8 figures who need speed and depth.&rdquo;
-            </p>
-          </div>
+
+          <p className="mt-3 text-[11px] text-white/35">
+            No tiers, no T1/T2. The Pro anchor ({activeTier.anchor}) exists so the
+            buy-in feels like the deal, never quote it alone.
+          </p>
         </div>
-        <p className="text-[11px] text-[#999] mt-2">
-          No tiers. No T1/T2. The anchor ({activeTier.anchor}) exists so the buy-in feels like
-          the deal, never quote it alone. Bigger scopes price upward naturally.
-        </p>
       </section>
+
+      <div className="px-6 py-6 md:px-10">
 
       {/* Preview action bar */}
       {isPreviewing && hydrated && (
@@ -350,6 +377,7 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
           ))}
         </Grid>
       </Section>
+      </div>
     </div>
   );
 }

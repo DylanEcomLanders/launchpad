@@ -9,7 +9,9 @@ import {
   Client,
   PAGE_DEFAULT_WEIGHT,
   PAGE_LABEL,
+  PAGE_WEIGHT_POINTS,
   PageType,
+  PageWeight,
   Pod,
   PodMember,
   PodMemberRole,
@@ -29,6 +31,7 @@ import {
   adjustedPoints,
   bucketFromPoints,
   deliveryThursdayFor,
+  devDueFromApproval,
   effectivePagePoints,
   kickoffMondayFor,
 } from "./calc";
@@ -1312,10 +1315,249 @@ export function addPairedDeliverable(input: {
   return { design, dev };
 }
 
+/* ── Strategy-driven deliverables + approval-gated dev clock ───────── */
+
+/** Add a deliverable from the strategy area. Spawns a paired Design + Build
+ * task. The DEV half is approval-gated: its due date is a placeholder until
+ * the client approves the design (see approveDesign), so it doesn't go
+ * "overdue" before work can even start. The DESIGN half is due on the
+ * project's normal design date.
+ *
+ * `heavy_fast_track` marks one of the first 1-2 heavy deliverables that
+ * should target ~4 days post-approval regardless of bucket, so clients see
+ * early value on big builds. `needs_brief` records whether a strategy brief
+ * must be attached before design starts. */
+export function addStrategyDeliverable(input: {
+  project_id: string;
+  deliverable_type: PageType;
+  weight: PageWeight;
+  designer_id: string;
+  dev_id: string;
+  /** Brief decision. Omit (undefined) for the two-role flow where Alister
+   * adds the deliverable and Aanchal rules on the brief afterwards. */
+  needs_brief?: boolean;
+  heavy_fast_track?: boolean;
+}): { design: Task; dev: Task } {
+  const project = getProjects().find((p) => p.id === input.project_id);
+  const label = PAGE_LABEL[input.deliverable_type];
+  const designId = uid();
+  const devId = uid();
+  const now = new Date().toISOString();
+  const today = now.slice(0, 10);
+
+  const all = getTasks();
+  const sameTypeExists = all.some(
+    (t) =>
+      t.project_id === input.project_id &&
+      t.deliverable_type === input.deliverable_type &&
+      t.discipline === "design",
+  );
+  const basePoints = PAGE_WEIGHT_POINTS[input.weight];
+  const effectivePoints = sameTypeExists ? basePoints * 0.5 : basePoints;
+
+  const design: Task = {
+    id: designId,
+    project_id: input.project_id,
+    title: `Design - ${label}`,
+    type: "core_deliverable",
+    discipline: "design",
+    assigned_to: input.designer_id,
+    status: "todo",
+    due_date: project ? taskDueDateFor(project, "design") : today,
+    created_at: now,
+    phase: "design",
+    phase_history: [{ phase: "design", enteredAt: now }],
+    deliverable_type: input.deliverable_type,
+    weight: input.weight,
+    points: effectivePoints,
+    paired_task_id: devId,
+    needs_brief: input.needs_brief,
+  };
+  const dev: Task = {
+    id: devId,
+    project_id: input.project_id,
+    title: `Build - ${label}`,
+    type: "core_deliverable",
+    discipline: "development",
+    assigned_to: input.dev_id,
+    status: "todo",
+    // Placeholder until approval starts the clock; approval_gated hides it
+    // from overdue/at-risk until design_approved_at is set.
+    due_date: project ? project.delivery_date : today,
+    created_at: now,
+    phase: "development",
+    phase_history: [{ phase: "development", enteredAt: now }],
+    deliverable_type: input.deliverable_type,
+    weight: input.weight,
+    points: effectivePoints,
+    paired_task_id: designId,
+    approval_gated: true,
+    needs_brief: input.needs_brief,
+  };
+  write(LS_TASKS, [...all, design, dev]);
+  return { design, dev };
+}
+
+/** Aanchal's brief ruling on a deliverable (the two-role flow). Pass the
+ * design task id (or its paired dev id — we resolve the pair) and the
+ * decision: true = needs a brief, false = no brief needed. Applies to both
+ * halves so the dev side stays in sync. */
+export function setDeliverableBriefDecision(taskId: string, needsBrief: boolean): void {
+  const all = getTasks();
+  const task = all.find((t) => t.id === taskId);
+  if (!task) return;
+  const pairIds = new Set([task.id, task.paired_task_id].filter(Boolean) as string[]);
+  write(
+    LS_TASKS,
+    all.map((t) => (pairIds.has(t.id) ? { ...t, needs_brief: needsBrief } : t)),
+  );
+}
+
+/** Mark a design as client-approved. Stamps the approval date on the design
+ * task and starts its paired dev task's clock: dev due = approval + bucket
+ * working days (A=4, B=6, C=8), or the ~4-day fast-track for flagged heavy
+ * deliverables. Pass approvalYMD to backdate; defaults to today. Idempotent-
+ * ish: re-approving just re-stamps and recomputes the dev due. */
+export function approveDesign(designTaskId: string, approvalYMD?: string): void {
+  const all = getTasks();
+  const design = all.find((t) => t.id === designTaskId);
+  if (!design) return;
+  const ymd = approvalYMD ?? new Date().toISOString().slice(0, 10);
+  const project = getProjects().find((p) => p.id === design.project_id);
+  const bucket = project?.bucket ?? "B";
+
+  // Heavy fast-track: the first 1-2 heavy deliverables in the project target
+  // ~4 days so clients see early value on big builds.
+  let heavyFast = false;
+  if (design.weight === "heavy") {
+    const heavyDesignsInProject = all
+      .filter(
+        (t) =>
+          t.project_id === design.project_id &&
+          t.discipline === "design" &&
+          t.weight === "heavy",
+      )
+      .sort((a, b) => a.created_at.localeCompare(b.created_at));
+    const rank = heavyDesignsInProject.findIndex((t) => t.id === design.id);
+    heavyFast = rank > -1 && rank < 2;
+  }
+
+  const devDue = devDueFromApproval(ymd, bucket as Bucket, heavyFast);
+
+  write(
+    LS_TASKS,
+    all.map((t) => {
+      if (t.id === designTaskId) {
+        return { ...t, design_approved_at: ymd };
+      }
+      if (t.id === design.paired_task_id) {
+        return { ...t, design_approved_at: ymd, due_date: devDue };
+      }
+      return t;
+    }),
+  );
+}
+
+/** Clear a design approval (undo). Reverts the dev half to "awaiting
+ * approval" with a placeholder due date. */
+export function unapproveDesign(designTaskId: string): void {
+  const all = getTasks();
+  const design = all.find((t) => t.id === designTaskId);
+  if (!design) return;
+  const project = getProjects().find((p) => p.id === design.project_id);
+  const placeholder = project?.delivery_date ?? new Date().toISOString().slice(0, 10);
+  write(
+    LS_TASKS,
+    all.map((t) => {
+      if (t.id === designTaskId) {
+        const { design_approved_at: _omit, ...rest } = t;
+        return rest as Task;
+      }
+      if (t.id === design.paired_task_id) {
+        const { design_approved_at: _omit, ...rest } = t;
+        return { ...(rest as Task), due_date: placeholder };
+      }
+      return t;
+    }),
+  );
+}
+
 /* Move a client to a different pod. Their projects move with them, and
  * any open (non-done) tasks get re-assigned to the destination pod's
  * primary designer/dev (matching discipline). Done tasks stay attached
  * to the original assignee for audit history. */
+/** Assign a parked (pod-less) client to a pod and create an empty project so
+ * the Workspace strategy deliverable-adder is immediately usable. This is the
+ * Workspace equivalent of the /pods-v2 AssignToPodModal, minus the up-front
+ * page scoping (deliverables are added afterwards via the strategy area).
+ *
+ * Sets engagement_kind so retainer/sprint reads correctly, and seeds an empty
+ * project (no pages → no auto-seeded tasks). The project's bucket starts at
+ * "A" and is recomputed as deliverables are added (see recomputeProjectBucket),
+ * which keeps the approval-gated dev turnaround (A=4/B=6/C=8) meaningful.
+ * Returns the new project id. No-op-safe if the client already has a pod. */
+export function assignParkedClientToPod(input: {
+  clientId: string;
+  podId: string;
+  engagementKind: EngagementKind;
+  projectName?: string;
+}): { projectId: string } | null {
+  const clients = getClients();
+  const client = clients.find((c) => c.id === input.clientId);
+  if (!client) return null;
+  const pod = getPodById(input.podId);
+  if (!pod) return null;
+
+  write(
+    LS_CLIENTS,
+    clients.map((c) =>
+      c.id === input.clientId
+        ? { ...c, pod_id: input.podId, engagement_kind: input.engagementKind }
+        : c,
+    ),
+  );
+
+  const project = createProject({
+    name: input.projectName?.trim() || `${client.name} engagement`,
+    client_id: input.clientId,
+    pod_id: input.podId,
+    pages: [],
+    signoff_date: client.kickoff_date ?? new Date().toISOString().slice(0, 10),
+    is_rush: false,
+    brand_warm: client.brand_warm,
+    onboarding_id: client.onboarding_submission_id,
+  });
+
+  return { projectId: project.id };
+}
+
+/** Recompute a project's bucket from the distinct deliverable weights its
+ * design tasks currently carry, so the approval-gated dev turnaround stays
+ * accurate as deliverables are added one-by-one in the strategy area. Uses
+ * the same points→bucket rule as intake. Called after addStrategyDeliverable. */
+export function recomputeProjectBucket(projectId: string): void {
+  const projects = getProjects();
+  const project = projects.find((p) => p.id === projectId);
+  if (!project) return;
+  const designs = getTasks().filter(
+    (t) => t.project_id === projectId && t.discipline === "design" && t.weight,
+  );
+  // Build a synthetic page list from the design deliverables' weights, so the
+  // same-type discount + brand-warm rules apply consistently with intake.
+  const pages: ProjectPage[] = designs.map((t) => ({
+    type: (t.deliverable_type ?? "pdp") as PageType,
+    weight: t.weight!,
+  }));
+  const client = getClientById(project.client_id);
+  const points = adjustedPoints(pages, client?.brand_warm ?? false);
+  const bucket = bucketFromPoints(points);
+  if (bucket === project.bucket && points === project.points) return;
+  write(
+    LS_PROJECTS,
+    projects.map((p) => (p.id === projectId ? { ...p, bucket, points } : p)),
+  );
+}
+
 export function moveClientToPod(clientId: string, targetPodId: string): void {
   const clients = getClients();
   const client = clients.find((c) => c.id === clientId);

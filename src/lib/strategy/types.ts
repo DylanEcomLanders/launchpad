@@ -60,6 +60,12 @@ export interface StrategyResource {
   added_at: string;
   added_by?: string;
   brandable?: boolean;
+  /** Workspace categorisation (optional, JSONB-safe additions).
+   *  "doc"   = general strategist upload (audit, roadmap, Loom).
+   *  "brief" = a per-page strategy brief; `page_label` names the page. */
+  category?: "doc" | "brief";
+  /** Page this brief covers, e.g. "PDP", "Homepage". Only for category="brief". */
+  page_label?: string;
 }
 
 export interface StrategyNote {

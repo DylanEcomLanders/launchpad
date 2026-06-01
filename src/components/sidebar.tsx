@@ -12,17 +12,14 @@ import {
   ChevronRightIcon,
   ClockIcon,
   BanknotesIcon,
-  UserGroupIcon,
   SparklesIcon,
   BookOpenIcon,
   BuildingOffice2Icon,
   RocketLaunchIcon,
-  WrenchScrewdriverIcon,
   PuzzlePieceIcon,
   Squares2X2Icon,
   LightBulbIcon,
   LockClosedIcon,
-  ArrowRightIcon,
   CalendarDaysIcon,
 } from "@heroicons/react/24/solid";
 import { LogoMark } from "@/components/logo";
@@ -158,11 +155,11 @@ const homeItem = {
   href: "/",
   icon: <HomeIcon className="size-4" />,
 };
-/* My Week — Dylan's private weekly planner. Admin-only (founder), same
- * private posture as Finance. */
-const myWeekItem = {
-  label: "My Week",
-  href: "/my-week",
+/* My Work — personal landing for everyone: the deliverables assigned to the
+ * signed-in person. (Replaces the old founder-only "My Week" planner.) */
+const myWorkItem = {
+  label: "My Work",
+  href: "/my-work",
   icon: <CalendarDaysIcon className="size-4" />,
 };
 const offerItem = {
@@ -170,34 +167,44 @@ const offerItem = {
   href: "/offer",
   icon: <SparklesIcon className="size-4" />,
 };
-const podsItem = {
-  label: "Pods",
-  href: "/pods-v2",
-  icon: <UserGroupIcon className="size-4" />,
-};
-const engagementsItem = {
-  label: "Clients",
-  href: "/engagements",
+const workspaceItem = {
+  label: "Workspace",
+  href: "/workspace",
   icon: <Squares2X2Icon className="size-4" />,
 };
+/* Agents — shelved from the nav for now (route still exists at /agents).
+ * Restore by re-adding to the admin pinned cluster + command palette.
 const agentsItem = {
   label: "Agents",
   href: "/agents",
   icon: <WrenchScrewdriverIcon className="size-4" />,
 };
+*/
 const wikiItem = {
   label: "Wiki",
   href: "/wiki-v2",
   icon: <BookOpenIcon className="size-4" />,
 };
-/* R&D Tracker — internal accountability + team idea inbox. Sits with
- * the pinned top-level cluster (rather than inside a collapsible
- * section) because the team needs one-click access to drop ideas. */
+/* R&D Tracker — internal accountability + team idea inbox. Admin cluster. */
 const rdItem = {
   label: "R&D",
   href: "/rd",
   icon: <LightBulbIcon className="size-4" />,
 };
+
+/* Toolbox — the day-to-day tools every team member needs, carried over from
+ * the retired Team Hub so members work entirely inside the dashboard shell.
+ * Visible to everyone (admins included). Ordered in a logical flow, paired by
+ * purpose: daily work → playbook → reference assets → pay.
+ * Renders as one collapsible "Toolbox" section. */
+const toolboxItems: NavItem[] = [
+  // Reference assets
+  { label: "Swipe File", href: "/team/swipe-file" },
+  { label: "Font Library", href: "/team/fonts" },
+  // Pay
+  { label: "Submit Invoice", href: "/team/invoice" },
+  { label: "Payments", href: "/team/payments" },
+];
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -269,16 +276,21 @@ export function Sidebar() {
    * + shelved items (marked so they render with the Shelved badge). */
   const paletteItems: CommandItem[] = [
     { label: homeItem.label, href: homeItem.href, group: "Pinned", icon: homeItem.icon },
-    { label: offerItem.label, href: offerItem.href, group: "Pinned", icon: offerItem.icon },
-    { label: engagementsItem.label, href: engagementsItem.href, group: "Pinned", icon: engagementsItem.icon, keywords: ["engagements"] },
-    { label: podsItem.label, href: podsItem.href, group: "Pinned", icon: podsItem.icon },
+    { label: myWorkItem.label, href: myWorkItem.href, group: "Pinned", icon: myWorkItem.icon, keywords: ["my tasks", "assigned"] },
+    { label: workspaceItem.label, href: workspaceItem.href, group: "Pinned", icon: workspaceItem.icon, keywords: ["pods", "clients", "delivery"] },
     { label: wikiItem.label, href: wikiItem.href, group: "Pinned", icon: wikiItem.icon, keywords: ["ops wiki", "operations"] },
-    { label: rdItem.label, href: rdItem.href, group: "Pinned", icon: rdItem.icon, keywords: ["research", "ideas"] },
-    { label: agentsItem.label, href: agentsItem.href, group: "Pinned", icon: agentsItem.icon },
-    ...visibleSections.flatMap((s) =>
-      s.items.map((i) => ({ label: i.label, href: i.href, group: s.title }))
-    ),
-    { label: "Team Hub", href: "/team", group: "Pinned" },
+    // Toolbox tools — searchable for everyone.
+    ...toolboxItems.map((i) => ({ label: i.label, href: i.href, group: "Toolbox" })),
+    // Admin-only entries below.
+    ...(role !== "team"
+      ? [
+          { label: offerItem.label, href: offerItem.href, group: "Pinned", icon: offerItem.icon },
+          { label: rdItem.label, href: rdItem.href, group: "Pinned", icon: rdItem.icon, keywords: ["research", "ideas"] },
+          ...visibleSections.flatMap((s) =>
+            s.items.map((i) => ({ label: i.label, href: i.href, group: s.title })),
+          ),
+        ]
+      : []),
     { label: "Changelog", href: "/changelog", group: "Pinned" },
     ...(role === "admin" ? [{ label: "Settings", href: "/settings", group: "Pinned" }] : []),
   ];
@@ -438,7 +450,61 @@ export function Sidebar() {
   }
 
   function renderDivider() {
-    return <div className={collapsed ? "my-2" : "my-3"} />;
+    // Soft hairline so clusters read as separated without a hard line.
+    return (
+      <div className={collapsed ? "mx-2 my-2" : "mx-3 my-2.5"}>
+        <div className="h-px bg-white/[0.06]" />
+      </div>
+    );
+  }
+
+  /* Toolbox — collapsible group of member tools, styled to match the
+   * lifecycle/ops accordion sections. Open state lives in `openSections`
+   * under the "Toolbox" key (seeded open). */
+  function renderToolbox() {
+    const open = openSections["Toolbox"] !== false;
+    const hasActive = toolboxItems.some((i) => isActive(i.href));
+    return (
+      <div className="mb-0.5">
+        <button
+          onClick={() => toggleSection("Toolbox")}
+          className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md hover:bg-white/[0.06] transition-colors group"
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] text-[#A1A1AA] group-hover:text-white transition-colors">
+              Toolbox
+            </span>
+            {hasActive && !open && <span className="size-1.5 rounded-full bg-white" />}
+          </div>
+          <ChevronDownIcon
+            className={`size-3 text-white/30 group-hover:text-white/60 transition-all duration-200 ${
+              open ? "" : "-rotate-90"
+            }`}
+          />
+        </button>
+        {open && (
+          <div className="mt-0.5 mb-2 space-y-0.5">
+            {toolboxItems.map((item) => {
+              const active = isActive(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`block pl-9 pr-2.5 py-1.5 text-[13px] rounded-md transition-all duration-150 ${
+                    active
+                      ? "text-[#0E0F11] font-medium bg-white"
+                      : "text-[#A1A1AA] hover:text-white hover:bg-white/[0.06]"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
   }
 
   return (
@@ -544,15 +610,16 @@ export function Sidebar() {
             </div>
           )}
 
-          {/* Pinned daily drivers — Mission Control, Offer, Pods */}
+          {/* Pinned daily drivers. Workspace now covers pods + clients, so
+            * there are no standalone Pods/Clients pins. Members get a lean
+            * set; admins get the acquisition/ops extras (Offer, R&D). */}
           <div className="px-3 mb-1 mt-2 space-y-0.5">
             {renderTopLink(homeItem)}
-            {role === "admin" && renderTopLink(myWeekItem)}
-            {renderTopLink(offerItem)}
-            {renderTopLink(engagementsItem)}
-            {renderTopLink(podsItem)}
+            {renderTopLink(myWorkItem)}
+            {renderTopLink(workspaceItem)}
+            {role !== "team" && renderTopLink(offerItem)}
             {renderTopLink(wikiItem)}
-            {renderTopLink(rdItem)}
+            {role !== "team" && renderTopLink(rdItem)}
           </div>
 
           {/* Pod identity tiles — quick jump into each pod with its
@@ -612,24 +679,31 @@ export function Sidebar() {
             </div>
           )}
 
-          {renderDivider()}
+          {/* Toolbox — day-to-day tools for everyone (carried from Team Hub),
+            * collapsible like the lifecycle/ops sections. */}
+          {!collapsed && (
+            <>
+              {renderDivider()}
+              <div className="px-3">{renderToolbox()}</div>
+            </>
+          )}
 
-          {/* Lifecycle: Acquire, Deliver, Operate */}
-          <div className="px-3">
-            {visibleSections.filter((s) => s.group === "lifecycle").map((section) => renderSection(section))}
-          </div>
+          {/* Admin-only: lifecycle + ops accordion sections. */}
+          {role !== "team" && (
+            <>
+              {renderDivider()}
+              <div className="px-3">
+                {visibleSections.filter((s) => s.group === "lifecycle").map((section) => renderSection(section))}
+              </div>
+              {renderDivider()}
+              <div className="px-3">
+                {visibleSections.filter((s) => s.group === "ops").map((section) => renderSection(section))}
+              </div>
+            </>
+          )}
 
-          {renderDivider()}
-
-          {/* Ops: Money, Company */}
-          <div className="px-3">
-            {visibleSections.filter((s) => s.group === "ops").map((section) => renderSection(section))}
-          </div>
-
-          {renderDivider()}
-
-          {/* Standalone bottom links — Agents, Settings */}
-          <div className="px-3 mb-1">{renderTopLink(agentsItem)}</div>
+          {/* Settings (admin). Agents shelved for now. */}
+          {!collapsed && role === "admin" && renderDivider()}
           {!collapsed && role === "admin" && (
             <div className="px-3 mt-1">
               <Link
@@ -648,27 +722,6 @@ export function Sidebar() {
             </div>
           )}
         </nav>
-
-        {/* Team Hub CTA — sits just above the timezone card */}
-        {!collapsed && (
-          <div className="mx-3 mb-2">
-            <Link
-              href="/team"
-              onClick={() => setMobileOpen(false)}
-              className={`group flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] transition-all duration-150 ${
-                pathname === "/team"
-                  ? "bg-white text-[#0E0F11] font-medium"
-                  : "bg-gradient-to-r from-white/[0.04] to-white/[0.01] hover:from-white/[0.08] hover:to-white/[0.03] text-white border border-white/[0.06] hover:border-white/[0.12]"
-              }`}
-            >
-              <UserGroupIcon className="size-4" />
-              <span className="flex-1">Team Hub</span>
-              <ArrowRightIcon className={`size-3 transition-all duration-200 ${
-                pathname === "/team" ? "opacity-100" : "opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5"
-              }`} />
-            </Link>
-          </div>
-        )}
 
         {/* Team Timezones */}
         {!collapsed && (
@@ -715,7 +768,7 @@ export function Sidebar() {
               onClick={() => setMobileOpen(false)}
               className="text-[11px] text-[#71717A] hover:text-white transition-colors"
             >
-              Launchpad v0.49.0
+              Launchpad v1.0.0
             </Link>
             <span className="text-[10px] text-[#3F3F46]">·</span>
             <Link
