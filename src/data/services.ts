@@ -165,7 +165,7 @@ export const services: ServiceOption[] = [
     name: "Advertorial / Listicle Bundle ×2",
     category: "builds",
     description:
-      "Two advertorials for split testing different angles — identify which narrative drives the highest quality traffic.",
+      "Two advertorials for split testing different angles, to identify which narrative drives the highest quality traffic.",
     features: [
       "Two conversion-optimised long-form pages",
       "Split test different angles",

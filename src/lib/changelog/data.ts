@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-80",
+    date: "2 June 2026",
+    version: "1.0.1",
+    title: "Client price list rebuilt to lead with value",
+    changes: [
+      { type: "improved", text: "Rebuilt the client-facing price list (/pricing) to sell value first. It opens dark, with the Conversion Engine as the flagship (Core and Pro tiers) and no retainer price on the page: pricing is scoped on a free, surface-level audit, offered as a plain text link rather than a hard CTA button. A visual 'it all comes included' tally shows that the build work brands normally pay for as separate one-off projects is just part of the partnership." },
+      { type: "improved", text: "Below the fold the page drops into a clean, light 'Regular deliverables' section that keeps the one-off prices (Funnel Build, page builds and add-ons) for clients who know exactly what they need. The old menu-style quote builder and running total are gone." },
+      { type: "improved", text: "Mission Control's Price list tile now opens the client-facing pricing page (the one to send prospects) instead of the internal admin price list." },
+      { type: "fixed", text: "Tidied a stray dash in the advertorial bundle description." },
+    ],
+  },
+  {
     id: "cl-79",
     date: "1 June 2026",
     version: "1.0.0",
