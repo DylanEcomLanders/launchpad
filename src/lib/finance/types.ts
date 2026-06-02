@@ -184,6 +184,23 @@ export type RecurringFrequency = "monthly" | "quarterly" | "annual";
 
 export type ExpenseStatus = "due" | "paid" | "overdue" | "disputed";
 
+/* ── Monthly costs (standalone recurring-outgoings calculator) ──
+ * Deliberately separate from the invoice-linked Expense ledger above.
+ * A quick list of fixed recurring outgoings (salaries, software, rent,
+ * subscriptions) normalised to a monthly figure so the founder can see
+ * total monthly burn at a glance without touching the AP ledger. */
+export interface MonthlyCost {
+  id: string;
+  name: string;
+  category: ExpenseCategory;
+  amount: number; // amount charged per its own frequency, GBP
+  frequency: RecurringFrequency;
+  active: boolean; // counted in totals; pause without deleting
+  notes?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
 /* Input-VAT semantics (mirror of invoice-side VatTreatment but framed for
  * money going out). uk_20_reclaimable = supplier charged us 20% UK VAT
  * which we can reclaim as input tax on the next VAT return. */

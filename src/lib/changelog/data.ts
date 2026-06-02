@@ -40,11 +40,12 @@ const seedChangelog: ChangelogEntry[] = [
     id: "cl-80",
     date: "2 June 2026",
     version: "1.0.1",
-    title: "Client price list rebuilt to lead with value",
+    title: "Client price list rebuilt, plus a monthly costs tracker",
     changes: [
       { type: "improved", text: "Rebuilt the client-facing price list (/pricing) to sell value first. It opens dark, with the Conversion Engine as the flagship (Core and Pro tiers) and no retainer price on the page: pricing is scoped on a free, surface-level audit, offered as a plain text link rather than a hard CTA button. A visual 'it all comes included' tally shows that the build work brands normally pay for as separate one-off projects is just part of the partnership." },
       { type: "improved", text: "Below the fold the page drops into a clean, light 'Regular deliverables' section that keeps the one-off prices (Funnel Build, page builds and add-ons) for clients who know exactly what they need. The old menu-style quote builder and running total are gone." },
       { type: "improved", text: "Mission Control's Price list tile now opens the client-facing pricing page (the one to send prospects) instead of the internal admin price list." },
+      { type: "added", text: "Finance: a Monthly costs tracker (Finance > Monthly costs). A quick standalone calculator for fixed recurring outgoings (salaries, software, rent, subscriptions): add each cost with a monthly, quarterly or annual frequency and it normalises everything to a per-month figure, showing total monthly burn, the annual equivalent, and a breakdown by category. Inline-editable, with a pause toggle to exclude a line without deleting it. Kept separate from the invoice and expense ledger." },
       { type: "fixed", text: "Tidied a stray dash in the advertorial bundle description." },
     ],
   },

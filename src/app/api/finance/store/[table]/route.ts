@@ -13,6 +13,7 @@ const ALLOWED_TABLES = new Set([
   "finance_documents",
   "finance_company_profile",
   "finance_clients",
+  "finance_monthly_costs",
 ]);
 
 interface RouteParams {
