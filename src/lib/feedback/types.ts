@@ -8,5 +8,6 @@ export interface FeedbackSubmission {
   recommend_score: number; // 1–10
   testimonial: string;
   improvements: string;
+  video_url?: string; // optional recorded webcam testimonial
   submitted_at: string;
 }

@@ -46,6 +46,8 @@ const seedChangelog: ChangelogEntry[] = [
       { type: "improved", text: "Below the fold the page drops into a clean, light 'Regular deliverables' section that keeps the one-off prices (Funnel Build, page builds and add-ons) for clients who know exactly what they need. The old menu-style quote builder and running total are gone." },
       { type: "improved", text: "Mission Control's Price list tile now opens the client-facing pricing page (the one to send prospects) instead of the internal admin price list." },
       { type: "added", text: "Finance: a Monthly costs tracker (Finance > Monthly costs). A quick standalone calculator for fixed recurring outgoings (salaries, software, rent, subscriptions): add each cost with a monthly, quarterly or annual frequency and it normalises everything to a per-month figure, showing total monthly burn, the annual equivalent, and a breakdown by category. Inline-editable, with a pause toggle to exclude a line without deleting it. Kept separate from the invoice and expense ledger." },
+      { type: "added", text: "Pricing: a Full Shopify site build offering (from £14,999) now sits on the client price list directly below the Conversion Engine, for brands that want a brand-new custom store rather than a partnership." },
+      { type: "added", text: "Feedback: clients can now record an optional video testimonial on the feedback form. A built-in webcam recorder (record, stop, re-record, remove) uploads the clip on submit, and the video plays back inline in the internal feedback dashboard alongside the written ratings." },
       { type: "fixed", text: "Tidied a stray dash in the advertorial bundle description." },
     ],
   },

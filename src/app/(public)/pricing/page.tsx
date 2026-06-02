@@ -214,14 +214,56 @@ export default function PricingPage() {
 
       {/* ══ LIGHT · Regular deliverables (with prices) ══════════ */}
       <section className="px-6 md:px-12 pt-14 pb-14 max-w-3xl text-[#1B1B1B]">
+        {/* Full Shopify site build: the lead project, directly below the partnership */}
         <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-[#F3F3F5] text-[#7A7A7A] mb-3">
-          Regular deliverables
+          New build
         </span>
+        <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
+          Full Shopify site build
+        </h2>
+        <p className="text-sm text-[#5A5A5A] leading-relaxed mb-5">
+          Need a brand-new store rather than a partnership? We build the whole
+          thing, custom-coded and conversion-first, end to end.
+        </p>
+
+        <div className="border-2 border-[#1B1B1B] rounded-2xl p-6 md:p-7 bg-white mb-14">
+          <div className="flex items-baseline justify-between gap-3 mb-2">
+            <h3 className="text-lg font-bold">Full Shopify site build</h3>
+            <span className="text-xl font-bold tabular-nums shrink-0">
+              From £14,999
+            </span>
+          </div>
+          <p className="text-sm text-[#5A5A5A] leading-relaxed mb-4">
+            A complete custom Shopify store designed to convert from day one.
+            The full site, not a template: structure, design, copy and
+            development handled in one go.
+          </p>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
+            {[
+              "Custom Shopify theme, built from scratch",
+              "Every core page: home, collections, PDP, cart, account",
+              "Conversion-first design and copy throughout",
+              "Custom development, apps and integrations",
+              "Product and content migration",
+              "Launch support, mobile and speed optimised",
+            ].map((f) => (
+              <li
+                key={f}
+                className="flex items-start gap-2 text-xs text-[#7A7A7A]"
+              >
+                <CheckIcon className="size-3 text-[#1B1B1B] mt-0.5 shrink-0" />
+                {f}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Smaller one-off builds */}
         <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
           One-off builds
         </h2>
         <p className="text-sm text-[#5A5A5A] leading-relaxed mb-7">
-          Know exactly what you need? Buy the build, no retainer.
+          Or buy just the pages you need, no retainer.
         </p>
 
         {/* Funnel Build — featured */}

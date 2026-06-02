@@ -227,6 +227,21 @@ export default function FeedbackDashboard() {
                     </div>
                   )}
 
+                  {/* Video testimonial */}
+                  {sub.video_url && (
+                    <div className="mb-3">
+                      <p className="text-[10px] uppercase tracking-wider text-[#A0A0A0] mb-1">
+                        Video testimonial
+                      </p>
+                      <video
+                        src={sub.video_url}
+                        controls
+                        playsInline
+                        className="w-full max-w-sm rounded-lg border border-[#E5E5EA] bg-black"
+                      />
+                    </div>
+                  )}
+
                   {/* Improvements */}
                   {sub.improvements && (
                     <div>

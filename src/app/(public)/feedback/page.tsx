@@ -5,6 +5,7 @@ import { StarIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
 import { StarIcon as StarOutline } from "@heroicons/react/24/outline";
 import { Logo } from "@/components/logo";
 import { submitFeedback } from "@/lib/feedback/data";
+import { VideoRecorder } from "@/components/feedback/video-recorder";
 
 /* ── Star Rating ─────────────────────────────────────────────── */
 
@@ -58,8 +59,10 @@ export default function FeedbackPage() {
   const [recommendScore, setRecommendScore] = useState(0);
   const [testimonial, setTestimonial] = useState("");
   const [improvements, setImprovements] = useState("");
+  const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const canSubmit =
     clientName.trim() && rating > 0 && quality > 0 && communication > 0 && recommendScore > 0;
@@ -67,7 +70,24 @@ export default function FeedbackPage() {
   const handleSubmit = async () => {
     if (!canSubmit) return;
     setSubmitting(true);
+    setError(null);
     try {
+      let video_url: string | undefined;
+      if (videoBlob) {
+        const ext = videoBlob.type.includes("mp4") ? "mp4" : "webm";
+        const fd = new FormData();
+        fd.append("file", videoBlob, `feedback.${ext}`);
+        const res = await fetch("/api/feedback/upload", {
+          method: "POST",
+          body: fd,
+        });
+        if (!res.ok) {
+          const j = await res.json().catch(() => ({}));
+          throw new Error(j.error || "Video upload failed. Please try again.");
+        }
+        const j = (await res.json()) as { url: string };
+        video_url = j.url;
+      }
       await submitFeedback({
         client_name: clientName.trim(),
         client_email: clientEmail.trim() || undefined,
@@ -77,8 +97,13 @@ export default function FeedbackPage() {
         recommend_score: recommendScore,
         testimonial: testimonial.trim(),
         improvements: improvements.trim(),
+        video_url,
       });
       setSubmitted(true);
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : "Something went wrong. Please try again.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -207,6 +232,19 @@ export default function FeedbackPage() {
             />
           </div>
 
+          {/* Video testimonial (optional) */}
+          <div>
+            <label className="block text-sm font-medium text-[#1B1B1B] mb-1.5">
+              Video testimonial
+              <span className="text-[#A0A0A0] font-normal ml-1">(optional)</span>
+            </label>
+            <p className="text-xs text-[#A0A0A0] mb-3">
+              Prefer to say it on camera? Record a short clip. A few sentences
+              is perfect, and we may share it.
+            </p>
+            <VideoRecorder onChange={setVideoBlob} />
+          </div>
+
           {/* Improvements */}
           <div>
             <label className="block text-sm font-medium text-[#1B1B1B] mb-1.5">
@@ -223,13 +261,22 @@ export default function FeedbackPage() {
           </div>
 
           {/* Submit */}
-          <button
-            onClick={handleSubmit}
-            disabled={!canSubmit || submitting}
-            className="w-full px-4 py-3 text-sm font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {submitting ? "Submitting..." : "Submit Feedback"}
-          </button>
+          <div>
+            {error && (
+              <p className="text-xs text-red-500 mb-2">{error}</p>
+            )}
+            <button
+              onClick={handleSubmit}
+              disabled={!canSubmit || submitting}
+              className="w-full px-4 py-3 text-sm font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {submitting
+                ? videoBlob
+                  ? "Uploading video..."
+                  : "Submitting..."
+                : "Submit Feedback"}
+            </button>
+          </div>
         </div>
       </div>
 
