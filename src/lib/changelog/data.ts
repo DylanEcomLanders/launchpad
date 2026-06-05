@@ -37,6 +37,15 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-82",
+    date: "5 June 2026",
+    version: "1.0.3",
+    title: "Page-build prices rounded up to clean numbers",
+    changes: [
+      { type: "improved", text: "All .99 pricing across page builds rounded up by £1 to clean whole-thousand numbers: 1 Page £2,999 → £3,000, 2 Page £5,499 → £5,500, 3 Page / Funnel Build £7,999 → £8,000, 4 Page £9,999 → £10,000, Full Shopify site build from £14,999 → from £15,000. Applied to every layer: the public pricing page, the services catalogue that drives Whop checkout (amount + label both updated so what's displayed matches what's charged), the proposal/quote engine in lib/pricing.ts, and the finance/deliverables list used for invoicing. Existing Whop product entries pre-created at the old prices stay until manually updated in the Whop dashboard" },
+    ],
+  },
+  {
     id: "cl-81",
     date: "5 June 2026",
     version: "1.0.2",

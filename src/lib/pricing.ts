@@ -94,7 +94,7 @@ export const PRICE_ITEMS: PriceItem[] = [
     internalCategory: "funnel-build",
     calcCategory: "Page Builds",
     unit: "per project",
-    price: 2999,
+    price: 3000,
     roleCosts: { dev: 300, designer: 300, juniorDesigner: 250 },
     pageCount: 1,
     included:
@@ -109,7 +109,7 @@ export const PRICE_ITEMS: PriceItem[] = [
     internalCategory: "funnel-build",
     calcCategory: "Page Builds",
     unit: "per project",
-    price: 5499,
+    price: 5500,
     roleCosts: { dev: 600, designer: 600, juniorDesigner: 500 },
     pageCount: 2,
     included:
@@ -124,7 +124,7 @@ export const PRICE_ITEMS: PriceItem[] = [
     internalCategory: "funnel-build",
     calcCategory: "Page Builds",
     unit: "per project",
-    price: 7999,
+    price: 8000,
     roleCosts: { dev: 900, designer: 900, juniorDesigner: 750 },
     pageCount: 3,
     included:
@@ -139,7 +139,7 @@ export const PRICE_ITEMS: PriceItem[] = [
     internalCategory: "funnel-build",
     calcCategory: "Page Builds",
     unit: "per project",
-    price: 9999,
+    price: 10000,
     roleCosts: { dev: 1200, designer: 1200, juniorDesigner: 1000 },
     pageCount: 4,
     included:
@@ -643,7 +643,7 @@ export function formatPrice(item: PriceItem): string {
  *
  * @example
  *   quoteLineFor(itemFor("page-build-2"))
- *   // → "2 Page Build — £5,499 per project. Two connected pages…"
+ *   // → "2 Page Build — £5,500 per project. Two connected pages…"
  */
 export function quoteLineFor(item: PriceItem): string {
   return `${item.name} — ${formatPrice(item)} ${item.unit}. ${item.included}.`;

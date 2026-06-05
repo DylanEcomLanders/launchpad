@@ -6,7 +6,7 @@ export type ServiceMode = "one-off" | "retainer";
 
 export interface TierPricing {
   amount: number; // pence (GBP)
-  label: string; // display string e.g. "£1,499/mo"
+  label: string; // display string e.g. "£1,500/mo"
 }
 
 export interface ServicePricing {
@@ -63,7 +63,7 @@ export const services: ServiceOption[] = [
     modes: ["one-off"],
     pricing: {
       "one-off": {
-        price: { amount: 299900, label: "£2,999" },
+        price: { amount: 300000, label: "£3,000" },
       },
     },
   },
@@ -81,7 +81,7 @@ export const services: ServiceOption[] = [
     modes: ["one-off"],
     pricing: {
       "one-off": {
-        price: { amount: 549900, label: "£5,499" },
+        price: { amount: 550000, label: "£5,500" },
       },
     },
   },
@@ -99,7 +99,7 @@ export const services: ServiceOption[] = [
     modes: ["one-off"],
     pricing: {
       "one-off": {
-        price: { amount: 799900, label: "£7,999" },
+        price: { amount: 800000, label: "£8,000" },
       },
     },
   },
@@ -117,7 +117,7 @@ export const services: ServiceOption[] = [
     modes: ["one-off"],
     pricing: {
       "one-off": {
-        price: { amount: 999900, label: "£9,999" },
+        price: { amount: 1000000, label: "£10,000" },
       },
     },
   },
@@ -138,7 +138,7 @@ export const services: ServiceOption[] = [
     recommended: true,
     pricing: {
       "one-off": {
-        price: { amount: 799900, label: "£7,999" },
+        price: { amount: 800000, label: "£8,000" },
       },
     },
   },

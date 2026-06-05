@@ -230,7 +230,7 @@ export default function PricingPage() {
           <div className="flex items-baseline justify-between gap-3 mb-2">
             <h3 className="text-lg font-bold">Full Shopify site build</h3>
             <span className="text-xl font-bold tabular-nums shrink-0">
-              From £14,999
+              From £15,000
             </span>
           </div>
           <p className="text-sm text-[#5A5A5A] leading-relaxed mb-4">

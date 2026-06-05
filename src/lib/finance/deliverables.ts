@@ -11,10 +11,10 @@ export interface InvoiceDeliverable {
 
 export const invoiceDeliverables: InvoiceDeliverable[] = [
   /* Page Builds */
-  { name: "1 Page Build", category: "Page Builds", price: 2999 },
-  { name: "2 Page Build", category: "Page Builds", price: 5499 },
-  { name: "3 Page Build", category: "Page Builds", price: 7999 },
-  { name: "4 Page Build", category: "Page Builds", price: 9999 },
+  { name: "1 Page Build", category: "Page Builds", price: 3000 },
+  { name: "2 Page Build", category: "Page Builds", price: 5500 },
+  { name: "3 Page Build", category: "Page Builds", price: 8000 },
+  { name: "4 Page Build", category: "Page Builds", price: 10000 },
   { name: "Single Advertorial / Listicle", category: "Page Builds", price: 2000 },
   { name: "Advertorial / Listicle Bundle x2", category: "Page Builds", price: 3500 },
   /* Secondary Pages */
