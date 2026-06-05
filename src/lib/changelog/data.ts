@@ -37,6 +37,15 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-81",
+    date: "5 June 2026",
+    version: "1.0.2",
+    title: "5% off for video reviews",
+    changes: [
+      { type: "added", text: "The feedback form now highlights a 5% discount on all future projects for clients who record a video review, as a thank-you for taking the time." },
+    ],
+  },
+  {
     id: "cl-80",
     date: "2 June 2026",
     version: "1.0.1",

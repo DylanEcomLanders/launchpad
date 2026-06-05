@@ -242,6 +242,12 @@ export default function FeedbackPage() {
               Prefer to say it on camera? Record a short clip. A few sentences
               is perfect, and we may share it.
             </p>
+            <div className="mb-3 rounded-lg border border-[#16A34A]/20 bg-[#16A34A]/[0.06] px-3.5 py-2.5">
+              <p className="text-xs text-[#15803D]">
+                <span className="font-semibold">Record a video review and get 5% off all future projects.</span>{" "}
+                Our way of saying thanks for taking the time.
+              </p>
+            </div>
             <VideoRecorder onChange={setVideoBlob} />
           </div>
 
