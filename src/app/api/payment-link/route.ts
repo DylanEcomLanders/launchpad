@@ -66,6 +66,11 @@ export async function POST(request: Request) {
     const checkoutConfig = await client.checkoutConfigurations.create({
       plan: planConfig,
       mode: "payment",
+      // Top-level currency locks the BUYER-FACING display currency. Without
+      // this Whop auto-localises the price to the buyers IP region (so a US
+      // buyer sees $X instead of £X). Plan.currency only sets the
+      // denomination; this sets what's shown on the checkout page.
+      currency: "gbp",
       metadata: {
         client_name: clientName,
         client_email: clientEmail || "",

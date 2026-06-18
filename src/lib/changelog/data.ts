@@ -37,6 +37,15 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-83",
+    date: "18 June 2026",
+    version: "1.0.4",
+    title: "Payment links now lock to GBP for every buyer",
+    changes: [
+      { type: "fixed", text: "Payment link tool was only setting the plan's denomination to GBP, not the checkout page's display currency. Whop's checkout was then auto-localising the price to the buyer's IP region: a £500 link opened in the US showed converted dollars, EU buyers saw EUR, etc. Added a top-level `currency: gbp` to the checkoutConfigurations.create call so the buyer-facing display is now locked to GBP regardless of region. Heads-up for the team: existing payment links created before this fix were never told to lock the display currency, so they keep auto-localising. Any link still being chased needs to be regenerated to pick up the new behaviour" },
+    ],
+  },
+  {
     id: "cl-82",
     date: "5 June 2026",
     version: "1.0.3",
