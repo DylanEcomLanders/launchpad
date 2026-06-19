@@ -37,6 +37,15 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-84",
+    date: "19 June 2026",
+    version: "1.0.5",
+    title: "Client pricing page rebuilt around the three Conversion Engine tiers",
+    changes: [
+      { type: "improved", text: "Full redesign of the public /pricing page (the one we hand to clients and leads). The Conversion Engine is now three priced tiers: Entry £5k, Core £10k (most chosen) and VIP £15k per month, each showing pages, tests, and call/report cadence. Added a Monthly vs Pay-up-front toggle that recalculates live (10% off, so Core reads £9k/mo) and also surfaces the 90-day total for each tier (£13.5k / £27k / £40.5k). New dark editorial monochrome look (the green accent is gone), a desktop feature-comparison matrix, and the value tally that shows the build work included in a single month. All clickable CTAs and the nav were stripped so it reads as a static handout. Section widths unified and centred, tier cards are equal height, and mobile is verified" },
+    ],
+  },
+  {
     id: "cl-83",
     date: "18 June 2026",
     version: "1.0.4",

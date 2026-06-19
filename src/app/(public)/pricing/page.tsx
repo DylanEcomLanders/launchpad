@@ -1,16 +1,23 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
 import { CheckIcon } from "@heroicons/react/24/solid";
 import { Logo } from "@/components/logo";
 import { services as allServices, getPrice, formatGBP } from "@/data/services";
 
 /* ──────────────────────────────────────────────────────────────
-   Client-facing price list.
-   - Opens DARK: the Conversion Engine, pure value, no price.
-     Investment is scoped on a free surface-level audit.
-   - Drops into LIGHT: the regular one-off deliverables, with prices.
-   - The free audit is always a plain text offer, never a button.
+   Client-facing price list. Dark, editorial, monochrome.
+   Structure (top to bottom):
+     · sticky nav
+     · hero + billing toggle (Monthly / Pay up front -10%)
+     · three priced tiers (Entry / Core hero / VIP)
+     · credibility strip
+     · "all included" value tally
+     · feature comparison matrix (desktop)
+     · one-off builds
+     · FAQ accordion
+     · closing CTA + footer
+   The free audit is always a plain text/link offer.
    ────────────────────────────────────────────────────────────── */
 
 const services = allServices.filter((s) => s.id !== "test-checkout");
@@ -31,23 +38,114 @@ const tally = TALLY_IDS.flatMap((id) => {
 });
 const tallyTotal = tally.reduce((sum, t) => sum + t.amount, 0);
 
-const STANDARD_INCLUDES = [
-  "Conversion audit + revenue-gap roadmap",
-  "Monthly page builds",
-  "A/B test programme",
-  "AOV work: bundles, upsells, post-purchase",
-  "Monthly report with revenue attribution",
-  "Dedicated Slack with the team",
+/* The three partnership tiers, low to high. Core is the hero.
+   `monthly` is the headline monthly figure in GBP. */
+const TIERS = [
+  {
+    name: "Entry",
+    monthly: 5000,
+    blurb:
+      "The Conversion Engine at a starter cadence. A proven system, dialled in to a focused scope.",
+    features: [
+      "2 page builds per month",
+      "2 A/B tests per month",
+      "Biweekly strategy calls",
+      "Biweekly reports on results",
+    ],
+    featured: false,
+  },
+  {
+    name: "Core",
+    monthly: 10000,
+    badge: "Most chosen",
+    blurb:
+      "The full Conversion Engine on a weekly rhythm. A complete conversion team owning the roadmap with you.",
+    features: [
+      "4 page builds per month",
+      "4 A/B tests per month",
+      "Weekly strategy calls (optional)",
+      "Weekly reports on results",
+    ],
+    featured: true,
+  },
+  {
+    name: "VIP",
+    monthly: 15000,
+    blurb:
+      "Maximum velocity. More builds, an aggressive test programme and priority on every deliverable.",
+    features: [
+      "6 page builds per month",
+      "12 A/B tests per month",
+      "Weekly strategy calls",
+      "Weekly reports on results",
+      "Priority turnaround on deliverables",
+      "Quarterly brand-strategy calls",
+    ],
+    featured: false,
+  },
 ];
 
-const PRO_INCLUDES = [
-  "More resources, faster turnarounds",
-  "Dedicated strategist",
-  "Weekly strategy call",
-  "Ad-to-page creative alignment",
-  "Quarterly business reviews",
-  "Multi-funnel scope",
+/* Feature comparison matrix. Cell value: string = label, true = check,
+   false = not included. Order of values is Entry / Core / VIP. */
+const MATRIX: {
+  group: string;
+  rows: { label: string; values: (string | boolean)[] }[];
+}[] = [
+  {
+    group: "Every month",
+    rows: [
+      { label: "Page builds", values: ["2", "4", "6"] },
+      { label: "A/B tests", values: ["2", "4", "12"] },
+      {
+        label: "Conversion audit + revenue-gap roadmap",
+        values: [true, true, true],
+      },
+      {
+        label: "AOV work: bundles, upsells, post-purchase",
+        values: [true, true, true],
+      },
+    ],
+  },
+  {
+    group: "Strategy & reporting",
+    rows: [
+      {
+        label: "Strategy calls",
+        values: ["Biweekly", "Weekly", "Weekly"],
+      },
+      {
+        label: "Reports on results",
+        values: ["Biweekly", "Weekly", "Weekly"],
+      },
+      { label: "Revenue attribution", values: [true, true, true] },
+      { label: "Dedicated Slack channel", values: [true, true, true] },
+      {
+        label: "Quarterly brand-strategy call",
+        values: [false, false, true],
+      },
+    ],
+  },
+  {
+    group: "Service level",
+    rows: [
+      {
+        label: "Priority turnaround on deliverables",
+        values: [false, false, true],
+      },
+      {
+        label: "Minimum commitment",
+        values: ["90 days", "90 days", "90 days"],
+      },
+      { label: "Pay-up-front discount", values: ["10%", "10%", "10%"] },
+    ],
+  },
 ];
+
+/* £5,000 -> "£5k", £13,500 -> "£13.5k" */
+function fmtK(n: number) {
+  const k = n / 1000;
+  return `£${Number.isInteger(k) ? k : k.toFixed(1)}k`;
+}
 
 function priceLabel(s: (typeof services)[number]) {
   const pricing = s.pricing[s.modes[0]];
@@ -56,189 +154,307 @@ function priceLabel(s: (typeof services)[number]) {
   return s.volumeDiscounts?.length ? `From ${label}` : label;
 }
 
-/* Free-audit mention as text, not a CTA button. */
-function AuditLink({
-  children,
-  tone = "light",
-}: {
-  children: React.ReactNode;
-  tone?: "light" | "dark";
-}) {
-  const cls =
-    tone === "dark"
-      ? "text-white underline underline-offset-4 decoration-white/30 hover:decoration-white transition-colors"
-      : "text-[#1B1B1B] underline underline-offset-4 decoration-[#C5C5C5] hover:decoration-[#1B1B1B] transition-colors";
-  return (
-    <Link href="/audit" className={`font-medium ${cls}`}>
-      {children}
-    </Link>
-  );
-}
+const GRID = "grid grid-cols-[minmax(0,1.7fr)_repeat(3,minmax(0,1fr))]";
 
 export default function PricingPage() {
+  const [billing, setBilling] = useState<"monthly" | "upfront">("monthly");
+  const upfront = billing === "upfront";
+
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      {/* ══ DARK · The Conversion Engine (pure value, no price) ══ */}
-      <div className="bg-[#0A0A0A] text-white">
-        <header className="px-6 md:px-12 py-5">
+    <div className="min-h-screen bg-[#0E0D0B] text-[#FAFAF7] flex flex-col">
+      {/* ══ Header ════════════════════════════════════════════════ */}
+      <header className="border-b border-white/5">
+        <div className="max-w-6xl mx-auto w-full flex items-center px-6 md:px-12 h-16">
           <Logo height={16} className="text-white" />
-        </header>
+        </div>
+      </header>
 
-        <section className="px-6 md:px-12 pt-6 pb-9 max-w-5xl">
-          <span className="inline-block text-[10px] font-bold uppercase tracking-[0.15em] px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-300 mb-4">
-            Flagship partnership
-          </span>
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.02] mb-4">
-            The Conversion Engine
-          </h1>
-          <p className="text-base md:text-lg text-white/55 leading-relaxed max-w-2xl">
-            We turn the traffic you already pay for into revenue. A full
-            conversion team, embedded: design, dev, copy and CRO under one roof,
-            on a monthly system that compounds.
-          </p>
-        </section>
+      {/* ══ Hero ═════════════════════════════════════════════════ */}
+      <section
+        id="partnership"
+        className="px-6 md:px-12 pt-14 md:pt-24 pb-10 max-w-6xl mx-auto w-full scroll-mt-20"
+      >
+        <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-white/45 mb-6">
+          Conversion partnership
+        </p>
+        <h1 className="text-5xl md:text-7xl font-semibold tracking-[-0.03em] leading-[0.95] mb-6">
+          The Conversion Engine.
+          <br />
+          <span className="text-white/45">Built to compound.</span>
+        </h1>
+        <p className="text-base md:text-lg text-white/55 leading-relaxed max-w-xl">
+          We turn the traffic you already pay for into revenue. A full
+          conversion team, embedded in your business: design, dev, copy and CRO
+          under one roof, on a monthly system.
+        </p>
+      </section>
 
-        <section className="px-6 md:px-12 pb-16 max-w-5xl">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            {/* Standard — hero tier */}
-            <div className="md:col-span-3 relative rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-emerald-500/[0.08] to-white/[0.01] p-6 md:p-8">
-              <div className="flex items-center gap-2.5 mb-2 flex-wrap">
-                <h2 className="text-xl font-bold">Core</h2>
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500 text-[#0A0A0A]">
-                  Most brands start here
-                </span>
-              </div>
-              <p className="text-sm text-white/55 leading-relaxed mb-6 max-w-md">
-                The full Conversion Engine. A complete conversion team on a
-                monthly rhythm, owning the roadmap with you.
-              </p>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-300/70 mb-3.5">
-                Every month
-              </p>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
-                {STANDARD_INCLUDES.map((f) => (
-                  <li key={f} className="flex items-start gap-2.5">
-                    <CheckIcon className="size-3.5 text-emerald-400 mt-0.5 shrink-0" />
-                    <span className="text-sm text-white leading-snug">{f}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+      {/* Billing toggle */}
+      <div className="px-6 md:px-12 max-w-6xl mx-auto w-full mb-7">
+        <div className="inline-flex items-center gap-1 rounded-full border border-white/12 bg-white/[0.03] p-1">
+          <button
+            onClick={() => setBilling("monthly")}
+            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+              !upfront ? "bg-white text-[#0E0D0B]" : "text-white/55 hover:text-white"
+            }`}
+          >
+            Monthly
+          </button>
+          <button
+            onClick={() => setBilling("upfront")}
+            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors flex items-center gap-2 ${
+              upfront ? "bg-white text-[#0E0D0B]" : "text-white/55 hover:text-white"
+            }`}
+          >
+            Pay up front
+            <span
+              className={`font-mono text-[10px] tracking-wider ${
+                upfront ? "text-[#0E0D0B]/60" : "text-white/40"
+              }`}
+            >
+              -10%
+            </span>
+          </button>
+        </div>
+      </div>
 
-            {/* Pro — anchor tier */}
-            <div className="md:col-span-2 rounded-2xl border border-white/10 bg-white/[0.02] p-6 md:p-7">
-              <h2 className="text-xl font-bold text-white/80 mb-2">Pro</h2>
-              <p className="text-sm text-white/45 leading-relaxed mb-6">
-                Same system, more of it. For brands that need speed and depth.
-              </p>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-white/40 mb-3.5">
-                Everything in Core, plus
-              </p>
-              <ul className="space-y-3">
-                {PRO_INCLUDES.map((f) => (
-                  <li key={f} className="flex items-start gap-2.5">
-                    <CheckIcon className="size-3.5 text-white/35 mt-0.5 shrink-0" />
-                    <span className="text-sm text-white/70 leading-snug">
-                      {f}
+      {/* ══ Tiers ════════════════════════════════════════════════ */}
+      <section className="px-6 md:px-12 pb-12 max-w-6xl mx-auto w-full">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 items-stretch">
+          {TIERS.map((tier) => {
+            const amount = upfront ? tier.monthly * 0.9 : tier.monthly;
+            const featured = tier.featured;
+            return (
+              <div
+                key={tier.name}
+                className={
+                  featured
+                    ? "rounded-3xl bg-[#FAFAF7] text-[#1A1A17] p-7 md:p-8 shadow-xl shadow-black/30"
+                    : "rounded-3xl border border-white/12 bg-white/[0.025] p-7 md:p-8"
+                }
+              >
+                <div className="flex items-center justify-between gap-2 mb-6">
+                  <h2
+                    className={`text-lg font-semibold ${featured ? "" : "text-white/85"}`}
+                  >
+                    {tier.name}
+                  </h2>
+                  {featured && tier.badge && (
+                    <span className="font-mono text-[9px] font-medium uppercase tracking-[0.18em] px-2.5 py-1 rounded-full bg-[#1A1A17] text-[#FAFAF7]">
+                      {tier.badge}
                     </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+                  )}
+                </div>
 
-          {/* Value visual: a month of build work, tallied, all included */}
-          <div className="mt-4 rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.06] p-5 md:p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:items-center">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-300 mb-2">
-                  It all comes included
+                <div className="flex items-baseline gap-1.5">
+                  <span
+                    className={`text-5xl font-semibold tracking-[-0.03em] tabular-nums ${featured ? "" : "text-white/90"}`}
+                  >
+                    {fmtK(amount)}
+                  </span>
+                  <span
+                    className={`text-sm ${featured ? "text-[#1A1A17]/45" : "text-white/40"}`}
+                  >
+                    /mo
+                  </span>
+                </div>
+                <p
+                  className={`font-mono text-[11px] mt-2 ${featured ? "text-[#1A1A17]/45" : "text-white/35"}`}
+                >
+                  {upfront
+                    ? `${fmtK(amount * 3)} up front for 90 days, 10% off`
+                    : "billed monthly"}
                 </p>
-                <p className="text-sm text-white/85 leading-relaxed">
-                  A single month can include the kind of build work brands
-                  normally pay for as separate projects. No line items, no extra
-                  invoices, it&apos;s all part of the partnership.
-                </p>
-              </div>
 
-              {/* Receipt-style tally */}
-              <div className="rounded-xl border border-white/10 bg-[#0A0A0A] p-4">
-                <ul className="space-y-2.5 mb-3">
-                  {tally.map((t) => (
-                    <li
-                      key={t.name}
-                      className="flex items-baseline justify-between gap-3"
-                    >
-                      <span className="text-xs text-white/60 truncate">
-                        {t.name}
-                      </span>
-                      <span className="text-xs tabular-nums text-white/35 line-through shrink-0">
-                        {t.label}
+                <p
+                  className={`text-sm leading-relaxed mt-4 mb-6 ${featured ? "text-[#1A1A17]/60" : "text-white/50"}`}
+                >
+                  {tier.blurb}
+                </p>
+
+                <div
+                  className={`h-px mb-6 ${featured ? "bg-[#1A1A17]/10" : "bg-white/10"}`}
+                />
+
+                <ul className="space-y-3.5">
+                  {tier.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2.5">
+                      <CheckIcon
+                        className={`size-3.5 mt-0.5 shrink-0 ${featured ? "text-[#1A1A17]" : "text-white/35"}`}
+                      />
+                      <span
+                        className={`text-sm leading-snug ${featured ? "" : "text-white/70"}`}
+                      >
+                        {f}
                       </span>
                     </li>
                   ))}
                 </ul>
-                <div className="flex items-baseline justify-between gap-3 pt-3 border-t border-white/10">
-                  <span className="text-xs text-white/50">
-                    As one-off projects
-                  </span>
-                  <span className="text-sm font-semibold tabular-nums text-white/35 line-through shrink-0">
-                    {formatGBP(tallyTotal)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-3 mt-2.5">
-                  <span className="text-sm font-semibold text-white">
-                    In the Engine
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-500 text-[#0A0A0A] shrink-0">
-                    Included
-                  </span>
-                </div>
               </div>
-            </div>
+            );
+          })}
+        </div>
+
+        <p className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-white/35 mt-10 text-center">
+          90-day initial commitment · 10% off when paid up front
+        </p>
+      </section>
+
+      {/* ══ Value tally ══════════════════════════════════════════ */}
+      <section className="px-6 md:px-12 pt-4 md:pt-6 pb-4 max-w-6xl mx-auto w-full">
+        <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 md:items-center">
+          <div>
+            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/40 mb-4">
+              It all comes included
+            </p>
+            <h3 className="text-2xl md:text-3xl font-semibold tracking-[-0.02em] leading-tight mb-4">
+              A single month carries the kind of build work brands usually buy as
+              separate projects.
+            </h3>
+            <p className="text-sm text-white/50 leading-relaxed max-w-md">
+              No line items, no extra invoices. It is all part of the
+              partnership.
+            </p>
           </div>
 
-          <p className="text-sm text-white/55 leading-relaxed mt-6 max-w-2xl">
-            Want to see how we can help?{" "}
-            <AuditLink tone="dark">Get a free, surface-level audit</AuditLink> of
-            your funnel and we&apos;ll show you where it leaks and what
-            we&apos;d fix first.
-          </p>
+          <div className="rounded-2xl border border-white/10 bg-[#0E0D0B] p-5 md:p-6">
+            <ul className="space-y-3 mb-4">
+              {tally.map((t) => (
+                <li
+                  key={t.name}
+                  className="flex items-baseline justify-between gap-3"
+                >
+                  <span className="text-sm text-white/65 truncate">{t.name}</span>
+                  <span className="font-mono text-xs tabular-nums text-white/35 line-through shrink-0">
+                    {t.label}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="flex items-baseline justify-between gap-3 pt-4 border-t border-white/10">
+              <span className="text-sm text-white/50">As one-off projects</span>
+              <span className="font-mono text-sm font-medium tabular-nums text-white/35 line-through shrink-0">
+                {formatGBP(tallyTotal)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-3 mt-3">
+              <span className="text-sm font-semibold text-white">
+                In the Engine
+              </span>
+              <span className="font-mono text-[10px] font-medium uppercase tracking-[0.15em] px-3 py-1 rounded-full bg-[#FAFAF7] text-[#0E0D0B] shrink-0">
+                Included
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
 
-          <p className="text-xs italic text-white/30 mt-4">
-            Expect 0.5-2% site-wide CVR lift in 90 days. If the numbers
-            haven&apos;t moved, we have an honest conversation.
-          </p>
-        </section>
-      </div>
-
-      {/* ══ LIGHT · Regular deliverables (with prices) ══════════ */}
-      <section className="px-6 md:px-12 pt-14 pb-14 max-w-3xl text-[#1B1B1B]">
-        {/* Full Shopify site build: the lead project, directly below the partnership */}
-        <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-[#F3F3F5] text-[#7A7A7A] mb-3">
-          New build
-        </span>
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
-          Full Shopify site build
+      {/* ══ Comparison matrix (desktop) ══════════════════════════ */}
+      <section
+        id="compare"
+        className="hidden md:block px-6 md:px-12 pt-16 md:pt-24 pb-4 max-w-6xl mx-auto w-full scroll-mt-20"
+      >
+        <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/40 mb-4">
+          Compare plans
+        </p>
+        <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] mb-10">
+          Every tier, side by side
         </h2>
-        <p className="text-sm text-[#5A5A5A] leading-relaxed mb-5">
-          Need a brand-new store rather than a partnership? We build the whole
-          thing, custom-coded and conversion-first, end to end.
+
+        <div className="border border-white/10 rounded-2xl overflow-hidden">
+          {/* header */}
+          <div className={`${GRID} items-end px-7 pt-7 pb-5`}>
+            <span />
+            {TIERS.map((t) => {
+              const amount = upfront ? t.monthly * 0.9 : t.monthly;
+              return (
+                <div key={t.name} className="text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-sm font-semibold">{t.name}</span>
+                    {t.featured && (
+                      <span className="size-1.5 rounded-full bg-white" />
+                    )}
+                  </div>
+                  <p className="font-mono text-xs tabular-nums text-white/45 mt-1">
+                    {fmtK(amount)}/mo
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+
+          {MATRIX.map((group) => (
+            <div key={group.group}>
+              <div className="px-7 py-2.5 bg-white/[0.03] border-y border-white/10">
+                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/40">
+                  {group.group}
+                </span>
+              </div>
+              {group.rows.map((row) => (
+                <div
+                  key={row.label}
+                  className={`${GRID} items-center px-7 py-3.5 border-b border-white/[0.06] last:border-0`}
+                >
+                  <span className="text-sm text-white/70 pr-4">{row.label}</span>
+                  {row.values.map((v, i) => {
+                    const hero = TIERS[i].featured;
+                    return (
+                      <div key={i} className="text-center">
+                        {typeof v === "boolean" ? (
+                          v ? (
+                            <CheckIcon
+                              className={`size-4 mx-auto ${hero ? "text-white" : "text-white/45"}`}
+                            />
+                          ) : (
+                            <span className="inline-block w-2.5 h-px bg-white/20 align-middle" />
+                          )
+                        ) : (
+                          <span
+                            className={`text-sm tabular-nums ${hero ? "text-white font-medium" : "text-white/60"}`}
+                          >
+                            {v}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ══ One-off builds ═══════════════════════════════════════ */}
+      <section
+        id="one-off"
+        className="px-6 md:px-12 pt-20 md:pt-28 pb-20 md:pb-28 max-w-6xl mx-auto w-full scroll-mt-20"
+      >
+        <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/40 mb-4">
+          Or buy individually
+        </p>
+        <h2 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] mb-3">
+          One-off builds
+        </h2>
+        <p className="text-white/55 leading-relaxed mb-10 max-w-xl">
+          Need a brand-new store, or just the pages you need without a retainer?
+          We build those too.
         </p>
 
-        <div className="border-2 border-[#1B1B1B] rounded-2xl p-6 md:p-7 bg-white mb-14">
-          <div className="flex items-baseline justify-between gap-3 mb-2">
-            <h3 className="text-lg font-bold">Full Shopify site build</h3>
-            <span className="text-xl font-bold tabular-nums shrink-0">
+        {/* Full Shopify site build */}
+        <div className="border border-white/12 rounded-3xl p-7 md:p-9 bg-white/[0.025] mb-4">
+          <div className="flex items-baseline justify-between gap-3 mb-3">
+            <h3 className="text-lg font-semibold">Full Shopify site build</h3>
+            <span className="text-2xl font-semibold tabular-nums shrink-0">
               From £15,000
             </span>
           </div>
-          <p className="text-sm text-[#5A5A5A] leading-relaxed mb-4">
-            A complete custom Shopify store designed to convert from day one.
-            The full site, not a template: structure, design, copy and
-            development handled in one go.
+          <p className="text-sm text-white/55 leading-relaxed mb-6 max-w-lg">
+            A complete custom Shopify store designed to convert from day one. The
+            full site, not a template: structure, design, copy and development
+            handled in one go.
           </p>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2.5">
             {[
               "Custom Shopify theme, built from scratch",
               "Every core page: home, collections, PDP, cart, account",
@@ -249,48 +465,40 @@ export default function PricingPage() {
             ].map((f) => (
               <li
                 key={f}
-                className="flex items-start gap-2 text-xs text-[#7A7A7A]"
+                className="flex items-start gap-2.5 text-sm text-white/70"
               >
-                <CheckIcon className="size-3 text-[#1B1B1B] mt-0.5 shrink-0" />
+                <CheckIcon className="size-3.5 text-white/40 mt-0.5 shrink-0" />
                 {f}
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Smaller one-off builds */}
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
-          One-off builds
-        </h2>
-        <p className="text-sm text-[#5A5A5A] leading-relaxed mb-7">
-          Or buy just the pages you need, no retainer.
-        </p>
-
-        {/* Funnel Build — featured */}
+        {/* Funnel Build */}
         {funnel && (
-          <div className="border border-[#E5E5EA] rounded-2xl p-6 bg-white mb-4">
-            <div className="flex items-baseline justify-between gap-3 mb-2">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-lg font-bold">Funnel Build</h3>
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#FEF3C7] text-[#A16207]">
+          <div className="border border-white/12 rounded-3xl p-7 bg-white/[0.025] mb-4">
+            <div className="flex items-baseline justify-between gap-3 mb-3">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <h3 className="text-lg font-semibold">Funnel Build</h3>
+                <span className="font-mono text-[9px] font-medium uppercase tracking-[0.18em] px-2.5 py-1 rounded-full bg-[#FAFAF7] text-[#0E0D0B]">
                   Most popular
                 </span>
               </div>
-              <span className="text-xl font-bold tabular-nums shrink-0">
+              <span className="text-xl font-semibold tabular-nums shrink-0">
                 {priceLabel(funnel)}
               </span>
             </div>
-            <p className="text-sm text-[#5A5A5A] leading-relaxed mb-4">
+            <p className="text-sm text-white/55 leading-relaxed mb-6 max-w-lg">
               Framing page, product page and cart, designed as one system. The
               full buyer journey from cold traffic to add-to-cart.
             </p>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2.5">
               {funnel.features.map((f) => (
                 <li
                   key={f}
-                  className="flex items-start gap-2 text-xs text-[#7A7A7A]"
+                  className="flex items-start gap-2.5 text-sm text-white/70"
                 >
-                  <CheckIcon className="size-3 text-[#1B1B1B] mt-0.5 shrink-0" />
+                  <CheckIcon className="size-3.5 text-white/40 mt-0.5 shrink-0" />
                   {f}
                 </li>
               ))}
@@ -298,70 +506,62 @@ export default function PricingPage() {
           </div>
         )}
 
-        {/* Page builds — clean price list */}
-        <div className="border border-[#E5E5EA] rounded-2xl divide-y divide-[#E5E5EA] mb-4">
+        {/* Page builds price list */}
+        <div className="border border-white/12 rounded-3xl divide-y divide-white/[0.07] bg-white/[0.025] mb-12 overflow-hidden">
           {pageBuilds.map((s) => (
             <div
               key={s.id}
-              className="flex items-center justify-between gap-4 px-5 py-4"
+              className="flex items-center justify-between gap-4 px-6 py-4"
             >
               <div className="min-w-0">
                 <p className="text-sm font-semibold">{s.name}</p>
-                <p className="text-xs text-[#7A7A7A] truncate">
-                  {s.description}
-                </p>
+                <p className="text-xs text-white/45 truncate">{s.description}</p>
               </div>
-              <span className="text-sm font-bold tabular-nums shrink-0">
+              <span className="text-sm font-semibold tabular-nums shrink-0">
                 {priceLabel(s)}
               </span>
             </div>
           ))}
         </div>
 
-        {/* Add-ons — compact price list */}
-        <p className="text-[10px] font-bold uppercase tracking-wider text-[#7A7A7A] mb-3">
+        {/* Add-ons */}
+        <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/40 mb-4">
           Add-ons
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-3">
           {addOns.map((s) => (
             <div
               key={s.id}
-              className="flex items-baseline justify-between gap-3 border-b border-[#F0F0F0] pb-2"
+              className="flex items-baseline justify-between gap-3 border-b border-white/10 pb-2.5"
             >
-              <span className="text-sm text-[#1B1B1B] min-w-0 truncate">
+              <span className="text-sm text-white/85 min-w-0 truncate">
                 {s.name}
               </span>
-              <span className="text-sm font-semibold tabular-nums text-[#5A5A5A] shrink-0">
+              <span className="text-sm font-semibold tabular-nums text-white/60 shrink-0">
                 {priceLabel(s)}
               </span>
             </div>
           ))}
         </div>
-
-        {/* Closing */}
-        <div className="border-t border-[#E5E5EA] mt-12 pt-8">
-          <h3 className="text-xl font-bold mb-2">Not sure where to start?</h3>
-          <p className="text-sm text-[#5A5A5A] leading-relaxed max-w-xl">
-            <AuditLink>Ask us for a free, surface-level audit</AuditLink> of your
-            funnel. We&apos;ll show you the gaps and the gains, then you decide
-            what fits.
-          </p>
-        </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-[#EDEDEF] px-6 md:px-12 py-6 text-center mt-auto">
-        <p className="text-xs text-[#A0A0A0]">
-          Built by{" "}
-          <a
-            href="https://ecomlanders.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
-          >
-            Ecomlanders
-          </a>
-        </p>
+
+      {/* ══ Footer ═══════════════════════════════════════════════ */}
+      <footer className="border-t border-white/8 mt-auto">
+        <div className="max-w-6xl mx-auto w-full px-6 md:px-12 py-7 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <Logo height={14} className="text-white/70" />
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">
+            Built by{" "}
+            <a
+              href="https://ecomlanders.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/60 hover:text-white transition-colors"
+            >
+              Ecomlanders
+            </a>
+          </p>
+        </div>
       </footer>
     </div>
   );
