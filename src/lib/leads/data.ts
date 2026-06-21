@@ -6,7 +6,7 @@
  */
 
 import { createStore } from "@/lib/supabase-store";
-import type { Lead, LeadStage } from "./types";
+import type { Lead, LeadStage, SalesCall } from "./types";
 
 export const leadsStore = createStore<Lead>({
   table: "leads",
@@ -39,6 +39,32 @@ export function emptyLead(): Lead {
     next_action: "",
     notes: "",
     touches: [],
+    sales_calls: [],
+    created_at: nowISO(),
+    updated_at: nowISO(),
+  };
+}
+
+/* Fresh structured call shell. Defaults follow the playbook's
+ * call script - the closer fills phase notes inline. */
+export function emptySalesCall(ranBy = ""): SalesCall {
+  return {
+    id: uid(),
+    ran_by: ranBy,
+    called_at: nowISO(),
+    frame_notes: "",
+    discovery: {
+      monthly_revenue: "",
+      biggest_funnel_loss: "",
+      prior_cro_tried: "",
+      decision_maker: "",
+      prize_value: "",
+      why_now: "",
+    },
+    discovery_notes: "",
+    demo_notes: "",
+    close_notes: "",
+    next_action_booked: "",
     created_at: nowISO(),
     updated_at: nowISO(),
   };

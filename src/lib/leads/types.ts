@@ -48,6 +48,68 @@ export interface LeadTouch {
   summary: string;             // free-text - what happened
 }
 
+/* ── Sales call (structured by the playbook's 4-phase script) ──
+ *
+ * The closer captures a call against the spine: Frame → Discovery
+ * → Demo → Close. Discovery's qualifying questions are first-class
+ * fields, not free text, so the form mirrors the script and the
+ * answers stay structured for later analysis.
+ */
+
+export interface SalesCallDiscovery {
+  monthly_revenue: string;            // their answer to the rev-band question
+  biggest_funnel_loss: string;
+  prior_cro_tried: string;
+  decision_maker: string;             // who owns site + can approve changes
+  prize_value: string;                // what's it worth if we lift the metric
+  why_now: string;
+}
+
+export type SalesCallOutcome =
+  | "next_step_booked"
+  | "audit_sold"
+  | "retainer_signed"
+  | "no_decision"
+  | "passed";
+
+export interface SalesCall {
+  id: string;
+  ran_by: string;                     // closer
+  called_at: string;                  // ISO
+  duration_minutes?: number;
+
+  /* Phase notes. Discovery has its own structured fields above;
+   * these markdown blobs are for the rest of the script. */
+  frame_notes: string;
+  discovery: SalesCallDiscovery;
+  discovery_notes: string;
+  demo_notes: string;
+  close_notes: string;
+
+  /* Outcome + the next step the call has to end on. */
+  outcome?: SalesCallOutcome;
+  next_action_booked: string;         // free-text - next call date / audit sent / etc.
+
+  created_at: string;
+  updated_at: string;
+}
+
+export const OUTCOME_LABEL: Record<SalesCallOutcome, string> = {
+  next_step_booked: "Next step booked",
+  audit_sold: "Audit sold",
+  retainer_signed: "Retainer signed",
+  no_decision: "No decision (re-touch)",
+  passed: "Passed",
+};
+
+export const OUTCOME_TINT: Record<SalesCallOutcome, string> = {
+  next_step_booked: "bg-cyan-500/15 text-cyan-200 ring-1 ring-cyan-500/30",
+  audit_sold: "bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-500/30",
+  retainer_signed: "bg-emerald-500/25 text-emerald-100 ring-1 ring-emerald-500/40",
+  no_decision: "bg-amber-500/15 text-amber-200 ring-1 ring-amber-500/30",
+  passed: "bg-rose-500/15 text-rose-200 ring-1 ring-rose-500/30",
+};
+
 export interface Lead {
   id: string;
 
@@ -88,6 +150,11 @@ export interface Lead {
   /* ── Body ── markdown notes + append-only touch log ── */
   notes: string;
   touches: LeadTouch[];
+
+  /* Sales calls captured against this lead. Each call follows the
+   * playbook's 4-phase spine (Frame / Discovery / Demo / Close).
+   * Newest first in the UI. */
+  sales_calls: SalesCall[];
 
   created_at: string;
   updated_at: string;

@@ -23,11 +23,14 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
   DocumentMagnifyingGlassIcon,
+  ChevronDownIcon,
+  PhoneIcon,
 } from "@heroicons/react/24/outline";
 import { useRole } from "@/components/auth-gate";
 import { discoveryAuditsStore, emptyAudit } from "@/lib/discovery-audits/data";
 import type { DiscoveryAudit } from "@/lib/discovery-audits/types";
 import {
+  emptySalesCall,
   leadsStore,
   nowISO,
   risksFor,
@@ -36,6 +39,8 @@ import {
   uid,
 } from "@/lib/leads/data";
 import {
+  OUTCOME_LABEL,
+  OUTCOME_TINT,
   PATH_LABEL,
   PATH_ORDER,
   STAGE_LABEL,
@@ -46,6 +51,8 @@ import {
   type LeadStage,
   type LeadTouch,
   type LeadTouchKind,
+  type SalesCall,
+  type SalesCallOutcome,
 } from "@/lib/leads/types";
 import { inputClass, labelClass, textareaClass } from "@/lib/form-styles";
 
@@ -122,6 +129,39 @@ export default function LeadDetailPage({
   function transition(next: LeadStage) {
     if (!lead) return;
     patch(stageTransitionStamp(lead.stage, next));
+  }
+
+  function addCall() {
+    if (!lead) return;
+    const call = emptySalesCall(lead.owner);
+    patch({
+      sales_calls: [call, ...lead.sales_calls],
+      last_touched_at: call.called_at,
+      first_touch_at: lead.first_touch_at || call.called_at,
+    });
+    /* Also log it on the touches timeline so the cadence picture
+     * stays accurate without the closer double-entering. */
+    const t: LeadTouch = {
+      id: uid(),
+      kind: "call_done",
+      at: call.called_at,
+      by: call.ran_by || "—",
+      summary: "Sales call logged",
+    };
+    patch({ touches: [t, ...lead.touches] });
+  }
+  function updateCall(callId: string, p: Partial<SalesCall>) {
+    if (!lead) return;
+    patch({
+      sales_calls: lead.sales_calls.map((c) =>
+        c.id === callId ? { ...c, ...p, updated_at: nowISO() } : c,
+      ),
+    });
+  }
+  function removeCall(callId: string) {
+    if (!lead) return;
+    if (!window.confirm("Delete this call record?")) return;
+    patch({ sales_calls: lead.sales_calls.filter((c) => c.id !== callId) });
   }
 
   function logTouch(kind: LeadTouchKind, summary: string) {
@@ -449,6 +489,39 @@ export default function LeadDetailPage({
         )}
       </Section>
 
+      {/* Sales calls (structured by the playbook's 4-phase script) */}
+      <Section title={`Sales calls (${lead.sales_calls.length})`}>
+        <div className="flex items-center justify-between gap-3 -mt-1">
+          <p className="text-[11px] text-[#71757D]">
+            Capture each call against the script: Frame → Discovery → Demo → Close. Always end with a booked next step or a clean no.
+          </p>
+          <button
+            onClick={addCall}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 shrink-0"
+          >
+            <PhoneIcon className="size-3.5" />
+            Log new call
+          </button>
+        </div>
+        {lead.sales_calls.length === 0 ? (
+          <p className="text-[11px] italic text-[#71757D] mt-3">
+            No calls logged yet.
+          </p>
+        ) : (
+          <div className="space-y-2 mt-3">
+            {lead.sales_calls.map((c) => (
+              <SalesCallCard
+                key={c.id}
+                call={c}
+                defaultOpen={c.created_at === c.updated_at}
+                onChange={(p) => updateCall(c.id, p)}
+                onDelete={() => removeCall(c.id)}
+              />
+            ))}
+          </div>
+        )}
+      </Section>
+
       {/* Touches log */}
       <Section title={`Touches (${lead.touches.length})`}>
         <TouchLogger onLog={logTouch} />
@@ -516,6 +589,262 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     <div>
       <label className={labelClass}>{label}</label>
       {children}
+    </div>
+  );
+}
+
+/* ─── SalesCallCard - one structured call against the playbook script ─── */
+const OUTCOME_ORDER: SalesCallOutcome[] = [
+  "next_step_booked",
+  "audit_sold",
+  "retainer_signed",
+  "no_decision",
+  "passed",
+];
+
+function SalesCallCard({
+  call,
+  defaultOpen,
+  onChange,
+  onDelete,
+}: {
+  call: SalesCall;
+  defaultOpen: boolean;
+  onChange: (patch: Partial<SalesCall>) => void;
+  onDelete: () => void;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="bg-black/40 rounded-xl ring-1 ring-white/[0.06]">
+      <div className="flex items-center gap-3 px-4 py-3">
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="flex-1 min-w-0 text-left flex items-center gap-3"
+        >
+          <PhoneIcon className="size-3.5 text-cyan-300 shrink-0" />
+          <span className="text-sm text-[#E5E5EA]">
+            {new Date(call.called_at).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}
+          </span>
+          {call.ran_by && (
+            <span className="text-[11px] text-[#71757D]">· {call.ran_by}</span>
+          )}
+          {call.outcome && (
+            <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold ${OUTCOME_TINT[call.outcome]}`}>
+              {OUTCOME_LABEL[call.outcome]}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={onDelete}
+          className="p-1 text-[#71757D] hover:text-rose-400"
+          title="Delete call"
+        >
+          <TrashIcon className="size-3.5" />
+        </button>
+        <ChevronDownIcon
+          onClick={() => setOpen((v) => !v)}
+          className={`size-4 text-[#71757D] transition-transform cursor-pointer ${open ? "rotate-180" : ""}`}
+        />
+      </div>
+      {open && (
+        <div className="border-t border-white/[0.04] p-4 space-y-4">
+          {/* Meta row */}
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_180px_200px] gap-3">
+            <Field label="Ran by">
+              <input
+                value={call.ran_by}
+                onChange={(e) => onChange({ ran_by: e.target.value })}
+                className={inputClass}
+                placeholder="Closer name"
+              />
+            </Field>
+            <Field label="Duration (mins)">
+              <input
+                type="number"
+                value={call.duration_minutes ?? ""}
+                onChange={(e) =>
+                  onChange({
+                    duration_minutes: e.target.value ? Number(e.target.value) : undefined,
+                  })
+                }
+                className={inputClass}
+                placeholder="30"
+              />
+            </Field>
+            <Field label="Outcome">
+              <select
+                value={call.outcome ?? ""}
+                onChange={(e) =>
+                  onChange({
+                    outcome: (e.target.value || undefined) as SalesCallOutcome | undefined,
+                  })
+                }
+                className={inputClass}
+              >
+                <option value="">—</option>
+                {OUTCOME_ORDER.map((o) => (
+                  <option key={o} value={o}>{OUTCOME_LABEL[o]}</option>
+                ))}
+              </select>
+            </Field>
+          </div>
+
+          {/* Phase 1: Frame */}
+          <PhaseBlock
+            title="1 · Frame"
+            blurb="Set the agenda, take polite control. Agreement on the agenda earns the right to ask hard questions later."
+            value={call.frame_notes}
+            onChange={(v) => onChange({ frame_notes: v })}
+          />
+
+          {/* Phase 2: Discovery (structured fields + free notes) */}
+          <div>
+            <div className="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold mb-2">
+              2 · Discovery
+            </div>
+            <p className="text-[11px] text-[#71757D] mb-3">
+              Get them to name the problem and its cost. Whoever diagnoses, prescribes.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Field label="Monthly revenue (their answer)">
+                <input
+                  value={call.discovery.monthly_revenue}
+                  onChange={(e) =>
+                    onChange({
+                      discovery: { ...call.discovery, monthly_revenue: e.target.value },
+                    })
+                  }
+                  className={inputClass}
+                  placeholder="£300k/mo"
+                />
+              </Field>
+              <Field label="Decision-maker">
+                <input
+                  value={call.discovery.decision_maker}
+                  onChange={(e) =>
+                    onChange({
+                      discovery: { ...call.discovery, decision_maker: e.target.value },
+                    })
+                  }
+                  className={inputClass}
+                  placeholder="Who owns site + can approve changes"
+                />
+              </Field>
+              <Field label="Biggest funnel loss (their answer)">
+                <input
+                  value={call.discovery.biggest_funnel_loss}
+                  onChange={(e) =>
+                    onChange({
+                      discovery: { ...call.discovery, biggest_funnel_loss: e.target.value },
+                    })
+                  }
+                  className={inputClass}
+                  placeholder="Where they think they're losing the most"
+                />
+              </Field>
+              <Field label="Prior CRO tried">
+                <input
+                  value={call.discovery.prior_cro_tried}
+                  onChange={(e) =>
+                    onChange({
+                      discovery: { ...call.discovery, prior_cro_tried: e.target.value },
+                    })
+                  }
+                  className={inputClass}
+                  placeholder="What's been tried + what happened"
+                />
+              </Field>
+              <Field label="Prize value (if we lift the metric)">
+                <input
+                  value={call.discovery.prize_value}
+                  onChange={(e) =>
+                    onChange({
+                      discovery: { ...call.discovery, prize_value: e.target.value },
+                    })
+                  }
+                  className={inputClass}
+                  placeholder="What it's worth to them"
+                />
+              </Field>
+              <Field label="Why now?">
+                <input
+                  value={call.discovery.why_now}
+                  onChange={(e) =>
+                    onChange({
+                      discovery: { ...call.discovery, why_now: e.target.value },
+                    })
+                  }
+                  className={inputClass}
+                  placeholder="Real urgency, or its absence"
+                />
+              </Field>
+            </div>
+            <div className="mt-3">
+              <Field label="Other discovery notes (markdown)">
+                <textarea
+                  value={call.discovery_notes}
+                  onChange={(e) => onChange({ discovery_notes: e.target.value })}
+                  rows={3}
+                  className={`${textareaClass} font-mono text-[13px]`}
+                  placeholder="Anything else surfaced. Disqualifiers, ICP signals, intel."
+                />
+              </Field>
+            </div>
+          </div>
+
+          {/* Phase 3: Demo */}
+          <PhaseBlock
+            title="3 · Demo"
+            blurb="Prove competence by reacting to their store live. Two sharp observations beat ten shallow ones."
+            value={call.demo_notes}
+            onChange={(v) => onChange({ demo_notes: v })}
+          />
+
+          {/* Phase 4: Close */}
+          <PhaseBlock
+            title="4 · Close"
+            blurb="Recommend a tier directively. Lock the next action before hanging up. Silence closes."
+            value={call.close_notes}
+            onChange={(v) => onChange({ close_notes: v })}
+          />
+
+          <Field label="Next action booked (don't end without one)">
+            <input
+              value={call.next_action_booked}
+              onChange={(e) => onChange({ next_action_booked: e.target.value })}
+              className={inputClass}
+              placeholder="e.g. Contract sent today; or Next call booked Tue 11am"
+            />
+          </Field>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PhaseBlock({
+  title,
+  blurb,
+  value,
+  onChange,
+}: {
+  title: string;
+  blurb: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div>
+      <div className="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold mb-1">
+        {title}
+      </div>
+      <p className="text-[11px] text-[#71757D] mb-2">{blurb}</p>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={3}
+        className={`${textareaClass} font-mono text-[13px]`}
+      />
     </div>
   );
 }

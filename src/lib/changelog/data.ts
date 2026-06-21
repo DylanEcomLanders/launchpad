@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-95",
+    date: "21 June 2026",
+    version: "1.5.2",
+    title: "Sales-call capture - the 4-phase script, structured",
+    changes: [
+      { type: "added", text: "Sales calls captured against each lead, structured by the playbook's 4-phase script: Frame → Discovery → Demo → Close. Closer clicks Log new call from the lead detail, fills phase notes inline, sets outcome (Next step booked / Audit sold / Retainer signed / No decision / Passed). Auto-logs a touches-timeline entry so cadence stays accurate without double-entry" },
+      { type: "added", text: "Discovery section is structured: monthly revenue answer, biggest funnel loss, prior CRO tried, decision-maker, prize value, why now - each as its own field rather than free text so the answers stay analysable. Plus a markdown notes blob for anything else surfaced" },
+      { type: "added", text: "Per-call outcome pill colours the call header; first new call defaults open for editing; subsequent re-opens collapse. Each call carries duration, ran_by, called_at, and the next_action_booked field the playbook insists every call end with" },
+      { type: "improved", text: "Lead.sales_calls is a nested array on the existing leads table (jsonb pattern), so no new migration needed - just push and use" },
+    ],
+  },
+  {
     id: "cl-94",
     date: "21 June 2026",
     version: "1.5.1",
