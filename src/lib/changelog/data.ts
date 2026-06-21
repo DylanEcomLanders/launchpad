@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-107",
+    date: "22 June 2026",
+    version: "1.9.1",
+    title: "Brain library v1 - searchable test learnings",
+    changes: [
+      { type: "added", text: "/knowledge brain-library surface. Every concluded test (winner / loser / inconclusive) is a library entry with the hypothesis + learning surfaced inline. Searchable across hypothesis / client / surface / write-up / learning text" },
+      { type: "added", text: "Outcome filters (Winners / Losers / Inconclusive) + tag filters. Common surface tags seeded (pdp, cart, checkout, landing, post-purchase, klaviyo, ad-creative); admin adds custom tags inline per test. Tags persist on the ab_tests row" },
+      { type: "added", text: "Top stats: tests in library, winners count, win rate. Win rate is the team's compounding-knowledge KPI" },
+      { type: "improved", text: "No new tables - reads ab_tests directly with tags nested on the existing jsonb shape. Auto-grows as tests conclude" },
+    ],
+  },
+  {
     id: "cl-106",
     date: "22 June 2026",
     version: "1.9.0",

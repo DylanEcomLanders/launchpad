@@ -40,6 +40,9 @@ export interface AbTest {
   write_up: string;                    // markdown
   learnings: string;                   // markdown - what it feeds next
 
+  /* Brain library tags - funnel area, brand type, test pattern. */
+  tags?: string[];
+
   created_at: string;
   updated_at: string;
 }
