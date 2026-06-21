@@ -37,6 +37,20 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-93",
+    date: "21 June 2026",
+    version: "1.5.0",
+    title: "Discovery Audit builder",
+    changes: [
+      { type: "added", text: "Discovery Audit builder at /tools/discovery-audit - systemises the £1k pre-signup audit the playbook calls out as the biggest acquisition unlock. Strategist fills in identity + funnel snapshot + findings + 30/60/90 plan + recommended tier; system outputs a consistent branded deck. Replaces ad-hoc Google Docs / Notion versions" },
+      { type: "added", text: "Detail editor with debounced auto-save (600ms) and six collapsible sections matching the deck spine: Identity / Funnel snapshot / Findings / Executive summary / 30-60-90 plan / Recommendation. Status pill flows draft → ready → sent → credited (with a passed escape hatch); sent_at + credited_at auto-stamp on transition" },
+      { type: "added", text: "Findings carry ICE scoring (Impact × Confidence × Ease, 1-10 each). Multi-stage finding picker (Landing / PDP / Cart / Checkout / Post-purchase / Other). Output deck sorts findings by ICE descending so the lead reads the highest-leverage problems first" },
+      { type: "added", text: "Public shareable output at /audit-output/[slug] - cover with brand-gradient headline, exec summary, snapshot stats, findings as deck-style slides with screenshot slot + revenue cost callout, 30/60/90 horizons, recommendation with bonded tier card and explicit credit-against-retainer line. No auth (slug is the gate). Matches the rest of the Hero Offer's cool green-blue chrome" },
+      { type: "added", text: "Cross-link from /hero-offer/execution top: admin sees an Execution tools strip with a one-click Open builder button. Will grow as Phase 3 ships the roadmap / brief / test / report builders" },
+      { type: "added", text: "Migration 032 creates the discovery_audits table (jsonb pattern with both created_at + updated_at). Flag as MANUAL PASTE to Supabase SQL Editor" },
+    ],
+  },
+  {
     id: "cl-92",
     date: "21 June 2026",
     version: "1.4.1",

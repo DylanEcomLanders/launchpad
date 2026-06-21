@@ -14,12 +14,15 @@
  */
 
 import { useEffect, useState, type ReactNode } from "react";
+import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
   CheckIcon,
   XMarkIcon,
   PencilSquareIcon,
+  ArrowTopRightOnSquareIcon,
+  DocumentMagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import { useRole } from "@/components/auth-gate";
 import {
@@ -129,6 +132,31 @@ export default function ExecutionPage() {
         what gets delivered, how long it takes, and the bar to hit for
         each. This is the team&apos;s spec.
       </div>
+
+      {/* Tools that operationalise this stage. Grows as Phase 3 ships
+          the roadmap builder, brief builders, test tracker, reports. */}
+      {isAdmin && (
+        <div className="bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 rounded-xl ring-1 ring-emerald-500/20 p-4 flex items-center gap-3">
+          <div className="size-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(16,185,129,0.3)] shrink-0">
+            <DocumentMagnifyingGlassIcon className="size-4.5 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold mb-0.5">
+              Execution tools
+            </div>
+            <div className="text-sm text-[#E5E5EA]">
+              Run a paid Discovery Audit through the systemised builder.
+            </div>
+          </div>
+          <Link
+            href="/tools/discovery-audit"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA] shrink-0"
+          >
+            Open builder
+            <ArrowTopRightOnSquareIcon className="size-3" />
+          </Link>
+        </div>
+      )}
 
       <div className="space-y-3">
         {layers.length === 0 ? (
