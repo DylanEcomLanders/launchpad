@@ -13,15 +13,15 @@ interface Props {
 
 export function HeadlineStatCard({ stat, index, onChange, onDelete }: Props) {
   return (
-    <div className="bg-[#FAFAFB] border border-[#EDEDEF] rounded-lg p-4 space-y-3">
+    <div className="bg-[#0C0C0C] border border-[#2A2A2A] rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between gap-3">
-        <div className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
           Stat {index + 1}
         </div>
         <button
           type="button"
           onClick={onDelete}
-          className="text-[#A0A0A0] hover:text-red-600 transition-colors p-1"
+          className="text-[#71757D] hover:text-red-600 transition-colors p-1"
           title="Remove stat"
         >
           <TrashIcon className="size-4" />

@@ -86,15 +86,15 @@ export function PodKanban({
   const stageOf = (t: Task) => (t.phase ? PHASE_STAGE[t.phase] ?? 0 : 0);
 
   return (
-    <section className="rounded-xl border border-[#E5E5EA] bg-white p-4 shadow-[var(--shadow-soft)]">
+    <section className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)]">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-[#1B1B1B]">Pipeline</h2>
-        <label className="flex items-center gap-1.5 text-[11px] text-[#7A7A7A]">
+        <h2 className="text-sm font-semibold text-[#E5E5EA]">Pipeline</h2>
+        <label className="flex items-center gap-1.5 text-[11px] text-[#71757D]">
           Show
           <select
             value={mine}
             onChange={(e) => setMine(e.target.value)}
-            className="rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-[12px] font-medium text-[#1B1B1B] focus:outline-none"
+            className="rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[12px] font-medium text-[#E5E5EA] focus:outline-none"
           >
             <option value="">Whole pod</option>
             {members
@@ -112,13 +112,13 @@ export function PodKanban({
         {STAGES.map((stage, si) => {
           const items = cards.filter((t) => stageOf(t) === si);
           return (
-            <div key={stage} className="rounded-lg border border-[#E5E5EA] bg-[#F7F8FA] p-2">
+            <div key={stage} className="rounded-lg border border-[#2A2A2A] bg-[#0C0C0C] p-2">
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">{stage}</span>
-                <span className="text-[10px] tabular-nums text-[#A0A0A0]">{items.length}</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">{stage}</span>
+                <span className="text-[10px] tabular-nums text-[#71757D]">{items.length}</span>
               </div>
               {items.length === 0 ? (
-                <div className="rounded-md border border-dashed border-[#E5E5EA] px-1.5 py-3 text-center text-[10px] text-[#C5C5C5]">
+                <div className="rounded-md border border-dashed border-[#2A2A2A] px-1.5 py-3 text-center text-[10px] text-[#C5C5C5]">
                   —
                 </div>
               ) : (
@@ -127,19 +127,19 @@ export function PodKanban({
                     const client = clientById.get(clientByProject.get(t.project_id) ?? "") ?? null;
                     const risk = riskLevel(t, client, today);
                     return (
-                      <div key={t.id} className="rounded-md border border-[#F0F0F2] bg-white p-2 shadow-[var(--shadow-soft)]">
+                      <div key={t.id} className="rounded-md border border-[#2A2A2A] bg-[#181818] p-2 shadow-[var(--shadow-soft)]">
                         <div className="flex items-start gap-1.5">
                           <span className={`mt-1 size-1.5 shrink-0 rounded-full ${RISK_DOT[risk]}`} />
-                          <span className="min-w-0 flex-1 text-[11px] font-medium leading-tight text-[#1B1B1B]">{t.title}</span>
+                          <span className="min-w-0 flex-1 text-[11px] font-medium leading-tight text-[#E5E5EA]">{t.title}</span>
                         </div>
-                        <div className="mt-1 truncate text-[10px] text-[#7A7A7A]">
+                        <div className="mt-1 truncate text-[10px] text-[#71757D]">
                           {memberName.get(t.assigned_to) ?? "—"}
                           {client && <span className="text-[#C5C5C5]"> · {client.name}</span>}
                         </div>
                         <button
                           onClick={() => advance(t)}
                           title={t.phase === "launch" ? "Mark shipped" : "Advance stage"}
-                          className="mt-1.5 inline-flex items-center gap-1 rounded border border-[#E5E5EA] bg-white px-1.5 py-0.5 text-[9px] font-medium text-[#1B1B1B] transition-colors hover:border-[#1B1B1B] hover:bg-[#1B1B1B] hover:text-white"
+                          className="mt-1.5 inline-flex items-center gap-1 rounded border border-[#2A2A2A] bg-[#181818] px-1.5 py-0.5 text-[9px] font-medium text-[#E5E5EA] transition-colors hover:border-white hover:bg-[#1B1B1B] hover:text-white"
                         >
                           {t.phase === "launch" ? <CheckCircleIcon className="size-3" /> : <ArrowRightCircleIcon className="size-3" />}
                           {t.phase === "launch" ? "Ship" : "Advance"}

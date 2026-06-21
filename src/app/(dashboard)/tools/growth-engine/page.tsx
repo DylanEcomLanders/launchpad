@@ -105,7 +105,7 @@ export default function GrowthEnginePage() {
     })), serialized);
   }, [debouncedSave]);
 
-  // Update node data from editor — syncs canvas, refs, selected node, and triggers save
+  // Update node data from editor: syncs canvas, refs, selected node, and triggers save
   const updateNodeData = useCallback((field: string, value: unknown) => {
     if (!selectedNode || !canvasRef.current) return;
     const updated = nodesRef.current.map((n) =>
@@ -132,7 +132,7 @@ export default function GrowthEnginePage() {
   if (loading || !engine) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin size-6 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full" />
+        <div className="animate-spin size-6 border-2 border-[#2A2A2A] border-t-[#1A1A1A] rounded-full" />
       </div>
     );
   }
@@ -141,8 +141,8 @@ export default function GrowthEnginePage() {
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Top bar — profile + platform tabs */}
-      <div className="border-b border-[#E5E5EA] bg-white px-6 py-0 shrink-0">
+      {/* Top bar, profile + platform tabs */}
+      <div className="border-b border-[#2A2A2A] bg-[#181818] px-6 py-0 shrink-0">
         <div className="flex items-center justify-between">
           {/* Left: Profile switcher + title */}
           <div className="flex items-center gap-4">
@@ -153,25 +153,25 @@ export default function GrowthEnginePage() {
                   onClick={() => { setProfile(p.key); setSelectedNode(null); }}
                   className={`px-3 py-1.5 text-xs font-semibold rounded-full transition-colors ${
                     profile === p.key
-                      ? "bg-[#1A1A1A] text-white"
-                      : "text-[#999] hover:text-[#1A1A1A] hover:bg-[#F5F5F5]"
+                      ? "bg-white text-[#0C0C0C]"
+                      : "text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#222222]"
                   }`}
                 >
                   {p.label}
                 </button>
               ))}
             </div>
-            <div className="h-5 w-px bg-[#E5E5EA]" />
-            <h1 className="text-sm font-semibold text-[#1A1A1A]">Agency Funnels</h1>
+            <div className="h-5 w-px bg-[#2A2A2A]" />
+            <h1 className="text-sm font-semibold text-[#E5E5EA]">Agency Funnels</h1>
           </div>
 
           {/* Right: View switcher + stats */}
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1 bg-[#F3F3F5] rounded-lg p-0.5">
-              <button onClick={() => setView("funnel")} className={`px-3 py-1 text-[11px] font-medium rounded-md transition-colors ${view === "funnel" ? "bg-white text-[#1A1A1A] shadow-sm" : "text-[#999]"}`}>Funnel</button>
-              <button onClick={() => setView("gaps")} className={`px-3 py-1 text-[11px] font-medium rounded-md transition-colors ${view === "gaps" ? "bg-white text-[#1A1A1A] shadow-sm" : "text-[#999]"}`}>Gap Grid</button>
+            <div className="flex items-center gap-1 bg-[#222222] rounded-lg p-0.5">
+              <button onClick={() => setView("funnel")} className={`px-3 py-1 text-[11px] font-medium rounded-md transition-colors ${view === "funnel" ? "bg-[#181818] text-[#E5E5EA] shadow-sm" : "text-[#71757D]"}`}>Funnel</button>
+              <button onClick={() => setView("gaps")} className={`px-3 py-1 text-[11px] font-medium rounded-md transition-colors ${view === "gaps" ? "bg-[#181818] text-[#E5E5EA] shadow-sm" : "text-[#71757D]"}`}>Gap Grid</button>
             </div>
-            <span className="text-[10px] text-[#AAA]">{totalFlows} funnels · {totalNodes} nodes</span>
+            <span className="text-[10px] text-[#9CA3AF]">{totalFlows} funnels · {totalNodes} nodes</span>
           </div>
         </div>
 
@@ -187,14 +187,14 @@ export default function GrowthEnginePage() {
                 onClick={() => { setPlatform(p.key); setSelectedNode(null); }}
                 className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors ${
                   isActive
-                    ? "border-[#1A1A1A] text-[#1A1A1A]"
-                    : "border-transparent text-[#999] hover:text-[#555]"
+                    ? "border-[#1A1A1A] text-[#E5E5EA]"
+                    : "border-transparent text-[#71757D] hover:text-[#C7C9CD]"
                 }`}
               >
                 <span style={{ color: isActive ? p.color : undefined }}>{p.icon}</span>
                 {p.label}
                 {nodeCount > 0 && (
-                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${isActive ? "bg-[#1A1A1A] text-white" : "bg-[#F0F0F0] text-[#999]"}`}>
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${isActive ? "bg-white text-[#0C0C0C]" : "bg-[#222222] text-[#71757D]"}`}>
                     {nodeCount}
                   </span>
                 )}
@@ -209,27 +209,27 @@ export default function GrowthEnginePage() {
         <div className="flex-1 overflow-auto p-6">
           <div className="max-w-5xl mx-auto">
             <div className="mb-6">
-              <h2 className="text-lg font-bold text-[#1A1A1A]">Gap Analysis — {PROFILES.find(p => p.key === profile)?.label}</h2>
-              <p className="text-xs text-[#AAA] mt-1">Red = missing, Amber = planned, Green = live</p>
+              <h2 className="text-lg font-bold text-[#E5E5EA]">Gap Analysis: {PROFILES.find(p => p.key === profile)?.label}</h2>
+              <p className="text-xs text-[#9CA3AF] mt-1">Red = missing, Amber = planned, Green = live</p>
             </div>
-            <div className="border border-[#E5E5EA] rounded-xl overflow-hidden bg-white">
+            <div className="border border-[#2A2A2A] rounded-xl overflow-hidden bg-[#181818]">
               {/* Header row */}
-              <div className="grid grid-cols-[140px_1fr_1fr_1fr_1fr] border-b border-[#E5E5EA]">
-                <div className="px-4 py-3 bg-[#FAFAFA]" />
+              <div className="grid grid-cols-[140px_1fr_1fr_1fr_1fr] border-b border-[#2A2A2A]">
+                <div className="px-4 py-3 bg-[#0C0C0C]" />
                 {STAGES.map(s => (
-                  <div key={s.key} className="px-4 py-3 bg-[#FAFAFA] border-l border-[#E5E5EA]">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">{s.label}</p>
-                    <p className="text-[9px] text-[#CCC]">{s.warmth}</p>
+                  <div key={s.key} className="px-4 py-3 bg-[#0C0C0C] border-l border-[#2A2A2A]">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF]">{s.label}</p>
+                    <p className="text-[9px] text-[#C7C9CD]">{s.warmth}</p>
                   </div>
                 ))}
               </div>
               {/* Channel rows */}
               {PLATFORMS.map(ch => {
                 return (
-                  <div key={ch.key} className="grid grid-cols-[140px_1fr_1fr_1fr_1fr] border-b border-[#F0F0F0] last:border-0">
+                  <div key={ch.key} className="grid grid-cols-[140px_1fr_1fr_1fr_1fr] border-b border-[#2A2A2A] last:border-0">
                     <div className="px-4 py-4 flex items-center gap-2">
                       <span className="text-sm">{ch.icon}</span>
-                      <span className="text-xs font-medium text-[#1A1A1A]">{ch.label}</span>
+                      <span className="text-xs font-medium text-[#E5E5EA]">{ch.label}</span>
                     </div>
                     {STAGES.map(stage => {
                       // Check if this profile+channel has nodes in this stage
@@ -254,7 +254,7 @@ export default function GrowthEnginePage() {
                       return (
                         <div
                           key={stage.key}
-                          className={`px-4 py-4 border-l border-[#F0F0F0] cursor-pointer hover:bg-[#FAFAFA] transition-colors ${
+                          className={`px-4 py-4 border-l border-[#2A2A2A] cursor-pointer hover:bg-[#0C0C0C] transition-colors ${
                             isEmpty ? "bg-red-50/30" : hasLive ? "bg-emerald-50/30" : "bg-amber-50/30"
                           }`}
                           onClick={() => { setPlatform(ch.key); setView("funnel"); }}
@@ -266,7 +266,7 @@ export default function GrowthEnginePage() {
                               <span className={`text-[10px] font-semibold ${hasLive ? "text-emerald-600" : "text-amber-600"}`}>
                                 {stageNodes.length} item{stageNodes.length !== 1 ? "s" : ""}
                               </span>
-                              <p className="text-[9px] text-[#AAA] mt-0.5 truncate">
+                              <p className="text-[9px] text-[#9CA3AF] mt-0.5 truncate">
                                 {stageNodes.map(n => (n.data as any)?.label).join(", ")}
                               </p>
                             </div>
@@ -290,7 +290,7 @@ export default function GrowthEnginePage() {
                 });
               });
               return (
-                <p className="text-xs text-[#AAA] mt-4">{gaps} gap{gaps !== 1 ? "s" : ""} identified across {PLATFORMS.length} channels</p>
+                <p className="text-xs text-[#9CA3AF] mt-4">{gaps} gap{gaps !== 1 ? "s" : ""} identified across {PLATFORMS.length} channels</p>
               );
             })()}
           </div>
@@ -300,39 +300,39 @@ export default function GrowthEnginePage() {
       {/* Main area — sidebar + canvas */}
       {view === "funnel" && <div className="flex flex-1 overflow-hidden">
         {/* Left sidebar — palette or node editor */}
-        <div className="w-64 border-r border-[#E5E5EA] bg-white overflow-y-auto shrink-0">
+        <div className="w-64 border-r border-[#2A2A2A] bg-[#181818] overflow-y-auto shrink-0">
           {selectedNode ? (
             /* Node editor */
             <div className="p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">Edit Node</p>
-                <button onClick={() => setSelectedNode(null)} className="text-[10px] text-[#CCC] hover:text-[#1A1A1A]">Done</button>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF]">Edit Node</p>
+                <button onClick={() => setSelectedNode(null)} className="text-[10px] text-[#C7C9CD] hover:text-[#E5E5EA]">Done</button>
               </div>
               <div>
-                <label className="text-[10px] text-[#777] block mb-1">Title</label>
+                <label className="text-[10px] text-[#9CA3AF] block mb-1">Title</label>
                 <input
                   type="text"
                   value={String((selectedNode.data as Record<string, unknown>)?.label || "")}
                   onChange={(e) => updateNodeData("label", e.target.value)}
                   placeholder="Give this node a name..."
-                  className="w-full text-sm px-2 py-1.5 border border-[#E5E5EA] rounded"
+                  className="w-full text-sm px-2 py-1.5 border border-[#2A2A2A] rounded"
                 />
               </div>
               <div>
-                <label className="text-[10px] text-[#777] block mb-1">Description</label>
+                <label className="text-[10px] text-[#9CA3AF] block mb-1">Description</label>
                 <textarea
                   value={String((selectedNode.data as Record<string, unknown>)?.description || "")}
                   onChange={(e) => updateNodeData("description", e.target.value)}
                   placeholder="Add details, notes..."
-                  className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded min-h-[60px] resize-y"
+                  className="w-full text-xs px-2 py-1.5 border border-[#2A2A2A] rounded min-h-[60px] resize-y"
                 />
               </div>
               <div>
-                <label className="text-[10px] text-[#777] block mb-1">Status</label>
+                <label className="text-[10px] text-[#9CA3AF] block mb-1">Status</label>
                 <select
                   value={String((selectedNode.data as Record<string, unknown>)?.status || "planned")}
                   onChange={(e) => updateNodeData("status", e.target.value)}
-                  className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded"
+                  className="w-full text-xs px-2 py-1.5 border border-[#2A2A2A] rounded"
                 >
                   <option value="planned">Planned</option>
                   <option value="in-progress">In Progress</option>
@@ -340,11 +340,11 @@ export default function GrowthEnginePage() {
                 </select>
               </div>
               <div>
-                <label className="text-[10px] text-[#777] block mb-1">Funnel Stage</label>
+                <label className="text-[10px] text-[#9CA3AF] block mb-1">Funnel Stage</label>
                 <select
                   value={String((selectedNode.data as Record<string, unknown>)?.stage || "")}
                   onChange={(e) => updateNodeData("stage", e.target.value)}
-                  className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded"
+                  className="w-full text-xs px-2 py-1.5 border border-[#2A2A2A] rounded"
                 >
                   <option value="">No stage</option>
                   <option value="tofu">TOFU (Top)</option>
@@ -354,11 +354,11 @@ export default function GrowthEnginePage() {
               </div>
               {selectedNode.type === "trafficNode" && (
                 <div>
-                  <label className="text-[10px] text-[#777] block mb-1">Warmth</label>
+                  <label className="text-[10px] text-[#9CA3AF] block mb-1">Warmth</label>
                   <select
                     value={String((selectedNode.data as Record<string, unknown>)?.warmth || "cold")}
                     onChange={(e) => updateNodeData("warmth", e.target.value)}
-                    className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded"
+                    className="w-full text-xs px-2 py-1.5 border border-[#2A2A2A] rounded"
                   >
                     <option value="cold">Cold</option>
                     <option value="warm">Warm</option>
@@ -368,11 +368,11 @@ export default function GrowthEnginePage() {
               )}
               {selectedNode.type === "leadMagnetNode" && (
                 <div>
-                  <label className="text-[10px] text-[#777] block mb-1">Format</label>
+                  <label className="text-[10px] text-[#9CA3AF] block mb-1">Format</label>
                   <select
                     value={String((selectedNode.data as Record<string, unknown>)?.leadMagnetFormat || "pdf")}
                     onChange={(e) => updateNodeData("leadMagnetFormat", e.target.value)}
-                    className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded"
+                    className="w-full text-xs px-2 py-1.5 border border-[#2A2A2A] rounded"
                   >
                     <option value="pdf">PDF Guide</option>
                     <option value="video">Video</option>
@@ -385,38 +385,38 @@ export default function GrowthEnginePage() {
               {selectedNode.type === "emailSequenceNode" && (
                 <div className="space-y-2">
                   <div>
-                    <label className="text-[10px] text-[#777] block mb-1">Email Count</label>
+                    <label className="text-[10px] text-[#9CA3AF] block mb-1">Email Count</label>
                     <input type="number" min={1} value={String((selectedNode.data as any)?.emailSequenceMetrics?.emailCount || "")}
                       onChange={(e) => {
                         const esm = (selectedNode.data as any)?.emailSequenceMetrics || {};
                         updateNodeData("emailSequenceMetrics", { ...esm, emailCount: e.target.value ? Number(e.target.value) : undefined });
                       }}
-                      className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded" />
+                      className="w-full text-xs px-2 py-1.5 border border-[#2A2A2A] rounded" />
                   </div>
                   <div>
-                    <label className="text-[10px] text-[#777] block mb-1">Open Rate %</label>
+                    <label className="text-[10px] text-[#9CA3AF] block mb-1">Open Rate %</label>
                     <input type="number" step="0.1" value={String((selectedNode.data as any)?.emailSequenceMetrics?.openRate ?? "")}
                       onChange={(e) => {
                         const esm = (selectedNode.data as any)?.emailSequenceMetrics || {};
                         updateNodeData("emailSequenceMetrics", { ...esm, openRate: e.target.value ? Number(e.target.value) : undefined });
                       }}
-                      className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded" />
+                      className="w-full text-xs px-2 py-1.5 border border-[#2A2A2A] rounded" />
                   </div>
                   <div>
-                    <label className="text-[10px] text-[#777] block mb-1">Click Rate %</label>
+                    <label className="text-[10px] text-[#9CA3AF] block mb-1">Click Rate %</label>
                     <input type="number" step="0.1" value={String((selectedNode.data as any)?.emailSequenceMetrics?.clickRate ?? "")}
                       onChange={(e) => {
                         const esm = (selectedNode.data as any)?.emailSequenceMetrics || {};
                         updateNodeData("emailSequenceMetrics", { ...esm, clickRate: e.target.value ? Number(e.target.value) : undefined });
                       }}
-                      className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded" />
+                      className="w-full text-xs px-2 py-1.5 border border-[#2A2A2A] rounded" />
                   </div>
                 </div>
               )}
               {/* Content Slots */}
               {(selectedNode.type === "pageNode" || selectedNode.type === "leadMagnetNode") && (
-                <div className="pt-3 border-t border-[#E5E5EA]">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Content Checklist</p>
+                <div className="pt-3 border-t border-[#2A2A2A]">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-2">Content Checklist</p>
                   {(["headline", "hook", "offer", "cta", "socialProof"] as const).map((slot) => {
                     const slots = (selectedNode.data as any)?.contentSlots || {};
                     const checked = slots[slot] || false;
@@ -425,29 +425,29 @@ export default function GrowthEnginePage() {
                       <label key={slot} className="flex items-center gap-2 py-1 cursor-pointer">
                         <input type="checkbox" checked={checked}
                           onChange={(e) => updateNodeData("contentSlots", { ...slots, [slot]: e.target.checked })}
-                          className="size-3.5 rounded border-[#CCC] text-[#1B1B1B] focus:ring-0" />
-                        <span className={`text-xs ${checked ? "text-[#1B1B1B]" : "text-[#999]"}`}>{labels[slot]}</span>
+                          className="size-3.5 rounded border-[#383838] text-[#E5E5EA] focus:ring-0" />
+                        <span className={`text-xs ${checked ? "text-[#E5E5EA]" : "text-[#71757D]"}`}>{labels[slot]}</span>
                       </label>
                     );
                   })}
                 </div>
               )}
               <div>
-                <label className="text-[10px] text-[#777] block mb-1">Preview URL</label>
+                <label className="text-[10px] text-[#9CA3AF] block mb-1">Preview URL</label>
                 <input
                   type="url"
                   value={String((selectedNode.data as Record<string, unknown>)?.previewUrl || "")}
                   onChange={(e) => updateNodeData("previewUrl", e.target.value)}
-                  className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded"
+                  className="w-full text-xs px-2 py-1.5 border border-[#2A2A2A] rounded"
                   placeholder="https://..."
                 />
               </div>
               <div>
-                <label className="text-[10px] text-[#777] block mb-1">Notes</label>
+                <label className="text-[10px] text-[#9CA3AF] block mb-1">Notes</label>
                 <textarea
                   value={String((selectedNode.data as Record<string, unknown>)?.notes || "")}
                   onChange={(e) => updateNodeData("notes", e.target.value)}
-                  className="w-full text-xs px-2 py-1.5 border border-[#E5E5EA] rounded min-h-[80px]"
+                  className="w-full text-xs px-2 py-1.5 border border-[#2A2A2A] rounded min-h-[80px]"
                   placeholder="Strategy notes, ideas..."
                 />
               </div>
@@ -455,7 +455,7 @@ export default function GrowthEnginePage() {
           ) : (
             /* Palette */
             <div className="p-4">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-3">
                 Traffic Sources
               </p>
               <div className="space-y-1.5 mb-5">
@@ -470,16 +470,16 @@ export default function GrowthEnginePage() {
                         e.dataTransfer.setData("application/reactflow", JSON.stringify(data));
                         e.dataTransfer.effectAllowed = "move";
                       }}
-                      className="flex items-center gap-2 px-3 py-2 border border-[#E5E5EA] rounded-lg cursor-grab hover:border-[#999] hover:shadow-sm transition-all"
+                      className="flex items-center gap-2 px-3 py-2 border border-[#2A2A2A] rounded-lg cursor-grab hover:border-[#999] hover:shadow-sm transition-all"
                     >
                       <span className="size-2 rounded-full" style={{ backgroundColor: config.color }} />
-                      <span className="text-xs font-medium text-[#1A1A1A]">{config.label}</span>
+                      <span className="text-xs font-medium text-[#E5E5EA]">{config.label}</span>
                     </div>
                   );
                 })}
               </div>
 
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-3">
                 Agency Funnel Steps
               </p>
               <div className="space-y-1.5 mb-5">
@@ -494,16 +494,16 @@ export default function GrowthEnginePage() {
                         e.dataTransfer.setData("application/reactflow", JSON.stringify(data));
                         e.dataTransfer.effectAllowed = "move";
                       }}
-                      className="flex items-center gap-2 px-3 py-2 border border-[#E5E5EA] rounded-lg cursor-grab hover:border-[#999] hover:shadow-sm transition-all"
+                      className="flex items-center gap-2 px-3 py-2 border border-[#2A2A2A] rounded-lg cursor-grab hover:border-[#999] hover:shadow-sm transition-all"
                     >
                       <span className="size-2 rounded-full" style={{ backgroundColor: config.color }} />
-                      <span className="text-xs font-medium text-[#1A1A1A]">{config.label}</span>
+                      <span className="text-xs font-medium text-[#E5E5EA]">{config.label}</span>
                     </div>
                   );
                 })}
               </div>
 
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-3">
                 Lead Gen
               </p>
               <div className="space-y-1.5">
@@ -517,7 +517,7 @@ export default function GrowthEnginePage() {
                   className="flex items-center gap-2 px-3 py-2 border border-[#BBF7D0] rounded-lg cursor-grab hover:border-[#15803D] hover:shadow-sm transition-all bg-[#F0FDF4]"
                 >
                   <span className="size-2 rounded-full bg-[#15803D]" />
-                  <span className="text-xs font-medium text-[#1A1A1A]">Lead Magnet</span>
+                  <span className="text-xs font-medium text-[#E5E5EA]">Lead Magnet</span>
                 </div>
                 <div
                   draggable
@@ -529,7 +529,7 @@ export default function GrowthEnginePage() {
                   className="flex items-center gap-2 px-3 py-2 border border-[#FED7AA] rounded-lg cursor-grab hover:border-[#C2410C] hover:shadow-sm transition-all bg-[#FFF7ED]"
                 >
                   <span className="size-2 rounded-full bg-[#C2410C]" />
-                  <span className="text-xs font-medium text-[#1A1A1A]">Email Sequence</span>
+                  <span className="text-xs font-medium text-[#E5E5EA]">Email Sequence</span>
                 </div>
               </div>
             </div>

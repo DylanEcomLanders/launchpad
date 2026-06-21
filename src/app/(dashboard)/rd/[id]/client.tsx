@@ -78,7 +78,7 @@ export default function InitiativeDetailClient({ id }: { id: string }) {
   if (loading) {
     return (
       <div className="max-w-3xl mx-auto px-6 md:px-10 py-16">
-        <div className="text-[13px] text-[#7A7A7A]">Loading initiative...</div>
+        <div className="text-[13px] text-[#71757D]">Loading initiative...</div>
       </div>
     );
   }
@@ -87,12 +87,12 @@ export default function InitiativeDetailClient({ id }: { id: string }) {
       <div className="max-w-3xl mx-auto px-6 md:px-10 py-16">
         <Link
           href="/rd"
-          className="inline-flex items-center gap-1.5 text-[13px] text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors mb-6"
+          className="inline-flex items-center gap-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] transition-colors mb-6"
         >
           <ArrowLeftIcon className="size-4" />
           Back to R&amp;D
         </Link>
-        <div className="text-[15px] text-[#1B1B1B]">Initiative not found.</div>
+        <div className="text-[15px] text-[#E5E5EA]">Initiative not found.</div>
       </div>
     );
   }
@@ -186,7 +186,7 @@ export default function InitiativeDetailClient({ id }: { id: string }) {
       {/* Back */}
       <Link
         href="/rd"
-        className="inline-flex items-center gap-1.5 text-[13px] text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] transition-colors mb-6"
       >
         <ArrowLeftIcon className="size-4" />
         Back to R&amp;D
@@ -197,7 +197,7 @@ export default function InitiativeDetailClient({ id }: { id: string }) {
         <InlineText
           value={initiative.name}
           onChange={(v) => patchInitiative({ name: v })}
-          className="text-3xl font-semibold text-[#1B1B1B] tracking-tight"
+          className="text-3xl font-semibold text-[#E5E5EA]"
           placeholder="Untitled initiative"
         />
         <div className="flex items-center gap-2 mt-3 flex-wrap">
@@ -209,11 +209,11 @@ export default function InitiativeDetailClient({ id }: { id: string }) {
             value={initiative.type}
             onChange={(t) => patchInitiative({ type: t })}
           />
-          <span className="text-[12px] text-[#7A7A7A]">·</span>
+          <span className="text-[12px] text-[#71757D]">·</span>
           <InlineText
             value={initiative.owner}
             onChange={(v) => patchInitiative({ owner: v })}
-            className="text-[12px] text-[#7A7A7A] hover:text-[#1B1B1B]"
+            className="text-[12px] text-[#71757D] hover:text-[#E5E5EA]"
             placeholder="Owner"
             singleLine
           />
@@ -222,13 +222,13 @@ export default function InitiativeDetailClient({ id }: { id: string }) {
 
       {/* North Star */}
       <div className="mb-8">
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-2">
+        <div className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-2">
           North star
         </div>
         <InlineText
           value={initiative.north_star || ""}
           onChange={(v) => patchInitiative({ north_star: v })}
-          className="text-[14px] text-[#1B1B1B] leading-relaxed"
+          className="text-[14px] text-[#E5E5EA] leading-relaxed"
           placeholder="What does done look like?"
         />
       </div>
@@ -236,10 +236,10 @@ export default function InitiativeDetailClient({ id }: { id: string }) {
       {/* Sub-points */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
             Sub-points
           </div>
-          <div className="text-[12px] text-[#7A7A7A] tabular-nums">
+          <div className="text-[12px] text-[#71757D] tabular-nums">
             {done}/{total} · {pct}%
           </div>
         </div>
@@ -259,7 +259,7 @@ export default function InitiativeDetailClient({ id }: { id: string }) {
       </div>
 
       {/* Meta */}
-      <div className="mt-12 pt-6 border-t border-[#EDEDEF] text-[12px] text-[#7A7A7A] space-y-1">
+      <div className="mt-12 pt-6 border-t border-[#2A2A2A] text-[12px] text-[#71757D] space-y-1">
         <div>Created {timeAgo(initiative.created_at)}</div>
         <div>Last touched {timeAgo(last)}</div>
         {sourceIdea && (
@@ -267,7 +267,7 @@ export default function InitiativeDetailClient({ id }: { id: string }) {
             Promoted from idea:{" "}
             <Link
               href={`/rd/ideas/${sourceIdea.id}`}
-              className="text-[#1B1B1B] hover:underline"
+              className="text-[#E5E5EA] hover:underline"
             >
               {sourceIdea.title}
             </Link>
@@ -315,7 +315,7 @@ function InlineText({
       <button
         type="button"
         onClick={() => setEditing(true)}
-        className={`block w-full text-left rounded transition-colors hover:bg-[#F7F8FA] -mx-1 px-1 ${className || ""}`}
+        className={`block w-full text-left rounded transition-colors hover:bg-[#0C0C0C] -mx-1 px-1 ${className || ""}`}
       >
         {value || (
           <span className="text-[#C5C5C5]">{placeholder || "Click to edit"}</span>
@@ -327,7 +327,7 @@ function InlineText({
     return (
       <input
         ref={inputRef as React.RefObject<HTMLInputElement>}
-        className={`block w-full bg-white border border-[#E5E5EA] rounded px-1 -mx-1 focus:outline-none focus:border-[#1B1B1B] ${className || ""}`}
+        className={`block w-full bg-[#181818] border border-[#2A2A2A] rounded px-1 -mx-1 focus:outline-none focus:border-white ${className || ""}`}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onBlur={commit}
@@ -345,7 +345,7 @@ function InlineText({
   return (
     <textarea
       ref={inputRef as React.RefObject<HTMLTextAreaElement>}
-      className={`block w-full bg-white border border-[#E5E5EA] rounded px-1 -mx-1 resize-none focus:outline-none focus:border-[#1B1B1B] ${className || ""}`}
+      className={`block w-full bg-[#181818] border border-[#2A2A2A] rounded px-1 -mx-1 resize-none focus:outline-none focus:border-white ${className || ""}`}
       rows={2}
       value={draft}
       onChange={(e) => setDraft(e.target.value)}
@@ -390,7 +390,7 @@ function StatusDropdown({
         <InitiativeStatusPill status={value} />
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-1 bg-white border border-[#E5E5EA] rounded-lg shadow-lg z-10 min-w-[140px] py-1">
+        <div className="absolute top-full left-0 mt-1 bg-[#181818] border border-[#2A2A2A] rounded-lg shadow-lg z-10 min-w-[140px] py-1">
           {INITIATIVE_STATUSES.map((s) => (
             <button
               key={s}
@@ -398,8 +398,8 @@ function StatusDropdown({
                 onChange(s);
                 setOpen(false);
               }}
-              className={`w-full text-left px-3 py-1.5 text-[12px] hover:bg-[#F7F8FA] transition-colors ${
-                s === value ? "text-[#1B1B1B] font-medium" : "text-[#555]"
+              className={`w-full text-left px-3 py-1.5 text-[12px] hover:bg-[#0C0C0C] transition-colors ${
+                s === value ? "text-[#E5E5EA] font-medium" : "text-[#C7C9CD]"
               }`}
             >
               {s.charAt(0).toUpperCase() + s.slice(1)}
@@ -438,7 +438,7 @@ function TypeDropdown({
         <TypeBadge type={value} />
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-1 bg-white border border-[#E5E5EA] rounded-lg shadow-lg z-10 min-w-[140px] py-1">
+        <div className="absolute top-full left-0 mt-1 bg-[#181818] border border-[#2A2A2A] rounded-lg shadow-lg z-10 min-w-[140px] py-1">
           {types.map((t) => (
             <button
               key={t}
@@ -446,8 +446,8 @@ function TypeDropdown({
                 onChange(t);
                 setOpen(false);
               }}
-              className={`w-full text-left px-3 py-1.5 text-[12px] hover:bg-[#F7F8FA] transition-colors ${
-                t === value ? "text-[#1B1B1B] font-medium" : "text-[#555]"
+              className={`w-full text-left px-3 py-1.5 text-[12px] hover:bg-[#0C0C0C] transition-colors ${
+                t === value ? "text-[#E5E5EA] font-medium" : "text-[#C7C9CD]"
               }`}
             >
               {RD_TYPE_META[t].label}
@@ -510,11 +510,11 @@ function SubpointRow({
         const fromId = e.dataTransfer.getData("text/plain");
         if (fromId && fromId !== subpoint.id) onReorderTo(subpoint.id);
       }}
-      className={`group rounded-lg border transition-colors ${dragOver ? "border-[#1B1B1B] bg-[#F7F8FA]" : "border-transparent hover:bg-[#F7F8FA]"}`}
+      className={`group rounded-lg border transition-colors ${dragOver ? "border-white bg-[#0C0C0C]" : "border-transparent hover:bg-[#0C0C0C]"}`}
     >
       <div className="flex items-center gap-2 px-2 py-1.5">
         <span
-          className="cursor-grab active:cursor-grabbing text-[#C5C5C5] hover:text-[#7A7A7A] p-1"
+          className="cursor-grab active:cursor-grabbing text-[#C5C5C5] hover:text-[#71757D] p-1"
           aria-label="Drag to reorder"
         >
           <Bars3Icon className="size-3.5" />
@@ -523,8 +523,8 @@ function SubpointRow({
           onClick={() => onPatch({ done: !subpoint.done })}
           className={`size-4 rounded border-2 flex items-center justify-center transition-colors shrink-0 ${
             subpoint.done
-              ? "bg-[#1B1B1B] border-[#1B1B1B]"
-              : "border-[#C5C5C5] hover:border-[#1B1B1B]"
+              ? "bg-[#E5E5EA] border-[#181818]"
+              : "border-[#C5C5C5] hover:border-white"
           }`}
           aria-label={subpoint.done ? "Mark not done" : "Mark done"}
         >
@@ -545,7 +545,7 @@ function SubpointRow({
         {editingTitle ? (
           <input
             autoFocus
-            className="flex-1 bg-white border border-[#E5E5EA] rounded px-2 py-0.5 text-[13px] focus:outline-none focus:border-[#1B1B1B]"
+            className="flex-1 bg-[#181818] border border-[#2A2A2A] rounded px-2 py-0.5 text-[13px] focus:outline-none focus:border-white"
             value={draftTitle}
             onChange={(e) => setDraftTitle(e.target.value)}
             onBlur={commitTitle}
@@ -563,7 +563,7 @@ function SubpointRow({
           <button
             onClick={() => setEditingTitle(true)}
             className={`flex-1 text-left text-[13px] px-1 ${
-              subpoint.done ? "line-through text-[#A0A0A0]" : "text-[#1B1B1B]"
+              subpoint.done ? "line-through text-[#71757D]" : "text-[#E5E5EA]"
             }`}
           >
             {subpoint.title}
@@ -571,7 +571,7 @@ function SubpointRow({
         )}
         <button
           onClick={() => setNotesOpen((v) => !v)}
-          className="p-1 text-[#C5C5C5] hover:text-[#1B1B1B] opacity-0 group-hover:opacity-100 transition-opacity"
+          className="p-1 text-[#C5C5C5] hover:text-[#E5E5EA] opacity-0 group-hover:opacity-100 transition-opacity"
           aria-label="Toggle notes"
         >
           <ChevronRightIcon
@@ -612,7 +612,7 @@ function AddSubpointRow({ onAdd }: { onAdd: (title: string) => void }) {
     setValue("");
   }
   return (
-    <div className="flex items-center gap-2 px-2 py-1.5 mt-1 rounded-lg border border-dashed border-[#E5E5EA]">
+    <div className="flex items-center gap-2 px-2 py-1.5 mt-1 rounded-lg border border-dashed border-[#2A2A2A]">
       <PlusIcon className="size-3.5 text-[#C5C5C5]" />
       <input
         className={`${inputClass} border-0 shadow-none px-1 py-0.5 text-[13px]`}

@@ -81,17 +81,17 @@ export function DeckBuilderInline() {
     Number(aov);
 
   const inputClass =
-    "w-full px-3 py-1.5 text-xs border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B] bg-white";
-  const labelClass = "block text-[10px] text-[#999] uppercase tracking-wider mb-1";
+    "w-full px-3 py-1.5 text-xs border border-[#2A2A2A] rounded-lg focus:outline-none focus:border-white bg-[#181818]";
+  const labelClass = "block text-[10px] text-[#71757D] uppercase tracking-wider mb-1";
 
   return (
-    <div className="border border-[#E5E5EA] rounded-xl mb-6 overflow-hidden">
+    <div className="border border-[#2A2A2A] rounded-xl mb-6 overflow-hidden">
       {/* Accordion header */}
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-[#FAFAFA] transition-colors"
+        className="flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-[#0C0C0C] transition-colors"
       >
-        <div className="size-8 rounded-lg bg-[#1B1B1B] flex items-center justify-center shrink-0">
+        <div className="size-8 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
           <svg className="size-4 text-white" viewBox="0 0 20 20" fill="currentColor">
             <path
               fillRule="evenodd"
@@ -101,17 +101,17 @@ export function DeckBuilderInline() {
           </svg>
         </div>
         <div className="flex-1">
-          <p className="text-sm font-semibold text-[#1B1B1B]">Generate Deck</p>
-          <p className="text-[10px] text-[#999]">Fill in the inputs below and generate a shareable link</p>
+          <p className="text-sm font-semibold text-[#E5E5EA]">Generate Deck</p>
+          <p className="text-[10px] text-[#71757D]">Fill in the inputs below and generate a shareable link</p>
         </div>
         <ChevronDownIcon
-          className={`size-4 text-[#999] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`size-4 text-[#71757D] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
         />
       </button>
 
       {/* Accordion body */}
       {open && (
-        <div className="px-5 pb-5 pt-1 border-t border-[#F0F0F0] space-y-4">
+        <div className="px-5 pb-5 pt-1 border-t border-[#2A2A2A] space-y-4">
           {/* Brand row */}
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -198,7 +198,7 @@ export function DeckBuilderInline() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2">
               {SCORE_KEYS.map(({ key, label }) => (
                 <div key={key} className="flex items-center gap-2">
-                  <label className="text-[10px] text-[#999] w-20 shrink-0 truncate">{label}</label>
+                  <label className="text-[10px] text-[#71757D] w-20 shrink-0 truncate">{label}</label>
                   <input
                     type="range"
                     min={1}
@@ -229,7 +229,7 @@ export function DeckBuilderInline() {
             <div className="space-y-2">
               {priorities.map((p, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <span className="size-5 rounded-full bg-[#F0F0F0] flex items-center justify-center text-[10px] font-bold text-[#999] shrink-0">
+                  <span className="size-5 rounded-full bg-[#222222] flex items-center justify-center text-[10px] font-bold text-[#71757D] shrink-0">
                     {i + 1}
                   </span>
                   <input
@@ -274,13 +274,13 @@ export function DeckBuilderInline() {
             <button
               onClick={generate}
               disabled={generating || !brandName.trim()}
-              className="px-5 py-2 bg-[#1B1B1B] text-white text-xs font-semibold rounded-lg hover:bg-[#2D2D2D] disabled:opacity-40 transition-colors"
+              className="px-5 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-40 transition-colors"
             >
               {generating ? "Generating..." : "Generate Deck"}
             </button>
 
             {deckUrl && (
-              <div className="flex items-center gap-2 flex-1 bg-[#F8F8F8] border border-[#E5E5EA] rounded-lg px-3 py-2">
+              <div className="flex items-center gap-2 flex-1 bg-[#222222] border border-[#2A2A2A] rounded-lg px-3 py-2">
                 <a
                   href={deckUrl}
                   target="_blank"
@@ -295,7 +295,7 @@ export function DeckBuilderInline() {
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
                   }}
-                  className="shrink-0 p-1 text-[#999] hover:text-[#1B1B1B] transition-colors"
+                  className="shrink-0 p-1 text-[#71757D] hover:text-[#E5E5EA] transition-colors"
                   title="Copy link"
                 >
                   {copied ? (
@@ -308,7 +308,7 @@ export function DeckBuilderInline() {
                   href={deckUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="shrink-0 p-1 text-[#999] hover:text-[#1B1B1B] transition-colors"
+                  className="shrink-0 p-1 text-[#71757D] hover:text-[#E5E5EA] transition-colors"
                   title="Open"
                 >
                   <ArrowTopRightOnSquareIcon className="size-3.5" />

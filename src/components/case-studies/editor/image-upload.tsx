@@ -85,12 +85,12 @@ export function ImageUpload({
   return (
     <div>
       {label && (
-        <label className="block text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-2">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-2">
           {label}
         </label>
       )}
       {value?.url ? (
-        <div className={`relative ${ASPECT_CLASS[aspect]} rounded-lg overflow-hidden bg-[#F3F3F5] border border-[#EDEDEF] group`}>
+        <div className={`relative ${ASPECT_CLASS[aspect]} rounded-lg overflow-hidden bg-[#222222] border border-[#2A2A2A] group`}>
           {isVideo ? (
             // eslint-disable-next-line jsx-a11y/media-has-caption
             <video src={value.url} className="w-full h-full object-cover" muted loop autoPlay playsInline />
@@ -101,7 +101,7 @@ export function ImageUpload({
           <button
             type="button"
             onClick={handleClear}
-            className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black/80 text-white rounded-full transition-colors opacity-0 group-hover:opacity-100"
+            className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-[#F3F4F6]/80 text-white rounded-full transition-colors opacity-0 group-hover:opacity-100"
             title="Remove"
           >
             <XMarkIcon className="size-3.5" />
@@ -125,19 +125,19 @@ export function ImageUpload({
           disabled={uploading}
           className={`w-full ${ASPECT_CLASS[aspect]} rounded-lg border-2 border-dashed transition-colors flex flex-col items-center justify-center gap-2 ${
             dragOver
-              ? "border-[#1B1B1B] bg-[#F3F3F5]"
-              : "border-[#E5E5EA] bg-[#FAFAFB] hover:border-[#A0A0A0] hover:bg-[#F3F3F5]"
+              ? "border-white bg-[#222222]"
+              : "border-[#2A2A2A] bg-[#0C0C0C] hover:border-[#A0A0A0] hover:bg-[#222222]"
           } disabled:opacity-50`}
         >
           {uploading ? (
             <div className="size-5 border-2 border-[#A0A0A0] border-t-[#1B1B1B] rounded-full animate-spin" />
           ) : (
             <>
-              <ArrowUpTrayIcon className="size-5 text-[#7A7A7A]" />
-              <div className="text-xs text-[#7A7A7A]">
-                <span className="font-semibold text-[#1B1B1B]">Click</span> or drag
+              <ArrowUpTrayIcon className="size-5 text-[#71757D]" />
+              <div className="text-xs text-[#71757D]">
+                <span className="font-semibold text-[#E5E5EA]">Click</span> or drag
               </div>
-              {helper && <div className="text-[10px] text-[#A0A0A0]">{helper}</div>}
+              {helper && <div className="text-[10px] text-[#71757D]">{helper}</div>}
             </>
           )}
         </button>

@@ -161,7 +161,7 @@ CLIENT BRIEF:
 ${brief}
 ═══════════════════════════════════════
 
-Write a full advertorial (1,500–2,500 words) following this exact 10-phase structure. Each phase has a specific psychological job — do NOT skip or reorder phases.
+Write a full advertorial (1,500-2,500 words) following this exact 10-phase structure. Each phase has a specific psychological job - do NOT skip or reorder phases.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PHASE 1 — HOOK (Headline + Sub-headline + Byline)
@@ -188,7 +188,7 @@ Rules:
 - List specific symptoms, not generic ones ('Racing thoughts, tired all day, wide awake at midnight' NOT 'sleep issues')
 - Use first-person or second-person framing — 'You've noticed...' or 'I was the person who...'
 - Include emotional consequences, not just physical ones (shame, relationship damage, embarrassment)
-- Build a list of 4–6 bullet symptoms early — this is a scroll-stopping pattern interrupt
+- Build a list of 4-6 bullet symptoms early - this is a scroll-stopping pattern interrupt
 - Don't rush to the solution — stay in the pain longer than feels comfortable
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -197,7 +197,7 @@ PHASE 3 — FAILED ALTERNATIVES
 Destroy confidence in existing solutions. This validates why they haven't solved it yet and opens them to something new.
 
 Rules:
-- Name 2–4 specific alternatives the reader has probably tried
+- Name 2-4 specific alternatives the reader has probably tried
 - Don't insult the reader for trying them — validate their effort, blame the solutions
 - Use framing: 'Even the most recommended solutions fail to...' or 'Most [X] on the market...'
 - This primes the reader to see your product as categorically different
@@ -222,7 +222,7 @@ Make the cost of inaction visceral. Paint a specific picture of what happens if 
 Rules:
 - Use 'The longer this continues...' or 'Without taking action...' framing
 - Escalate from physical → emotional → social consequences (relationship damage, isolation, shame)
-- List 4–6 progressively worse outcomes as bullets
+- List 4-6 progressively worse outcomes as bullets
 - End with a pivot line: 'So What's the Solution?' — this creates a pattern break and relief
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -244,9 +244,9 @@ PHASE 7 — MECHANISM DEEP DIVE (How It Works)
 Explain specifically HOW the product works. Ingredient-by-ingredient or feature-by-feature.
 
 Rules:
-- List 4–7 key ingredients or features with individual explanations
+- List 4-7 key ingredients or features with individual explanations
 - Each explanation should name what it does AND why that matters for the reader's specific problem
-- Use bold ingredient/feature names, then 1–2 sentences of mechanism explanation
+- Use bold ingredient/feature names, then 1-2 sentences of mechanism explanation
 - Compare to what the alternatives lack ('Most solutions only address X, not Y and Z')
 - Use 'But that's not all...' transitions to keep momentum
 - Tie every ingredient/feature back to the named root cause mechanism from Phase 4
@@ -257,7 +257,7 @@ PHASE 8 — SOCIAL PROOF
 Testimonials are the conversion mechanism — specific, varied, and woven throughout.
 
 Rules:
-- Include 3–5 testimonials with first name, last initial
+- Include 3-5 testimonials with first name, last initial
 - Each MUST reference specific outcomes, not generic praise ('I lost 9 lbs in 3 weeks', NOT 'Great product!')
 - Mix demographics where relevant — age groups, severity levels
 - Include star ratings or verified purchase labels for credibility
@@ -274,7 +274,7 @@ Rules:
 - Product column ALWAYS wins every row — no draws or losses
 - Alternatives described with negative framing: 'Harsh chemicals', 'Temporary only', 'Single-use/wasteful'
 - Use ✅ for product and ❌ for alternatives
-- Include 6–8 comparison rows for maximum impact
+- Include 6-8 comparison rows for maximum impact
 - Place this just before the offer section
 - Format as a clean comparison table with columns: Feature | ✅ [Product] | ❌ [Alternative]
 

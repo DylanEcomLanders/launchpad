@@ -14,7 +14,7 @@ function EmailSequenceNodeComponent({ data: rawData, selected }: NodeProps) {
   return (
     <div
       className={`
-        min-w-[180px] max-w-[240px] rounded-xl border bg-white transition-shadow
+        min-w-[180px] max-w-[240px] rounded-xl border bg-[#181818] transition-shadow
         ${selected ? "border-[#C2410C] shadow-lg" : "border-[#FED7AA] shadow-sm hover:shadow-md"}
       `}
     >
@@ -49,9 +49,9 @@ function EmailSequenceNodeComponent({ data: rawData, selected }: NodeProps) {
 
       {/* Body */}
       <div className="px-3.5 py-3">
-        <p className="text-[13px] font-semibold text-[#1B1B1B] leading-tight">{data.label || "Email Sequence"}</p>
+        <p className="text-[13px] font-semibold text-[#E5E5EA] leading-tight">{data.label || "Email Sequence"}</p>
         {(data as any).description && (
-          <p className="text-[11px] text-[#777] mt-1 leading-relaxed whitespace-pre-wrap">{(data as any).description}</p>
+          <p className="text-[11px] text-[#9CA3AF] mt-1 leading-relaxed whitespace-pre-wrap">{(data as any).description}</p>
         )}
 
         {/* Metrics */}
@@ -59,22 +59,22 @@ function EmailSequenceNodeComponent({ data: rawData, selected }: NodeProps) {
           <div className="mt-2.5 pt-2 border-t border-[#FDF2E9] grid grid-cols-3 gap-2">
             {esm.emailCount != null && (
               <div>
-                <p className="text-[8px] text-[#AAA] uppercase tracking-wider mb-0.5">Emails</p>
-                <p className="text-xs font-semibold text-[#1B1B1B]">{esm.emailCount}</p>
+                <p className="text-[8px] text-[#9CA3AF] uppercase tracking-wider mb-0.5">Emails</p>
+                <p className="text-xs font-semibold text-[#E5E5EA]">{esm.emailCount}</p>
               </div>
             )}
             {esm.openRate != null && (
               <div>
-                <p className="text-[8px] text-[#AAA] uppercase tracking-wider mb-0.5">Open</p>
-                <p className={`text-xs font-semibold ${esm.openRate >= 30 ? "text-emerald-600" : esm.openRate < 15 ? "text-red-500" : "text-[#1B1B1B]"}`}>
+                <p className="text-[8px] text-[#9CA3AF] uppercase tracking-wider mb-0.5">Open</p>
+                <p className={`text-xs font-semibold ${esm.openRate >= 30 ? "text-emerald-600" : esm.openRate < 15 ? "text-red-500" : "text-[#E5E5EA]"}`}>
                   {esm.openRate}%
                 </p>
               </div>
             )}
             {esm.clickRate != null && (
               <div>
-                <p className="text-[8px] text-[#AAA] uppercase tracking-wider mb-0.5">Click</p>
-                <p className={`text-xs font-semibold ${esm.clickRate >= 3 ? "text-emerald-600" : esm.clickRate < 1 ? "text-red-500" : "text-[#1B1B1B]"}`}>
+                <p className="text-[8px] text-[#9CA3AF] uppercase tracking-wider mb-0.5">Click</p>
+                <p className={`text-xs font-semibold ${esm.clickRate >= 3 ? "text-emerald-600" : esm.clickRate < 1 ? "text-red-500" : "text-[#E5E5EA]"}`}>
                   {esm.clickRate}%
                 </p>
               </div>

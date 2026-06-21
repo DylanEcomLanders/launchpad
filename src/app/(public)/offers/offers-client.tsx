@@ -169,7 +169,7 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
             className="text-base md:text-lg text-[#B5B5B5] leading-[1.6] mt-8 max-w-2xl mx-auto"
             style={{ fontFamily: "var(--font-body)" }}
           >
-            Most DTC brands spend £50–100K/mo driving traffic to pages that don't convert.
+            Most DTC brands spend £50-100K/mo driving traffic to pages that don't convert.
             We plug in as your conversion partner — audit the funnel, own the roadmap, build
             the pages, run the tests, compound the results.
           </p>
@@ -282,7 +282,7 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
           <p className="text-center text-sm text-[#7A7A7A] leading-[1.6] mt-10 max-w-2xl mx-auto">
             Breakeven on the partnership = a{" "}
             <strong className="text-white">0.11% CVR lift</strong>. Our 90-day target is{" "}
-            <strong className="text-white">0.5–2%</strong>.
+            <strong className="text-white">0.5-2%</strong>.
           </p>
         </div>
       </section>
@@ -365,7 +365,7 @@ export default function OffersClient({ portfolioImages = [] }: { portfolioImages
               {
                 label: "Month 3+",
                 title: "Compounding kicks in",
-                desc: "Wins stack. Most retainers pay back inside 60 days. Roadmap rolls 60–90 days ahead.",
+                desc: "Wins stack. Most retainers pay back inside 60 days. Roadmap rolls 60-90 days ahead.",
               },
             ].map((step) => (
               <div

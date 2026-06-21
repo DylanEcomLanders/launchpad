@@ -45,21 +45,21 @@ export function EngagementLifecycle({
     return (
       <div>
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
             Sprint lifecycle (§1.4)
           </span>
-          <span className="text-[11px] text-[#A0A0A0]">points → bucket → duration</span>
+          <span className="text-[11px] text-[#71757D]">points → bucket → duration</span>
         </div>
         <div className="grid grid-cols-3 gap-1.5">
           {SPRINT_PHASES.map((p, i) => (
-            <div key={i} className="rounded-lg border border-[#F0F0F2] bg-[#FAFAFB] px-2.5 py-2">
-              <div className="text-[11px] font-medium text-[#1B1B1B]">{p.label}</div>
-              <div className="mt-0.5 text-[10px] text-[#A0A0A0]">{p.hint}</div>
+            <div key={i} className="rounded-lg border border-[#404040] bg-[#0C0C0C] px-2.5 py-2">
+              <div className="text-[11px] font-medium text-[#E5E5EA]">{p.label}</div>
+              <div className="mt-0.5 text-[10px] text-[#71757D]">{p.hint}</div>
             </div>
           ))}
         </div>
         {start && (
-          <div className="mt-2 text-[11px] text-[#7A7A7A]">Kickoff {fmtDayMonth(start)} (§1.4)</div>
+          <div className="mt-2 text-[11px] text-[#71757D]">Kickoff {fmtDayMonth(start)} (§1.4)</div>
         )}
       </div>
     );
@@ -74,11 +74,11 @@ export function EngagementLifecycle({
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
           90-day engagement (§1.9)
         </span>
         {day != null && (
-          <span className={`text-[11px] tabular-nums ${refreshIn != null && refreshIn <= 10 ? "font-semibold text-rose-700" : "text-[#7A7A7A]"}`}>
+          <span className={`text-[11px] tabular-nums ${refreshIn != null && refreshIn <= 10 ? "font-semibold text-rose-700" : "text-[#71757D]"}`}>
             Day {Math.max(1, day)}/90
             {refreshIn != null && ` · refresh ${refreshIn <= 0 ? "due" : `in ${refreshIn}d`}`}
           </span>
@@ -86,7 +86,7 @@ export function EngagementLifecycle({
       </div>
 
       {/* window track */}
-      <div className="relative h-7 w-full overflow-hidden rounded-lg border border-[#E5E5EA] bg-[#F7F8FA]">
+      <div className="relative h-7 w-full overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#0C0C0C]">
         <div className="flex h-full w-full">
           {WINDOWS.map((w) => {
             const span = w.to - w.from + 1;
@@ -98,9 +98,9 @@ export function EngagementLifecycle({
                 style={{ width: `${(span / 90) * 100}%` }}
                 className={`flex items-center justify-center border-r border-white/70 px-1 text-center text-[9px] leading-tight last:border-r-0 ${
                   active
-                    ? "bg-[#1B1B1B] text-white"
+                    ? "bg-white text-[#0C0C0C]"
                     : past
-                      ? "bg-[#E8E8EC] text-[#9A9A9A]"
+                      ? "bg-[#2A2A2A] text-[#9A9A9A]"
                       : "text-[#9A9A9A]"
                 }`}
                 title={`${ENGAGEMENT_WINDOW_LABEL[w.key]} · days ${w.from}-${w.to}`}
@@ -128,7 +128,7 @@ export function EngagementLifecycle({
         ].map((m) => (
           <div
             key={m.d}
-            className="absolute -translate-x-1/2 text-[9px] text-[#A0A0A0]"
+            className="absolute -translate-x-1/2 text-[9px] text-[#71757D]"
             style={{ left: `${pctOf(m.d)}%` }}
           >
             <span className="block h-1.5 w-px bg-[#C5C5C5]" style={{ marginLeft: "50%" }} />

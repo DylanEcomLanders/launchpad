@@ -92,7 +92,7 @@ export default function IdeaDetailClient({ id }: { id: string }) {
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto px-6 md:px-10 py-16">
-        <div className="text-[13px] text-[#7A7A7A]">Loading idea...</div>
+        <div className="text-[13px] text-[#71757D]">Loading idea...</div>
       </div>
     );
   }
@@ -101,12 +101,12 @@ export default function IdeaDetailClient({ id }: { id: string }) {
       <div className="max-w-2xl mx-auto px-6 md:px-10 py-16">
         <Link
           href="/rd"
-          className="inline-flex items-center gap-1.5 text-[13px] text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors mb-6"
+          className="inline-flex items-center gap-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] transition-colors mb-6"
         >
           <ArrowLeftIcon className="size-4" />
           Back to R&amp;D
         </Link>
-        <div className="text-[15px] text-[#1B1B1B]">Idea not found.</div>
+        <div className="text-[15px] text-[#E5E5EA]">Idea not found.</div>
       </div>
     );
   }
@@ -115,7 +115,7 @@ export default function IdeaDetailClient({ id }: { id: string }) {
     <div className="max-w-2xl mx-auto px-6 md:px-10 py-10 pb-24">
       <Link
         href="/rd"
-        className="inline-flex items-center gap-1.5 text-[13px] text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] transition-colors mb-6"
       >
         <ArrowLeftIcon className="size-4" />
         Back to R&amp;D
@@ -126,7 +126,7 @@ export default function IdeaDetailClient({ id }: { id: string }) {
         value={idea.title}
         onChange={(v) => patch({ title: v })}
         placeholder="Untitled idea"
-        className="text-2xl font-semibold text-[#1B1B1B] tracking-tight"
+        className="text-2xl font-semibold text-[#E5E5EA]"
       />
 
       {/* Status + type + meta */}
@@ -139,15 +139,15 @@ export default function IdeaDetailClient({ id }: { id: string }) {
           value={idea.type || null}
           onChange={(t) => patch({ type: t })}
         />
-        <span className="text-[12px] text-[#A0A0A0]">·</span>
-        <span className="text-[12px] text-[#7A7A7A]">
+        <span className="text-[12px] text-[#71757D]">·</span>
+        <span className="text-[12px] text-[#71757D]">
           {idea.submitted_by} · {timeAgo(idea.created_at)}
         </span>
       </div>
 
       {/* Why */}
       <div className="mt-8">
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-2">
+        <div className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-2">
           Why this matters
         </div>
         <WhyEditor value={idea.why || ""} onChange={(v) => patch({ why: v })} />
@@ -158,7 +158,7 @@ export default function IdeaDetailClient({ id }: { id: string }) {
         <div className="mt-10">
           <button
             onClick={() => setPromoteOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1B1B1B] text-white text-[13px] font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#E5E5EA] text-[#181818] text-[13px] font-medium rounded-lg hover:bg-white transition-colors"
           >
             <RocketLaunchIcon className="size-4" />
             Promote to Initiative
@@ -166,7 +166,7 @@ export default function IdeaDetailClient({ id }: { id: string }) {
         </div>
       )}
       {idea.status === "promoted" && (
-        <div className="mt-10 text-[12px] text-[#7A7A7A]">
+        <div className="mt-10 text-[12px] text-[#71757D]">
           This idea has been promoted to an initiative.
         </div>
       )}
@@ -238,7 +238,7 @@ function InlineTextSingle({
       <button
         type="button"
         onClick={() => setEditing(true)}
-        className={`block w-full text-left rounded transition-colors hover:bg-[#F7F8FA] -mx-1 px-1 ${className || ""}`}
+        className={`block w-full text-left rounded transition-colors hover:bg-[#0C0C0C] -mx-1 px-1 ${className || ""}`}
       >
         {value || (
           <span className="text-[#C5C5C5]">{placeholder || "Click to edit"}</span>
@@ -249,7 +249,7 @@ function InlineTextSingle({
   return (
     <input
       ref={inputRef}
-      className={`block w-full bg-white border border-[#E5E5EA] rounded px-1 -mx-1 focus:outline-none focus:border-[#1B1B1B] ${className || ""}`}
+      className={`block w-full bg-[#181818] border border-[#2A2A2A] rounded px-1 -mx-1 focus:outline-none focus:border-white ${className || ""}`}
       value={draft}
       onChange={(e) => setDraft(e.target.value)}
       onBlur={commit}
@@ -294,7 +294,7 @@ function IdeaStatusDropdown({
         <IdeaStatusPill status={value} />
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-1 bg-white border border-[#E5E5EA] rounded-lg shadow-lg z-10 min-w-[140px] py-1">
+        <div className="absolute top-full left-0 mt-1 bg-[#181818] border border-[#2A2A2A] rounded-lg shadow-lg z-10 min-w-[140px] py-1">
           {IDEA_STATUSES.map((s) => (
             <button
               key={s}
@@ -302,8 +302,8 @@ function IdeaStatusDropdown({
                 onChange(s);
                 setOpen(false);
               }}
-              className={`w-full text-left px-3 py-1.5 text-[12px] hover:bg-[#F7F8FA] transition-colors ${
-                s === value ? "text-[#1B1B1B] font-medium" : "text-[#555]"
+              className={`w-full text-left px-3 py-1.5 text-[12px] hover:bg-[#0C0C0C] transition-colors ${
+                s === value ? "text-[#E5E5EA] font-medium" : "text-[#C7C9CD]"
               }`}
             >
               {s.charAt(0).toUpperCase() + s.slice(1)}
@@ -344,20 +344,20 @@ function IdeaTypeDropdown({
         {value ? (
           <TypeBadge type={value} />
         ) : (
-          <span className="inline-flex items-center px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider rounded bg-[#F0F0F0] text-[#7A7A7A]">
+          <span className="inline-flex items-center px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider rounded bg-[#222222] text-[#71757D]">
             Unsure
           </span>
         )}
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-1 bg-white border border-[#E5E5EA] rounded-lg shadow-lg z-10 min-w-[140px] py-1">
+        <div className="absolute top-full left-0 mt-1 bg-[#181818] border border-[#2A2A2A] rounded-lg shadow-lg z-10 min-w-[140px] py-1">
           <button
             onClick={() => {
               onChange(null);
               setOpen(false);
             }}
-            className={`w-full text-left px-3 py-1.5 text-[12px] hover:bg-[#F7F8FA] transition-colors ${
-              !value ? "text-[#1B1B1B] font-medium" : "text-[#555]"
+            className={`w-full text-left px-3 py-1.5 text-[12px] hover:bg-[#0C0C0C] transition-colors ${
+              !value ? "text-[#E5E5EA] font-medium" : "text-[#C7C9CD]"
             }`}
           >
             Unsure
@@ -369,8 +369,8 @@ function IdeaTypeDropdown({
                 onChange(t);
                 setOpen(false);
               }}
-              className={`w-full text-left px-3 py-1.5 text-[12px] hover:bg-[#F7F8FA] transition-colors ${
-                t === value ? "text-[#1B1B1B] font-medium" : "text-[#555]"
+              className={`w-full text-left px-3 py-1.5 text-[12px] hover:bg-[#0C0C0C] transition-colors ${
+                t === value ? "text-[#E5E5EA] font-medium" : "text-[#C7C9CD]"
               }`}
             >
               {RD_TYPE_META[t].label}

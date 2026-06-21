@@ -104,7 +104,7 @@ export default function PipelineClient() {
   if (loading) {
     return (
       <div className="mx-auto max-w-7xl px-6 py-12 md:px-10">
-        <div className="text-sm text-[#7A7A7A]">Loading pipeline…</div>
+        <div className="text-sm text-[#71757D]">Loading pipeline…</div>
       </div>
     );
   }
@@ -114,24 +114,24 @@ export default function PipelineClient() {
       <div className="flex items-center justify-between">
         <Link
           href="/pods-v2"
-          className="inline-flex items-center gap-1 text-xs text-[#7A7A7A] hover:text-[#1B1B1B]"
+          className="inline-flex items-center gap-1 text-xs text-[#71757D] hover:text-[#E5E5EA]"
         >
           <ChevronLeftIcon className="size-3.5" />
           All pods
         </Link>
-        <div className="text-[11px] uppercase tracking-wider text-[#A0A0A0]">
+        <div className="text-[11px] uppercase tracking-wider text-[#71757D]">
           Cross-pod pipeline
         </div>
       </div>
 
       <div className="mt-2">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
           Pipeline
         </p>
-        <h1 className="mt-1 text-3xl font-medium tracking-tight">
+        <h1 className="mt-1 text-3xl font-medium">
           All projects in flight
         </h1>
-        <p className="mt-1 max-w-2xl text-sm text-[#7A7A7A]">
+        <p className="mt-1 max-w-2xl text-sm text-[#71757D]">
           Every queued, in-progress, in-review and slipped project across all
           pods. Filter to drill in.
         </p>
@@ -154,7 +154,7 @@ export default function PipelineClient() {
       </div>
 
       {/* FILTERS */}
-      <div className="mt-6 rounded-xl border border-[#E5E5EA] bg-white p-4 shadow-[var(--shadow-soft)]">
+      <div className="mt-6 rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)]">
         <div className="flex flex-wrap items-center gap-3">
           <FilterGroup label="Pod">
             <FilterChip
@@ -215,16 +215,16 @@ export default function PipelineClient() {
           </FilterGroup>
 
           <div className="ml-auto flex items-center gap-2">
-            <label className="flex items-center gap-1.5 text-[11px] text-[#7A7A7A]">
+            <label className="flex items-center gap-1.5 text-[11px] text-[#71757D]">
               <input
                 type="checkbox"
                 checked={includeShipped}
                 onChange={(e) => setIncludeShipped(e.target.checked)}
-                className="size-3.5 rounded border-[#E5E5EA]"
+                className="size-3.5 rounded border-[#2A2A2A]"
               />
               Include shipped
             </label>
-            <div className="inline-flex rounded-lg border border-[#E5E5EA] bg-white p-0.5 text-[11px]">
+            <div className="inline-flex rounded-lg border border-[#2A2A2A] bg-[#181818] p-0.5 text-[11px]">
               <ViewButton
                 active={view === "weeks"}
                 onClick={() => setView("weeks")}
@@ -287,10 +287,10 @@ function Stat({
 }) {
   const cls =
     tone === "rose"
-      ? "border-rose-200 bg-rose-50 text-rose-900"
+      ? "border-rose-500/30 bg-rose-500/10 text-rose-300"
       : tone === "amber"
-        ? "border-amber-200 bg-amber-50 text-amber-900"
-        : "border-[#E5E5EA] bg-white text-[#1B1B1B]";
+        ? "border-amber-500/30 bg-amber-500/10 text-amber-300"
+        : "border-[#2A2A2A] bg-[#181818] text-[#E5E5EA]";
   return (
     <div className={`rounded-xl border p-4 shadow-[var(--shadow-soft)] ${cls}`}>
       <div className="text-[10px] font-semibold uppercase tracking-wider opacity-70">
@@ -310,7 +310,7 @@ function FilterGroup({
 }) {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
         {label}
       </span>
       <div className="flex flex-wrap gap-1">{children}</div>
@@ -332,8 +332,8 @@ function FilterChip({
       onClick={onClick}
       className={`rounded-md px-2 py-1 text-[11px] transition-colors ${
         active
-          ? "bg-[#1B1B1B] text-white"
-          : "bg-[#F3F3F5] text-[#7A7A7A] hover:bg-[#E5E5EA] hover:text-[#1B1B1B]"
+          ? "bg-[#E5E5EA] text-[#181818]"
+          : "bg-[#222222] text-[#71757D] hover:bg-[#2A2A2A] hover:text-[#E5E5EA]"
       }`}
     >
       {children}
@@ -342,7 +342,7 @@ function FilterChip({
 }
 
 function Divider() {
-  return <div className="h-5 w-px bg-[#E5E5EA]" />;
+  return <div className="h-5 w-px bg-[#2A2A2A]" />;
 }
 
 function ViewButton({
@@ -361,8 +361,8 @@ function ViewButton({
       onClick={onClick}
       className={`inline-flex items-center gap-1 rounded-md px-2 py-1 transition-colors ${
         active
-          ? "bg-[#1B1B1B] text-white"
-          : "text-[#7A7A7A] hover:text-[#1B1B1B]"
+          ? "bg-[#E5E5EA] text-[#181818]"
+          : "text-[#71757D] hover:text-[#E5E5EA]"
       }`}
     >
       {icon}
@@ -387,9 +387,9 @@ function TableView({
   );
 
   return (
-    <div className="overflow-hidden rounded-xl border border-[#E5E5EA] bg-white shadow-[var(--shadow-soft)]">
+    <div className="overflow-hidden rounded-xl border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-soft)]">
       <table className="w-full text-sm">
-        <thead className="border-b border-[#E5E5EA] bg-[#F7F8FA] text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+        <thead className="border-b border-[#2A2A2A] bg-[#0C0C0C] text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
           <tr>
             <th className="px-4 py-2.5 text-left">Project</th>
             <th className="px-4 py-2.5 text-left">Pod</th>
@@ -402,7 +402,7 @@ function TableView({
             <th className="px-4 py-2.5 text-right">Days left</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#EDEDEF]">
+        <tbody className="divide-y divide-[#2A2A2A]">
           {sorted.map((p) => {
             const pod = podById.get(p.pod_id);
             const client = clientById.get(p.client_id);
@@ -416,9 +416,9 @@ function TableView({
                 ? "text-rose-700"
                 : daysLeft <= 3
                   ? "text-amber-700"
-                  : "text-[#7A7A7A]";
+                  : "text-[#71757D]";
             return (
-              <tr key={p.id} className="hover:bg-[#F7F8FA]">
+              <tr key={p.id} className="hover:bg-[#0C0C0C]">
                 <td className="px-4 py-3">
                   <div className="font-medium">{p.name}</div>
                   {p.is_rush && (
@@ -427,7 +427,7 @@ function TableView({
                     </span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-[#7A7A7A]">{pod?.name ?? ","}</td>
+                <td className="px-4 py-3 text-[#71757D]">{pod?.name ?? ","}</td>
                 <td className="px-4 py-3">
                   <div>{client?.name ?? ","}</div>
                   {client?.brand_warm && (
@@ -459,7 +459,7 @@ function TableView({
             <tr>
               <td
                 colSpan={9}
-                className="px-4 py-10 text-center text-sm text-[#A0A0A0]"
+                className="px-4 py-10 text-center text-sm text-[#71757D]"
               >
                 No projects match these filters.
               </td>

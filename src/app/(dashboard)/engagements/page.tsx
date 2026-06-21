@@ -163,29 +163,29 @@ export default function EngagementsPage() {
 
   return (
     <div className="px-6 py-6 max-w-[1400px] mx-auto">
-      <header className="mb-6 border-b border-[#E5E5EA] pb-4 flex items-start justify-between gap-4">
+      <header className="mb-6 border-b border-[#2A2A2A] pb-4 flex items-start justify-between gap-4">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
             Internal · Delivery
           </p>
-          <h1 className="text-2xl font-semibold tracking-tight text-[#1B1B1B] mt-1">
+          <h1 className="text-2xl font-semibold text-[#E5E5EA] mt-1">
             Clients
           </h1>
-          <p className="text-sm text-[#666] mt-1">
+          <p className="text-sm text-[#9CA3AF] mt-1">
             Active clients and one-off projects. Click in to open the delivery dashboard.
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <Link
             href="/engagements/trash"
-            className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#666] hover:text-[#1B1B1B] hover:bg-[#F5F5F5] px-3 py-2 rounded"
+            className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#9CA3AF] hover:text-[#E5E5EA] hover:bg-[#222222] px-3 py-2 rounded"
           >
             <TrashIcon className="size-3.5" />
             Trash{trashedCount > 0 ? ` (${trashedCount})` : ""}
           </Link>
           <Link
             href="/engagements/new"
-            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-white bg-[#1B1B1B] hover:bg-black px-3 py-2 rounded"
+            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#181818] bg-[#E5E5EA] hover:bg-white px-3 py-2 rounded"
           >
             <PlusIcon className="size-3.5" />
             New client
@@ -194,19 +194,19 @@ export default function EngagementsPage() {
       </header>
 
       {allEngagements.length === 0 ? (
-        <section className="rounded-lg border border-dashed border-[#E5E5EA] bg-[#FAFAFA] p-12 text-center">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#999] mb-2">
+        <section className="rounded-lg border border-dashed border-[#2A2A2A] bg-[#0C0C0C] p-12 text-center">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-2">
             No clients yet
           </p>
-          <p className="text-[14px] text-[#1B1B1B] font-medium mb-1">
+          <p className="text-[14px] text-[#E5E5EA] font-medium mb-1">
             Clients appear here once they sign.
           </p>
-          <p className="text-[12px] text-[#666] max-w-md mx-auto mb-4">
+          <p className="text-[12px] text-[#9CA3AF] max-w-md mx-auto mb-4">
             CE retainers spawn from the offer flow. One-off bucket projects spawn from Alister&apos;s PM onboarding form.
           </p>
           <Link
             href="/engagements/new"
-            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-white bg-[#1B1B1B] hover:bg-black px-3 py-2 rounded"
+            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#181818] bg-[#E5E5EA] hover:bg-white px-3 py-2 rounded"
           >
             <PlusIcon className="size-3.5" />
             New client
@@ -215,9 +215,9 @@ export default function EngagementsPage() {
       ) : (
       <>
       {/* One-line summary — calm, not a wall of tiles. */}
-      <div className="mb-4 flex items-center gap-2 text-[12px] text-[#666]">
+      <div className="mb-4 flex items-center gap-2 text-[12px] text-[#9CA3AF]">
         <span className={`size-2 rounded-full ${toneDot(overallTone)}`} />
-        <span className="font-medium text-[#1B1B1B]">{allEngagements.length} clients</span>
+        <span className="font-medium text-[#E5E5EA]">{allEngagements.length} clients</span>
         {totalOverdue > 0 && <span className="text-[#C62828] font-semibold">· {totalOverdue} overdue</span>}
         {totalBlocked > 0 && <span className="text-[#C62828] font-semibold">· {totalBlocked} blocked</span>}
         {totalOverdue === 0 && totalBlocked === 0 && <span className="text-[#2E7D32]">· on track</span>}
@@ -226,10 +226,10 @@ export default function EngagementsPage() {
       {/* Clients table — Google-Sheets-style: every client, where we are,
           what's next, at a glance. Sorted worst-health first so slipping
           clients surface, not hide. */}
-      <div className="overflow-x-auto rounded-lg border border-[#E5E5EA] bg-white">
+      <div className="overflow-x-auto rounded-lg border border-[#2A2A2A] bg-[#181818]">
         <table className="w-full min-w-[760px] text-left text-[13px]">
           <thead>
-            <tr className="border-b border-[#E5E5EA] text-[10px] font-semibold uppercase tracking-wider text-[#999]">
+            <tr className="border-b border-[#2A2A2A] text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
               <th className="px-4 py-2.5 font-semibold">Client</th>
               <th className="px-3 py-2.5 font-semibold">Type</th>
               <th className="px-3 py-2.5 font-semibold">Pod</th>
@@ -256,33 +256,33 @@ export default function EngagementsPage() {
                   <tr
                     key={eng.id}
                     onClick={() => router.push(`/engagements/${eng.id}`)}
-                    className="cursor-pointer border-b border-[#F0F0F2] last:border-0 hover:bg-[#FAFAFB]"
+                    className="cursor-pointer border-b border-[#2A2A2A] last:border-0 hover:bg-[#0C0C0C]"
                   >
                     <td className="px-4 py-3">
                       <span className="inline-flex items-center gap-2">
                         <span className={`size-1.5 rounded-full ${toneDot(health.overall)}`} />
-                        <span className="font-semibold text-[#1B1B1B]">{eng.brand}</span>
+                        <span className="font-semibold text-[#E5E5EA]">{eng.brand}</span>
                       </span>
                     </td>
                     <td className="px-3 py-3">
                       <span
                         className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[11px] font-medium ${
-                          isRetainer ? "border-[#1B1B1B]/15 bg-[#F3F3F5] text-[#1B1B1B]" : "border-blue-200 bg-blue-50 text-blue-700"
+                          isRetainer ? "border-white/15 bg-[#222222] text-[#E5E5EA]" : "border-blue-200 bg-blue-50 text-blue-700"
                         }`}
                       >
                         {typeLabel}
                       </span>
                     </td>
-                    <td className="px-3 py-3 text-[#666] tabular-nums">Pod {eng.podNumber}</td>
-                    <td className="px-3 py-3 text-[#666] tabular-nums">
+                    <td className="px-3 py-3 text-[#9CA3AF] tabular-nums">Pod {eng.podNumber}</td>
+                    <td className="px-3 py-3 text-[#9CA3AF] tabular-nums">
                       {where}
                       <span className="ml-1 text-[#C5C5C5]">· {health.done}/{health.total}</span>
                     </td>
                     <td className="px-3 py-3">
                       {next ? (
-                        <span className="text-[#1B1B1B]">
+                        <span className="text-[#E5E5EA]">
                           <span className="truncate">{next.name}</span>
-                          <span className={`ml-1.5 text-[11px] tabular-nums ${next.dueInDays < 0 ? "font-semibold text-[#C62828]" : "text-[#999]"}`}>
+                          <span className={`ml-1.5 text-[11px] tabular-nums ${next.dueInDays < 0 ? "font-semibold text-[#C62828]" : "text-[#71757D]"}`}>
                             {dueLabel(next.dueInDays)}
                           </span>
                         </span>

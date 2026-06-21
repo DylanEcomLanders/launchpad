@@ -55,22 +55,22 @@ export default function WorkspaceClientsList() {
   const sprints = shown.filter((c) => c.kind === "sprint");
 
   if (data.loading || scopedMember) {
-    return <div className="h-96 animate-pulse rounded-2xl bg-slate-100" />;
+    return <div className="h-96 animate-pulse rounded-2xl bg-[#222222]" />;
   }
 
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-semibold tracking-tight text-slate-900">
+          <h1 className="font-heading text-2xl font-semibold text-[#E5E5EA]">
             Clients
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-[#9CA3AF]">
             Retainers and one-off sprints, split out, with health at a glance.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-1">
+          <div className="flex gap-1 rounded-lg border border-[#2A2A2A] bg-[#181818] p-1">
             {(
               [
                 ["all", "All"],
@@ -82,8 +82,8 @@ export default function WorkspaceClientsList() {
                 onClick={() => setFilter(key)}
                 className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
                   filter === key
-                    ? "bg-slate-900 text-white"
-                    : "text-slate-500 hover:text-slate-800"
+                    ? "bg-white text-[#0C0C0C]"
+                    : "text-[#9CA3AF] hover:text-[#E5E5EA]"
                 }`}
               >
                 {label}
@@ -98,7 +98,7 @@ export default function WorkspaceClientsList() {
           </Link>
         </div>
       </div>
-      <p className="-mt-2 text-xs text-slate-400">
+      <p className="-mt-2 text-xs text-[#71757D]">
         New clients come in from the onboarding inbox — approving a submission
         creates the client here with its brief pre-filled.
       </p>
@@ -110,7 +110,7 @@ export default function WorkspaceClientsList() {
           <section>
             <SectionTitle
               action={
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-[#71757D]">
                   {retainers.length} · 90-day partnerships
                 </span>
               }
@@ -131,7 +131,7 @@ export default function WorkspaceClientsList() {
           <section>
             <SectionTitle
               action={
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-[#71757D]">
                   {sprints.length} · one-off projects
                 </span>
               }
@@ -159,14 +159,14 @@ function ClientCard({ c }: { c: ClientVM }) {
     <Link href={`/workspace/clients/${c.client.id}`} className="block">
       <Card
         className={`p-5 transition-shadow hover:shadow-md ${
-          c.kind === "retainer" ? "border-slate-200 bg-slate-100/70" : ""
+          c.kind === "retainer" ? "border-[#2A2A2A] bg-[#222222]/70" : ""
         }`}
       >
         {/* Line 1: name reads first; one status signal on the right */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
             <HealthDot band={c.band} />
-            <span className="truncate font-heading text-base font-semibold text-slate-900">
+            <span className="truncate font-heading text-base font-semibold text-[#E5E5EA]">
               {c.client.name}
             </span>
           </div>
@@ -182,34 +182,34 @@ function ClientCard({ c }: { c: ClientVM }) {
         {c.kind === "retainer" ? (
           c.day != null ? (
             <div className="mt-3 flex items-baseline gap-1.5">
-              <span className="font-heading text-xl font-semibold tabular-nums text-slate-900">
+              <span className="font-heading text-xl font-semibold tabular-nums text-[#E5E5EA]">
                 Day {c.day}
               </span>
-              <span className="text-sm text-slate-400">/ 90</span>
+              <span className="text-sm text-[#71757D]">/ 90</span>
             </div>
           ) : (
-            <div className="mt-3 text-sm text-slate-300">Not started</div>
+            <div className="mt-3 text-sm text-[#4B4D52]">Not started</div>
           )
         ) : (
-          <div className="mt-3 text-sm text-slate-600">
+          <div className="mt-3 text-sm text-[#9CA3AF]">
             {startLabel(c) ? (
               <>
-                <span className="text-slate-400">Started </span>
+                <span className="text-[#71757D]">Started </span>
                 <span className="font-medium">{startLabel(c)}</span>
               </>
             ) : (
-              <span className="text-slate-300">Not started</span>
+              <span className="text-[#4B4D52]">Not started</span>
             )}
           </div>
         )}
 
         {/* Quiet meta: type chip · pod */}
-        <div className="mt-2.5 flex items-center gap-2 text-[11px] text-slate-400">
+        <div className="mt-2.5 flex items-center gap-2 text-[11px] text-[#71757D]">
           <span
             className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
               c.kind === "retainer"
                 ? "bg-slate-700 text-white"
-                : "bg-slate-200 text-slate-500"
+                : "bg-[#2A2A2A] text-[#9CA3AF]"
             }`}
           >
             {c.kind === "retainer" ? "Retainer" : "Sprint"}

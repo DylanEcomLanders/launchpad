@@ -260,17 +260,17 @@ const FunnelCanvasInner = forwardRef<FunnelCanvasHandle, FunnelCanvasProps>(func
         fitView
         fitViewOptions={{ padding: 0.2 }}
         proOptions={{ hideAttribution: true }}
-        className="bg-[#FAFAFA]"
+        className="bg-[#0C0C0C]"
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#E5E5EA" />
         <Controls
           showInteractive={false}
-          className="!bg-white !border-[#E5E5EA] !shadow-sm [&>button]:!border-[#E5E5EA] [&>button]:!bg-white [&>button:hover]:!bg-[#F5F5F5]"
+          className="!bg-[#181818] !border-[#2A2A2A] !shadow-sm [&>button]:!border-[#2A2A2A] [&>button]:!bg-[#181818] [&>button:hover]:!bg-[#222222]"
         />
         <MiniMap
           nodeColor="#E5E5EA"
           maskColor="rgba(255,255,255,0.8)"
-          className="!bg-[#FAFAFA] !border-[#E5E5EA]"
+          className="!bg-[#0C0C0C] !border-[#2A2A2A]"
         />
       </ReactFlow>
     </div>

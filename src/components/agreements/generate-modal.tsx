@@ -156,16 +156,16 @@ export function GenerateAgreementsModal({
         onClick={onClose}
       >
         <div
-          className="bg-white rounded-2xl w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto"
+          className="bg-[#181818] rounded-2xl w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="border-b border-[#EDEDEF] px-6 py-4 flex items-center justify-between">
-            <h2 className="font-semibold text-[#1B1B1B]">
+          <div className="border-b border-[#2A2A2A] px-6 py-4 flex items-center justify-between">
+            <h2 className="font-semibold text-[#E5E5EA]">
               Generate agreements for {person.full_name}
             </h2>
             <button
               onClick={onClose}
-              className="text-[#7A7A7A] hover:text-[#1B1B1B] text-xl leading-none"
+              className="text-[#71757D] hover:text-[#E5E5EA] text-xl leading-none"
             >
               ×
             </button>
@@ -183,7 +183,7 @@ export function GenerateAgreementsModal({
                     onChange={(e) => setGenNda(e.target.checked)}
                     className="accent-[#1B1B1B]"
                   />
-                  <span className="text-[14px] text-[#1B1B1B]">
+                  <span className="text-[14px] text-[#E5E5EA]">
                     NDA{hasNda && " (already exists)"}
                   </span>
                 </label>
@@ -195,7 +195,7 @@ export function GenerateAgreementsModal({
                     onChange={(e) => setGenContract(e.target.checked)}
                     className="accent-[#1B1B1B]"
                   />
-                  <span className="text-[14px] text-[#1B1B1B]">
+                  <span className="text-[14px] text-[#E5E5EA]">
                     Contract{hasContract && " (already exists)"}
                   </span>
                 </label>
@@ -204,7 +204,7 @@ export function GenerateAgreementsModal({
 
             {/* Contract-specific fields, only when generating a contract */}
             {genContract && !hasContract && (
-              <div className="pt-4 border-t border-[#EDEDEF] space-y-4">
+              <div className="pt-4 border-t border-[#2A2A2A] space-y-4">
                 <div>
                   <label className={labelClass}>Role / job title</label>
                   <input
@@ -295,14 +295,14 @@ export function GenerateAgreementsModal({
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={onClose}
-                className="px-3 py-1.5 text-[13px] text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+                className="px-3 py-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={submit}
                 disabled={submitting || (!genNda && !genContract) || (hasNda && hasContract)}
-                className="px-3 py-1.5 bg-[#1B1B1B] text-white text-[13px] font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40"
+                className="px-3 py-1.5 bg-[#222222] text-[#E5E5EA] text-[13px] font-medium rounded-lg hover:bg-[#2A2A2A] transition-colors disabled:opacity-40"
               >
                 {submitting ? "Generating..." : "Generate"}
               </button>

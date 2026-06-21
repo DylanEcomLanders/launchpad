@@ -45,16 +45,16 @@ export function WikiShell({ sections, children }: Props) {
   return (
     <div className="flex overflow-hidden h-[calc(100dvh-4.5rem)] md:h-[calc(100dvh-1rem)]">
       {/* Wiki nav rail */}
-      <aside className="w-64 shrink-0 bg-[#FAFAFB] border-r border-[#EDEDEF] flex flex-col overflow-hidden">
+      <aside className="w-64 shrink-0 bg-[#0C0C0C] border-r border-[#2A2A2A] flex flex-col overflow-hidden">
         {/* Search */}
-        <div className="px-4 py-4 border-b border-[#EDEDEF]">
+        <div className="px-4 py-4 border-b border-[#2A2A2A]">
           <div className="relative">
-            <MagnifyingGlassIcon className="size-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#A0A0A0]" />
+            <MagnifyingGlassIcon className="size-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#71757D]" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search wiki..."
-              className="w-full pl-8 pr-3 py-2 text-[12px] bg-white border border-[#EDEDEF] rounded-md focus:outline-none focus:border-[#1B1B1B] placeholder:text-[#A0A0A0]"
+              className="w-full pl-8 pr-3 py-2 text-[12px] bg-[#181818] border border-[#2A2A2A] rounded-md focus:outline-none focus:border-white placeholder:text-[#71757D]"
             />
           </div>
         </div>
@@ -65,8 +65,8 @@ export function WikiShell({ sections, children }: Props) {
             href="/wiki-v2"
             className={`relative block px-2.5 py-1.5 mb-5 text-[12px] rounded-md transition-colors ${
               !activeSlug
-                ? "text-[#1B1B1B] font-semibold bg-white shadow-[var(--shadow-soft)]"
-                : "text-[#5F6066] hover:text-[#1B1B1B] hover:bg-white"
+                ? "text-[#E5E5EA] font-semibold bg-[#181818] shadow-[var(--shadow-soft)]"
+                : "text-[#5F6066] hover:text-[#E5E5EA] hover:bg-[#181818]"
             }`}
           >
             {!activeSlug && (
@@ -94,9 +94,9 @@ export function WikiShell({ sections, children }: Props) {
             return (
               <div
                 key={section.name}
-                className={`mb-5 ${sectionIdx > 0 ? "pt-5 border-t border-[#EDEDEF]" : ""}`}
+                className={`mb-5 ${sectionIdx > 0 ? "pt-5 border-t border-[#2A2A2A]" : ""}`}
               >
-                <div className="px-2.5 mb-2 text-[13px] font-semibold text-[#1B1B1B] tracking-tight">
+                <div className="px-2.5 mb-2 text-[13px] font-semibold text-[#E5E5EA]">
                   {section.name}
                 </div>
 
@@ -119,7 +119,7 @@ export function WikiShell({ sections, children }: Props) {
                     {/* Subsection groups */}
                     {section.subsections.map((sub) => (
                       <div key={sub.name} className="mb-3">
-                        <div className="px-2.5 mb-1 text-[12px] text-[#7A7A7A]">
+                        <div className="px-2.5 mb-1 text-[12px] text-[#71757D]">
                           {sub.name}
                         </div>
                         <div className="space-y-0.5">
@@ -154,7 +154,7 @@ export function WikiShell({ sections, children }: Props) {
           })}
 
           {filtered.length === 0 && (
-            <p className="text-[12px] text-[#A0A0A0] px-2.5 py-4 text-center">
+            <p className="text-[12px] text-[#71757D] px-2.5 py-4 text-center">
               No matches for &ldquo;{query}&rdquo;
             </p>
           )}
@@ -162,7 +162,7 @@ export function WikiShell({ sections, children }: Props) {
       </aside>
 
       {/* Page content */}
-      <div className="flex-1 overflow-y-auto bg-white">{children}</div>
+      <div className="flex-1 overflow-y-auto bg-[#181818]">{children}</div>
     </div>
   );
 }
@@ -183,8 +183,8 @@ function PageLink({
       href={`/wiki-v2/${slug}`}
       className={`relative flex items-baseline gap-2 py-1.5 px-2.5 text-[12px] rounded-md transition-colors ${
         active
-          ? "text-[#1B1B1B] font-semibold bg-white shadow-[var(--shadow-soft)]"
-          : "text-[#5F6066] hover:text-[#1B1B1B] hover:bg-white"
+          ? "text-[#E5E5EA] font-semibold bg-[#181818] shadow-[var(--shadow-soft)]"
+          : "text-[#5F6066] hover:text-[#E5E5EA] hover:bg-[#181818]"
       }`}
     >
       {active && (

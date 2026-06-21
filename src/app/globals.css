@@ -2,21 +2,24 @@
 @plugin "@tailwindcss/typography";
 
 @theme inline {
-  --color-background: #F7F8FA;
-  --color-foreground: #1B1B1B;
-  --color-surface: #EDEDEF;
-  --color-surface-light: #F3F3F5;
-  --color-border: #E5E5EA;
-  --color-muted: #7A7A7A;
-  --color-hover: #2D2D2D;
-  --color-accent: #1B1B1B;
-  --color-accent-hover: #2D2D2D;
-  --color-accent-light: #F3F3F5;
-  --color-accent-muted: #A0A0A0;
-  --color-sidebar-bg: #FFFFFF;
-  --color-card-bg: #FFFFFF;
-  --font-heading: var(--font-inter), "Inter", system-ui, sans-serif;
-  --font-body: var(--font-articulat), "Articulat CF", system-ui, sans-serif;
+  /* Dark mode palette — pure greyscale, no blue cast. Sidebar deepest, canvas
+     one step up, cards one more. Text primary near white, then steps down. */
+  --color-background: #0C0C0C;
+  --color-foreground: #E5E5EA;
+  --color-surface: #181818;
+  --color-surface-light: #222222;
+  --color-border: #2A2A2A;
+  --color-muted: #9CA3AF;
+  --color-hover: #222222;
+  --color-accent: #FFFFFF;
+  --color-accent-hover: #F3F4F6;
+  --color-accent-light: #222222;
+  --color-accent-muted: #71757D;
+  --color-sidebar-bg: #0C0C0C;
+  --color-card-bg: #181818;
+  --font-heading: var(--font-inter-tight), var(--font-inter), "Inter Tight", "Inter", system-ui, sans-serif;
+  --font-body: var(--font-articulat), var(--font-inter), "Articulat CF", system-ui, sans-serif;
+  --font-mono: var(--font-mono), "JetBrains Mono", "Roboto Mono", ui-monospace, SFMono-Regular, monospace;
   --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
   --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);
   --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.03);
@@ -583,4 +586,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 .animate-slide-in-right {
   animation: wv2-slide-in-right 180ms ease-out;
+}
+
+/* Marquee scroll for logo strips */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }

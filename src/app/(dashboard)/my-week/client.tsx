@@ -93,8 +93,8 @@ export default function MyWeekClient() {
   if (role !== "admin") {
     return (
       <div className="mx-auto max-w-md px-6 py-24 text-center">
-        <h1 className="text-lg font-semibold text-[#1B1B1B]">My Week</h1>
-        <p className="mt-2 text-sm text-[#7A7A7A]">This area is private.</p>
+        <h1 className="text-lg font-semibold text-[#E5E5EA]">My Week</h1>
+        <p className="mt-2 text-sm text-[#71757D]">This area is private.</p>
       </div>
     );
   }
@@ -103,13 +103,13 @@ export default function MyWeekClient() {
     <div className="mx-auto max-w-5xl px-6 py-8 md:px-10">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-[#1B1B1B]">My Week</h1>
-          <p className="text-sm text-[#7A7A7A]">Your private schedule. Click any slot to block time.</p>
+          <h1 className="text-2xl font-semibold text-[#E5E5EA]">My Week</h1>
+          <p className="text-sm text-[#71757D]">Your private schedule. Click any slot to block time.</p>
         </div>
         <div className="flex items-center gap-1">
           <button
             onClick={() => setWeekStart(addDays(weekStart, -7))}
-            className="rounded-md border border-[#E5E5EA] bg-white p-1.5 text-[#7A7A7A] hover:text-[#1B1B1B]"
+            className="rounded-md border border-[#2A2A2A] bg-[#181818] p-1.5 text-[#71757D] hover:text-[#E5E5EA]"
             aria-label="Previous week"
           >
             <ChevronLeftIcon className="size-4" />
@@ -117,14 +117,14 @@ export default function MyWeekClient() {
           <button
             onClick={() => setWeekStart(mondayOf(new Date()))}
             className={`rounded-md border px-3 py-1.5 text-[12px] font-medium ${
-              isThisWeek ? "border-[#1B1B1B] bg-[#1B1B1B] text-white" : "border-[#E5E5EA] bg-white text-[#1B1B1B] hover:border-[#1B1B1B]"
+              isThisWeek ? "border-white bg-white text-[#0C0C0C]" : "border-[#2A2A2A] bg-[#181818] text-[#E5E5EA] hover:border-white"
             }`}
           >
             {weekLabel}
           </button>
           <button
             onClick={() => setWeekStart(addDays(weekStart, 7))}
-            className="rounded-md border border-[#E5E5EA] bg-white p-1.5 text-[#7A7A7A] hover:text-[#1B1B1B]"
+            className="rounded-md border border-[#2A2A2A] bg-[#181818] p-1.5 text-[#71757D] hover:text-[#E5E5EA]"
             aria-label="Next week"
           >
             <ChevronRightIcon className="size-4" />
@@ -132,20 +132,20 @@ export default function MyWeekClient() {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-[#E5E5EA] bg-white shadow-[var(--shadow-soft)]">
+      <div className="overflow-x-auto rounded-xl border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-soft)]">
         <div className="min-w-[720px]">
           {/* Header row */}
-          <div className="grid grid-cols-[64px_repeat(5,1fr)] border-b border-[#E5E5EA] bg-[#FAFAFB]">
+          <div className="grid grid-cols-[64px_repeat(5,1fr)] border-b border-[#2A2A2A] bg-[#0C0C0C]">
             <div className="px-2 py-2" />
             {days.map((d, i) => {
               const isToday = ymd(d) === today;
               return (
                 <div
                   key={i}
-                  className={`px-3 py-2 text-center text-[12px] font-semibold ${isToday ? "text-[#1B1B1B]" : "text-[#7A7A7A]"}`}
+                  className={`px-3 py-2 text-center text-[12px] font-semibold ${isToday ? "text-[#E5E5EA]" : "text-[#71757D]"}`}
                 >
                   <div className="uppercase tracking-wider">{DAY_LABELS[i]}</div>
-                  <div className={`text-[11px] font-normal tabular-nums ${isToday ? "text-[#1B1B1B]" : "text-[#A0A0A0]"}`}>
+                  <div className={`text-[11px] font-normal tabular-nums ${isToday ? "text-[#E5E5EA]" : "text-[#71757D]"}`}>
                     {MONTHS[d.getMonth()]} {d.getDate()}
                     {isToday && <span className="ml-1 inline-block size-1.5 rounded-full bg-rose-500 align-middle" />}
                   </div>
@@ -157,7 +157,7 @@ export default function MyWeekClient() {
           {/* Time rows */}
           {HOURS.map((h) => (
             <div key={h} className="grid grid-cols-[64px_repeat(5,1fr)] border-b border-[#F0F0F2] last:border-0">
-              <div className="px-2 py-1 text-right text-[10px] tabular-nums text-[#A0A0A0]">{hourLabel(h)}</div>
+              <div className="px-2 py-1 text-right text-[10px] tabular-nums text-[#71757D]">{hourLabel(h)}</div>
               {days.map((d, i) => {
                 const key = cellKey(ymd(d), h);
                 const val = blocks[key];
@@ -183,13 +183,13 @@ export default function MyWeekClient() {
                             setDraft("");
                           }
                         }}
-                        className="h-full min-h-[40px] w-full resize-none rounded-md border border-[#1B1B1B] bg-white p-1.5 text-[12px] focus:outline-none"
+                        className="h-full min-h-[40px] w-full resize-none rounded-md border border-white bg-[#181818] p-1.5 text-[12px] focus:outline-none"
                         placeholder="Block…"
                       />
                     ) : val ? (
                       <button
                         onClick={() => openEdit(key)}
-                        className="group relative flex h-full w-full items-start rounded-md border border-[#E5E5EA] bg-[#F3F6FF] p-1.5 text-left text-[12px] leading-tight text-[#1B1B1B] transition-colors hover:border-[#1B1B1B]"
+                        className="group relative flex h-full w-full items-start rounded-md border border-[#2A2A2A] bg-[#F3F6FF] p-1.5 text-left text-[12px] leading-tight text-[#E5E5EA] transition-colors hover:border-white"
                       >
                         <span className="whitespace-pre-wrap break-words">{val}</span>
                         <span
@@ -201,7 +201,7 @@ export default function MyWeekClient() {
                             delete next[key];
                             persist(next);
                           }}
-                          className="absolute right-0.5 top-0.5 hidden rounded p-0.5 text-[#A0A0A0] hover:text-rose-600 group-hover:block"
+                          className="absolute right-0.5 top-0.5 hidden rounded p-0.5 text-[#71757D] hover:text-rose-600 group-hover:block"
                           aria-label="Clear block"
                         >
                           <XMarkIcon className="size-3" />
@@ -210,7 +210,7 @@ export default function MyWeekClient() {
                     ) : (
                       <button
                         onClick={() => openEdit(key)}
-                        className="h-full min-h-[40px] w-full rounded-md text-left text-[12px] text-transparent transition-colors hover:bg-[#FAFAFB]"
+                        className="h-full min-h-[40px] w-full rounded-md text-left text-[12px] text-transparent transition-colors hover:bg-[#0C0C0C]"
                       >
                         +
                       </button>
@@ -223,7 +223,7 @@ export default function MyWeekClient() {
         </div>
       </div>
 
-      <p className="mt-3 text-[11px] text-[#A0A0A0]">
+      <p className="mt-3 text-[11px] text-[#71757D]">
         Private to you. Enter to save · Shift+Enter for a new line · hover a block to clear it.
       </p>
     </div>

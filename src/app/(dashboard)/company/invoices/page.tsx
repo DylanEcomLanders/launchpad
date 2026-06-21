@@ -111,7 +111,7 @@ export default function InvoicesPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative w-56">
-            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[#7A7A7A] z-10" />
+            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[#71757D] z-10" />
             <input
               placeholder="Search…"
               value={query}
@@ -135,17 +135,17 @@ export default function InvoicesPage() {
         </div>
         <button
           onClick={() => setShowAdd(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#1B1B1B] text-white text-sm rounded-lg hover:opacity-90"
+          className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-[#0C0C0C] text-sm rounded-lg hover:opacity-90"
         >
           <PlusIcon className="size-4" /> Upload invoice
         </button>
       </div>
 
       {!hydrated ? (
-        <div className="h-48 bg-[#F7F8FA] rounded-xl animate-pulse" />
+        <div className="h-48 bg-[#0C0C0C] rounded-xl animate-pulse" />
       ) : filtered.length === 0 ? (
-        <div className="bg-white border border-dashed border-[#E5E5EA] rounded-xl p-12 text-center">
-          <div className="text-sm text-[#7A7A7A] mb-3">
+        <div className="bg-[#181818] border border-dashed border-[#2A2A2A] rounded-xl p-12 text-center">
+          <div className="text-sm text-[#71757D] mb-3">
             {invoices.length === 0
               ? "No invoices yet — upload your first one."
               : "No invoices match these filters."}
@@ -153,16 +153,16 @@ export default function InvoicesPage() {
           {invoices.length === 0 && (
             <button
               onClick={() => setShowAdd(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#1B1B1B] text-white text-sm rounded-lg hover:opacity-90"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-[#0C0C0C] text-sm rounded-lg hover:opacity-90"
             >
               <DocumentArrowUpIcon className="size-4" /> Upload invoice
             </button>
           )}
         </div>
       ) : (
-        <div className="bg-white border border-[#E5E5EA] rounded-xl overflow-x-auto shadow-[var(--shadow-soft)]">
+        <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-x-auto shadow-[var(--shadow-soft)]">
           <table className="w-full text-sm">
-            <thead className="bg-[#F7F8FA] text-[11px] uppercase tracking-wider text-[#7A7A7A]">
+            <thead className="bg-[#0C0C0C] text-[11px] uppercase tracking-wider text-[#71757D]">
               <tr>
                 <Th onClick={() => toggleSort("supplier_name")}>Supplier</Th>
                 <th className="text-left px-4 py-3 font-semibold">Invoice #</th>
@@ -177,19 +177,19 @@ export default function InvoicesPage() {
               {filtered.map((i) => {
                 const badge = INVOICE_STATUS_BADGE[i.status];
                 return (
-                  <tr key={i.id} className="border-t border-[#E5E5EA] hover:bg-[#F7F8FA]">
+                  <tr key={i.id} className="border-t border-[#2A2A2A] hover:bg-[#0C0C0C]">
                     <td className="px-4 py-3">
                       <Link
                         href={`/company/invoices/${i.id}`}
-                        className="font-medium text-[#1B1B1B] hover:underline"
+                        className="font-medium text-[#E5E5EA] hover:underline"
                       >
                         {i.supplier_name}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-[#7A7A7A]">{i.invoice_number || "—"}</td>
-                    <td className="px-4 py-3 text-[#7A7A7A]">{fmtDateUK(i.issue_date)}</td>
-                    <td className="px-4 py-3 text-[#7A7A7A]">{fmtDateUK(i.due_date)}</td>
-                    <td className="px-4 py-3 font-medium text-[#1B1B1B]">
+                    <td className="px-4 py-3 text-[#71757D]">{i.invoice_number || "—"}</td>
+                    <td className="px-4 py-3 text-[#71757D]">{fmtDateUK(i.issue_date)}</td>
+                    <td className="px-4 py-3 text-[#71757D]">{fmtDateUK(i.due_date)}</td>
+                    <td className="px-4 py-3 font-medium text-[#E5E5EA]">
                       {fmtMoney(i.amount, i.currency)}
                     </td>
                     <td className="px-4 py-3">
@@ -206,7 +206,7 @@ export default function InvoicesPage() {
                           href={i.file_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[#1B1B1B] hover:underline inline-flex items-center gap-1"
+                          className="text-[#E5E5EA] hover:underline inline-flex items-center gap-1"
                         >
                           <DocumentIcon className="size-4" />
                         </a>
@@ -235,7 +235,7 @@ export default function InvoicesPage() {
 
 function Th({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
   return (
-    <th className="text-left px-4 py-3 font-semibold cursor-pointer select-none hover:text-[#1B1B1B]" onClick={onClick}>
+    <th className="text-left px-4 py-3 font-semibold cursor-pointer select-none hover:text-[#E5E5EA]" onClick={onClick}>
       {children}
     </th>
   );
@@ -251,10 +251,10 @@ function SummaryCard({
   accent?: "red" | "green";
 }) {
   const color =
-    accent === "red" ? "text-[#B91C1C]" : accent === "green" ? "text-[#047857]" : "text-[#1B1B1B]";
+    accent === "red" ? "text-[#B91C1C]" : accent === "green" ? "text-[#047857]" : "text-[#E5E5EA]";
   return (
-    <div className="bg-white border border-[#E5E5EA] rounded-xl p-4 shadow-[var(--shadow-soft)]">
-      <div className="text-[11px] uppercase tracking-wider text-[#7A7A7A] mb-1">{label}</div>
+    <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 shadow-[var(--shadow-soft)]">
+      <div className="text-[11px] uppercase tracking-wider text-[#71757D] mb-1">{label}</div>
       <div className={`text-2xl font-semibold ${color}`}>{fmtMoney(amount)}</div>
     </div>
   );
@@ -343,8 +343,8 @@ function UploadInvoiceModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <form onSubmit={submit} className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 my-8">
-        <h2 className="text-lg font-semibold text-[#1B1B1B] mb-4">Upload invoice</h2>
+      <form onSubmit={submit} className="bg-[#181818] rounded-xl shadow-xl w-full max-w-2xl p-6 my-8">
+        <h2 className="text-lg font-semibold text-[#E5E5EA] mb-4">Upload invoice</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -440,13 +440,13 @@ function UploadInvoiceModal({
         {error && <div className="mt-3 text-sm text-[#B91C1C]">{error}</div>}
 
         <div className="flex justify-end gap-2 mt-6">
-          <button type="button" onClick={onCancel} className="px-3 py-2 text-sm text-[#7A7A7A] hover:text-[#1B1B1B]">
+          <button type="button" onClick={onCancel} className="px-3 py-2 text-sm text-[#71757D] hover:text-[#E5E5EA]">
             Cancel
           </button>
           <button
             type="submit"
             disabled={uploading}
-            className="px-3 py-2 bg-[#1B1B1B] text-white text-sm rounded-lg hover:opacity-90 disabled:opacity-50"
+            className="px-3 py-2 bg-white text-[#0C0C0C] text-sm rounded-lg hover:opacity-90 disabled:opacity-50"
           >
             {uploading ? "Saving…" : "Save invoice"}
           </button>

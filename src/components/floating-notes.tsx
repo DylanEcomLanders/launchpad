@@ -290,10 +290,10 @@ export function FloatingNotes() {
       {/* Floating button */}
       <button
         onClick={() => setOpen(!open)}
-        className="fixed top-4 right-4 z-[60] p-2 rounded-lg bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.12)] transition-all duration-200 group"
+        className="fixed top-4 right-4 z-[60] p-2 rounded-lg bg-[#181818] shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.12)] transition-all duration-200 group"
         title="Notes (Cmd+Shift+N)"
       >
-        <svg className="size-4 text-[#7A7A7A] group-hover:text-[#1B1B1B] transition-colors" viewBox="0 0 20 20" fill="currentColor">
+        <svg className="size-4 text-[#71757D] group-hover:text-[#E5E5EA] transition-colors" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5zm12 2a1 1 0 01.894.553l3 6A1 1 0 0117 15h-6a1 1 0 01-.894-1.447l3-6A1 1 0 0114 7z" clipRule="evenodd" />
         </svg>
         {remaining > 0 && (
@@ -307,15 +307,15 @@ export function FloatingNotes() {
       {open && (
         <div
           ref={panelRef}
-          className="fixed top-14 right-4 z-[60] w-[380px] max-h-[calc(100vh-80px)] bg-white rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12),0_1px_4px_rgba(0,0,0,0.06)] border border-[#E5E5EA] flex flex-col overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+          className="fixed top-14 right-4 z-[60] w-[380px] max-h-[calc(100vh-80px)] bg-[#181818] rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.12),0_1px_4px_rgba(0,0,0,0.06)] border border-[#2A2A2A] flex flex-col overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#F0F0F0]">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[#2A2A2A]">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setCurrentDate(dateNav(currentDate, -1))}
-                  className="p-0.5 text-[#CCC] hover:text-[#1B1B1B] transition-colors"
+                  className="p-0.5 text-[#C7C9CD] hover:text-[#E5E5EA] transition-colors"
                 >
                   <ChevronLeftIcon className="size-3.5" />
                 </button>
@@ -323,8 +323,8 @@ export function FloatingNotes() {
                   onClick={() => !isToday && setCurrentDate(todayKey())}
                   className={`text-xs font-medium px-2 py-0.5 rounded ${
                     isToday
-                      ? "text-[#1B1B1B]"
-                      : "text-[#666] hover:text-[#1B1B1B] hover:bg-[#F5F5F5]"
+                      ? "text-[#E5E5EA]"
+                      : "text-[#9CA3AF] hover:text-[#E5E5EA] hover:bg-[#222222]"
                   }`}
                 >
                   {formatDateShort(currentDate)}
@@ -336,18 +336,18 @@ export function FloatingNotes() {
                 </button>
                 <button
                   onClick={() => setCurrentDate(dateNav(currentDate, 1))}
-                  className="p-0.5 text-[#CCC] hover:text-[#1B1B1B] transition-colors"
+                  className="p-0.5 text-[#C7C9CD] hover:text-[#E5E5EA] transition-colors"
                 >
                   <ChevronRightIcon className="size-3.5" />
                 </button>
               </div>
-              <span className="text-[9px] text-[#CCC]">
+              <span className="text-[9px] text-[#C7C9CD]">
                 {saving ? "Saving..." : ""}
               </span>
             </div>
             <button
               onClick={() => setOpen(false)}
-              className="p-1 text-[#CCC] hover:text-[#1B1B1B] transition-colors"
+              className="p-1 text-[#C7C9CD] hover:text-[#E5E5EA] transition-colors"
             >
               <XMarkIcon className="size-4" />
             </button>
@@ -373,7 +373,7 @@ export function FloatingNotes() {
                   </button>
                 </div>
                 {transcript && (
-                  <p className="text-[11px] text-[#555] leading-relaxed bg-white rounded p-2 border border-[#E5E5EA]">
+                  <p className="text-[11px] text-[#C7C9CD] leading-relaxed bg-[#181818] rounded p-2 border border-[#2A2A2A]">
                     {transcript}
                   </p>
                 )}
@@ -381,7 +381,7 @@ export function FloatingNotes() {
             ) : (
               <button
                 onClick={startRecording}
-                className="w-full flex items-center justify-center gap-1.5 py-2 border border-dashed border-[#E5E5EA] rounded-lg text-[#999] hover:border-[#999] hover:text-[#1B1B1B] transition-colors"
+                className="w-full flex items-center justify-center gap-1.5 py-2 border border-dashed border-[#2A2A2A] rounded-lg text-[#71757D] hover:border-[#999] hover:text-[#E5E5EA] transition-colors"
               >
                 <MicrophoneIcon className="size-3.5" />
                 <span className="text-[11px] font-medium">Record</span>
@@ -390,10 +390,10 @@ export function FloatingNotes() {
 
             {/* Action Items */}
             <div>
-              <h3 className="text-[10px] font-semibold uppercase tracking-wider text-[#BBB] mb-2">
+              <h3 className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-2">
                 Actions{" "}
                 {remaining > 0 && (
-                  <span className="text-[#999]">({remaining})</span>
+                  <span className="text-[#71757D]">({remaining})</span>
                 )}
               </h3>
               <div className="space-y-1">
@@ -406,20 +406,20 @@ export function FloatingNotes() {
                       type="checkbox"
                       checked={action.done}
                       onChange={() => toggleAction(action.id)}
-                      className="size-3.5 rounded border-[#CCC] text-[#1B1B1B] focus:ring-0 mt-0.5 cursor-pointer"
+                      className="size-3.5 rounded border-[#383838] text-[#E5E5EA] focus:ring-0 mt-0.5 cursor-pointer"
                     />
                     <p
                       className={`flex-1 text-xs leading-relaxed ${
                         action.done
-                          ? "line-through text-[#CCC]"
-                          : "text-[#444]"
+                          ? "line-through text-[#C7C9CD]"
+                          : "text-[#C7C9CD]"
                       }`}
                     >
                       {action.text}
                     </p>
                     <button
                       onClick={() => deleteAction(action.id)}
-                      className="p-0.5 text-[#DDD] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="p-0.5 text-[#C7C9CD] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <TrashIcon className="size-2.5" />
                     </button>
@@ -435,12 +435,12 @@ export function FloatingNotes() {
                     if (e.key === "Enter") addAction();
                   }}
                   placeholder="Add action..."
-                  className="flex-1 text-xs px-2.5 py-1.5 border border-[#E5E5EA] rounded-md focus:outline-none focus:border-[#999] placeholder:text-[#DDD]"
+                  className="flex-1 text-xs px-2.5 py-1.5 border border-[#2A2A2A] rounded-md focus:outline-none focus:border-[#999] placeholder:text-[#C7C9CD]"
                 />
                 <button
                   onClick={addAction}
                   disabled={!newActionText.trim()}
-                  className="p-1 text-[#CCC] hover:text-[#1B1B1B] disabled:opacity-30"
+                  className="p-1 text-[#C7C9CD] hover:text-[#E5E5EA] disabled:opacity-30"
                 >
                   <PlusIcon className="size-3.5" />
                 </button>
@@ -449,25 +449,25 @@ export function FloatingNotes() {
 
             {/* Notes */}
             <div>
-              <h3 className="text-[10px] font-semibold uppercase tracking-wider text-[#BBB] mb-2">
+              <h3 className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-2">
                 Notes
               </h3>
               <textarea
                 value={currentNote?.notes || ""}
                 onChange={(e) => updateNotes(e.target.value)}
                 placeholder="Quick notes..."
-                className="w-full min-h-[80px] text-xs px-3 py-2 border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#999] placeholder:text-[#DDD] resize-y leading-relaxed"
+                className="w-full min-h-[80px] text-xs px-3 py-2 border border-[#2A2A2A] rounded-lg focus:outline-none focus:border-[#999] placeholder:text-[#C7C9CD] resize-y leading-relaxed"
               />
             </div>
 
             {/* Transcript */}
             {currentNote?.rawTranscript && (
               <div>
-                <h3 className="text-[10px] font-semibold uppercase tracking-wider text-[#BBB] mb-2">
+                <h3 className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-2">
                   Transcript
                 </h3>
-                <div className="bg-[#FAFAFA] border border-[#E5E5EA] rounded-lg p-2.5">
-                  <p className="text-[10px] text-[#888] leading-relaxed whitespace-pre-wrap">
+                <div className="bg-[#0C0C0C] border border-[#2A2A2A] rounded-lg p-2.5">
+                  <p className="text-[10px] text-[#9CA3AF] leading-relaxed whitespace-pre-wrap">
                     {currentNote.rawTranscript}
                   </p>
                 </div>
@@ -477,7 +477,7 @@ export function FloatingNotes() {
             {/* Empty state */}
             {!currentNote && !recording && (
               <div className="text-center py-4">
-                <p className="text-xs text-[#CCC]">No notes for this day</p>
+                <p className="text-xs text-[#C7C9CD]">No notes for this day</p>
               </div>
             )}
           </div>

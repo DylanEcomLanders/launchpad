@@ -20,7 +20,7 @@ const galleryFilters: (PageType | "All")[] = ["All", "PDP", "Collection", "Landi
 const priorityStyles = {
   required: { label: "Required", bg: "bg-[#1B1B1B]", text: "text-white" },
   recommended: { label: "Recommended", bg: "bg-[#E5E5EA]", text: "text-[#3A3A3A]" },
-  optional: { label: "Optional", bg: "bg-[#F3F3F5]", text: "text-[#999999]" },
+  optional: { label: "Optional", bg: "bg-[#222222]", text: "text-[#999999]" },
 };
 
 export default function DesignDevPage() {
@@ -54,7 +54,7 @@ export default function DesignDevPage() {
     for (const item of checklistItems) {
       const check = checkedItems.has(item.sectionName) ? "x" : " ";
       const priority = item.priority.charAt(0).toUpperCase() + item.priority.slice(1);
-      lines.push(`[${check}] ${item.sectionName} \u2014 ${item.purpose} (${priority})`);
+      lines.push(`[${check}] ${item.sectionName}: ${item.purpose} (${priority})`);
     }
     const checked = checklistItems.filter((i) => checkedItems.has(i.sectionName)).length;
     lines.push("");
@@ -74,22 +74,22 @@ export default function DesignDevPage() {
       <div className="relative z-10 max-w-4xl mx-auto px-6 md:px-12 py-12 md:py-16">
         {/* Header */}
         <div className="mb-10">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">
             Design & Dev
           </h1>
-          <p className="text-[#7A7A7A] text-sm">
+          <p className="text-[#71757D] text-sm">
             Section reference gallery and component checklists for every page type
           </p>
         </div>
 
         {/* Tab Toggle */}
-        <div className="flex gap-1 mb-8 bg-[#EDEDEF] border border-[#E5E5EA] rounded-lg p-1 w-fit">
+        <div className="flex gap-1 mb-8 bg-[#222222] border border-[#2A2A2A] rounded-lg p-1 w-fit">
           <button
             onClick={() => setActiveTab("gallery")}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
               activeTab === "gallery"
-                ? "bg-white border border-[#E5E5EA] shadow-sm"
-                : "text-[#7A7A7A] hover:text-[#3A3A3A]"
+                ? "bg-[#181818] border border-[#2A2A2A] shadow-sm"
+                : "text-[#71757D] hover:text-[#E5E5EA]"
             }`}
           >
             Section Gallery
@@ -98,8 +98,8 @@ export default function DesignDevPage() {
             onClick={() => setActiveTab("checklist")}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
               activeTab === "checklist"
-                ? "bg-white border border-[#E5E5EA] shadow-sm"
-                : "text-[#7A7A7A] hover:text-[#3A3A3A]"
+                ? "bg-[#181818] border border-[#2A2A2A] shadow-sm"
+                : "text-[#71757D] hover:text-[#E5E5EA]"
             }`}
           >
             Page Checklist
@@ -117,8 +117,8 @@ export default function DesignDevPage() {
                   onClick={() => setGalleryFilter(filter)}
                   className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
                     galleryFilter === filter
-                      ? "bg-[#1B1B1B] text-white"
-                      : "bg-[#F3F3F5] text-[#7A7A7A] hover:bg-[#EBEBEB]"
+                      ? "bg-[#222222] text-[#E5E5EA]"
+                      : "bg-[#222222] text-[#71757D] hover:bg-[#222222]"
                   }`}
                 >
                   {filter}
@@ -131,10 +131,10 @@ export default function DesignDevPage() {
               {filteredSections.map((section) => (
                 <div
                   key={section.id}
-                  className="bg-white border border-[#E5E5EA] rounded-lg overflow-hidden"
+                  className="bg-[#181818] border border-[#2A2A2A] rounded-lg overflow-hidden"
                 >
                   {/* Placeholder image */}
-                  <div className="h-32 bg-[#F3F3F5] flex items-center justify-center">
+                  <div className="h-32 bg-[#222222] flex items-center justify-center">
                     <span className="text-sm font-semibold text-[#C5C5C5] uppercase tracking-wider">
                       {section.name}
                     </span>
@@ -143,7 +143,7 @@ export default function DesignDevPage() {
                   {/* Content */}
                   <div className="p-5">
                     <h3 className="text-sm font-semibold mb-1.5">{section.name}</h3>
-                    <p className="text-xs text-[#7A7A7A] leading-relaxed mb-3">
+                    <p className="text-xs text-[#71757D] leading-relaxed mb-3">
                       {section.description}
                     </p>
 
@@ -164,7 +164,7 @@ export default function DesignDevPage() {
                       {section.pageTypes.map((pt) => (
                         <span
                           key={pt}
-                          className="px-2 py-0.5 text-[10px] font-medium bg-[#F3F3F5] text-[#7A7A7A] rounded"
+                          className="px-2 py-0.5 text-[10px] font-medium bg-[#222222] text-[#71757D] rounded"
                         >
                           {pt}
                         </span>
@@ -191,8 +191,8 @@ export default function DesignDevPage() {
                   }}
                   className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
                     checklistType === pt
-                      ? "bg-[#1B1B1B] text-white"
-                      : "bg-[#F3F3F5] text-[#7A7A7A] hover:bg-[#EBEBEB]"
+                      ? "bg-[#222222] text-[#E5E5EA]"
+                      : "bg-[#222222] text-[#71757D] hover:bg-[#222222]"
                   }`}
                 >
                   {pt}
@@ -201,8 +201,8 @@ export default function DesignDevPage() {
             </div>
 
             {/* Progress */}
-            <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg px-5 py-3 mb-6 flex items-center justify-between">
-              <span className="text-xs text-[#7A7A7A]">
+            <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg px-5 py-3 mb-6 flex items-center justify-between">
+              <span className="text-xs text-[#71757D]">
                 {checkedItems.size}/{checklistItems.length} sections checked
               </span>
               <div className="flex items-center gap-3">
@@ -213,7 +213,7 @@ export default function DesignDevPage() {
             </div>
 
             {/* Checklist items */}
-            <div className="bg-white border border-[#E5E5EA] rounded-lg divide-y divide-[#EDEDEF]">
+            <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg divide-y divide-[#2A2A2A]">
               {checklistItems.map((item) => {
                 const isChecked = checkedItems.has(item.sectionName);
                 const ps = priorityStyles[item.priority];
@@ -221,7 +221,7 @@ export default function DesignDevPage() {
                 return (
                   <div
                     key={item.sectionName}
-                    className={`flex items-start gap-3 px-5 py-3.5 cursor-pointer hover:bg-[#F7F8FA] transition-colors ${
+                    className={`flex items-start gap-3 px-5 py-3.5 cursor-pointer hover:bg-[#0C0C0C] transition-colors ${
                       isChecked ? "opacity-60" : ""
                     }`}
                     onClick={() => toggleItem(item.sectionName)}
@@ -266,8 +266,8 @@ export default function DesignDevPage() {
                 onClick={copyChecklist}
                 className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md transition-all ${
                   copied
-                    ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
-                    : "bg-[#1B1B1B] text-white hover:bg-[#2D2D2D]"
+                    ? "bg-emerald-950 border border-emerald-900 text-emerald-400"
+                    : "bg-white text-[#0C0C0C] hover:bg-[#F3F4F6]"
                 }`}
               >
                 <ClipboardDocumentIcon className="size-4" />
@@ -275,7 +275,7 @@ export default function DesignDevPage() {
               </button>
               <button
                 onClick={resetChecklist}
-                className="px-4 py-2.5 text-sm font-medium border border-[#E5E5EA] bg-white text-[#7A7A7A] rounded-md hover:bg-[#F3F3F5] transition-colors"
+                className="px-4 py-2.5 text-sm font-medium border border-[#2A2A2A] bg-[#181818] text-[#71757D] rounded-md hover:bg-[#222222] transition-colors"
               >
                 Reset
               </button>

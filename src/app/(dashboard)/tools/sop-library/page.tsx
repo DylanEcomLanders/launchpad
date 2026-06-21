@@ -11,14 +11,14 @@ import { isLoomUrl, toLoomEmbed } from "@/lib/portal/loom";
 /* ── Simple markdown → HTML ── */
 function renderMarkdown(md: string): string {
   return md
-    .replace(/^### (.+)$/gm, "<h3 class='text-sm font-bold text-[#1A1A1A] mt-4 mb-1'>$1</h3>")
-    .replace(/^## (.+)$/gm, "<h2 class='text-base font-bold text-[#1A1A1A] mt-5 mb-2'>$1</h2>")
-    .replace(/^# (.+)$/gm, "<h1 class='text-lg font-bold text-[#1A1A1A] mt-6 mb-2'>$1</h1>")
+    .replace(/^### (.+)$/gm, "<h3 class='text-sm font-bold text-[#E5E5EA] mt-4 mb-1'>$1</h3>")
+    .replace(/^## (.+)$/gm, "<h2 class='text-base font-bold text-[#E5E5EA] mt-5 mb-2'>$1</h2>")
+    .replace(/^# (.+)$/gm, "<h1 class='text-lg font-bold text-[#E5E5EA] mt-6 mb-2'>$1</h1>")
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    .replace(/`(.+?)`/g, "<code class='px-1 py-0.5 bg-[#F3F3F5] rounded text-[12px] font-mono'>$1</code>")
-    .replace(/^- (.+)$/gm, "<li class='ml-4 list-disc text-[13px] text-[#555] leading-relaxed'>$1</li>")
-    .replace(/^(\d+)\. (.+)$/gm, "<li class='ml-4 list-decimal text-[13px] text-[#555] leading-relaxed'>$2</li>")
+    .replace(/`(.+?)`/g, "<code class='px-1 py-0.5 bg-[#222222] rounded text-[12px] font-mono'>$1</code>")
+    .replace(/^- (.+)$/gm, "<li class='ml-4 list-disc text-[13px] text-[#C7C9CD] leading-relaxed'>$1</li>")
+    .replace(/^(\d+)\. (.+)$/gm, "<li class='ml-4 list-decimal text-[13px] text-[#C7C9CD] leading-relaxed'>$2</li>")
     .replace(/\n\n/g, "<br/><br/>")
     .replace(/\n/g, "<br/>");
 }
@@ -177,37 +177,37 @@ export default function SOPLibraryPage() {
       <div className="max-w-3xl mx-auto py-10 px-4">
         <button
           onClick={() => setSelectedId(null)}
-          className="flex items-center gap-1.5 text-xs font-medium text-[#7A7A7A] hover:text-[#1A1A1A] transition-colors mb-6"
+          className="flex items-center gap-1.5 text-xs font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors mb-6"
         >
           <ArrowLeftIcon className="size-3" />
           All SOPs
         </button>
 
         <div className="mb-6">
-          <h1 className="text-2xl font-bold tracking-tight">{selected.title}</h1>
+          <h1 className="text-[28px] leading-tight font-bold text-[#E5E5EA]">{selected.title}</h1>
           <div className="flex items-center gap-3 mt-2">
             <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ background: cat.color + "18", color: cat.color }}>
               {cat.label}
             </span>
-            <span className="text-xs text-[#AAA]">{readTime(selected.content)} min read</span>
-            <span className="text-xs text-[#AAA]">Updated {new Date(selected.updated_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
-            {selected.loomUrl && <span className="text-xs text-[#AAA]">Loom attached</span>}
+            <span className="text-xs text-[#9CA3AF]">{readTime(selected.content)} min read</span>
+            <span className="text-xs text-[#9CA3AF]">Updated {new Date(selected.updated_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
+            {selected.loomUrl && <span className="text-xs text-[#9CA3AF]">Loom attached</span>}
           </div>
           {selected.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-3">
               {selected.tags.map((t) => (
-                <span key={t} className="px-2 py-0.5 text-[10px] font-medium text-[#777] bg-[#F3F3F5] rounded-full">{t}</span>
+                <span key={t} className="px-2 py-0.5 text-[10px] font-medium text-[#9CA3AF] bg-[#222222] rounded-full">{t}</span>
               ))}
             </div>
           )}
           {selected.description && (
-            <p className="text-sm text-[#555] mt-3 leading-relaxed">{selected.description}</p>
+            <p className="text-sm text-[#C7C9CD] mt-3 leading-relaxed">{selected.description}</p>
           )}
         </div>
 
         {/* Loom embed */}
         {loomEmbed && (
-          <div className="mb-6 rounded-xl overflow-hidden border border-[#E5E5EA]">
+          <div className="mb-6 rounded-xl overflow-hidden border border-[#2A2A2A]">
             <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
               <iframe src={loomEmbed} className="absolute inset-0 w-full h-full border-0" allowFullScreen />
             </div>
@@ -215,9 +215,9 @@ export default function SOPLibraryPage() {
         )}
 
         {/* Content */}
-        <div className="bg-white border border-[#E5E5EA] rounded-xl p-6">
+        <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-6">
           <div
-            className="text-[13px] text-[#333] leading-relaxed"
+            className="text-[13px] text-[#E5E5EA] leading-relaxed"
             dangerouslySetInnerHTML={{ __html: renderMarkdown(selected.content) }}
           />
         </div>
@@ -236,7 +236,7 @@ export default function SOPLibraryPage() {
             >
               {selected.draft ? "Publish" : "Unpublish"}
             </button>
-            <button onClick={() => openEdit(selected)} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-[#777] border border-[#E5E5EA] rounded-lg hover:bg-[#F5F5F5]">
+            <button onClick={() => openEdit(selected)} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-[#9CA3AF] border border-[#2A2A2A] rounded-lg hover:bg-[#222222]">
               <PencilIcon className="size-3" /> Edit
             </button>
             <button
@@ -257,11 +257,11 @@ export default function SOPLibraryPage() {
   if (showForm) {
     return (
       <div className="max-w-2xl mx-auto py-10 px-4">
-        <button onClick={() => { setShowForm(false); resetForm(); }} className="flex items-center gap-1.5 text-xs font-medium text-[#7A7A7A] hover:text-[#1A1A1A] transition-colors mb-6">
+        <button onClick={() => { setShowForm(false); resetForm(); }} className="flex items-center gap-1.5 text-xs font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors mb-6">
           <ArrowLeftIcon className="size-3" /> Cancel
         </button>
 
-        <h1 className="text-xl font-bold tracking-tight mb-6">{editingId ? "Edit SOP" : "New SOP"}</h1>
+        <h1 className="text-[28px] leading-tight font-bold text-[#E5E5EA] mb-6">{editingId ? "Edit SOP" : "New SOP"}</h1>
 
         <div className="space-y-4">
           <div>
@@ -288,7 +288,7 @@ export default function SOPLibraryPage() {
             <label className={labelClass}>Loom URL (optional)</label>
             <input type="url" value={formLoom} onChange={(e) => setFormLoom(e.target.value)} className={inputClass} placeholder="https://www.loom.com/share/..." />
             {formLoom && isLoomUrl(formLoom) && (
-              <div className="mt-2 rounded-lg overflow-hidden border border-[#E5E5EA]">
+              <div className="mt-2 rounded-lg overflow-hidden border border-[#2A2A2A]">
                 <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
                   <iframe src={toLoomEmbed(formLoom) || ""} className="absolute inset-0 w-full h-full border-0" allowFullScreen />
                 </div>
@@ -308,7 +308,7 @@ export default function SOPLibraryPage() {
             <button
               onClick={handleSave}
               disabled={!formTitle.trim()}
-              className="px-5 py-2.5 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D] disabled:opacity-30"
+              className="px-5 py-2.5 bg-white text-[#0C0C0C] text-xs font-medium rounded-lg hover:bg-[#F3F4F6] disabled:opacity-30"
             >
               {formDraft ? (editingId ? "Save Draft" : "Create as Draft") : (editingId ? "Save & Publish" : "Create & Publish")}
             </button>
@@ -317,9 +317,9 @@ export default function SOPLibraryPage() {
                 type="checkbox"
                 checked={!formDraft}
                 onChange={(e) => setFormDraft(!e.target.checked)}
-                className="size-3.5 rounded border-[#CCC] text-[#1B1B1B] focus:ring-0"
+                className="size-3.5 rounded border-[#383838] text-[#E5E5EA] focus:ring-0"
               />
-              <span className="text-xs text-[#777]">Publish immediately</span>
+              <span className="text-xs text-[#9CA3AF]">Publish immediately</span>
             </label>
           </div>
         </div>
@@ -332,11 +332,11 @@ export default function SOPLibraryPage() {
     <div className="max-w-3xl mx-auto py-10 px-4">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">SOP Library</h1>
-          <p className="text-xs text-[#7A7A7A] mt-1">{sops.length} process{sops.length !== 1 ? "es" : ""} documented</p>
+          <h1 className="text-[28px] leading-tight font-bold text-[#E5E5EA]">SOP Library</h1>
+          <p className="text-xs text-[#71757D] mt-1">{sops.length} process{sops.length !== 1 ? "es" : ""} documented</p>
         </div>
         {isAdmin && (
-          <button onClick={openCreate} className="flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg hover:bg-[#2D2D2D]">
+          <button onClick={openCreate} className="flex items-center gap-1.5 px-4 py-2 bg-white text-[#0C0C0C] text-xs font-medium rounded-lg hover:bg-[#F3F4F6]">
             <PlusIcon className="size-3.5" /> New SOP
           </button>
         )}
@@ -344,13 +344,13 @@ export default function SOPLibraryPage() {
 
       {/* Search */}
       <div className="relative mb-4">
-        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#CCC]" />
+        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#C7C9CD]" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search SOPs..."
-          className="w-full pl-9 pr-4 py-2.5 text-sm border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#999] placeholder:text-[#CCC]"
+          className="w-full pl-9 pr-4 py-2.5 text-sm border border-[#2A2A2A] rounded-lg focus:outline-none focus:border-[#999] placeholder:text-[#C7C9CD]"
         />
       </div>
 
@@ -359,7 +359,7 @@ export default function SOPLibraryPage() {
         <button
           onClick={() => setCategoryFilter("all")}
           className={`px-3 py-1.5 text-[11px] font-medium rounded-full transition-colors ${
-            categoryFilter === "all" ? "bg-[#1A1A1A] text-white" : "bg-[#F3F3F5] text-[#777] hover:bg-[#E5E5EA]"
+            categoryFilter === "all" ? "bg-white text-[#0C0C0C]" : "bg-[#222222] text-[#9CA3AF] hover:bg-[#2A2A2A]"
           }`}
         >
           All
@@ -369,7 +369,7 @@ export default function SOPLibraryPage() {
             key={c.key}
             onClick={() => setCategoryFilter(c.key)}
             className={`px-3 py-1.5 text-[11px] font-medium rounded-full transition-colors ${
-              categoryFilter === c.key ? "text-white" : "text-[#777] hover:bg-[#E5E5EA]"
+              categoryFilter === c.key ? "text-white" : "text-[#9CA3AF] hover:bg-[#2A2A2A]"
             }`}
             style={categoryFilter === c.key ? { background: c.color } : { background: "#F3F3F5" }}
           >
@@ -381,15 +381,15 @@ export default function SOPLibraryPage() {
       {/* Loading */}
       {loading && (
         <div className="flex items-center justify-center py-16">
-          <div className="animate-spin size-5 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full" />
+          <div className="animate-spin size-5 border-2 border-[#2A2A2A] border-t-[#1A1A1A] rounded-full" />
         </div>
       )}
 
       {/* Empty state */}
       {!loading && filtered.length === 0 && (
-        <div className="border-2 border-dashed border-[#E5E5EA] rounded-xl p-12 text-center">
-          <p className="text-sm text-[#AAA]">{search ? "No SOPs match your search" : "No SOPs yet"}</p>
-          {isAdmin && !search && <p className="text-xs text-[#CCC] mt-1">Create your first SOP to get started</p>}
+        <div className="border-2 border-dashed border-[#2A2A2A] rounded-xl p-12 text-center">
+          <p className="text-sm text-[#9CA3AF]">{search ? "No SOPs match your search" : "No SOPs yet"}</p>
+          {isAdmin && !search && <p className="text-xs text-[#C7C9CD] mt-1">Create your first SOP to get started</p>}
         </div>
       )}
 
@@ -402,22 +402,22 @@ export default function SOPLibraryPage() {
               <button
                 key={sop.id}
                 onClick={() => setSelectedId(sop.id)}
-                className="w-full text-left p-4 border border-[#E5E5EA] rounded-xl bg-white hover:border-[#999] transition-colors group"
+                className="w-full text-left p-4 border border-[#2A2A2A] rounded-xl bg-[#181818] hover:border-[#999] transition-colors group"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-[#1A1A1A] group-hover:underline truncate">{sop.title}</p>
+                    <p className="text-sm font-semibold text-[#E5E5EA] group-hover:underline truncate">{sop.title}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full" style={{ background: cat.color + "18", color: cat.color }}>
                         {cat.label}
                       </span>
-                      <span className="text-[10px] text-[#AAA]">{readTime(sop.content)} min read</span>
-                      {sop.loomUrl && <span className="text-[10px] text-[#AAA]">Loom</span>}
-                      {sop.draft && <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600">Draft</span>}
+                      <span className="text-[10px] text-[#9CA3AF]">{readTime(sop.content)} min read</span>
+                      {sop.loomUrl && <span className="text-[10px] text-[#9CA3AF]">Loom</span>}
+                      {sop.draft && <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-900/30 text-amber-300">Draft</span>}
                     </div>
-                    {sop.description && <p className="text-xs text-[#777] mt-1.5 line-clamp-1">{sop.description}</p>}
+                    {sop.description && <p className="text-xs text-[#9CA3AF] mt-1.5 line-clamp-1">{sop.description}</p>}
                   </div>
-                  <svg className="size-4 text-[#DDD] group-hover:text-[#1A1A1A] transition-colors shrink-0 mt-1" viewBox="0 0 20 20" fill="currentColor">
+                  <svg className="size-4 text-[#C7C9CD] group-hover:text-[#E5E5EA] transition-colors shrink-0 mt-1" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
                   </svg>
                 </div>

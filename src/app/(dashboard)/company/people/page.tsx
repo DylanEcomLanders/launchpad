@@ -60,7 +60,7 @@ export default function PeoplePage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative w-56">
-            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[#7A7A7A] z-10" />
+            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[#71757D] z-10" />
             <input
               type="text"
               placeholder="Search…"
@@ -109,17 +109,17 @@ export default function PeoplePage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="inline-flex rounded-lg border border-[#E5E5EA] overflow-hidden">
+          <div className="inline-flex rounded-lg border border-[#2A2A2A] overflow-hidden">
             <button
               onClick={() => setView("grid")}
-              className={`p-2 ${view === "grid" ? "bg-[#1B1B1B] text-white" : "bg-white text-[#7A7A7A]"}`}
+              className={`p-2 ${view === "grid" ? "bg-white text-[#0C0C0C]" : "bg-[#181818] text-[#71757D]"}`}
               title="Grid view"
             >
               <Squares2X2Icon className="size-4" />
             </button>
             <button
               onClick={() => setView("table")}
-              className={`p-2 ${view === "table" ? "bg-[#1B1B1B] text-white" : "bg-white text-[#7A7A7A]"}`}
+              className={`p-2 ${view === "table" ? "bg-white text-[#0C0C0C]" : "bg-[#181818] text-[#71757D]"}`}
               title="Table view"
             >
               <ListBulletIcon className="size-4" />
@@ -127,7 +127,7 @@ export default function PeoplePage() {
           </div>
           <button
             onClick={() => setShowAdd(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#1B1B1B] text-white text-sm rounded-lg hover:opacity-90"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-[#0C0C0C] text-sm rounded-lg hover:opacity-90"
           >
             <PlusIcon className="size-4" />
             Add person
@@ -138,7 +138,7 @@ export default function PeoplePage() {
       {!hydrated ? (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-36 bg-[#F7F8FA] rounded-xl animate-pulse" />
+            <div key={i} className="h-36 bg-[#0C0C0C] rounded-xl animate-pulse" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
@@ -163,7 +163,7 @@ function PersonCard({ person }: { person: Person }) {
   return (
     <Link
       href={`/company/people/${person.id}`}
-      className="block bg-white border border-[#E5E5EA] rounded-xl p-4 hover:border-[#1B1B1B] transition-colors shadow-[var(--shadow-soft)]"
+      className="block bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 hover:border-white transition-colors shadow-[var(--shadow-soft)]"
     >
       <div className="flex items-start gap-3">
         {person.avatar_url ? (
@@ -178,8 +178,8 @@ function PersonCard({ person }: { person: Person }) {
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <div className="font-medium text-[#1B1B1B] truncate">{person.preferred_name || person.full_name}</div>
-          <div className="text-xs text-[#7A7A7A] truncate">{person.job_title || "—"}</div>
+          <div className="font-medium text-[#E5E5EA] truncate">{person.preferred_name || person.full_name}</div>
+          <div className="text-xs text-[#71757D] truncate">{person.job_title || "—"}</div>
         </div>
       </div>
       <div className="mt-3 flex items-center justify-between">
@@ -189,12 +189,12 @@ function PersonCard({ person }: { person: Person }) {
         >
           {status.label}
         </span>
-        <span className="text-[11px] text-[#7A7A7A]">
+        <span className="text-[11px] text-[#71757D]">
           {person.employment_type === "employee" ? "Employee" : "Contractor"}
         </span>
       </div>
       {person.department && (
-        <div className="mt-2 flex items-center gap-1.5 text-[11px] text-[#7A7A7A]">
+        <div className="mt-2 flex items-center gap-1.5 text-[11px] text-[#71757D]">
           <span className="size-2 rounded-full" style={{ background: deptColor(person.department) }} />
           {person.department}
         </div>
@@ -205,9 +205,9 @@ function PersonCard({ person }: { person: Person }) {
 
 function PeopleTable({ rows }: { rows: Person[] }) {
   return (
-    <div className="bg-white border border-[#E5E5EA] rounded-xl overflow-hidden shadow-[var(--shadow-soft)]">
+    <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-hidden shadow-[var(--shadow-soft)]">
       <table className="w-full text-sm">
-        <thead className="bg-[#F7F8FA] text-[11px] uppercase tracking-wider text-[#7A7A7A]">
+        <thead className="bg-[#0C0C0C] text-[11px] uppercase tracking-wider text-[#71757D]">
           <tr>
             <th className="text-left px-4 py-3 font-semibold">Name</th>
             <th className="text-left px-4 py-3 font-semibold">Title</th>
@@ -221,15 +221,15 @@ function PeopleTable({ rows }: { rows: Person[] }) {
           {rows.map((p) => {
             const status = STATUS_BADGE[p.status];
             return (
-              <tr key={p.id} className="border-t border-[#E5E5EA] hover:bg-[#F7F8FA]">
+              <tr key={p.id} className="border-t border-[#2A2A2A] hover:bg-[#0C0C0C]">
                 <td className="px-4 py-3">
-                  <Link href={`/company/people/${p.id}`} className="font-medium text-[#1B1B1B] hover:underline">
+                  <Link href={`/company/people/${p.id}`} className="font-medium text-[#E5E5EA] hover:underline">
                     {p.preferred_name || p.full_name}
                   </Link>
                 </td>
-                <td className="px-4 py-3 text-[#7A7A7A]">{p.job_title || "—"}</td>
-                <td className="px-4 py-3 text-[#7A7A7A]">{p.department || "—"}</td>
-                <td className="px-4 py-3 text-[#7A7A7A] capitalize">{p.employment_type}</td>
+                <td className="px-4 py-3 text-[#71757D]">{p.job_title || "—"}</td>
+                <td className="px-4 py-3 text-[#71757D]">{p.department || "—"}</td>
+                <td className="px-4 py-3 text-[#71757D] capitalize">{p.employment_type}</td>
                 <td className="px-4 py-3">
                   <span
                     className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
@@ -238,7 +238,7 @@ function PeopleTable({ rows }: { rows: Person[] }) {
                     {status.label}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-[#7A7A7A]">{p.email || "—"}</td>
+                <td className="px-4 py-3 text-[#71757D]">{p.email || "—"}</td>
               </tr>
             );
           })}
@@ -250,14 +250,14 @@ function PeopleTable({ rows }: { rows: Person[] }) {
 
 function EmptyState({ onAdd, hasFilter }: { onAdd: () => void; hasFilter: boolean }) {
   return (
-    <div className="bg-white border border-dashed border-[#E5E5EA] rounded-xl p-12 text-center">
-      <div className="text-sm text-[#7A7A7A] mb-3">
-        {hasFilter ? "No people match these filters." : "No people yet — add your first team member."}
+    <div className="bg-[#181818] border border-dashed border-[#2A2A2A] rounded-xl p-12 text-center">
+      <div className="text-sm text-[#71757D] mb-3">
+        {hasFilter ? "No people match these filters." : "No people yet - add your first team member."}
       </div>
       {!hasFilter && (
         <button
           onClick={onAdd}
-          className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#1B1B1B] text-white text-sm rounded-lg hover:opacity-90"
+          className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-[#0C0C0C] text-sm rounded-lg hover:opacity-90"
         >
           <PlusIcon className="size-4" />
           Add person
@@ -303,9 +303,9 @@ function AddPersonModal({
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
       <form
         onSubmit={submit}
-        className="bg-white rounded-xl shadow-xl w-full max-w-md p-6"
+        className="bg-[#181818] rounded-xl shadow-xl w-full max-w-md p-6"
       >
-        <h2 className="text-lg font-semibold text-[#1B1B1B] mb-4">Add person</h2>
+        <h2 className="text-lg font-semibold text-[#E5E5EA] mb-4">Add person</h2>
         <div className="space-y-4">
           <div>
             <label className={labelClass}>Full name</label>
@@ -368,13 +368,13 @@ function AddPersonModal({
           <button
             type="button"
             onClick={onCancel}
-            className="px-3 py-2 text-sm text-[#7A7A7A] hover:text-[#1B1B1B]"
+            className="px-3 py-2 text-sm text-[#71757D] hover:text-[#E5E5EA]"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-3 py-2 bg-[#1B1B1B] text-white text-sm rounded-lg hover:opacity-90"
+            className="px-3 py-2 bg-white text-[#0C0C0C] text-sm rounded-lg hover:opacity-90"
           >
             Add
           </button>

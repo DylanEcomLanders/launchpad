@@ -55,7 +55,7 @@ function CopyButton({ item }: { item: PriceItem }) {
       className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
         copied
           ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-          : "border-[#E5E5EA] bg-white text-[#7A7A7A] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"
+          : "border-[#2A2A2A] bg-[#181818] text-[#71757D] hover:border-white hover:text-[#E5E5EA]"
       }`}
       title="Copy as quote line"
     >
@@ -85,39 +85,39 @@ function CategoryGroup({
   return (
     <section className="mb-10">
       <div className="mb-3 flex items-baseline gap-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">
           {INTERNAL_CATEGORY_LABELS[category]}
         </h2>
-        <span className="text-xs text-[#A0A0A0]">
+        <span className="text-xs text-[#71757D]">
           {items.length} {items.length === 1 ? "item" : "items"}
         </span>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-[#E5E5EA] bg-white shadow-[var(--shadow-soft)]">
+      <div className="overflow-hidden rounded-xl border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-soft)]">
         {/* Column headers */}
-        <div className="hidden grid-cols-[2fr_1.2fr_0.9fr_2.5fr_2.2fr_0.9fr_0.6fr] gap-3 border-b border-[#E5E5EA] bg-[#FAFAFA] px-4 py-2.5 lg:grid">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+        <div className="hidden grid-cols-[2fr_1.2fr_0.9fr_2.5fr_2.2fr_0.9fr_0.6fr] gap-3 border-b border-[#2A2A2A] bg-[#0C0C0C] px-4 py-2.5 lg:grid">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
             Name
           </span>
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
             Price
           </span>
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
             Unit
           </span>
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
             Included
           </span>
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
             NOT included
           </span>
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
             Updated
           </span>
           <span className="sr-only">Copy</span>
         </div>
 
-        <ul className="divide-y divide-[#EFEFF1]">
+        <ul className="divide-y divide-[#2A2A2A]">
           {items.map((item) => (
             <li
               key={item.id}
@@ -125,29 +125,29 @@ function CategoryGroup({
             >
               {/* Name */}
               <div className="flex items-baseline gap-2 lg:block">
-                <p className="text-sm font-semibold text-[#1B1B1B]">
+                <p className="text-sm font-semibold text-[#E5E5EA]">
                   {item.name}
                 </p>
               </div>
 
               {/* Price */}
               <div className="lg:pt-px">
-                <span className="font-mono text-sm tabular-nums text-[#1B1B1B]">
+                <span className="font-mono text-sm tabular-nums text-[#E5E5EA]">
                   {formatPrice(item)}
                 </span>
               </div>
 
               {/* Unit */}
               <div className="lg:pt-px">
-                <span className="inline-block rounded-md bg-[#F3F3F5] px-2 py-0.5 text-xs text-[#7A7A7A]">
+                <span className="inline-block rounded-md bg-[#222222] px-2 py-0.5 text-xs text-[#71757D]">
                   {item.unit}
                 </span>
               </div>
 
               {/* Included */}
-              <p className="text-sm leading-snug text-[#444]">
+              <p className="text-sm leading-snug text-[#C7C9CD]">
                 <span className="lg:hidden">
-                  <strong className="text-[10px] uppercase tracking-wider text-[#A0A0A0]">
+                  <strong className="text-[10px] uppercase tracking-wider text-[#71757D]">
                     Included
                   </strong>
                   <br />
@@ -156,9 +156,9 @@ function CategoryGroup({
               </p>
 
               {/* Excluded */}
-              <p className="text-sm leading-snug text-[#7A7A7A]">
+              <p className="text-sm leading-snug text-[#71757D]">
                 <span className="lg:hidden">
-                  <strong className="text-[10px] uppercase tracking-wider text-[#A0A0A0]">
+                  <strong className="text-[10px] uppercase tracking-wider text-[#71757D]">
                     NOT included
                   </strong>
                   <br />
@@ -167,7 +167,7 @@ function CategoryGroup({
               </p>
 
               {/* Last updated */}
-              <span className="font-mono text-xs tabular-nums text-[#A0A0A0] lg:pt-px">
+              <span className="font-mono text-xs tabular-nums text-[#71757D] lg:pt-px">
                 {fmtDate(item.lastUpdated)}
               </span>
 
@@ -226,22 +226,22 @@ export default function InternalPricingPage() {
         {/* Header */}
         <div className="mb-8">
           <div className="mb-3 flex items-center gap-2">
-            <span className="rounded-full border border-[#E5E5EA] bg-white px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+            <span className="rounded-full border border-[#2A2A2A] bg-[#181818] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
               Internal only
             </span>
           </div>
-          <h1 className="mb-2 text-3xl font-bold tracking-tight md:text-4xl">
+          <h1 className="mb-2 text-3xl font-bold md:text-4xl">
             Price List
           </h1>
-          <p className="text-[#7A7A7A]">
+          <p className="text-[#71757D]">
             Single source of truth for what we charge. Edits go in{" "}
-            <code className="rounded bg-[#F3F3F5] px-1.5 py-0.5 font-mono text-xs text-[#1B1B1B]">
+            <code className="rounded bg-[#222222] px-1.5 py-0.5 font-mono text-xs text-[#E5E5EA]">
               src/lib/pricing.ts
             </code>{" "}
             and propagate to the{" "}
             <Link
               href="/tools/price-calculator"
-              className="text-[#1B1B1B] underline decoration-[#C5C5C5] underline-offset-2 transition-colors hover:decoration-[#1B1B1B]"
+              className="text-[#E5E5EA] underline decoration-[#C5C5C5] underline-offset-2 transition-colors hover:decoration-[#1B1B1B]"
             >
               price calculator
               <ArrowTopRightOnSquareIcon className="ml-0.5 inline size-3" />
@@ -257,7 +257,7 @@ export default function InternalPricingPage() {
               Search
             </label>
             <div className="relative">
-              <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#A0A0A0]" />
+              <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#71757D]" />
               <input
                 id="pricing-search"
                 type="search"
@@ -271,7 +271,7 @@ export default function InternalPricingPage() {
 
           <div>
             <label className={labelClass}>Category</label>
-            <div className="inline-flex flex-wrap gap-1 rounded-lg border border-[#E5E5EA] bg-[#F3F3F5] p-0.5">
+            <div className="inline-flex flex-wrap gap-1 rounded-lg border border-[#2A2A2A] bg-[#222222] p-0.5">
               {FILTERS.map((f) => (
                 <button
                   key={f.id}
@@ -279,8 +279,8 @@ export default function InternalPricingPage() {
                   onClick={() => setFilter(f.id)}
                   className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                     filter === f.id
-                      ? "bg-[#1B1B1B] text-white shadow-[var(--shadow-soft)]"
-                      : "text-[#7A7A7A] hover:text-[#1B1B1B]"
+                      ? "bg-[#E5E5EA] text-[#181818] shadow-[var(--shadow-soft)]"
+                      : "text-[#71757D] hover:text-[#E5E5EA]"
                   }`}
                 >
                   {f.label}
@@ -292,8 +292,8 @@ export default function InternalPricingPage() {
 
         {/* Results count */}
         <div className="mb-4 flex items-center justify-between">
-          <p className="text-xs text-[#A0A0A0]">
-            Showing <span className="font-semibold text-[#1B1B1B]">{totalCount}</span>{" "}
+          <p className="text-xs text-[#71757D]">
+            Showing <span className="font-semibold text-[#E5E5EA]">{totalCount}</span>{" "}
             of {PRICE_ITEMS.length} items
           </p>
           {(query || filter !== "all") && (
@@ -303,7 +303,7 @@ export default function InternalPricingPage() {
                 setQuery("");
                 setFilter("all");
               }}
-              className="text-xs font-medium text-[#7A7A7A] underline decoration-[#C5C5C5] underline-offset-2 transition-colors hover:text-[#1B1B1B] hover:decoration-[#1B1B1B]"
+              className="text-xs font-medium text-[#71757D] underline decoration-[#C5C5C5] underline-offset-2 transition-colors hover:text-[#E5E5EA] hover:decoration-[#1B1B1B]"
             >
               Clear filters
             </button>
@@ -312,11 +312,11 @@ export default function InternalPricingPage() {
 
         {/* Empty state */}
         {totalCount === 0 ? (
-          <div className="rounded-xl border border-dashed border-[#E5E5EA] bg-white px-6 py-12 text-center">
-            <p className="text-sm font-semibold text-[#1B1B1B]">
+          <div className="rounded-xl border border-dashed border-[#2A2A2A] bg-[#181818] px-6 py-12 text-center">
+            <p className="text-sm font-semibold text-[#E5E5EA]">
               No items match
             </p>
-            <p className="mt-1 text-sm text-[#7A7A7A]">
+            <p className="mt-1 text-sm text-[#71757D]">
               Try a different search or clear the filters.
             </p>
           </div>
@@ -333,7 +333,7 @@ export default function InternalPricingPage() {
         )}
 
         {/* Footer note */}
-        <p className="mt-12 border-t border-[#EFEFF1] pt-6 text-xs text-[#A0A0A0]">
+        <p className="mt-12 border-t border-[#2A2A2A] pt-6 text-xs text-[#71757D]">
           Internal reference only. Do not share this URL with clients.
         </p>
       </div>

@@ -163,7 +163,7 @@ export default function AuditPortfolioPage() {
     <div className="max-w-5xl mx-auto px-6 py-10">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[#1B1B1B] tracking-tight">
+        <h1 className="text-2xl font-bold text-[#1B1B1B]">
           Audit Portfolio
         </h1>
         <p className="text-sm text-[#7A7A7A] mt-1">

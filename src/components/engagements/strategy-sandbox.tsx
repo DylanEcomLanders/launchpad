@@ -86,7 +86,7 @@ const RESOURCE_TONE: Record<ResourceKind, string> = {
   doc: "border-blue-200 bg-blue-50 text-blue-700",
   loom: "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700",
   link: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  file: "border-[#E5E5EA] bg-[#F3F3F5] text-[#4A4A4A]",
+  file: "border-[#2A2A2A] bg-[#222222] text-[#4A4A4A]",
 };
 
 const RESOURCE_ICON: Record<ResourceKind, React.ReactNode> = {
@@ -216,17 +216,17 @@ export function StrategySandbox({
   };
 
   return (
-    <section className="mb-5 rounded-lg border border-[#E5E5EA] bg-white">
+    <section className="mb-5 rounded-lg border border-[#2A2A2A] bg-[#181818]">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-baseline justify-between px-4 py-3 text-left hover:bg-[#FAFAFB]"
+        className="flex w-full items-baseline justify-between px-4 py-3 text-left hover:bg-[#0C0C0C]"
       >
         <div className="flex items-baseline gap-2">
           <span className="text-[10px] font-semibold uppercase tracking-wider text-violet-700">
             Strategy
           </span>
-          <span className="text-[13px] font-semibold text-[#1B1B1B]">Sandbox</span>
-          <span className="text-[10px] text-[#A0A0A0]">
+          <span className="text-[13px] font-semibold text-[#E5E5EA]">Sandbox</span>
+          <span className="text-[10px] text-[#71757D]">
             · {resources.length} resource{resources.length === 1 ? "" : "s"} for {clientName}
           </span>
         </div>
@@ -235,29 +235,29 @@ export function StrategySandbox({
             <span className="text-[10px] text-emerald-700">{savedLabel}</span>
           )}
           {open ? (
-            <ChevronUpIcon className="h-4 w-4 text-[#A0A0A0]" />
+            <ChevronUpIcon className="h-4 w-4 text-[#71757D]" />
           ) : (
-            <ChevronDownIcon className="h-4 w-4 text-[#A0A0A0]" />
+            <ChevronDownIcon className="h-4 w-4 text-[#71757D]" />
           )}
         </div>
       </button>
 
       {open && (
-        <div className="grid gap-4 border-t border-[#F0F0F0] p-4 md:grid-cols-5">
+        <div className="grid gap-4 border-t border-[#2A2A2A] p-4 md:grid-cols-5">
           {/* Resources */}
           <div className="md:col-span-3">
             <div className="mb-2 flex items-baseline justify-between">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
                 Resources
               </span>
-              <span className="text-[10px] tabular-nums text-[#A0A0A0]">
+              <span className="text-[10px] tabular-nums text-[#71757D]">
                 {resources.length}
               </span>
             </div>
 
             {/* Add row */}
-            <div className="mb-3 flex items-center gap-2 rounded-md border border-dashed border-[#C5C5C5] bg-[#FAFAFB] px-2.5 py-2">
-              <LinkIcon className="h-3.5 w-3.5 text-[#7A7A7A] shrink-0" />
+            <div className="mb-3 flex items-center gap-2 rounded-md border border-dashed border-[#C5C5C5] bg-[#0C0C0C] px-2.5 py-2">
+              <LinkIcon className="h-3.5 w-3.5 text-[#71757D] shrink-0" />
               <input
                 type="text"
                 value={urlInput}
@@ -266,21 +266,21 @@ export function StrategySandbox({
                   if (e.key === "Enter") addUrl();
                 }}
                 placeholder="Paste a Google Doc, Loom, or any link"
-                className="flex-1 bg-transparent text-[12px] text-[#1B1B1B] placeholder-[#A0A0A0] focus:outline-none"
+                className="flex-1 bg-transparent text-[12px] text-[#E5E5EA] placeholder-[#A0A0A0] focus:outline-none"
               />
               <button
                 onClick={addUrl}
                 disabled={!urlInput.trim()}
-                className="inline-flex items-center gap-1 rounded-md bg-[#1B1B1B] px-2 py-1 text-[11px] font-medium text-white hover:bg-black disabled:bg-[#D5D5D8]"
+                className="inline-flex items-center gap-1 rounded-md bg-[#1B1B1B] px-2 py-1 text-[11px] font-medium text-white hover:bg-[#F3F4F6] disabled:bg-[#D5D5D8]"
               >
                 <PlusIcon className="h-3 w-3" />
                 Add
               </button>
-              <span className="text-[10px] text-[#A0A0A0]">or</span>
+              <span className="text-[10px] text-[#71757D]">or</span>
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="inline-flex items-center gap-1 rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-[11px] font-medium text-[#1B1B1B] hover:border-[#1B1B1B] disabled:opacity-50"
+                className="inline-flex items-center gap-1 rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[11px] font-medium text-[#E5E5EA] hover:border-white disabled:opacity-50"
               >
                 <PaperClipIcon className="h-3 w-3" />
                 {uploading ? "Uploading…" : "Upload"}
@@ -295,7 +295,7 @@ export function StrategySandbox({
 
             {/* List */}
             {resources.length === 0 ? (
-              <div className="rounded-md border border-dashed border-[#E5E5EA] bg-white px-3 py-4 text-center text-[11px] italic text-[#A0A0A0]">
+              <div className="rounded-md border border-dashed border-[#2A2A2A] bg-[#181818] px-3 py-4 text-center text-[11px] italic text-[#71757D]">
                 Nothing here yet. Drop a brief, paste a Loom, link a Google Doc.
               </div>
             ) : (
@@ -314,10 +314,10 @@ export function StrategySandbox({
           {/* Notes */}
           <div className="md:col-span-2">
             <div className="mb-2 flex items-baseline justify-between">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
                 Notes
               </span>
-              <span className="text-[10px] tabular-nums text-[#A0A0A0]">
+              <span className="text-[10px] tabular-nums text-[#71757D]">
                 {notes.length}
               </span>
             </div>
@@ -394,14 +394,14 @@ function NotesEntries({
           }
         }}
         placeholder={`New note for ${clientName}. Cmd+Enter to save.`}
-        className="h-[78px] w-full resize-none rounded-md border border-[#E5E5EA] bg-[#FAFAFB] px-3 py-2 text-[12px] leading-relaxed text-[#1B1B1B] focus:border-[#1B1B1B] focus:outline-none"
+        className="h-[78px] w-full resize-none rounded-md border border-[#2A2A2A] bg-[#0C0C0C] px-3 py-2 text-[12px] leading-relaxed text-[#E5E5EA] focus:border-white focus:outline-none"
       />
       <div className="mt-1 flex items-center justify-between">
-        <span className="text-[10px] text-[#A0A0A0]">Cmd+Enter to save</span>
+        <span className="text-[10px] text-[#71757D]">Cmd+Enter to save</span>
         <button
           onClick={submit}
           disabled={!draft.trim()}
-          className="inline-flex items-center gap-1 rounded-md bg-[#1B1B1B] px-2.5 py-1 text-[11px] font-medium text-white hover:bg-black disabled:bg-[#D5D5D8]"
+          className="inline-flex items-center gap-1 rounded-md bg-[#1B1B1B] px-2.5 py-1 text-[11px] font-medium text-white hover:bg-[#F3F4F6] disabled:bg-[#D5D5D8]"
         >
           <PlusIcon className="h-3 w-3" />
           Add note
@@ -409,7 +409,7 @@ function NotesEntries({
       </div>
 
       {entries.length === 0 ? (
-        <div className="mt-3 rounded-md border border-dashed border-[#E5E5EA] bg-white px-3 py-3 text-center text-[11px] italic text-[#A0A0A0]">
+        <div className="mt-3 rounded-md border border-dashed border-[#2A2A2A] bg-[#181818] px-3 py-3 text-center text-[11px] italic text-[#71757D]">
           No notes yet.
         </div>
       ) : (
@@ -417,15 +417,15 @@ function NotesEntries({
           {entries.map((e) => (
             <li
               key={e.id}
-              className="group rounded-md border border-[#EDEDEF] bg-white px-2.5 py-2"
+              className="group rounded-md border border-[#2A2A2A] bg-[#181818] px-2.5 py-2"
             >
               <div className="flex items-baseline justify-between gap-2">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
                     {formatEntryDate(e.created_at)}
                   </span>
                   {e.author && (
-                    <span className="text-[10px] text-[#A0A0A0]">
+                    <span className="text-[10px] text-[#71757D]">
                       · by {e.author}
                     </span>
                   )}
@@ -433,12 +433,12 @@ function NotesEntries({
                 <button
                   onClick={() => onRemove(e.id)}
                   title="Delete"
-                  className="rounded p-1 text-[#A0A0A0] opacity-0 transition-opacity hover:bg-[#F3F3F5] hover:text-rose-700 group-hover:opacity-100"
+                  className="rounded p-1 text-[#71757D] opacity-0 transition-opacity hover:bg-[#222222] hover:text-rose-700 group-hover:opacity-100"
                 >
                   <TrashIcon className="h-3 w-3" />
                 </button>
               </div>
-              <p className="mt-1 whitespace-pre-wrap text-[12px] leading-relaxed text-[#1B1B1B]">
+              <p className="mt-1 whitespace-pre-wrap text-[12px] leading-relaxed text-[#E5E5EA]">
                 {e.content}
               </p>
             </li>
@@ -467,7 +467,7 @@ function BrandedShareButton({ resourceId }: { resourceId: string }) {
     <button
       onClick={onClick}
       title="Copies the branded share URL to your clipboard"
-      className="inline-flex items-center gap-1 rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-[10px] font-medium text-[#1B1B1B] hover:border-[#1B1B1B]"
+      className="inline-flex items-center gap-1 rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[10px] font-medium text-[#E5E5EA] hover:border-white"
     >
       <SparklesIcon className="h-3 w-3" />
       {copied ? "Link copied" : "Branded share link"}
@@ -509,7 +509,7 @@ function ResourceRowView({
   };
 
   return (
-    <div className="group flex items-center gap-2.5 rounded-md border border-[#EDEDEF] bg-white px-2.5 py-2">
+    <div className="group flex items-center gap-2.5 rounded-md border border-[#2A2A2A] bg-[#181818] px-2.5 py-2">
       <div
         className={`grid h-7 w-7 shrink-0 place-items-center rounded border ${RESOURCE_TONE[r.kind]}`}
       >
@@ -518,11 +518,11 @@ function ResourceRowView({
       <div className="min-w-0 flex-1">
         <button
           onClick={openResource}
-          className="block w-full truncate text-left text-[12px] font-medium text-[#1B1B1B] hover:text-violet-700 hover:underline"
+          className="block w-full truncate text-left text-[12px] font-medium text-[#E5E5EA] hover:text-violet-700 hover:underline"
         >
           {r.title}
         </button>
-        <div className="text-[10px] text-[#A0A0A0]">
+        <div className="text-[10px] text-[#71757D]">
           {r.kind === "doc"
             ? "Google Doc"
             : r.kind === "loom"
@@ -541,13 +541,13 @@ function ResourceRowView({
       <div ref={ref} className="relative">
         <button
           onClick={() => setMenuOpen((o) => !o)}
-          className={`rounded p-1 text-[#A0A0A0] transition-opacity hover:bg-[#F3F3F5] hover:text-[#1B1B1B] ${menuOpen ? "opacity-100 bg-[#F3F3F5] text-[#1B1B1B]" : "opacity-0 group-hover:opacity-100"}`}
+          className={`rounded p-1 text-[#71757D] transition-opacity hover:bg-[#222222] hover:text-[#E5E5EA] ${menuOpen ? "opacity-100 bg-[#222222] text-[#E5E5EA]" : "opacity-0 group-hover:opacity-100"}`}
           title="Edit or remove"
         >
           <EllipsisHorizontalIcon className="h-4 w-4" />
         </button>
         {menuOpen && (
-          <div className="absolute right-0 top-7 z-10 min-w-[120px] overflow-hidden rounded-md border border-[#E5E5EA] bg-white shadow-lg">
+          <div className="absolute right-0 top-7 z-10 min-w-[120px] overflow-hidden rounded-md border border-[#2A2A2A] bg-[#181818] shadow-lg">
             <button
               onClick={() => {
                 onRemove();

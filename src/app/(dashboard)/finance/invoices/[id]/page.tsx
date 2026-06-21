@@ -207,14 +207,14 @@ export default function InvoiceDetailPage() {
   }
 
   if (loading) {
-    return <div className="h-48 bg-[#F7F8FA] rounded-xl animate-pulse" />;
+    return <div className="h-48 bg-[#0C0C0C] rounded-xl animate-pulse" />;
   }
 
   if (!invoice) {
     return (
-      <div className="bg-white border border-dashed border-[#E5E5EA] rounded-xl p-12 text-center">
-        <p className="text-sm text-[#7A7A7A] mb-3">Invoice not found</p>
-        <Link href="/finance/invoices" className="text-sm text-[#1B1B1B] underline">
+      <div className="bg-[#181818] border border-dashed border-[#2A2A2A] rounded-xl p-12 text-center">
+        <p className="text-sm text-[#71757D] mb-3">Invoice not found</p>
+        <Link href="/finance/invoices" className="text-sm text-[#E5E5EA] underline">
           Back to invoices
         </Link>
       </div>
@@ -233,7 +233,7 @@ export default function InvoiceDetailPage() {
     <div>
       <Link
         href="/finance/invoices"
-        className="inline-flex items-center gap-1.5 text-sm text-[#7A7A7A] hover:text-[#1B1B1B] mb-6 transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-[#71757D] hover:text-[#E5E5EA] mb-6 transition-colors"
       >
         <ArrowLeftIcon className="size-4" /> Back to invoices
       </Link>
@@ -241,7 +241,7 @@ export default function InvoiceDetailPage() {
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <h2 className="text-xl font-semibold text-[#1B1B1B]">
+            <h2 className="text-xl font-semibold text-[#E5E5EA]">
               {invoice.invoice_number}
             </h2>
             <span
@@ -252,14 +252,14 @@ export default function InvoiceDetailPage() {
               {INVOICE_STATUS_LABELS[derivedStatus]}
             </span>
           </div>
-          <p className="text-sm text-[#7A7A7A]">
+          <p className="text-sm text-[#71757D]">
             {invoice.client_name} · Issued {fmtDateUK(invoice.invoice_date)} · Due{" "}
             {fmtDateUK(invoice.due_date)}
           </p>
         </div>
 
         {!editing && (
-          <div className="inline-flex items-center divide-x divide-[#E5E5EA] border border-[#E5E5EA] rounded-lg bg-white overflow-hidden shadow-[var(--shadow-soft)]">
+          <div className="inline-flex items-center divide-x divide-[#2A2A2A] border border-[#2A2A2A] rounded-lg bg-[#181818] overflow-hidden shadow-[var(--shadow-soft)]">
             <ToolbarButton onClick={startEdit} icon={<PencilSquareIcon className="size-4" />}>
               Edit
             </ToolbarButton>
@@ -294,12 +294,12 @@ export default function InvoiceDetailPage() {
       </div>
 
       {error && (
-        <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+        <div className="mb-6 px-4 py-3 bg-[#7F1D1D]/20 border border-[#991B1B] rounded-lg text-sm text-[#FCA5A5]">
           {error}
         </div>
       )}
       {sendError && (
-        <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+        <div className="mb-6 px-4 py-3 bg-[#7F1D1D]/20 border border-[#991B1B] rounded-lg text-sm text-[#FCA5A5]">
           {sendError}
         </div>
       )}
@@ -322,27 +322,27 @@ export default function InvoiceDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2 space-y-4">
               <Card title="Client">
-                <div className="text-sm text-[#1B1B1B]">
+                <div className="text-sm text-[#E5E5EA]">
                   <div className="font-medium">{invoice.client_name}</div>
                   {invoice.contact_name && (
-                    <div className="text-[#555]">{invoice.contact_name}</div>
+                    <div className="text-[#C7C9CD]">{invoice.contact_name}</div>
                   )}
                   {invoice.client_email && (
-                    <div className="text-[#555]">{invoice.client_email}</div>
+                    <div className="text-[#C7C9CD]">{invoice.client_email}</div>
                   )}
                   {invoice.client_address && (
-                    <div className="text-[#555] whitespace-pre-wrap leading-snug mt-1.5">
+                    <div className="text-[#C7C9CD] whitespace-pre-wrap leading-snug mt-1.5">
                       {invoice.client_address}
                     </div>
                   )}
-                  <div className="text-[11px] text-[#999] mt-1.5">{invoice.client_country}</div>
+                  <div className="text-[11px] text-[#71757D] mt-1.5">{invoice.client_country}</div>
                 </div>
               </Card>
 
               <Card title="Line items">
                 <div className="overflow-x-auto -mx-4">
                   <table className="w-full text-sm">
-                    <thead className="text-[10px] uppercase tracking-wider text-[#999] border-b border-[#E5E5EA]">
+                    <thead className="text-[10px] uppercase tracking-wider text-[#71757D] border-b border-[#2A2A2A]">
                       <tr>
                         <th className="text-left px-4 py-2 font-semibold">Description</th>
                         <th className="text-center px-4 py-2 font-semibold">Qty</th>
@@ -354,8 +354,8 @@ export default function InvoiceDetailPage() {
                       {invoice.items.map((item) => (
                         <tr key={item.id} className="border-b border-[#F4F4F6] last:border-0">
                           <td className="px-4 py-2.5">{item.name}</td>
-                          <td className="px-4 py-2.5 text-center text-[#7A7A7A]">{item.quantity}</td>
-                          <td className="px-4 py-2.5 text-right text-[#7A7A7A] tabular-nums">
+                          <td className="px-4 py-2.5 text-center text-[#71757D]">{item.quantity}</td>
+                          <td className="px-4 py-2.5 text-right text-[#71757D] tabular-nums">
                             {fmtMoney(item.unitPrice, invoice.currency)}
                           </td>
                           <td className="px-4 py-2.5 text-right tabular-nums">
@@ -384,7 +384,7 @@ export default function InvoiceDetailPage() {
                     bold
                   />
                   {invoice.currency !== "GBP" && (
-                    <div className="flex justify-between text-[11px] text-[#999] pt-1">
+                    <div className="flex justify-between text-[11px] text-[#71757D] pt-1">
                       <span>≈ GBP equivalent</span>
                       <span className="tabular-nums">
                         {fmtMoney(invoice.gbp_equivalent, "GBP")}
@@ -394,14 +394,14 @@ export default function InvoiceDetailPage() {
                 </div>
 
                 {invoice.currency !== "GBP" && (
-                  <p className="mt-3 pt-3 border-t border-[#F4F4F6] text-[11px] text-[#999]">
+                  <p className="mt-3 pt-3 border-t border-[#F4F4F6] text-[11px] text-[#71757D]">
                     Amounts billed in {invoice.currency}. GBP equivalent recorded from{" "}
                     {invoice.source_system || "the source"} statement at the time of the
                     transaction; no live FX conversion applied.
                   </p>
                 )}
                 {breakdown.noteForInvoice && (
-                  <p className="mt-3 pt-3 border-t border-[#F4F4F6] text-[11px] text-[#7A7A7A]">
+                  <p className="mt-3 pt-3 border-t border-[#F4F4F6] text-[11px] text-[#71757D]">
                     {breakdown.noteForInvoice}
                   </p>
                 )}
@@ -409,7 +409,7 @@ export default function InvoiceDetailPage() {
 
               {invoice.notes && (
                 <Card title="Notes">
-                  <p className="text-sm text-[#1B1B1B] whitespace-pre-wrap leading-relaxed">
+                  <p className="text-sm text-[#E5E5EA] whitespace-pre-wrap leading-relaxed">
                     {invoice.notes}
                   </p>
                 </Card>
@@ -443,76 +443,76 @@ export default function InvoiceDetailPage() {
                 <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[12px] mt-2">
                   {invoice.sent_date && (
                     <>
-                      <dt className="text-[#999]">Sent</dt>
-                      <dd className="text-[#1B1B1B] text-right">{fmtDateUK(invoice.sent_date)}</dd>
+                      <dt className="text-[#71757D]">Sent</dt>
+                      <dd className="text-[#E5E5EA] text-right">{fmtDateUK(invoice.sent_date)}</dd>
                     </>
                   )}
                   {invoice.paid_date && (
                     <>
-                      <dt className="text-[#999]">Paid</dt>
-                      <dd className="text-[#1B1B1B] text-right">{fmtDateUK(invoice.paid_date)}</dd>
+                      <dt className="text-[#71757D]">Paid</dt>
+                      <dd className="text-[#E5E5EA] text-right">{fmtDateUK(invoice.paid_date)}</dd>
                     </>
                   )}
                   {invoice.disputed_at && (
                     <>
-                      <dt className="text-[#999]">Disputed</dt>
-                      <dd className="text-[#1B1B1B] text-right">{fmtDateUK(invoice.disputed_at)}</dd>
+                      <dt className="text-[#71757D]">Disputed</dt>
+                      <dd className="text-[#E5E5EA] text-right">{fmtDateUK(invoice.disputed_at)}</dd>
                     </>
                   )}
                 </dl>
                 {invoice.disputed_reason && (
-                  <p className="text-[12px] text-[#1B1B1B] whitespace-pre-wrap mt-2 pt-2 border-t border-[#F4F4F6]">
-                    <span className="text-[#999]">Reason:</span> {invoice.disputed_reason}
+                  <p className="text-[12px] text-[#E5E5EA] whitespace-pre-wrap mt-2 pt-2 border-t border-[#F4F4F6]">
+                    <span className="text-[#71757D]">Reason:</span> {invoice.disputed_reason}
                   </p>
                 )}
               </Card>
 
               <Card title="VAT & Payment">
                 <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-[12px]">
-                  <dt className="text-[#999]">Treatment</dt>
-                  <dd className="text-[#1B1B1B] text-right">
+                  <dt className="text-[#71757D]">Treatment</dt>
+                  <dd className="text-[#E5E5EA] text-right">
                     {VAT_TREATMENT_LABELS[invoice.vat_treatment]}
                   </dd>
                   {breakdown.vatAmount > 0 && (
                     <>
-                      <dt className="text-[#999]">VAT charged</dt>
-                      <dd className="text-[#1B1B1B] text-right tabular-nums">
+                      <dt className="text-[#71757D]">VAT charged</dt>
+                      <dd className="text-[#E5E5EA] text-right tabular-nums">
                         {fmtMoney(breakdown.vatAmount, invoice.currency)}
                       </dd>
                     </>
                   )}
-                  <dt className="text-[#999]">Method</dt>
-                  <dd className="text-[#1B1B1B] text-right">
+                  <dt className="text-[#71757D]">Method</dt>
+                  <dd className="text-[#E5E5EA] text-right">
                     {invoice.payment_method === "bank_transfer" ? "Bank transfer" : "Whop (online)"}
                   </dd>
                   {invoice.bank_name && (
                     <>
-                      <dt className="text-[#999]">Bank</dt>
-                      <dd className="text-[#1B1B1B] text-right">{invoice.bank_name}</dd>
+                      <dt className="text-[#71757D]">Bank</dt>
+                      <dd className="text-[#E5E5EA] text-right">{invoice.bank_name}</dd>
                     </>
                   )}
                   {invoice.account_name && (
                     <>
-                      <dt className="text-[#999]">Account</dt>
-                      <dd className="text-[#1B1B1B] text-right">{invoice.account_name}</dd>
+                      <dt className="text-[#71757D]">Account</dt>
+                      <dd className="text-[#E5E5EA] text-right">{invoice.account_name}</dd>
                     </>
                   )}
                   {invoice.sort_code && (
                     <>
-                      <dt className="text-[#999]">Sort code</dt>
-                      <dd className="text-[#1B1B1B] text-right tabular-nums">{invoice.sort_code}</dd>
+                      <dt className="text-[#71757D]">Sort code</dt>
+                      <dd className="text-[#E5E5EA] text-right tabular-nums">{invoice.sort_code}</dd>
                     </>
                   )}
                   {invoice.account_number && (
                     <>
-                      <dt className="text-[#999]">Account #</dt>
-                      <dd className="text-[#1B1B1B] text-right tabular-nums">{invoice.account_number}</dd>
+                      <dt className="text-[#71757D]">Account #</dt>
+                      <dd className="text-[#E5E5EA] text-right tabular-nums">{invoice.account_number}</dd>
                     </>
                   )}
                   {invoice.payment_term && (
                     <>
-                      <dt className="text-[#999]">Terms</dt>
-                      <dd className="text-[#1B1B1B] text-right">{invoice.payment_term}</dd>
+                      <dt className="text-[#71757D]">Terms</dt>
+                      <dd className="text-[#E5E5EA] text-right">{invoice.payment_term}</dd>
                     </>
                   )}
                 </dl>
@@ -676,8 +676,8 @@ function EditInvoiceForm({
 
       <FormSection title="Line items">
         {draft.items.length > 0 && (
-          <div className="border border-[#E5E5EA] rounded-md overflow-hidden mb-3">
-            <div className="hidden md:grid grid-cols-[1fr_60px_100px_100px_28px] gap-2 px-3 py-2 bg-[#F7F8FA] text-[10px] font-semibold uppercase tracking-[0.08em] text-[#999]">
+          <div className="border border-[#2A2A2A] rounded-md overflow-hidden mb-3">
+            <div className="hidden md:grid grid-cols-[1fr_60px_100px_100px_28px] gap-2 px-3 py-2 bg-[#0C0C0C] text-[10px] font-semibold uppercase tracking-[0.08em] text-[#71757D]">
               <span>Description</span>
               <span className="text-center">Qty</span>
               <span className="text-right">Unit price</span>
@@ -721,7 +721,7 @@ function EditInvoiceForm({
                 </span>
                 <button
                   onClick={() => removeItem(item.id)}
-                  className="p-1 text-[#A0A0A0] hover:text-red-500 transition-colors justify-self-center"
+                  className="p-1 text-[#71757D] hover:text-red-500 transition-colors justify-self-center"
                 >
                   <XMarkIcon className="size-3.5" />
                 </button>
@@ -731,7 +731,7 @@ function EditInvoiceForm({
         )}
         <button
           onClick={addCustomItem}
-          className="inline-flex items-center gap-1.5 text-xs text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-[#71757D] hover:text-[#E5E5EA] transition-colors"
         >
           <PlusIcon className="size-3.5" /> Add line item
         </button>
@@ -749,16 +749,16 @@ function EditInvoiceForm({
         </FormSection>
 
         <FormSection title={`Totals (live, ${draft.currency})`}>
-          <div className="border border-[#E5E5EA] rounded-md p-3 space-y-1.5">
+          <div className="border border-[#2A2A2A] rounded-md p-3 space-y-1.5">
             <div className="flex justify-between text-sm">
-              <span className="text-[#999]">Subtotal</span>
+              <span className="text-[#71757D]">Subtotal</span>
               <span className="tabular-nums">
                 {fmtMoney(breakdown.subtotal, draft.currency)}
               </span>
             </div>
             {breakdown.vatAmount > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-[#999]">
+                <span className="text-[#71757D]">
                   VAT ({Math.round(breakdown.vatRate * 100)}%)
                 </span>
                 <span className="tabular-nums">
@@ -837,17 +837,17 @@ function EditInvoiceForm({
         </FormGrid>
       </FormSection>
 
-      <div className="flex justify-end gap-2 pt-4 border-t border-[#E5E5EA]">
+      <div className="flex justify-end gap-2 pt-4 border-t border-[#2A2A2A]">
         <button
           onClick={onCancel}
-          className="px-4 py-2 text-sm text-[#7A7A7A] hover:text-[#1B1B1B]"
+          className="px-4 py-2 text-sm text-[#71757D] hover:text-[#E5E5EA]"
         >
           Cancel
         </button>
         <button
           onClick={onSave}
           disabled={saving}
-          className="px-5 py-2 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
+          className="px-5 py-2 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
         >
           {saving ? "Saving..." : "Save changes"}
         </button>
@@ -932,7 +932,7 @@ function InvoiceAttachmentCard({
           <button
             onClick={openAttachment}
             disabled={opening}
-            className="inline-flex items-center gap-2 text-sm text-[#1B1B1B] underline hover:opacity-80 disabled:opacity-40"
+            className="inline-flex items-center gap-2 text-sm text-[#E5E5EA] underline hover:opacity-80 disabled:opacity-40"
           >
             {opening ? (
               <ArrowPathIcon className="size-4 animate-spin" />
@@ -941,22 +941,22 @@ function InvoiceAttachmentCard({
             )}
             {invoice.attachment_name}
           </button>
-          <p className="text-[11px] text-[#A0A0A0]">
+          <p className="text-[11px] text-[#71757D]">
             Signed on click, expires 15min
           </p>
           <button
             onClick={removeAttachment}
-            className="text-xs text-[#7A7A7A] hover:text-red-600 underline"
+            className="text-xs text-[#71757D] hover:text-red-600 underline"
           >
             Remove
           </button>
         </div>
       ) : (
         <div>
-          <p className="text-[11px] text-[#A0A0A0] mb-2">
+          <p className="text-[11px] text-[#71757D] mb-2">
             Signed PO, payment confirmation, contract reference, etc.
           </p>
-          <label className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E5E5EA] text-[#1B1B1B] text-sm rounded-lg hover:bg-[#F7F8FA] cursor-pointer">
+          <label className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#181818] border border-[#2A2A2A] text-[#E5E5EA] text-sm rounded-lg hover:bg-[#0C0C0C] cursor-pointer">
             <input
               type="file"
               accept="application/pdf,image/*"
@@ -1001,8 +1001,8 @@ function ToolbarButton({
       title={title}
       className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm transition-colors disabled:opacity-40 ${
         danger
-          ? "text-red-600 hover:bg-red-50"
-          : "text-[#1B1B1B] hover:bg-[#F7F8FA]"
+          ? "text-red-600 hover:bg-[#222222]"
+          : "text-[#E5E5EA] hover:bg-[#0C0C0C]"
       }`}
     >
       {icon}
@@ -1013,8 +1013,8 @@ function ToolbarButton({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white border border-[#E5E5EA] rounded-lg p-4 shadow-[var(--shadow-soft)]">
-      <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#999] mb-2.5">
+    <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-4 shadow-[var(--shadow-soft)]">
+      <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#71757D] mb-2.5">
         {title}
       </h3>
       <div>{children}</div>
@@ -1026,9 +1026,9 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
  * tighter inline labels than the global form-styles, so admin forms
  * feel less bulky. */
 const compactInput =
-  "w-full px-3 py-2 bg-white border border-[#E5E5EA] rounded-md text-sm focus:outline-none focus:border-[#1B1B1B] focus:ring-1 focus:ring-[#1B1B1B]/10 transition-all placeholder:text-[#C5C5C5]";
+  "w-full px-3 py-2 bg-[#181818] border border-[#2A2A2A] rounded-md text-sm focus:outline-none focus:border-white focus:ring-1 focus:ring-[#1B1B1B]/10 transition-all placeholder:text-[#C5C5C5]";
 const compactTextarea =
-  "w-full px-3 py-2 bg-white border border-[#E5E5EA] rounded-md text-sm focus:outline-none focus:border-[#1B1B1B] focus:ring-1 focus:ring-[#1B1B1B]/10 transition-all resize-none placeholder:text-[#C5C5C5]";
+  "w-full px-3 py-2 bg-[#181818] border border-[#2A2A2A] rounded-md text-sm focus:outline-none focus:border-white focus:ring-1 focus:ring-[#1B1B1B]/10 transition-all resize-none placeholder:text-[#C5C5C5]";
 
 function FormSection({
   title,
@@ -1039,7 +1039,7 @@ function FormSection({
 }) {
   return (
     <section>
-      <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#999] mb-3">
+      <h3 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#71757D] mb-3">
         {title}
       </h3>
       {children}
@@ -1062,7 +1062,7 @@ function FormField({
 }) {
   return (
     <div className={full ? "md:col-span-2" : ""}>
-      <label className="block text-[11px] font-medium text-[#7A7A7A] mb-1">{label}</label>
+      <label className="block text-[11px] font-medium text-[#71757D] mb-1">{label}</label>
       {children}
     </div>
   );
@@ -1079,8 +1079,8 @@ function KV({
 }) {
   return (
     <div>
-      <div className="text-[11px] uppercase tracking-wider text-[#A0A0A0] mb-0.5">{label}</div>
-      <div className={`text-sm text-[#1B1B1B] ${multiline ? "whitespace-pre-wrap" : ""}`}>
+      <div className="text-[11px] uppercase tracking-wider text-[#71757D] mb-0.5">{label}</div>
+      <div className={`text-sm text-[#E5E5EA] ${multiline ? "whitespace-pre-wrap" : ""}`}>
         {value}
       </div>
     </div>
@@ -1090,9 +1090,9 @@ function KV({
 function Row({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
   return (
     <div
-      className={`flex justify-between text-sm ${bold ? "font-bold pt-2 border-t border-[#E5E5EA]" : ""}`}
+      className={`flex justify-between text-sm ${bold ? "font-bold pt-2 border-t border-[#2A2A2A]" : ""}`}
     >
-      <span className={bold ? "" : "text-[#7A7A7A]"}>{label}</span>
+      <span className={bold ? "" : "text-[#71757D]"}>{label}</span>
       <span className="tabular-nums">{value}</span>
     </div>
   );

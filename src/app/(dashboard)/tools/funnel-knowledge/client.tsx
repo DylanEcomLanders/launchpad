@@ -127,12 +127,12 @@ export default function FunnelKnowledgeClient({
     <div className="flex h-full">
       {/* Internal sub-nav */}
       <div
-        className={`border-r border-[#E5E5EA] bg-[#FAFAFA] flex-shrink-0 overflow-y-auto transition-all duration-200 ${
+        className={`border-r border-[#2A2A2A] bg-[#0C0C0C] flex-shrink-0 overflow-y-auto transition-all duration-200 ${
           navOpen ? "w-52" : "w-0 overflow-hidden"
         }`}
       >
         <div className="p-3 pb-2">
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#A0A0A0] px-2">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] px-2">
             Funnel Layers
           </h2>
         </div>
@@ -149,11 +149,11 @@ export default function FunnelKnowledgeClient({
                 }}
                 className={`flex items-center gap-2 w-full px-2.5 py-[6px] text-[13px] rounded-md transition-all duration-150 text-left ${
                   isActive
-                    ? "text-[#1B1B1B] font-medium bg-white shadow-[var(--shadow-soft)]"
-                    : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
+                    ? "text-[#E5E5EA] font-medium bg-[#181818] shadow-[var(--shadow-soft)]"
+                    : "text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#181818]/50"
                 }`}
               >
-                <span className="flex-shrink-0 text-[#A0A0A0]">
+                <span className="flex-shrink-0 text-[#71757D]">
                   {iconMap[m.icon]}
                 </span>
                 <span className="truncate">
@@ -170,7 +170,7 @@ export default function FunnelKnowledgeClient({
         </div>
 
         <div className="p-3 pb-2">
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#A0A0A0] px-2">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] px-2">
             Reference
           </h2>
         </div>
@@ -187,11 +187,11 @@ export default function FunnelKnowledgeClient({
                 }}
                 className={`flex items-center gap-2 w-full px-2.5 py-[6px] text-[13px] rounded-md transition-all duration-150 text-left ${
                   isActive
-                    ? "text-[#1B1B1B] font-medium bg-white shadow-[var(--shadow-soft)]"
-                    : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
+                    ? "text-[#E5E5EA] font-medium bg-[#181818] shadow-[var(--shadow-soft)]"
+                    : "text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#181818]/50"
                 }`}
               >
-                <span className="flex-shrink-0 text-[#A0A0A0]">
+                <span className="flex-shrink-0 text-[#71757D]">
                   {iconMap[m.icon]}
                 </span>
                 <span className="truncate">{m.shortTitle}</span>
@@ -204,23 +204,23 @@ export default function FunnelKnowledgeClient({
       {/* Main content */}
       <div className="flex-1 overflow-y-auto">
         {/* Toolbar */}
-        <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-[#E5E5EA] px-6 py-3">
+        <div className="sticky top-0 z-10 bg-[#181818]/95 backdrop-blur-sm border-b border-[#2A2A2A] px-6 py-3">
           <div className="flex items-center gap-3 flex-wrap">
             {/* Nav toggle */}
             <button
               onClick={() => setNavOpen(!navOpen)}
-              className="p-1.5 rounded-lg hover:bg-[#F3F3F5] transition-colors"
+              className="p-1.5 rounded-lg hover:bg-[#222222] transition-colors"
               title={navOpen ? "Hide navigation" : "Show navigation"}
             >
               <ChevronRightIcon
-                className={`size-4 text-[#7A7A7A] transition-transform duration-200 ${
+                className={`size-4 text-[#71757D] transition-transform duration-200 ${
                   navOpen ? "rotate-180" : ""
                 }`}
               />
             </button>
 
             {/* Mode switcher */}
-            <div className="flex gap-0.5 bg-[#F3F3F5] rounded-lg p-0.5">
+            <div className="flex gap-0.5 bg-[#222222] rounded-lg p-0.5">
               {(
                 [
                   { key: "full", label: "Full" },
@@ -233,8 +233,8 @@ export default function FunnelKnowledgeClient({
                   onClick={() => setViewMode(key)}
                   className={`px-3 py-1.5 text-[12px] font-medium rounded-md transition-all duration-150 ${
                     viewMode === key
-                      ? "bg-white text-[#1B1B1B] shadow-[var(--shadow-soft)]"
-                      : "text-[#7A7A7A] hover:text-[#1B1B1B]"
+                      ? "bg-[#181818] text-[#E5E5EA] shadow-[var(--shadow-soft)]"
+                      : "text-[#71757D] hover:text-[#E5E5EA]"
                   }`}
                 >
                   {label}
@@ -250,20 +250,20 @@ export default function FunnelKnowledgeClient({
                 placeholder="Search this module..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 text-[13px] border border-[#E5E5EA] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1B1B1B]/10 focus:border-[#1B1B1B]/20 placeholder:text-[#C5C5C5]"
+                className="w-full pl-8 pr-3 py-1.5 text-[13px] border border-[#2A2A2A] rounded-lg bg-[#181818] focus:outline-none focus:ring-2 focus:ring-[#2A2A2A] focus:border-[#C5C5C5] placeholder:text-[#C5C5C5]"
               />
             </div>
 
             {/* Current module title */}
-            <span className="text-[12px] text-[#A0A0A0] hidden lg:block ml-auto">
+            <span className="text-[12px] text-[#71757D] hidden lg:block ml-auto">
               {activeModule.title}
             </span>
           </div>
 
           {/* Search results dropdown */}
           {searchResults && searchResults.length > 0 && (
-            <div className="mt-2 p-2 bg-white border border-[#E5E5EA] rounded-lg max-h-40 overflow-y-auto shadow-[var(--shadow-card)]">
-              <p className="text-[11px] text-[#A0A0A0] mb-1 px-1">
+            <div className="mt-2 p-2 bg-[#181818] border border-[#2A2A2A] rounded-lg max-h-40 overflow-y-auto shadow-[var(--shadow-card)]">
+              <p className="text-[11px] text-[#71757D] mb-1 px-1">
                 {searchResults.length} matches
               </p>
               {searchResults.map((r, i) => (
@@ -271,17 +271,17 @@ export default function FunnelKnowledgeClient({
                   key={i}
                   className="text-[12px] py-1 px-1 border-b border-[#F3F3F5] last:border-0"
                 >
-                  <span className="text-[11px] text-[#7A7A7A] font-medium">
+                  <span className="text-[11px] text-[#71757D] font-medium">
                     {r.heading}
                   </span>
-                  <p className="text-[#1B1B1B] truncate">{r.text}</p>
+                  <p className="text-[#E5E5EA] truncate">{r.text}</p>
                 </div>
               ))}
             </div>
           )}
           {searchResults && searchResults.length === 0 && searchQuery.trim() && (
-            <div className="mt-2 p-2 bg-white border border-[#E5E5EA] rounded-lg">
-              <p className="text-[12px] text-[#A0A0A0]">
+            <div className="mt-2 p-2 bg-[#181818] border border-[#2A2A2A] rounded-lg">
+              <p className="text-[12px] text-[#71757D]">
                 No results for &ldquo;{searchQuery}&rdquo;
               </p>
             </div>

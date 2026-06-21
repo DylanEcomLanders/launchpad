@@ -44,7 +44,7 @@ export default function WorkspaceOverview() {
   const me = useCurrentUser();
   const router = useRouter();
 
-  // Members are scoped to their own pod — they don't get the all-pods
+  // Members are scoped to their own pod - they don't get the all-pods
   // overview. Redirect them to their pod board (or My Work if unlinked).
   const myPodId = useMemo(
     () => (me?.role === "team" ? podIdForMember(data.pods, me.pod_member_id) : null),
@@ -91,10 +91,10 @@ export default function WorkspaceOverview() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-heading text-2xl font-semibold tracking-tight text-slate-900">
+        <h1 className="font-heading text-2xl font-semibold text-[#E5E5EA]">
           Today across every pod
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-[#9CA3AF]">
           Everything that needs a decision, an owner, or a nudge - in one place.
         </p>
       </div>
@@ -127,24 +127,24 @@ export default function WorkspaceOverview() {
         />
       </div>
 
-      {/* This week — compact count-per-day strip across all pods */}
+      {/* This week - compact count-per-day strip across all pods */}
       <WeekStrip days={weekDays} />
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.4fr_1fr]">
-        {/* Needs attention — one row per client (decluttered) */}
+        {/* Needs attention - one row per client (decluttered) */}
         <section>
           <SectionTitle
             action={
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-[#71757D]">
                 {grouped.length} client{grouped.length === 1 ? "" : "s"} · {totalSignals} signals
               </span>
             }
           >
             Needs attention
           </SectionTitle>
-          <Card className="divide-y divide-slate-100">
+          <Card className="divide-y divide-[#2A2A2A]">
             {grouped.length === 0 ? (
-              <div className="px-5 py-10 text-center text-sm text-slate-400">
+              <div className="px-5 py-10 text-center text-sm text-[#71757D]">
                 Nothing on fire. Every lane is on track.
               </div>
             ) : (
@@ -154,19 +154,19 @@ export default function WorkspaceOverview() {
                   <Link
                     key={g.clientId}
                     href={`/workspace/clients/${g.clientId}`}
-                    className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-slate-50"
+                    className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-[#222222]"
                   >
                     <Pill tone={meta.tone} dot>
                       {meta.label}
                     </Pill>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium text-slate-800">
+                      <div className="truncate text-sm font-medium text-[#E5E5EA]">
                         {g.clientName}
                       </div>
-                      <div className="truncate text-xs text-slate-500">{g.top.title}</div>
+                      <div className="truncate text-xs text-[#9CA3AF]">{g.top.title}</div>
                     </div>
                     {g.extraCount > 0 && (
-                      <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500">
+                      <span className="shrink-0 rounded-full bg-[#222222] px-2 py-0.5 text-[11px] font-medium text-[#9CA3AF]">
                         +{g.extraCount} more
                       </span>
                     )}
@@ -177,7 +177,7 @@ export default function WorkspaceOverview() {
             {grouped.length > 8 && (
               <Link
                 href="/workspace/clients"
-                className="block px-5 py-3 text-center text-xs font-medium text-slate-500 hover:text-slate-800"
+                className="block px-5 py-3 text-center text-xs font-medium text-[#9CA3AF] hover:text-[#E5E5EA]"
               >
                 View {grouped.length - 8} more in Clients →
               </Link>
@@ -191,7 +191,7 @@ export default function WorkspaceOverview() {
             action={
               <Link
                 href="/workspace/pods"
-                className="text-xs font-medium text-slate-500 hover:text-slate-800"
+                className="text-xs font-medium text-[#9CA3AF] hover:text-[#E5E5EA]"
               >
                 All pods →
               </Link>
@@ -206,10 +206,10 @@ export default function WorkspaceOverview() {
                 <Card className="px-5 py-4 transition-shadow hover:shadow-md">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-heading text-sm font-semibold text-slate-900">
+                      <div className="font-heading text-sm font-semibold text-[#E5E5EA]">
                         {p.pod.name}
                       </div>
-                      <div className="text-xs text-slate-500">
+                      <div className="text-xs text-[#9CA3AF]">
                         {p.retainerCount} retainer · {p.sprintCount} sprint
                       </div>
                     </div>
@@ -220,7 +220,7 @@ export default function WorkspaceOverview() {
                     )}
                   </div>
                   <div className="mt-3">
-                    <div className="mb-1 flex items-center justify-between text-xs text-slate-500">
+                    <div className="mb-1 flex items-center justify-between text-xs text-[#9CA3AF]">
                       <span>This month</span>
                       <span className="tabular-nums">
                         {p.capacityUsed} / {p.capacityTotal} pts
@@ -241,7 +241,7 @@ export default function WorkspaceOverview() {
           action={
             <Link
               href="/workspace/clients"
-              className="text-xs font-medium text-slate-500 hover:text-slate-800"
+              className="text-xs font-medium text-[#9CA3AF] hover:text-[#E5E5EA]"
             >
               All clients →
             </Link>
@@ -258,9 +258,9 @@ export default function WorkspaceOverview() {
                 <Card className="flex items-center justify-between px-4 py-3 transition-shadow hover:shadow-md">
                   <div className="flex items-center gap-2">
                     <HealthDot band={c.band} />
-                    <span className="text-sm font-medium text-slate-800">{c.client.name}</span>
+                    <span className="text-sm font-medium text-[#E5E5EA]">{c.client.name}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-400">
+                  <div className="flex items-center gap-2 text-xs text-[#71757D]">
                     {c.day != null && <span>Day {c.day}/90</span>}
                     {c.atRiskCount > 0 && <Pill tone="red">{c.atRiskCount}</Pill>}
                   </div>
@@ -276,7 +276,7 @@ export default function WorkspaceOverview() {
 
 function WeekStrip({ days }: { days: WeekDay[] }) {
   const total = days.reduce((s, d) => s + d.count, 0);
-  // Default-open today if it has items, else nothing — keeps it clean.
+  // Default-open today if it has items, else nothing - keeps it clean.
   const todayWithItems = days.find((d) => d.isToday && d.count > 0)?.ymd ?? null;
   const [openDay, setOpenDay] = useState<string | null>(todayWithItems);
   const selected = days.find((d) => d.ymd === openDay) ?? null;
@@ -284,7 +284,7 @@ function WeekStrip({ days }: { days: WeekDay[] }) {
   return (
     <section>
       <SectionTitle
-        action={<span className="text-xs text-slate-400">{total} due this week</span>}
+        action={<span className="text-xs text-[#71757D]">{total} due this week</span>}
       >
         This week
       </SectionTitle>
@@ -298,19 +298,19 @@ function WeekStrip({ days }: { days: WeekDay[] }) {
               type="button"
               onClick={() => setOpenDay(isOpen ? null : d.count > 0 ? d.ymd : null)}
               disabled={d.count === 0}
-              className={`rounded-2xl border bg-white px-3 py-3 text-left shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-all ${
+              className={`rounded-2xl border bg-[#181818] px-3 py-3 text-left shadow-[0_1px_2px_rgba(0,0,0,0.2)] transition-all ${
                 d.count === 0 ? "cursor-default" : "hover:shadow-md"
               } ${
                 isOpen
                   ? "border-slate-900/30 ring-1 ring-slate-900/10"
                   : d.isToday
-                    ? "border-slate-200/80 ring-1 ring-slate-900/10"
-                    : "border-slate-200/80"
-              } ${hasOverdue ? "bg-rose-50/50" : ""}`}
+                    ? "border-[#2A2A2A]/80 ring-1 ring-slate-900/10"
+                    : "border-[#2A2A2A]/80"
+              } ${hasOverdue ? "bg-red-950/20" : ""}`}
             >
               <div
                 className={`text-[11px] font-semibold uppercase tracking-wide ${
-                  d.isToday ? "text-slate-900" : "text-slate-400"
+                  d.isToday ? "text-[#E5E5EA]" : "text-[#71757D]"
                 }`}
               >
                 {d.weekday} {d.dayNum}
@@ -318,7 +318,7 @@ function WeekStrip({ days }: { days: WeekDay[] }) {
               <div className="mt-1.5 flex items-baseline gap-1.5">
                 <span
                   className={`font-heading text-2xl font-semibold tabular-nums ${
-                    d.count === 0 ? "text-slate-300" : "text-slate-900"
+                    d.count === 0 ? "text-[#4B4D52]" : "text-[#E5E5EA]"
                   }`}
                 >
                   {d.count}
@@ -336,15 +336,15 @@ function WeekStrip({ days }: { days: WeekDay[] }) {
 
       {/* Click-in detail for the selected day */}
       {selected && selected.items.length > 0 && (
-        <Card className="mt-2 divide-y divide-slate-100">
-          <div className="px-5 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-400">
+        <Card className="mt-2 divide-y divide-[#2A2A2A]">
+          <div className="px-5 py-2.5 text-xs font-medium uppercase tracking-wide text-[#71757D]">
             {selected.weekday} {selected.dayNum} · {selected.count} due
           </div>
           {selected.items.map((it) => (
             <Link
               key={it.id}
               href={`/workspace/clients/${it.clientId}`}
-              className="flex items-center gap-3 px-5 py-2.5 transition-colors hover:bg-slate-50"
+              className="flex items-center gap-3 px-5 py-2.5 transition-colors hover:bg-[#222222]"
             >
               <span
                 className={`h-1.5 w-1.5 shrink-0 rounded-full ${
@@ -356,8 +356,8 @@ function WeekStrip({ days }: { days: WeekDay[] }) {
                 }`}
               />
               <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-medium text-slate-800">{it.title}</div>
-                <div className="truncate text-xs text-slate-500">{it.clientName}</div>
+                <div className="truncate text-sm font-medium text-[#E5E5EA]">{it.title}</div>
+                <div className="truncate text-xs text-[#9CA3AF]">{it.clientName}</div>
               </div>
               {it.state === "overdue" && (
                 <span className="shrink-0 text-[11px] font-medium text-rose-600">
@@ -376,13 +376,13 @@ function WeekStrip({ days }: { days: WeekDay[] }) {
 function LoadingState() {
   return (
     <div className="space-y-6">
-      <div className="h-8 w-64 animate-pulse rounded-lg bg-slate-100" />
+      <div className="h-8 w-64 animate-pulse rounded-lg bg-[#222222]" />
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="h-24 animate-pulse rounded-2xl bg-slate-100" />
+          <div key={i} className="h-24 animate-pulse rounded-2xl bg-[#222222]" />
         ))}
       </div>
-      <div className="h-96 animate-pulse rounded-2xl bg-slate-100" />
+      <div className="h-96 animate-pulse rounded-2xl bg-[#222222]" />
     </div>
   );
 }

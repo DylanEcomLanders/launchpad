@@ -157,7 +157,7 @@ export default function ExpensesListPage() {
         <SummaryCard label="Monthly recurring" amount={summary.recurringMonthly} />
       </div>
 
-      {/* Category pill bar — horizontal scroll on narrow viewports, sorted by row count desc */}
+      {/* Category pill bar - horizontal scroll on narrow viewports, sorted by row count desc */}
       {hydrated && categoryPills.length > 1 && (
         <div className="mb-3 -mx-1 overflow-x-auto">
           <div className="flex items-center gap-1.5 px-1 py-1 min-w-max">
@@ -171,14 +171,14 @@ export default function ExpensesListPage() {
                   }
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
                     active
-                      ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
-                      : "bg-white text-[#1B1B1B] border-[#E5E5EA] hover:bg-[#F7F8FA]"
+                      ? "bg-white text-[#0C0C0C] border-white"
+                      : "bg-[#181818] text-[#E5E5EA] border-[#2A2A2A] hover:bg-[#0C0C0C]"
                   }`}
                 >
                   {p.label}
                   <span
                     className={`text-[10px] tabular-nums font-semibold px-1.5 py-0.5 rounded-full ${
-                      active ? "bg-white/20 text-white" : "bg-[#F0F1F4] text-[#7A7A7A]"
+                      active ? "bg-[#181818]/20 text-white" : "bg-[#222222] text-[#71757D]"
                     }`}
                   >
                     {p.count}
@@ -193,7 +193,7 @@ export default function ExpensesListPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative w-64">
-            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[#7A7A7A] z-10" />
+            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[#71757D] z-10" />
             <input
               placeholder="Search supplier or description..."
               value={query}
@@ -217,13 +217,13 @@ export default function ExpensesListPage() {
           <button
             onClick={exportCSV}
             disabled={filtered.length === 0}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E5E5EA] text-[#1B1B1B] text-sm rounded-lg hover:bg-[#F7F8FA] disabled:opacity-40 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#181818] border border-[#2A2A2A] text-[#E5E5EA] text-sm rounded-lg hover:bg-[#0C0C0C] disabled:opacity-40 transition-colors"
           >
             <ArrowDownTrayIcon className="size-4" /> CSV
           </button>
           <Link
             href="/finance/expenses/new"
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#1B1B1B] text-white text-sm rounded-lg hover:opacity-90"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-[#0C0C0C] text-sm rounded-lg hover:opacity-90"
           >
             <PlusIcon className="size-4" /> New expense
           </Link>
@@ -231,27 +231,27 @@ export default function ExpensesListPage() {
       </div>
 
       {!hydrated ? (
-        <div className="h-48 bg-[#F7F8FA] rounded-xl animate-pulse" />
+        <div className="h-48 bg-[#0C0C0C] rounded-xl animate-pulse" />
       ) : filtered.length === 0 ? (
-        <div className="bg-white border border-dashed border-[#E5E5EA] rounded-xl p-12 text-center">
-          <p className="text-sm text-[#7A7A7A] mb-3">
+        <div className="bg-[#181818] border border-dashed border-[#2A2A2A] rounded-xl p-12 text-center">
+          <p className="text-sm text-[#71757D] mb-3">
             {expenses.length === 0
-              ? "No expenses yet — log your first one."
+              ? "No expenses yet - log your first one."
               : "No expenses match these filters."}
           </p>
           {expenses.length === 0 && (
             <Link
               href="/finance/expenses/new"
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#1B1B1B] text-white text-sm rounded-lg hover:opacity-90"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-[#0C0C0C] text-sm rounded-lg hover:opacity-90"
             >
               <PlusIcon className="size-4" /> New expense
             </Link>
           )}
         </div>
       ) : (
-        <div className="bg-white border border-[#E5E5EA] rounded-xl overflow-x-auto shadow-[var(--shadow-soft)]">
+        <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-x-auto shadow-[var(--shadow-soft)]">
           <table className="w-full text-sm">
-            <thead className="bg-[#F7F8FA] text-[11px] uppercase tracking-wider text-[#7A7A7A]">
+            <thead className="bg-[#0C0C0C] text-[11px] uppercase tracking-wider text-[#71757D]">
               <tr>
                 <th className="text-left px-4 py-3 font-semibold">Supplier</th>
                 <th className="text-left px-4 py-3 font-semibold">Category</th>
@@ -264,24 +264,24 @@ export default function ExpensesListPage() {
               {filtered.map((e) => {
                 const badge = STATUS_BADGE[e.status];
                 return (
-                  <tr key={e.id} className="border-t border-[#E5E5EA] hover:bg-[#F7F8FA]">
+                  <tr key={e.id} className="border-t border-[#2A2A2A] hover:bg-[#0C0C0C]">
                     <td className="px-4 py-3">
                       <Link
                         href={`/finance/expenses/${e.id}`}
-                        className="font-medium text-[#1B1B1B] hover:underline"
+                        className="font-medium text-[#E5E5EA] hover:underline"
                       >
                         {e.supplier_name}
                       </Link>
                       {e.recurring && (
-                        <span className="ml-2 text-[10px] uppercase tracking-wider text-[#7A7A7A]">
+                        <span className="ml-2 text-[10px] uppercase tracking-wider text-[#71757D]">
                           {e.recurring}
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-[#7A7A7A]">
+                    <td className="px-4 py-3 text-[#71757D]">
                       {EXPENSE_CATEGORY_LABELS[e.category]}
                     </td>
-                    <td className="px-4 py-3 text-[#7A7A7A]">{fmtDateUK(e.date_due)}</td>
+                    <td className="px-4 py-3 text-[#71757D]">{fmtDateUK(e.date_due)}</td>
                     <td className="px-4 py-3">
                       <span
                         className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
@@ -290,10 +290,10 @@ export default function ExpensesListPage() {
                         {badge.label}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right font-medium text-[#1B1B1B] tabular-nums">
+                    <td className="px-4 py-3 text-right font-medium text-[#E5E5EA] tabular-nums">
                       {fmtMoney(e.amount)}
                       {e.vat_included && (
-                        <div className="text-[10px] text-[#A0A0A0]">incl VAT</div>
+                        <div className="text-[10px] text-[#71757D]">incl VAT</div>
                       )}
                     </td>
                   </tr>
@@ -316,10 +316,10 @@ function SummaryCard({
   amount: number;
   accent?: "red";
 }) {
-  const color = accent === "red" ? "text-[#B91C1C]" : "text-[#1B1B1B]";
+  const color = accent === "red" ? "text-[#B91C1C]" : "text-[#E5E5EA]";
   return (
-    <div className="bg-white border border-[#E5E5EA] rounded-xl p-4 shadow-[var(--shadow-soft)]">
-      <div className="text-[11px] uppercase tracking-wider text-[#7A7A7A] mb-1">{label}</div>
+    <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 shadow-[var(--shadow-soft)]">
+      <div className="text-[11px] uppercase tracking-wider text-[#71757D] mb-1">{label}</div>
       <div className={`text-2xl font-semibold tabular-nums ${color}`}>{fmtMoney(amount)}</div>
     </div>
   );

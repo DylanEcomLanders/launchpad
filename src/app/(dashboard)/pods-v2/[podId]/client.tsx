@@ -93,7 +93,7 @@ import { selectClass } from "@/lib/form-styles";
 const TIER_PILL: Record<RetainerTier, { label: string; cls: string }> = {
   none: {
     label: "Project-only",
-    cls: "border-[#E5E5EA] bg-[#F3F3F5] text-[#7A7A7A]",
+    cls: "border-[#2A2A2A] bg-[#222222] text-[#71757D]",
   },
   "8k": {
     label: "£8k retainer",
@@ -101,7 +101,7 @@ const TIER_PILL: Record<RetainerTier, { label: string; cls: string }> = {
   },
   "12k": {
     label: "£12k retainer",
-    cls: "border-amber-200 bg-amber-50 text-amber-800",
+    cls: "border-amber-500/30 bg-amber-500/10 text-amber-300",
   },
 };
 
@@ -115,11 +115,11 @@ const TASK_TYPE_LABEL: Record<TaskType, string> = {
 };
 
 const TASK_TYPE_BADGE: Record<TaskType, string> = {
-  core_deliverable: "border-[#1B1B1B]/15 bg-white text-[#1B1B1B]",
+  core_deliverable: "border-white/15 bg-[#181818] text-[#E5E5EA]",
   revision: "border-blue-200 bg-blue-50 text-blue-800",
-  bug: "border-rose-200 bg-rose-50 text-rose-800",
+  bug: "border-rose-500/30 bg-rose-500/10 text-rose-300",
   desktop_fix: "border-purple-200 bg-purple-50 text-purple-800",
-  asset_prep: "border-amber-200 bg-amber-50 text-amber-800",
+  asset_prep: "border-amber-500/30 bg-amber-500/10 text-amber-300",
   library: "border-emerald-200 bg-emerald-50 text-emerald-800",
 };
 
@@ -144,18 +144,18 @@ const STATUS_CYCLE_BACK: Record<TaskStatus, TaskStatus> = {
 };
 
 const PHASE_PILL: Record<TaskPhase, string> = {
-  onboarding: "bg-[#F3F4F6] text-[#374151] border-[#E5E7EB]",
+  onboarding: "bg-[#222222] text-[#C7C9CD] border-[#2A2A2A]",
   research: "bg-[#ECFEFF] text-[#0E7490] border-[#A5F3FC]",
-  wireframe: "bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]",
-  design: "bg-[#F5F3FF] text-[#6D28D9] border-[#DDD6FE]",
+  wireframe: "bg-amber-500/15 text-[#92400E] border-[#FDE68A]",
+  design: "bg-purple-500/15 text-[#6D28D9] border-[#DDD6FE]",
   "internal-design-qa": "bg-[#FAF5FF] text-[#7E22CE] border-[#E9D5FF]",
   "external-design-review": "bg-[#FDF2F8] text-[#BE185D] border-[#FBCFE8]",
   "design-revision": "bg-[#FFF7ED] text-[#C2410C] border-[#FED7AA]",
-  development: "bg-[#ECFDF5] text-[#047857] border-[#A7F3D0]",
+  development: "bg-emerald-500/15 text-[#047857] border-[#A7F3D0]",
   "development-qa": "bg-[#F0FDF4] text-[#166534] border-[#BBF7D0]",
   "external-dev-review": "bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]",
-  "dev-revision": "bg-[#FFFBEB] text-[#A16207] border-[#FDE68A]",
-  launch: "bg-[#1B1B1B] text-white border-[#1B1B1B]",
+  "dev-revision": "bg-amber-500/15 text-[#A16207] border-[#FDE68A]",
+  launch: "bg-[#E5E5EA] text-[#181818] border-[#E5E5EA]",
 };
 
 const DISCIPLINE_BADGE: Record<TaskDisciplineLocal, string> = {
@@ -173,10 +173,10 @@ const PRIORITY_LABEL: Record<TaskPriority, string> = {
 };
 
 const PRIORITY_PILL: Record<TaskPriority, string> = {
-  low: "border-[#E5E5EA] bg-white text-[#7A7A7A]",
+  low: "border-[#2A2A2A] bg-[#181818] text-[#71757D]",
   normal: "border-blue-200 bg-blue-50 text-blue-700",
-  high: "border-amber-200 bg-amber-50 text-amber-800",
-  urgent: "border-rose-200 bg-rose-50 text-rose-700",
+  high: "border-amber-500/30 bg-amber-500/10 text-amber-300",
+  urgent: "border-rose-500/30 bg-rose-500/10 text-rose-300",
 };
 
 const PRIORITY_ORDER: TaskPriority[] = ["low", "normal", "high", "urgent"];
@@ -494,7 +494,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
   if (loading || !pod) {
     return (
       <div className="mx-auto max-w-7xl px-6 py-12 md:px-10">
-        <div className="text-sm text-[#7A7A7A]">Loading pod…</div>
+        <div className="text-sm text-[#71757D]">Loading pod…</div>
       </div>
     );
   }
@@ -508,7 +508,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
       <div className="flex items-center justify-between">
         <Link
           href={linkBase}
-          className="inline-flex items-center gap-1 text-xs text-[#7A7A7A] hover:text-[#1B1B1B]"
+          className="inline-flex items-center gap-1 text-xs text-[#71757D] hover:text-[#E5E5EA]"
         >
           <ChevronLeftIcon className="size-3.5" />
           All pods
@@ -516,7 +516,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
         {isAdmin && (
           <Link
             href="/pods-v2/new-project"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[#1B1B1B] bg-[#1B1B1B] px-3 py-2 text-xs font-medium text-white shadow-[var(--shadow-soft)] transition-colors hover:bg-[#2D2D2D]"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-white bg-[#1B1B1B] px-3 py-2 text-xs font-medium text-white shadow-[var(--shadow-soft)] transition-colors hover:bg-[#F3F4F6]"
           >
             <PlusIcon className="size-3.5" />
             New project
@@ -552,7 +552,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
 
       {/* HEADER STRIP */}
       <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[1fr,360px]">
-        <div className="rounded-2xl border border-[#E5E5EA] bg-white p-5 shadow-[var(--shadow-soft)]">
+        <div className="rounded-2xl border border-[#2A2A2A] bg-[#181818] p-5 shadow-[var(--shadow-soft)]">
           <PodHeading name={pod.name} tagline={pod.tagline} />
           <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
             {pod.members.map((m) => {
@@ -598,7 +598,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
           flight · Shipping Thu) so the pod can see what lands when and hit
           the dates. Reuses the shared WeeksView, scoped to this pod. */}
       <div className="mt-10">
-        <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+        <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
           Weekly cadence
         </h2>
         <WeeksView
@@ -624,14 +624,14 @@ export default function PodDetailClient({ podId }: { podId: string }) {
        * done tasks. Useful when columns get full and you want to zoom
        * in on what matters. */}
       <div className="mt-10 flex flex-wrap items-center gap-2 text-[11px]">
-        <span className="font-semibold uppercase tracking-wider text-[#7A7A7A]">
+        <span className="font-semibold uppercase tracking-wider text-[#71757D]">
           Filter:
         </span>
         <select
           data-filter-client
           value={filterClient}
           onChange={(e) => setFilterClient(e.target.value)}
-          className="rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-[11px]"
+          className="rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[11px]"
         >
           <option value="">All clients</option>
           {clients.map((c) => (
@@ -640,7 +640,7 @@ export default function PodDetailClient({ podId }: { podId: string }) {
             </option>
           ))}
         </select>
-        <label className="flex cursor-pointer items-center gap-1.5 rounded-md border border-[#E5E5EA] bg-white px-2 py-1">
+        <label className="flex cursor-pointer items-center gap-1.5 rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1">
           <input
             type="checkbox"
             checked={hideDone}
@@ -655,14 +655,14 @@ export default function PodDetailClient({ podId }: { podId: string }) {
               setFilterClient("");
               setHideDone(false);
             }}
-            className="rounded-md px-2 py-1 text-[10px] text-rose-700 hover:bg-rose-50"
+            className="rounded-md px-2 py-1 text-[10px] text-rose-700 hover:bg-rose-500/10"
           >
             Clear
           </button>
         )}
         <button
           onClick={() => setHotkeyHelpOpen((v) => !v)}
-          className="ml-auto rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-[10px] text-[#7A7A7A] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"
+          className="ml-auto rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[10px] text-[#71757D] hover:border-white hover:text-[#E5E5EA]"
           title="Show keyboard shortcuts (?)"
         >
           ? Hotkeys
@@ -670,31 +670,31 @@ export default function PodDetailClient({ podId }: { podId: string }) {
       </div>
 
       {hotkeyHelpOpen && (
-        <div className="mt-2 grid grid-cols-1 gap-2 rounded-xl border border-[#E5E5EA] bg-white p-3 text-[11px] md:grid-cols-3">
+        <div className="mt-2 grid grid-cols-1 gap-2 rounded-xl border border-[#2A2A2A] bg-[#181818] p-3 text-[11px] md:grid-cols-3">
           <div>
-            <kbd className="rounded border border-[#E5E5EA] bg-[#F7F8FA] px-1 font-mono text-[10px]">j</kbd>
-            <kbd className="ml-1 rounded border border-[#E5E5EA] bg-[#F7F8FA] px-1 font-mono text-[10px]">k</kbd>
-            <span className="ml-2 text-[#7A7A7A]">Move focus down / up between tasks</span>
+            <kbd className="rounded border border-[#2A2A2A] bg-[#0C0C0C] px-1 font-mono text-[10px]">j</kbd>
+            <kbd className="ml-1 rounded border border-[#2A2A2A] bg-[#0C0C0C] px-1 font-mono text-[10px]">k</kbd>
+            <span className="ml-2 text-[#71757D]">Move focus down / up between tasks</span>
           </div>
           <div>
-            <kbd className="rounded border border-[#E5E5EA] bg-[#F7F8FA] px-1 font-mono text-[10px]">space</kbd>
-            <span className="ml-2 text-[#7A7A7A]">Cycle focused task status</span>
+            <kbd className="rounded border border-[#2A2A2A] bg-[#0C0C0C] px-1 font-mono text-[10px]">space</kbd>
+            <span className="ml-2 text-[#71757D]">Cycle focused task status</span>
           </div>
           <div>
-            <kbd className="rounded border border-[#E5E5EA] bg-[#F7F8FA] px-1 font-mono text-[10px]">d</kbd>
-            <span className="ml-2 text-[#7A7A7A]">Toggle Hide done</span>
+            <kbd className="rounded border border-[#2A2A2A] bg-[#0C0C0C] px-1 font-mono text-[10px]">d</kbd>
+            <span className="ml-2 text-[#71757D]">Toggle Hide done</span>
           </div>
           <div>
-            <kbd className="rounded border border-[#E5E5EA] bg-[#F7F8FA] px-1 font-mono text-[10px]">/</kbd>
-            <span className="ml-2 text-[#7A7A7A]">Focus the client filter</span>
+            <kbd className="rounded border border-[#2A2A2A] bg-[#0C0C0C] px-1 font-mono text-[10px]">/</kbd>
+            <span className="ml-2 text-[#71757D]">Focus the client filter</span>
           </div>
           <div>
-            <kbd className="rounded border border-[#E5E5EA] bg-[#F7F8FA] px-1 font-mono text-[10px]">esc</kbd>
-            <span className="ml-2 text-[#7A7A7A]">Clear filters / close popovers</span>
+            <kbd className="rounded border border-[#2A2A2A] bg-[#0C0C0C] px-1 font-mono text-[10px]">esc</kbd>
+            <span className="ml-2 text-[#71757D]">Clear filters / close popovers</span>
           </div>
           <div>
-            <kbd className="rounded border border-[#E5E5EA] bg-[#F7F8FA] px-1 font-mono text-[10px]">?</kbd>
-            <span className="ml-2 text-[#7A7A7A]">Toggle this help</span>
+            <kbd className="rounded border border-[#2A2A2A] bg-[#0C0C0C] px-1 font-mono text-[10px]">?</kbd>
+            <span className="ml-2 text-[#71757D]">Toggle this help</span>
           </div>
         </div>
       )}
@@ -754,7 +754,7 @@ function CapacityPanel({
   ).length;
 
   return (
-    <div className="rounded-2xl border border-[#E5E5EA] bg-white p-5 shadow-[var(--shadow-soft)]">
+    <div className="rounded-2xl border border-[#2A2A2A] bg-[#181818] p-5 shadow-[var(--shadow-soft)]">
       <div className="grid grid-cols-2 gap-3">
         <div className="col-span-2">
           <CapacityMeter
@@ -774,8 +774,8 @@ function CapacityPanel({
         />
         <SnapshotStat label="Members" value={pod.members.length} />
       </div>
-      <div className="mt-4 border-t border-[#EDEDEF] pt-3">
-        <div className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+      <div className="mt-4 border-t border-[#2A2A2A] pt-3">
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
           Open tasks per member
         </div>
         <div className="mt-2 space-y-1.5">
@@ -786,12 +786,12 @@ function CapacityPanel({
             >
               <span
                 className={`truncate ${
-                  member.is_placeholder ? "italic text-[#A0A0A0]" : ""
+                  member.is_placeholder ? "italic text-[#71757D]" : ""
                 }`}
               >
                 {member.is_placeholder ? "TO HIRE" : member.name}
               </span>
-              <span className="tabular-nums text-[#7A7A7A]">{count}</span>
+              <span className="tabular-nums text-[#71757D]">{count}</span>
             </div>
           ))}
         </div>
@@ -812,7 +812,7 @@ function SnapshotStat({
   const cls =
     tone === "alert"
       ? "bg-rose-50 text-rose-900"
-      : "bg-[#F7F8FA] text-[#1B1B1B]";
+      : "bg-[#0C0C0C] text-[#E5E5EA]";
   return (
     <div className={`rounded-lg px-3 py-2 ${cls}`}>
       <div className="text-[9px] font-semibold uppercase tracking-wider opacity-70">
@@ -859,12 +859,12 @@ function SwimLane({
     <div className="mt-10">
       <div className="flex items-baseline justify-between gap-3">
         <div>
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
             {title}
           </h2>
-          <p className="mt-0.5 text-xs text-[#7A7A7A]">{subtitle}</p>
+          <p className="mt-0.5 text-xs text-[#71757D]">{subtitle}</p>
         </div>
-        <div className="text-[11px] text-[#A0A0A0]">
+        <div className="text-[11px] text-[#71757D]">
           {tasks.length} task{tasks.length === 1 ? "" : "s"}
         </div>
       </div>
@@ -882,7 +882,7 @@ function SwimLane({
           return (
             <div
               key={member.id}
-              className="rounded-xl border border-[#E5E5EA] bg-white p-4 shadow-[var(--shadow-soft)]"
+              className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)]"
             >
               <div className="flex items-center justify-between">
                 <MemberRow
@@ -892,13 +892,13 @@ function SwimLane({
                     onMutate();
                   }}
                 />
-                <span className="text-[11px] tabular-nums text-[#7A7A7A]">
+                <span className="text-[11px] tabular-nums text-[#71757D]">
                   {myTasks.length}
                 </span>
               </div>
               <div className="mt-3 space-y-1.5">
                 {myTasks.length === 0 && (
-                  <div className="rounded-lg border border-dashed border-[#E5E5EA] px-3 py-3 text-center text-[11px] text-[#A0A0A0]">
+                  <div className="rounded-lg border border-dashed border-[#2A2A2A] px-3 py-3 text-center text-[11px] text-[#71757D]">
                     No tasks
                   </div>
                 )}
@@ -992,7 +992,7 @@ function PrimaryTaskRow({
       ? "text-rose-700"
       : daysToDeadline <= 3
         ? "text-amber-700"
-        : "text-[#7A7A7A]";
+        : "text-[#71757D]";
 
   const dueLabel = `Due ${formatDayMonth(task.due_date)} · ${
     daysToDeadline < 0
@@ -1033,7 +1033,7 @@ function PrimaryTaskRow({
     <div
       data-task-id={task.id}
       tabIndex={-1}
-      className={`group relative flex items-center gap-3 rounded-lg px-2 py-2 outline-none transition-colors hover:bg-[#F7F8FA] focus:bg-[#EEF2FF] focus:ring-2 focus:ring-[#1B1B1B]/20 ${
+      className={`group relative flex items-center gap-3 rounded-lg px-2 py-2 outline-none transition-colors hover:bg-[#0C0C0C] focus:bg-[#EEF2FF] focus:ring-2 focus:ring-[#1B1B1B]/20 ${
         task.status === "done" ? "opacity-50" : ""
       }`}
       ref={ref}
@@ -1069,8 +1069,8 @@ function PrimaryTaskRow({
           task.status === "done"
             ? "border-emerald-500 bg-emerald-500 text-white"
             : task.status === "in_progress"
-              ? "border-blue-500 bg-white text-blue-500"
-              : "border-[#D5D5DC] bg-white hover:border-[#1B1B1B]"
+              ? "border-blue-500 bg-[#181818] text-blue-500"
+              : "border-[#2A2A2A] bg-[#181818] hover:border-white"
         }`}
         title={`Current: ${task.status === "done" ? "Done" : task.status === "in_progress" ? "In progress" : "To do"}. Click to advance · Shift-click or right-click to step back.`}
       >
@@ -1086,7 +1086,7 @@ function PrimaryTaskRow({
       <div className="min-w-0 flex-1">
         <div
           className={`flex items-center gap-1.5 truncate text-sm leading-tight ${
-            task.status === "done" ? "text-[#A0A0A0] line-through" : "text-[#1B1B1B]"
+            task.status === "done" ? "text-[#71757D] line-through" : "text-[#E5E5EA]"
           }`}
         >
           <span className="truncate">{task.title}</span>
@@ -1113,10 +1113,10 @@ function PrimaryTaskRow({
                   : task.test_result?.status === "loser"
                     ? "border-rose-300 bg-rose-100 text-rose-900"
                     : task.test_result?.status === "inconclusive"
-                      ? "border-[#E5E5EA] bg-[#F7F8FA] text-[#7A7A7A]"
+                      ? "border-[#2A2A2A] bg-[#0C0C0C] text-[#71757D]"
                       : task.test_result?.status === "pending"
                         ? "border-amber-200 bg-amber-50 text-amber-800"
-                        : "border-dashed border-[#D5D5DC] bg-white text-[#A0A0A0]"
+                        : "border-dashed border-[#2A2A2A] bg-[#181818] text-[#71757D]"
               }`}
               title="Click to edit test result"
             >
@@ -1131,21 +1131,21 @@ function PrimaryTaskRow({
           )}
           {task.points != null && (
             <span
-              className="shrink-0 rounded border border-[#E5E5EA] bg-white px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-[#7A7A7A]"
+              className="shrink-0 rounded border border-[#2A2A2A] bg-[#181818] px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-[#71757D]"
               title={`${task.points} pt deliverable, covers design + dev together`}
             >
               {task.points}pt{task.points === 1 ? "" : "s"}
             </span>
           )}
         </div>
-        <div className="mt-0.5 flex items-center gap-1.5 truncate text-[11px] text-[#7A7A7A]">
+        <div className="mt-0.5 flex items-center gap-1.5 truncate text-[11px] text-[#71757D]">
           {client?.brand_warm && (
             <span
               className="size-1 shrink-0 rounded-full bg-orange-500"
               title="Brand-warm"
             />
           )}
-          {client && <span className="truncate font-medium text-[#1B1B1B]">{client.name}</span>}
+          {client && <span className="truncate font-medium text-[#E5E5EA]">{client.name}</span>}
           {client && project && <span className="text-[#C5C5C5]">·</span>}
           {project && <span className="truncate">{project.name}</span>}
           {/* Phase pill (primary) or ticket-type pill (secondary) */}
@@ -1179,7 +1179,7 @@ function PrimaryTaskRow({
                 e.stopPropagation();
                 setPauseOpen((v) => !v);
               }}
-              className="inline-flex items-center gap-1 rounded-md border border-[#E5E5EA] bg-[#F7F8FA] px-1.5 py-0.5 text-[10px] font-medium text-[#7A7A7A] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"
+              className="inline-flex items-center gap-1 rounded-md border border-[#2A2A2A] bg-[#0C0C0C] px-1.5 py-0.5 text-[10px] font-medium text-[#71757D] hover:border-white hover:text-[#E5E5EA]"
               title="Click to resume"
             >
               ⏸ Waiting on {task.waiting_on === "client" ? "client" : "internal"}
@@ -1211,7 +1211,7 @@ function PrimaryTaskRow({
                   ? "text-amber-700"
                   : daysToDeadline <= 7
                     ? "text-emerald-700"
-                    : "text-[#7A7A7A]"
+                    : "text-[#71757D]"
             }`}
           >
             {formatDayMonth(task.due_date)}
@@ -1228,7 +1228,7 @@ function PrimaryTaskRow({
             className="opacity-0 transition-opacity group-hover:opacity-100"
             title="Delete task"
           >
-            <XMarkIcon className="size-3.5 text-[#A0A0A0] hover:text-rose-600" />
+            <XMarkIcon className="size-3.5 text-[#71757D] hover:text-rose-600" />
           </button>
         )}
       </div>
@@ -1348,8 +1348,8 @@ function ReassignPopover({
   onPick: (id: string) => void;
 }) {
   return (
-    <div className="absolute left-0 top-full z-30 mt-1 w-56 overflow-hidden rounded-lg border border-[#E5E5EA] bg-white shadow-[var(--shadow-card)]">
-      <div className="border-b border-[#EDEDEF] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+    <div className="absolute left-0 top-full z-30 mt-1 w-56 overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-card)]">
+      <div className="border-b border-[#2A2A2A] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
         Reassign to…
       </div>
       {members.map((m) => (
@@ -1357,12 +1357,12 @@ function ReassignPopover({
           key={m.id}
           disabled={m.is_placeholder}
           onClick={() => onPick(m.id)}
-          className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-[#F7F8FA] ${
-            m.id === currentId ? "bg-[#F3F3F5] font-medium" : ""
+          className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-[#0C0C0C] ${
+            m.id === currentId ? "bg-[#222222] font-medium" : ""
           } ${m.is_placeholder ? "cursor-not-allowed opacity-50" : ""}`}
         >
           <span>{m.is_placeholder ? "TO HIRE" : m.name}</span>
-          <span className="text-[10px] text-[#A0A0A0]">
+          <span className="text-[10px] text-[#71757D]">
             {m.role.replace("_", " ")}
           </span>
         </button>
@@ -1388,8 +1388,8 @@ function PhasePopover({
    * launch) surface for both lanes; research is design-side. */
   const applicable = phasesForDiscipline(discipline) as TaskPhase[];
   return (
-    <div className="absolute left-0 top-full z-30 mt-1 w-72 overflow-hidden rounded-lg border border-[#E5E5EA] bg-white shadow-[var(--shadow-card)]">
-      <div className="border-b border-[#EDEDEF] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+    <div className="absolute left-0 top-full z-30 mt-1 w-72 overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-card)]">
+      <div className="border-b border-[#2A2A2A] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
         Move to phase…
       </div>
       <div className="max-h-64 overflow-y-auto">
@@ -1397,8 +1397,8 @@ function PhasePopover({
           <button
             key={p}
             onClick={() => onPick(p)}
-            className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-[#F7F8FA] ${
-              p === currentPhase ? "bg-[#F3F3F5] font-medium" : ""
+            className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-[#0C0C0C] ${
+              p === currentPhase ? "bg-[#222222] font-medium" : ""
             }`}
           >
             <span>{TASK_PHASE_LABEL[p]}</span>
@@ -1411,8 +1411,8 @@ function PhasePopover({
         ))}
       </div>
       {hasHistory && (
-        <div className="border-t border-[#EDEDEF] bg-[#FAFBFD] px-3 py-3">
-          <p className="text-[9px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-2">
+        <div className="border-t border-[#2A2A2A] bg-[#FAFBFD] px-3 py-3">
+          <p className="text-[9px] font-semibold uppercase tracking-wider text-[#71757D] mb-2">
             Phase history
           </p>
           <PhaseTimeline history={history} compact />
@@ -1443,7 +1443,7 @@ function MemberOooEditor({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="text-[10px] text-[#A0A0A0] hover:text-[#1B1B1B] hover:underline"
+        className="text-[10px] text-[#71757D] hover:text-[#E5E5EA] hover:underline"
       >
         {hasOoo ? "Edit OOO" : "+ Set OOO"}
       </button>
@@ -1455,15 +1455,15 @@ function MemberOooEditor({
         type="date"
         value={start}
         onChange={(e) => setStart(e.target.value)}
-        className="rounded border border-[#E5E5EA] bg-white px-1 py-0.5 text-[10px]"
+        className="rounded border border-[#2A2A2A] bg-[#181818] px-1 py-0.5 text-[10px]"
         title="OOO start"
       />
-      <span className="text-[#A0A0A0]">→</span>
+      <span className="text-[#71757D]">→</span>
       <input
         type="date"
         value={end}
         onChange={(e) => setEnd(e.target.value)}
-        className="rounded border border-[#E5E5EA] bg-white px-1 py-0.5 text-[10px]"
+        className="rounded border border-[#2A2A2A] bg-[#181818] px-1 py-0.5 text-[10px]"
         title="OOO end"
       />
       <button
@@ -1472,7 +1472,7 @@ function MemberOooEditor({
           setOpen(false);
           onChange();
         }}
-        className="rounded bg-[#1B1B1B] px-1.5 py-0.5 text-[10px] font-medium text-white hover:bg-[#2D2D2D]"
+        className="rounded bg-[#E5E5EA] text-[#181818] px-1.5 py-0.5 text-[10px] font-medium text-white hover:bg-[#F3F4F6]"
       >
         Save
       </button>
@@ -1485,7 +1485,7 @@ function MemberOooEditor({
             setOpen(false);
             onChange();
           }}
-          className="rounded px-1.5 py-0.5 text-[10px] text-rose-700 hover:bg-rose-50"
+          className="rounded px-1.5 py-0.5 text-[10px] text-rose-700 hover:bg-rose-500/10"
           title="Clear OOO, back at the desk"
         >
           Clear
@@ -1497,7 +1497,7 @@ function MemberOooEditor({
           setEnd(member.ooo_end || "");
           setOpen(false);
         }}
-        className="rounded px-1.5 py-0.5 text-[10px] text-[#7A7A7A] hover:text-[#1B1B1B]"
+        className="rounded px-1.5 py-0.5 text-[10px] text-[#71757D] hover:text-[#E5E5EA]"
       >
         Cancel
       </button>
@@ -1533,70 +1533,70 @@ function ClientMetricsEditor({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+      <div className="w-full max-w-md rounded-2xl bg-[#181818] p-5 shadow-2xl">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
           Client metrics
         </p>
-        <h2 className="mt-0.5 text-base font-semibold text-[#1B1B1B]">{client.name}</h2>
-        <p className="mt-1 text-[11px] text-[#7A7A7A]">
+        <h2 className="mt-0.5 text-base font-semibold text-[#E5E5EA]">{client.name}</h2>
+        <p className="mt-1 text-[11px] text-[#71757D]">
           Baseline at engagement start, current latest. Drives the renewal share-card and the % delta on the roster card.
         </p>
 
         <div className="mt-3 space-y-3">
           <div>
-            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
               Conversion rate (%)
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[10px] text-[#A0A0A0]">Baseline</label>
+                <label className="text-[10px] text-[#71757D]">Baseline</label>
                 <input
                   type="number"
                   step="0.01"
                   value={cvrBase}
                   onChange={(e) => setCvrBase(e.target.value)}
                   placeholder="2.4"
-                  className="w-full rounded-lg border border-[#E5E5EA] bg-white px-2 py-1.5 text-xs"
+                  className="w-full rounded-lg border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-xs"
                 />
               </div>
               <div>
-                <label className="text-[10px] text-[#A0A0A0]">Current</label>
+                <label className="text-[10px] text-[#71757D]">Current</label>
                 <input
                   type="number"
                   step="0.01"
                   value={cvrCur}
                   onChange={(e) => setCvrCur(e.target.value)}
                   placeholder="3.1"
-                  className="w-full rounded-lg border border-[#E5E5EA] bg-white px-2 py-1.5 text-xs"
+                  className="w-full rounded-lg border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-xs"
                 />
               </div>
             </div>
           </div>
           <div>
-            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
               Average order value (£)
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[10px] text-[#A0A0A0]">Baseline</label>
+                <label className="text-[10px] text-[#71757D]">Baseline</label>
                 <input
                   type="number"
                   step="0.01"
                   value={aovBase}
                   onChange={(e) => setAovBase(e.target.value)}
                   placeholder="68"
-                  className="w-full rounded-lg border border-[#E5E5EA] bg-white px-2 py-1.5 text-xs"
+                  className="w-full rounded-lg border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-xs"
                 />
               </div>
               <div>
-                <label className="text-[10px] text-[#A0A0A0]">Current</label>
+                <label className="text-[10px] text-[#71757D]">Current</label>
                 <input
                   type="number"
                   step="0.01"
                   value={aovCur}
                   onChange={(e) => setAovCur(e.target.value)}
                   placeholder="74"
-                  className="w-full rounded-lg border border-[#E5E5EA] bg-white px-2 py-1.5 text-xs"
+                  className="w-full rounded-lg border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-xs"
                 />
               </div>
             </div>
@@ -1606,7 +1606,7 @@ function ClientMetricsEditor({
         <div className="mt-4 flex items-center justify-end gap-2">
           <button
             onClick={onCancel}
-            className="rounded-lg px-3 py-1.5 text-xs text-[#7A7A7A] hover:text-[#1B1B1B]"
+            className="rounded-lg px-3 py-1.5 text-xs text-[#71757D] hover:text-[#E5E5EA]"
           >
             Cancel
           </button>
@@ -1621,7 +1621,7 @@ function ClientMetricsEditor({
               });
               onSave();
             }}
-            className="rounded-lg bg-[#1B1B1B] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#2D2D2D]"
+            className="rounded-lg bg-[#1B1B1B] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#F3F4F6]"
           >
             Save
           </button>
@@ -1666,18 +1666,18 @@ function TestResultEditor({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+      <div className="w-full max-w-md rounded-2xl bg-[#181818] p-5 shadow-2xl">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
           Test result
         </p>
-        <h2 className="mt-0.5 text-base font-semibold text-[#1B1B1B]">{taskTitle}</h2>
-        <p className="mt-1 text-[11px] text-[#7A7A7A]">
+        <h2 className="mt-0.5 text-base font-semibold text-[#E5E5EA]">{taskTitle}</h2>
+        <p className="mt-1 text-[11px] text-[#71757D]">
           Captures the outcome so retainer renewals run on data, not vibes. Surfaces a chip on the task and feeds the share-card.
         </p>
 
         <div className="mt-3 space-y-3">
           <div>
-            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
               Status
             </label>
             <div className="grid grid-cols-4 gap-1">
@@ -1692,9 +1692,9 @@ function TestResultEditor({
                         : s === "loser"
                           ? "border-rose-500 bg-rose-50 text-rose-900"
                           : s === "inconclusive"
-                            ? "border-[#1B1B1B] bg-[#F7F8FA] text-[#1B1B1B]"
+                            ? "border-white bg-[#0C0C0C] text-[#E5E5EA]"
                             : "border-amber-500 bg-amber-50 text-amber-900"
-                      : "border-[#E5E5EA] bg-white text-[#7A7A7A]"
+                      : "border-[#2A2A2A] bg-[#181818] text-[#71757D]"
                   }`}
                 >
                   {s}
@@ -1705,7 +1705,7 @@ function TestResultEditor({
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
                 Lift % vs control
               </label>
               <input
@@ -1714,12 +1714,12 @@ function TestResultEditor({
                 value={lift}
                 onChange={(e) => setLift(e.target.value)}
                 placeholder="e.g. 18.4"
-                className="w-full rounded-lg border border-[#E5E5EA] bg-white px-2 py-1.5 text-xs"
+                className="w-full rounded-lg border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-xs"
                 disabled={status === "pending"}
               />
             </div>
             <div>
-              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
                 Significance %
               </label>
               <input
@@ -1727,14 +1727,14 @@ function TestResultEditor({
                 value={sig}
                 onChange={(e) => setSig(e.target.value)}
                 placeholder="95"
-                className="w-full rounded-lg border border-[#E5E5EA] bg-white px-2 py-1.5 text-xs"
+                className="w-full rounded-lg border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-xs"
                 disabled={status === "pending"}
               />
             </div>
           </div>
 
           <div>
-            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
               Notes
             </label>
             <textarea
@@ -1742,7 +1742,7 @@ function TestResultEditor({
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
               placeholder="Hypothesis, what changed, what to try next…"
-              className="w-full rounded-lg border border-[#E5E5EA] bg-white px-2 py-1.5 text-xs"
+              className="w-full rounded-lg border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-xs"
             />
           </div>
         </div>
@@ -1771,7 +1771,7 @@ function TestResultEditor({
           <div className="flex items-center gap-2">
             <button
               onClick={onCancel}
-              className="rounded-lg px-3 py-1.5 text-xs text-[#7A7A7A] hover:text-[#1B1B1B]"
+              className="rounded-lg px-3 py-1.5 text-xs text-[#71757D] hover:text-[#E5E5EA]"
             >
               Cancel
             </button>
@@ -1784,7 +1784,7 @@ function TestResultEditor({
                   notes: notes.trim() || undefined,
                 })
               }
-              className="rounded-lg bg-[#1B1B1B] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#2D2D2D]"
+              className="rounded-lg bg-[#1B1B1B] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#F3F4F6]"
             >
               Save
             </button>
@@ -1814,17 +1814,17 @@ function DesignHandoffModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+      <div className="w-full max-w-sm rounded-2xl bg-[#181818] p-5 shadow-2xl">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
           Design → Dev handoff
         </p>
-        <h2 className="mt-0.5 text-base font-semibold text-[#1B1B1B]">{taskTitle}</h2>
-        <p className="mt-1 text-[11px] text-[#7A7A7A]">
+        <h2 className="mt-0.5 text-base font-semibold text-[#E5E5EA]">{taskTitle}</h2>
+        <p className="mt-1 text-[11px] text-[#71757D]">
           Tick all three before flipping to done, stops the back-and-forth where dev pings the designer two days later.
         </p>
 
         <div className="mt-3 space-y-2">
-          <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-[#E5E5EA] px-3 py-2 hover:border-[#1B1B1B]">
+          <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-[#2A2A2A] px-3 py-2 hover:border-white">
             <input
               type="checkbox"
               checked={figma}
@@ -1832,13 +1832,13 @@ function DesignHandoffModal({
               className="mt-0.5"
             />
             <div className="flex-1">
-              <div className="text-xs font-medium text-[#1B1B1B]">Figma link present</div>
-              <div className="text-[10px] text-[#7A7A7A]">
+              <div className="text-xs font-medium text-[#E5E5EA]">Figma link present</div>
+              <div className="text-[10px] text-[#71757D]">
                 Pasted on the project / portal so dev can find it without asking.
               </div>
             </div>
           </label>
-          <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-[#E5E5EA] px-3 py-2 hover:border-[#1B1B1B]">
+          <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-[#2A2A2A] px-3 py-2 hover:border-white">
             <input
               type="checkbox"
               checked={assets}
@@ -1846,13 +1846,13 @@ function DesignHandoffModal({
               className="mt-0.5"
             />
             <div className="flex-1">
-              <div className="text-xs font-medium text-[#1B1B1B]">Assets exported</div>
-              <div className="text-[10px] text-[#7A7A7A]">
+              <div className="text-xs font-medium text-[#E5E5EA]">Assets exported</div>
+              <div className="text-[10px] text-[#71757D]">
                 Hero images, icons, fonts, sliced and dropped where dev expects them.
               </div>
             </div>
           </label>
-          <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-[#E5E5EA] px-3 py-2 hover:border-[#1B1B1B]">
+          <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-[#2A2A2A] px-3 py-2 hover:border-white">
             <input
               type="checkbox"
               checked={scope}
@@ -1860,8 +1860,8 @@ function DesignHandoffModal({
               className="mt-0.5"
             />
             <div className="flex-1">
-              <div className="text-xs font-medium text-[#1B1B1B]">Scope locked</div>
-              <div className="text-[10px] text-[#7A7A7A]">
+              <div className="text-xs font-medium text-[#E5E5EA]">Scope locked</div>
+              <div className="text-[10px] text-[#71757D]">
                 No outstanding client comments. Anything new is a separate revision.
               </div>
             </div>
@@ -1871,7 +1871,7 @@ function DesignHandoffModal({
         <div className="mt-4 flex items-center justify-end gap-2">
           <button
             onClick={onCancel}
-            className="rounded-lg px-3 py-1.5 text-xs text-[#7A7A7A] hover:text-[#1B1B1B]"
+            className="rounded-lg px-3 py-1.5 text-xs text-[#71757D] hover:text-[#E5E5EA]"
           >
             Cancel
           </button>
@@ -1880,8 +1880,8 @@ function DesignHandoffModal({
             disabled={!ready}
             className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
               ready
-                ? "bg-[#1B1B1B] text-white hover:bg-[#2D2D2D]"
-                : "cursor-not-allowed bg-[#E5E5EA] text-[#A0A0A0]"
+                ? "bg-[#E5E5EA] text-[#181818] hover:bg-white"
+                : "cursor-not-allowed bg-[#2A2A2A] text-[#71757D]"
             }`}
           >
             {ready ? "Confirm, mark done" : `Tick all 3 (${[figma, assets, scope].filter(Boolean).length}/3)`}
@@ -1904,18 +1904,18 @@ function PausePopover({
   onResume: () => void;
 }) {
   return (
-    <div className="absolute right-0 top-full z-30 mt-1 w-52 overflow-hidden rounded-lg border border-[#E5E5EA] bg-white shadow-[var(--shadow-card)]">
-      <div className="border-b border-[#EDEDEF] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+    <div className="absolute right-0 top-full z-30 mt-1 w-52 overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-card)]">
+      <div className="border-b border-[#2A2A2A] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
         {isPaused ? "Currently paused" : "Pause clock, waiting on…"}
       </div>
       {isPaused ? (
         <>
-          <div className="px-3 py-1.5 text-[11px] text-[#7A7A7A]">
-            Waiting on <strong className="text-[#1B1B1B]">{waitingOn === "client" ? "client" : "internal"}</strong>. Resume when unblocked to restart the clock from where it left off.
+          <div className="px-3 py-1.5 text-[11px] text-[#71757D]">
+            Waiting on <strong className="text-[#E5E5EA]">{waitingOn === "client" ? "client" : "internal"}</strong>. Resume when unblocked to restart the clock from where it left off.
           </div>
           <button
             onClick={onResume}
-            className="flex w-full items-center justify-center gap-1 border-t border-[#EDEDEF] px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
+            className="flex w-full items-center justify-center gap-1 border-t border-[#2A2A2A] px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
           >
             ▶ Resume
           </button>
@@ -1924,17 +1924,17 @@ function PausePopover({
         <>
           <button
             onClick={() => onPause("client")}
-            className="flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-[#F7F8FA]"
+            className="flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-[#0C0C0C]"
           >
             <span>Waiting on client</span>
-            <span className="text-[10px] text-[#A0A0A0]">most common</span>
+            <span className="text-[10px] text-[#71757D]">most common</span>
           </button>
           <button
             onClick={() => onPause("internal")}
-            className="flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-[#F7F8FA]"
+            className="flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-[#0C0C0C]"
           >
             <span>Waiting on internal</span>
-            <span className="text-[10px] text-[#A0A0A0]">team blocker</span>
+            <span className="text-[10px] text-[#71757D]">team blocker</span>
           </button>
         </>
       )}
@@ -1950,16 +1950,16 @@ function PriorityPopover({
   onPick: (p: TaskPriority) => void;
 }) {
   return (
-    <div className="absolute left-0 top-full z-30 mt-1 w-48 overflow-hidden rounded-lg border border-[#E5E5EA] bg-white shadow-[var(--shadow-card)]">
-      <div className="border-b border-[#EDEDEF] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+    <div className="absolute left-0 top-full z-30 mt-1 w-48 overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-card)]">
+      <div className="border-b border-[#2A2A2A] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
         Set priority…
       </div>
       {PRIORITY_ORDER.map((p) => (
         <button
           key={p}
           onClick={() => onPick(p)}
-          className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-[#F7F8FA] ${
-            p === currentPriority ? "bg-[#F3F3F5] font-medium" : ""
+          className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-xs hover:bg-[#0C0C0C] ${
+            p === currentPriority ? "bg-[#222222] font-medium" : ""
           }`}
         >
           <span>{PRIORITY_LABEL[p]}</span>
@@ -1986,7 +1986,7 @@ function TaskStatusButton({
       ? "bg-emerald-50 text-emerald-700 border-emerald-200"
       : status === "in_progress"
         ? "bg-blue-50 text-blue-700 border-blue-200"
-        : "bg-[#F3F3F5] text-[#7A7A7A] border-[#E5E5EA]";
+        : "bg-[#222222] text-[#71757D] border-[#2A2A2A]";
   const label =
     status === "done" ? "Done" : status === "in_progress" ? "Live" : "Todo";
   return (
@@ -2116,7 +2116,7 @@ function AddTaskInline({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex w-full items-center justify-center gap-1 rounded-lg border border-dashed border-[#E5E5EA] px-2 py-1.5 text-[11px] text-[#A0A0A0] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"
+        className="flex w-full items-center justify-center gap-1 rounded-lg border border-dashed border-[#2A2A2A] px-2 py-1.5 text-[11px] text-[#71757D] hover:border-white hover:text-[#E5E5EA]"
       >
         <PlusIcon className="size-3" />
         Add for {member.name}
@@ -2135,22 +2135,22 @@ function AddTaskInline({
   }
 
   return (
-    <div className="rounded-lg border border-[#1B1B1B]/20 bg-[#F7F8FA] p-2.5">
-      <div className="flex items-center gap-2 pb-1.5 text-[11px] text-[#7A7A7A]">
+    <div className="rounded-lg border border-white/20 bg-[#0C0C0C] p-2.5">
+      <div className="flex items-center gap-2 pb-1.5 text-[11px] text-[#71757D]">
         {isPrimaryMode ? (
           <>
-            New deliverable starting with <strong className="text-[#1B1B1B]">{member.name}</strong>
+            New deliverable starting with <strong className="text-[#E5E5EA]">{member.name}</strong>
           </>
         ) : (
           <>
-            New for <strong className="text-[#1B1B1B]">{member.name}</strong>
+            New for <strong className="text-[#E5E5EA]">{member.name}</strong>
           </>
         )}
       </div>
 
       {isPrimaryMode ? (
         projectOptions.length === 0 ? (
-          <div className="rounded-md border border-amber-200 bg-amber-50 px-2.5 py-2 text-[11px] text-amber-800">
+          <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-2 text-[11px] text-amber-300">
             No clients or projects on this pod yet. Create one via{" "}
             <Link href="/pods-v2/new-project" className="font-medium underline hover:text-amber-900">
               + New project
@@ -2176,7 +2176,7 @@ function AddTaskInline({
                 value={variantLabel}
                 onChange={(e) => setVariantLabel(e.target.value)}
                 placeholder="Variant label (e.g. Lavender oil)"
-                className="rounded border border-[#E5E5EA] bg-white px-2 py-1 text-[11px] placeholder:text-[#CCC]"
+                className="rounded border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[11px] placeholder:text-[#C7C9CD]"
               />
             </div>
             <select
@@ -2190,12 +2190,12 @@ function AddTaskInline({
                 </option>
               ))}
             </select>
-            <div className="mt-1.5 text-[10px] text-[#7A7A7A]">
+            <div className="mt-1.5 text-[10px] text-[#71757D]">
               Creates two paired tasks: <strong>Design, {PAGE_LABEL[deliverableType]}</strong> for{" "}
-              <strong className="text-[#1B1B1B]">{memberIsDesigner ? member.name : pairPartner?.name ?? ","}</strong>
+              <strong className="text-[#E5E5EA]">{memberIsDesigner ? member.name : pairPartner?.name ?? ","}</strong>
               {" "}+{" "}
               <strong>Build, {PAGE_LABEL[deliverableType]}</strong> for{" "}
-              <strong className="text-[#1B1B1B]">{memberIsDesigner ? pairPartner?.name ?? "," : member.name}</strong>.
+              <strong className="text-[#E5E5EA]">{memberIsDesigner ? pairPartner?.name ?? "," : member.name}</strong>.
               Points cover both halves: <strong>{pointsFor(deliverableType)}pt{pointsFor(deliverableType) === 1 ? "" : "s"}</strong>.
               Same-type discount applies if a {PAGE_LABEL[deliverableType]} already exists on this project.
             </div>
@@ -2208,7 +2208,7 @@ function AddTaskInline({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Task title"
-            className="w-full rounded border border-[#E5E5EA] bg-white px-2 py-1 text-xs"
+            className="w-full rounded border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-xs"
           />
           <div className="mt-1.5 grid grid-cols-2 gap-1.5">
             <select
@@ -2242,7 +2242,7 @@ function AddTaskInline({
       <div className="mt-1.5 flex justify-end gap-1.5">
         <button
           onClick={reset}
-          className="rounded px-2 py-1 text-[11px] text-[#7A7A7A] hover:text-[#1B1B1B]"
+          className="rounded px-2 py-1 text-[11px] text-[#71757D] hover:text-[#E5E5EA]"
         >
           Cancel
         </button>
@@ -2315,7 +2315,7 @@ function AddTaskInline({
             onMutate();
           }}
           disabled={(isPrimaryMode && (!pairPartner || projectOptions.length === 0))}
-          className="rounded bg-[#1B1B1B] px-2 py-1 text-[11px] font-medium text-white hover:bg-[#2D2D2D] disabled:opacity-50"
+          className="rounded bg-[#E5E5EA] text-[#181818] px-2 py-1 text-[11px] font-medium text-white hover:bg-[#F3F4F6] disabled:opacity-50"
         >
           {isPrimaryMode ? "Add deliverable" : "Add"}
         </button>
@@ -2369,10 +2369,10 @@ function PodBlockersPanel({
     <div className="mt-10">
       <div className="flex items-baseline justify-between gap-3">
         <div>
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
             Blockers
           </h2>
-          <p className="mt-0.5 text-xs text-[#7A7A7A]">
+          <p className="mt-0.5 text-xs text-[#71757D]">
             Pod-wide blockers everyone needs to see, a missing asset, a sick teammate, a tool down.
             {pod.slack_channel_id && (
               <span className="ml-1.5 inline-flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-emerald-800">
@@ -2381,7 +2381,7 @@ function PodBlockersPanel({
             )}
           </p>
           {isAdmin && (
-            <div className="mt-1 flex items-center gap-1.5 text-[10px] text-[#A0A0A0]">
+            <div className="mt-1 flex items-center gap-1.5 text-[10px] text-[#71757D]">
               <span>Slack channel:</span>
               {editingSlack ? (
                 <>
@@ -2390,7 +2390,7 @@ function PodBlockersPanel({
                     value={slackDraft}
                     onChange={(e) => setSlackDraft(e.target.value)}
                     placeholder="C0123456 (channel id)"
-                    className="rounded border border-[#E5E5EA] bg-white px-1.5 py-0.5 text-[10px]"
+                    className="rounded border border-[#2A2A2A] bg-[#181818] px-1.5 py-0.5 text-[10px]"
                     onBlur={() => {
                       updatePodSlackChannel(pod.id, slackDraft.trim());
                       setEditingSlack(false);
@@ -2408,7 +2408,7 @@ function PodBlockersPanel({
               ) : (
                 <button
                   onClick={() => setEditingSlack(true)}
-                  className="font-mono text-[#1B1B1B] hover:underline"
+                  className="font-mono text-[#E5E5EA] hover:underline"
                 >
                   {pod.slack_channel_id || ", not set ,"}
                 </button>
@@ -2416,13 +2416,13 @@ function PodBlockersPanel({
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2 text-[11px] tabular-nums text-[#A0A0A0]">
+        <div className="flex items-center gap-2 text-[11px] tabular-nums text-[#71757D]">
           <span className={active.length > 0 ? "font-semibold text-rose-700" : ""}>
             {active.length} active
           </span>
           <button
             onClick={() => setOpen((v) => !v)}
-            className="rounded-md border border-[#E5E5EA] px-2 py-1 text-[11px] font-medium text-[#1B1B1B] hover:border-[#1B1B1B]"
+            className="rounded-md border border-[#2A2A2A] px-2 py-1 text-[11px] font-medium text-[#E5E5EA] hover:border-white"
           >
             {open ? "Cancel" : "+ Raise blocker"}
           </button>
@@ -2430,26 +2430,26 @@ function PodBlockersPanel({
       </div>
 
       {open && (
-        <div className="mt-3 rounded-xl border border-[#1B1B1B]/20 bg-[#F7F8FA] p-3">
+        <div className="mt-3 rounded-xl border border-white/20 bg-[#0C0C0C] p-3">
           <input
             autoFocus
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="What's blocking? (e.g. Waiting on Acme brand assets)"
-            className="w-full rounded-md border border-[#E5E5EA] bg-white px-2 py-1.5 text-xs"
+            className="w-full rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-xs"
           />
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="More context (optional)"
             rows={2}
-            className="mt-1.5 w-full rounded-md border border-[#E5E5EA] bg-white px-2 py-1.5 text-xs placeholder:text-[#CCC]"
+            className="mt-1.5 w-full rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-xs placeholder:text-[#C7C9CD]"
           />
           <div className="mt-1.5 flex items-center gap-1.5">
             <select
               value={ownerId}
               onChange={(e) => setOwnerId(e.target.value)}
-              className="rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-[11px]"
+              className="rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[11px]"
             >
               <option value="">Owner (optional)</option>
               {pod.members.filter((m) => !m.is_placeholder).map((m) => (
@@ -2462,7 +2462,7 @@ function PodBlockersPanel({
             <button
               onClick={submit}
               disabled={!title.trim()}
-              className="rounded-md bg-[#1B1B1B] px-2.5 py-1 text-[11px] font-medium text-white hover:bg-[#2D2D2D] disabled:opacity-50"
+              className="rounded-md bg-[#1B1B1B] px-2.5 py-1 text-[11px] font-medium text-white hover:bg-[#F3F4F6] disabled:opacity-50"
             >
               Raise blocker
             </button>
@@ -2472,7 +2472,7 @@ function PodBlockersPanel({
 
       <div className="mt-3 space-y-2">
         {active.length === 0 && !open && (
-          <div className="rounded-xl border border-dashed border-[#E5E5EA] bg-white px-4 py-6 text-center text-xs text-[#A0A0A0]">
+          <div className="rounded-xl border border-dashed border-[#2A2A2A] bg-[#181818] px-4 py-6 text-center text-xs text-[#71757D]">
             No active blockers. Pod is clear.
           </div>
         )}
@@ -2481,21 +2481,21 @@ function PodBlockersPanel({
           const ageMs = Date.now() - new Date(b.raised_at).getTime();
           const ageHours = Math.floor(ageMs / 3_600_000);
           const ageLabel = ageHours < 1 ? "just now" : ageHours < 24 ? `${ageHours}h ago` : `${Math.floor(ageHours / 24)}d ago`;
-          const tone = ageHours >= 48 ? "border-rose-300 bg-rose-50" : ageHours >= 24 ? "border-amber-300 bg-amber-50" : "border-[#E5E5EA] bg-white";
+          const tone = ageHours >= 48 ? "border-rose-300 bg-rose-50" : ageHours >= 24 ? "border-amber-300 bg-amber-50" : "border-[#2A2A2A] bg-[#181818]";
           return (
             <div key={b.id} className={`rounded-xl border ${tone} p-3 shadow-[var(--shadow-soft)]`}>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold text-[#1B1B1B]">{b.title}</div>
+                  <div className="text-sm font-semibold text-[#E5E5EA]">{b.title}</div>
                   {b.description && (
-                    <div className="mt-1 text-[12px] text-[#555] whitespace-pre-wrap">{b.description}</div>
+                    <div className="mt-1 text-[12px] text-[#C7C9CD] whitespace-pre-wrap">{b.description}</div>
                   )}
-                  <div className="mt-1.5 flex items-center gap-2 text-[10px] text-[#7A7A7A]">
+                  <div className="mt-1.5 flex items-center gap-2 text-[10px] text-[#71757D]">
                     <span>Raised {ageLabel}</span>
                     {owner && (
                       <>
                         <span className="text-[#C5C5C5]">·</span>
-                        <span>Owner: <strong className="text-[#1B1B1B]">{owner.name}</strong></span>
+                        <span>Owner: <strong className="text-[#E5E5EA]">{owner.name}</strong></span>
                       </>
                     )}
                   </div>
@@ -2517,7 +2517,7 @@ function PodBlockersPanel({
                         onMutate();
                       }
                     }}
-                    className="text-[#A0A0A0] hover:text-rose-600"
+                    className="text-[#71757D] hover:text-rose-600"
                     title="Delete"
                   >
                     <XMarkIcon className="size-3.5" />
@@ -2528,20 +2528,20 @@ function PodBlockersPanel({
           );
         })}
         {resolved.length > 0 && (
-          <details className="text-[11px] text-[#7A7A7A]">
-            <summary className="cursor-pointer hover:text-[#1B1B1B]">Recently resolved ({resolved.length})</summary>
+          <details className="text-[11px] text-[#71757D]">
+            <summary className="cursor-pointer hover:text-[#E5E5EA]">Recently resolved ({resolved.length})</summary>
             <div className="mt-2 space-y-1">
               {resolved.map((b) => (
-                <div key={b.id} className="group flex items-center justify-between gap-2 rounded-md bg-[#F7F8FA] px-2 py-1">
+                <div key={b.id} className="group flex items-center justify-between gap-2 rounded-md bg-[#0C0C0C] px-2 py-1">
                   <span className="truncate line-through opacity-60">{b.title}</span>
                   <div className="flex shrink-0 items-center gap-2">
-                    <span className="text-[10px] text-[#A0A0A0]">{b.resolved_at ? new Date(b.resolved_at).toLocaleDateString("en-GB") : ""}</span>
+                    <span className="text-[10px] text-[#71757D]">{b.resolved_at ? new Date(b.resolved_at).toLocaleDateString("en-GB") : ""}</span>
                     <button
                       onClick={() => {
                         reopenBlocker(pod.id, b.id);
                         onMutate();
                       }}
-                      className="rounded px-1.5 py-0.5 text-[10px] font-medium text-[#1B1B1B] opacity-0 transition-opacity hover:bg-white hover:underline group-hover:opacity-100"
+                      className="rounded px-1.5 py-0.5 text-[10px] font-medium text-[#E5E5EA] opacity-0 transition-opacity hover:bg-[#181818] hover:underline group-hover:opacity-100"
                       title="Re-open, moves back to active blockers"
                     >
                       ↺ Re-open
@@ -2592,7 +2592,7 @@ function ClientRoster({
 }) {
   return (
     <div className="mt-10">
-      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
         Client roster
       </h2>
       <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
@@ -2609,7 +2609,7 @@ function ClientRoster({
           />
         ))}
         {clients.length === 0 && (
-          <div className="rounded-xl border border-dashed border-[#E5E5EA] bg-white px-4 py-6 text-center text-xs text-[#A0A0A0]">
+          <div className="rounded-xl border border-dashed border-[#2A2A2A] bg-[#181818] px-4 py-6 text-center text-xs text-[#71757D]">
             No clients assigned yet.
           </div>
         )}
@@ -2666,14 +2666,14 @@ function ClientCard({
       : null;
 
   return (
-    <div className="group relative rounded-xl border border-[#E5E5EA] bg-white p-4 shadow-[var(--shadow-soft)] transition-colors hover:border-[#1B1B1B]/30">
+    <div className="group relative rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)] transition-colors hover:border-white/30">
       <div className="flex items-start justify-between gap-2">
         <Link href={engagementHref} className="block min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <span className="text-sm font-semibold leading-tight">
               {client.name}
             </span>
-            <ArrowTopRightOnSquareIcon className="size-3 text-[#A0A0A0] transition-colors group-hover:text-[#1B1B1B]" />
+            <ArrowTopRightOnSquareIcon className="size-3 text-[#71757D] transition-colors group-hover:text-[#E5E5EA]" />
           </div>
           <div className="mt-1 flex items-center gap-1.5">
             <span
@@ -2699,7 +2699,7 @@ function ClientCard({
         {canUnassign && (
           <button
             onClick={() => setUnassignOpen(true)}
-            className="rounded-md px-1.5 py-0.5 text-[10px] text-[#A0A0A0] hover:bg-[#F7F8FA] hover:text-[#1B1B1B]"
+            className="rounded-md px-1.5 py-0.5 text-[10px] text-[#71757D] hover:bg-[#0C0C0C] hover:text-[#E5E5EA]"
             title="Unassign from pod"
           >
             Unassign
@@ -2707,7 +2707,7 @@ function ClientCard({
         )}
       </div>
       {client.retainer_tier !== "none" && (
-        <div className="mt-3 text-[11px] text-[#7A7A7A]">
+        <div className="mt-3 text-[11px] text-[#71757D]">
           {RETAINER_SCOPE[client.retainer_tier]}
         </div>
       )}
@@ -2716,17 +2716,17 @@ function ClientCard({
       <div className="mt-3 grid grid-cols-2 gap-2">
         <button
           onClick={() => setMetricsOpen(true)}
-          className="rounded-lg border border-[#E5E5EA] bg-[#FAFAFA] px-2 py-1.5 text-left transition-colors hover:border-[#1B1B1B]/30"
+          className="rounded-lg border border-[#2A2A2A] bg-[#0C0C0C] px-2 py-1.5 text-left transition-colors hover:border-white/30"
           title="Click to edit CVR baseline / current"
         >
-          <div className="text-[9px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+          <div className="text-[9px] font-semibold uppercase tracking-wider text-[#71757D]">
             CVR
           </div>
           {client.cvr_baseline != null || client.cvr_current != null ? (
             <div className="mt-0.5 flex items-baseline gap-1 text-[11px] tabular-nums">
-              <span className="text-[#7A7A7A]">{client.cvr_baseline ?? ","}%</span>
+              <span className="text-[#71757D]">{client.cvr_baseline ?? ","}%</span>
               <span className="text-[#C5C5C5]">→</span>
-              <span className="font-semibold text-[#1B1B1B]">
+              <span className="font-semibold text-[#E5E5EA]">
                 {client.cvr_current ?? ","}%
               </span>
               {cvrDelta != null && (
@@ -2736,7 +2736,7 @@ function ClientCard({
                       ? "text-emerald-700"
                       : cvrDelta < 0
                         ? "text-rose-700"
-                        : "text-[#7A7A7A]"
+                        : "text-[#71757D]"
                   }`}
                 >
                   {cvrDelta > 0 ? "+" : ""}
@@ -2745,22 +2745,22 @@ function ClientCard({
               )}
             </div>
           ) : (
-            <div className="mt-0.5 text-[10px] italic text-[#A0A0A0]">+ set</div>
+            <div className="mt-0.5 text-[10px] italic text-[#71757D]">+ set</div>
           )}
         </button>
         <button
           onClick={() => setMetricsOpen(true)}
-          className="rounded-lg border border-[#E5E5EA] bg-[#FAFAFA] px-2 py-1.5 text-left transition-colors hover:border-[#1B1B1B]/30"
+          className="rounded-lg border border-[#2A2A2A] bg-[#0C0C0C] px-2 py-1.5 text-left transition-colors hover:border-white/30"
           title="Click to edit AOV baseline / current"
         >
-          <div className="text-[9px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+          <div className="text-[9px] font-semibold uppercase tracking-wider text-[#71757D]">
             AOV
           </div>
           {client.aov_baseline != null || client.aov_current != null ? (
             <div className="mt-0.5 flex items-baseline gap-1 text-[11px] tabular-nums">
-              <span className="text-[#7A7A7A]">£{client.aov_baseline ?? ","}</span>
+              <span className="text-[#71757D]">£{client.aov_baseline ?? ","}</span>
               <span className="text-[#C5C5C5]">→</span>
-              <span className="font-semibold text-[#1B1B1B]">
+              <span className="font-semibold text-[#E5E5EA]">
                 £{client.aov_current ?? ","}
               </span>
               {aovDelta != null && (
@@ -2770,7 +2770,7 @@ function ClientCard({
                       ? "text-emerald-700"
                       : aovDelta < 0
                         ? "text-rose-700"
-                        : "text-[#7A7A7A]"
+                        : "text-[#71757D]"
                   }`}
                 >
                   {aovDelta > 0 ? "+" : ""}
@@ -2779,16 +2779,16 @@ function ClientCard({
               )}
             </div>
           ) : (
-            <div className="mt-0.5 text-[10px] italic text-[#A0A0A0]">+ set</div>
+            <div className="mt-0.5 text-[10px] italic text-[#71757D]">+ set</div>
           )}
         </button>
       </div>
 
       {/* Deliverables + timeline — the tracking strip that brings the
           engagement's work onto the pod view so nothing gets missed. */}
-      <div className="mt-3 border-t border-[#F0F0F2] pt-3">
+      <div className="mt-3 border-t border-[#2A2A2A] pt-3">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
             Deliverables
           </span>
           {day != null && (
@@ -2796,7 +2796,7 @@ function ClientCard({
               className={`rounded-md border px-1.5 py-0.5 text-[10px] font-medium tabular-nums ${
                 day > 75
                   ? "border-rose-200 bg-rose-50 text-rose-700"
-                  : "border-[#E5E5EA] bg-[#FAFAFA] text-[#7A7A7A]"
+                  : "border-[#2A2A2A] bg-[#0C0C0C] text-[#71757D]"
               }`}
               title="Day in the 90-day engagement"
             >
@@ -2806,12 +2806,12 @@ function ClientCard({
         </div>
 
         {deliverables.length === 0 ? (
-          <div className="mt-1.5 rounded-md border border-dashed border-[#E5E5EA] bg-[#FAFAFA] px-2 py-1.5 text-[10px] text-[#A0A0A0]">
+          <div className="mt-1.5 rounded-md border border-dashed border-[#2A2A2A] bg-[#0C0C0C] px-2 py-1.5 text-[10px] text-[#71757D]">
             No deliverables yet
           </div>
         ) : (
           <>
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-[#7A7A7A]">
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-[#71757D]">
               <span>{liveDeliverables.length} live</span>
               {atRisk > 0 && <span className="font-semibold text-rose-600">· {atRisk} at risk</span>}
               {blockedCount > 0 && <span className="text-amber-700">· {blockedCount} blocked</span>}
@@ -2823,13 +2823,13 @@ function ClientCard({
                 <Link
                   key={d.task.id}
                   href={engagementHref}
-                  className="flex items-center gap-2 rounded-md px-1 py-0.5 hover:bg-[#FAFAFA]"
+                  className="flex items-center gap-2 rounded-md px-1 py-0.5 hover:bg-[#0C0C0C]"
                 >
                   <span className={`size-1.5 shrink-0 rounded-full ${RISK_DOT[d.risk]}`} />
-                  <span className="min-w-0 flex-1 truncate text-[11px] text-[#1B1B1B]">{d.task.title}</span>
+                  <span className="min-w-0 flex-1 truncate text-[11px] text-[#E5E5EA]">{d.task.title}</span>
                   <span
                     className={`shrink-0 text-[10px] tabular-nums ${
-                      d.risk === "red" ? "font-semibold text-rose-600" : "text-[#A0A0A0]"
+                      d.risk === "red" ? "font-semibold text-rose-600" : "text-[#71757D]"
                     }`}
                   >
                     {d.reason}
@@ -2841,7 +2841,7 @@ function ClientCard({
             {overflow > 0 && (
               <Link
                 href={engagementHref}
-                className="mt-1 inline-block text-[10px] font-medium text-[#7A7A7A] hover:text-[#1B1B1B]"
+                className="mt-1 inline-block text-[10px] font-medium text-[#71757D] hover:text-[#E5E5EA]"
               >
                 +{overflow} more →
               </Link>
@@ -2906,19 +2906,19 @@ function UnassignClientModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+      <div className="w-full max-w-md rounded-2xl bg-[#181818] p-5 shadow-2xl">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
           Unassign from pod
         </p>
-        <h2 className="text-lg font-semibold text-[#1B1B1B]">{client.name}</h2>
-        <p className="mt-1 text-[11px] text-[#7A7A7A]">
+        <h2 className="text-lg font-semibold text-[#E5E5EA]">{client.name}</h2>
+        <p className="mt-1 text-[11px] text-[#71757D]">
           Pick a destination. Open tasks reassign to the new pod's primary designer/dev. Done tasks stay attached for audit.
         </p>
 
         <div className="mt-4 space-y-2">
           <label
             className={`flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 ${
-              mode === "move" ? "border-[#1B1B1B] bg-[#F7F8FA]" : "border-[#E5E5EA]"
+              mode === "move" ? "border-white bg-[#0C0C0C]" : "border-[#2A2A2A]"
             } ${otherPods.length === 0 ? "opacity-50" : ""}`}
           >
             <input
@@ -2929,13 +2929,13 @@ function UnassignClientModal({
               className="mt-0.5"
             />
             <div className="flex-1">
-              <div className="text-xs font-medium text-[#1B1B1B]">Move to another pod</div>
-              <div className="text-[10px] text-[#7A7A7A]">Reassign client + open work to a destination pod.</div>
+              <div className="text-xs font-medium text-[#E5E5EA]">Move to another pod</div>
+              <div className="text-[10px] text-[#71757D]">Reassign client + open work to a destination pod.</div>
               {mode === "move" && otherPods.length > 0 && (
                 <select
                   value={targetPodId}
                   onChange={(e) => setTargetPodId(e.target.value)}
-                  className="mt-2 w-full rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-[11px]"
+                  className="mt-2 w-full rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[11px]"
                 >
                   {otherPods.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -2949,7 +2949,7 @@ function UnassignClientModal({
 
           <label
             className={`flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 ${
-              mode === "park" ? "border-[#1B1B1B] bg-[#F7F8FA]" : "border-[#E5E5EA]"
+              mode === "park" ? "border-white bg-[#0C0C0C]" : "border-[#2A2A2A]"
             }`}
           >
             <input
@@ -2959,8 +2959,8 @@ function UnassignClientModal({
               className="mt-0.5"
             />
             <div className="flex-1">
-              <div className="text-xs font-medium text-[#1B1B1B]">Park (no pod)</div>
-              <div className="text-[10px] text-[#7A7A7A]">
+              <div className="text-xs font-medium text-[#E5E5EA]">Park (no pod)</div>
+              <div className="text-[10px] text-[#71757D]">
                 Client stays in the system. Open projects flip to queued, open tasks become unassigned. Use when capacity isn't ready yet.
               </div>
             </div>
@@ -2968,13 +2968,13 @@ function UnassignClientModal({
         </div>
 
         <div className="mt-4 flex justify-end gap-2">
-          <button onClick={onCancel} className="rounded px-3 py-1.5 text-[11px] text-[#7A7A7A] hover:text-[#1B1B1B]">
+          <button onClick={onCancel} className="rounded px-3 py-1.5 text-[11px] text-[#71757D] hover:text-[#E5E5EA]">
             Cancel
           </button>
           <button
             onClick={submit}
             disabled={submitting || (mode === "move" && !targetPodId)}
-            className="rounded bg-[#1B1B1B] px-3 py-1.5 text-[11px] font-medium text-white hover:bg-[#2D2D2D] disabled:opacity-50"
+            className="rounded bg-[#E5E5EA] text-[#181818] px-3 py-1.5 text-[11px] font-medium text-white hover:bg-[#F3F4F6] disabled:opacity-50"
           >
             {submitting ? "Working…" : mode === "move" ? "Move client" : "Park client"}
           </button>

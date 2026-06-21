@@ -96,13 +96,13 @@ export function ClientPicker({ clientId, onSelect }: Props) {
 
   if (creating) {
     return (
-      <div className="space-y-3 p-4 bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg">
+      <div className="space-y-3 p-4 bg-[#0C0C0C] border border-[#2A2A2A] rounded-lg">
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-semibold text-[#1B1B1B]">New client</h4>
+          <h4 className="text-sm font-semibold text-[#E5E5EA]">New client</h4>
           <button
             type="button"
             onClick={() => setCreating(false)}
-            className="text-xs text-[#7A7A7A] hover:text-[#1B1B1B] underline"
+            className="text-xs text-[#71757D] hover:text-[#E5E5EA] underline"
           >
             Cancel
           </button>
@@ -165,7 +165,7 @@ export function ClientPicker({ clientId, onSelect }: Props) {
           type="button"
           onClick={handleCreate}
           disabled={saving}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
         >
           {saving && <ArrowPathIcon className="size-4 animate-spin" />}
           Save client

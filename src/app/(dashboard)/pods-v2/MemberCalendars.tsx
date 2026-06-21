@@ -74,7 +74,7 @@ const PHASE_DOT: Record<TaskPhase, string> = {
 };
 
 const DISCIPLINE_BADGE: Record<TaskDiscipline, string> = {
-  strategy: "border-amber-200 bg-amber-50 text-amber-800",
+  strategy: "bg-amber-500/10 text-amber-300 border-amber-500/30",
   design: "border-purple-200 bg-purple-50 text-purple-800",
   development: "border-emerald-200 bg-emerald-50 text-emerald-800",
 };
@@ -170,31 +170,31 @@ function MemberCalendar({
   }
 
   return (
-    <div className="rounded-xl border border-[#E5E5EA] bg-white shadow-[var(--shadow-soft)]">
-      <div className="flex items-center justify-between gap-3 border-b border-[#E5E5EA] px-4 py-3">
+    <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-soft)]">
+      <div className="flex items-center justify-between gap-3 border-b border-[#2A2A2A] px-4 py-3">
         <MemberRow member={member} />
-        <div className="flex items-center gap-2 text-[11px] text-[#7A7A7A]">
+        <div className="flex items-center gap-2 text-[11px] text-[#71757D]">
           <span className="tabular-nums">{tasks.length}</span>
           <span>open</span>
           {earlier.length > 0 && (
-            <span className="rounded bg-rose-50 px-1.5 py-0.5 text-rose-700">
+            <span className="rounded bg-rose-500/10 px-1.5 py-0.5 text-rose-300">
               {earlier.length} overdue
             </span>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-5 border-b border-[#EDEDEF] bg-[#F7F8FA]">
+      <div className="grid grid-cols-5 border-b border-[#2A2A2A] bg-[#0C0C0C]">
         {DOW_LABELS.map((label) => (
           <div
             key={label}
-            className="px-2 py-1.5 text-[9px] font-semibold uppercase tracking-wider text-[#7A7A7A]"
+            className="px-2 py-1.5 text-[9px] font-semibold uppercase tracking-wider text-[#71757D]"
           >
             {label}
           </div>
         ))}
       </div>
-      <div className="divide-y divide-[#EDEDEF]">
+      <div className="divide-y divide-[#2A2A2A]">
         {grid.map((week) => (
           <div key={week[0]} className="grid grid-cols-5">
             {week.map((dayYMD) => {
@@ -204,24 +204,24 @@ function MemberCalendar({
               return (
                 <div
                   key={dayYMD}
-                  className={`min-h-[80px] border-r border-[#EDEDEF] p-1.5 last:border-r-0 ${
-                    isToday ? "bg-[#FFFCEF]" : "bg-white"
+                  className={`min-h-[80px] border-r border-[#2A2A2A] p-1.5 last:border-r-0 ${
+                    isToday ? "bg-[#FFFCEF]" : "bg-[#181818]"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span
                       className={`text-[10px] tabular-nums ${
                         isToday
-                          ? "font-semibold text-[#1B1B1B]"
+                          ? "font-semibold text-[#E5E5EA]"
                           : isThu
-                            ? "text-[#1B1B1B]"
-                            : "text-[#7A7A7A]"
+                            ? "text-[#E5E5EA]"
+                            : "text-[#71757D]"
                       }`}
                     >
                       {formatDayMonth(dayYMD)}
                     </span>
                     {dayTasks.length > 1 && (
-                      <span className="rounded bg-[#F3F3F5] px-1 text-[9px] tabular-nums text-[#7A7A7A]">
+                      <span className="rounded bg-[#222222] px-1 text-[9px] tabular-nums text-[#71757D]">
                         {dayTasks.length}
                       </span>
                     )}
@@ -250,7 +250,7 @@ function MemberCalendar({
       </div>
 
       {(earlier.length > 0 || later.length > 0) && (
-        <div className="border-t border-[#EDEDEF] bg-[#F7F8FA] px-3 py-2 text-[10px] text-[#7A7A7A]">
+        <div className="border-t border-[#2A2A2A] bg-[#0C0C0C] px-3 py-2 text-[10px] text-[#71757D]">
           {earlier.length > 0 && (
             <span className="mr-3 text-rose-700">
               {earlier.length} earlier overdue
@@ -277,7 +277,7 @@ function MemberTaskTile({
   const phase = task.phase;
   return (
     <div
-      className={`rounded border bg-white px-1.5 py-1 text-[10px] ${DISCIPLINE_BADGE[task.discipline]}`}
+      className={`rounded border bg-[#181818] px-1.5 py-1 text-[10px] ${DISCIPLINE_BADGE[task.discipline]}`}
       title={`${task.title}${
         project ? ` · ${project.name}` : ""
       }${client ? ` · ${client.name}` : ""}${

@@ -27,30 +27,30 @@ export function TeamPortalsSection({ hideHeader = false }: { hideHeader?: boolea
   return (
     <div className={hideHeader ? "" : "mt-10"}>
       {!hideHeader && (
-        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-4">
           Client Portals
         </h2>
       )}
       {loading ? (
-        <p className="text-xs text-[#AAA]">Loading…</p>
+        <p className="text-xs text-[#9CA3AF]">Loading…</p>
       ) : portals.length === 0 ? (
-        <p className="text-xs text-[#AAA]">No active portals.</p>
+        <p className="text-xs text-[#9CA3AF]">No active portals.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {portals.map((p) => (
             <Link
               key={p.id}
               href={`/portal/${p.token}/team`}
-              className="bg-white border border-[#E5E5EA] rounded-lg p-4 hover:border-[#1B1B1B] hover:shadow-sm transition-all group flex items-center justify-between gap-3"
+              className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-4 hover:border-[#1B1B1B] hover:shadow-sm transition-all group flex items-center justify-between gap-3"
             >
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-[#1B1B1B] truncate">{p.client_name}</p>
-                <p className="text-[11px] text-[#999] mt-0.5">
+                <p className="text-sm font-semibold text-[#E5E5EA] truncate">{p.client_name}</p>
+                <p className="text-[11px] text-[#71757D] mt-0.5">
                   {p.client_type === "retainer" ? "Retainer" : "Page Build"}
                   {p.current_phase ? ` · ${p.current_phase}` : ""}
                 </p>
               </div>
-              <ChevronRightIcon className="size-3.5 text-[#CCC] group-hover:text-[#1B1B1B] transition-colors shrink-0" />
+              <ChevronRightIcon className="size-3.5 text-[#C7C9CD] group-hover:text-[#E5E5EA] transition-colors shrink-0" />
             </Link>
           ))}
         </div>

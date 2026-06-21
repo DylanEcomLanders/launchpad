@@ -121,41 +121,41 @@ export function TaskDetailDrawer({
       />
       {pendingChange && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/30">
-          <div className="w-full max-w-[360px] mx-4 bg-white rounded-xl shadow-2xl p-5">
-            <h3 className="text-sm font-semibold text-[#1A1A1A]">
+          <div className="w-full max-w-[360px] mx-4 bg-[#181818] rounded-xl shadow-2xl p-5">
+            <h3 className="text-sm font-semibold text-[#E5E5EA]">
               {pendingChange.field === "designDueDate" ? "Design" : pendingChange.field === "devDueDate" ? "Dev" : "Launch"} deadline is moving
             </h3>
             <div className="flex items-center gap-2 mt-3 text-xs">
-              <span className="tabular-nums line-through text-[#777]">
+              <span className="tabular-nums line-through text-[#9CA3AF]">
                 {new Date(pendingChange.prev + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
               </span>
-              <span className="text-[#BBB]">→</span>
-              <span className="tabular-nums font-semibold text-[#1A1A1A]">
+              <span className="text-[#9CA3AF]">→</span>
+              <span className="tabular-nums font-semibold text-[#E5E5EA]">
                 {new Date(pendingChange.next + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
               </span>
             </div>
             <label className="block mt-4">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#777]">Why is it changing?</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF]">Why is it changing?</span>
               <textarea
                 value={reasonDraft}
                 onChange={(e) => setReasonDraft(e.target.value)}
                 placeholder="e.g. Client requested extra round of revisions"
                 autoFocus
                 rows={3}
-                className="mt-1.5 w-full text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#999] resize-none"
+                className="mt-1.5 w-full text-sm px-3 py-2 border border-[#2A2A2A] rounded-lg focus:outline-none focus:border-[#999] resize-none"
               />
             </label>
             <div className="flex items-center justify-end gap-2 mt-4">
               <button
                 onClick={cancelPendingChange}
-                className="px-3 py-1.5 text-xs font-medium text-[#777] hover:text-[#1A1A1A]"
+                className="px-3 py-1.5 text-xs font-medium text-[#9CA3AF] hover:text-[#E5E5EA]"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmPendingChange}
                 disabled={!reasonDraft.trim()}
-                className="px-4 py-1.5 text-xs font-medium bg-[#1A1A1A] text-white rounded-lg hover:bg-[#2D2D2D] disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-4 py-1.5 text-xs font-medium bg-white text-[#0C0C0C] rounded-lg hover:bg-[#F3F4F6] disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Save change
               </button>
@@ -163,19 +163,19 @@ export function TaskDetailDrawer({
           </div>
         </div>
       )}
-      <div className="relative ml-auto w-full max-w-[440px] h-full bg-white shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-200">
+      <div className="relative ml-auto w-full max-w-[440px] h-full bg-[#181818] shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-200">
         {/* Header */}
-        <div className="flex items-start justify-between p-6 border-b border-[#EDEDEF]">
+        <div className="flex items-start justify-between p-6 border-b border-[#2A2A2A]">
           <div className="min-w-0 pr-3">
-            <h2 className="text-base font-semibold text-[#1A1A1A] break-words">{task.title || "Untitled task"}</h2>
-            <p className="text-xs text-[#AAA] mt-1">
+            <h2 className="text-base font-semibold text-[#E5E5EA] break-words">{task.title || "Untitled task"}</h2>
+            <p className="text-xs text-[#9CA3AF] mt-1">
               {task.client || ","}
               {computedAssignee && <> · {computedAssignee}</>}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="shrink-0 p-1.5 rounded-lg text-[#999] hover:text-[#1A1A1A] hover:bg-[#F3F3F5]"
+            className="shrink-0 p-1.5 rounded-lg text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#222222]"
             aria-label="Close"
           >
             <XMarkIcon className="size-4" />
@@ -183,8 +183,8 @@ export function TaskDetailDrawer({
         </div>
 
         {/* Current phase */}
-        <section className="px-6 py-5 border-b border-[#EDEDEF]">
-          <h3 className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA] mb-2">Current phase</h3>
+        <section className="px-6 py-5 border-b border-[#2A2A2A]">
+          <h3 className="text-[9px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-2">Current phase</h3>
           {currentMeta ? (
             <div className="flex items-center gap-2">
               <span
@@ -200,13 +200,13 @@ export function TaskDetailDrawer({
               )}
             </div>
           ) : (
-            <p className="text-xs text-[#AAA]">Not started</p>
+            <p className="text-xs text-[#9CA3AF]">Not started</p>
           )}
         </section>
 
         {/* Team */}
-        <section className="px-6 py-5 border-b border-[#EDEDEF]">
-          <h3 className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA] mb-3">Team</h3>
+        <section className="px-6 py-5 border-b border-[#2A2A2A]">
+          <h3 className="text-[9px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-3">Team</h3>
           <TeamRow
             label="Designer"
             value={task.designer}
@@ -234,8 +234,8 @@ export function TaskDetailDrawer({
         </section>
 
         {/* Deadlines */}
-        <section className="px-6 py-5 border-b border-[#EDEDEF]">
-          <h3 className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA] mb-3">Deadlines</h3>
+        <section className="px-6 py-5 border-b border-[#2A2A2A]">
+          <h3 className="text-[9px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-3">Deadlines</h3>
           <DeadlineRow
             label="Design"
             field="designDueDate"
@@ -267,7 +267,7 @@ export function TaskDetailDrawer({
 
         {/* Timeline */}
         <section className="px-6 py-5">
-          <h3 className="text-[9px] font-semibold uppercase tracking-wider text-[#AAA] mb-3">Phase timeline</h3>
+          <h3 className="text-[9px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-3">Phase timeline</h3>
           <PhaseTimeline
             history={task.phaseHistory}
             emptyLabel="No phase history yet. Set a phase to start the timer."
@@ -303,14 +303,14 @@ function TeamRow({
           style={{ background: active ? "#1A1A1A" : "#D4D4D8" }}
           title={active ? "Currently on this task" : ""}
         />
-        <span className="text-sm font-medium text-[#1A1A1A]">{label}</span>
-        {locked && <span className="text-[9px] text-[#BBB] uppercase tracking-wider">auto</span>}
+        <span className="text-sm font-medium text-[#E5E5EA]">{label}</span>
+        {locked && <span className="text-[9px] text-[#9CA3AF] uppercase tracking-wider">auto</span>}
       </div>
       {editable && onChange ? (
         <select
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          className="text-xs px-2 py-1 border border-[#E5E5EA] rounded focus:outline-none focus:border-[#999] min-w-[140px]"
+          className="text-xs px-2 py-1 border border-[#2A2A2A] rounded focus:outline-none focus:border-[#999] min-w-[140px]"
         >
           <option value="">Unassigned</option>
           {options.map((m) => (
@@ -318,7 +318,7 @@ function TeamRow({
           ))}
         </select>
       ) : (
-        <span className={`text-xs ${value ? "text-[#1A1A1A]" : "text-[#BBB]"}`}>
+        <span className={`text-xs ${value ? "text-[#E5E5EA]" : "text-[#9CA3AF]"}`}>
           {value || "Unassigned"}
         </span>
       )}
@@ -377,7 +377,7 @@ function DeadlineRow({
               title={urgency === "overdue" ? "Overdue" : urgency === "due-soon" ? "Due soon" : "On track"}
             />
           )}
-          <span className="text-sm font-medium text-[#1A1A1A]">{label}</span>
+          <span className="text-sm font-medium text-[#E5E5EA]">{label}</span>
         </div>
         {editable && onChange ? (
           <input
@@ -393,7 +393,7 @@ function DeadlineRow({
                 (e.target as HTMLInputElement).blur();
               }
             }}
-            className="text-xs px-2 py-1 border border-[#E5E5EA] rounded focus:outline-none focus:border-[#999]"
+            className="text-xs px-2 py-1 border border-[#2A2A2A] rounded focus:outline-none focus:border-[#999]"
           />
         ) : (
           <span
@@ -405,18 +405,18 @@ function DeadlineRow({
         )}
       </div>
       {hasHistory && (
-        <ul className="mt-2 ml-4 pl-3 border-l border-[#EDEDEF] space-y-1.5">
+        <ul className="mt-2 ml-4 pl-3 border-l border-[#2A2A2A] space-y-1.5">
           {(history ?? []).slice().reverse().map((h, i) => (
             <li key={i} className="text-[11px]">
-              <div className="flex items-center gap-2 text-[#777]">
+              <div className="flex items-center gap-2 text-[#9CA3AF]">
                 <span className="tabular-nums line-through">{new Date(h.previousValue + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
-                <span className="text-[#BBB]">→</span>
-                <span className="tabular-nums font-medium text-[#1A1A1A]">{new Date(h.newValue + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
-                <span className="text-[10px] text-[#AAA]">
+                <span className="text-[#9CA3AF]">→</span>
+                <span className="tabular-nums font-medium text-[#E5E5EA]">{new Date(h.newValue + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
+                <span className="text-[10px] text-[#9CA3AF]">
                   · {new Date(h.changedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                 </span>
               </div>
-              <p className="text-[#555] mt-0.5 italic">{h.reason}</p>
+              <p className="text-[#C7C9CD] mt-0.5 italic">{h.reason}</p>
             </li>
           ))}
         </ul>

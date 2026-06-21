@@ -110,7 +110,7 @@ export function ScopePdfDocument({ data }: { data: ScopeFormData }) {
             </View>
             <View style={s.tableColType}>
               <Text style={[s.tableCellMuted, { textAlign: "right" }]}>
-                {d.type || "—"}
+                {d.type || "TBD"}
               </Text>
             </View>
           </View>
@@ -119,7 +119,7 @@ export function ScopePdfDocument({ data }: { data: ScopeFormData }) {
         {/* Footer */}
         <View style={s.footer}>
           <Text style={s.footerText}>
-            Confidential — for internal and client use only
+            Confidential - for internal and client use only
           </Text>
           <Text style={s.disclaimer}>{disclaimer}</Text>
         </View>
@@ -146,7 +146,7 @@ export function ScopePdfDocument({ data }: { data: ScopeFormData }) {
           {/* Footer */}
           <View style={s.footer}>
             <Text style={s.footerText}>
-              Confidential — for internal and client use only
+              Confidential - for internal and client use only
             </Text>
             <Text style={s.disclaimer}>{disclaimer}</Text>
           </View>
@@ -168,7 +168,7 @@ export function ScopePdfDocument({ data }: { data: ScopeFormData }) {
 
           <View style={s.footer}>
             <Text style={s.footerText}>
-              Confidential — for internal and client use only
+              Confidential - for internal and client use only
             </Text>
             <Text style={s.disclaimer}>{disclaimer}</Text>
           </View>

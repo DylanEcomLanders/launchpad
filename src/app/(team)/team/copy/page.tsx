@@ -296,10 +296,10 @@ export default function CopyEnginePage() {
       <div className="relative z-10 max-w-4xl mx-auto px-6 md:px-12 py-12 md:py-16">
         {/* Header */}
         <div className="mb-10">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">
             Copy Engine
           </h1>
-          <p className="text-[#7A7A7A] text-sm">
+          <p className="text-[#71757D] text-sm">
             Drop in the brief, add context, generate conversion copy
           </p>
         </div>
@@ -312,8 +312,8 @@ export default function CopyEnginePage() {
               onClick={() => setMode(m.value)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 mode === m.value
-                  ? "bg-[#1B1B1B] text-white"
-                  : "bg-[#F3F3F5] text-[#7A7A7A] hover:bg-[#EBEBEB]"
+                  ? "bg-[#222222] text-[#E5E5EA]"
+                  : "bg-[#222222] text-[#71757D] hover:bg-[#EBEBEB]"
               }`}
             >
               {m.label}
@@ -322,7 +322,7 @@ export default function CopyEnginePage() {
         </div>
 
         {/* ── Input area ── */}
-        <div className="bg-white border border-[#E5E5EA] rounded-lg p-6 mb-6 space-y-5">
+        <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-6 mb-6 space-y-5">
           {/* Client brief */}
           <div>
             <label className="block text-xs font-semibold text-[#3A3A3A] mb-1.5 uppercase tracking-wider">
@@ -333,7 +333,7 @@ export default function CopyEnginePage() {
               onChange={(e) => setBrief(e.target.value)}
               rows={6}
               placeholder="Paste the client brief here — product info, goals, target audience, tone, URLs, whatever you have..."
-              className="w-full px-4 py-3 text-sm border border-[#E5E5EA] rounded-md focus:outline-none focus:border-[#1B1B1B] transition-colors resize-none leading-relaxed"
+              className="w-full px-4 py-3 text-sm border border-[#2A2A2A] rounded-md focus:outline-none focus:border-[#1B1B1B] transition-colors resize-none leading-relaxed"
             />
           </div>
 
@@ -346,7 +346,7 @@ export default function CopyEnginePage() {
               {contextBlocks.map((block) => (
                 <div
                   key={block.id}
-                  className="border border-[#E5E5EA] rounded-md p-3 bg-[#F7F8FA]"
+                  className="border border-[#2A2A2A] rounded-md p-3 bg-[#0C0C0C]"
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <select
@@ -357,7 +357,7 @@ export default function CopyEnginePage() {
                           e.target.value as ContextBlockLabel
                         )
                       }
-                      className="px-2 py-1 text-xs font-medium border border-[#E5E5EA] rounded bg-white focus:outline-none focus:border-[#1B1B1B] transition-colors"
+                      className="px-2 py-1 text-xs font-medium border border-[#2A2A2A] rounded bg-[#181818] focus:outline-none focus:border-[#1B1B1B] transition-colors"
                     >
                       {contextBlockLabels.map((l) => (
                         <option key={l} value={l}>
@@ -367,7 +367,7 @@ export default function CopyEnginePage() {
                     </select>
                     <button
                       onClick={() => removeBlock(block.id)}
-                      className="ml-auto p-1 text-[#A0A0A0] hover:text-red-500 transition-colors"
+                      className="ml-auto p-1 text-[#71757D] hover:text-red-500 transition-colors"
                     >
                       <XMarkIcon className="size-4" />
                     </button>
@@ -387,7 +387,7 @@ export default function CopyEnginePage() {
                         ? "Paste competitor page content..."
                         : "Paste any additional context..."
                     }
-                    className="w-full px-3 py-2 text-sm border border-[#E5E5EA] rounded bg-white focus:outline-none focus:border-[#1B1B1B] transition-colors resize-none"
+                    className="w-full px-3 py-2 text-sm border border-[#2A2A2A] rounded bg-[#181818] focus:outline-none focus:border-[#1B1B1B] transition-colors resize-none"
                   />
                 </div>
               ))}
@@ -396,11 +396,11 @@ export default function CopyEnginePage() {
 
           <button
             onClick={addContextBlock}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#7A7A7A] border border-dashed border-[#D4D4D4] rounded-md hover:border-[#1B1B1B] hover:text-[#1B1B1B] transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#71757D] border border-dashed border-[#D4D4D4] rounded-md hover:border-[#1B1B1B] hover:text-[#E5E5EA] transition-all"
           >
             <PlusIcon className="size-3.5" />
             Add Context
-            <span className="text-[#A0A0A0]">(ads, inspo, competitor pages)</span>
+            <span className="text-[#71757D]">(ads, inspo, competitor pages)</span>
           </button>
 
           {/* Brand profile */}
@@ -408,14 +408,14 @@ export default function CopyEnginePage() {
             <div>
               <label className="block text-xs font-semibold text-[#3A3A3A] mb-1.5 uppercase tracking-wider">
                 Brand Profile{" "}
-                <span className="text-[#A0A0A0] font-normal normal-case tracking-normal">
+                <span className="text-[#71757D] font-normal normal-case tracking-normal">
                   (optional — adds VOC data as context)
                 </span>
               </label>
               <select
                 value={selectedProfileId}
                 onChange={(e) => setSelectedProfileId(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-[#E5E5EA] rounded-md bg-white focus:outline-none focus:border-[#1B1B1B] transition-colors"
+                className="w-full px-3 py-2 text-sm border border-[#2A2A2A] rounded-md bg-[#181818] focus:outline-none focus:border-[#1B1B1B] transition-colors"
               >
                 <option value="">None</option>
                 {profiles.map((p) => (
@@ -430,7 +430,7 @@ export default function CopyEnginePage() {
 
         {/* ── Page mode: section picker ── */}
         {mode === "Page" && (
-          <div className="bg-white border border-[#E5E5EA] rounded-lg p-6 mb-6">
+          <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-6 mb-6">
             <label className="block text-xs font-semibold text-[#3A3A3A] mb-4 uppercase tracking-wider">
               Page Sections
             </label>
@@ -443,8 +443,8 @@ export default function CopyEnginePage() {
                   onClick={() => setPageType(pt)}
                   className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
                     pageType === pt
-                      ? "bg-[#1B1B1B] text-white"
-                      : "bg-[#F3F3F5] text-[#7A7A7A] hover:bg-[#EBEBEB]"
+                      ? "bg-[#222222] text-[#E5E5EA]"
+                      : "bg-[#222222] text-[#71757D] hover:bg-[#EBEBEB]"
                   }`}
                 >
                   {pt}
@@ -454,7 +454,7 @@ export default function CopyEnginePage() {
 
             {/* Section count */}
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs text-[#7A7A7A]">
+              <span className="text-xs text-[#71757D]">
                 {selectedSections.size}/{checklistItems.length} sections selected
               </span>
               <div className="flex gap-2">
@@ -464,14 +464,14 @@ export default function CopyEnginePage() {
                       new Set(checklistItems.map((i) => i.sectionName))
                     )
                   }
-                  className="text-[10px] font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+                  className="text-[10px] font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors"
                 >
                   Select All
                 </button>
                 <span className="text-[#E5E5EA]">|</span>
                 <button
                   onClick={() => setSelectedSections(new Set())}
-                  className="text-[10px] font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+                  className="text-[10px] font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors"
                 >
                   Clear
                 </button>
@@ -488,19 +488,19 @@ export default function CopyEnginePage() {
                     onClick={() => toggleSection(item.sectionName)}
                     className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-left transition-all ${
                       isSelected
-                        ? "bg-[#1B1B1B] text-white"
-                        : "bg-[#F3F3F5] text-[#7A7A7A] hover:bg-[#EBEBEB]"
+                        ? "bg-[#222222] text-[#E5E5EA]"
+                        : "bg-[#222222] text-[#71757D] hover:bg-[#EBEBEB]"
                     }`}
                   >
                     <div
                       className={`size-3.5 rounded border-2 shrink-0 flex items-center justify-center ${
                         isSelected
-                          ? "border-white bg-white"
+                          ? "border-white bg-[#181818]"
                           : "border-[#D4D4D4]"
                       }`}
                     >
                       {isSelected && (
-                        <CheckCircleIcon className="size-3 text-[#1B1B1B]" />
+                        <CheckCircleIcon className="size-3 text-[#E5E5EA]" />
                       )}
                     </div>
                     <div className="min-w-0">
@@ -512,10 +512,10 @@ export default function CopyEnginePage() {
                       className={`ml-auto text-[9px] font-semibold uppercase tracking-wider shrink-0 px-1.5 py-0.5 rounded ${
                         isSelected
                           ? item.priority === "required"
-                            ? "bg-white/20 text-white"
+                            ? "bg-[#181818]/20 text-white"
                             : item.priority === "recommended"
-                            ? "bg-white/10 text-white/70"
-                            : "bg-white/5 text-white/50"
+                            ? "bg-[#181818]/10 text-white/70"
+                            : "bg-[#181818]/5 text-white/50"
                           : item.priority === "required"
                           ? "bg-[#1B1B1B]/10 text-[#3A3A3A]"
                           : item.priority === "recommended"
@@ -544,8 +544,8 @@ export default function CopyEnginePage() {
             status === "generating"
               ? "bg-[#3A3A3A] text-white cursor-wait"
               : !canGenerate
-              ? "bg-[#E5E5EA] text-[#A0A0A0] cursor-not-allowed"
-              : "bg-[#1B1B1B] text-white hover:bg-[#2D2D2D]"
+              ? "bg-[#E5E5EA] text-[#71757D] cursor-not-allowed"
+              : "bg-[#222222] text-[#E5E5EA] hover:bg-[#F3F4F6]"
           }`}
         >
           {status === "generating" ? (
@@ -568,15 +568,15 @@ export default function CopyEnginePage() {
         <div ref={outputRef}>
           {/* Streaming indicator */}
           {status === "generating" && (
-            <div className="bg-white border border-[#E5E5EA] rounded-lg p-6 mb-6">
+            <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-6 mb-6">
               <div className="flex items-center gap-3 mb-4">
-                <ArrowPathIcon className="size-4 text-[#7A7A7A] animate-spin" />
-                <span className="text-sm text-[#7A7A7A]">
+                <ArrowPathIcon className="size-4 text-[#71757D] animate-spin" />
+                <span className="text-sm text-[#71757D]">
                   Writing {mode === "Page" ? `${pageType}` : mode} copy...
                 </span>
               </div>
-              <div className="bg-[#F3F3F5] rounded-md p-4 max-h-72 overflow-y-auto">
-                <pre className="text-xs text-[#7A7A7A] whitespace-pre-wrap font-mono leading-relaxed">
+              <div className="bg-[#222222] rounded-md p-4 max-h-72 overflow-y-auto">
+                <pre className="text-xs text-[#71757D] whitespace-pre-wrap font-mono leading-relaxed">
                   {rawStream || "Waiting for response..."}
                 </pre>
               </div>
@@ -607,7 +607,7 @@ export default function CopyEnginePage() {
                   className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
                     copiedId === "__all__"
                       ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
-                      : "bg-[#1B1B1B] text-white hover:bg-[#2D2D2D]"
+                      : "bg-[#222222] text-[#E5E5EA] hover:bg-[#F3F4F6]"
                   }`}
                 >
                   {copiedId === "__all__" ? (
@@ -628,11 +628,11 @@ export default function CopyEnginePage() {
                 {sections.map((section) => (
                   <div
                     key={section.id}
-                    className="bg-white border border-[#E5E5EA] rounded-lg overflow-hidden"
+                    className="bg-[#181818] border border-[#2A2A2A] rounded-lg overflow-hidden"
                   >
                     {/* Section header — only show for Page mode (multi-section) */}
                     {mode === "Page" && (
-                      <div className="flex items-center justify-between px-5 py-3 border-b border-[#EDEDEF]">
+                      <div className="flex items-center justify-between px-5 py-3 border-b border-[#2A2A2A]">
                         <h3 className="text-xs font-semibold text-[#3A3A3A] uppercase tracking-wider">
                           {section.label}
                         </h3>
@@ -643,7 +643,7 @@ export default function CopyEnginePage() {
                           className={`flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded transition-all ${
                             copiedId === section.id
                               ? "bg-emerald-50 text-emerald-700"
-                              : "text-[#A0A0A0] hover:text-[#3A3A3A] hover:bg-[#F3F3F5]"
+                              : "text-[#71757D] hover:text-[#3A3A3A] hover:bg-[#222222]"
                           }`}
                         >
                           {copiedId === section.id ? (

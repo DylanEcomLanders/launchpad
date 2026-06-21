@@ -102,17 +102,17 @@ export default function TicketsPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight">{showTrash ? "Trash" : "Tickets"}</h1>
+            <h1 className="text-[28px] leading-tight font-bold text-[#E5E5EA]">{showTrash ? "Trash" : "Tickets"}</h1>
             <button
               onClick={() => { setShowTrash(!showTrash); setConfirmDeleteId(null); }}
               className={`text-[10px] font-medium px-2.5 py-1 rounded-full transition-colors ${
-                showTrash ? "bg-[#1B1B1B] text-white" : "bg-[#F3F3F5] text-[#777] hover:bg-[#E5E5EA]"
+                showTrash ? "bg-white text-[#0C0C0C]" : "bg-[#222222] text-[#9CA3AF] hover:bg-[#2A2A2A]"
               }`}
             >
               {showTrash ? `← Back` : `Trash${trashedTickets.length > 0 ? ` (${trashedTickets.length})` : ""}`}
             </button>
           </div>
-          <p className="text-sm text-[#7A7A7A] mt-0.5">
+          <p className="text-sm text-[#71757D] mt-0.5">
             {showTrash
               ? `${trashedTickets.length} deleted ticket${trashedTickets.length !== 1 ? "s" : ""}`
               : `${openCount > 0 ? `${openCount} open` : "No open tickets"}${inProgressCount > 0 ? ` · ${inProgressCount} in progress` : ""} · ${activeTickets.length} total`
@@ -121,7 +121,7 @@ export default function TicketsPage() {
         </div>
         <button
           onClick={() => setShowMappings(!showMappings)}
-          className="text-[11px] font-medium text-[#777] border border-[#E5E5EA] px-3 py-1.5 rounded-lg hover:bg-[#F5F5F5]"
+          className="text-[11px] font-medium text-[#9CA3AF] border border-[#2A2A2A] px-3 py-1.5 rounded-lg hover:bg-[#222222]"
         >
           {showMappings ? "Hide Mappings" : "Channel Mappings"}
         </button>
@@ -129,21 +129,21 @@ export default function TicketsPage() {
 
       {/* Channel Mappings */}
       {showMappings && (
-        <div className="border border-[#E5E5EA] rounded-xl bg-white p-5 mb-6">
-          <h3 className="text-xs font-semibold text-[#1A1A1A] mb-1">Channel → Client Mappings</h3>
-          <p className="text-[10px] text-[#AAA] mb-4">Map Slack channel IDs to client names. Tickets logged from a channel auto-assign to the client.</p>
+        <div className="border border-[#2A2A2A] rounded-xl bg-[#181818] p-5 mb-6">
+          <h3 className="text-xs font-semibold text-[#E5E5EA] mb-1">Channel → Client Mappings</h3>
+          <p className="text-[10px] text-[#9CA3AF] mb-4">Map Slack channel IDs to client names. Tickets logged from a channel auto-assign to the client.</p>
 
           {mappings.length > 0 && (
             <div className="space-y-1.5 mb-4">
               {mappings.map((m) => (
-                <div key={m.channel_id} className="flex items-center justify-between py-1.5 px-3 bg-[#FAFAFA] rounded-lg">
+                <div key={m.channel_id} className="flex items-center justify-between py-1.5 px-3 bg-[#0C0C0C] rounded-lg">
                   <div className="flex items-center gap-3">
-                    <code className="text-[10px] text-[#999] font-mono">{m.channel_id}</code>
-                    <span className="text-xs font-medium text-[#1A1A1A]">{m.client_name}</span>
+                    <code className="text-[10px] text-[#71757D] font-mono">{m.channel_id}</code>
+                    <span className="text-xs font-medium text-[#E5E5EA]">{m.client_name}</span>
                   </div>
                   <button
                     onClick={async () => { await deleteChannelMapping(m.channel_id); load(); }}
-                    className="text-[10px] text-[#CCC] hover:text-red-400"
+                    className="text-[10px] text-[#C7C9CD] hover:text-red-400"
                   >
                     Remove
                   </button>
@@ -164,7 +164,7 @@ export default function TicketsPage() {
             <button
               onClick={handleAddMapping}
               disabled={!newChannelId.trim() || !newClientName.trim()}
-              className="px-3 py-2 bg-[#1B1B1B] text-white text-xs font-medium rounded-lg disabled:opacity-30"
+              className="px-3 py-2 bg-white text-[#0C0C0C] text-xs font-medium rounded-lg disabled:opacity-30"
             >
               Add
             </button>
@@ -180,7 +180,7 @@ export default function TicketsPage() {
               key={s.key}
               onClick={() => setFilterStatus(s.key)}
               className={`px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full transition-colors ${
-                filterStatus === s.key ? "bg-[#1B1B1B] text-white" : "text-[#AAA] hover:text-[#1A1A1A]"
+                filterStatus === s.key ? "bg-white text-[#0C0C0C]" : "text-[#9CA3AF] hover:text-[#E5E5EA]"
               }`}
             >
               {s.label}
@@ -191,7 +191,7 @@ export default function TicketsPage() {
           <select
             value={filterClient}
             onChange={(e) => setFilterClient(e.target.value)}
-            className="text-[10px] text-[#777] border border-[#E5E5EA] rounded px-2 py-1"
+            className="text-[10px] text-[#9CA3AF] border border-[#2A2A2A] rounded px-2 py-1"
           >
             <option value="all">All clients</option>
             {clients.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -202,10 +202,10 @@ export default function TicketsPage() {
       {/* Tickets list */}
       {loading ? (
         <div className="flex justify-center py-12">
-          <div className="animate-spin size-6 border-2 border-[#E5E5EA] border-t-[#1A1A1A] rounded-full" />
+          <div className="animate-spin size-6 border-2 border-[#2A2A2A] border-t-[#1A1A1A] rounded-full" />
         </div>
       ) : filtered.length > 0 ? (
-        <div className="border border-[#E5E5EA] rounded-xl overflow-hidden">
+        <div className="border border-[#2A2A2A] rounded-xl overflow-hidden">
           {filtered.map((ticket) => {
             const si = TICKET_STATUSES.find((s) => s.key === ticket.status) || TICKET_STATUSES[0];
             const age = ticketAge(ticket.created_at);
@@ -214,7 +214,7 @@ export default function TicketsPage() {
             return (
               <div
                 key={ticket.id}
-                className={`flex items-start gap-3 px-4 py-3 border-b border-[#EDEDEF] last:border-0 hover:bg-[#FAFAFA] cursor-pointer ${isOld ? "bg-red-50/30" : ""}`}
+                className={`flex items-start gap-3 px-4 py-3 border-b border-[#2A2A2A] last:border-0 hover:bg-[#0C0C0C] cursor-pointer ${isOld ? "bg-red-900/20" : ""}`}
                 onClick={() => setSelectedTicket(ticket)}
               >
                 {/* Priority dot */}
@@ -223,7 +223,7 @@ export default function TicketsPage() {
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-xs font-semibold text-[#1A1A1A]">{ticket.title}</p>
+                    <p className="text-xs font-semibold text-[#E5E5EA]">{ticket.title}</p>
                     <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full" style={{ backgroundColor: si.color + "15", color: si.color }}>
                       {si.label}
                     </span>
@@ -236,11 +236,11 @@ export default function TicketsPage() {
                       ) : null;
                     })()}
                   </div>
-                  <p className="text-[10px] text-[#999] mt-0.5 line-clamp-1">{ticket.description}</p>
+                  <p className="text-[10px] text-[#71757D] mt-0.5 line-clamp-1">{ticket.description}</p>
                   <div className="flex items-center gap-3 mt-1">
-                    <span className="text-[9px] font-medium text-[#777]">{ticket.client_name}</span>
-                    <span className="text-[9px] text-[#BBB]">{ticket.submitted_by}</span>
-                    <span className={`text-[9px] ${isOld ? "text-red-500 font-semibold" : "text-[#CCC]"}`}>{age}</span>
+                    <span className="text-[9px] font-medium text-[#9CA3AF]">{ticket.client_name}</span>
+                    <span className="text-[9px] text-[#9CA3AF]">{ticket.submitted_by}</span>
+                    <span className={`text-[9px] ${isOld ? "text-red-500 font-semibold" : "text-[#C7C9CD]"}`}>{age}</span>
                     {ticket.attachment_url && (
                       <a href={ticket.attachment_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-[9px] text-blue-500 hover:underline">
                         Attachment
@@ -257,7 +257,7 @@ export default function TicketsPage() {
                     await updateTicketStatus(ticket.id, e.target.value as TicketStatus);
                     load();
                   }}
-                  className="text-[10px] text-[#777] border border-[#E5E5EA] rounded px-1.5 py-1 shrink-0 cursor-pointer"
+                  className="text-[10px] text-[#9CA3AF] border border-[#2A2A2A] rounded px-1.5 py-1 shrink-0 cursor-pointer"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {TICKET_STATUSES.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
@@ -274,7 +274,7 @@ export default function TicketsPage() {
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDelete(ticket); }}
                     className={`text-[10px] font-medium px-2 py-1 shrink-0 transition-colors ${
-                      confirmDeleteId === ticket.id ? "text-red-500" : "text-[#CCC] hover:text-red-400"
+                      confirmDeleteId === ticket.id ? "text-red-500" : "text-[#C7C9CD] hover:text-red-400"
                     }`}
                   >
                     {confirmDeleteId === ticket.id ? "Confirm" : "Delete"}
@@ -285,9 +285,9 @@ export default function TicketsPage() {
           })}
         </div>
       ) : (
-        <div className="border border-dashed border-[#E5E5EA] rounded-xl p-12 text-center">
-          <p className="text-sm text-[#AAA]">No tickets</p>
-          <p className="text-xs text-[#CCC] mt-1">Tickets logged via /ticket in Slack will appear here</p>
+        <div className="border border-dashed border-[#2A2A2A] rounded-xl p-12 text-center">
+          <p className="text-sm text-[#9CA3AF]">No tickets</p>
+          <p className="text-xs text-[#C7C9CD] mt-1">Tickets logged via /ticket in Slack will appear here</p>
         </div>
       )}
 
@@ -348,19 +348,19 @@ function TicketDetailModal({ ticket, team, onClose, onStatusChange, onSaveNotes,
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-5 py-3 border-b border-[#F0F0F0]">
+      <div className="bg-[#181818] rounded-xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-3 border-b border-[#2A2A2A]">
           <div className="flex items-center gap-2">
             <div className="size-2.5 rounded-full" style={{ backgroundColor: priorityColors[ticket.priority] }} />
             <h3 className="text-sm font-semibold">{ticket.title}</h3>
           </div>
-          <button onClick={onClose} className="text-[#AAA] hover:text-[#1A1A1A]"><XMarkIcon className="size-5" /></button>
+          <button onClick={onClose} className="text-[#9CA3AF] hover:text-[#E5E5EA]"><XMarkIcon className="size-5" /></button>
         </div>
 
         <div className="p-5 space-y-4">
           {/* Meta */}
-          <div className="flex items-center gap-4 text-[10px] text-[#999]">
-            <span className="font-medium text-[#777]">{ticket.client_name}</span>
+          <div className="flex items-center gap-4 text-[10px] text-[#71757D]">
+            <span className="font-medium text-[#9CA3AF]">{ticket.client_name}</span>
             <span>by {ticket.submitted_by}</span>
             <span>{ticketAge(ticket.created_at)} ago</span>
             <span className="font-semibold uppercase" style={{ color: si.color }}>{si.label}</span>
@@ -368,14 +368,14 @@ function TicketDetailModal({ ticket, team, onClose, onStatusChange, onSaveNotes,
 
           {/* Description */}
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Description</p>
-            <p className="text-xs text-[#555] leading-relaxed whitespace-pre-wrap">{ticket.description}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-1">Description</p>
+            <p className="text-xs text-[#C7C9CD] leading-relaxed whitespace-pre-wrap">{ticket.description}</p>
           </div>
 
           {/* Attachment */}
           {ticket.attachment_url && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Attachment</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-1">Attachment</p>
               <a href={ticket.attachment_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline break-all">
                 {ticket.attachment_url}
               </a>
@@ -384,7 +384,7 @@ function TicketDetailModal({ ticket, team, onClose, onStatusChange, onSaveNotes,
 
           {/* Status */}
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Status</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-1">Status</p>
             <div className="flex gap-1.5">
               {TICKET_STATUSES.map((s) => (
                 <button
@@ -393,7 +393,7 @@ function TicketDetailModal({ ticket, team, onClose, onStatusChange, onSaveNotes,
                   className={`px-3 py-1.5 text-[10px] font-semibold rounded-lg border transition-colors ${
                     ticket.status === s.key
                       ? "text-white border-transparent"
-                      : "text-[#777] border-[#E5E5EA] hover:border-[#999]"
+                      : "text-[#9CA3AF] border-[#2A2A2A] hover:border-[#999]"
                   }`}
                   style={ticket.status === s.key ? { backgroundColor: s.color } : {}}
                 >
@@ -405,7 +405,7 @@ function TicketDetailModal({ ticket, team, onClose, onStatusChange, onSaveNotes,
 
           {/* Type */}
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Type</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-1">Type</p>
             <div className="flex gap-1.5">
               {TICKET_TYPES.filter((t) => t.key !== "unassigned").map((t) => (
                 <button
@@ -414,7 +414,7 @@ function TicketDetailModal({ ticket, team, onClose, onStatusChange, onSaveNotes,
                   className={`px-3 py-1.5 text-[10px] font-semibold rounded-lg border transition-colors ${
                     ticket.ticket_type === t.key
                       ? "text-white border-transparent"
-                      : "text-[#777] border-[#E5E5EA] hover:border-[#999]"
+                      : "text-[#9CA3AF] border-[#2A2A2A] hover:border-[#999]"
                   }`}
                   style={ticket.ticket_type === t.key ? { backgroundColor: t.color } : {}}
                 >
@@ -426,11 +426,11 @@ function TicketDetailModal({ ticket, team, onClose, onStatusChange, onSaveNotes,
 
           {/* Assignee */}
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Assignee</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-1">Assignee</p>
             <select
               value={ticket.assignee_id || ""}
               onChange={(e) => onSaveTicket({ ...ticket, assignee_id: e.target.value || undefined })}
-              className="text-xs text-[#777] border border-[#E5E5EA] rounded-lg px-2.5 py-1.5 w-full"
+              className="text-xs text-[#9CA3AF] border border-[#2A2A2A] rounded-lg px-2.5 py-1.5 w-full"
             >
               <option value="">Unassigned</option>
               {team.map((m) => (
@@ -441,7 +441,7 @@ function TicketDetailModal({ ticket, team, onClose, onStatusChange, onSaveNotes,
 
           {/* Internal notes */}
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA] mb-1">Internal Notes</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-1">Internal Notes</p>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -451,7 +451,7 @@ function TicketDetailModal({ ticket, team, onClose, onStatusChange, onSaveNotes,
             {notes !== ticket.notes && (
               <button
                 onClick={() => onSaveNotes(notes)}
-                className="mt-2 px-3 py-1.5 bg-[#1B1B1B] text-white text-[10px] font-medium rounded-lg"
+                className="mt-2 px-3 py-1.5 bg-white text-[#0C0C0C] text-[10px] font-medium rounded-lg"
               >
                 Save Notes
               </button>

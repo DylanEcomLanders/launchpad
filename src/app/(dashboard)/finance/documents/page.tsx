@@ -148,10 +148,10 @@ export default function DocumentsPage() {
         ref={dropRef}
         onDragOver={(e) => e.preventDefault()}
         onDrop={onDrop}
-        className="bg-white border-2 border-dashed border-[#E5E5EA] rounded-xl p-8 text-center mb-6 hover:border-[#1B1B1B] transition-colors"
+        className="bg-[#181818] border-2 border-dashed border-[#2A2A2A] rounded-xl p-8 text-center mb-6 hover:border-white transition-colors"
       >
-        <DocumentArrowUpIcon className="size-8 text-[#A0A0A0] mx-auto mb-2" />
-        <p className="text-sm text-[#1B1B1B] font-medium mb-1">
+        <DocumentArrowUpIcon className="size-8 text-[#71757D] mx-auto mb-2" />
+        <p className="text-sm text-[#E5E5EA] font-medium mb-1">
           Drop a file here, or
         </p>
         <label className="inline-block cursor-pointer">
@@ -161,13 +161,13 @@ export default function DocumentsPage() {
             onChange={onFileInput}
             className="hidden"
           />
-          <span className="text-sm text-[#1B1B1B] underline">choose a file</span>
+          <span className="text-sm text-[#E5E5EA] underline">choose a file</span>
         </label>
-        <p className="text-[11px] text-[#A0A0A0] mt-2">
+        <p className="text-[11px] text-[#71757D] mt-2">
           PDF, image, CSV or Excel · 25MB max · stored privately
         </p>
         {uploading && (
-          <p className="text-xs text-[#7A7A7A] mt-2">Uploading...</p>
+          <p className="text-xs text-[#71757D] mt-2">Uploading...</p>
         )}
         {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
       </div>
@@ -175,7 +175,7 @@ export default function DocumentsPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative w-64">
-            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[#7A7A7A] z-10" />
+            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[#71757D] z-10" />
             <input
               placeholder="Search name, tag, or note..."
               value={query}
@@ -196,37 +196,37 @@ export default function DocumentsPage() {
             ))}
           </select>
         </div>
-        <p className="text-xs text-[#7A7A7A]">
+        <p className="text-xs text-[#71757D]">
           {filtered.length} of {docs.length} document{docs.length === 1 ? "" : "s"}
         </p>
       </div>
 
       {!hydrated ? (
-        <div className="h-48 bg-[#F7F8FA] rounded-xl animate-pulse" />
+        <div className="h-48 bg-[#0C0C0C] rounded-xl animate-pulse" />
       ) : filtered.length === 0 ? (
-        <div className="bg-white border border-dashed border-[#E5E5EA] rounded-xl p-12 text-center">
-          <p className="text-sm text-[#7A7A7A]">
+        <div className="bg-[#181818] border border-dashed border-[#2A2A2A] rounded-xl p-12 text-center">
+          <p className="text-sm text-[#71757D]">
             {docs.length === 0
-              ? "No documents yet — drop a file above to get started."
+              ? "No documents yet - drop a file above to get started."
               : "No documents match these filters."}
           </p>
         </div>
       ) : (
-        <div className="bg-white border border-[#E5E5EA] rounded-xl divide-y divide-[#E5E5EA] shadow-[var(--shadow-soft)]">
+        <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl divide-y divide-[#2A2A2A] shadow-[var(--shadow-soft)]">
           {filtered.map((doc) => (
             <div
               key={doc.id}
-              className="px-4 py-3 hover:bg-[#F7F8FA] transition-colors flex items-center gap-3"
+              className="px-4 py-3 hover:bg-[#0C0C0C] transition-colors flex items-center gap-3"
             >
-              <DocumentIcon className="size-5 text-[#7A7A7A] shrink-0" />
+              <DocumentIcon className="size-5 text-[#71757D] shrink-0" />
               <div className="flex-1 min-w-0">
                 <button
                   onClick={() => openDoc(doc)}
-                  className="text-sm font-medium text-[#1B1B1B] hover:underline truncate text-left block max-w-full"
+                  className="text-sm font-medium text-[#E5E5EA] hover:underline truncate text-left block max-w-full"
                 >
                   {doc.name}
                 </button>
-                <div className="flex flex-wrap items-center gap-2 text-[11px] text-[#7A7A7A] mt-0.5">
+                <div className="flex flex-wrap items-center gap-2 text-[11px] text-[#71757D] mt-0.5">
                   <span>{DOCUMENT_CATEGORY_LABELS[doc.category]}</span>
                   {doc.document_date && (
                     <>
@@ -247,7 +247,7 @@ export default function DocumentsPage() {
               </div>
               <button
                 onClick={() => handleDelete(doc)}
-                className="p-1.5 text-[#A0A0A0] hover:text-red-500 transition-colors"
+                className="p-1.5 text-[#71757D] hover:text-red-500 transition-colors"
               >
                 <TrashIcon className="size-4" />
               </button>
@@ -258,19 +258,19 @@ export default function DocumentsPage() {
 
       {showAdd && pendingFile && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+          <div className="bg-[#181818] rounded-xl shadow-xl w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-[#1B1B1B]">
+              <h3 className="text-base font-semibold text-[#E5E5EA]">
                 Tag this document
               </h3>
               <button
                 onClick={resetAdd}
-                className="p-1 text-[#7A7A7A] hover:text-[#1B1B1B]"
+                className="p-1 text-[#71757D] hover:text-[#E5E5EA]"
               >
                 <XMarkIcon className="size-5" />
               </button>
             </div>
-            <p className="text-sm text-[#7A7A7A] mb-4 truncate">{pendingFile.name}</p>
+            <p className="text-sm text-[#71757D] mb-4 truncate">{pendingFile.name}</p>
 
             <div className="space-y-4">
               <div>
@@ -320,13 +320,13 @@ export default function DocumentsPage() {
             <div className="flex justify-end gap-2 mt-6">
               <button
                 onClick={resetAdd}
-                className="px-3 py-2 text-sm text-[#7A7A7A] hover:text-[#1B1B1B]"
+                className="px-3 py-2 text-sm text-[#71757D] hover:text-[#E5E5EA]"
               >
                 Cancel
               </button>
               <button
                 onClick={saveDocument}
-                className="px-4 py-2 bg-[#1B1B1B] text-white text-sm font-medium rounded-lg hover:opacity-90"
+                className="px-4 py-2 bg-white text-[#0C0C0C] text-sm font-medium rounded-lg hover:opacity-90"
               >
                 Save document
               </button>

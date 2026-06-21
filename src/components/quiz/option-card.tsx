@@ -17,22 +17,22 @@ export function OptionCard({ label, selected, onClick, disabled }: OptionCardPro
       disabled={disabled}
       className={`group w-full flex items-center gap-3 px-4 py-3.5 rounded-lg border text-left transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
         selected
-          ? "border-[#1B1B1B] bg-[#FAFAFA]"
-          : "border-[#E5E5E5] bg-white hover:border-[#1B1B1B]"
+          ? "border-white bg-[#0C0C0C]"
+          : "border-[#E5E5E5] bg-[#181818] hover:border-white"
       }`}
     >
       <span
         className={`shrink-0 size-5 rounded-full border-2 flex items-center justify-center transition-colors ${
-          selected ? "border-[#1B1B1B] bg-[#D1FF4C]" : "border-[#E5E5E5] group-hover:border-[#999]"
+          selected ? "border-white bg-[#D1FF4C]" : "border-[#E5E5E5] group-hover:border-[#999]"
         }`}
       >
         {selected && (
-          <svg className="size-3 text-[#1B1B1B]" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+          <svg className="size-3 text-[#E5E5EA]" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
           </svg>
         )}
       </span>
-      <span className="text-sm font-medium text-[#1B1B1B]">{label}</span>
+      <span className="text-sm font-medium text-[#E5E5EA]">{label}</span>
     </button>
   );
 }

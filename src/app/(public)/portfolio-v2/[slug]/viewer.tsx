@@ -23,7 +23,7 @@ export function PortfolioViewer({
               onClick={() => setMode("desktop")}
               className={`px-5 py-1.5 text-xs font-semibold rounded-full transition-colors ${
                 mode === "desktop"
-                  ? "bg-white text-[#0A0A0B]"
+                  ? "bg-white text-[#080808]"
                   : "text-white/60 hover:text-white"
               }`}
             >
@@ -33,7 +33,7 @@ export function PortfolioViewer({
               onClick={() => setMode("mobile")}
               className={`px-5 py-1.5 text-xs font-semibold rounded-full transition-colors ${
                 mode === "mobile"
-                  ? "bg-white text-[#0A0A0B]"
+                  ? "bg-white text-[#080808]"
                   : "text-white/60 hover:text-white"
               }`}
             >

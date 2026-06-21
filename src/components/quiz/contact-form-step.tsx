@@ -56,13 +56,13 @@ export function ContactFormStep({ step, total, loading, error, onSubmit, onBack 
       <QuizProgressBar current={step} total={total} />
 
       <h1
-        className="mt-8 text-2xl md:text-[2rem] font-bold text-[#1B1B1B] leading-[1.15] tracking-tight text-center"
+        className="mt-8 text-2xl md:text-[2rem] font-bold text-[#E5E5EA] leading-[1.15] text-center"
         style={{ fontFamily: "var(--font-heading)" }}
       >
         Where should we send your results?
       </h1>
       <p
-        className="mt-3 text-sm text-[#666] text-center"
+        className="mt-3 text-sm text-[#9CA3AF] text-center"
         style={{ fontFamily: "var(--font-body)" }}
       >
         We&apos;ll have your personalised page ready in seconds.
@@ -70,49 +70,49 @@ export function ContactFormStep({ step, total, loading, error, onSubmit, onBack 
 
       <div className="mt-8 space-y-5" style={{ fontFamily: "var(--font-body)" }}>
         <div>
-          <label className="block text-sm font-medium text-[#1B1B1B] mb-2">First name</label>
+          <label className="block text-sm font-medium text-[#E5E5EA] mb-2">First name</label>
           <input
             type="text"
             autoFocus
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
             placeholder="Enter your first name"
-            className="w-full px-4 py-3 bg-white border border-[#E5E5E5] rounded-lg text-sm text-[#1B1B1B] outline-none placeholder:text-[#CCC] focus:border-[#1B1B1B] transition-colors"
+            className="w-full px-4 py-3 bg-[#181818] border border-[#E5E5E5] rounded-lg text-sm text-[#E5E5EA] outline-none placeholder:text-[#C7C9CD] focus:border-white transition-colors"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#1B1B1B] mb-2">Email</label>
+          <label className="block text-sm font-medium text-[#E5E5EA] mb-2">Email</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email"
-            className="w-full px-4 py-3 bg-white border border-[#E5E5E5] rounded-lg text-sm text-[#1B1B1B] outline-none placeholder:text-[#CCC] focus:border-[#1B1B1B] transition-colors"
+            className="w-full px-4 py-3 bg-[#181818] border border-[#E5E5E5] rounded-lg text-sm text-[#E5E5EA] outline-none placeholder:text-[#C7C9CD] focus:border-white transition-colors"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#1B1B1B] mb-2">Store URL</label>
+          <label className="block text-sm font-medium text-[#E5E5EA] mb-2">Store URL</label>
           <input
             type="text"
             value={storeUrl}
             onChange={(e) => setStoreUrl(e.target.value)}
             placeholder="yourstore.com"
-            className="w-full px-4 py-3 bg-white border border-[#E5E5E5] rounded-lg text-sm text-[#1B1B1B] outline-none placeholder:text-[#CCC] focus:border-[#1B1B1B] transition-colors"
+            className="w-full px-4 py-3 bg-[#181818] border border-[#E5E5E5] rounded-lg text-sm text-[#E5E5EA] outline-none placeholder:text-[#C7C9CD] focus:border-white transition-colors"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#1B1B1B] mb-2">
-            WhatsApp <span className="text-[#999] font-normal">(optional)</span>
+          <label className="block text-sm font-medium text-[#E5E5EA] mb-2">
+            WhatsApp <span className="text-[#71757D] font-normal">(optional)</span>
           </label>
           <input
             type="tel"
             value={whatsapp}
             onChange={(e) => setWhatsapp(e.target.value)}
             placeholder="+44 7000 000000"
-            className="w-full px-4 py-3 bg-white border border-[#E5E5E5] rounded-lg text-sm text-[#1B1B1B] outline-none placeholder:text-[#CCC] focus:border-[#1B1B1B] transition-colors"
+            className="w-full px-4 py-3 bg-[#181818] border border-[#E5E5E5] rounded-lg text-sm text-[#E5E5EA] outline-none placeholder:text-[#C7C9CD] focus:border-white transition-colors"
           />
         </div>
 
@@ -124,7 +124,7 @@ export function ContactFormStep({ step, total, loading, error, onSubmit, onBack 
           type="button"
           onClick={handleClick}
           disabled={!valid || loading}
-          className="w-full py-3.5 bg-[#1B1B1B] text-white text-sm font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-3.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {loading ? "Building your results…" : (
             <>
@@ -142,7 +142,7 @@ export function ContactFormStep({ step, total, loading, error, onSubmit, onBack 
           type="button"
           onClick={onBack}
           disabled={loading}
-          className="text-xs font-medium text-[#999] hover:text-[#1B1B1B] transition-colors disabled:opacity-50"
+          className="text-xs font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors disabled:opacity-50"
         >
           ← Back
         </button>

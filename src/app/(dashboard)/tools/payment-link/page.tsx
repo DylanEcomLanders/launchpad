@@ -81,10 +81,10 @@ export default function PaymentLinkPage() {
       <DecorativeBlocks />
       <div className="relative z-10 max-w-lg mx-auto px-6 md:px-12 py-16 md:py-24">
         <div className="mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
+          <h1 className="text-[28px] font-bold mb-2">
             Payment Link
           </h1>
-          <p className="text-[#7A7A7A]">
+          <p className="text-[#71757D]">
             Generate a checkout link to send to a client
           </p>
         </div>
@@ -95,7 +95,7 @@ export default function PaymentLinkPage() {
             <label className={labelClass}>Quick Preset</label>
             <button
               onClick={applyConversionEnginePreset}
-              className="w-full flex items-center gap-3 px-4 py-3 bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-3 bg-white text-[#0C0C0C] rounded-lg hover:bg-[#F3F4F6] transition-colors"
             >
               <BoltIcon className="size-4 text-amber-300" />
               <div className="text-left flex-1">
@@ -115,8 +115,8 @@ export default function PaymentLinkPage() {
                   onClick={() => setPlanType(type)}
                   className={`py-2.5 text-sm font-medium rounded-lg border-2 transition-colors ${
                     planType === type
-                      ? "border-[#1B1B1B] bg-[#1B1B1B] text-white"
-                      : "border-[#E5E5EA] text-[#999] hover:border-[#CCC]"
+                      ? "border-white bg-white text-[#0C0C0C]"
+                      : "border-[#2A2A2A] text-[#71757D] hover:border-[#383838]"
                   }`}
                 >
                   {type === "one-time" ? "One-time" : "Monthly"}
@@ -150,10 +150,10 @@ export default function PaymentLinkPage() {
           <div>
             <label className={labelClass}>
               Amount (GBP) *
-              {planType === "recurring" && <span className="ml-2 text-[#999] font-normal text-xs">per month</span>}
+              {planType === "recurring" && <span className="ml-2 text-[#71757D] font-normal text-xs">per month</span>}
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#A0A0A0]">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#71757D]">
                 £
               </span>
               <input
@@ -167,7 +167,7 @@ export default function PaymentLinkPage() {
               />
             </div>
             {planType === "recurring" && amount && parseFloat(amount) > 0 && (
-              <p className="text-[11px] text-[#999] mt-1.5">
+              <p className="text-[11px] text-[#71757D] mt-1.5">
                 Billed monthly • First payment £{parseFloat(amount).toLocaleString("en-GB")} • Renews every 30 days
               </p>
             )}
@@ -201,11 +201,11 @@ export default function PaymentLinkPage() {
                     type="text"
                     readOnly
                     value={paymentUrl}
-                    className="flex-1 px-3 py-2 bg-white border border-[#E5E5EA] rounded-md text-sm text-[#7A7A7A] truncate"
+                    className="flex-1 px-3 py-2 bg-[#181818] border border-[#2A2A2A] rounded-md text-sm text-[#71757D] truncate"
                   />
                   <button
                     onClick={handleCopy}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:bg-[#1A1A1A] transition-colors shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-2 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:bg-[#1A1A1A] transition-colors shrink-0"
                   >
                     {copied ? (
                       <>
@@ -224,7 +224,7 @@ export default function PaymentLinkPage() {
 
               <button
                 onClick={handleReset}
-                className="w-full py-2.5 text-sm font-medium text-[#7A7A7A] border border-[#E5E5EA] rounded-md hover:bg-[#F3F3F5] transition-colors"
+                className="w-full py-2.5 text-sm font-medium text-[#71757D] border border-[#2A2A2A] rounded-md hover:bg-[#222222] transition-colors"
               >
                 Create another
               </button>
@@ -233,7 +233,7 @@ export default function PaymentLinkPage() {
             <button
               onClick={handleGenerate}
               disabled={!canSubmit || loading}
-              className="w-full py-2.5 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:bg-[#1A1A1A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full py-2.5 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:bg-[#1A1A1A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {loading ? "Creating…" : planType === "recurring" ? "Generate Subscription Link" : "Generate Payment Link"}
             </button>

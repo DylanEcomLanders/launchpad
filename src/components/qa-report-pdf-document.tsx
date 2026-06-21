@@ -11,7 +11,7 @@ const q = StyleSheet.create({
   catHeading: {
     fontSize: 13,
     fontWeight: 700,
-    color: "#0A0A0A",
+    color: "#080808",
     marginBottom: 6,
     marginTop: 20,
   },
@@ -68,7 +68,7 @@ const q = StyleSheet.create({
     marginBottom: 20,
   },
   statItem: {},
-  statValue: { fontSize: 20, fontWeight: 800, color: "#0A0A0A" },
+  statValue: { fontSize: 20, fontWeight: 800, color: "#080808" },
   statLabel: {
     fontSize: 8,
     fontWeight: 600,

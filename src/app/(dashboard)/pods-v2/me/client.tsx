@@ -136,29 +136,29 @@ export default function MeClient() {
     <div className="mx-auto max-w-3xl px-4 py-6">
       <div className="mb-6 flex items-baseline justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
             Today
           </p>
-          <h1 className="text-2xl font-semibold text-[#1B1B1B]">
+          <h1 className="text-2xl font-semibold text-[#E5E5EA]">
             {me ? `What's on ${me.name}'s plate` : "Pick yourself"}
           </h1>
         </div>
         <Link
           href={linkBase}
-          className="text-[11px] text-[#7A7A7A] hover:text-[#1B1B1B] hover:underline"
+          className="text-[11px] text-[#71757D] hover:text-[#E5E5EA] hover:underline"
         >
           ← All pods
         </Link>
       </div>
 
-      <div className="mb-5 rounded-xl border border-[#E5E5EA] bg-white p-3">
-        <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+      <div className="mb-5 rounded-xl border border-[#2A2A2A] bg-[#181818] p-3">
+        <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
           I&apos;m…
         </label>
         <select
           value={meId}
           onChange={(e) => setMe(e.target.value)}
-          className="mt-1 w-full rounded-lg border border-[#E5E5EA] bg-white px-2 py-1.5 text-sm"
+          className="mt-1 w-full rounded-lg border border-[#2A2A2A] bg-[#181818] px-2 py-1.5 text-sm"
         >
           <option value="">, choose your name ,</option>
           {members.map((m) => (
@@ -168,13 +168,13 @@ export default function MeClient() {
             </option>
           ))}
         </select>
-        <p className="mt-1 text-[10px] text-[#A0A0A0]">
+        <p className="mt-1 text-[10px] text-[#71757D]">
           Saved on this device. Change anytime.
         </p>
       </div>
 
       {!meId ? (
-        <div className="rounded-xl border border-dashed border-[#E5E5EA] bg-[#FAFAFA] px-4 py-12 text-center text-sm text-[#A0A0A0]">
+        <div className="rounded-xl border border-dashed border-[#2A2A2A] bg-[#0C0C0C] px-4 py-12 text-center text-sm text-[#71757D]">
           Pick your name above to see your tasks.
         </div>
       ) : myTasks.length === 0 ? (
@@ -255,12 +255,12 @@ function Section({
     <div>
       <div className="mb-2 flex items-center gap-2">
         <span className={`size-2 rounded-full ${dot}`} />
-        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
           {title}
         </h2>
-        <span className="text-[10px] tabular-nums text-[#A0A0A0]">{tasks.length}</span>
+        <span className="text-[10px] tabular-nums text-[#71757D]">{tasks.length}</span>
       </div>
-      <div className="overflow-hidden rounded-xl border border-[#E5E5EA] bg-white">
+      <div className="overflow-hidden rounded-xl border border-[#2A2A2A] bg-[#181818]">
         {tasks.map((t, i) => {
           const project = projectById.get(t.project_id);
           const client = project ? clientById.get(project.client_id) : undefined;
@@ -269,7 +269,7 @@ function Section({
           return (
             <div
               key={t.id}
-              className={`flex items-center gap-3 px-3 py-2 ${i > 0 ? "border-t border-[#EDEDEF]" : ""}`}
+              className={`flex items-center gap-3 px-3 py-2 ${i > 0 ? "border-t border-[#2A2A2A]" : ""}`}
             >
               <button
                 onClick={(e) => {
@@ -305,8 +305,8 @@ function Section({
                 }}
                 className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 ${
                   t.status === "in_progress"
-                    ? "border-blue-500 bg-white"
-                    : "border-[#D5D5DC] bg-white hover:border-[#1B1B1B]"
+                    ? "border-blue-500 bg-[#181818]"
+                    : "border-[#2A2A2A] bg-[#181818] hover:border-white"
                 }`}
                 title="Click to advance · Shift-click or right-click to step back"
               >
@@ -315,10 +315,10 @@ function Section({
                 )}
               </button>
               <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-medium text-[#1B1B1B]">{t.title}</div>
+                <div className="truncate text-sm font-medium text-[#E5E5EA]">{t.title}</div>
                 {(client || project) && (
-                  <div className="mt-0.5 truncate text-[11px] text-[#7A7A7A]">
-                    {client && <span className="font-medium text-[#1B1B1B]">{client.name}</span>}
+                  <div className="mt-0.5 truncate text-[11px] text-[#71757D]">
+                    {client && <span className="font-medium text-[#E5E5EA]">{client.name}</span>}
                     {client && project && <span className="text-[#C5C5C5]"> · </span>}
                     {project && <span>{project.name}</span>}
                   </div>
@@ -331,7 +331,7 @@ function Section({
                       ? "font-semibold text-rose-700"
                       : due === today
                         ? "font-semibold text-amber-700"
-                        : "text-[#7A7A7A]"
+                        : "text-[#71757D]"
                   }`}
                 >
                   {formatDayMonth(due)}

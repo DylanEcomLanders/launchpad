@@ -1,6 +1,6 @@
 "use client";
 
-// Sales Engine is a RETIRED surface — non-accessible in the app. Any visit to
+// Sales Engine is a RETIRED surface - non-accessible in the app. Any visit to
 // /sales-engine/* redirects to Mission Control for every role. The routes +
 // components stay in git (so we can revive the surface later), they're just
 // not navigable. Sidebar links that used to point here were repointed to the
@@ -18,7 +18,7 @@ export default function SalesEngineLayout() {
 
   return (
     <AuthGate>
-      <div className="flex h-screen items-center justify-center bg-[#0E0F11] text-sm text-white/50">
+      <div className="flex h-screen items-center justify-center bg-[#0C0C0C] text-sm text-white/50">
         Redirecting…
       </div>
     </AuthGate>

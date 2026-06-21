@@ -217,8 +217,8 @@ const STATUS_LABEL: Record<SliceStatus, string> = {
 };
 
 const STATUS_CLASS: Record<SliceStatus, string> = {
-  not_started: "bg-[#F3F3F5] text-[#7A7A7A] border-[#E5E5EA]",
-  queued: "bg-[#F3F3F5] text-[#7A7A7A] border-[#E5E5EA]",
+  not_started: "bg-[#222222] text-[#71757D] border-[#2A2A2A]",
+  queued: "bg-[#222222] text-[#71757D] border-[#2A2A2A]",
   in_progress: "bg-blue-50 text-blue-700 border-blue-200",
   in_review: "bg-amber-50 text-amber-800 border-amber-200",
   done: "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -235,7 +235,7 @@ function MemberAvatar({ name, isStrategist }: { name: string; isStrategist?: boo
       className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-[11px] font-semibold ${
         isStrategist
           ? "bg-violet-100 text-violet-700 ring-2 ring-violet-300"
-          : "bg-[#EDEDEF] text-[#4A4A4A]"
+          : "bg-[#222222] text-[#4A4A4A]"
       }`}
       title={name}
     >
@@ -255,10 +255,10 @@ export default function StrategistDeliverablesPreview() {
     <div className="mx-auto max-w-6xl px-6 py-8">
       {/* Page header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-medium tracking-tight text-[#1B1B1B]">
+        <h1 className="text-3xl font-medium text-[#E5E5EA]">
           Strategist + deliverables preview
         </h1>
-        <p className="mt-1 text-sm text-[#7A7A7A]">
+        <p className="mt-1 text-sm text-[#71757D]">
           Three changes shown together: strategist as a pod member, deliverables
           grouping strategy/design/dev, and per-client strategic docs with a
           branded client share.
@@ -279,15 +279,15 @@ export default function StrategistDeliverablesPreview() {
 
         <div className="grid gap-4 md:grid-cols-3">
           {/* Pod card */}
-          <div className="md:col-span-2 rounded-xl border border-[#E5E5EA] bg-white p-4 shadow-[var(--shadow-soft)]">
+          <div className="md:col-span-2 rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)]">
             <div className="mb-3 flex items-baseline justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-[#1B1B1B]">
+                <h2 className="text-lg font-semibold text-[#E5E5EA]">
                   {POD.name}
                 </h2>
-                <p className="text-xs text-[#7A7A7A]">{POD.tagline}</p>
+                <p className="text-xs text-[#71757D]">{POD.tagline}</p>
               </div>
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
                 6 members
               </span>
             </div>
@@ -299,15 +299,15 @@ export default function StrategistDeliverablesPreview() {
                   className={`flex items-center gap-2.5 rounded-lg border p-2 ${
                     m.isStrategist
                       ? "border-violet-200 bg-violet-50/40"
-                      : "border-[#E5E5EA] bg-white"
+                      : "border-[#2A2A2A] bg-[#181818]"
                   }`}
                 >
                   <MemberAvatar name={m.name} isStrategist={m.isStrategist} />
                   <div className="min-w-0 leading-tight">
-                    <div className="truncate text-sm font-medium text-[#1B1B1B]">
+                    <div className="truncate text-sm font-medium text-[#E5E5EA]">
                       {m.name}
                     </div>
-                    <div className="truncate text-[11px] text-[#7A7A7A]">
+                    <div className="truncate text-[11px] text-[#71757D]">
                       {m.role}
                       {m.isStrategist && (
                         <span className="ml-1 rounded border border-violet-200 bg-violet-100 px-1 py-0 text-[9px] font-semibold uppercase tracking-wider text-violet-800">
@@ -365,17 +365,17 @@ export default function StrategistDeliverablesPreview() {
           sub="Today a single piece of work becomes three independent tasks. This groups them so the deliverable is the unit, and discipline progress is visible at a glance."
         />
 
-        <div className="rounded-xl border border-[#E5E5EA] bg-white p-4 shadow-[var(--shadow-soft)]">
-          <div className="mb-3 flex items-baseline justify-between border-b border-[#EDEDEF] pb-3">
+        <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)]">
+          <div className="mb-3 flex items-baseline justify-between border-b border-[#2A2A2A] pb-3">
             <div>
-              <h2 className="text-lg font-semibold text-[#1B1B1B]">
+              <h2 className="text-lg font-semibold text-[#E5E5EA]">
                 {CLIENT.name}
               </h2>
-              <p className="text-[11px] text-[#7A7A7A]">
+              <p className="text-[11px] text-[#71757D]">
                 {CLIENT.retainer} · {CLIENT.pod} · {DELIVERABLES.length} deliverables in flight
               </p>
             </div>
-            <button className="inline-flex items-center gap-1 rounded-md border border-[#E5E5EA] bg-white px-2.5 py-1 text-[11px] font-medium text-[#4A4A4A] hover:border-[#C5C5C5]">
+            <button className="inline-flex items-center gap-1 rounded-md border border-[#2A2A2A] bg-[#181818] px-2.5 py-1 text-[11px] font-medium text-[#4A4A4A] hover:border-[#C5C5C5]">
               <PlusIcon className="h-3.5 w-3.5" />
               New deliverable
             </button>
@@ -397,16 +397,16 @@ export default function StrategistDeliverablesPreview() {
           sub="Strategist uploads here. Internal docs stay internal. Client-shared docs render in a branded wrapper the client can open."
         />
 
-        <div className="rounded-xl border border-[#E5E5EA] bg-white shadow-[var(--shadow-soft)]">
+        <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-soft)]">
           {/* Toggle */}
-          <div className="flex items-center justify-between border-b border-[#EDEDEF] px-4 py-3">
+          <div className="flex items-center justify-between border-b border-[#2A2A2A] px-4 py-3">
             <div className="flex items-center gap-2">
-              <DocumentTextIcon className="h-4 w-4 text-[#7A7A7A]" />
-              <span className="text-sm font-semibold text-[#1B1B1B]">
+              <DocumentTextIcon className="h-4 w-4 text-[#71757D]" />
+              <span className="text-sm font-semibold text-[#E5E5EA]">
                 {CLIENT.name} · Strategic docs
               </span>
             </div>
-            <div className="flex items-center gap-1 rounded-md bg-[#F3F3F5] p-0.5">
+            <div className="flex items-center gap-1 rounded-md bg-[#222222] p-0.5">
               <ToggleButton
                 active={docsView === "internal"}
                 onClick={() => setDocsView("internal")}
@@ -431,8 +431,8 @@ export default function StrategistDeliverablesPreview() {
       </section>
 
       {/* Footer note */}
-      <div className="mt-10 rounded-lg border border-[#E5E5EA] bg-[#FAFAFB] p-4 text-xs text-[#7A7A7A]">
-        <p className="font-semibold uppercase tracking-wider text-[#1B1B1B]">
+      <div className="mt-10 rounded-lg border border-[#2A2A2A] bg-[#0C0C0C] p-4 text-xs text-[#71757D]">
+        <p className="font-semibold uppercase tracking-wider text-[#E5E5EA]">
           What this preview is not
         </p>
         <ul className="mt-1 list-disc space-y-0.5 pl-4">
@@ -468,11 +468,11 @@ function SectionHeading({
 }) {
   return (
     <div className="mb-4">
-      <div className="text-[11px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+      <div className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
         {eyebrow}
       </div>
-      <h2 className="mt-1 text-xl font-semibold text-[#1B1B1B]">{title}</h2>
-      <p className="mt-1 max-w-3xl text-sm text-[#7A7A7A]">{sub}</p>
+      <h2 className="mt-1 text-xl font-semibold text-[#E5E5EA]">{title}</h2>
+      <p className="mt-1 max-w-3xl text-sm text-[#71757D]">{sub}</p>
     </div>
   );
 }
@@ -489,7 +489,7 @@ function FlightItem({
   due: string;
 }) {
   return (
-    <li className="rounded-lg border border-violet-200/60 bg-white p-2.5">
+    <li className="rounded-lg border border-violet-200/60 bg-[#181818] p-2.5">
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-violet-700">
           {client}
@@ -500,10 +500,10 @@ function FlightItem({
           {STATUS_LABEL[status]}
         </span>
       </div>
-      <div className="mt-1 text-[12px] font-medium leading-snug text-[#1B1B1B]">
+      <div className="mt-1 text-[12px] font-medium leading-snug text-[#E5E5EA]">
         {title}
       </div>
-      <div className="mt-1 flex items-center gap-1 text-[10px] text-[#7A7A7A]">
+      <div className="mt-1 flex items-center gap-1 text-[10px] text-[#71757D]">
         <ClockIcon className="h-3 w-3" />
         {due}
       </div>
@@ -516,23 +516,23 @@ function DeliverableCard({ deliverable }: { deliverable: MockDeliverable }) {
   return (
     <div
       className={`rounded-lg border p-3 ${
-        allDone ? "border-emerald-200 bg-emerald-50/30" : "border-[#E5E5EA] bg-white"
+        allDone ? "border-emerald-200 bg-emerald-50/30" : "border-[#2A2A2A] bg-[#181818]"
       }`}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center rounded-md border border-[#E5E5EA] bg-[#F7F8FA] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#4A4A4A]">
+            <span className="inline-flex items-center rounded-md border border-[#2A2A2A] bg-[#0C0C0C] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#4A4A4A]">
               {deliverable.type}
             </span>
-            <h3 className="truncate text-sm font-semibold text-[#1B1B1B]">
+            <h3 className="truncate text-sm font-semibold text-[#E5E5EA]">
               {deliverable.title}
             </h3>
           </div>
         </div>
-        <div className="text-right text-[11px] text-[#7A7A7A]">
-          <div className="font-medium text-[#1B1B1B]">
+        <div className="text-right text-[11px] text-[#71757D]">
+          <div className="font-medium text-[#E5E5EA]">
             Ships {deliverable.target_ship}
           </div>
         </div>
@@ -550,7 +550,7 @@ function DeliverableCard({ deliverable }: { deliverable: MockDeliverable }) {
 
 function SliceCell({ slice }: { slice: DisciplineSlice }) {
   return (
-    <div className="rounded-md border border-[#EDEDEF] bg-white p-2.5">
+    <div className="rounded-md border border-[#2A2A2A] bg-[#181818] p-2.5">
       <div className="flex items-center justify-between">
         <span
           className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${DISCIPLINE_ACCENT[slice.discipline]}`}
@@ -569,18 +569,18 @@ function SliceCell({ slice }: { slice: DisciplineSlice }) {
       <div className="mt-2 text-[11px] text-[#4A4A4A]">
         {slice.owner ? (
           <div className="flex items-center gap-1">
-            <UserCircleIcon className="h-3.5 w-3.5 text-[#A0A0A0]" />
+            <UserCircleIcon className="h-3.5 w-3.5 text-[#71757D]" />
             <span>{slice.owner}</span>
             {slice.due && (
-              <span className="ml-auto text-[#7A7A7A]">{slice.due}</span>
+              <span className="ml-auto text-[#71757D]">{slice.due}</span>
             )}
           </div>
         ) : (
-          <span className="italic text-[#A0A0A0]">Unassigned</span>
+          <span className="italic text-[#71757D]">Unassigned</span>
         )}
       </div>
       {slice.note && (
-        <p className="mt-1.5 line-clamp-2 text-[11px] leading-snug text-[#7A7A7A]">
+        <p className="mt-1.5 line-clamp-2 text-[11px] leading-snug text-[#71757D]">
           {slice.note}
         </p>
       )}
@@ -604,8 +604,8 @@ function ToggleButton({
       onClick={onClick}
       className={`inline-flex items-center gap-1.5 rounded px-2.5 py-1 text-[11px] font-medium transition-colors ${
         active
-          ? "bg-white text-[#1B1B1B] shadow-sm"
-          : "text-[#7A7A7A] hover:text-[#1B1B1B]"
+          ? "bg-[#181818] text-[#E5E5EA] shadow-sm"
+          : "text-[#71757D] hover:text-[#E5E5EA]"
       }`}
     >
       {icon}
@@ -620,7 +620,7 @@ function DocTypePill({ type }: { type: MockDoc["type"] }) {
     Audit: "border-blue-200 bg-blue-50 text-blue-700",
     Roadmap: "border-emerald-200 bg-emerald-50 text-emerald-700",
     "Monthly review": "border-amber-200 bg-amber-50 text-amber-800",
-    Kickoff: "border-[#E5E5EA] bg-[#F3F3F5] text-[#4A4A4A]",
+    Kickoff: "border-[#2A2A2A] bg-[#222222] text-[#4A4A4A]",
   };
   return (
     <span
@@ -635,12 +635,12 @@ function InternalDocsView() {
   return (
     <div className="p-4">
       {/* Upload affordance */}
-      <div className="mb-4 flex items-center justify-between rounded-lg border border-dashed border-[#C5C5C5] bg-[#FAFAFB] px-3 py-3">
+      <div className="mb-4 flex items-center justify-between rounded-lg border border-dashed border-[#C5C5C5] bg-[#0C0C0C] px-3 py-3">
         <div className="flex items-center gap-2 text-sm text-[#4A4A4A]">
-          <DocumentArrowUpIcon className="h-4 w-4 text-[#7A7A7A]" />
+          <DocumentArrowUpIcon className="h-4 w-4 text-[#71757D]" />
           Drop a PDF, doc, or paste a Notion link
         </div>
-        <button className="inline-flex items-center gap-1.5 rounded-md bg-[#1B1B1B] px-2.5 py-1.5 text-[11px] font-medium text-white hover:bg-black">
+        <button className="inline-flex items-center gap-1.5 rounded-md bg-[#1B1B1B] px-2.5 py-1.5 text-[11px] font-medium text-white hover:bg-[#F3F4F6]">
           <PlusIcon className="h-3.5 w-3.5" />
           Upload doc
         </button>
@@ -650,17 +650,17 @@ function InternalDocsView() {
         {DOCS.map((doc) => (
           <div
             key={doc.id}
-            className="flex items-center gap-3 rounded-lg border border-[#E5E5EA] bg-white p-3"
+            className="flex items-center gap-3 rounded-lg border border-[#2A2A2A] bg-[#181818] p-3"
           >
-            <DocumentTextIcon className="h-5 w-5 shrink-0 text-[#7A7A7A]" />
+            <DocumentTextIcon className="h-5 w-5 shrink-0 text-[#71757D]" />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="truncate text-sm font-medium text-[#1B1B1B]">
+                <span className="truncate text-sm font-medium text-[#E5E5EA]">
                   {doc.title}
                 </span>
                 <DocTypePill type={doc.type} />
                 {doc.visibility === "internal" ? (
-                  <span className="inline-flex items-center gap-1 rounded-md border border-[#E5E5EA] bg-[#F3F3F5] px-1.5 py-0.5 text-[10px] font-medium text-[#7A7A7A]">
+                  <span className="inline-flex items-center gap-1 rounded-md border border-[#2A2A2A] bg-[#222222] px-1.5 py-0.5 text-[10px] font-medium text-[#71757D]">
                     <LockClosedIcon className="h-3 w-3" />
                     Internal
                   </span>
@@ -671,20 +671,20 @@ function InternalDocsView() {
                   </span>
                 )}
               </div>
-              <div className="mt-0.5 text-[11px] text-[#7A7A7A]">
+              <div className="mt-0.5 text-[11px] text-[#71757D]">
                 Uploaded {doc.uploaded_at} by {doc.uploaded_by} · {doc.size}
               </div>
             </div>
             <div className="flex items-center gap-1">
               <button
                 title="Edit"
-                className="rounded p-1.5 text-[#7A7A7A] hover:bg-[#F3F3F5] hover:text-[#1B1B1B]"
+                className="rounded p-1.5 text-[#71757D] hover:bg-[#222222] hover:text-[#E5E5EA]"
               >
                 <PencilSquareIcon className="h-4 w-4" />
               </button>
               <button
                 title="Download"
-                className="rounded p-1.5 text-[#7A7A7A] hover:bg-[#F3F3F5] hover:text-[#1B1B1B]"
+                className="rounded p-1.5 text-[#71757D] hover:bg-[#222222] hover:text-[#E5E5EA]"
               >
                 <ArrowDownTrayIcon className="h-4 w-4" />
               </button>
@@ -699,9 +699,9 @@ function InternalDocsView() {
 function ClientShareView() {
   const sharedDocs = DOCS.filter((d) => d.visibility === "client_shared");
   return (
-    <div className="bg-[#FAFAFB] p-4">
+    <div className="bg-[#0C0C0C] p-4">
       {/* Branded wrapper preview */}
-      <div className="mx-auto max-w-2xl overflow-hidden rounded-xl border border-[#E5E5EA] bg-white shadow-[var(--shadow-soft)]">
+      <div className="mx-auto max-w-2xl overflow-hidden rounded-xl border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-soft)]">
         {/* Branded header */}
         <div className="bg-gradient-to-br from-[#0F1115] to-[#1F2430] px-6 py-6 text-white">
           <div className="flex items-center justify-between">
@@ -714,7 +714,7 @@ function ClientShareView() {
                 Strategist: Maya Lin
               </div>
             </div>
-            <div className="grid h-12 w-12 place-items-center rounded-full bg-white/10 text-sm font-semibold text-white">
+            <div className="grid h-12 w-12 place-items-center rounded-full bg-[#181818]/10 text-sm font-semibold text-white">
               EL
             </div>
           </div>
@@ -723,10 +723,10 @@ function ClientShareView() {
         {/* Doc list */}
         <div className="p-5">
           <div className="mb-3 flex items-baseline justify-between">
-            <h3 className="text-sm font-semibold text-[#1B1B1B]">
+            <h3 className="text-sm font-semibold text-[#E5E5EA]">
               Shared with you
             </h3>
-            <span className="text-[11px] text-[#7A7A7A]">
+            <span className="text-[11px] text-[#71757D]">
               {sharedDocs.length} documents
             </span>
           </div>
@@ -735,23 +735,23 @@ function ClientShareView() {
             {sharedDocs.map((doc) => (
               <div
                 key={doc.id}
-                className="flex items-center gap-3 rounded-lg border border-[#E5E5EA] bg-white p-3 hover:border-[#C5C5C5]"
+                className="flex items-center gap-3 rounded-lg border border-[#2A2A2A] bg-[#181818] p-3 hover:border-[#C5C5C5]"
               >
-                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-[#F3F3F5] text-[#4A4A4A]">
+                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-[#222222] text-[#4A4A4A]">
                   <DocumentTextIcon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-medium text-[#1B1B1B]">
+                  <div className="truncate text-sm font-medium text-[#E5E5EA]">
                     {doc.title}
                   </div>
-                  <div className="mt-0.5 flex items-center gap-2 text-[11px] text-[#7A7A7A]">
+                  <div className="mt-0.5 flex items-center gap-2 text-[11px] text-[#71757D]">
                     <DocTypePill type={doc.type} />
                     <span>{doc.size}</span>
                     <span>·</span>
                     <span>Shared {doc.uploaded_at}</span>
                   </div>
                 </div>
-                <button className="inline-flex items-center gap-1 rounded-md border border-[#E5E5EA] bg-white px-2.5 py-1.5 text-[11px] font-medium text-[#1B1B1B] hover:border-[#C5C5C5]">
+                <button className="inline-flex items-center gap-1 rounded-md border border-[#2A2A2A] bg-[#181818] px-2.5 py-1.5 text-[11px] font-medium text-[#E5E5EA] hover:border-[#C5C5C5]">
                   <ArrowDownTrayIcon className="h-3.5 w-3.5" />
                   Download
                 </button>
@@ -759,8 +759,8 @@ function ClientShareView() {
             ))}
           </div>
 
-          <div className="mt-5 rounded-lg border border-[#E5E5EA] bg-[#FAFAFB] p-3">
-            <div className="flex items-center gap-2 text-[11px] text-[#7A7A7A]">
+          <div className="mt-5 rounded-lg border border-[#2A2A2A] bg-[#0C0C0C] p-3">
+            <div className="flex items-center gap-2 text-[11px] text-[#71757D]">
               <PaperAirplaneIcon className="h-3.5 w-3.5" />
               Questions? Reply to Maya at maya@ecomlanders.com
             </div>
@@ -768,12 +768,12 @@ function ClientShareView() {
         </div>
 
         {/* Branded footer */}
-        <div className="border-t border-[#EDEDEF] bg-[#FAFAFB] px-5 py-3 text-center text-[10px] uppercase tracking-[0.16em] text-[#A0A0A0]">
+        <div className="border-t border-[#2A2A2A] bg-[#0C0C0C] px-5 py-3 text-center text-[10px] uppercase tracking-[0.16em] text-[#71757D]">
           Ecom Landers · Conversion Partnership
         </div>
       </div>
 
-      <p className="mt-3 text-center text-[11px] text-[#7A7A7A]">
+      <p className="mt-3 text-center text-[11px] text-[#71757D]">
         Preview of what the client sees. Internal-only docs are hidden.
       </p>
     </div>

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -7,6 +7,22 @@ const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
+});
+
+// Inter Tight - display/heading font. Slightly tighter than Inter, used for
+// titles, section labels, sidebar nav. Brand-aligned per the type spec.
+const interTight = Inter_Tight({
+  variable: "--font-inter-tight",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+});
+
+// JetBrains Mono - tabular numbers + monospace fields. Sits next to body type
+// to read like a data sheet (Well-style).
+const jetBrainsMono = JetBrains_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 const articulatCF = localFont({
@@ -28,7 +44,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Launchpad — Ecomlanders",
+  title: "Launchpad - Ecomlanders",
   description: "Internal tools for the Ecomlanders team",
   manifest: "/manifest.json",
   appleWebApp: {
@@ -44,11 +60,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`light ${inter.variable} ${articulatCF.variable}`}>
+    <html lang="en" className={`light ${inter.variable} ${interTight.variable} ${articulatCF.variable} ${jetBrainsMono.variable}`}>
       <head>
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
       </head>
-      <body className="font-body antialiased bg-[#FAFAFA] text-[#0A0A0A]">
+      <body className="font-body antialiased bg-[#0C0C0C] text-[#E5E5EA]">
         {children}
         <script
           dangerouslySetInnerHTML={{

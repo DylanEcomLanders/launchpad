@@ -235,20 +235,20 @@ export default function NotesPage() {
     <div className="max-w-2xl mx-auto py-10 px-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">Notes</h1>
-        <span className="text-[10px] text-[#CCC]">{saving ? "Saving..." : "Auto-saved"}</span>
+        <h1 className="text-[28px] leading-tight font-bold text-[#E5E5EA]">Notes</h1>
+        <span className="text-[10px] text-[#C7C9CD]">{saving ? "Saving..." : "Auto-saved"}</span>
       </div>
 
       {/* Date navigation */}
-      <div className="flex items-center justify-between mb-6 bg-white border border-[#E5E5EA] rounded-xl px-4 py-3">
-        <button onClick={() => setCurrentDate(dateNav(currentDate, -1))} className="p-1 text-[#999] hover:text-[#1A1A1A] transition-colors">
+      <div className="flex items-center justify-between mb-6 bg-[#181818] border border-[#2A2A2A] rounded-xl px-4 py-3">
+        <button onClick={() => setCurrentDate(dateNav(currentDate, -1))} className="p-1 text-[#71757D] hover:text-[#E5E5EA] transition-colors">
           <ChevronLeftIcon className="size-5" />
         </button>
         <div className="text-center">
-          <p className="text-sm font-semibold text-[#1A1A1A]">{formatDate(currentDate)}</p>
+          <p className="text-sm font-semibold text-[#E5E5EA]">{formatDate(currentDate)}</p>
           {isToday && <p className="text-[10px] text-emerald-600 font-medium">Today</p>}
         </div>
-        <button onClick={() => setCurrentDate(dateNav(currentDate, 1))} className="p-1 text-[#999] hover:text-[#1A1A1A] transition-colors">
+        <button onClick={() => setCurrentDate(dateNav(currentDate, 1))} className="p-1 text-[#71757D] hover:text-[#E5E5EA] transition-colors">
           <ChevronRightIcon className="size-5" />
         </button>
       </div>
@@ -274,13 +274,13 @@ export default function NotesPage() {
               </button>
             </div>
             {transcript && (
-              <p className="text-xs text-[#555] leading-relaxed bg-white rounded-lg p-3 border border-[#E5E5EA]">{transcript}</p>
+              <p className="text-xs text-[#C7C9CD] leading-relaxed bg-[#181818] rounded-lg p-3 border border-[#2A2A2A]">{transcript}</p>
             )}
           </div>
         ) : (
           <button
             onClick={startRecording}
-            className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-[#E5E5EA] rounded-xl text-[#777] hover:border-[#1A1A1A] hover:text-[#1A1A1A] transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-[#2A2A2A] rounded-xl text-[#9CA3AF] hover:border-[#1A1A1A] hover:text-[#E5E5EA] transition-colors"
           >
             <MicrophoneIcon className="size-4" />
             <span className="text-xs font-medium">Tap to record</span>
@@ -291,7 +291,7 @@ export default function NotesPage() {
       {/* Action Items */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#AAA]">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#9CA3AF]">
             Action Items {currentNote?.actionItems.length ? `(${currentNote.actionItems.filter(a => !a.done).length} remaining)` : ""}
           </h2>
         </div>
@@ -303,12 +303,12 @@ export default function NotesPage() {
                 type="checkbox"
                 checked={action.done}
                 onChange={() => toggleAction(action.id)}
-                className="size-4 rounded border-[#CCC] text-[#1B1B1B] focus:ring-0 mt-0.5 cursor-pointer"
+                className="size-4 rounded border-[#383838] text-[#E5E5EA] focus:ring-0 mt-0.5 cursor-pointer"
               />
-              <p className={`flex-1 text-sm leading-relaxed ${action.done ? "line-through text-[#CCC]" : "text-[#333]"}`}>
+              <p className={`flex-1 text-sm leading-relaxed ${action.done ? "line-through text-[#C7C9CD]" : "text-[#E5E5EA]"}`}>
                 {action.text}
               </p>
-              <button onClick={() => deleteAction(action.id)} className="p-0.5 text-[#DDD] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onClick={() => deleteAction(action.id)} className="p-0.5 text-[#C7C9CD] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">
                 <TrashIcon className="size-3" />
               </button>
             </div>
@@ -323,9 +323,9 @@ export default function NotesPage() {
             onChange={(e) => setNewActionText(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") addAction(); }}
             placeholder="Add action item..."
-            className="flex-1 text-sm px-3 py-2 border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#999] placeholder:text-[#CCC]"
+            className="flex-1 text-sm px-3 py-2 border border-[#2A2A2A] rounded-lg focus:outline-none focus:border-[#999] placeholder:text-[#C7C9CD]"
           />
-          <button onClick={addAction} disabled={!newActionText.trim()} className="p-2 text-[#CCC] hover:text-[#1A1A1A] disabled:opacity-30">
+          <button onClick={addAction} disabled={!newActionText.trim()} className="p-2 text-[#C7C9CD] hover:text-[#E5E5EA] disabled:opacity-30">
             <PlusIcon className="size-4" />
           </button>
         </div>
@@ -333,21 +333,21 @@ export default function NotesPage() {
 
       {/* Free-form notes */}
       <div className="mb-6">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Notes</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-[#9CA3AF] mb-3">Notes</h2>
         <textarea
           value={currentNote?.notes || ""}
           onChange={(e) => updateNotes(e.target.value)}
           placeholder="Free-form notes for the day..."
-          className="w-full min-h-[150px] text-sm px-4 py-3 border border-[#E5E5EA] rounded-xl focus:outline-none focus:border-[#999] placeholder:text-[#CCC] resize-y leading-relaxed"
+          className="w-full min-h-[150px] text-sm px-4 py-3 border border-[#2A2A2A] rounded-xl focus:outline-none focus:border-[#999] placeholder:text-[#C7C9CD] resize-y leading-relaxed"
         />
       </div>
 
       {/* Raw transcript */}
       {currentNote?.rawTranscript && (
         <div>
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Transcript</h2>
-          <div className="bg-[#FAFAFA] border border-[#E5E5EA] rounded-xl p-4">
-            <p className="text-xs text-[#777] leading-relaxed whitespace-pre-wrap">{currentNote.rawTranscript}</p>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#9CA3AF] mb-3">Transcript</h2>
+          <div className="bg-[#0C0C0C] border border-[#2A2A2A] rounded-xl p-4">
+            <p className="text-xs text-[#9CA3AF] leading-relaxed whitespace-pre-wrap">{currentNote.rawTranscript}</p>
           </div>
         </div>
       )}
@@ -355,8 +355,8 @@ export default function NotesPage() {
       {/* Empty state */}
       {!currentNote && !recording && (
         <div className="text-center py-8">
-          <p className="text-sm text-[#CCC]">No notes for this day</p>
-          <p className="text-xs text-[#DDD] mt-1">Tap record or type to start</p>
+          <p className="text-sm text-[#C7C9CD]">No notes for this day</p>
+          <p className="text-xs text-[#C7C9CD] mt-1">Tap record or type to start</p>
         </div>
       )}
     </div>

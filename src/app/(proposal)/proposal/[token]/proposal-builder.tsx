@@ -314,7 +314,7 @@ export function ProposalBuilder({
 
       {/* Mobile: Persistent summary bar */}
       {itemCount > 0 && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E5EA] z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#181818] border-t border-[#E5E5EA] z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
           {/* Scrollable item list */}
           <div className="max-h-[30vh] overflow-y-auto px-4 pt-3 pb-2 space-y-1.5">
             {selectedItems.map(({ service, sel, lineTotal, baseLineTotal, discount }) => (
@@ -355,7 +355,7 @@ export function ProposalBuilder({
           </div>
 
           {/* Total + CTA */}
-          <div className="px-4 pb-4 pt-2 border-t border-[#EDEDEF]">
+          <div className="px-4 pb-4 pt-2 border-t border-[#333333]">
             <div className="flex items-center justify-between mb-2.5">
               <span className="text-sm font-semibold text-[#1B1B1B]">Total</span>
               <span className="text-lg font-bold text-[#1B1B1B]">{formatGBP(totalPence)}</span>
@@ -458,7 +458,7 @@ function ServiceCard({
       className={`relative rounded-lg border-2 p-5 transition-all duration-200 cursor-pointer ${
         isSelected
           ? "border-[#2563EB] bg-[#EFF6FF] shadow-sm"
-          : "border-[#E5E5EA] bg-white hover:border-[#C5C5C5] hover:shadow-sm"
+          : "border-[#404040] bg-[#1A1A1A] hover:border-[#C5C5C5] hover:shadow-sm"
       }`}
     >
       {/* Recommended badge */}
@@ -534,7 +534,7 @@ function ServiceCard({
         {/* Mode toggle (only if both modes) */}
         {hasBothModes && isSelected && (
           <div
-            className="inline-flex rounded-md border border-[#E5E5EA] bg-white p-0.5 text-[10px] font-semibold uppercase tracking-wider"
+            className="inline-flex rounded-md border border-[#404040] bg-[#1A1A1A] p-0.5 text-[10px] font-semibold uppercase tracking-wider"
             onClick={(e) => e.stopPropagation()}
           >
             {service.modes.map((m) => (
@@ -661,7 +661,7 @@ function OrderSummary({
   );
 
   return (
-    <div className="bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg p-5">
+    <div className="bg-[#181818] border border-[#E5E5EA] rounded-lg p-5">
       <h3 className="text-sm font-semibold text-[#1B1B1B] mb-4">
         Order Summary
       </h3>

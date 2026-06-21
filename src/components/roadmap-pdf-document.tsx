@@ -19,9 +19,9 @@ import {
 import { ecomlanders } from "@/lib/agreement-terms";
 import { formatDayMonth as formatShortDate } from "@/lib/dates";
 
-/* ── Colours for the 6 Gantt bars (monochromatic, dark → light) ── */
+/* -- Colours for the 6 Gantt bars (monochromatic, dark to light) -- */
 const phaseColors = [
-  "#0A0A0A",
+  "#080808",
   "#2A2A2A",
   "#4A4A4A",
   "#6B6B6B",
@@ -29,13 +29,13 @@ const phaseColors = [
   "#AAAAAA",
 ];
 
-/* ── Gantt chart constants ── */
+/* -- Gantt chart constants -- */
 const CHART_LABEL_WIDTH = 105;
 const CHART_AREA_WIDTH = 394;
 const BAR_HEIGHT = 24;
 const ROW_GAP = 6;
 
-/* ── Local styles ── */
+/* -- Local styles -- */
 const r = StyleSheet.create({
   ganttContainer: {
     marginTop: 16,
@@ -50,7 +50,7 @@ const r = StyleSheet.create({
     width: CHART_LABEL_WIDTH,
     fontSize: 8,
     fontWeight: 600,
-    color: "#0A0A0A",
+    color: "#080808",
   },
   ganttTrack: {
     width: CHART_AREA_WIDTH,
@@ -84,7 +84,7 @@ const r = StyleSheet.create({
   phaseSubheading: {
     fontSize: 10,
     fontWeight: 700,
-    color: "#0A0A0A",
+    color: "#080808",
     marginBottom: 4,
     marginTop: 12,
   },
@@ -108,7 +108,7 @@ const r = StyleSheet.create({
   phaseHeading: {
     fontSize: 15,
     fontWeight: 700,
-    color: "#0A0A0A",
+    color: "#080808",
     letterSpacing: -0.3,
     marginBottom: 12,
     marginTop: 4,
@@ -142,7 +142,7 @@ const r = StyleSheet.create({
     width: 65,
     fontSize: 9,
     fontWeight: 600,
-    color: "#0A0A0A",
+    color: "#080808",
   },
   clientDateLabel: {
     fontSize: 9,
@@ -171,11 +171,11 @@ const r = StyleSheet.create({
   touchpointDate: {
     fontSize: 8,
     fontWeight: 600,
-    color: "#0A0A0A",
+    color: "#080808",
   },
 });
 
-/* ── Sub-components ── */
+/* -- Sub-components -- */
 
 function ContentHeader({ clientName }: { clientName: string }) {
   return (
@@ -190,18 +190,18 @@ function PageFooter() {
   return (
     <View style={s.footer}>
       <Text style={s.footerText}>
-        Confidential — for internal and client use only
+        Confidential - for internal and client use only
       </Text>
     </View>
   );
 }
 
-/* ── Diamond milestone marker ── */
+/* -- Diamond milestone marker -- */
 
 function DiamondMarker({
   size = 8,
   fill = "#FFFFFF",
-  stroke = "#0A0A0A",
+  stroke = "#080808",
 }: {
   size?: number;
   fill?: string;
@@ -216,7 +216,7 @@ function DiamondMarker({
   );
 }
 
-/* ── Main component ── */
+/* -- Main component -- */
 
 export function RoadmapPdfDocument({ data }: { data: RoadmapFormData }) {
   const today = formatDate(new Date().toISOString().split("T")[0]);
@@ -292,7 +292,7 @@ export function RoadmapPdfDocument({ data }: { data: RoadmapFormData }) {
 
   return (
     <Document>
-      {/* ──────── Page 1: Cover ──────── */}
+      {/* -------- Page 1: Cover -------- */}
       <Page size="A4" style={s.coverPage}>
         <View style={s.decoBlock1} />
         <View style={s.decoBlock2} />
@@ -320,7 +320,7 @@ export function RoadmapPdfDocument({ data }: { data: RoadmapFormData }) {
         </View>
       </Page>
 
-      {/* ──────── Page 2: Timeline Overview ──────── */}
+      {/* -------- Page 2: Timeline Overview -------- */}
       <Page size="A4" style={s.contentPage}>
         <ContentHeader clientName={data.clientName} />
 
@@ -345,7 +345,7 @@ export function RoadmapPdfDocument({ data }: { data: RoadmapFormData }) {
           </View>
           <View style={s.timelineItem}>
             <Text style={s.timelineLabel}>Project Type</Text>
-            <Text style={s.timelineValue}>{data.projectType || "—"}</Text>
+            <Text style={s.timelineValue}>{data.projectType || "-"}</Text>
           </View>
         </View>
 
@@ -399,7 +399,7 @@ export function RoadmapPdfDocument({ data }: { data: RoadmapFormData }) {
                         },
                       ]}
                     >
-                      {formatShortDate(phase.startDate)} –{" "}
+                      {formatShortDate(phase.startDate)} -{" "}
                       {formatShortDate(phase.endDate)}
                     </Text>
                   )}
@@ -419,7 +419,7 @@ export function RoadmapPdfDocument({ data }: { data: RoadmapFormData }) {
                       <DiamondMarker
                         size={8}
                         fill="#FFFFFF"
-                        stroke="#0A0A0A"
+                        stroke="#080808"
                       />
                     </View>
                   ))}
@@ -486,7 +486,7 @@ export function RoadmapPdfDocument({ data }: { data: RoadmapFormData }) {
                 justifyContent: "center" as const,
               }}
             >
-              <DiamondMarker size={8} fill="#FFFFFF" stroke="#0A0A0A" />
+              <DiamondMarker size={8} fill="#FFFFFF" stroke="#080808" />
             </View>
             <Text
               style={{ fontSize: 7.5, fontWeight: 500, color: "#6B6B6B" }}
@@ -508,7 +508,7 @@ export function RoadmapPdfDocument({ data }: { data: RoadmapFormData }) {
             .map((tp, i) => (
               <View key={i} style={r.clientDateRow}>
                 <View style={r.clientDateBullet}>
-                  <DiamondMarker size={5} fill="#0A0A0A" stroke="#0A0A0A" />
+                  <DiamondMarker size={5} fill="#080808" stroke="#080808" />
                 </View>
                 <Text style={r.clientDateDate}>
                   {formatShortDate(tp.date)}
@@ -521,7 +521,7 @@ export function RoadmapPdfDocument({ data }: { data: RoadmapFormData }) {
         <PageFooter />
       </Page>
 
-      {/* ──────── Phase Detail Pages (3 per page) ──────── */}
+      {/* -------- Phase Detail Pages (3 per page) -------- */}
       {detailChunks.map((chunk, pageIdx) => (
         <Page key={`detail-${pageIdx}`} size="A4" style={s.contentPage}>
           <ContentHeader clientName={data.clientName} />
@@ -622,7 +622,7 @@ export function RoadmapPdfDocument({ data }: { data: RoadmapFormData }) {
         </Page>
       ))}
 
-      {/* ──────── Final Page: Sign-off ──────── */}
+      {/* -------- Final Page: Sign-off -------- */}
       <Page size="A4" style={s.contentPage}>
         <ContentHeader clientName={data.clientName} />
 

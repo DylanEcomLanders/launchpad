@@ -34,7 +34,7 @@ type Props = {
 const priorityPill: Record<RoadmapPriority, string> = {
   high: "bg-red-50 text-red-600",
   medium: "bg-amber-50 text-amber-700",
-  low: "bg-[#F3F3F5] text-[#777]",
+  low: "bg-[#222222] text-[#9CA3AF]",
 };
 
 function formatMonth(ym: string): string {
@@ -105,7 +105,7 @@ export function RoadmapList({ portalId, readOnly = false }: Props) {
   };
 
   if (loading) {
-    return <p className="text-sm text-[#999]">Loading roadmap…</p>;
+    return <p className="text-sm text-[#71757D]">Loading roadmap…</p>;
   }
 
   return (
@@ -122,7 +122,7 @@ export function RoadmapList({ portalId, readOnly = false }: Props) {
           ) : (
             <button
               onClick={() => setShowAddForm(true)}
-              className="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-white bg-[#1B1B1B] rounded-lg hover:bg-[#2D2D2D] transition-colors"
+              className="inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-[#0C0C0C] bg-white rounded-lg hover:bg-[#F3F4F6] transition-colors"
             >
               <PlusIcon className="size-3.5" />
               Add roadmap item
@@ -139,16 +139,16 @@ export function RoadmapList({ portalId, readOnly = false }: Props) {
         return (
           <section key={stage}>
             <div className="flex items-center gap-2 mb-3">
-              <h3 className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#AAA]">
+              <h3 className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#9CA3AF]">
                 {STAGE_LABELS[stage]}
               </h3>
-              <span className="text-[10px] text-[#CCC]">{stageItems.length}</span>
+              <span className="text-[10px] text-[#C7C9CD]">{stageItems.length}</span>
             </div>
 
             {stageItems.length === 0 ? (
-              <p className="text-xs text-[#BBB] italic">Nothing here yet.</p>
+              <p className="text-xs text-[#9CA3AF] italic">Nothing here yet.</p>
             ) : (
-              <div className="divide-y divide-[#F0F0F0] border border-[#E8E8E8] rounded-xl bg-white">
+              <div className="divide-y divide-[#2A2A2A] border border-[#2A2A2A] rounded-xl bg-[#181818]">
                 {stageItems.map((item) =>
                   editingId === item.id ? (
                     <div key={item.id} className="p-4">
@@ -203,12 +203,12 @@ function RoadmapRow({
     <div className="p-4 flex items-start gap-4">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <p className="text-sm font-semibold text-[#1A1A1A] truncate">{item.title}</p>
+          <p className="text-sm font-semibold text-[#E5E5EA] truncate">{item.title}</p>
           <span className={`text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${priorityPill[item.priority]}`}>
             {item.priority}
           </span>
           {item.target_month && (
-            <span className="text-[10px] text-[#999]">{formatMonth(item.target_month)}</span>
+            <span className="text-[10px] text-[#71757D]">{formatMonth(item.target_month)}</span>
           )}
           {item.shipped_at && (
             <span className="text-[10px] text-emerald-600 font-medium">Shipped {formatShippedDate(item.shipped_at)}</span>
@@ -216,11 +216,11 @@ function RoadmapRow({
         </div>
 
         {item.description && (
-          <p className="text-xs text-[#666] leading-relaxed mb-2">{item.description}</p>
+          <p className="text-xs text-[#9CA3AF] leading-relaxed mb-2">{item.description}</p>
         )}
 
         {item.impact_hypothesis && (
-          <p className="text-[11px] text-[#888] italic mb-2">{item.impact_hypothesis}</p>
+          <p className="text-[11px] text-[#9CA3AF] italic mb-2">{item.impact_hypothesis}</p>
         )}
 
         {item.outcome && (
@@ -235,7 +235,7 @@ function RoadmapRow({
                 href={l.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-[11px] text-[#555] hover:text-[#1A1A1A] transition-colors"
+                className="inline-flex items-center gap-1 text-[11px] text-[#C7C9CD] hover:text-[#E5E5EA] transition-colors"
               >
                 {l.label}
                 <ArrowTopRightOnSquareIcon className="size-2.5" />
@@ -251,7 +251,7 @@ function RoadmapRow({
           <select
             value={item.stage}
             onChange={(e) => onMove(e.target.value as RoadmapStage)}
-            className="text-[11px] px-2 py-1 border border-[#E8E8E8] rounded-md bg-white text-[#555] focus:border-[#1B1B1B] outline-none"
+            className="text-[11px] px-2 py-1 border border-[#2A2A2A] rounded-md bg-[#181818] text-[#C7C9CD] focus:border-white outline-none"
           >
             {STAGE_ORDER.map((s) => (
               <option key={s} value={s}>{STAGE_LABELS[s]}</option>
@@ -259,14 +259,14 @@ function RoadmapRow({
           </select>
           <button
             onClick={onEdit}
-            className="p-1.5 text-[#999] hover:text-[#1A1A1A] transition-colors"
+            className="p-1.5 text-[#71757D] hover:text-[#E5E5EA] transition-colors"
             title="Edit"
           >
             <PencilSquareIcon className="size-4" />
           </button>
           <button
             onClick={onDelete}
-            className="p-1.5 text-[#999] hover:text-red-600 transition-colors"
+            className="p-1.5 text-[#71757D] hover:text-red-600 transition-colors"
             title="Delete"
           >
             <TrashIcon className="size-4" />
@@ -327,7 +327,7 @@ function RoadmapForm({
   };
 
   return (
-    <div className="border border-[#E8E8E8] rounded-xl bg-[#FAFAFA] p-4 space-y-3">
+    <div className="border border-[#2A2A2A] rounded-xl bg-[#0C0C0C] p-4 space-y-3">
       <div>
         <label className={labelClass}>Title *</label>
         <input
@@ -440,13 +440,13 @@ function RoadmapForm({
         <button
           onClick={handleSubmit}
           disabled={!canSave || saving}
-          className="px-4 py-2 text-xs font-semibold text-white bg-[#1B1B1B] rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40"
+          className="px-4 py-2 text-xs font-semibold text-[#0C0C0C] bg-white rounded-lg hover:bg-[#F3F4F6] transition-colors disabled:opacity-40"
         >
           {saving ? "Saving…" : initial ? "Save changes" : "Add item"}
         </button>
         <button
           onClick={onCancel}
-          className="px-4 py-2 text-xs font-medium text-[#777] hover:text-[#1A1A1A] transition-colors"
+          className="px-4 py-2 text-xs font-medium text-[#9CA3AF] hover:text-[#E5E5EA] transition-colors"
         >
           Cancel
         </button>

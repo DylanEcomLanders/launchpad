@@ -209,16 +209,16 @@ export default function PriceCalculatorPage() {
       <div className="relative z-10 max-w-3xl mx-auto px-6 md:px-12 py-16 md:py-24">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
+          <h1 className="text-[28px] font-bold mb-2">
             Price Calculator
           </h1>
-          <p className="text-[#7A7A7A]">
+          <p className="text-[#71757D]">
             Select deliverables and quantities to calculate project costs and
             margins
           </p>
           {/* Share Price List Links */}
           <div className="flex flex-wrap items-center gap-3 mt-4">
-            <span className="text-xs font-medium text-[#A0A0A0]">Share price list:</span>
+            <span className="text-xs font-medium text-[#71757D]">Share price list:</span>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => {
@@ -227,7 +227,7 @@ export default function PriceCalculatorPage() {
                   setCopiedShareLink(true);
                   setTimeout(() => setCopiedShareLink(false), 2000);
                 }}
-                className="flex items-center gap-1 text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+                className="flex items-center gap-1 text-xs font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors"
               >
                 <ClipboardDocumentIcon className="size-3.5" />
                 {copiedShareLink ? "Copied!" : "/pricing"}
@@ -236,7 +236,7 @@ export default function PriceCalculatorPage() {
                 href="/pricing"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
+                className="text-[#71757D] hover:text-[#E5E5EA] transition-colors"
               >
                 <ArrowTopRightOnSquareIcon className="size-3.5" />
               </a>
@@ -257,8 +257,8 @@ export default function PriceCalculatorPage() {
                     onClick={() => toggleRole(role)}
                     className={`px-3 py-2 text-sm font-medium rounded-md border transition-colors ${
                       isOn
-                        ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
-                        : "bg-white text-[#A0A0A0] border-[#E5E5EA] hover:text-[#7A7A7A] hover:border-[#C5C5C5]"
+                        ? "bg-white text-[#0C0C0C] border-white"
+                        : "bg-[#181818] text-[#71757D] border-[#2A2A2A] hover:text-[#71757D] hover:border-[#C5C5C5]"
                     }`}
                   >
                     {roleLabels[role]}
@@ -289,24 +289,24 @@ export default function PriceCalculatorPage() {
             return (
               <div key={cat}>
                 <label className={labelClass}>{cat}</label>
-                <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg overflow-hidden">
+                <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg overflow-hidden">
                   {/* Column headers */}
-                  <div className="hidden md:grid md:grid-cols-[1fr_80px_80px_72px] gap-3 px-5 py-2.5 border-b border-[#E5E5EA] bg-[#EDEDEF]">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0]">
+                  <div className="hidden md:grid md:grid-cols-[1fr_80px_80px_72px] gap-3 px-5 py-2.5 border-b border-[#2A2A2A] bg-[#222222]">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">
                       Deliverable
                     </span>
-                    <span className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] text-right">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-[#71757D] text-right">
                       Internal
                     </span>
-                    <span className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] text-right">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-[#71757D] text-right">
                       Client
                     </span>
-                    <span className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] text-center">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-[#71757D] text-center">
                       Qty
                     </span>
                   </div>
 
-                  <div className="divide-y divide-[#E5E5EA]">
+                  <div className="divide-y divide-[#2A2A2A]">
                     {items.map((d) => {
                       const qty = getQty(d.name);
                       const isActive = qty > 0;
@@ -319,12 +319,12 @@ export default function PriceCalculatorPage() {
                       return (
                         <div
                           key={d.name}
-                          className={`px-5 py-3 transition-colors ${isActive ? "bg-white" : ""}`}
+                          className={`px-5 py-3 transition-colors ${isActive ? "bg-[#181818]" : ""}`}
                         >
                           {/* Desktop row */}
                           <div className="hidden md:grid md:grid-cols-[1fr_80px_80px_72px] gap-3 items-center">
                             <span
-                              className={`text-sm font-medium ${isActive ? "text-[#1B1B1B]" : "text-[#7A7A7A]"}`}
+                              className={`text-sm font-medium ${isActive ? "text-[#E5E5EA]" : "text-[#71757D]"}`}
                             >
                               {d.name}
                             </span>
@@ -342,14 +342,14 @@ export default function PriceCalculatorPage() {
                                 </>
                               ) : (
                                 <span
-                                  className={`text-sm tabular-nums ${isActive ? "text-[#1B1B1B]" : "text-[#A0A0A0]"}`}
+                                  className={`text-sm tabular-nums ${isActive ? "text-[#E5E5EA]" : "text-[#71757D]"}`}
                                 >
                                   {activeRoleCount > 0 ? fmt.format(cost) : "—"}
                                 </span>
                               )}
                             </div>
                             <span
-                              className={`text-sm tabular-nums text-right ${isActive ? "text-[#1B1B1B]" : "text-[#A0A0A0]"}`}
+                              className={`text-sm tabular-nums text-right ${isActive ? "text-[#E5E5EA]" : "text-[#71757D]"}`}
                             >
                               {fmt.format(price)}
                             </span>
@@ -357,19 +357,19 @@ export default function PriceCalculatorPage() {
                               <button
                                 onClick={() => setQty(d.name, qty - 1)}
                                 disabled={qty === 0}
-                                className="p-1 rounded hover:bg-[#E5E5EA] text-[#A0A0A0] hover:text-[#7A7A7A] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                className="p-1 rounded hover:bg-[#2A2A2A] text-[#71757D] hover:text-[#71757D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                                 aria-label={`Decrease ${d.name} quantity`}
                               >
                                 <MinusIcon className="size-3" />
                               </button>
                               <span
-                                className={`text-sm font-semibold tabular-nums w-5 text-center ${isActive ? "text-[#1B1B1B]" : "text-[#A0A0A0]"}`}
+                                className={`text-sm font-semibold tabular-nums w-5 text-center ${isActive ? "text-[#E5E5EA]" : "text-[#71757D]"}`}
                               >
                                 {qty}
                               </span>
                               <button
                                 onClick={() => setQty(d.name, qty + 1)}
-                                className="p-1 rounded hover:bg-[#E5E5EA] text-[#A0A0A0] hover:text-[#7A7A7A] transition-colors"
+                                className="p-1 rounded hover:bg-[#2A2A2A] text-[#71757D] hover:text-[#71757D] transition-colors"
                                 aria-label={`Increase ${d.name} quantity`}
                               >
                                 <PlusIcon className="size-3" />
@@ -381,12 +381,12 @@ export default function PriceCalculatorPage() {
                           <div className="md:hidden flex items-center justify-between gap-3">
                             <div className="flex-1 min-w-0">
                               <span
-                                className={`text-sm font-medium block ${isActive ? "text-[#1B1B1B]" : "text-[#7A7A7A]"}`}
+                                className={`text-sm font-medium block ${isActive ? "text-[#E5E5EA]" : "text-[#71757D]"}`}
                               >
                                 {d.name}
                               </span>
                               <span
-                                className={`text-xs tabular-nums ${isActive ? "text-[#7A7A7A]" : "text-[#A0A0A0]"}`}
+                                className={`text-xs tabular-nums ${isActive ? "text-[#71757D]" : "text-[#71757D]"}`}
                               >
                                 {activeRoleCount > 0 ? fmt.format(cost) : "—"}
                                 {hasDiscount && activeRoleCount > 0 && (
@@ -402,19 +402,19 @@ export default function PriceCalculatorPage() {
                               <button
                                 onClick={() => setQty(d.name, qty - 1)}
                                 disabled={qty === 0}
-                                className="p-1 rounded hover:bg-[#E5E5EA] text-[#A0A0A0] hover:text-[#7A7A7A] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                className="p-1 rounded hover:bg-[#2A2A2A] text-[#71757D] hover:text-[#71757D] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                                 aria-label={`Decrease ${d.name} quantity`}
                               >
                                 <MinusIcon className="size-3.5" />
                               </button>
                               <span
-                                className={`text-sm font-semibold tabular-nums w-5 text-center ${isActive ? "text-[#1B1B1B]" : "text-[#A0A0A0]"}`}
+                                className={`text-sm font-semibold tabular-nums w-5 text-center ${isActive ? "text-[#E5E5EA]" : "text-[#71757D]"}`}
                               >
                                 {qty}
                               </span>
                               <button
                                 onClick={() => setQty(d.name, qty + 1)}
-                                className="p-1 rounded hover:bg-[#E5E5EA] text-[#A0A0A0] hover:text-[#7A7A7A] transition-colors"
+                                className="p-1 rounded hover:bg-[#2A2A2A] text-[#71757D] hover:text-[#71757D] transition-colors"
                                 aria-label={`Increase ${d.name} quantity`}
                               >
                                 <PlusIcon className="size-3.5" />
@@ -434,32 +434,32 @@ export default function PriceCalculatorPage() {
           {hasActiveItems && (
             <div>
               <label className={labelClass}>Breakdown</label>
-              <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg overflow-hidden">
-                <div className="hidden md:grid md:grid-cols-[1fr_80px_80px_90px] gap-3 px-5 py-2.5 border-b border-[#E5E5EA] bg-[#EDEDEF]">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0]">
+              <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg overflow-hidden">
+                <div className="hidden md:grid md:grid-cols-[1fr_80px_80px_90px] gap-3 px-5 py-2.5 border-b border-[#2A2A2A] bg-[#222222]">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">
                     Deliverable
                   </span>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] text-right">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[#71757D] text-right">
                     Internal
                   </span>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] text-right">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[#71757D] text-right">
                     Client
                   </span>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] text-right">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[#71757D] text-right">
                     Margin
                   </span>
                 </div>
 
-                <div className="divide-y divide-[#E5E5EA]">
+                <div className="divide-y divide-[#2A2A2A]">
                   {activeItems.map((item) => (
                     <div key={item.name} className="px-5 py-3">
                       {/* Desktop */}
                       <div className="hidden md:grid md:grid-cols-[1fr_80px_80px_90px] gap-3 items-center">
                         <div>
-                          <span className="text-sm text-[#1B1B1B]">
+                          <span className="text-sm text-[#E5E5EA]">
                             {item.name}
                             {item.qty > 1 && (
-                              <span className="text-[#A0A0A0] ml-1">
+                              <span className="text-[#71757D] ml-1">
                                 ×{item.qty}
                               </span>
                             )}
@@ -467,17 +467,17 @@ export default function PriceCalculatorPage() {
                           {/* Role cost breakdown */}
                           <div className="flex gap-3 mt-1">
                             {activeRoles.has("dev") && item.lineDevCost > 0 && (
-                              <span className="text-xs text-[#A0A0A0]">
+                              <span className="text-xs text-[#71757D]">
                                 Dev {fmt.format(item.lineDevCost)}
                               </span>
                             )}
                             {activeRoles.has("designer") && item.lineDesignerCost > 0 && (
-                              <span className="text-xs text-[#A0A0A0]">
+                              <span className="text-xs text-[#71757D]">
                                 Design {fmt.format(item.lineDesignerCost)}
                               </span>
                             )}
                             {activeRoles.has("juniorDesigner") && item.lineJuniorCost > 0 && (
-                              <span className="text-xs text-[#A0A0A0]">
+                              <span className="text-xs text-[#71757D]">
                                 Jr {fmt.format(item.lineJuniorCost)}
                               </span>
                             )}
@@ -488,10 +488,10 @@ export default function PriceCalculatorPage() {
                             )}
                           </div>
                         </div>
-                        <span className="text-sm tabular-nums text-right text-[#7A7A7A]">
+                        <span className="text-sm tabular-nums text-right text-[#71757D]">
                           {fmt.format(item.lineCost)}
                         </span>
-                        <span className="text-sm tabular-nums text-right text-[#1B1B1B]">
+                        <span className="text-sm tabular-nums text-right text-[#E5E5EA]">
                           {fmt.format(item.linePrice)}
                         </span>
                         <div className="text-right">
@@ -499,12 +499,12 @@ export default function PriceCalculatorPage() {
                             className={`text-sm tabular-nums font-medium ${
                               item.lineMargin < 0
                                 ? "text-red-600"
-                                : "text-[#1B1B1B]"
+                                : "text-[#E5E5EA]"
                             }`}
                           >
                             {fmt.format(item.lineMargin)}
                           </span>
-                          <span className="text-xs text-[#A0A0A0] ml-1">
+                          <span className="text-xs text-[#71757D] ml-1">
                             {item.lineMarginPercent.toFixed(0)}%
                           </span>
                         </div>
@@ -513,10 +513,10 @@ export default function PriceCalculatorPage() {
                       {/* Mobile */}
                       <div className="md:hidden">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium text-[#1B1B1B]">
+                          <span className="text-sm font-medium text-[#E5E5EA]">
                             {item.name}
                             {item.qty > 1 && (
-                              <span className="text-[#A0A0A0] ml-1">
+                              <span className="text-[#71757D] ml-1">
                                 ×{item.qty}
                               </span>
                             )}
@@ -525,14 +525,14 @@ export default function PriceCalculatorPage() {
                             className={`text-sm font-medium tabular-nums ${
                               item.lineMargin < 0
                                 ? "text-red-600"
-                                : "text-[#1B1B1B]"
+                                : "text-[#E5E5EA]"
                             }`}
                           >
                             {fmt.format(item.lineMargin)}
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-xs tabular-nums text-[#A0A0A0]">
+                          <span className="text-xs tabular-nums text-[#71757D]">
                             {fmt.format(item.lineCost)} internal ·{" "}
                             {fmt.format(item.linePrice)} client
                             {item.discountRate > 0 && (
@@ -541,24 +541,24 @@ export default function PriceCalculatorPage() {
                               </span>
                             )}
                           </span>
-                          <span className="text-xs text-[#A0A0A0]">
+                          <span className="text-xs text-[#71757D]">
                             {item.lineMarginPercent.toFixed(0)}%
                           </span>
                         </div>
                         {/* Role breakdown on mobile */}
                         <div className="flex gap-3 mt-1">
                           {activeRoles.has("dev") && item.lineDevCost > 0 && (
-                            <span className="text-xs text-[#A0A0A0]">
+                            <span className="text-xs text-[#71757D]">
                               Dev {fmt.format(item.lineDevCost)}
                             </span>
                           )}
                           {activeRoles.has("designer") && item.lineDesignerCost > 0 && (
-                            <span className="text-xs text-[#A0A0A0]">
+                            <span className="text-xs text-[#71757D]">
                               Design {fmt.format(item.lineDesignerCost)}
                             </span>
                           )}
                           {activeRoles.has("juniorDesigner") && item.lineJuniorCost > 0 && (
-                            <span className="text-xs text-[#A0A0A0]">
+                            <span className="text-xs text-[#71757D]">
                               Jr {fmt.format(item.lineJuniorCost)}
                             </span>
                           )}
@@ -569,46 +569,46 @@ export default function PriceCalculatorPage() {
                 </div>
 
                 {/* Totals row */}
-                <div className="px-5 py-4 border-t-2 border-[#E5E5EA] bg-white">
+                <div className="px-5 py-4 border-t-2 border-[#2A2A2A] bg-[#181818]">
                   <div className="hidden md:grid md:grid-cols-[1fr_80px_80px_90px] gap-3 items-center">
                     <div>
-                      <span className="text-sm font-semibold text-[#1B1B1B]">
+                      <span className="text-sm font-semibold text-[#E5E5EA]">
                         Total
                       </span>
                       {/* Role total breakdown */}
                       <div className="flex gap-3 mt-1">
                         {activeRoles.has("dev") && roleTotals.dev > 0 && (
-                          <span className="text-xs font-medium text-[#A0A0A0]">
+                          <span className="text-xs font-medium text-[#71757D]">
                             Dev {fmt.format(roleTotals.dev)}
                           </span>
                         )}
                         {activeRoles.has("designer") && roleTotals.designer > 0 && (
-                          <span className="text-xs font-medium text-[#A0A0A0]">
+                          <span className="text-xs font-medium text-[#71757D]">
                             Design {fmt.format(roleTotals.designer)}
                           </span>
                         )}
                         {activeRoles.has("juniorDesigner") && roleTotals.juniorDesigner > 0 && (
-                          <span className="text-xs font-medium text-[#A0A0A0]">
+                          <span className="text-xs font-medium text-[#71757D]">
                             Jr {fmt.format(roleTotals.juniorDesigner)}
                           </span>
                         )}
                       </div>
                     </div>
-                    <span className="text-sm font-semibold tabular-nums text-right text-[#7A7A7A]">
+                    <span className="text-sm font-semibold tabular-nums text-right text-[#71757D]">
                       {fmtDetailed.format(totalCost)}
                     </span>
-                    <span className="text-sm font-semibold tabular-nums text-right text-[#1B1B1B]">
+                    <span className="text-sm font-semibold tabular-nums text-right text-[#E5E5EA]">
                       {fmtDetailed.format(totalPrice)}
                     </span>
                     <div className="text-right">
                       <span
                         className={`text-sm font-semibold tabular-nums ${
-                          totalMargin < 0 ? "text-red-600" : "text-[#1B1B1B]"
+                          totalMargin < 0 ? "text-red-600" : "text-[#E5E5EA]"
                         }`}
                       >
                         {fmtDetailed.format(totalMargin)}
                       </span>
-                      <span className="text-xs font-medium text-[#A0A0A0] ml-1">
+                      <span className="text-xs font-medium text-[#71757D] ml-1">
                         {marginPercent.toFixed(1)}%
                       </span>
                     </div>
@@ -616,40 +616,40 @@ export default function PriceCalculatorPage() {
 
                   <div className="md:hidden">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-semibold text-[#1B1B1B]">
+                      <span className="text-sm font-semibold text-[#E5E5EA]">
                         Total
                       </span>
                       <span
                         className={`text-sm font-semibold tabular-nums ${
-                          totalMargin < 0 ? "text-red-600" : "text-[#1B1B1B]"
+                          totalMargin < 0 ? "text-red-600" : "text-[#E5E5EA]"
                         }`}
                       >
                         {fmtDetailed.format(totalMargin)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs tabular-nums text-[#A0A0A0]">
+                      <span className="text-xs tabular-nums text-[#71757D]">
                         {fmtDetailed.format(totalCost)} internal ·{" "}
                         {fmtDetailed.format(totalPrice)} client
                       </span>
-                      <span className="text-xs font-medium text-[#A0A0A0]">
+                      <span className="text-xs font-medium text-[#71757D]">
                         {marginPercent.toFixed(1)}%
                       </span>
                     </div>
                     {/* Role totals on mobile */}
                     <div className="flex gap-3 mt-1">
                       {activeRoles.has("dev") && roleTotals.dev > 0 && (
-                        <span className="text-xs font-medium text-[#A0A0A0]">
+                        <span className="text-xs font-medium text-[#71757D]">
                           Dev {fmt.format(roleTotals.dev)}
                         </span>
                       )}
                       {activeRoles.has("designer") && roleTotals.designer > 0 && (
-                        <span className="text-xs font-medium text-[#A0A0A0]">
+                        <span className="text-xs font-medium text-[#71757D]">
                           Design {fmt.format(roleTotals.designer)}
                         </span>
                       )}
                       {activeRoles.has("juniorDesigner") && roleTotals.juniorDesigner > 0 && (
-                        <span className="text-xs font-medium text-[#A0A0A0]">
+                        <span className="text-xs font-medium text-[#71757D]">
                           Jr {fmt.format(roleTotals.juniorDesigner)}
                         </span>
                       )}
@@ -664,43 +664,43 @@ export default function PriceCalculatorPage() {
           {hasActiveItems && (
             <div>
               <label className={labelClass}>Project Summary</label>
-              <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-5">
+              <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg p-5">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-1">
                       Internal Cost
                     </p>
-                    <p className="text-lg font-semibold tabular-nums text-[#1B1B1B]">
+                    <p className="text-lg font-semibold tabular-nums text-[#E5E5EA]">
                       {fmtDetailed.format(totalCost)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-1">
                       Client Price
                     </p>
-                    <p className="text-lg font-semibold tabular-nums text-[#1B1B1B]">
+                    <p className="text-lg font-semibold tabular-nums text-[#E5E5EA]">
                       {fmtDetailed.format(totalPrice)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-1">
                       Total Margin
                     </p>
                     <p
                       className={`text-lg font-semibold tabular-nums ${
-                        totalMargin < 0 ? "text-red-600" : "text-[#1B1B1B]"
+                        totalMargin < 0 ? "text-red-600" : "text-[#E5E5EA]"
                       }`}
                     >
                       {fmtDetailed.format(totalMargin)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-1">
                       Margin %
                     </p>
                     <p
                       className={`text-lg font-semibold tabular-nums ${
-                        totalMargin < 0 ? "text-red-600" : "text-[#1B1B1B]"
+                        totalMargin < 0 ? "text-red-600" : "text-[#E5E5EA]"
                       }`}
                     >
                       {marginPercent.toFixed(1)}%
@@ -710,37 +710,37 @@ export default function PriceCalculatorPage() {
 
                 {/* Role cost breakdown in summary */}
                 {activeRoleCount > 0 && (
-                  <div className="mt-4 pt-4 border-t border-[#E5E5EA]">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] mb-2">
+                  <div className="mt-4 pt-4 border-t border-[#2A2A2A]">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-2">
                       Cost by Role
                     </p>
                     <div className="flex flex-wrap gap-x-6 gap-y-1">
                       {activeRoles.has("dev") && (
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-[#7A7A7A]">
+                          <span className="text-xs text-[#71757D]">
                             Developer
                           </span>
-                          <span className="text-xs font-semibold tabular-nums text-[#1B1B1B]">
+                          <span className="text-xs font-semibold tabular-nums text-[#E5E5EA]">
                             {fmtDetailed.format(roleTotals.dev)}
                           </span>
                         </div>
                       )}
                       {activeRoles.has("designer") && (
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-[#7A7A7A]">
+                          <span className="text-xs text-[#71757D]">
                             Designer
                           </span>
-                          <span className="text-xs font-semibold tabular-nums text-[#1B1B1B]">
+                          <span className="text-xs font-semibold tabular-nums text-[#E5E5EA]">
                             {fmtDetailed.format(roleTotals.designer)}
                           </span>
                         </div>
                       )}
                       {activeRoles.has("juniorDesigner") && (
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-[#7A7A7A]">
+                          <span className="text-xs text-[#71757D]">
                             Junior Designer
                           </span>
-                          <span className="text-xs font-semibold tabular-nums text-[#1B1B1B]">
+                          <span className="text-xs font-semibold tabular-nums text-[#E5E5EA]">
                             {fmtDetailed.format(roleTotals.juniorDesigner)}
                           </span>
                         </div>
@@ -755,8 +755,8 @@ export default function PriceCalculatorPage() {
                 )}
 
                 {/* Payment Processing Fees */}
-                <div className="mt-4 pt-4 border-t border-[#E5E5EA]">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] mb-3">
+                <div className="mt-4 pt-4 border-t border-[#2A2A2A]">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-3">
                     Payment Processing Fees
                   </p>
                   <div className="space-y-2">
@@ -770,12 +770,12 @@ export default function PriceCalculatorPage() {
                             className="flex items-center gap-2"
                           >
                             <div className={`size-4 rounded border transition-colors flex items-center justify-center ${
-                              isOn ? "bg-[#1B1B1B] border-[#1B1B1B]" : "border-[#CCC] bg-white"
+                              isOn ? "bg-white border-[#0C0C0C]" : "border-[#383838] bg-[#181818]"
                             }`}>
                               {isOn && <svg className="size-2.5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg>}
                             </div>
-                            <span className="text-xs text-[#555]">{fee.label}</span>
-                            <span className="text-xs text-[#AAA]">{fee.description}</span>
+                            <span className="text-xs text-[#C7C9CD]">{fee.label}</span>
+                            <span className="text-xs text-[#9CA3AF]">{fee.description}</span>
                           </button>
                           {isOn && (
                             <span className="text-xs font-semibold tabular-nums text-red-500">
@@ -797,20 +797,20 @@ export default function PriceCalculatorPage() {
                     const netMargin = netRevenue - totalCost;
                     const netMarginPct = netRevenue > 0 ? (netMargin / netRevenue) * 100 : 0;
                     return (
-                      <div className="mt-3 pt-3 border-t border-[#E5E5EA]">
+                      <div className="mt-3 pt-3 border-t border-[#2A2A2A]">
                         <div className="grid grid-cols-3 gap-4">
                           <div>
-                            <p className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] mb-0.5">Total Fees</p>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-0.5">Total Fees</p>
                             <p className="text-sm font-semibold tabular-nums text-red-500">-{fmtDetailed.format(totalFees)}</p>
                           </div>
                           <div>
-                            <p className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] mb-0.5">Net Revenue</p>
-                            <p className="text-sm font-semibold tabular-nums text-[#1B1B1B]">{fmtDetailed.format(netRevenue)}</p>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-0.5">Net Revenue</p>
+                            <p className="text-sm font-semibold tabular-nums text-[#E5E5EA]">{fmtDetailed.format(netRevenue)}</p>
                           </div>
                           <div>
-                            <p className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] mb-0.5">Net Margin</p>
-                            <p className={`text-sm font-semibold tabular-nums ${netMargin < 0 ? "text-red-600" : "text-[#1B1B1B]"}`}>
-                              {fmtDetailed.format(netMargin)} <span className="text-xs text-[#AAA]">{netMarginPct.toFixed(1)}%</span>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-0.5">Net Margin</p>
+                            <p className={`text-sm font-semibold tabular-nums ${netMargin < 0 ? "text-red-600" : "text-[#E5E5EA]"}`}>
+                              {fmtDetailed.format(netMargin)} <span className="text-xs text-[#9CA3AF]">{netMarginPct.toFixed(1)}%</span>
                             </p>
                           </div>
                         </div>

@@ -16,12 +16,12 @@ function TrafficNodeComponent({ data: rawData, selected }: NodeProps) {
   return (
     <div
       className={`
-        min-w-[170px] max-w-[220px] rounded-xl border bg-white transition-shadow
-        ${selected ? "border-[#1B1B1B] shadow-lg" : "border-[#E5E5EA] shadow-sm hover:shadow-md"}
+        min-w-[170px] max-w-[220px] rounded-xl border bg-[#181818] transition-shadow
+        ${selected ? "border-white shadow-lg" : "border-[#2A2A2A] shadow-sm hover:shadow-md"}
       `}
     >
       {/* Header bar */}
-      <div className="flex items-center gap-1.5 px-3.5 py-2 border-b border-[#F0F0F0]">
+      <div className="flex items-center gap-1.5 px-3.5 py-2 border-b border-[#2A2A2A]">
         <span
           className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
           style={{ background: config.color, color: config.textColor }}
@@ -44,16 +44,16 @@ function TrafficNodeComponent({ data: rawData, selected }: NodeProps) {
             {stage.label}
           </span>
         )}
-        <span className="ml-auto text-[9px] font-medium text-[#CCC] uppercase tracking-wider">Traffic</span>
+        <span className="ml-auto text-[9px] font-medium text-[#C7C9CD] uppercase tracking-wider">Traffic</span>
       </div>
 
       {/* Body */}
       <div className="px-3.5 py-3">
-        <p className="text-[13px] font-semibold text-[#1B1B1B] leading-tight">{data.label}</p>
+        <p className="text-[13px] font-semibold text-[#E5E5EA] leading-tight">{data.label}</p>
 
         {data.metrics?.traffic != null && (
-          <p className="text-[11px] text-[#777] mt-2">
-            <span className="font-semibold text-[#1B1B1B]">{data.metrics.traffic.toLocaleString()}</span> visits
+          <p className="text-[11px] text-[#9CA3AF] mt-2">
+            <span className="font-semibold text-[#E5E5EA]">{data.metrics.traffic.toLocaleString()}</span> visits
           </p>
         )}
 
@@ -63,7 +63,7 @@ function TrafficNodeComponent({ data: rawData, selected }: NodeProps) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-1 mt-2.5 px-2 py-1 text-[10px] font-medium text-[#2563EB] bg-[#EFF6FF] rounded-md hover:bg-[#DBEAFE] transition-colors"
+            className="inline-flex items-center gap-1 mt-2.5 px-2 py-1 text-[10px] font-medium text-[#2563EB] bg-blue-500/15 rounded-md hover:bg-blue-500/15 transition-colors"
           >
             <svg className="size-2.5" viewBox="0 0 16 16" fill="currentColor"><path d="M4.5 2A2.5 2.5 0 002 4.5v7A2.5 2.5 0 004.5 14h7a2.5 2.5 0 002.5-2.5v-3a.5.5 0 00-1 0v3A1.5 1.5 0 0111.5 13h-7A1.5 1.5 0 013 11.5v-7A1.5 1.5 0 014.5 3h3a.5.5 0 000-1h-3zM9 2.5a.5.5 0 01.5-.5h4a.5.5 0 01.5.5v4a.5.5 0 01-1 0V3.707L8.354 8.354a.5.5 0 11-.708-.708L12.293 3H9.5a.5.5 0 01-.5-.5z" /></svg>
             Ad Preview

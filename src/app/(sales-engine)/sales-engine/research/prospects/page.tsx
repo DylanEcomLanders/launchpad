@@ -137,12 +137,12 @@ export default function EcomProspectingPage() {
   return (
     <div className="max-w-5xl mx-auto py-10 px-6">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">Ecom Prospecting</h1>
+        <h1 className="text-2xl font-bold">Ecom Prospecting</h1>
         <p className="text-sm text-[#7A7A7A] mt-1">Find and analyse Shopify stores by niche. Add prospects directly to your pipeline.</p>
       </div>
 
       {/* Search */}
-      <div className="border border-[#E5E5EA] rounded-xl bg-white p-5 mb-6">
+      <div className="border border-[#E5E5EA] rounded-xl bg-[#181818] p-5 mb-6">
         <div className="flex items-end gap-3">
           <div className="flex-1">
             <label className={labelClass}>Search by niche or keyword</label>
@@ -192,8 +192,8 @@ export default function EcomProspectingPage() {
           </div>
 
           {/* Table header */}
-          <div className="border border-[#E5E5EA] rounded-xl bg-white overflow-hidden">
-            <div className="grid grid-cols-[1fr_120px_80px_80px_100px_60px] gap-2 px-4 py-2 bg-[#FAFAFA] border-b border-[#E5E5EA] text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">
+          <div className="border border-[#E5E5EA] rounded-xl bg-[#181818] overflow-hidden">
+            <div className="grid grid-cols-[1fr_120px_80px_80px_100px_60px] gap-2 px-4 py-2 bg-[#181818] border-b border-[#E5E5EA] text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">
               <span>Store</span>
               <span>Email</span>
               <span className="text-center">Products</span>
@@ -203,7 +203,7 @@ export default function EcomProspectingPage() {
             </div>
 
             {stores.map((store, i) => (
-              <div key={store.url || i} className="grid grid-cols-[1fr_120px_80px_80px_100px_60px] gap-2 px-4 py-3 border-b border-[#EDEDEF] last:border-0 items-center hover:bg-[#FAFAFA]">
+              <div key={store.url || i} className="grid grid-cols-[1fr_120px_80px_80px_100px_60px] gap-2 px-4 py-3 border-b border-[#EDEDEF] last:border-0 items-center hover:bg-[#222222]">
                 <div className="min-w-0">
                   <a href={store.url} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-[#1A1A1A] hover:underline truncate block">
                     {store.name || store.url}
@@ -218,9 +218,9 @@ export default function EcomProspectingPage() {
                     )}
                   </div>
                 </div>
-                <span className="text-[10px] text-[#777] truncate">{store.email || "—"}</span>
-                <span className="text-xs text-center text-[#777]">{store.products_count || "—"}</span>
-                <span className="text-[10px] text-center text-[#999]">{store.country || "—"}</span>
+                <span className="text-[10px] text-[#777] truncate">{store.email || "-"}</span>
+                <span className="text-xs text-center text-[#777]">{store.products_count || "-"}</span>
+                <span className="text-[10px] text-center text-[#999]">{store.country || "-"}</span>
                 <div className="flex items-center justify-center">
                   <div className="w-12 h-1.5 bg-[#F0F0F0] rounded-full overflow-hidden">
                     <div

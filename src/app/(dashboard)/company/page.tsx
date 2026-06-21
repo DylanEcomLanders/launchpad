@@ -116,7 +116,7 @@ export default function CompanyOverview() {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-32 bg-[#F7F8FA] rounded-xl animate-pulse" />
+          <div key={i} className="h-32 bg-[#0C0C0C] rounded-xl animate-pulse" />
         ))}
       </div>
     );
@@ -157,12 +157,12 @@ export default function CompanyOverview() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 bg-white border border-[#E5E5EA] rounded-xl p-5 shadow-[var(--shadow-soft)]">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
+        <div className="lg:col-span-2 bg-[#181818] border border-[#2A2A2A] rounded-xl p-5 shadow-[var(--shadow-soft)]">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-4">
             Recent activity
           </h2>
           {activity.length === 0 ? (
-            <div className="text-xs text-[#7A7A7A] py-2">
+            <div className="text-xs text-[#71757D] py-2">
               No activity yet. Add people, candidates, or invoices to see them here.
             </div>
           ) : (
@@ -171,22 +171,22 @@ export default function CompanyOverview() {
                 <li key={e.id} className="flex items-start justify-between gap-3 text-sm">
                   <div className="flex-1 min-w-0">
                     {e.href ? (
-                      <Link href={e.href} className="text-[#1B1B1B] hover:underline">
+                      <Link href={e.href} className="text-[#E5E5EA] hover:underline">
                         {e.text}
                       </Link>
                     ) : (
-                      <span className="text-[#1B1B1B]">{e.text}</span>
+                      <span className="text-[#E5E5EA]">{e.text}</span>
                     )}
                   </div>
-                  <span className="text-[11px] text-[#7A7A7A] whitespace-nowrap">{fmtDateUK(e.ts)}</span>
+                  <span className="text-[11px] text-[#71757D] whitespace-nowrap">{fmtDateUK(e.ts)}</span>
                 </li>
               ))}
             </ul>
           )}
         </div>
 
-        <div className="bg-white border border-[#E5E5EA] rounded-xl p-5 shadow-[var(--shadow-soft)]">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
+        <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-5 shadow-[var(--shadow-soft)]">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-4">
             Jump to
           </h2>
           <div className="space-y-2">
@@ -219,16 +219,16 @@ function StatCard({
   return (
     <Link
       href={href}
-      className="block bg-white border border-[#E5E5EA] rounded-xl p-5 hover:border-[#1B1B1B] transition-colors shadow-[var(--shadow-soft)]"
+      className="block bg-[#181818] border border-[#2A2A2A] rounded-xl p-5 hover:border-white transition-colors shadow-[var(--shadow-soft)]"
     >
-      <div className="flex items-center gap-2 text-[#7A7A7A] mb-2">
+      <div className="flex items-center gap-2 text-[#71757D] mb-2">
         <Icon className="size-4" />
         <span className="text-[11px] uppercase tracking-wider font-semibold">{label}</span>
       </div>
-      <div className={`text-2xl font-semibold ${accent === "red" ? "text-[#B91C1C]" : "text-[#1B1B1B]"}`}>
+      <div className={`text-2xl font-semibold ${accent === "red" ? "text-[#B91C1C]" : "text-[#E5E5EA]"}`}>
         {value}
       </div>
-      {sub && <div className="text-xs text-[#7A7A7A] mt-1">{sub}</div>}
+      {sub && <div className="text-xs text-[#71757D] mt-1">{sub}</div>}
     </Link>
   );
 }
@@ -237,10 +237,10 @@ function QuickLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="flex items-center justify-between text-sm text-[#1B1B1B] hover:bg-[#F7F8FA] rounded-lg px-3 py-2"
+      className="flex items-center justify-between text-sm text-[#E5E5EA] hover:bg-[#0C0C0C] rounded-lg px-3 py-2"
     >
       {label}
-      <ArrowRightIcon className="size-3.5 text-[#7A7A7A]" />
+      <ArrowRightIcon className="size-3.5 text-[#71757D]" />
     </Link>
   );
 }

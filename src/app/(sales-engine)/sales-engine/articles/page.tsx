@@ -20,7 +20,7 @@ const store = createStore<Article>({ table: "articles", lsKey: "launchpad-articl
 const TOPIC_SUGGESTIONS = [
   "How to actually fix your PDP and convert traffic",
   "Why most Shopify stores waste 70% of their ad spend on the landing page",
-  "The advertorial playbook — how to warm cold traffic before your PDP",
+  "The advertorial playbook - how to warm cold traffic before your PDP",
   "5 A/B tests every DTC brand should run this month",
   "Why your homepage isn't a sales page (and what to do about it)",
   "The subscription framing trick that adds 30% to AOV",
@@ -31,8 +31,8 @@ const TOPIC_SUGGESTIONS = [
   "What I learned building 200+ landing pages for DTC brands",
   "How to structure a listicle that actually converts cold traffic",
   "The funnel most DTC brands are missing between ads and PDP",
-  "Social proof mechanics — why 4.8 stars converts better than 5.0",
-  "Mobile PDP optimisation — where 80% of your revenue is leaking",
+  "Social proof mechanics - why 4.8 stars converts better than 5.0",
+  "Mobile PDP optimisation - where 80% of your revenue is leaking",
 ];
 
 export default function ArticlesPage() {
@@ -135,7 +135,7 @@ export default function ArticlesPage() {
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-xl font-bold tracking-tight">Article Library</h1>
+              <h1 className="text-xl font-bold">Article Library</h1>
               <p className="text-xs text-[#AAA] mt-1">{articles.length} articles · {articles.filter(a => a.status === "approved").length} ready to post</p>
             </div>
             <button

@@ -37,12 +37,12 @@ export function MustDosRow({
 
   return (
     <>
-      <section className="mb-5 rounded-lg border border-[#E5E5EA] bg-white px-4 py-3">
+      <section className="mb-5 rounded-lg border border-[#2A2A2A] bg-[#181818] px-4 py-3">
         <div className="flex items-baseline justify-between mb-2">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
             Must dos
           </span>
-          <span className="text-[10px] text-[#999] tabular-nums">
+          <span className="text-[10px] text-[#71757D] tabular-nums">
             {completedCount}/4 complete
           </span>
         </div>
@@ -58,10 +58,10 @@ export function MustDosRow({
                 onClick={() => onOpen(key)}
                 className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1.5 rounded-full border transition-colors ${
                   isComplete
-                    ? "border-[#1B5E20] bg-[#E8F5E9] text-[#1B5E20]"
+                    ? "border-[#1B5E20] bg-emerald-500/15 text-[#1B5E20]"
                     : checked > 0
                       ? "border-[#FFB300] bg-[#FFF8E1] text-[#E65100]"
-                      : "border-[#E5E5EA] bg-white text-[#666] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"
+                      : "border-[#2A2A2A] bg-[#181818] text-[#9CA3AF] hover:border-white hover:text-[#E5E5EA]"
                 }`}
               >
                 <span className="text-[10px]">

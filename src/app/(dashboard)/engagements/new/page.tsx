@@ -117,20 +117,20 @@ export default function NewEngagementPage() {
     <div className="px-6 py-6 max-w-2xl mx-auto">
       <Link
         href="/engagements"
-        className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#666] hover:text-[#1B1B1B] mb-4"
+        className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#9CA3AF] hover:text-[#E5E5EA] mb-4"
       >
         <ArrowLeftIcon className="size-3" />
         All clients
       </Link>
 
-      <header className="mb-6 border-b border-[#E5E5EA] pb-4">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
+      <header className="mb-6 border-b border-[#2A2A2A] pb-4">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
           Internal · Delivery
         </p>
-        <h1 className="text-2xl font-semibold tracking-tight text-[#1B1B1B] mt-1">
+        <h1 className="text-2xl font-semibold text-[#E5E5EA] mt-1">
           New client
         </h1>
-        <p className="text-sm text-[#666] mt-1">
+        <p className="text-sm text-[#9CA3AF] mt-1">
           Spin up a client space. Brief details get filled in once the onboarding form lands.
         </p>
       </header>
@@ -138,7 +138,7 @@ export default function NewEngagementPage() {
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Kind selector */}
         <div>
-          <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#999] mb-2">
+          <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-2">
             Type
           </label>
           <div className="grid grid-cols-5 gap-2">
@@ -157,12 +157,12 @@ export default function NewEngagementPage() {
                   onClick={() => setKindChoice(opt.id)}
                   className={`text-left rounded-lg border p-2.5 transition-all ${
                     active
-                      ? "border-[#1B1B1B] bg-[#1B1B1B] text-white"
-                      : "border-[#E5E5EA] bg-white text-[#1B1B1B] hover:border-[#1B1B1B]"
+                      ? "border-[#E5E5EA] bg-[#E5E5EA] text-[#181818]"
+                      : "border-[#2A2A2A] bg-[#181818] text-[#E5E5EA] hover:border-white"
                   }`}
                 >
-                  <p className="text-[12px] font-semibold tracking-tight">{opt.label}</p>
-                  <p className={`text-[10px] ${active ? "text-white/70" : "text-[#999]"}`}>{opt.sub}</p>
+                  <p className="text-[12px] font-semibold">{opt.label}</p>
+                  <p className={`text-[10px] ${active ? "text-white/70" : "text-[#71757D]"}`}>{opt.sub}</p>
                 </button>
               );
             })}
@@ -192,7 +192,7 @@ export default function NewEngagementPage() {
             required
           />
           <div>
-            <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#999] mb-1">
+            <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1">
               Pod
             </label>
             <div className="flex gap-1.5">
@@ -203,8 +203,8 @@ export default function NewEngagementPage() {
                   onClick={() => setPodNumber(n)}
                   className={`flex-1 py-2 text-[12px] font-semibold rounded-md border transition-all ${
                     podNumber === n
-                      ? "border-[#1B1B1B] bg-[#1B1B1B] text-white"
-                      : "border-[#E5E5EA] bg-white text-[#1B1B1B] hover:border-[#1B1B1B]"
+                      ? "border-[#E5E5EA] bg-[#E5E5EA] text-[#181818]"
+                      : "border-[#2A2A2A] bg-[#181818] text-[#E5E5EA] hover:border-white"
                   }`}
                 >
                   Pod {n}
@@ -231,33 +231,33 @@ export default function NewEngagementPage() {
             placeholder="https://..."
           />
           <div>
-            <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#999] mb-1">
+            <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1">
               Kickoff date (Monday)
             </label>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full text-[12px] px-2 py-1.5 border border-[#E5E5EA] rounded focus:outline-none focus:border-[#1B1B1B]"
+              className="w-full text-[12px] px-2 py-1.5 border border-[#2A2A2A] rounded focus:outline-none focus:border-white"
             />
           </div>
         </div>
 
-        <div className="flex items-center gap-2 pt-4 border-t border-[#E5E5EA]">
+        <div className="flex items-center gap-2 pt-4 border-t border-[#2A2A2A]">
           <button
             type="submit"
             disabled={!valid || submitting}
-            className="text-[12px] font-semibold text-white bg-[#1B1B1B] hover:bg-black px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-[12px] font-semibold text-[#181818] bg-[#E5E5EA] hover:bg-white px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting ? "Creating..." : "Create client"}
           </button>
           <Link
             href="/engagements"
-            className="text-[12px] font-medium text-[#666] hover:text-[#1B1B1B] px-3 py-2"
+            className="text-[12px] font-medium text-[#9CA3AF] hover:text-[#E5E5EA] px-3 py-2"
           >
             Cancel
           </Link>
-          <p className="text-[11px] text-[#999] ml-auto">
+          <p className="text-[11px] text-[#71757D] ml-auto">
             Saved to localStorage until Supabase is wired
           </p>
         </div>
@@ -281,7 +281,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#999] mb-1">
+      <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1">
         {label} {required && <span className="text-[#C62828] normal-case">*</span>}
       </label>
       <input
@@ -289,7 +289,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full text-[12px] px-2 py-1.5 border border-[#E5E5EA] rounded focus:outline-none focus:border-[#1B1B1B]"
+        className="w-full text-[12px] px-2 py-1.5 border border-[#2A2A2A] rounded focus:outline-none focus:border-white"
       />
     </div>
   );

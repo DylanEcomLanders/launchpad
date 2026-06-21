@@ -61,13 +61,13 @@ export default function PersonProfilePage() {
   }
 
   if (!hydrated) {
-    return <div className="h-32 bg-[#F7F8FA] rounded-xl animate-pulse" />;
+    return <div className="h-32 bg-[#0C0C0C] rounded-xl animate-pulse" />;
   }
   if (!person) {
     return (
       <div className="text-center py-12">
-        <p className="text-sm text-[#7A7A7A] mb-3">Person not found.</p>
-        <Link href="/company/people" className="text-sm text-[#1B1B1B] hover:underline">
+        <p className="text-sm text-[#71757D] mb-3">Person not found.</p>
+        <Link href="/company/people" className="text-sm text-[#E5E5EA] hover:underline">
           Back to People
         </Link>
       </div>
@@ -88,28 +88,28 @@ export default function PersonProfilePage() {
       <div className="flex items-center justify-between mb-4">
         <Link
           href="/company/people"
-          className="inline-flex items-center gap-1 text-sm text-[#7A7A7A] hover:text-[#1B1B1B]"
+          className="inline-flex items-center gap-1 text-sm text-[#71757D] hover:text-[#E5E5EA]"
         >
           <ArrowLeftIcon className="size-4" />
           Back to People
         </Link>
         <button
           onClick={handleDelete}
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-[#B91C1C] hover:bg-[#FEE2E2] rounded-md"
+          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-[#B91C1C] hover:bg-red-500/15 rounded-md"
         >
           <TrashIcon className="size-3.5" />
           Delete
         </button>
       </div>
 
-      <div className="bg-white border border-[#E5E5EA] rounded-xl p-6 mb-4 shadow-[var(--shadow-soft)]">
+      <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-6 mb-4 shadow-[var(--shadow-soft)]">
         <div className="flex items-start gap-4">
           <AvatarWithUpload person={person} onUpdate={patch} />
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-baseline gap-2 mb-1">
-              <h2 className="text-xl font-semibold text-[#1B1B1B]">{person.full_name}</h2>
+              <h2 className="text-xl font-semibold text-[#E5E5EA]">{person.full_name}</h2>
               {person.preferred_name && person.preferred_name !== person.full_name && (
-                <span className="text-sm text-[#7A7A7A]">"{person.preferred_name}"</span>
+                <span className="text-sm text-[#71757D]">"{person.preferred_name}"</span>
               )}
               <span
                 className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
@@ -118,7 +118,7 @@ export default function PersonProfilePage() {
                 {status.label}
               </span>
             </div>
-            <div className="text-sm text-[#7A7A7A]">
+            <div className="text-sm text-[#71757D]">
               {person.job_title || "—"}
               {person.department && (
                 <>
@@ -136,7 +136,7 @@ export default function PersonProfilePage() {
         </div>
       </div>
 
-      <div className="border-b border-[#E5E5EA] mb-6">
+      <div className="border-b border-[#2A2A2A] mb-6">
         <div className="flex gap-1">
           {tabs
             .filter((t) => t.visible)
@@ -146,8 +146,8 @@ export default function PersonProfilePage() {
                 onClick={() => setTab(t.id)}
                 className={`px-4 py-2.5 text-sm border-b-2 transition-colors ${
                   tab === t.id
-                    ? "border-[#1B1B1B] text-[#1B1B1B] font-medium"
-                    : "border-transparent text-[#7A7A7A] hover:text-[#1B1B1B]"
+                    ? "border-white text-[#E5E5EA] font-medium"
+                    : "border-transparent text-[#71757D] hover:text-[#E5E5EA]"
                 }`}
               >
                 {t.label}
@@ -357,7 +357,7 @@ function OverviewTab({
             onChange={(e) => onPatch({ notes: e.target.value })}
             rows={4}
             className={textareaClass}
-            placeholder="Free-form notes — markdown supported."
+            placeholder="Free-form notes - markdown supported."
           />
         </div>
       </Section>
@@ -468,7 +468,7 @@ function FinancialTab({
             onChange={(e) => onPatch({ bank_details: e.target.value })}
             rows={3}
             className={textareaClass}
-            placeholder="Sort code, account number, or IBAN. Stored in plaintext — admin only."
+            placeholder="Sort code, account number, or IBAN. Stored in plaintext - admin only."
           />
         </div>
       </Section>
@@ -482,16 +482,16 @@ function FinancialTab({
               const reason = prompt("Reason?") || "";
               logChange(parseFloat(amount), reason);
             }}
-            className="inline-flex items-center gap-1 text-xs text-[#1B1B1B] hover:underline"
+            className="inline-flex items-center gap-1 text-xs text-[#E5E5EA] hover:underline"
           >
             <PlusIcon className="size-3.5" /> Log change
           </button>
         </div>
         {history.length === 0 ? (
-          <div className="text-xs text-[#7A7A7A] py-3">No history yet.</div>
+          <div className="text-xs text-[#71757D] py-3">No history yet.</div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="text-[11px] uppercase tracking-wider text-[#7A7A7A]">
+            <thead className="text-[11px] uppercase tracking-wider text-[#71757D]">
               <tr>
                 <th className="text-left py-2 font-semibold">Date</th>
                 <th className="text-left py-2 font-semibold">Old</th>
@@ -501,17 +501,17 @@ function FinancialTab({
             </thead>
             <tbody>
               {history.map((h) => (
-                <tr key={h.id} className="border-t border-[#E5E5EA]">
-                  <td className="py-2 text-[#7A7A7A]">{fmtDateUK(h.changed_at)}</td>
-                  <td className="py-2 text-[#7A7A7A]">
+                <tr key={h.id} className="border-t border-[#2A2A2A]">
+                  <td className="py-2 text-[#71757D]">{fmtDateUK(h.changed_at)}</td>
+                  <td className="py-2 text-[#71757D]">
                     {h.old_amount != null
                       ? fmtMoney(h.old_amount, person.compensation_currency || "GBP")
                       : "—"}
                   </td>
-                  <td className="py-2 text-[#1B1B1B] font-medium">
+                  <td className="py-2 text-[#E5E5EA] font-medium">
                     {fmtMoney(h.new_amount, person.compensation_currency || "GBP")}
                   </td>
-                  <td className="py-2 text-[#7A7A7A]">{h.reason || "—"}</td>
+                  <td className="py-2 text-[#71757D]">{h.reason || "—"}</td>
                 </tr>
               ))}
             </tbody>
@@ -597,17 +597,17 @@ function PerformanceTab({
       <Section
         title="Reviews"
         action={
-          <button onClick={addReview} className="text-xs text-[#1B1B1B] hover:underline inline-flex items-center gap-1">
+          <button onClick={addReview} className="text-xs text-[#E5E5EA] hover:underline inline-flex items-center gap-1">
             <PlusIcon className="size-3.5" /> Add review
           </button>
         }
       >
         {reviews.length === 0 ? (
-          <div className="text-xs text-[#7A7A7A] py-2">No reviews yet.</div>
+          <div className="text-xs text-[#71757D] py-2">No reviews yet.</div>
         ) : (
           <div className="space-y-3">
             {reviews.map((r) => (
-              <div key={r.id} className="p-3 border border-[#E5E5EA] rounded-lg">
+              <div key={r.id} className="p-3 border border-[#2A2A2A] rounded-lg">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                   <input
                     type="date"
@@ -655,17 +655,17 @@ function PerformanceTab({
       <Section
         title="Goals"
         action={
-          <button onClick={addGoal} className="text-xs text-[#1B1B1B] hover:underline inline-flex items-center gap-1">
+          <button onClick={addGoal} className="text-xs text-[#E5E5EA] hover:underline inline-flex items-center gap-1">
             <PlusIcon className="size-3.5" /> Add goal
           </button>
         }
       >
         {goals.length === 0 ? (
-          <div className="text-xs text-[#7A7A7A] py-2">No goals yet.</div>
+          <div className="text-xs text-[#71757D] py-2">No goals yet.</div>
         ) : (
           <div className="space-y-3">
             {goals.map((g) => (
-              <div key={g.id} className="p-3 border border-[#E5E5EA] rounded-lg">
+              <div key={g.id} className="p-3 border border-[#2A2A2A] rounded-lg">
                 <input
                   placeholder="Title"
                   value={g.title}
@@ -711,18 +711,18 @@ function PerformanceTab({
       <Section
         title="1:1 / performance notes"
         action={
-          <button onClick={addNote} className="text-xs text-[#1B1B1B] hover:underline inline-flex items-center gap-1">
+          <button onClick={addNote} className="text-xs text-[#E5E5EA] hover:underline inline-flex items-center gap-1">
             <PlusIcon className="size-3.5" /> Add note
           </button>
         }
       >
         {notes.length === 0 ? (
-          <div className="text-xs text-[#7A7A7A] py-2">No notes yet.</div>
+          <div className="text-xs text-[#71757D] py-2">No notes yet.</div>
         ) : (
           <div className="space-y-3">
             {notes.map((n) => (
-              <div key={n.id} className="p-3 border border-[#E5E5EA] rounded-lg">
-                <div className="text-[11px] text-[#7A7A7A] mb-2">{fmtDateUK(n.created_at)}</div>
+              <div key={n.id} className="p-3 border border-[#2A2A2A] rounded-lg">
+                <div className="text-[11px] text-[#71757D] mb-2">{fmtDateUK(n.created_at)}</div>
                 <input
                   placeholder="Author"
                   value={n.author}
@@ -774,9 +774,9 @@ function Section({
   action?: React.ReactNode;
 }) {
   return (
-    <div className={`bg-white border border-[#E5E5EA] rounded-xl p-5 shadow-[var(--shadow-soft)] ${className}`}>
+    <div className={`bg-[#181818] border border-[#2A2A2A] rounded-xl p-5 shadow-[var(--shadow-soft)] ${className}`}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A]">{title}</h3>
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D]">{title}</h3>
         {action}
       </div>
       <div className="space-y-3">{children}</div>
@@ -867,23 +867,23 @@ function AgreementsTab({ person }: { person: Person }) {
   }
 
   if (loading) {
-    return <div className="h-24 bg-[#F7F8FA] rounded-xl animate-pulse" />;
+    return <div className="h-24 bg-[#0C0C0C] rounded-xl animate-pulse" />;
   }
 
   return (
     <div>
       {agreements.length === 0 ? (
-        <div className="bg-[#F7F8FA] border border-dashed border-[#E5E5EA] rounded-xl p-8 text-center">
-          <p className="text-sm text-[#1B1B1B] font-medium mb-1">
+        <div className="bg-[#0C0C0C] border border-dashed border-[#2A2A2A] rounded-xl p-8 text-center">
+          <p className="text-sm text-[#E5E5EA] font-medium mb-1">
             No agreements yet for {person.full_name}.
           </p>
-          <p className="text-xs text-[#7A7A7A] mb-5 max-w-md mx-auto">
+          <p className="text-xs text-[#71757D] mb-5 max-w-md mx-auto">
             Generate an NDA, a contract, or both. Each captures a snapshot of
             the current master template so future edits don&apos;t rewrite it.
           </p>
           <button
             onClick={() => setModalOpen(true)}
-            className="px-3.5 py-2 bg-[#1B1B1B] text-white text-sm font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
+            className="px-3.5 py-2 bg-white text-[#0C0C0C] text-sm font-medium rounded-lg hover:bg-[#F3F4F6] transition-colors"
           >
             Generate agreements
           </button>
@@ -896,17 +896,17 @@ function AgreementsTab({ person }: { person: Person }) {
               <Link
                 key={a.id}
                 href={`/company/contracts/${a.id}`}
-                className="flex items-center justify-between gap-3 bg-white border border-[#E5E5EA] rounded-xl p-4 hover:border-[#1B1B1B]/30 hover:shadow-[var(--shadow-soft)] transition-all"
+                className="flex items-center justify-between gap-3 bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 hover:border-white/30 hover:shadow-[var(--shadow-soft)] transition-all"
               >
                 <div className="flex items-center gap-3">
-                  <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-[#F3F3F5] text-[#1B1B1B]">
+                  <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-[#222222] text-[#E5E5EA]">
                     {AGREEMENT_KIND_LABEL[a.kind]}
                   </span>
                   <div>
-                    <div className="text-[14px] font-medium text-[#1B1B1B]">
+                    <div className="text-[14px] font-medium text-[#E5E5EA]">
                       {a.template_body.title}
                     </div>
-                    <div className="text-[11px] text-[#7A7A7A] mt-0.5">
+                    <div className="text-[11px] text-[#71757D] mt-0.5">
                       {a.template_revision}
                     </div>
                   </div>
@@ -923,7 +923,7 @@ function AgreementsTab({ person }: { person: Person }) {
           {canGenerateMore && (
             <button
               onClick={() => setModalOpen(true)}
-              className="w-full py-3 border border-dashed border-[#E5E5EA] rounded-xl text-[13px] text-[#7A7A7A] hover:border-[#1B1B1B] hover:text-[#1B1B1B] transition-colors"
+              className="w-full py-3 border border-dashed border-[#2A2A2A] rounded-xl text-[13px] text-[#71757D] hover:border-white hover:text-[#E5E5EA] transition-colors"
             >
               + Generate {!hasNda && !hasContract ? "agreements" : !hasNda ? "NDA" : "contract"}
             </button>

@@ -38,7 +38,7 @@ const a = StyleSheet.create({
   partyName: {
     fontSize: 11,
     fontWeight: 700,
-    color: "#0A0A0A",
+    color: "#080808",
     marginBottom: 4,
   },
   partyDetail: {
@@ -52,7 +52,7 @@ const a = StyleSheet.create({
   backgroundLabel: {
     fontSize: 9,
     fontWeight: 700,
-    color: "#0A0A0A",
+    color: "#080808",
     marginRight: 6,
   },
   backgroundRow: {
@@ -99,7 +99,7 @@ const a = StyleSheet.create({
   termValue: {
     fontSize: 10,
     fontWeight: 500,
-    color: "#0A0A0A",
+    color: "#080808",
   },
   termRowHighlight: {
     backgroundColor: "#F5F5F5",
@@ -118,7 +118,7 @@ const a = StyleSheet.create({
   legalHeading: {
     fontSize: 11,
     fontWeight: 700,
-    color: "#0A0A0A",
+    color: "#080808",
     marginTop: 16,
     marginBottom: 6,
   },
@@ -167,7 +167,7 @@ const a = StyleSheet.create({
   },
   sigLine: {
     borderBottomWidth: 1,
-    borderBottomColor: "#0A0A0A",
+    borderBottomColor: "#080808",
     marginBottom: 8,
     height: 50,
   },
@@ -196,7 +196,7 @@ const a = StyleSheet.create({
   sigFieldValue: {
     fontSize: 10,
     fontWeight: 500,
-    color: "#0A0A0A",
+    color: "#080808",
     marginBottom: 4,
     height: 20,
     borderBottomWidth: 0.5,
@@ -208,7 +208,7 @@ const a = StyleSheet.create({
   subHeading: {
     fontSize: 13,
     fontWeight: 700,
-    color: "#0A0A0A",
+    color: "#080808",
     letterSpacing: -0.3,
     marginBottom: 12,
     marginTop: 24,

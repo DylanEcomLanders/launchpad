@@ -25,10 +25,10 @@ export function PhaseTimeline({
 }) {
   const spans = computePhaseSpans(history);
   if (spans.length === 0) {
-    return <p className="text-xs text-[#AAA]">{emptyLabel}</p>;
+    return <p className="text-xs text-[#9CA3AF]">{emptyLabel}</p>;
   }
   return (
-    <ol className={`relative ${compact ? "space-y-2.5" : "space-y-4"} before:absolute before:left-[5px] before:top-1.5 before:bottom-1.5 before:w-px before:bg-[#E5E5EA]`}>
+    <ol className={`relative ${compact ? "space-y-2.5" : "space-y-4"} before:absolute before:left-[5px] before:top-1.5 before:bottom-1.5 before:w-px before:bg-[#2A2A2A]`}>
       {spans.map((span, i) => {
         const meta = phaseMeta(span.phase);
         if (!meta) return null;
@@ -45,12 +45,12 @@ export function PhaseTimeline({
               >
                 {meta.label}
               </span>
-              <span className="text-xs font-medium text-[#1A1A1A] tabular-nums">
+              <span className="text-xs font-medium text-[#E5E5EA] tabular-nums">
                 {formatDurationMs(span.durationMs)}
               </span>
-              {span.isCurrent && <span className="text-[10px] text-[#AAA]">· in progress</span>}
+              {span.isCurrent && <span className="text-[10px] text-[#9CA3AF]">· in progress</span>}
             </div>
-            <p className="text-[10px] text-[#AAA] mt-1">
+            <p className="text-[10px] text-[#9CA3AF] mt-1">
               {new Date(span.enteredAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
               {span.exitedAt && (
                 <> → {new Date(span.exitedAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</>

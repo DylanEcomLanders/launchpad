@@ -78,13 +78,13 @@ export default function TurnaroundsPage() {
       <div className="relative z-10 max-w-5xl mx-auto px-6 md:px-12 py-16 md:py-24">
         {/* Header */}
         <div className="mb-8">
-          <p className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] mb-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-2">
             Internal reference
           </p>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">
             Turnaround Times
           </h1>
-          <p className="text-[#7A7A7A] max-w-2xl">
+          <p className="text-[#71757D] max-w-2xl">
             Source of truth for every deliverable we sell. Internal targets are what the team
             works to. Client-quoted dates are internal target + buffer — never share the internal
             number with a client.
@@ -92,17 +92,17 @@ export default function TurnaroundsPage() {
         </div>
 
         {/* Commitment banner */}
-        <div className="mb-10 p-5 border border-[#1B1B1B] bg-[#1B1B1B] rounded-xl text-white">
+        <div className="mb-10 p-5 border border-[#2A2A2A] bg-[#1B1B1B] rounded-xl text-white">
           <p className="text-sm leading-relaxed">
             <span className="font-semibold">These are commitments.</span>{" "}
             If we can&apos;t hit the internal target, flag in{" "}
-            <code className="bg-white/10 px-1.5 py-0.5 rounded text-[12px]">#ops</code>{" "}
+            <code className="bg-[#181818]/10 px-1.5 py-0.5 rounded text-[12px]">#ops</code>{" "}
             <span className="font-semibold">before</span> the client-quoted date — never on the day.
           </p>
         </div>
 
         {/* Buffer config */}
-        <div className="mb-8 p-5 bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg">
+        <div className="mb-8 p-5 bg-[#222222] border border-[#2A2A2A] rounded-lg">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <div className="flex-1 max-w-xs">
               <label className={labelClass}>Buffer (%)</label>
@@ -116,23 +116,23 @@ export default function TurnaroundsPage() {
                   onChange={(e) => updateBuffer(parseFloat(e.target.value))}
                   className={inputClass}
                 />
-                <span className="text-sm text-[#7A7A7A] tabular-nums">%</span>
+                <span className="text-sm text-[#71757D] tabular-nums">%</span>
               </div>
-              <p className="text-[11px] text-[#A0A0A0] mt-1.5 leading-snug">
+              <p className="text-[11px] text-[#71757D] mt-1.5 leading-snug">
                 Added on top of internal target, rounded up to the nearest business day. Default 30%.
               </p>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={handleReset}
-                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] border border-[#E5E5EA] rounded-md hover:bg-white transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-[#71757D] hover:text-[#E5E5EA] border border-[#2A2A2A] rounded-md hover:bg-[#181818] transition-colors"
               >
                 <ArrowPathIcon className="size-3.5" />
                 Reset to defaults
               </button>
               <button
                 onClick={handleSave}
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#1B1B1B] rounded-md hover:bg-[#2D2D2D] transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-[#181818] bg-[#E5E5EA] rounded-md hover:bg-white transition-colors"
               >
                 {savedAt ? (
                   <>
@@ -152,27 +152,27 @@ export default function TurnaroundsPage() {
           {groups.map(({ cat, items }) => (
             <div key={cat}>
               <label className={labelClass}>{cat}</label>
-              <div className="bg-white border border-[#E5E5EA] rounded-lg overflow-hidden shadow-[var(--shadow-soft)]">
+              <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg overflow-hidden shadow-[var(--shadow-soft)]">
                 {/* Desktop header */}
-                <div className="hidden md:grid md:grid-cols-[2fr_120px_120px_140px_2fr] gap-3 px-5 py-2.5 border-b border-[#E5E5EA] bg-[#F7F8FA]">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0]">
+                <div className="hidden md:grid md:grid-cols-[2fr_120px_120px_140px_2fr] gap-3 px-5 py-2.5 border-b border-[#2A2A2A] bg-[#0C0C0C]">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">
                     Deliverable
                   </span>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] text-right">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[#71757D] text-right">
                     Internal target
                   </span>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0] text-right">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[#71757D] text-right">
                     Buffer
                   </span>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[#1B1B1B] text-right">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[#E5E5EA] text-right">
                     Client-quoted
                   </span>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[#A0A0A0]">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">
                     Notes
                   </span>
                 </div>
 
-                <div className="divide-y divide-[#E5E5EA]">
+                <div className="divide-y divide-[#2A2A2A]">
                   {items.map((d) => {
                     const buffer = getBufferDays(d.internalDays, config.bufferPercent);
                     const client = getClientQuotedDays(d.internalDays, config.bufferPercent);
@@ -180,7 +180,7 @@ export default function TurnaroundsPage() {
                       <div key={d.id} className="px-5 py-3">
                         {/* Desktop row */}
                         <div className="hidden md:grid md:grid-cols-[2fr_120px_120px_140px_2fr] gap-3 items-center">
-                          <span className="text-sm font-medium text-[#1B1B1B]">{d.name}</span>
+                          <span className="text-sm font-medium text-[#E5E5EA]">{d.name}</span>
                           <div className="flex items-center justify-end gap-1.5">
                             <input
                               type="number"
@@ -192,16 +192,16 @@ export default function TurnaroundsPage() {
                                   internalDays: Math.max(0, parseInt(e.target.value, 10) || 0),
                                 })
                               }
-                              className="w-16 px-2 py-1 bg-white border border-[#E5E5EA] rounded text-sm text-right tabular-nums focus:outline-none focus:border-[#1B1B1B] focus:ring-1 focus:ring-[#1B1B1B]/10"
+                              className="w-16 px-2 py-1 bg-[#181818] border border-[#2A2A2A] rounded text-sm text-right tabular-nums focus:outline-none focus:border-white focus:ring-1 focus:ring-[#1B1B1B]/10"
                             />
-                            <span className="text-xs text-[#A0A0A0] w-9">
+                            <span className="text-xs text-[#71757D] w-9">
                               {d.internalDays === 1 ? "day" : "days"}
                             </span>
                           </div>
-                          <span className="text-sm tabular-nums text-right text-[#7A7A7A]">
+                          <span className="text-sm tabular-nums text-right text-[#71757D]">
                             +{pluralDays(buffer)}
                           </span>
-                          <span className="text-sm font-semibold tabular-nums text-right text-[#1B1B1B]">
+                          <span className="text-sm font-semibold tabular-nums text-right text-[#E5E5EA]">
                             {pluralDays(client)}
                           </span>
                           <input
@@ -209,20 +209,20 @@ export default function TurnaroundsPage() {
                             value={d.notes ?? ""}
                             onChange={(e) => updateDeliverable(d.id, { notes: e.target.value })}
                             placeholder="Caveats / preconditions"
-                            className="w-full px-2 py-1 bg-transparent border border-transparent hover:border-[#E5E5EA] focus:border-[#1B1B1B] focus:bg-white rounded text-xs text-[#7A7A7A] focus:text-[#1B1B1B] focus:outline-none focus:ring-1 focus:ring-[#1B1B1B]/10 transition-colors"
+                            className="w-full px-2 py-1 bg-transparent border border-transparent hover:border-[#2A2A2A] focus:border-white focus:bg-[#181818] rounded text-xs text-[#71757D] focus:text-[#E5E5EA] focus:outline-none focus:ring-1 focus:ring-[#1B1B1B]/10 transition-colors"
                           />
                         </div>
 
                         {/* Mobile row */}
                         <div className="md:hidden">
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-[#1B1B1B]">{d.name}</span>
-                            <span className="text-sm font-semibold tabular-nums text-[#1B1B1B]">
+                            <span className="text-sm font-medium text-[#E5E5EA]">{d.name}</span>
+                            <span className="text-sm font-semibold tabular-nums text-[#E5E5EA]">
                               {pluralDays(client)}
                             </span>
                           </div>
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="text-[11px] text-[#A0A0A0] uppercase tracking-wider">
+                            <span className="text-[11px] text-[#71757D] uppercase tracking-wider">
                               Internal
                             </span>
                             <input
@@ -235,9 +235,9 @@ export default function TurnaroundsPage() {
                                   internalDays: Math.max(0, parseInt(e.target.value, 10) || 0),
                                 })
                               }
-                              className="w-14 px-2 py-1 bg-white border border-[#E5E5EA] rounded text-sm text-right tabular-nums"
+                              className="w-14 px-2 py-1 bg-[#181818] border border-[#2A2A2A] rounded text-sm text-right tabular-nums"
                             />
-                            <span className="text-xs text-[#7A7A7A]">
+                            <span className="text-xs text-[#71757D]">
                               + {pluralDays(buffer)} buffer
                             </span>
                           </div>
@@ -246,7 +246,7 @@ export default function TurnaroundsPage() {
                             value={d.notes ?? ""}
                             onChange={(e) => updateDeliverable(d.id, { notes: e.target.value })}
                             placeholder="Caveats / preconditions"
-                            className="w-full px-2 py-1.5 bg-[#F7F8FA] border border-[#E5E5EA] rounded text-xs text-[#7A7A7A] focus:text-[#1B1B1B] focus:bg-white focus:outline-none focus:border-[#1B1B1B]"
+                            className="w-full px-2 py-1.5 bg-[#0C0C0C] border border-[#2A2A2A] rounded text-xs text-[#71757D] focus:text-[#E5E5EA] focus:bg-[#181818] focus:outline-none focus:border-white"
                           />
                         </div>
                       </div>
@@ -259,13 +259,13 @@ export default function TurnaroundsPage() {
         </div>
 
         {/* Footer note */}
-        <div className="mt-10 p-4 bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg">
-          <p className="text-xs text-[#7A7A7A] leading-relaxed">
+        <div className="mt-10 p-4 bg-[#0C0C0C] border border-[#2A2A2A] rounded-lg">
+          <p className="text-xs text-[#71757D] leading-relaxed">
             Pulled by the price calculator, offers page, and proposal generator via{" "}
-            <code className="text-[#1B1B1B] bg-white border border-[#E5E5EA] px-1.5 py-0.5 rounded text-[11px]">
+            <code className="text-[#E5E5EA] bg-[#181818] border border-[#2A2A2A] px-1.5 py-0.5 rounded text-[11px]">
               getClientQuotedDays
             </code>{" "}
-            in <code className="text-[#1B1B1B] bg-white border border-[#E5E5EA] px-1.5 py-0.5 rounded text-[11px]">src/lib/turnarounds.ts</code>.
+            in <code className="text-[#E5E5EA] bg-[#181818] border border-[#2A2A2A] px-1.5 py-0.5 rounded text-[11px]">src/lib/turnarounds.ts</code>.
             Internal targets stay internal.
           </p>
         </div>

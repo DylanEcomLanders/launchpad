@@ -47,7 +47,7 @@ const LEAD_MAGNETS: LeadMagnet[] = [
     funnel: "audit",
     path: "/audit",
     status: "live",
-    description: "8-point product page audit — captures email, store URL, and name.",
+    description: "8-point product page audit - captures email, store URL, and name.",
   },
 ];
 
@@ -144,7 +144,7 @@ export default function LeadMagnetsPage() {
     <div className="max-w-4xl mx-auto px-6 py-8 space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-bold text-[#1B1B1B] tracking-tight">Lead Magnets</h1>
+        <h1 className="text-xl font-bold text-[#1B1B1B]">Lead Magnets</h1>
         <p className="text-sm text-[#999] mt-1">
           Manage your lead magnet pages, tracked links, and conversion stats.
         </p>
