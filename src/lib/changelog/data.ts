@@ -37,6 +37,19 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-94",
+    date: "21 June 2026",
+    version: "1.5.1",
+    title: "Pipeline (lite CRM) + Lead ↔ Audit linking",
+    changes: [
+      { type: "added", text: "Pipeline kanban at /pipeline - lite CRM for the 3 paths in (upsell / warm / cold via audit / cold direct). Six stage columns (New / Qualified / Discovery Audit / Proposed / Closed won / Closed lost) plus a long-term nurture toggle. Cards show name, brand, owner, risk badges + next-action chip in two lines" },
+      { type: "added", text: "Pipeline-rule risk engine surfaces playbook signals automatically: speed-to-lead overdue (>15 min from create no first touch = warn, >2h = danger), stale touch (7d+ = warn, 14d+ = danger), missing next action or date (warn), overdue next action (danger). Top-of-page health strip counts Active / At-risk / Won-this-month so closers see pipeline state at a glance" },
+      { type: "added", text: "Lead detail page with debounced auto-save, status dropdown that auto-stamps first_touch_at / closed_at, append-only touches log (Outreach sent / Reply received / Call booked + done / Audit sent + delivered / Proposal sent / Follow-up / Internal note), notes (markdown with preview), and revenue_band → recommended tier hint (£200k-£400k → Entry, £400-800k → Core, £800k+ → VIP)" },
+      { type: "added", text: "Lead ↔ Discovery Audit linking is bidirectional. From a lead: 'New audit for this lead' pre-fills brand + contact + revenue from the lead, OR link an existing draft. Stage auto-advances to discovery_audit on link. From the audit: credited_to_retainer_ref carries the lead's brand name" },
+      { type: "added", text: "Migration 033 creates the leads table (jsonb pattern). MANUAL PASTE required to Supabase SQL Editor" },
+    ],
+  },
+  {
     id: "cl-93",
     date: "21 June 2026",
     version: "1.5.0",
