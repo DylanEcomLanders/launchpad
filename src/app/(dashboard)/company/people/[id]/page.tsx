@@ -10,6 +10,8 @@ import {
   PhotoIcon,
 } from "@heroicons/react/24/outline";
 import { peopleStore, uid, nowISO, fmtDateUK, fmtMoney } from "@/lib/company/data";
+import { getPods } from "@/lib/pods-v2/data";
+import type { Pod, PodMember } from "@/lib/pods-v2/types";
 import { agreementStore } from "@/lib/agreements/data";
 import type { Agreement } from "@/lib/agreements/types";
 import { AGREEMENT_STATUS_META, AGREEMENT_KIND_LABEL } from "@/lib/agreements/types";
@@ -36,6 +38,7 @@ export default function PersonProfilePage() {
 
   const [person, setPerson] = useState<Person | null>(null);
   const [allPeople, setAllPeople] = useState<Person[]>([]);
+  const [pods, setPods] = useState<Pod[]>([]);
   const [tab, setTab] = useState<Tab>("overview");
   const [hydrated, setHydrated] = useState(false);
 
@@ -43,6 +46,7 @@ export default function PersonProfilePage() {
     Promise.all([peopleStore.getById(id), peopleStore.getAll()]).then(([p, all]) => {
       setPerson(p);
       setAllPeople(all);
+      setPods(getPods());
       setHydrated(true);
     });
   }, [id]);
@@ -157,7 +161,7 @@ export default function PersonProfilePage() {
       </div>
 
       {tab === "overview" && (
-        <OverviewTab person={person} allPeople={allPeople} onPatch={patch} />
+        <OverviewTab person={person} allPeople={allPeople} pods={pods} onPatch={patch} />
       )}
       {tab === "agreements" && isAdmin && (
         <AgreementsTab person={person} />
@@ -235,13 +239,45 @@ function AvatarWithUpload({
 function OverviewTab({
   person,
   allPeople,
+  pods,
   onPatch,
 }: {
   person: Person;
   allPeople: Person[];
+  pods: Pod[];
   onPatch: (u: Partial<Person>) => void;
 }) {
   const others = allPeople.filter((p) => p.id !== person.id);
+  /* Flatten { member, pod } pairs so the picker can show "Name - Pod 1
+   * (Primary designer)" for each option. Filters out placeholder
+   * members so the dropdown stays clean. */
+  const podMemberOptions = useMemo<
+    Array<{ id: string; label: string; alreadyLinkedTo?: string }>
+  >(() => {
+    const linkedByMember = new Map<string, string>(); // pod_member_id → full_name of person already using it
+    for (const p of allPeople) {
+      if (p.pod_member_id) linkedByMember.set(p.pod_member_id, p.full_name);
+    }
+    const out: Array<{ id: string; label: string; alreadyLinkedTo?: string }> =
+      [];
+    for (const pod of pods) {
+      for (const m of pod.members) {
+        if (m.is_placeholder) continue;
+        const linkedName = linkedByMember.get(m.id);
+        const taken = linkedName && m.id !== person.pod_member_id;
+        const role = m.role.replace(/_/g, " ");
+        out.push({
+          id: m.id,
+          label: `${m.name} - ${pod.name} (${role})${
+            taken ? ` - linked to ${linkedName}` : ""
+          }`,
+          alreadyLinkedTo: taken ? linkedName : undefined,
+        });
+      }
+    }
+    out.sort((a, b) => a.label.localeCompare(b.label));
+    return out;
+  }, [pods, allPeople, person.pod_member_id]);
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <Section title="Personal">
@@ -284,6 +320,15 @@ function OverviewTab({
             v === "" ? "— None —" : others.find((p) => p.id === v)?.full_name || v
           }
           onChange={(v) => onPatch({ reports_to: v || undefined })}
+        />
+        <FieldSelect
+          label="Linked pod member"
+          value={person.pod_member_id || ""}
+          options={["", ...podMemberOptions.map((o) => o.id)] as string[]}
+          renderOption={(v) =>
+            v === "" ? "Not on a pod" : podMemberOptions.find((o) => o.id === v)?.label || v
+          }
+          onChange={(v) => onPatch({ pod_member_id: v || undefined })}
         />
         <FieldSelect
           label="Type"

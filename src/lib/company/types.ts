@@ -70,6 +70,13 @@ export interface Person {
   date_of_birth?: string;
   notes?: string;
 
+  /* Bridge to the pods-v2 PodMember record. Drives the per-person KPI
+   * tab (resolves kanban tasks assigned to this human) and stops
+   * settings.team / pods_v2_pods / company_people drifting apart. Set
+   * via the picker on the Overview tab; nullable for humans not on a
+   * delivery pod (founders, ops, hires before first pod assignment). */
+  pod_member_id?: string;
+
   // Financial
   compensation_type?: CompensationType;
   compensation_amount?: number;

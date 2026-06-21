@@ -37,6 +37,16 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-88",
+    date: "21 June 2026",
+    version: "1.1.3",
+    title: "Person records can now link to a pod member (HR bridge)",
+    changes: [
+      { type: "added", text: "Person.pod_member_id field on the HR record bridges the canonical Person to the pods-v2 PodMember that drives kanban + workspace task assignment. Settable from a new picker in the Role section of the Overview tab; the picker lists every pod member by pod + role and flags any that are already linked to a different Person so the same human cant be linked twice" },
+      { type: "added", text: "New resolver module at src/lib/people/resolver.ts. Five helpers for the four-way Person / PodMember / TeamMember / kanban-name resolution: personByPodMemberId, podMemberByPersonId, personByTeamMember (matches by email then name), personByKanbanName (kanban string field to canonical Person), teamMemberByPodMemberId. Pure derivation, no DB calls. Foundation for the per-person KPI tab landing in a follow-up" },
+    ],
+  },
+  {
     id: "cl-87",
     date: "21 June 2026",
     version: "1.1.2",
