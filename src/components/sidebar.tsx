@@ -221,6 +221,16 @@ const trainingItem = {
   href: "/wiki-v2",
   icon: <AcademicCapIcon className="size-4" />,
 };
+/* Hero Offer - the conversion engine playbook house. One umbrella with
+ * Start here / Acquisition / Execution / Retention tabs inside. Sits
+ * at the TOP of the growth+learning group because it's the playbook
+ * FOR Acquisition + Retention + Training. Visible to every role -
+ * the playbook is for everyone, edits are admin-only inside. */
+const heroOfferItem = {
+  label: "Hero Offer",
+  href: "/hero-offer",
+  icon: <LightBulbIcon className="size-4" />,
+};
 
 /* Toolbox — the day-to-day tools every team member needs, carried over from
  * the retired Team Hub so members work entirely inside the dashboard shell.
@@ -540,10 +550,12 @@ export function Sidebar() {
             </div>
           )}
 
-          {/* GROUP 3 — Growth + learning: Acquisition, Retention, Training.
-              Acquisition + Retention are admin/cro only; Training is for
-              everyone, so it renders for the team role too. */}
+          {/* GROUP 3 — Growth + learning: Hero Offer (the playbook house
+              for everyone), Acquisition, Retention, Training. Acquisition +
+              Retention are admin/cro only; Hero Offer + Training render for
+              the team role too. */}
           <div className="px-3 space-y-0.5 mt-6">
+            {renderTopLink(heroOfferItem)}
             {role !== "team" && renderTopLink(pitchItem)}
             {role !== "team" && renderTopLink(feedbackItem)}
             {renderTopLink(trainingItem)}

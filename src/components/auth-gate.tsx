@@ -55,6 +55,8 @@ function isTeamAllowedPath(pathname: string): boolean {
     pathname === "/" ||
     pathname === "/me" ||
     pathname.startsWith("/me/") ||
+    pathname === "/hero-offer" ||
+    pathname.startsWith("/hero-offer/") ||
     pathname === "/my-work" ||
     pathname === "/workspace" ||
     pathname.startsWith("/workspace/") ||

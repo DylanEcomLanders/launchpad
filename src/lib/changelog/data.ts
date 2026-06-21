@@ -37,6 +37,25 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-91",
+    date: "21 June 2026",
+    version: "1.4.0",
+    title: "Hero Offer - the conversion engine playbook house",
+    changes: [
+      { type: "added", text: "New /hero-offer top-level area with a 4-tab shell (Start here / Acquisition / Execution / Retention). Sits at the top of the Growth + Learning group in the sidebar, visible to every role. Tabs are local-state for instant swap; URL syncs via router.replace with scroll:false. Migration 031 adds six tables (offer_sections / offer_objections / offer_layers / offer_milestones / offer_resources / offer_pricing) following the established id+jsonb pattern; flag as manual paste" },
+      { type: "added", text: "Per-stage colour identity in cool / green-blue palette: Acquisition emerald, Execution cyan, Retention sky blue. Page-level accents (gradient title text, soft radial blob behind the header, gradient active tab pill, gradient day badges, glowing section dots) all sit on a cohesive bg-[#0F0F10] card chrome with ring-1 ring-white/[0.04] rather than visible borders" },
+      { type: "added", text: "Editable scaffolding pre-seeded per stage so admin lands on the structure (not a blank Add prompt). Start here: 2 sections. Acquisition: 4 sections + 3 pricing slots (Entry / Core / VIP). Execution: 6 layer cards. Retention: 2 sections + 4 milestone cards (Day 30 / 90 / 180 / 365). Seed fires only when the table is empty AND the user is admin/cro" },
+      { type: "added", text: "scripts/populate-hero-offer.mjs - one-shot Node script that wipes the seed scaffolding and inserts the full v1 Conversion Engine playbook content (5+9+7 sections, 8 objections, 3 fully-fleshed pricing tiers, 7 execution layers, 4 lifecycle milestones). All structured per the playbook doc; ready for the team to edit in place" },
+      { type: "added", text: "/me hub gets a Change password card that fires Supabase resetPasswordForEmail with a redirect to /login/reset-password. Adds /me/profile (read-only Person view) and /me/invoices (self-service upload form with auto-set linked_person_id). Team members can now run their own admin without admin access" },
+      { type: "added", text: "Global bonuses log at /company/bonuses - cross-person view of every BonusPayment with per-currency totals, kind + status filters, click-through to the person's Bonuses tab. Reachable from Inbox" },
+      { type: "improved", text: "Inbox panel KPI bonus suggestions cross-check scoring_periods to suppress double-pay if the same test win was already included in a scheme period. Person profile Invite button detects existing app_users row and shows Already invited instead of letting admin double-fire. Person.status = left now cascades to app_users.active = false; coming back from left re-enables" },
+      { type: "improved", text: "Onboarding checklist task copy updated to reference the single master Contract, dropping the deprecated NDA + Contract pair language" },
+      { type: "improved", text: "Person rename in Admin now propagates to settings.team alongside the existing kanban_pods, kanban_tasks, and pods_v2 PodMember.name fan-out, so the legacy directory in /tools/tickets + /sales-engine/lead-magnets stays fresh too" },
+      { type: "fixed", text: "Empty arrays from localStorage no longer overwrite the MOCK fixtures + cloud overlay on the kanban (length check before trusting the cache). + Client button on the kanban header lets admin add a new client inline" },
+      { type: "added", text: "Hero Offer tables gained created_at column alongside the existing updated_at so the standard createStore.getAll order-by-created_at works. Migration patch flagged as manual paste; future fresh setups already get both columns by default in migration 031" },
+    ],
+  },
+  {
     id: "cl-90",
     date: "21 June 2026",
     version: "1.3.0",
