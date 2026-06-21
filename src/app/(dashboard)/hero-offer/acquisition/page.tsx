@@ -10,7 +10,7 @@
  * Admin can add / edit / reorder / delete each. Team reads only.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   CheckIcon,
   XMarkIcon,
@@ -20,6 +20,7 @@ import { useRole } from "@/components/auth-gate";
 import {
   offerObjectionsStore,
   offerPricingStore,
+  offerResourcesStore,
   offerSectionsStore,
   nextOrder,
   nowISO,
@@ -32,9 +33,11 @@ import {
 import type {
   OfferObjection,
   OfferPricingTier,
+  OfferResource,
   OfferSection,
 } from "@/lib/hero-offer/types";
 import { SectionCard } from "@/lib/hero-offer/section-card";
+import { ResourceList } from "@/lib/hero-offer/resource-list";
 import { inputClass, textareaClass } from "@/lib/form-styles";
 
 export default function AcquisitionPage() {
@@ -44,6 +47,7 @@ export default function AcquisitionPage() {
   const [sections, setSections] = useState<OfferSection[]>([]);
   const [objections, setObjections] = useState<OfferObjection[]>([]);
   const [pricing, setPricing] = useState<OfferPricingTier[]>([]);
+  const [resources, setResources] = useState<OfferResource[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
   const [editingObjectionId, setEditingObjectionId] = useState<string | null>(null);
@@ -52,12 +56,14 @@ export default function AcquisitionPage() {
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const [s, o, p] = await Promise.all([
+      const [s, o, p, r] = await Promise.all([
         offerSectionsStore.getAll(),
         offerObjectionsStore.getAll(),
         offerPricingStore.getAll(),
+        offerResourcesStore.getAll(),
       ]);
       if (cancelled) return;
+      setResources(r);
       const isSeeder = role === "admin" || role === "cro";
 
       const acquisitionSections = s
@@ -166,6 +172,45 @@ export default function AcquisitionPage() {
     await offerPricingStore.remove(id);
   }
 
+  /* ── Resource CRUD ── shared across every Acquisition card. */
+  async function createResource(input: Omit<OfferResource, "id">) {
+    const row: OfferResource = { id: uid(), ...input };
+    setResources((prev) => [...prev, row]);
+    await offerResourcesStore.create(row);
+  }
+  async function updateResource(id: string, patch: Partial<OfferResource>) {
+    setResources((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+    );
+    await offerResourcesStore.update(id, patch);
+  }
+  async function removeResource(id: string) {
+    setResources((prev) => prev.filter((r) => r.id !== id));
+    await offerResourcesStore.remove(id);
+  }
+
+  /* Reusable helper - every card asks the same question: "what
+   * resources are attached to me?" */
+  function resourcesFor(parentType: OfferResource["parent_type"], parentId: string) {
+    return resources.filter(
+      (r) => r.parent_type === parentType && r.parent_id === parentId,
+    );
+  }
+  function resourceFooter(parentType: OfferResource["parent_type"], parentId: string, accent: "emerald" | "cyan" | "sky"): ReactNode {
+    return (
+      <ResourceList
+        parentType={parentType}
+        parentId={parentId}
+        resources={resourcesFor(parentType, parentId)}
+        isAdmin={isAdmin}
+        accent={accent}
+        onCreate={createResource}
+        onUpdate={updateResource}
+        onRemove={removeResource}
+      />
+    );
+  }
+
   if (!hydrated) {
     return (
       <div className="space-y-3">
@@ -207,6 +252,7 @@ export default function AcquisitionPage() {
                   setEditingSectionId(null);
                 }}
                 onDelete={() => removeSection(s.id)}
+                footer={resourceFooter("section", s.id, "emerald")}
               />
             ))
           )}
@@ -250,6 +296,7 @@ export default function AcquisitionPage() {
                   setEditingObjectionId(null);
                 }}
                 onDelete={() => removeObjection(o.id)}
+                footer={resourceFooter("objection", o.id, "cyan")}
               />
             ))
           )}
@@ -295,6 +342,7 @@ export default function AcquisitionPage() {
                   setEditingPricingId(null);
                 }}
                 onDelete={() => removePricing(p.id)}
+                footer={resourceFooter("pricing", p.id, "sky")}
               />
             ))
           )}
@@ -329,6 +377,7 @@ function ObjectionCard({
   onCancel,
   onSave,
   onDelete,
+  footer,
 }: {
   objection: OfferObjection;
   isAdmin: boolean;
@@ -337,6 +386,7 @@ function ObjectionCard({
   onCancel: () => void;
   onSave: (patch: Partial<OfferObjection>) => void;
   onDelete: () => void;
+  footer?: ReactNode;
 }) {
   const [qDraft, setQDraft] = useState(objection.objection);
   const [aDraft, setADraft] = useState(objection.response);
@@ -418,6 +468,7 @@ function ObjectionCard({
           <span className="italic text-[#71757D]">No response yet.</span>
         )}
       </p>
+      {footer}
     </div>
   );
 }
@@ -431,6 +482,7 @@ function PricingCard({
   onCancel,
   onSave,
   onDelete,
+  footer,
 }: {
   tier: OfferPricingTier;
   isAdmin: boolean;
@@ -439,6 +491,7 @@ function PricingCard({
   onCancel: () => void;
   onSave: (patch: Partial<OfferPricingTier>) => void;
   onDelete: () => void;
+  footer?: ReactNode;
 }) {
   const [tierDraft, setTierDraft] = useState(tier.tier);
   const [priceDraft, setPriceDraft] = useState(tier.price);
@@ -546,6 +599,7 @@ function PricingCard({
       ) : (
         <p className="text-xs text-[#71757D] italic mt-3">Nothing listed yet.</p>
       )}
+      {footer}
     </div>
   );
 }

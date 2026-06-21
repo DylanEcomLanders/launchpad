@@ -7,7 +7,7 @@
  * sees rendered markdown only.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -31,6 +31,7 @@ export function SectionCard<T extends SectionLike>({
   onCancel,
   onSave,
   onDelete,
+  footer,
 }: {
   section: T;
   isAdmin: boolean;
@@ -39,6 +40,10 @@ export function SectionCard<T extends SectionLike>({
   onCancel: () => void;
   onSave: (patch: Partial<T>) => void;
   onDelete: () => void;
+  /* Optional slot rendered at the bottom of the card in read mode -
+   * Hero Offer uses this for the attached-resources list. Hidden
+   * while editing so the form stays focused. */
+  footer?: ReactNode;
 }) {
   const [titleDraft, setTitleDraft] = useState(section.title);
   const [bodyDraft, setBodyDraft] = useState(section.body);
@@ -123,6 +128,7 @@ export function SectionCard<T extends SectionLike>({
       ) : (
         <p className="text-xs text-[#71757D] italic">Empty section.</p>
       )}
+      {footer}
     </div>
   );
 }

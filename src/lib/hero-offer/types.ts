@@ -65,6 +65,7 @@ export type OfferResourceParent =
   | "layer"
   | "milestone"
   | "objection"
+  | "pricing"            // attach proposals + price sheets to a tier
   | "root";              // surfaced on the Start here index
 
 /* Attached link anywhere in the playbook. parent_type + parent_id

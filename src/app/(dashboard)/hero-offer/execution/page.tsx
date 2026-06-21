@@ -13,7 +13,7 @@
  * textarea, so every layer carries the same fields.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -24,12 +24,14 @@ import {
 import { useRole } from "@/components/auth-gate";
 import {
   offerLayersStore,
+  offerResourcesStore,
   nextOrder,
   nowISO,
   uid,
 } from "@/lib/hero-offer/data";
 import { seedExecutionLayers } from "@/lib/hero-offer/seed";
-import type { OfferLayer } from "@/lib/hero-offer/types";
+import type { OfferLayer, OfferResource } from "@/lib/hero-offer/types";
+import { ResourceList } from "@/lib/hero-offer/resource-list";
 import { inputClass, textareaClass, labelClass } from "@/lib/form-styles";
 
 export default function ExecutionPage() {
@@ -37,13 +39,17 @@ export default function ExecutionPage() {
   const isAdmin = role === "admin" || role === "cro";
 
   const [layers, setLayers] = useState<OfferLayer[]>([]);
+  const [resources, setResources] = useState<OfferResource[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const rows = await offerLayersStore.getAll();
+      const [rows, res] = await Promise.all([
+        offerLayersStore.getAll(),
+        offerResourcesStore.getAll(),
+      ]);
       if (cancelled) return;
       const sorted = rows.sort((a, b) => a.order - b.order);
       if (sorted.length === 0 && (role === "admin" || role === "cro")) {
@@ -53,6 +59,7 @@ export default function ExecutionPage() {
       } else {
         setLayers(sorted);
       }
+      setResources(res);
       setHydrated(true);
     }
     load();
@@ -86,6 +93,23 @@ export default function ExecutionPage() {
   async function removeLayer(id: string) {
     setLayers((prev) => prev.filter((l) => l.id !== id));
     await offerLayersStore.remove(id);
+  }
+
+  /* ── Resource CRUD ── */
+  async function createResource(input: Omit<OfferResource, "id">) {
+    const row: OfferResource = { id: uid(), ...input };
+    setResources((prev) => [...prev, row]);
+    await offerResourcesStore.create(row);
+  }
+  async function updateResource(id: string, patch: Partial<OfferResource>) {
+    setResources((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+    );
+    await offerResourcesStore.update(id, patch);
+  }
+  async function removeResource(id: string) {
+    setResources((prev) => prev.filter((r) => r.id !== id));
+    await offerResourcesStore.remove(id);
   }
 
   if (!hydrated) {
@@ -130,6 +154,21 @@ export default function ExecutionPage() {
                 setEditingId(null);
               }}
               onDelete={() => removeLayer(l.id)}
+              footer={
+                <ResourceList
+                  parentType="layer"
+                  parentId={l.id}
+                  resources={resources.filter(
+                    (r) =>
+                      r.parent_type === "layer" && r.parent_id === l.id,
+                  )}
+                  isAdmin={isAdmin}
+                  accent="cyan"
+                  onCreate={createResource}
+                  onUpdate={updateResource}
+                  onRemove={removeResource}
+                />
+              }
             />
           ))
         )}
@@ -155,6 +194,7 @@ function LayerCard({
   onCancel,
   onSave,
   onDelete,
+  footer,
 }: {
   layer: OfferLayer;
   isAdmin: boolean;
@@ -163,6 +203,7 @@ function LayerCard({
   onCancel: () => void;
   onSave: (patch: Partial<OfferLayer>) => void;
   onDelete: () => void;
+  footer?: ReactNode;
 }) {
   const [name, setName] = useState(layer.name);
   const [included, setIncluded] = useState(layer.included);
@@ -298,6 +339,7 @@ function LayerCard({
         <LayerBlock title="Deliverables" body={layer.deliverables} />
         <LayerBlock title='The bar ("wow")' body={layer.bar} />
       </div>
+      {footer}
     </div>
   );
 }

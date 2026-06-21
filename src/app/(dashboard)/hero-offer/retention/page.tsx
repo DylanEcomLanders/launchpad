@@ -8,7 +8,7 @@
  * describing the plays at that point.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -19,6 +19,7 @@ import {
 import { useRole } from "@/components/auth-gate";
 import {
   offerMilestonesStore,
+  offerResourcesStore,
   offerSectionsStore,
   nextOrder,
   nowISO,
@@ -28,8 +29,13 @@ import {
   seedRetentionMilestones,
   seedRetentionSections,
 } from "@/lib/hero-offer/seed";
-import type { OfferMilestone, OfferSection } from "@/lib/hero-offer/types";
+import type {
+  OfferMilestone,
+  OfferResource,
+  OfferSection,
+} from "@/lib/hero-offer/types";
 import { SectionCard } from "@/lib/hero-offer/section-card";
+import { ResourceList } from "@/lib/hero-offer/resource-list";
 import { inputClass, textareaClass, labelClass } from "@/lib/form-styles";
 
 const DEFAULT_DAYS = [30, 90, 180, 365];
@@ -40,6 +46,7 @@ export default function RetentionPage() {
 
   const [sections, setSections] = useState<OfferSection[]>([]);
   const [milestones, setMilestones] = useState<OfferMilestone[]>([]);
+  const [resources, setResources] = useState<OfferResource[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
   const [editingMilestoneId, setEditingMilestoneId] = useState<string | null>(null);
@@ -47,11 +54,13 @@ export default function RetentionPage() {
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const [s, m] = await Promise.all([
+      const [s, m, r] = await Promise.all([
         offerSectionsStore.getAll(),
         offerMilestonesStore.getAll(),
+        offerResourcesStore.getAll(),
       ]);
       if (cancelled) return;
+      setResources(r);
       const isSeeder = role === "admin" || role === "cro";
 
       const retentionSections = s
@@ -141,6 +150,43 @@ export default function RetentionPage() {
     await offerMilestonesStore.remove(id);
   }
 
+  /* ── Resource CRUD ── */
+  async function createResource(input: Omit<OfferResource, "id">) {
+    const row: OfferResource = { id: uid(), ...input };
+    setResources((prev) => [...prev, row]);
+    await offerResourcesStore.create(row);
+  }
+  async function updateResource(id: string, patch: Partial<OfferResource>) {
+    setResources((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+    );
+    await offerResourcesStore.update(id, patch);
+  }
+  async function removeResource(id: string) {
+    setResources((prev) => prev.filter((r) => r.id !== id));
+    await offerResourcesStore.remove(id);
+  }
+
+  function resourceFooter(
+    parentType: OfferResource["parent_type"],
+    parentId: string,
+  ): ReactNode {
+    return (
+      <ResourceList
+        parentType={parentType}
+        parentId={parentId}
+        resources={resources.filter(
+          (r) => r.parent_type === parentType && r.parent_id === parentId,
+        )}
+        isAdmin={isAdmin}
+        accent="sky"
+        onCreate={createResource}
+        onUpdate={updateResource}
+        onRemove={removeResource}
+      />
+    );
+  }
+
   if (!hydrated) {
     return (
       <div className="space-y-3">
@@ -187,6 +233,7 @@ export default function RetentionPage() {
                   setEditingSectionId(null);
                 }}
                 onDelete={() => removeSection(s.id)}
+                footer={resourceFooter("section", s.id)}
               />
             ))
           )}
@@ -243,6 +290,7 @@ export default function RetentionPage() {
                   setEditingMilestoneId(null);
                 }}
                 onDelete={() => removeMilestone(m.id)}
+                footer={resourceFooter("milestone", m.id)}
               />
             ))
           )}
@@ -285,6 +333,7 @@ function MilestoneCard({
   onCancel,
   onSave,
   onDelete,
+  footer,
 }: {
   milestone: OfferMilestone;
   isAdmin: boolean;
@@ -293,6 +342,7 @@ function MilestoneCard({
   onCancel: () => void;
   onSave: (patch: Partial<OfferMilestone>) => void;
   onDelete: () => void;
+  footer?: ReactNode;
 }) {
   const [dayDraft, setDayDraft] = useState(String(milestone.day));
   const [titleDraft, setTitleDraft] = useState(milestone.title);
@@ -410,6 +460,7 @@ function MilestoneCard({
           ) : (
             <p className="text-xs text-[#71757D] italic">Not filled in.</p>
           )}
+          {footer}
         </div>
       </div>
     </div>

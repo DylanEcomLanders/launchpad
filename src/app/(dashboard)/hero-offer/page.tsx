@@ -16,13 +16,15 @@ import {
 import { useRole } from "@/components/auth-gate";
 import {
   offerSectionsStore,
+  offerResourcesStore,
   uid,
   nowISO,
   nextOrder,
 } from "@/lib/hero-offer/data";
 import { seedStartHere } from "@/lib/hero-offer/seed";
 import { SectionCard } from "@/lib/hero-offer/section-card";
-import type { OfferSection } from "@/lib/hero-offer/types";
+import { ResourceList } from "@/lib/hero-offer/resource-list";
+import type { OfferResource, OfferSection } from "@/lib/hero-offer/types";
 
 /* Each stage owns one slice of the gradient palette so the eye can
  * read "where am I" without parsing the label. Quiet at rest, vivid
@@ -59,13 +61,17 @@ export default function StartHerePage() {
   const isAdmin = role === "admin" || role === "cro";
 
   const [sections, setSections] = useState<OfferSection[]>([]);
+  const [resources, setResources] = useState<OfferResource[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const rows = await offerSectionsStore.getAll();
+      const [rows, res] = await Promise.all([
+        offerSectionsStore.getAll(),
+        offerResourcesStore.getAll(),
+      ]);
       if (cancelled) return;
       const slice = rows
         .filter((r) => r.stage === "start")
@@ -80,6 +86,7 @@ export default function StartHerePage() {
       } else {
         setSections(slice);
       }
+      setResources(res);
       setHydrated(true);
     }
     load();
@@ -87,6 +94,24 @@ export default function StartHerePage() {
       cancelled = true;
     };
   }, [role]);
+
+  /* ── Resource CRUD ── shared across the page; ResourceList filters
+   * its own slice by (parent_type, parent_id). */
+  async function createResource(input: Omit<OfferResource, "id">) {
+    const row: OfferResource = { id: uid(), ...input };
+    setResources((prev) => [...prev, row]);
+    await offerResourcesStore.create(row);
+  }
+  async function updateResource(id: string, patch: Partial<OfferResource>) {
+    setResources((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+    );
+    await offerResourcesStore.update(id, patch);
+  }
+  async function removeResource(id: string) {
+    setResources((prev) => prev.filter((r) => r.id !== id));
+    await offerResourcesStore.remove(id);
+  }
 
   async function addSection() {
     const row: OfferSection = {
@@ -115,8 +140,32 @@ export default function StartHerePage() {
     await offerSectionsStore.remove(id);
   }
 
+  /* Resources attached at "root" sit above the index so playbook-wide
+   * artefacts (the whole playbook as a PDF, the agency wiki) read as
+   * top-level, not buried in a section. Empty unless admin adds. */
+  const rootResources = resources.filter(
+    (r) => r.parent_type === "root" && r.parent_id === "root",
+  );
+
   return (
     <div className="space-y-6">
+      {/* Playbook-wide resources */}
+      {hydrated && (isAdmin || rootResources.length > 0) && (
+        <div className="bg-[#0F0F10] rounded-2xl p-5 ring-1 ring-white/[0.04]">
+          <ResourceList
+            parentType="root"
+            parentId="root"
+            resources={rootResources}
+            isAdmin={isAdmin}
+            accent="emerald"
+            embedded={false}
+            onCreate={createResource}
+            onUpdate={updateResource}
+            onRemove={removeResource}
+          />
+        </div>
+      )}
+
       {/* Editable intro sections */}
       <div className="space-y-3">
         {!hydrated ? (
@@ -141,6 +190,21 @@ export default function StartHerePage() {
                 setEditingId(null);
               }}
               onDelete={() => removeSection(s.id)}
+              footer={
+                <ResourceList
+                  parentType="section"
+                  parentId={s.id}
+                  resources={resources.filter(
+                    (r) =>
+                      r.parent_type === "section" && r.parent_id === s.id,
+                  )}
+                  isAdmin={isAdmin}
+                  accent="emerald"
+                  onCreate={createResource}
+                  onUpdate={updateResource}
+                  onRemove={removeResource}
+                />
+              }
             />
           ))
         )}

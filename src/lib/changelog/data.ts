@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-92",
+    date: "21 June 2026",
+    version: "1.4.1",
+    title: "Hero Offer - resource library wired in",
+    changes: [
+      { type: "added", text: "Every Hero Offer card (Start here sections, Acquisition sections + objections + pricing tiers, Execution layers, Retention sections + milestones) now has an attached-resources footer. Admin clicks + Add, drops in a title + URL + kind (Deck / Template / Doc / SOP / Loom / Link), and the resource saves to offer_resources. Each kind gets its own glyph so a long list scans by type. Per-stage accent (emerald / cyan / sky) on the hover ring keeps resources sitting inside the card's identity" },
+      { type: "added", text: "Playbook-wide resource block at the top of /hero-offer for artefacts that don't belong to one card (the whole playbook PDF, the agency wiki, training Looms). Hidden for team members on an empty parent so the surface stays quiet until something's attached" },
+      { type: "added", text: "Pricing tier gained a pricing resource parent type so attached proposals + price sheets per tier are first-class, not a section-id hack" },
+      { type: "improved", text: "SectionCard now takes an optional footer slot - the shared card across Start / Acquisition / Retention renders the ResourceList there without each panel duplicating layout" },
+    ],
+  },
+  {
     id: "cl-91",
     date: "21 June 2026",
     version: "1.4.0",
