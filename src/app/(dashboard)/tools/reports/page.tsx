@@ -25,6 +25,7 @@ export default function ReportsListPage() {
   const [hydrated, setHydrated] = useState(false);
   const [genClient, setGenClient] = useState("");
   const [genPeriod, setGenPeriod] = useState<ReportPeriod>("weekly");
+  const [genIsQbr, setGenIsQbr] = useState(false);
   const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
@@ -45,7 +46,7 @@ export default function ReportsListPage() {
       testsStore.getAll(),
       roadmapsStore.getAll(),
     ]);
-    const r = generateReport(genClient.trim(), genPeriod, tests, roadmaps);
+    const r = generateReport(genClient.trim(), genPeriod, tests, roadmaps, { isQbr: genIsQbr });
     await reportsStore.create(r);
     setGenerating(false);
     router.push(`/tools/reports/${r.id}`);
@@ -79,11 +80,21 @@ export default function ReportsListPage() {
           </div>
           <div className="w-40">
             <label className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold">Period</label>
-            <select value={genPeriod} onChange={(e) => setGenPeriod(e.target.value as ReportPeriod)} className={inputClass}>
+            <select value={genPeriod} onChange={(e) => {
+              const next = e.target.value as ReportPeriod;
+              setGenPeriod(next);
+              /* Quarterly → default to QBR; admin can untick. */
+              if (next === "quarterly") setGenIsQbr(true);
+            }} className={inputClass}>
               <option value="weekly">This week</option>
               <option value="monthly">This month</option>
+              <option value="quarterly">This quarter</option>
             </select>
           </div>
+          <label className="inline-flex items-center gap-2 text-[11px] text-[#9CA3AF] pb-2">
+            <input type="checkbox" checked={genIsQbr} onChange={(e) => setGenIsQbr(e.target.checked)} className="accent-sky-500" />
+            QBR mode (VIP)
+          </label>
           <button onClick={generate} disabled={!genClient.trim() || generating} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[12px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA] disabled:opacity-40 disabled:cursor-not-allowed">
             <PlusIcon className="size-4" />
             {generating ? "Generating…" : "Generate"}

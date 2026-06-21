@@ -1,6 +1,8 @@
 /* ── Report types ── */
 
-export type ReportPeriod = "weekly" | "monthly";
+export type ReportPeriod = "weekly" | "monthly" | "quarterly";
+/* Reports default to standard delivery cadence; flip is_qbr on for
+ * VIP quarterly reviews - same plumbing, different title + framing. */
 export type ReportStatus = "draft" | "ready" | "sent";
 
 export interface ReportTestSummary {
@@ -50,6 +52,10 @@ export interface Report {
   /* Optional - movement vs baseline (free text, with caveat). */
   cr_movement: string;
 
+  /* QBR mode - flips the public output to a brand-strategy review
+   * framing. Used for VIP quarterly reviews per the playbook. */
+  is_qbr?: boolean;
+
   /* Output sharing */
   output_slug: string;
 
@@ -61,6 +67,7 @@ export interface Report {
 export const PERIOD_LABEL: Record<ReportPeriod, string> = {
   weekly: "Weekly",
   monthly: "Monthly",
+  quarterly: "Quarterly",
 };
 
 export const STATUS_LABEL: Record<ReportStatus, string> = {

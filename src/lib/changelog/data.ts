@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-105",
+    date: "22 June 2026",
+    version: "1.8.3",
+    title: "Renewal proposals + QBR mode",
+    changes: [
+      { type: "added", text: "Reports now support quarterly period + a QBR-mode flag for VIP quarterly business reviews. Picking quarterly auto-flips QBR on; admin can untick. Public output title reads 'Quarterly business review' when QBR mode is on, with the same data + branded chrome" },
+      { type: "added", text: "Proposals get a renewal mode via a one-click +Renewal button on any signed/paid/kicked-off proposal in the list. Carries forward client + tier + scope + terms, opens a fresh draft. is_renewal + renews_from_id link back to the prior proposal for the audit trail" },
+      { type: "added", text: "Public proposal output detects renewal mode and re-frames: 'Renewal proposal' header, 'Continuation of the Conversion Engine' sub, momentum line under the tier" },
+      { type: "improved", text: "No new tables - both extensions piggyback on existing reports + proposals jsonb shapes" },
+    ],
+  },
+  {
     id: "cl-104",
     date: "22 June 2026",
     version: "1.8.2",

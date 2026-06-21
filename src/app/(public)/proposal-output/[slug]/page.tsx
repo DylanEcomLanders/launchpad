@@ -42,7 +42,7 @@ export default function ProposalOutputPage({ params }: { params: Promise<{ slug:
         <header>
           <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-emerald-300/80 font-semibold mb-6">
             <DocumentTextIcon className="size-3.5" />
-            Proposal · Ecom Landers
+            {proposal.is_renewal ? "Renewal proposal" : "Proposal"} · Ecom Landers
           </div>
           <p className="text-sm text-[#9CA3AF] mb-2">
             For {proposal.contact_name || proposal.brand_name}
@@ -51,8 +51,13 @@ export default function ProposalOutputPage({ params }: { params: Promise<{ slug:
             {proposal.brand_name}
           </h1>
           <p className="text-lg text-[#9CA3AF]">
-            The Conversion Engine · <span className="text-[#E5E5EA]">{proposal.tier} tier</span>
+            {proposal.is_renewal ? "Continuation of the Conversion Engine" : "The Conversion Engine"} · <span className="text-[#E5E5EA]">{proposal.tier} tier</span>
           </p>
+          {proposal.is_renewal && (
+            <p className="text-sm text-emerald-300/80 mt-2">
+              Rolling forward into your next {proposal.term_months}-month term. Same engine, building on the momentum we&apos;ve built.
+            </p>
+          )}
         </header>
 
         {/* Total */}

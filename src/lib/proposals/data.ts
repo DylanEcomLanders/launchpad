@@ -75,6 +75,29 @@ export function defaultScopeItems(tier: ProposalTier): { label: string; detail?:
 
 export const DEFAULT_GUARANTEE = `We guarantee a measurable increase in your conversion rate within the 90-day term, or we keep working at no further cost until you get one. You ship the changes we recommend; we hit the number.`;
 
+/* Build a renewal proposal from a prior signed/paid/kicked-off
+ * proposal. Carries forward client + tier + scope by default; admin
+ * tweaks before sending. */
+export function renewalFrom(prior: Proposal): Proposal {
+  const id = uid();
+  return {
+    ...prior,
+    id,
+    is_renewal: true,
+    renews_from_id: prior.id,
+    status: "draft",
+    sent_at: undefined,
+    signed_at: undefined,
+    paid_at: undefined,
+    kicked_off_at: undefined,
+    declined_at: undefined,
+    declined_reason: undefined,
+    output_slug: id,
+    created_at: nowISO(),
+    updated_at: nowISO(),
+  };
+}
+
 export function emptyProposal(): Proposal {
   const id = uid();
   const tier: ProposalTier = "Core";

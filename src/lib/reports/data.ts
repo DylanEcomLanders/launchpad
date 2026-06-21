@@ -30,7 +30,6 @@ export function slugify(input: string): string {
 /* Compute period bounds for the period containing `ref`. */
 export function periodBounds(period: ReportPeriod, ref = new Date()): { start: Date; end: Date; label: string } {
   if (period === "weekly") {
-    /* Week starts Monday. End at Sunday end-of-day. */
     const d = new Date(ref);
     const day = d.getDay();
     const diff = (day === 0 ? -6 : 1) - day;
@@ -41,6 +40,14 @@ export function periodBounds(period: ReportPeriod, ref = new Date()): { start: D
     end.setDate(start.getDate() + 6);
     end.setHours(23, 59, 59, 999);
     const label = `Week of ${start.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`;
+    return { start, end, label };
+  }
+  if (period === "quarterly") {
+    /* Quarter = 3 months ending at the current month. */
+    const end = new Date(ref.getFullYear(), ref.getMonth() + 1, 0, 23, 59, 59, 999);
+    const start = new Date(ref.getFullYear(), ref.getMonth() - 2, 1);
+    const quarter = Math.floor(ref.getMonth() / 3) + 1;
+    const label = `Q${quarter} ${ref.getFullYear()}`;
     return { start, end, label };
   }
   /* Monthly. */
@@ -58,6 +65,7 @@ export function generateReport(
   period: ReportPeriod,
   tests: AbTest[],
   roadmaps: Roadmap[],
+  options: { isQbr?: boolean } = {},
 ): Report {
   const bounds = periodBounds(period);
   const inPeriod = (iso?: string) => {
@@ -110,6 +118,7 @@ export function generateReport(
     id,
     client_name: clientName,
     period,
+    is_qbr: options.isQbr ?? false,
     period_label: bounds.label,
     period_start: bounds.start.toISOString(),
     period_end: bounds.end.toISOString(),

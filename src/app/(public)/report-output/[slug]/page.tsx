@@ -35,7 +35,13 @@ export default function ReportOutputPage({ params }: { params: Promise<{ slug: s
         <header>
           <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-sky-300/80 font-semibold mb-4">
             <ChartPieIcon className="size-3.5" />
-            {report.period === "weekly" ? "Weekly report" : "Monthly report"} · Ecom Landers
+            {report.is_qbr
+              ? "Quarterly business review · Ecom Landers"
+              : report.period === "weekly"
+                ? "Weekly report · Ecom Landers"
+                : report.period === "monthly"
+                  ? "Monthly report · Ecom Landers"
+                  : "Quarterly report · Ecom Landers"}
           </div>
           <h1 className="text-4xl md:text-5xl font-semibold bg-gradient-to-br from-white via-sky-100 to-cyan-200 bg-clip-text text-transparent leading-[1.05] mb-2">
             {report.client_name}

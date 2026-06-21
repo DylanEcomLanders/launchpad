@@ -17,6 +17,7 @@ import {
   formatMoney,
   proposalsStore,
   quotedTotal,
+  renewalFrom,
 } from "@/lib/proposals/data";
 import {
   STATUS_LABEL,
@@ -72,6 +73,12 @@ export default function ProposalsListPage() {
     const p = emptyProposal();
     await proposalsStore.create(p);
     router.push(`/tools/proposals/${p.id}`);
+  }
+
+  async function createRenewal(prior: Proposal) {
+    const renewal = renewalFrom(prior);
+    await proposalsStore.create(renewal);
+    router.push(`/tools/proposals/${renewal.id}`);
   }
 
   if (!isAdmin) {
@@ -177,18 +184,33 @@ export default function ProposalsListPage() {
                       <span className="text-emerald-300/80">· {formatMoney(quotedTotal(p), p.fee_currency)} quoted</span>
                     </div>
                   </div>
-                  {p.status !== "draft" && (
-                    <a
-                      href={`/proposal-output/${p.output_slug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-[#71757D] hover:text-emerald-300 shrink-0"
-                    >
-                      View
-                      <ArrowTopRightOnSquareIcon className="size-3.5" />
-                    </a>
-                  )}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {(p.status === "signed" || p.status === "paid" || p.status === "kicked_off") && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          createRenewal(p);
+                        }}
+                        className="px-2 py-1 rounded text-[10px] uppercase tracking-wider font-semibold bg-cyan-500/15 text-cyan-200 ring-1 ring-cyan-500/30 hover:bg-cyan-500/25"
+                        title="Generate renewal proposal from this one"
+                      >
+                        + Renewal
+                      </button>
+                    )}
+                    {p.status !== "draft" && (
+                      <a
+                        href={`/proposal-output/${p.output_slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-[#71757D] hover:text-emerald-300"
+                      >
+                        View
+                        <ArrowTopRightOnSquareIcon className="size-3.5" />
+                      </a>
+                    )}
+                  </div>
                 </div>
               </Link>
             </li>

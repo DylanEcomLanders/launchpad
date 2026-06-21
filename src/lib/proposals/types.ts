@@ -54,6 +54,12 @@ export interface Proposal {
   declined_at?: string;
   declined_reason?: string;
 
+  /* Renewal mode - flips the proposal's framing from a fresh pitch
+   * to a continuation. Used at the 90-day mark and onward. */
+  is_renewal?: boolean;
+  /* If renewal, the previous proposal we're continuing from. */
+  renews_from_id?: string;
+
   /* Output sharing */
   output_slug: string;
 
