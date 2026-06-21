@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-104",
+    date: "22 June 2026",
+    version: "1.8.2",
+    title: "Cadence + at-risk dashboard",
+    changes: [
+      { type: "added", text: "/tools/cadence - per-client comms log + at-risk signals. Three playbook signals computed automatically: channel silence (3d+ warn, 7d+ danger), missed onboarding deadlines, test yield drought (3+ consecutive inconclusive or no winners in last 3 tests)" },
+      { type: "added", text: "Inline touch logger per client: 7 kinds (channel message / call / email / report sent / strategy call / QBR / other), CSM name, summary, awaiting-reply flag. Logging stamps last_touched and clears silence signal" },
+      { type: "added", text: "Worst-risk-first sort so CSMs see the clients that need attention at the top. Healthy clients show a green Healthy pill" },
+      { type: "added", text: "Migration 041 creates client_touches table (jsonb pattern). MANUAL PASTE required" },
+    ],
+  },
+  {
     id: "cl-103",
     date: "22 June 2026",
     version: "1.8.1",
