@@ -29,6 +29,8 @@ import {
 import { useRole } from "@/components/auth-gate";
 import { discoveryAuditsStore, emptyAudit } from "@/lib/discovery-audits/data";
 import type { DiscoveryAudit } from "@/lib/discovery-audits/types";
+import { emptyProposal, proposalsStore } from "@/lib/proposals/data";
+import type { Proposal } from "@/lib/proposals/types";
 import {
   emptySalesCall,
   leadsStore,
@@ -80,6 +82,7 @@ export default function LeadDetailPage({
 
   const [lead, setLead] = useState<Lead | null>(null);
   const [audits, setAudits] = useState<DiscoveryAudit[]>([]);
+  const [proposals, setProposals] = useState<Proposal[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [notFound, setNotFound] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -88,15 +91,17 @@ export default function LeadDetailPage({
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [leads, auds] = await Promise.all([
+      const [leads, auds, props] = await Promise.all([
         leadsStore.getAll(),
         discoveryAuditsStore.getAll(),
+        proposalsStore.getAll(),
       ]);
       if (cancelled) return;
       const found = leads.find((l) => l.id === id);
       if (!found) setNotFound(true);
       else setLead(found);
       setAudits(auds);
+      setProposals(props);
       setHydrated(true);
     })();
     return () => {
@@ -196,6 +201,23 @@ export default function LeadDetailPage({
     }
   }
 
+  async function createNewProposal() {
+    if (!lead) return;
+    const p = emptyProposal();
+    p.brand_name = lead.brand_name;
+    p.brand_url = lead.brand_url;
+    p.contact_name = lead.full_name;
+    p.contact_email = lead.email;
+    p.prepared_by = lead.owner;
+    p.lead_id = lead.id;
+    await proposalsStore.create(p);
+    setProposals((prev) => [p, ...prev]);
+    patch({ proposal_id: p.id });
+    if (lead.stage === "discovery_audit" || lead.stage === "qualified") {
+      transition("proposed");
+    }
+  }
+
   async function createNewAudit() {
     if (!lead) return;
     const a = emptyAudit();
@@ -229,6 +251,10 @@ export default function LeadDetailPage({
   const linkedAudit = useMemo(
     () => (lead?.discovery_audit_id ? audits.find((a) => a.id === lead.discovery_audit_id) : null),
     [lead?.discovery_audit_id, audits],
+  );
+  const linkedProposal = useMemo(
+    () => (lead?.proposal_id ? proposals.find((p) => p.id === lead.proposal_id) : null),
+    [lead?.proposal_id, proposals],
   );
 
   if (!isAdmin) {
@@ -485,6 +511,52 @@ export default function LeadDetailPage({
                 </select>
               )}
             </div>
+          </div>
+        )}
+      </Section>
+
+      {/* Linked Proposal */}
+      <Section title="Proposal">
+        {linkedProposal ? (
+          <div className="bg-black/40 rounded-xl p-4 ring-1 ring-emerald-500/30 flex items-center gap-3">
+            <div className="size-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(16,185,129,0.3)] shrink-0">
+              <DocumentMagnifyingGlassIcon className="size-4 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold text-[#E5E5EA] truncate">
+                {linkedProposal.tier} · {linkedProposal.brand_name}
+              </div>
+              <div className="text-[11px] text-[#71757D]">
+                {linkedProposal.status} · {linkedProposal.fee_currency}{linkedProposal.monthly_fee.toLocaleString()}/mo
+              </div>
+            </div>
+            <Link
+              href={`/tools/proposals/${linkedProposal.id}`}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA] shrink-0"
+            >
+              Open
+              <ArrowTopRightOnSquareIcon className="size-3" />
+            </Link>
+            <button
+              onClick={() => patch({ proposal_id: undefined })}
+              className="text-[10px] uppercase tracking-wider text-[#71757D] hover:text-rose-400"
+              title="Unlink proposal"
+            >
+              Unlink
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-[12px] text-[#71757D]">
+              After the verbal yes, spin up the proposal here.
+            </p>
+            <button
+              onClick={createNewProposal}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700"
+            >
+              <PlusIcon className="size-3.5" />
+              New proposal for this lead
+            </button>
           </div>
         )}
       </Section>

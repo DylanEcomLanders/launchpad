@@ -37,6 +37,19 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-96",
+    date: "21 June 2026",
+    version: "1.6.0",
+    title: "Proposal generator + lead → proposal linking",
+    changes: [
+      { type: "added", text: "Proposal generator at /tools/proposals - tier picker (Entry £5k / Core £10k / VIP £15k / Custom) auto-fills monthly fee + the playbook's per-tier scope items. Custom scope notes, 90-day term default, 10% prepay toggle, default playbook guarantee text (resettable). Status flow draft → sent → signed → paid → kicked-off (or declined), each transition timestamps automatically" },
+      { type: "added", text: "Quoted-total summary card shows monthly × term less prepay discount, in a gradient panel matching Hero Offer chrome" },
+      { type: "added", text: "Public shareable output at /proposal-output/[slug] - branded cover, big investment number, what-you-get checklist with emerald checkmarks, guarantee panel in its own ring, terms list. No auth (slug is the gate)" },
+      { type: "added", text: "Pipeline lead detail gets a Proposal section: spin up a fresh proposal pre-filled with the lead's brand + contact + owner, or render the linked proposal with deep-link to the detail. Stage auto-advances to proposed when a proposal is created" },
+      { type: "added", text: "Migration 034 creates proposals table (jsonb pattern). MANUAL PASTE required" },
+    ],
+  },
+  {
     id: "cl-95",
     date: "21 June 2026",
     version: "1.5.2",
