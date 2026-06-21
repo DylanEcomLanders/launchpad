@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-99",
+    date: "22 June 2026",
+    version: "1.7.2",
+    title: "Test tracker - every test, every result",
+    changes: [
+      { type: "added", text: "/tools/tests two-tab tracker (Live + drafting / Concluded + killed). Each test card shows hypothesis, status pill, outcome chip with uplift %, and a live significance progress bar against the strategist's target" },
+      { type: "added", text: "Test detail editor with one-click status transitions: Go live stamps started_at; Winner/Loser/Inconclusive stamps ended_at + outcome. Live tests get a top progress card showing days running + sig progress" },
+      { type: "added", text: "Setup section captures client + surface + tool (Intelligems/Visually) + traffic split + hypothesis + control + variant. Result section captures baseline + variant values + uplift % + significance reached. Write-up + learnings as markdown" },
+      { type: "added", text: "Migration 037 creates ab_tests table (jsonb pattern). MANUAL PASTE required" },
+    ],
+  },
+  {
     id: "cl-98",
     date: "21 June 2026",
     version: "1.7.1",
