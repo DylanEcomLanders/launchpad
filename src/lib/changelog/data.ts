@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-103",
+    date: "22 June 2026",
+    version: "1.8.1",
+    title: "Lifecycle milestones - Day 30 / 90 / 180 / 365",
+    changes: [
+      { type: "added", text: "/tools/lifecycle dashboard with two surfaces. Top: Due / soon callout list (anything due now, in-progress, or upcoming inside 14d). Bottom: full client × milestone-day matrix where each cell is either an existing milestone (link, status-tinted pill) or a Spawn button that creates one against the engagement-start date" },
+      { type: "added", text: "Engagement-start auto-derives from the earliest onboarding row per client. No separate engagement table" },
+      { type: "added", text: "Each milestone seeded with the playbook checklist: Day 30 (pages live, tests live, kickoff retro), Day 90 (pattern of wins, roadmap refresh, expansion check), Day 180 (case study, renewal anchor), Day 365 (annual review, multi-year, referral, second pod). Auto-completes when all items tick. Status auto-resolves between Upcoming / Due / In progress / Completed" },
+      { type: "added", text: "Migration 040 creates client_milestones table (jsonb pattern). MANUAL PASTE required" },
+    ],
+  },
+  {
     id: "cl-102",
     date: "22 June 2026",
     version: "1.8.0",
