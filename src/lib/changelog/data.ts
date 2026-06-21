@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-106",
+    date: "22 June 2026",
+    version: "1.9.0",
+    title: "Test wins - case study inbox",
+    changes: [
+      { type: "added", text: "/tools/test-wins - lightweight quick-capture of every winning test as it concludes. Sits ahead of the editorial /tools/case-studies tool as the inbox; admin promotes wins to full case studies when ready" },
+      { type: "added", text: "Top callout surfaces winners not yet captured (any AbTest with outcome=winner that doesn't have a test_win record). One click captures the test: client, surface, hero metric, uplift %, baseline → variant, hypothesis, write-up all pre-filled" },
+      { type: "added", text: "Per-win actions: anonymise (toggles client name for proof-deck use), archive (drops out of the inbox), promote (links to /tools/case-studies). Status flow captured → promoted → anonymised / archived" },
+      { type: "added", text: "Migration 042 creates test_wins table (jsonb pattern). MANUAL PASTE required" },
+    ],
+  },
+  {
     id: "cl-105",
     date: "22 June 2026",
     version: "1.8.3",
