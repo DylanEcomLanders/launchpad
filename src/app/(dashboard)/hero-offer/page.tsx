@@ -12,6 +12,8 @@ import {
   MegaphoneIcon,
   WrenchScrewdriverIcon,
   HeartIcon,
+  SparklesIcon,
+  ArrowTopRightOnSquareIcon,
 } from "@heroicons/react/24/outline";
 import { useRole } from "@/components/auth-gate";
 import {
@@ -217,6 +219,27 @@ export default function StartHerePage() {
           </button>
         )}
       </div>
+
+      {/* Operations hub link - takes admin straight into the
+          tools that operationalise this playbook. Admin only. */}
+      {isAdmin && hydrated && (
+        <Link href="/operations" className="block bg-gradient-to-br from-emerald-500/10 via-cyan-500/10 to-sky-500/10 rounded-2xl p-5 ring-1 ring-emerald-500/20 hover:ring-emerald-500/40 transition-all group">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-gradient-to-br from-emerald-500 via-cyan-500 to-sky-500 flex items-center justify-center shadow-[0_8px_24px_rgba(6,182,212,0.3)] shrink-0">
+              <SparklesIcon className="size-5 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold mb-0.5">
+                Operations
+              </div>
+              <div className="text-sm text-[#E5E5EA]">
+                Every tool the playbook turns into. Pipeline · Discovery · Roadmap · Briefs · Tests · Reports · Onboarding · Lifecycle · Cadence · Brain library.
+              </div>
+            </div>
+            <ArrowTopRightOnSquareIcon className="size-4 text-[#71757D] group-hover:text-emerald-300 transition-colors shrink-0" />
+          </div>
+        </Link>
+      )}
 
       {/* Stage links - each gets its own slice of the palette so the
           three stages read as a sequence, not three identical cards. */}

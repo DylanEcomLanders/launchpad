@@ -37,6 +37,19 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-108",
+    date: "22 June 2026",
+    version: "2.0.0",
+    title: "Operations hub + Slack notification stub - full-scale build complete",
+    changes: [
+      { type: "added", text: "/operations - the single discoverability surface for the full operating system. Groups every tool by lifecycle stage (Acquisition / Execution / Retention / Brain). Twelve tools across thirteen phases, all reachable in one click" },
+      { type: "added", text: "Cross-link from /hero-offer/page.tsx: admin sees an Operations card above the three-stage grid so the playbook -> tools loop is one click away" },
+      { type: "added", text: "POST /api/notify/slack with a notifySlack() helper in src/lib/notify.ts. Returns 503 with a clear message until SLACK_BOT_TOKEN env var is set. GET returns config status so UIs can render a 'connected/stubbed' badge. Once Viktor provides the bot token, all existing trigger points fire real messages with no further code changes" },
+      { type: "added", text: "Operations hub shows live Slack-connection status at the top so the team knows whether notifications are stubbed or live" },
+      { type: "improved", text: "Phase 5C closes the full-scale build: Phase 0 (lock in) + Phase 1 (Hero Offer resources) + Phase 2 (Acquisition: Discovery / Pipeline / Calls / Proposals) + Phase 3 (Execution: Roadmap / Briefs / Tests / Throughput / Reports) + Phase 4 (Retention: Onboarding / Lifecycle / Cadence / Renewals + QBR) + Phase 5 (Brain: Test wins / Brain library / Notifications + hub)" },
+    ],
+  },
+  {
     id: "cl-107",
     date: "22 June 2026",
     version: "1.9.1",
