@@ -1,15 +1,13 @@
 /* ── KPI / Delivery Dashboard config ──
  *
- * Every threshold the dashboard depends on lives here. Source data is the
- * Project Delivery model (src/lib/projects) — no ClickUp, no Supabase.
+ * Every threshold the dashboard depends on lives here. Source data is the live
+ * Project Delivery board (the same data /kanban renders, via useKanbanData).
  */
 
-import { MOCK_TODAY } from "@/lib/projects/preview-phases";
-
-/** "Now" for every metric. While Project Delivery is the fixed-date prototype,
- *  this is MOCK_TODAY so the numbers always look fresh. Swap to a real
- *  `new Date()` when Project Delivery is wired to live data. */
-export const KPI_NOW: string = MOCK_TODAY;
+/** Today as ISO yyyy-mm-dd (UTC) — the "now" for every metric. The board is
+ *  live, so this tracks the real date. Computed once at module load (stable
+ *  within a session; same value SSR + client, so no hydration mismatch). */
+export const KPI_NOW: string = new Date().toISOString().slice(0, 10);
 
 /** Phase that marks a deliverable as delivered/live. Reaching it (an entry in
  *  phaseHistory) = delivered; the entry date is the delivery date. */

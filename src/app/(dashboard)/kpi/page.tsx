@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useKanbanData } from "@/lib/kanban/use-kanban-data";
 import { getDeliveryItems } from "@/lib/kpi/source";
 import {
   computeSummary,
@@ -59,7 +60,14 @@ export default function KpiPage() {
   // 0 = current period, 1 = previous, 2 = two ago … steps back through history.
   const [offset, setOffset] = useState(0);
 
-  const items = useMemo(() => getDeliveryItems(), []);
+  // Same live board /kanban renders: localStorage-cached, Supabase-mirrored,
+  // mock only as the cold-load seed. The KPI dash reports off this directly.
+  const { clients, pods: rosterPods, loading, source } = useKanbanData();
+
+  const items = useMemo(
+    () => getDeliveryItems(clients, rosterPods),
+    [clients, rosterPods],
+  );
   const win = useMemo(() => periodWindow(period, offset), [period, offset]);
   const summary = useMemo(
     () => computeSummary(items, period, offset),
@@ -91,7 +99,14 @@ export default function KpiPage() {
           </h1>
           <p className="text-xs text-[#71757D] mt-0.5">
             From Project Delivery · {win.label}
-            {win.isCurrent ? " · in progress" : ""}
+            {win.isCurrent ? " · in progress" : ""} ·{" "}
+            {loading
+              ? "syncing…"
+              : source === "supabase"
+                ? "live"
+                : source === "localStorage"
+                  ? "cached"
+                  : "sample data"}
           </p>
         </div>
         <div className="flex flex-col items-end gap-2 shrink-0">

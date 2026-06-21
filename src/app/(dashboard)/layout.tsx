@@ -9,6 +9,7 @@ import { QuickLinks } from "@/components/quick-links";
 import { Logo } from "@/components/logo";
 import { PitchNav } from "@/components/pitch-nav";
 import { ShortcutsNav, SHORTCUT_TABS } from "@/components/shortcuts-nav";
+import { TeamToolsNav, TEAM_TOOL_TABS } from "@/components/team-tools-nav";
 
 /* Pitch umbrella - routes the PitchNav strip rides above. Lives here (not
  * inside PitchNav) so the layout can decide whether to mount the strip
@@ -57,6 +58,27 @@ function ShortcutsShell() {
   );
 }
 
+/* Team Tools umbrella — the day-to-day team utilities. The strip rides above
+ * every /team/* tool route. Sourced from TEAM_TOOL_TABS so the two stay in
+ * lockstep. */
+const TEAM_TOOLS_PATHS = TEAM_TOOL_TABS.map((t) => t.href);
+
+function TeamToolsShell() {
+  const pathname = usePathname();
+  const isTeamTool = TEAM_TOOLS_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(p + "/"),
+  );
+  if (!isTeamTool) return null;
+  return (
+    <div className="max-w-7xl mx-auto px-6 md:px-12 pt-6 pb-3">
+      <h2 className="text-xs font-medium uppercase tracking-wider text-[#71757D] mb-2">
+        Team Tools
+      </h2>
+      <TeamToolsNav />
+    </div>
+  );
+}
+
 export default function DashboardLayout({
   children,
 }: {
@@ -93,6 +115,7 @@ export default function DashboardLayout({
                 are kept disjoint upstream. */}
             <ShortcutsShell />
             <PitchShell />
+            <TeamToolsShell />
             <PageTransition>{children}</PageTransition>
           </main>
         </div>

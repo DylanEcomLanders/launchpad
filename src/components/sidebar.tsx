@@ -245,6 +245,16 @@ const shortcutsItem = {
   icon: <BoltIcon className="size-4" />,
 };
 
+/* Team Tools — single pinned item replacing the old flat list of team
+ * utilities. Lands on the first tool; a TeamToolsNav pill strip (mounted by
+ * TeamToolsShell in the dashboard layout) rides above every /team/* route, so
+ * Swipe File / Font Library / Submit Invoice / Payments tab in-page. */
+const teamToolsItem = {
+  label: "Team Tools",
+  href: teamItems[0].href,
+  icon: <PuzzlePieceIcon className="size-4" />,
+};
+
 export function Sidebar() {
   const pathname = usePathname();
   const role = useRole();
@@ -518,32 +528,32 @@ export function Sidebar() {
             {renderTopLink(shortcutsItem)}
           </div>
 
-          {/* GROUP 2 — client lifecycle: Delivery → Workspace → Onboarding → Acquisition → Retention.
-              Workspace is parked here temporarily until the data layer is
-              migrated to real Supabase pods + tasks. */}
+          {/* GROUP 2 — Delivery: Project Delivery, Delivery KPIs, Workspace,
+              Onboarding. Delivery KPIs reflect the Project Delivery board;
+              Workspace stays here until its data layer is migrated. */}
           {role !== "team" && (
             <div className="px-3 space-y-0.5 mt-6">
               {renderTopLink(missionControlItem)}
               {renderTopLink(kpiItem)}
               {renderTopLink(workspaceItem)}
               {renderTopLink(onboardingItem)}
-              {renderTopLink(pitchItem)}
-              {renderTopLink(feedbackItem)}
             </div>
           )}
 
-          {/* GROUP 3 — Training: knowledge / learning. Points at the wiki for now. */}
+          {/* GROUP 3 — Growth + learning: Acquisition, Retention, Training.
+              Acquisition + Retention are admin/cro only; Training is for
+              everyone, so it renders for the team role too. */}
           <div className="px-3 space-y-0.5 mt-6">
+            {role !== "team" && renderTopLink(pitchItem)}
+            {role !== "team" && renderTopLink(feedbackItem)}
             {renderTopLink(trainingItem)}
           </div>
 
-          {/* GROUP 4 — Team: all team-facing utilities (Swipe File, Font Library,
-              Submit Invoice, Payments). */}
-          {!collapsed && (
-            <div className="px-3 space-y-0.5 mt-6">
-              {teamItems.map((item) => renderTopLink({ label: item.label, href: item.href, icon: item.icon as React.ReactNode }))}
-            </div>
-          )}
+          {/* GROUP 4 — Team Tools: single item; the TeamToolsNav pill strip
+              rides above the /team/* routes (see TeamToolsShell in the layout). */}
+          <div className="px-3 space-y-0.5 mt-6">
+            {renderTopLink(teamToolsItem)}
+          </div>
 
           {/* GROUP 5 — admin-only bottom cluster: Finance (locked) directly
               above Admin (locked). Both wear lock icons. */}

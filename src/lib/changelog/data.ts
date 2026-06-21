@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-88",
+    date: "20 June 2026",
+    version: "1.2.0",
+    title: "Delivery KPIs read the live board + sidebar regroup",
+    changes: [
+      { type: "improved", text: "Delivery KPIs (/kpi) now report off the live Project Delivery board via the same useKanbanData hook the kanban uses (localStorage-cached, Supabase-mirrored). No more separate data source - it reads the real clients, pods, due dates and delivered status straight from kanban_*. The fixtures only seed an empty board on cold start; live data always wins. Clock runs on the real date" },
+      { type: "improved", text: "getDeliveryItems() is now a pure function fed the live clients + pods, so whatever is on the board flows straight into on-time rate, delivered count, currently-overdue, avg turnaround, and the pod + per-owner breakdowns" },
+      { type: "improved", text: "Sidebar regrouped into three spaced sections: Delivery (Project Delivery, Delivery KPIs, Workspace, Onboarding), Growth + learning (Acquisition, Retention, Training), and Team Tools. Delivery KPIs sits directly under Project Delivery since it reflects that board" },
+      { type: "added", text: "Team Tools is now a pill tab-strip (Swipe File / Font Library / Submit Invoice / Payments) mounted across the /team/* routes, matching the Shortcuts and Acquisition pattern, instead of four flat sidebar links. The tools stay searchable via the command palette" },
+    ],
+  },
+  {
     id: "cl-87",
     date: "21 June 2026",
     version: "1.1.2",
