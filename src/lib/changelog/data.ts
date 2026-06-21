@@ -37,6 +37,17 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-86",
+    date: "21 June 2026",
+    version: "1.1.1",
+    title: "Mission Control kanban now reads + writes through Supabase",
+    changes: [
+      { type: "added", text: "New kanban_pods / kanban_clients / kanban_projects / kanban_tasks Supabase schema (migration 030). Standalone from pods_v2_* so iterating on the kanban cant break workspace. Relational columns, real indexes, RLS matching the existing app posture. Plus kanban-screenshots Storage bucket for the upload work that lands in a follow-up" },
+      { type: "added", text: "Data adapter at src/lib/kanban/data.ts + useKanbanData hook. localStorage cache for instant paint, Supabase pull on mount, additive upsert on every mutation with explicit delete routing. First load on an empty DB auto-seeds the MOCK fixtures so the team always lands on something. setClients / setPods are drop-in for the old useState - all 12 mutation functions on the kanban page kept their shape" },
+      { type: "added", text: "Defensive selector guards - if the cloud overlay drops or renames a client/pod that the page had selected, we fall back to the first available one so the board never goes blank" },
+    ],
+  },
+  {
     id: "cl-85",
     date: "21 June 2026",
     version: "1.1.0",

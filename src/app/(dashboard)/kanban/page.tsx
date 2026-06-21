@@ -40,11 +40,13 @@ import {
   type TestOutcome,
   type TestResult,
 } from "@/lib/projects/preview-phases";
+import { useKanbanData } from "@/lib/kanban/use-kanban-data";
 import {
   MOCK_CLIENTS,
   MOCK_PODS,
   type MockDeliverable,
   type MockClient,
+  type MockPod,
   type TrackedMetric,
   type OnboardingBrief,
 } from "@/lib/projects/mock-data";
@@ -488,13 +490,36 @@ function cloneClients(src: MockClient[]): MockClient[] {
 }
 
 export default function KanbanPage() {
-  const [clients, setClients] = useState<MockClient[]>(() => cloneClients(MOCK_CLIENTS));
+  /* Real Supabase-backed data via useKanbanData. First paint comes from
+   * localStorage (or MOCK_CLIENTS on cold load); the cloud pull overlays
+   * once it returns. Mutations through setClients / setPods mirror to
+   * Supabase automatically. */
+  const { clients, setClients, pods, setPods } = useKanbanData();
   const [viewMode, setViewMode] = useState<ViewMode>("project");
   const [clientId, setClientId] = useState<string>(MOCK_CLIENTS[0]?.id ?? "");
   const [podId, setPodId] = useState<string>(MOCK_PODS[0]?.id ?? "");
   const [projectId, setProjectId] = useState<string>(
     MOCK_CLIENTS[0]?.projects[0]?.id ?? "",
   );
+
+  /* Keep clientId / projectId / podId pointing at real rows after the
+   * cloud overlay lands. If the live data dropped or renamed our pick,
+   * fall back to the first available one so the page doesnt go blank. */
+  useEffect(() => {
+    if (clients.length === 0) return;
+    if (!clients.find((c) => c.id === clientId)) {
+      const next = clients[0];
+      setClientId(next.id);
+      setProjectId(next.projects[0]?.id ?? "");
+    }
+  }, [clients, clientId]);
+
+  useEffect(() => {
+    if (pods.length === 0) return;
+    if (!pods.find((p) => p.id === podId)) {
+      setPodId(pods[0].id);
+    }
+  }, [pods, podId]);
 
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<PreviewPhase | null>(null);
@@ -761,7 +786,7 @@ export default function KanbanPage() {
       const p = c?.projects.find((x) => x.id === activeProject.id);
       if (!p) return next;
       const id = `new-${Date.now()}`;
-      const pod = MOCK_PODS.find((pd) => pd.id === p.podId);
+      const pod = pods.find((pd) => pd.id === p.podId);
       // Launch + Testing assignees are surfaced at display time, not stored
       // on the deliverable, so the build team data stays intact for history.
       p.deliverables.push({
@@ -832,7 +857,7 @@ export default function KanbanPage() {
 
   async function assignPodToProject(podId: string) {
     if (!activeClient || !activeProject) return;
-    const pod = MOCK_PODS.find((p) => p.id === podId);
+    const pod = pods.find((p) => p.id === podId);
     if (!pod) return;
     // If the project already has deliverables, picking a new pod will
     // overwrite every card's assignees. Ask first so per-card overrides
@@ -1058,7 +1083,7 @@ export default function KanbanPage() {
           ? "By pod"
           : "Results Library";
 
-  const activePod = MOCK_PODS.find((p) => p.id === podId);
+  const activePod = pods.find((p) => p.id === podId);
 
   function headerTitle(): { bold: string; light: string } {
     if (viewMode === "results") {
@@ -1160,7 +1185,7 @@ export default function KanbanPage() {
             <div
               className={`relative w-[180px] shrink-0 ${
                 (viewMode === "project" && clients.length > 0) ||
-                (viewMode === "pod" && MOCK_PODS.length > 0)
+                (viewMode === "pod" && pods.length > 0)
                   ? ""
                   : "invisible pointer-events-none"
               }`}
@@ -1172,7 +1197,7 @@ export default function KanbanPage() {
                   onChange={(e) => setPodId(e.target.value)}
                   className="appearance-none w-full text-sm font-medium pl-3 pr-9 py-2 bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] rounded-full focus:outline-none focus:border-[#383838]"
                 >
-                  {MOCK_PODS.map((p) => (
+                  {pods.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name}
                     </option>
@@ -1218,7 +1243,7 @@ export default function KanbanPage() {
                   p.deliverables.filter((d) => !d.testResult).length,
                 ]),
               )}
-              pods={MOCK_PODS}
+              pods={pods}
               currentPodId={activeProject?.podId}
               onAssignPod={assignPodToProject}
               hasBrief={!!activeClient.onboardingBrief}
@@ -1492,7 +1517,7 @@ interface ProjectTabsRowProps {
     engagementDays?: EngagementDays;
   }) => void;
   deliverableCounts: Record<string, number>;
-  pods: typeof MOCK_PODS;
+  pods: MockPod[];
   currentPodId: string | undefined;
   onAssignPod: (podId: string) => void;
   // Brief is structured Q&A now (see OnboardingBrief in mock-data); the row
