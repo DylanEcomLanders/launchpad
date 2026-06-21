@@ -37,6 +37,17 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-100",
+    date: "22 June 2026",
+    version: "1.7.3",
+    title: "Throughput dashboard - per-tier delivery vs target",
+    changes: [
+      { type: "added", text: "/tools/throughput - per-client month-to-date pages shipped + tests live, scored against tier targets (Entry 2/2, Core 4/4, VIP 6/12). No new data: composes proposals (for tier) + ab_tests + roadmaps" },
+      { type: "added", text: "Risk engine scales tolerance against month-progress (10% buffer + 2x for critical). Status pill: On track / Behind / Critical. Summary tiles at top, sortable table with progress bars below" },
+      { type: "added", text: "Tier resolved from most recent signed/paid/kicked-off proposal per client - no separate clients table needed" },
+    ],
+  },
+  {
     id: "cl-99",
     date: "22 June 2026",
     version: "1.7.2",
