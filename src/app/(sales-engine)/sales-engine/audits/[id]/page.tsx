@@ -132,7 +132,7 @@ export default function AuditDetailPage() {
                 type="text"
                 value={audit.brand_name}
                 onChange={(e) => update({ brand_name: e.target.value })}
-                className="text-2xl font-bold tracking-tight capitalize bg-transparent border-0 border-b border-transparent hover:border-[#E5E5EA] focus:border-[#999] focus:outline-none px-0 py-0"
+                className="text-2xl font-bold capitalize bg-transparent border-0 border-b border-transparent hover:border-[#E5E5EA] focus:border-[#999] focus:outline-none px-0 py-0"
               />
               <span className={`text-[9px] font-semibold uppercase px-2 py-0.5 rounded-full shrink-0 ${
                 audit.status === "published" ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
@@ -179,7 +179,7 @@ export default function AuditDetailPage() {
         {/* Scorecard */}
         <div>
           <h2 className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">Scorecard</h2>
-          <div className="border border-[#E5E5EA] rounded-xl bg-white divide-y divide-[#F0F0F0] overflow-hidden">
+          <div className="border border-[#E5E5EA] rounded-xl bg-white divide-y divide-[#333333] overflow-hidden">
             {audit.scorecard.map((s, i) => (
               <div key={i} className="flex items-center justify-between px-4 py-2.5">
                 <input

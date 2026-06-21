@@ -31,21 +31,21 @@ export default function PriceListsPage() {
       <div className="relative z-10 max-w-3xl mx-auto px-6 md:px-12 py-16 md:py-24">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
+          <h1 className="text-[28px] leading-tight font-bold text-[#E5E5EA]">
             Price List
           </h1>
-          <p className="text-[#7A7A7A]">
+          <p className="text-[#71757D]">
             Shareable pricing page for clients.
           </p>
         </div>
 
         {/* Single share card */}
-        <div className="bg-white border border-[#E5E5EA] rounded-lg p-5 mb-10">
+        <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-5 mb-10">
           <div className="mb-4">
-            <h2 className="text-lg font-semibold text-[#1B1B1B]">
+            <h2 className="text-lg font-semibold text-[#E5E5EA]">
               /pricing
             </h2>
-            <p className="text-sm text-[#7A7A7A] mt-0.5">
+            <p className="text-sm text-[#71757D] mt-0.5">
               Public pricing page — services, retainer-paired discounts, and live totals.
             </p>
           </div>
@@ -53,7 +53,7 @@ export default function PriceListsPage() {
           <div className="flex items-center gap-3 mb-4">
             <button
               onClick={copyLink}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium bg-white text-[#0C0C0C] rounded-lg hover:bg-[#F3F4F6] transition-colors"
             >
               {copied ? (
                 <>
@@ -71,7 +71,7 @@ export default function PriceListsPage() {
               href="/pricing"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium border border-[#E5E5EA] rounded-lg text-[#1B1B1B] hover:bg-[#F3F3F5] transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium border border-[#2A2A2A] rounded-lg text-[#E5E5EA] hover:bg-[#222222] transition-colors"
             >
               <ArrowTopRightOnSquareIcon className="size-4" />
               Preview Page
@@ -79,8 +79,8 @@ export default function PriceListsPage() {
           </div>
 
           {/* Quick price overview */}
-          <div className="border-t border-[#EDEDEF] pt-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-2">
+          <div className="border-t border-[#2A2A2A] pt-3">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-2">
               Price snapshot
             </p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1.5">
@@ -98,13 +98,13 @@ export default function PriceListsPage() {
                       key={svc.id}
                       className="flex items-baseline justify-between gap-2"
                     >
-                      <span className="text-xs text-[#7A7A7A] truncate">
+                      <span className="text-xs text-[#71757D] truncate">
                         {svc.name}
                       </span>
-                      <span className="text-xs font-semibold text-[#1B1B1B] tabular-nums shrink-0">
+                      <span className="text-xs font-semibold text-[#E5E5EA] tabular-nums shrink-0">
                         {formatGBP(tierPrice.amount)}
                         {isRecurring && (
-                          <span className="font-normal text-[#A0A0A0]">
+                          <span className="font-normal text-[#71757D]">
                             /mo
                           </span>
                         )}
@@ -118,13 +118,13 @@ export default function PriceListsPage() {
 
         {/* Add-ons summary */}
         <div>
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-3">
             Add-on Services
-            <span className="ml-2 text-[10px] font-bold bg-[#EDEDEF] text-[#7A7A7A] px-1.5 py-0.5 rounded">
+            <span className="ml-2 text-[10px] font-bold bg-[#222222] text-[#71757D] px-1.5 py-0.5 rounded">
               {services.filter((s) => s.isAddOn).length}
             </span>
           </h2>
-          <div className="bg-[#F7F8FA] border border-[#E5E5EA] rounded-lg divide-y divide-[#E5E5EA]">
+          <div className="bg-[#0C0C0C] border border-[#2A2A2A] rounded-lg divide-y divide-[#2A2A2A]">
             {services
               .filter((s) => s.isAddOn)
               .map((svc) => {
@@ -138,22 +138,22 @@ export default function PriceListsPage() {
                 return (
                   <div key={svc.id} className="px-4 py-2.5">
                     <div className="flex items-center justify-between gap-4">
-                      <span className="text-xs text-[#7A7A7A] truncate">
+                      <span className="text-xs text-[#71757D] truncate">
                         {svc.name}
                         {hasUnit && (
-                          <span className="text-[10px] text-[#A0A0A0] ml-1">
+                          <span className="text-[10px] text-[#71757D] ml-1">
                             (min {svc.minQuantity})
                           </span>
                         )}
                       </span>
-                      <span className="text-xs tabular-nums text-[#A0A0A0]">
-                        <span className="font-semibold text-[#1B1B1B]">{tierPrice.label}</span>
+                      <span className="text-xs tabular-nums text-[#71757D]">
+                        <span className="font-semibold text-[#E5E5EA]">{tierPrice.label}</span>
                       </span>
                     </div>
                     {hasVolume && (
                       <div className="flex items-center gap-3 mt-1 ml-0 flex-wrap">
                         {svc.volumeDiscounts!.map((vd) => (
-                          <span key={vd.minQty} className="text-[10px] text-[#A0A0A0]">
+                          <span key={vd.minQty} className="text-[10px] text-[#71757D]">
                             {vd.minQty}+: <span className="font-semibold text-[#15803D]">{vd.label}</span>
                           </span>
                         ))}

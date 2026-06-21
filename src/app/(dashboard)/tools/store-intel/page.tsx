@@ -122,22 +122,22 @@ export default function StoreIntelPage() {
       <div className="relative z-10 max-w-4xl mx-auto px-6 md:px-12 py-12 md:py-16">
         {/* Header */}
         <div className="mb-10">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">
             Audit Machine
           </h1>
-          <p className="text-[#7A7A7A] text-sm">
+          <p className="text-[#71757D] text-sm">
             Analyse any Shopify store or audit a single page — get categorised, actionable findings
           </p>
         </div>
 
         {/* Mode Toggle */}
-        <div className="flex gap-1 mb-6 bg-[#EDEDEF] border border-[#E5E5EA] rounded-lg p-1 w-fit">
+        <div className="flex gap-1 mb-6 bg-[#222222] border border-[#2A2A2A] rounded-lg p-1 w-fit">
           <button
             onClick={() => { setMode("store"); setStoreResult(null); setPageResult(null); setError(""); }}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
               mode === "store"
-                ? "bg-white border border-[#E5E5EA] shadow-sm"
-                : "text-[#7A7A7A] hover:text-[#3A3A3A]"
+                ? "bg-[#181818] border border-[#2A2A2A] shadow-sm"
+                : "text-[#71757D] hover:text-[#3A3A3A]"
             }`}
           >
             <span className="flex items-center gap-2">
@@ -149,8 +149,8 @@ export default function StoreIntelPage() {
             onClick={() => { setMode("page"); setStoreResult(null); setPageResult(null); setError(""); }}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
               mode === "page"
-                ? "bg-white border border-[#E5E5EA] shadow-sm"
-                : "text-[#7A7A7A] hover:text-[#3A3A3A]"
+                ? "bg-[#181818] border border-[#2A2A2A] shadow-sm"
+                : "text-[#71757D] hover:text-[#3A3A3A]"
             }`}
           >
             <span className="flex items-center gap-2">
@@ -161,7 +161,7 @@ export default function StoreIntelPage() {
         </div>
 
         {/* Input Form */}
-        <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-5 mb-8">
+        <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg p-5 mb-8">
           {mode === "store" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
@@ -198,7 +198,7 @@ export default function StoreIntelPage() {
                 onChange={(e) => setPageUrl(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && runAnalysis()}
               />
-              <p className="text-[11px] text-[#A0A0A0] mt-1.5">
+              <p className="text-[11px] text-[#71757D] mt-1.5">
                 Paste any page — PDP, collection, homepage, landing page. Get a design-focused audit.
               </p>
             </div>
@@ -206,7 +206,7 @@ export default function StoreIntelPage() {
           <button
             onClick={runAnalysis}
             disabled={loading || !canRun}
-            className="w-full flex items-center justify-center gap-2 px-5 py-2.5 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-5 py-2.5 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:bg-[#F3F4F6] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? (
               <>
@@ -221,7 +221,7 @@ export default function StoreIntelPage() {
             )}
           </button>
           {loading && (
-            <p className="text-xs text-[#A0A0A0] text-center mt-2">
+            <p className="text-xs text-[#71757D] text-center mt-2">
               {mode === "store"
                 ? "This takes 2-4 minutes — crawling pages and running AI analysis"
                 : "This takes 30-60 seconds — crawling page and running AI audit"}
@@ -256,13 +256,13 @@ function PageAuditResults({ result }: { result: PageAuditResult }) {
   return (
     <div className="space-y-6">
       {/* Page Overview */}
-      <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-5">
+      <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg p-5">
         <div className="flex items-center gap-2 mb-1">
-          <DocumentTextIcon className="size-4 text-[#7A7A7A]" />
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">{result.pageType}</span>
+          <DocumentTextIcon className="size-4 text-[#71757D]" />
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">{result.pageType}</span>
         </div>
         <h2 className="text-sm font-semibold mb-1">{result.title}</h2>
-        <p className="text-xs text-[#A0A0A0] break-all">{result.pageUrl}</p>
+        <p className="text-xs text-[#71757D] break-all">{result.pageUrl}</p>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
           <StatBox
@@ -287,8 +287,8 @@ function PageAuditResults({ result }: { result: PageAuditResult }) {
 
       {/* Two-col: Persuasion + CTAs/Tech */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-5">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
+        <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg p-5">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-3">
             Persuasion Elements
           </h3>
           <div className="space-y-1.5">
@@ -301,46 +301,46 @@ function PageAuditResults({ result }: { result: PageAuditResult }) {
             {missingElements.map((el) => (
               <div key={el} className="flex items-center gap-2 text-sm">
                 <HandThumbDownIcon className="size-3.5 text-red-400 shrink-0" />
-                <span className="capitalize text-[#999]">{el.replace(/([A-Z])/g, " $1").trim()}</span>
+                <span className="capitalize text-[#71757D]">{el.replace(/([A-Z])/g, " $1").trim()}</span>
               </div>
             ))}
           </div>
         </div>
 
         <div className="space-y-4">
-          <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-5">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
+          <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg p-5">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-3">
               CTAs Found
             </h3>
             {result.elements.ctas.length > 0 ? (
               <div className="flex flex-wrap gap-1.5">
                 {result.elements.ctas.map((cta, i) => (
-                  <span key={i} className="inline-flex items-center px-2.5 py-1 bg-white border border-[#E5E5EA] rounded text-xs text-[#3A3A3A]">
+                  <span key={i} className="inline-flex items-center px-2.5 py-1 bg-[#181818] border border-[#2A2A2A] rounded text-xs text-[#3A3A3A]">
                     {cta}
                   </span>
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-[#A0A0A0]">No clear CTAs detected</p>
+              <p className="text-xs text-[#71757D]">No clear CTAs detected</p>
             )}
           </div>
 
-          <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-5">
+          <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg p-5">
             <div className="flex items-center gap-2 mb-3">
-              <SwatchIcon className="size-4 text-[#7A7A7A]" />
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">Tech Stack</h3>
+              <SwatchIcon className="size-4 text-[#71757D]" />
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">Tech Stack</h3>
             </div>
             <p className="text-sm font-medium mb-2">{result.theme}</p>
             {result.appsDetected.length > 0 ? (
               <div className="flex flex-wrap gap-1.5">
                 {result.appsDetected.map((app) => (
-                  <span key={app} className="inline-flex items-center px-2 py-0.5 bg-white border border-[#E5E5EA] rounded text-[11px] text-[#3A3A3A]">
+                  <span key={app} className="inline-flex items-center px-2 py-0.5 bg-[#181818] border border-[#2A2A2A] rounded text-[11px] text-[#3A3A3A]">
                     {app}
                   </span>
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-[#A0A0A0]">No major apps detected</p>
+              <p className="text-xs text-[#71757D]">No major apps detected</p>
             )}
           </div>
         </div>
@@ -361,11 +361,11 @@ function StoreResults({ result }: { result: StoreIntelResult }) {
   return (
     <div className="space-y-6">
       {/* Summary Stats */}
-      <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-5">
+      <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg p-5">
         <div className="flex items-center gap-2 mb-4">
-          <BuildingStorefrontIcon className="size-4 text-[#7A7A7A]" />
+          <BuildingStorefrontIcon className="size-4 text-[#71757D]" />
           <h2 className="text-sm font-semibold">{result.brand}</h2>
-          <span className="text-xs text-[#A0A0A0]">{result.storeUrl}</span>
+          <span className="text-xs text-[#71757D]">{result.storeUrl}</span>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <StatBox icon={<CubeIcon className="size-3.5" />} label="Products" value={String(result.products)} />
@@ -391,48 +391,48 @@ function StoreResults({ result }: { result: StoreIntelResult }) {
 
       {/* Tech Stack & Price */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-5">
+        <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg p-5">
           <div className="flex items-center gap-2 mb-3">
-            <SwatchIcon className="size-4 text-[#7A7A7A]" />
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">Tech Stack</h3>
+            <SwatchIcon className="size-4 text-[#71757D]" />
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">Tech Stack</h3>
           </div>
           <p className="text-sm font-medium mb-2">{result.theme}</p>
           {result.appsDetected.length > 0 ? (
             <div className="flex flex-wrap gap-1.5">
               {result.appsDetected.map((app) => (
-                <span key={app} className="inline-flex items-center px-2 py-0.5 bg-white border border-[#E5E5EA] rounded text-[11px] text-[#3A3A3A]">
+                <span key={app} className="inline-flex items-center px-2 py-0.5 bg-[#181818] border border-[#2A2A2A] rounded text-[11px] text-[#3A3A3A]">
                   {app}
                 </span>
               ))}
             </div>
           ) : (
-            <p className="text-xs text-[#A0A0A0]">No major apps detected</p>
+            <p className="text-xs text-[#71757D]">No major apps detected</p>
           )}
         </div>
 
         {result.productAnalysis && (
-          <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-5">
+          <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg p-5">
             <div className="flex items-center gap-2 mb-3">
-              <CubeIcon className="size-4 text-[#7A7A7A]" />
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">Price Analysis</h3>
+              <CubeIcon className="size-4 text-[#71757D]" />
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">Price Analysis</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
               <div>
-                <p className="text-[10px] text-[#A0A0A0] uppercase">Range</p>
+                <p className="text-[10px] text-[#71757D] uppercase">Range</p>
                 <p className="font-medium tabular-nums">
                   ${result.productAnalysis.priceRange.min.toFixed(0)} – ${result.productAnalysis.priceRange.max.toFixed(0)}
                 </p>
               </div>
               <div>
-                <p className="text-[10px] text-[#A0A0A0] uppercase">Median</p>
+                <p className="text-[10px] text-[#71757D] uppercase">Median</p>
                 <p className="font-medium tabular-nums">${result.productAnalysis.priceRange.median.toFixed(2)}</p>
               </div>
               <div>
-                <p className="text-[10px] text-[#A0A0A0] uppercase">Discounted</p>
+                <p className="text-[10px] text-[#71757D] uppercase">Discounted</p>
                 <p className="font-medium tabular-nums">{result.productAnalysis.discounting.percent}</p>
               </div>
               <div>
-                <p className="text-[10px] text-[#A0A0A0] uppercase">Avg Discount</p>
+                <p className="text-[10px] text-[#71757D] uppercase">Avg Discount</p>
                 <p className="font-medium tabular-nums">{result.productAnalysis.discounting.avgDiscount}</p>
               </div>
             </div>
@@ -453,8 +453,8 @@ function StoreResults({ result }: { result: StoreIntelResult }) {
 
 function SummaryCard({ summary }: { summary: string }) {
   return (
-    <div className="bg-[#F9F9F9] border border-[#E5E5EA] rounded-lg p-5">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-2">Executive Summary</p>
+    <div className="bg-[#F9F9F9] border border-[#2A2A2A] rounded-lg p-5">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-2">Executive Summary</p>
       <p className="text-sm text-[#3A3A3A] leading-relaxed">{summary}</p>
     </div>
   );
@@ -467,7 +467,7 @@ function FindingsSummaryStrip({ findings }: { findings: Finding[] }) {
   const highCount = findings.filter((f) => f.severity === "high").length;
 
   return (
-    <div className="flex flex-wrap items-center gap-4 bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg px-5 py-3">
+    <div className="flex flex-wrap items-center gap-4 bg-[#222222] border border-[#2A2A2A] rounded-lg px-5 py-3">
       {CATEGORY_ORDER.map((cat) => {
         const count = grouped[cat]?.length || 0;
         if (!count) return null;
@@ -476,12 +476,12 @@ function FindingsSummaryStrip({ findings }: { findings: Finding[] }) {
           <div key={cat} className="flex items-center gap-1.5">
             <span className={`size-2 rounded-full ${meta.dot}`} />
             <span className="text-xs font-semibold tabular-nums">{count}</span>
-            <span className="text-xs text-[#7A7A7A]">{meta.label}</span>
+            <span className="text-xs text-[#71757D]">{meta.label}</span>
           </div>
         );
       })}
       <div className="ml-auto flex items-center gap-1.5">
-        <span className="text-xs text-[#A0A0A0]">{findings.length} total</span>
+        <span className="text-xs text-[#71757D]">{findings.length} total</span>
         {highCount > 0 && (
           <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-red-100 text-red-700">
             {highCount} critical
@@ -524,14 +524,14 @@ function FindingsByCategory({ findings }: { findings: Finding[] }) {
         return (
           <div
             key={cat}
-            className={`bg-white border border-[#E5E5EA] border-l-4 ${meta.border} rounded-lg overflow-hidden`}
+            className={`bg-[#181818] border border-[#2A2A2A] border-l-4 ${meta.border} rounded-lg overflow-hidden`}
           >
             {/* Category Header */}
             <button
               onClick={() => toggle(cat)}
               className={`w-full flex items-center justify-between px-5 py-3.5 text-left ${meta.bg} hover:brightness-95 transition-all`}
             >
-              <span className="text-sm font-semibold text-[#1B1B1B]">
+              <span className="text-sm font-semibold text-[#E5E5EA]">
                 {meta.label}
               </span>
               <div className="flex items-center gap-2">
@@ -539,7 +539,7 @@ function FindingsByCategory({ findings }: { findings: Finding[] }) {
                   {catFindings.length} {catFindings.length === 1 ? "finding" : "findings"}
                 </span>
                 <ChevronDownIcon
-                  className={`size-4 text-[#7A7A7A] transition-transform duration-200 ${
+                  className={`size-4 text-[#71757D] transition-transform duration-200 ${
                     isCollapsed ? "-rotate-90" : ""
                   }`}
                 />
@@ -567,18 +567,18 @@ function FindingCard({ finding }: { finding: Finding }) {
   const sev = SEVERITY_META[finding.severity];
 
   return (
-    <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-md p-4">
+    <div className="bg-[#222222] border border-[#2A2A2A] rounded-md p-4">
       <div className="flex items-center gap-2 mb-2">
         <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${sev.pillBg} ${sev.text}`}>
           {sev.label}
         </span>
         {finding.page && (
-          <span className="text-[10px] px-2 py-0.5 bg-[#E5E5EA] rounded text-[#7A7A7A]">
+          <span className="text-[10px] px-2 py-0.5 bg-[#2A2A2A] rounded text-[#71757D]">
             {finding.page}
           </span>
         )}
       </div>
-      <h4 className="text-sm font-semibold text-[#1B1B1B] mb-1">{finding.title}</h4>
+      <h4 className="text-sm font-semibold text-[#E5E5EA] mb-1">{finding.title}</h4>
       <p className="text-xs text-[#3A3A3A] leading-relaxed">{finding.description}</p>
     </div>
   );
@@ -615,14 +615,14 @@ function ExportBar({ result }: { result: StoreIntelResult | PageAuditResult }) {
     <div className="flex items-center gap-3 pt-2">
       <button
         onClick={copyFindings}
-        className="flex items-center gap-2 px-4 py-2 bg-[#F3F3F5] border border-[#E5E5EA] rounded-md text-xs font-medium text-[#3A3A3A] hover:bg-[#EBEBEB] transition-colors"
+        className="flex items-center gap-2 px-4 py-2 bg-[#222222] border border-[#2A2A2A] rounded-md text-xs font-medium text-[#3A3A3A] hover:bg-[#2A2A2A] transition-colors"
       >
         <ClipboardDocumentIcon className="size-3.5" />
         {copied ? "Copied!" : "Copy Findings"}
       </button>
       <button
         onClick={downloadReport}
-        className="flex items-center gap-2 px-4 py-2 bg-[#F3F3F5] border border-[#E5E5EA] rounded-md text-xs font-medium text-[#3A3A3A] hover:bg-[#EBEBEB] transition-colors"
+        className="flex items-center gap-2 px-4 py-2 bg-[#222222] border border-[#2A2A2A] rounded-md text-xs font-medium text-[#3A3A3A] hover:bg-[#2A2A2A] transition-colors"
       >
         <ArrowDownTrayIcon className="size-3.5" />
         Download .md
@@ -647,8 +647,8 @@ function StatBox({
   return (
     <div>
       <div className="flex items-center gap-1 mb-1">
-        <span className="text-[#A0A0A0]">{icon}</span>
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">{label}</p>
+        <span className="text-[#71757D]">{icon}</span>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">{label}</p>
       </div>
       <p className={`text-lg font-semibold tabular-nums ${color || ""}`}>
         {value}

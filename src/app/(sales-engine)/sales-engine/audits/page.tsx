@@ -103,12 +103,12 @@ export default function AuditsPage() {
   return (
     <div className="max-w-4xl mx-auto py-10 px-4">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">CRO Audits</h1>
+        <h1 className="text-2xl font-bold">CRO Audits</h1>
         <p className="text-sm text-[#7A7A7A] mt-1">Generate comprehensive homepage audits for prospects</p>
       </div>
 
       {/* Generate new */}
-      <div className="border border-[#E5E5EA] rounded-xl bg-white p-5 mb-8">
+      <div className="border border-[#404040] rounded-xl bg-[#181818] p-5 mb-8">
         <p className="text-xs font-semibold uppercase tracking-wider text-[#AAA] mb-3">New Audit</p>
         <div className="flex items-end gap-3">
           <div className="flex-1">
@@ -156,14 +156,14 @@ export default function AuditsPage() {
           <p className="text-xs text-[#CCC] mt-1">Enter a URL above to generate your first CRO audit</p>
         </div>
       ) : (
-        <div className="divide-y divide-[#F0F0F0]">
+        <div className="divide-y divide-[#333333]">
           {audits.map((audit) => {
             const date = new Date(audit.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
             const issueCount = audit.issues?.length || 0;
             const criticalCount = audit.issues?.filter(i => i.severity === "critical").length || 0;
 
             return (
-              <div key={audit.id} className="flex items-center justify-between py-4 px-2 hover:bg-[#FAFAFA] rounded-lg transition-colors">
+              <div key={audit.id} className="flex items-center justify-between py-4 px-2 hover:bg-[#222222] rounded-lg transition-colors">
                 <Link href={`/sales-engine/audits/${audit.id}`} className="flex-1 min-w-0">
                   <div className="flex items-center gap-3">
                     <p className="text-sm font-semibold text-[#1A1A1A] capitalize">{audit.brand_name}</p>

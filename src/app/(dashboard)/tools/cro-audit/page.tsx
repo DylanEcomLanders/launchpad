@@ -89,8 +89,8 @@ export default function CroAuditPage() {
     <div className="max-w-4xl mx-auto px-6 md:px-12 py-12 md:py-16">
       {/* Header */}
       <div className="mb-10">
-        <h1 className="text-2xl font-bold tracking-tight mb-1">CRO Audit</h1>
-        <p className="text-sm text-[#7A7A7A]">
+        <h1 className="text-[28px] leading-tight font-bold text-[#E5E5EA] mb-1">CRO Audit</h1>
+        <p className="text-sm text-[#71757D]">
           Upload designs to get an AI-powered conversion analysis
         </p>
       </div>
@@ -150,7 +150,7 @@ export default function CroAuditPage() {
         <p className={labelClass}>Current Stats (optional)</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-[11px] text-[#A0A0A0] mb-1">
+            <label className="block text-[11px] text-[#71757D] mb-1">
               CR (%)
             </label>
             <input
@@ -164,7 +164,7 @@ export default function CroAuditPage() {
             />
           </div>
           <div>
-            <label className="block text-[11px] text-[#A0A0A0] mb-1">
+            <label className="block text-[11px] text-[#71757D] mb-1">
               AOV ($)
             </label>
             <input
@@ -178,7 +178,7 @@ export default function CroAuditPage() {
             />
           </div>
           <div>
-            <label className="block text-[11px] text-[#A0A0A0] mb-1">
+            <label className="block text-[11px] text-[#71757D] mb-1">
               Bounce (%)
             </label>
             <input
@@ -192,7 +192,7 @@ export default function CroAuditPage() {
             />
           </div>
           <div>
-            <label className="block text-[11px] text-[#A0A0A0] mb-1">
+            <label className="block text-[11px] text-[#71757D] mb-1">
               Sessions
             </label>
             <input
@@ -225,7 +225,7 @@ export default function CroAuditPage() {
         <button
           onClick={runAudit}
           disabled={!isFormValid || scanning}
-          className="flex items-center gap-2 px-5 py-2.5 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-5 py-2.5 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:bg-[#F3F4F6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {scanning ? (
             <>
@@ -243,13 +243,13 @@ export default function CroAuditPage() {
 
       {/* Scanning State */}
       {scanning && (
-        <div className="flex items-center gap-3 p-6 bg-[#EDEDEF] border border-[#E5E5EA] rounded-lg mb-8">
-          <ArrowPathIcon className="size-5 animate-spin text-[#7A7A7A]" />
+        <div className="flex items-center gap-3 p-6 bg-[#222222] border border-[#2A2A2A] rounded-lg mb-8">
+          <ArrowPathIcon className="size-5 animate-spin text-[#71757D]" />
           <div>
             <p className="text-sm font-medium">
               Analysing designs with Claude...
             </p>
-            <p className="text-xs text-[#7A7A7A] mt-0.5">
+            <p className="text-xs text-[#71757D] mt-0.5">
               This usually takes 15–30 seconds
             </p>
           </div>
@@ -273,10 +273,10 @@ export default function CroAuditPage() {
           {/* Side-by-side thumbnails */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-2">
                 Control
               </p>
-              <div className="rounded-lg overflow-hidden border border-[#E5E5EA]">
+              <div className="rounded-lg overflow-hidden border border-[#2A2A2A]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={controlImage!}
@@ -286,10 +286,10 @@ export default function CroAuditPage() {
               </div>
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-2">
                 Your Design
               </p>
-              <div className="rounded-lg overflow-hidden border border-[#E5E5EA]">
+              <div className="rounded-lg overflow-hidden border border-[#2A2A2A]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={variantImage!}
@@ -312,17 +312,17 @@ export default function CroAuditPage() {
 
           {/* Quick Wins */}
           {result.quickWins.length > 0 && (
-            <div className="bg-[#EDEDEF] border border-[#E5E5EA] rounded-lg p-6">
+            <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg p-6">
               <div className="flex items-center gap-2 mb-4">
                 <LightBulbIcon className="size-4 text-amber-500" />
-                <p className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">
                   Quick Wins
                 </p>
               </div>
               <div className="space-y-3">
                 {result.quickWins.map((win, i) => (
                   <div key={i} className="flex items-start gap-3">
-                    <span className="flex-shrink-0 size-5 rounded-full bg-[#1B1B1B] text-white text-[10px] font-bold flex items-center justify-center mt-0.5">
+                    <span className="flex-shrink-0 size-5 rounded-full bg-white text-[#0C0C0C] text-[10px] font-bold flex items-center justify-center mt-0.5">
                       {i + 1}
                     </span>
                     <p className="text-sm text-[#3A3A3A] leading-relaxed">
@@ -391,7 +391,7 @@ function ImageUpload({
   if (image) {
     return (
       <div className="relative group">
-        <div className="rounded-lg overflow-hidden border border-[#E5E5EA]">
+        <div className="rounded-lg overflow-hidden border border-[#2A2A2A]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={image} alt={label} className="w-full h-auto" />
         </div>
@@ -423,15 +423,15 @@ function ImageUpload({
         transition-colors duration-150
         ${
           dragOver
-            ? "border-[#1B1B1B] bg-[#EDEDEF]"
-            : "border-[#E5E5EA] bg-[#F7F8FA] hover:border-[#C5C5C5] hover:bg-[#F3F3F5]"
+            ? "border-white bg-[#222222]"
+            : "border-[#2A2A2A] bg-[#0C0C0C] hover:border-[#C5C5C5] hover:bg-[#222222]"
         }
       `}
     >
       <PhotoIcon className="size-8 text-[#C5C5C5]" />
       <div className="text-center">
-        <p className="text-sm font-medium text-[#7A7A7A]">{label}</p>
-        <p className="text-xs text-[#A0A0A0] mt-0.5">{sublabel}</p>
+        <p className="text-sm font-medium text-[#71757D]">{label}</p>
+        <p className="text-xs text-[#71757D] mt-0.5">{sublabel}</p>
       </div>
       <p className="text-[10px] text-[#C5C5C5]">
         Drop image or click to browse
@@ -491,9 +491,9 @@ function VerdictBanner({
       <p className="text-sm text-[#3A3A3A] leading-relaxed mb-3">
         {verdict.summary}
       </p>
-      <p className="text-xs font-semibold text-[#7A7A7A]">
+      <p className="text-xs font-semibold text-[#71757D]">
         Predicted impact:{" "}
-        <span className="text-[#1B1B1B]">{impact}</span>
+        <span className="text-[#E5E5EA]">{impact}</span>
       </p>
     </div>
   );
@@ -526,7 +526,7 @@ function AnalysisSection({ section }: { section: AuditSection }) {
   const r = ratingConfig[section.rating] || ratingConfig.moderate;
 
   return (
-    <div className="bg-[#EDEDEF] border border-[#E5E5EA] rounded-lg p-5">
+    <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg p-5">
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-sm font-semibold">{section.title}</h4>
         <span

@@ -33,13 +33,13 @@ const typeConfig: Record<ChangeType, { label: string; color: string; bg: string;
   added: { label: "Added", color: "text-emerald-700", bg: "bg-emerald-50", icon: SparklesIcon },
   improved: { label: "Improved", color: "text-blue-700", bg: "bg-blue-50", icon: WrenchScrewdriverIcon },
   fixed: { label: "Fixed", color: "text-amber-700", bg: "bg-amber-50", icon: BugAntIcon },
-  removed: { label: "Removed", color: "text-[#7A7A7A]", bg: "bg-[#F3F3F5]", icon: TrashIcon },
+  removed: { label: "Removed", color: "text-[#71757D]", bg: "bg-[#222222]", icon: TrashIcon },
 };
 
 const priorityConfig: Record<RoadmapPriority, { label: string; icon: React.ElementType; dot: string; text: string }> = {
-  next: { label: "Up Next", icon: RocketLaunchIcon, dot: "bg-[#1B1B1B]", text: "text-[#1B1B1B]" },
+  next: { label: "Up Next", icon: RocketLaunchIcon, dot: "bg-[#1B1B1B]", text: "text-[#E5E5EA]" },
   planned: { label: "Planned", icon: ClockIcon, dot: "bg-amber-400", text: "text-amber-600" },
-  exploring: { label: "Exploring", icon: CheckCircleIcon, dot: "bg-[#D4D4D4]", text: "text-[#A0A0A0]" },
+  exploring: { label: "Exploring", icon: CheckCircleIcon, dot: "bg-[#D4D4D4]", text: "text-[#71757D]" },
 };
 
 /* ── Page ── */
@@ -67,20 +67,20 @@ export default function ChangelogPage() {
     <div className="max-w-2xl mx-auto px-6 md:px-12 py-12">
       <div className="mb-8">
         <h1 className="text-xl font-semibold">Changelog</h1>
-        <p className="text-sm text-[#7A7A7A] mt-1">
+        <p className="text-sm text-[#71757D] mt-1">
           What&apos;s new and improved in Launchpad.
         </p>
       </div>
 
       {/* Tab toggle + add button */}
       <div className="flex items-center justify-between mb-8">
-        <div className="flex gap-1 p-1 bg-[#F3F3F5] rounded-lg w-fit">
+        <div className="flex gap-1 p-1 bg-[#222222] rounded-lg w-fit">
           <button
             onClick={() => setTab("changelog")}
             className={`px-3.5 py-1.5 text-sm rounded-md transition-colors ${
               tab === "changelog"
-                ? "bg-white text-[#1B1B1B] font-medium shadow-sm"
-                : "text-[#7A7A7A] hover:text-[#1B1B1B]"
+                ? "bg-[#181818] text-[#E5E5EA] font-medium shadow-sm"
+                : "text-[#71757D] hover:text-[#E5E5EA]"
             }`}
           >
             Updates
@@ -89,8 +89,8 @@ export default function ChangelogPage() {
             onClick={() => setTab("roadmap")}
             className={`px-3.5 py-1.5 text-sm rounded-md transition-colors ${
               tab === "roadmap"
-                ? "bg-white text-[#1B1B1B] font-medium shadow-sm"
-                : "text-[#7A7A7A] hover:text-[#1B1B1B]"
+                ? "bg-[#181818] text-[#E5E5EA] font-medium shadow-sm"
+                : "text-[#71757D] hover:text-[#E5E5EA]"
             }`}
           >
             Roadmap
@@ -99,7 +99,7 @@ export default function ChangelogPage() {
         {tab === "roadmap" && (
           <button
             onClick={() => setShowAddRoadmap(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1B1B1B] text-white text-sm rounded-md hover:bg-[#333] transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#E5E5EA] text-[#181818] text-sm rounded-md hover:bg-white transition-colors"
           >
             <PlusIcon className="size-3.5" />
             Add Idea
@@ -125,12 +125,12 @@ export default function ChangelogPage() {
             const PIcon = config.icon;
             return (
               <div key={priority}>
-                <div className="flex items-center gap-2 mb-3 pb-2 border-b border-[#E5E5EA]">
+                <div className="flex items-center gap-2 mb-3 pb-2 border-b border-[#2A2A2A]">
                   <PIcon className={`size-4 ${config.text}`} />
-                  <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#1B1B1B]">
+                  <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#E5E5EA]">
                     {config.label}
                   </h2>
-                  <span className="text-[11px] text-[#A0A0A0] tabular-nums">{items.length}</span>
+                  <span className="text-[11px] text-[#71757D] tabular-nums">{items.length}</span>
                 </div>
                 <div className="space-y-2">
                   {items.map((item) => (
@@ -146,7 +146,7 @@ export default function ChangelogPage() {
             );
           })}
           {roadmapItems.length === 0 && (
-            <p className="text-sm text-[#A0A0A0] text-center py-8">No roadmap items yet. Add one above.</p>
+            <p className="text-sm text-[#71757D] text-center py-8">No roadmap items yet. Add one above.</p>
           )}
         </div>
       )}
@@ -155,7 +155,7 @@ export default function ChangelogPage() {
       {tab === "changelog" && (
         <div className="relative">
           {/* Vertical line */}
-          <div className="absolute left-[7px] top-2 bottom-0 w-px bg-[#E5E5EA]" />
+          <div className="absolute left-[7px] top-2 bottom-0 w-px bg-[#2A2A2A]" />
 
           <div className="space-y-10">
             {changelog.map((entry, idx) => (
@@ -164,17 +164,17 @@ export default function ChangelogPage() {
                 <div
                   className={`absolute left-0 top-1.5 size-[15px] rounded-full border-2 ${
                     idx === 0
-                      ? "bg-[#1B1B1B] border-[#1B1B1B]"
-                      : "bg-white border-[#D4D4D4]"
+                      ? "bg-[#E5E5EA] border-[#181818]"
+                      : "bg-[#181818] border-[#D4D4D4]"
                   }`}
                 />
 
                 {/* Header */}
                 <div className="flex items-baseline gap-3 mb-3">
                   <span className="text-sm font-semibold">{entry.title}</span>
-                  <span className="text-[11px] text-[#A0A0A0] tabular-nums">{entry.version}</span>
+                  <span className="text-[11px] text-[#71757D] tabular-nums">{entry.version}</span>
                 </div>
-                <p className="text-[11px] text-[#A0A0A0] -mt-2 mb-3">{entry.date}</p>
+                <p className="text-[11px] text-[#71757D] -mt-2 mb-3">{entry.date}</p>
 
                 {/* Changes */}
                 <div className="space-y-1.5">
@@ -189,7 +189,7 @@ export default function ChangelogPage() {
                           <Icon className="size-2.5" />
                           {config.label}
                         </span>
-                        <span className="text-sm text-[#444]">{change.text}</span>
+                        <span className="text-sm text-[#C7C9CD]">{change.text}</span>
                       </div>
                     );
                   })}
@@ -218,16 +218,16 @@ function RoadmapCard({
 
   return (
     <div
-      className="flex items-start gap-3 py-2.5 px-3 rounded-lg border border-[#E5E5EA] bg-white group relative"
+      className="flex items-start gap-3 py-2.5 px-3 rounded-lg border border-[#2A2A2A] bg-[#181818] group relative"
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
       <span className={`size-2 rounded-full shrink-0 mt-1.5 ${config.dot}`} />
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium">{item.title}</p>
-        <p className="text-[12px] text-[#7A7A7A] mt-0.5">{item.description}</p>
+        <p className="text-[12px] text-[#71757D] mt-0.5">{item.description}</p>
         {item.addedBy && (
-          <p className="text-[10px] text-[#A0A0A0] mt-1">Added by {item.addedBy}</p>
+          <p className="text-[10px] text-[#71757D] mt-1">Added by {item.addedBy}</p>
         )}
       </div>
       {showActions && (
@@ -238,7 +238,7 @@ function RoadmapCard({
               await updateRoadmapPriority(item.id, e.target.value as RoadmapPriority);
               onUpdate();
             }}
-            className="text-[11px] text-[#7A7A7A] bg-[#F3F3F5] border-none rounded px-1.5 py-1 focus:outline-none cursor-pointer"
+            className="text-[11px] text-[#71757D] bg-[#222222] border-none rounded px-1.5 py-1 focus:outline-none cursor-pointer"
           >
             <option value="next">Up Next</option>
             <option value="planned">Planned</option>
@@ -246,7 +246,7 @@ function RoadmapCard({
           </select>
           <button
             onClick={async () => { await deleteRoadmapItem(item.id); onUpdate(); }}
-            className="p-1 text-[#A0A0A0] hover:text-red-500 transition-colors"
+            className="p-1 text-[#71757D] hover:text-red-500 transition-colors"
             title="Remove"
           >
             <XMarkIcon className="size-3.5" />
@@ -277,10 +277,10 @@ function AddRoadmapForm({ onSave, onCancel }: { onSave: () => void; onCancel: ()
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mb-8 border border-[#E5E5EA] rounded-lg p-4 bg-[#F7F8FA]">
+    <form onSubmit={handleSubmit} className="mb-8 border border-[#2A2A2A] rounded-lg p-4 bg-[#0C0C0C]">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold">New Roadmap Idea</h3>
-        <button type="button" onClick={onCancel} className="p-1 text-[#A0A0A0] hover:text-[#1B1B1B]">
+        <button type="button" onClick={onCancel} className="p-1 text-[#71757D] hover:text-[#E5E5EA]">
           <XMarkIcon className="size-4" />
         </button>
       </div>
@@ -300,7 +300,7 @@ function AddRoadmapForm({ onSave, onCancel }: { onSave: () => void; onCancel: ()
           className={inputClass}
         />
         <div>
-          <label className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-1.5 block">
+          <label className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-1.5 block">
             Your Name
           </label>
           <input
@@ -313,12 +313,12 @@ function AddRoadmapForm({ onSave, onCancel }: { onSave: () => void; onCancel: ()
       </div>
 
       <div className="flex justify-end gap-2">
-        <button type="button" onClick={onCancel} className="px-3 py-1.5 text-sm text-[#7A7A7A] hover:text-[#1B1B1B]">
+        <button type="button" onClick={onCancel} className="px-3 py-1.5 text-sm text-[#71757D] hover:text-[#E5E5EA]">
           Cancel
         </button>
         <button
           type="submit"
-          className="px-4 py-1.5 bg-[#1B1B1B] text-white text-sm rounded-md hover:bg-[#333] transition-colors"
+          className="px-4 py-1.5 bg-[#E5E5EA] text-[#181818] text-sm rounded-md hover:bg-white transition-colors"
         >
           Add to Roadmap
         </button>

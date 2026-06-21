@@ -46,7 +46,7 @@ export function ConfigTab({ agent, canEdit, onSaved }: ConfigTabProps) {
         </div>
       )}
 
-      <section className="rounded-xl border border-[#E5E5EA] bg-white p-4 shadow-[var(--shadow-soft)]">
+      <section className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)]">
         <div className="flex items-center justify-between mb-2">
           <label htmlFor="system-prompt" className={labelClass.replace(" mb-2", "")}>System prompt</label>
           {canEdit && (
@@ -55,7 +55,7 @@ export function ConfigTab({ agent, canEdit, onSaved }: ConfigTabProps) {
                 const seed = NAMED_AGENTS.find((a) => a.id === agent.id);
                 if (seed) setSystemPrompt(seed.systemPrompt);
               }}
-              className="text-[11px] text-[#7A7A7A] hover:text-[#1B1B1B] underline-offset-2 hover:underline"
+              className="text-[11px] text-[#71757D] hover:text-[#E5E5EA] underline-offset-2 hover:underline"
               title="Reset to the canonical prompt shipped in code"
             >
               Reset to default
@@ -70,14 +70,14 @@ export function ConfigTab({ agent, canEdit, onSaved }: ConfigTabProps) {
           rows={10}
           className={`${textareaClass} font-mono text-[13px]`}
         />
-        <p className="mt-2 text-[11px] text-[#A0A0A0]">
+        <p className="mt-2 text-[11px] text-[#71757D]">
           {agent.runner === "real"
             ? "Edits here take effect on the next Anthropic call. Use \"Reset to default\" if you break it."
             : "Edits saved here propagate to display only — this agent's runner isn't wired up yet."}
         </p>
       </section>
 
-      <section className="rounded-xl border border-[#E5E5EA] bg-white p-4 shadow-[var(--shadow-soft)]">
+      <section className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)]">
         <label htmlFor="model" className={labelClass}>Model</label>
         <select
           id="model"
@@ -92,23 +92,23 @@ export function ConfigTab({ agent, canEdit, onSaved }: ConfigTabProps) {
         </select>
       </section>
 
-      <section className="rounded-xl border border-[#E5E5EA] bg-white p-4 shadow-[var(--shadow-soft)]">
+      <section className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)]">
         <div className={labelClass}>Tools (read-only)</div>
         {agent.tools.length === 0 ? (
-          <p className="text-sm text-[#7A7A7A]">No tools configured.</p>
+          <p className="text-sm text-[#71757D]">No tools configured.</p>
         ) : (
           <div className="flex flex-wrap gap-1.5">
             {agent.tools.map((t) => (
               <span
                 key={t}
-                className="font-mono text-[11px] px-2 py-1 rounded-md bg-[#F3F3F5] text-[#1B1B1B] border border-[#E5E5EA]"
+                className="font-mono text-[11px] px-2 py-1 rounded-md bg-[#222222] text-[#E5E5EA] border border-[#2A2A2A]"
               >
                 {t}
               </span>
             ))}
           </div>
         )}
-        <p className="mt-3 text-[11px] text-[#A0A0A0]">
+        <p className="mt-3 text-[11px] text-[#71757D]">
           Tool wiring lands in v1 — these names are placeholders that document Sam, Iris, etc.'s intended capabilities.
         </p>
       </section>
@@ -118,7 +118,7 @@ export function ConfigTab({ agent, canEdit, onSaved }: ConfigTabProps) {
           <button
             onClick={save}
             disabled={!dirty || saving}
-            className="px-4 py-2 rounded-lg bg-[#1B1B1B] text-white text-sm font-semibold hover:bg-[#2D2D2D] active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {saving ? "Saving…" : "Save changes"}
           </button>

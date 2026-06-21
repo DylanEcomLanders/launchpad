@@ -176,14 +176,14 @@ export function TicketsPanel({ currentUser, clients, onPromoteToTask }: Props) {
 
   return (
     <>
-      <div className="rounded-xl border border-[#E5E5EA] bg-white overflow-hidden">
+      <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] overflow-hidden">
         {/* Header, counts are the always-visible pressure signal */}
-        <div className="flex items-center justify-between px-3 py-2.5 border-b border-[#E5E5EA] bg-[#FAFAFA]">
+        <div className="flex items-center justify-between px-3 py-2.5 border-b border-[#2A2A2A] bg-[#0C0C0C]">
           <div className="flex items-baseline gap-2">
-            <h2 className="text-[12px] font-semibold uppercase tracking-wider text-[#1A1A1A]">
+            <h2 className="text-[12px] font-semibold uppercase tracking-wider text-[#E5E5EA]">
               Tickets
             </h2>
-            <span className="text-[10px] font-medium text-[#7A7A7A] tabular-nums">
+            <span className="text-[10px] font-medium text-[#71757D] tabular-nums">
               {openCount} open
             </span>
             {staleCount > 0 && (
@@ -196,7 +196,7 @@ export function TicketsPanel({ currentUser, clients, onPromoteToTask }: Props) {
             type="button"
             onClick={() => setTriaging(true)}
             disabled={openTickets.length === 0}
-            className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold rounded border border-[#1A1A1A] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold rounded border border-[#1A1A1A] text-[#E5E5EA] hover:bg-[#1A1A1A] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             <BoltIcon className="size-3" />
             Triage
@@ -204,18 +204,18 @@ export function TicketsPanel({ currentUser, clients, onPromoteToTask }: Props) {
         </div>
 
         {/* Add button + view tabs */}
-        <div className="px-3 py-2 border-b border-[#F0F0F0]">
+        <div className="px-3 py-2 border-b border-[#2A2A2A]">
           <button
             type="button"
             onClick={() => setComposing(true)}
-            className="w-full flex items-center justify-center gap-1.5 px-2 py-2 text-[12px] font-semibold rounded border border-dashed border-[#E5E5EA] text-[#7A7A7A] hover:border-[#1A1A1A] hover:text-[#1A1A1A] transition-colors"
+            className="w-full flex items-center justify-center gap-1.5 px-2 py-2 text-[12px] font-semibold rounded border border-dashed border-[#2A2A2A] text-[#71757D] hover:border-[#1A1A1A] hover:text-[#E5E5EA] transition-colors"
           >
             <PlusIcon className="size-3.5" />
             New ticket
           </button>
         </div>
 
-        <div className="flex border-b border-[#F0F0F0]">
+        <div className="flex border-b border-[#2A2A2A]">
           <ViewTab
             label={`Open (${openCount})`}
             active={view === "open"}
@@ -249,11 +249,11 @@ export function TicketsPanel({ currentUser, clients, onPromoteToTask }: Props) {
         {/* List */}
         <div className="px-3 py-3 space-y-2 max-h-[calc(100vh-280px)] overflow-y-auto">
           {!hydrated ? (
-            <p className="text-[11px] text-[#BBB] text-center py-6">
+            <p className="text-[11px] text-[#9CA3AF] text-center py-6">
               Loading…
             </p>
           ) : visible.length === 0 ? (
-            <p className="text-[11px] text-[#BBB] text-center py-6">
+            <p className="text-[11px] text-[#9CA3AF] text-center py-6">
               {view === "open"
                 ? "No open tickets. Inbox zero."
                 : view === "done"
@@ -305,10 +305,10 @@ function ViewTab({
       onClick={onClick}
       className={`flex-1 px-2 py-2 text-[10px] font-semibold uppercase tracking-wider transition-colors border-b-2 ${
         active
-          ? "border-[#1A1A1A] text-[#1A1A1A]"
+          ? "border-[#1A1A1A] text-[#E5E5EA]"
           : muted
-          ? "border-transparent text-[#BBB] hover:text-[#7A7A7A]"
-          : "border-transparent text-[#7A7A7A] hover:text-[#1A1A1A]"
+          ? "border-transparent text-[#9CA3AF] hover:text-[#71757D]"
+          : "border-transparent text-[#71757D] hover:text-[#E5E5EA]"
       }`}
     >
       {label}

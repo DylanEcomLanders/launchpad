@@ -130,7 +130,7 @@ export default function FinanceDashboardPage() {
   /* Last-N-months series, computed once and sliced for the sparklines
    * (last 6) + the main chart (last 12). Always uses the full dataset
    * regardless of the page-level period filter so the chart's purpose
-   * stays "trend context" — the KPI tiles above show the filtered value
+   * stays "trend context" - the KPI tiles above show the filtered value
    * for the selected period, the chart shows the rolling 12mo trend.
    * Same pattern as Stripe / Wise dashboards.
    *
@@ -170,12 +170,12 @@ export default function FinanceDashboardPage() {
   }, [totals.expensesByCategory]);
 
   if (!hydrated) {
-    return <div className="h-96 bg-[#F7F8FA] rounded-xl animate-pulse" />;
+    return <div className="h-96 bg-[#0C0C0C] rounded-xl animate-pulse" />;
   }
 
   return (
     <div>
-      {/* Compact VAT threshold chip — keeps the message visible without
+      {/* Compact VAT threshold chip - keeps the message visible without
        * eating 70+px of vertical space. Full detail (HMRC reg deadline,
        * headroom, etc) lives on the VAT return tab. */}
       {!profile?.vat_registered && vatThreshold.status !== "ok" && (
@@ -198,7 +198,7 @@ export default function FinanceDashboardPage() {
         </div>
       )}
 
-      {/* Period selector — iOS-style segmented pill bar instead of dropdown */}
+      {/* Period selector - iOS-style segmented pill bar instead of dropdown */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
         <PeriodPills value={periodKey} onChange={setPeriodKey} />
         <div className="flex items-center gap-3">
@@ -264,7 +264,7 @@ export default function FinanceDashboardPage() {
         />
       </div>
 
-      {/* VAT row — shown when registered OR when there's any tagged VAT
+      {/* VAT row - shown when registered OR when there's any tagged VAT
        * data (pre-registration estimate). Sub-labels switch to clarify
        * which mode we're in. */}
       {(profile?.vat_registered ||
@@ -295,7 +295,7 @@ export default function FinanceDashboardPage() {
 
       {/* Charts: bar + donut */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-3">
-        <div className="lg:col-span-2 bg-white border border-[#EEEEF1] rounded-2xl p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+        <div className="lg:col-span-2 bg-[#181818] border border-[#2A2A2A] rounded-2xl p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
           <CardHeader
             icon={ArrowTrendingUpIcon}
             title="Revenue vs expenses"
@@ -313,7 +313,7 @@ export default function FinanceDashboardPage() {
             </span>
           </div>
           {trailingSeries.length === 0 ? (
-            <p className="text-sm text-[#A0A0A0] py-12 text-center">
+            <p className="text-sm text-[#71757D] py-12 text-center">
               No invoice or expense data yet
             </p>
           ) : (
@@ -407,26 +407,26 @@ export default function FinanceDashboardPage() {
           )}
         </div>
 
-        <div className="bg-white border border-[#EEEEF1] rounded-2xl p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+        <div className="bg-[#181818] border border-[#2A2A2A] rounded-2xl p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2.5">
-              <span className="inline-flex items-center justify-center size-8 rounded-xl bg-[#F4F4F7] text-[#1B1B1B]">
+              <span className="inline-flex items-center justify-center size-8 rounded-xl bg-[#222222] text-[#E5E5EA]">
                 <ChartPieIcon className="size-4" />
               </span>
-              <h3 className="text-[15px] font-semibold text-[#1B1B1B] tracking-tight">
+              <h3 className="text-[15px] font-semibold text-[#E5E5EA]">
                 Expense breakdown
               </h3>
             </div>
             <button
               type="button"
-              className="size-7 inline-flex items-center justify-center rounded-lg text-[#9A9AA3] hover:bg-[#F4F4F7] transition-colors"
-              aria-label="More"
+              className="size-7 inline-flex items-center justify-center rounded-lg text-[#9A9AA3] hover:bg-[#222222] transition-colors"
+              aria-label="More options"
             >
               <span className="text-lg leading-none tracking-tighter">···</span>
             </button>
           </div>
           {expenseSlices.length === 0 ? (
-            <p className="text-sm text-[#A0A0A0] py-8 text-center">No expenses</p>
+            <p className="text-sm text-[#71757D] py-8 text-center">No expenses</p>
           ) : (
             <>
               <DonutChart slices={expenseSlices} />
@@ -440,9 +440,9 @@ export default function FinanceDashboardPage() {
                         className="w-2 h-2 rounded-full shrink-0"
                         style={{ background: s.color }}
                       />
-                      <span className="text-[#1B1B1B] flex-1 truncate font-medium">{s.name}</span>
+                      <span className="text-[#E5E5EA] flex-1 truncate font-medium">{s.name}</span>
                       <span className="tabular-nums text-[#9A9AA3] font-medium">{pct.toFixed(1)}%</span>
-                      <span className="tabular-nums text-[#1B1B1B] font-semibold w-[64px] text-right">{fmtMoney(s.value)}</span>
+                      <span className="tabular-nums text-[#E5E5EA] font-semibold w-[64px] text-right">{fmtMoney(s.value)}</span>
                     </div>
                   );
                 })}
@@ -457,10 +457,10 @@ export default function FinanceDashboardPage() {
         </div>
       </div>
 
-      {/* Compact forecast strip — three inline stats in a single card to
+      {/* Compact forecast strip - three inline stats in a single card to
        * keep the dashboard at one viewport. The detail (per-frequency
        * breakdown etc) lives on the Expenses page. */}
-      <div className="bg-white border border-[#EEEEF1] rounded-2xl p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)] grid grid-cols-3 divide-x divide-[#EEEEF1]">
+      <div className="bg-[#181818] border border-[#2A2A2A] rounded-2xl p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)] grid grid-cols-3 divide-x divide-[#2A2A2A]">
         <ForecastInline
           icon={ArrowPathIcon}
           label="Recurring (monthly)"
@@ -505,7 +505,7 @@ function PeriodPills({
     { key: "custom", label: "Custom" },
   ];
   return (
-    <div className="inline-flex items-center gap-1 p-1 bg-[#F4F4F7] rounded-full border border-[#EEEEF1] w-fit">
+    <div className="inline-flex items-center gap-1 p-1 bg-[#222222] rounded-full border border-[#2A2A2A] w-fit">
       {options.map((o) => {
         const active = value === o.key;
         return (
@@ -514,8 +514,8 @@ function PeriodPills({
             onClick={() => onChange(o.key)}
             className={`px-3.5 py-1.5 rounded-full text-[12px] font-medium transition-all ${
               active
-                ? "bg-white text-[#1B1B1B] shadow-[0_1px_3px_rgba(16,24,40,0.08)]"
-                : "text-[#7A7A7A] hover:text-[#1B1B1B]"
+                ? "bg-[#181818] text-[#E5E5EA] shadow-[0_1px_3px_rgba(16,24,40,0.08)]"
+                : "text-[#71757D] hover:text-[#E5E5EA]"
             }`}
           >
             {o.label}
@@ -552,18 +552,16 @@ function Tile({
         ? "text-[#B91C1C]"
         : accent === "amber"
           ? "text-[#B45309]"
-          : "text-[#1B1B1B]";
+          : "text-[#E5E5EA]";
   const hero = size === "hero";
   return (
     <div
-      className={`relative bg-white border border-[#EEEEF1] rounded-2xl ${
-        hero ? "p-4" : "p-4"
-      } shadow-[0_1px_2px_rgba(16,24,40,0.04)] hover:shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_32px_rgba(16,24,40,0.08)] transition-shadow overflow-hidden`}
+      className="relative bg-[#181818] border border-[#2A2A2A] rounded-2xl p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)] hover:shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_32px_rgba(16,24,40,0.08)] transition-shadow overflow-hidden"
     >
       <div className="flex items-start justify-between mb-2.5">
         <div className="flex items-center gap-2">
           {Icon && (
-            <span className="inline-flex items-center justify-center size-7 rounded-lg bg-[#F4F4F7] text-[#1B1B1B]">
+            <span className="inline-flex items-center justify-center size-7 rounded-lg bg-[#222222] text-[#E5E5EA]">
               <Icon className="size-3.5" />
             </span>
           )}
@@ -679,7 +677,7 @@ function DonutChart({
             >
               {active.name}
             </div>
-            <div className="text-[17px] font-semibold tabular-nums tracking-tight text-[#1B1B1B] leading-none">
+            <div className="text-[17px] font-semibold tabular-nums text-[#E5E5EA] leading-none">
               {fmtMoney(active.value)}
             </div>
             <div className="text-[10px] text-[#9A9AA3] mt-1 tabular-nums">
@@ -691,7 +689,7 @@ function DonutChart({
             <div className="text-[9.5px] uppercase tracking-[0.06em] text-[#9A9AA3] font-semibold mb-0.5">
               Total
             </div>
-            <div className="text-[17px] font-semibold tabular-nums tracking-tight text-[#1B1B1B] leading-none">
+            <div className="text-[17px] font-semibold tabular-nums text-[#E5E5EA] leading-none">
               {fmtMoney(total)}
             </div>
             <div className="text-[10px] text-[#9A9AA3] mt-1">
@@ -734,20 +732,20 @@ function DateLabelTooltip({
       <div className="text-[10.5px] uppercase tracking-[0.08em] text-white/50 font-medium mb-1">
         {label}
       </div>
-      <div className="text-[22px] font-semibold tabular-nums tracking-tight leading-none text-white mb-3">
+      <div className="text-[22px] font-semibold tabular-nums leading-none text-white mb-3">
         {fmtMoney(total)}
       </div>
       <div className="flex items-center gap-2 text-[11px] mb-1.5">
         <span className="w-2 h-2 rounded-full bg-[#10B981]" />
         <span className="text-white/70">Revenue</span>
-        <span className="ml-auto tabular-nums font-medium text-white bg-white/10 px-2 py-0.5 rounded-md">
+        <span className="ml-auto tabular-nums font-medium text-white bg-[#181818]/10 px-2 py-0.5 rounded-md">
           {fmtMoney(revenue)}
         </span>
       </div>
       <div className="flex items-center gap-2 text-[11px]">
         <span className="w-2 h-2 rounded-full bg-[#F59E0B]" />
         <span className="text-white/70">Expenses</span>
-        <span className="ml-auto tabular-nums font-medium text-white bg-white/10 px-2 py-0.5 rounded-md">
+        <span className="ml-auto tabular-nums font-medium text-white bg-[#181818]/10 px-2 py-0.5 rounded-md">
           {fmtMoney(expenses)}
         </span>
       </div>
@@ -773,17 +771,17 @@ function ForecastInline({
       ? "text-[#B91C1C]"
       : accent === "amber"
         ? "text-[#B45309]"
-        : "text-[#1B1B1B]";
+        : "text-[#E5E5EA]";
   return (
     <div className="flex items-center gap-3 px-3 first:pl-0 last:pr-0">
-      <span className="inline-flex items-center justify-center size-9 rounded-xl bg-[#F4F4F7] text-[#1B1B1B] shrink-0">
+      <span className="inline-flex items-center justify-center size-9 rounded-xl bg-[#222222] text-[#E5E5EA] shrink-0">
         <Icon className="size-4" />
       </span>
       <div className="min-w-0">
         <div className="text-[10.5px] uppercase tracking-[0.06em] text-[#9A9AA3] font-semibold truncate">
           {label}
         </div>
-        <div className={`text-[18px] font-semibold tabular-nums tracking-tight leading-tight ${color}`}>
+        <div className={`text-[18px] font-semibold tabular-nums leading-tight ${color}`}>
           {value}
         </div>
       </div>
@@ -806,10 +804,10 @@ function CardHeader({
   return (
     <div className="flex items-center justify-between mb-5">
       <div className="flex items-center gap-2.5">
-        <span className="inline-flex items-center justify-center size-8 rounded-xl bg-[#F4F4F7] text-[#1B1B1B]">
+        <span className="inline-flex items-center justify-center size-8 rounded-xl bg-[#222222] text-[#E5E5EA]">
           <Icon className="size-4" />
         </span>
-        <h3 className="text-[15px] font-semibold text-[#1B1B1B] tracking-tight">{title}</h3>
+        <h3 className="text-[15px] font-semibold text-[#E5E5EA]">{title}</h3>
       </div>
       {eyebrow && <span className="text-[11px] text-[#9A9AA3]">{eyebrow}</span>}
     </div>

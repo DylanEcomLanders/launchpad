@@ -113,7 +113,7 @@ export function SalesEngineSidebar() {
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className={`p-1 rounded text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors ${collapsed ? "hidden md:block" : "hidden md:block"}`}
+          className={`p-1 rounded text-[#71757D] hover:text-[#E5E5EA] transition-colors ${collapsed ? "hidden md:block" : "hidden md:block"}`}
         >
           {collapsed ? <ChevronRightIcon className="size-3.5" /> : <ChevronLeftIcon className="size-3.5" />}
         </button>
@@ -125,7 +125,7 @@ export function SalesEngineSidebar() {
           <Link
             href="/sales-engine/proposals"
             onClick={() => setMobileOpen(false)}
-            className="flex items-center justify-center gap-2 px-3 py-2.5 bg-[#1B1B1B] text-white text-[12px] font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors"
+            className="flex items-center justify-center gap-2 px-3 py-2.5 bg-white text-[#0C0C0C] text-[12px] font-semibold rounded-lg hover:bg-[#F3F4F6] transition-colors"
           >
             Send Proposal
           </Link>
@@ -140,8 +140,8 @@ export function SalesEngineSidebar() {
           className={`
             flex items-center gap-2 px-2.5 py-2 rounded-lg transition-all duration-150
             ${pathname?.startsWith("/sales-engine/social")
-              ? "bg-white shadow-[var(--shadow-soft)] text-[#1B1B1B]"
-              : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
+              ? "bg-[#181818] shadow-[var(--shadow-soft)] text-[#E5E5EA]"
+              : "text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#181818]/50"
             }
           `}
         >
@@ -158,7 +158,7 @@ export function SalesEngineSidebar() {
               onClick={() => toggleSection(section.title)}
               className={`
                 flex items-center w-full px-2.5 py-2 rounded-lg text-left transition-all duration-150
-                text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50
+                text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#181818]/50
                 ${collapsed ? "justify-center" : "justify-between"}
               `}
             >
@@ -176,7 +176,7 @@ export function SalesEngineSidebar() {
             </button>
 
             {!collapsed && openSections[section.title] && (
-              <div className="ml-4 pl-2.5 border-l border-[#EDEDEF] space-y-0.5 mt-0.5">
+              <div className="ml-4 pl-2.5 border-l border-[#2A2A2A] space-y-0.5 mt-0.5">
                 {section.items.map((item) => (
                   <Link
                     key={item.href}
@@ -185,8 +185,8 @@ export function SalesEngineSidebar() {
                     className={`
                       block px-2.5 py-1.5 text-[12.5px] rounded-md transition-all duration-150
                       ${pathname === item.href
-                        ? "text-[#1B1B1B] font-semibold bg-white shadow-[var(--shadow-soft)]"
-                        : "text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-white/50"
+                        ? "text-[#E5E5EA] font-semibold bg-[#181818] shadow-[var(--shadow-soft)]"
+                        : "text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#181818]/50"
                       }
                     `}
                   >
@@ -201,11 +201,11 @@ export function SalesEngineSidebar() {
 
       {/* Footer */}
       {!collapsed && (
-        <div className="px-5 py-3 border-t border-[#EDEDEF]">
+        <div className="px-5 py-3 border-t border-[#2A2A2A]">
           <Link
             href="/changelog"
             onClick={() => setMobileOpen(false)}
-            className="text-[11px] text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
+            className="text-[11px] text-[#71757D] hover:text-[#E5E5EA] transition-colors"
           >
             Sales Engine v1.0
           </Link>
@@ -219,19 +219,19 @@ export function SalesEngineSidebar() {
       {/* Mobile hamburger */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white shadow-md"
+        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-[#181818] shadow-md"
       >
-        <Bars3Icon className="size-5 text-[#1B1B1B]" />
+        <Bars3Icon className="size-5 text-[#E5E5EA]" />
       </button>
 
       {/* Mobile overlay */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-          <aside className="relative w-56 h-full bg-[#F7F8FA] flex flex-col z-50">
+          <aside className="relative w-56 h-full bg-[#0C0C0C] flex flex-col z-50">
             <button
               onClick={() => setMobileOpen(false)}
-              className="absolute top-4 right-4 p-1 rounded text-[#A0A0A0] hover:text-[#1B1B1B]"
+              className="absolute top-4 right-4 p-1 rounded text-[#71757D] hover:text-[#E5E5EA]"
             >
               <XMarkIcon className="size-5" />
             </button>
@@ -243,7 +243,7 @@ export function SalesEngineSidebar() {
       {/* Desktop sidebar */}
       <aside
         className={`
-          hidden md:flex flex-col h-screen bg-[#F7F8FA] transition-all duration-200 shrink-0
+          hidden md:flex flex-col h-screen bg-[#0C0C0C] transition-all duration-200 shrink-0
           ${collapsed ? "w-14" : "w-56"}
         `}
       >

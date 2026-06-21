@@ -109,20 +109,20 @@ export function SignaturePad({
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <label className="block text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-[#71757D]">
           {label}
         </label>
         <button
           type="button"
           onClick={handleClear}
-          className="text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+          className="text-xs font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors"
         >
           Clear
         </button>
       </div>
       <canvas
         ref={canvasRef}
-        className="w-full border border-[#E5E5EA] rounded-md cursor-crosshair bg-white"
+        className="w-full border border-[#2A2A2A] rounded-md cursor-crosshair bg-[#181818]"
         style={{ height: 150, touchAction: "none" }}
         onMouseDown={startDrawing}
         onMouseMove={draw}
@@ -133,7 +133,7 @@ export function SignaturePad({
         onTouchEnd={endDrawing}
       />
       {!value && (
-        <p className="mt-1.5 text-[10px] text-[#A0A0A0]">
+        <p className="mt-1.5 text-[10px] text-[#71757D]">
           Draw your signature above
         </p>
       )}

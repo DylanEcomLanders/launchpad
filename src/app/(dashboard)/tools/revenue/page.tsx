@@ -88,8 +88,8 @@ function dateLabel(iso: string) {
 function ChartTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-[#1B1B1B] text-white px-3 py-2 rounded-lg text-xs shadow-xl">
-      <p className="text-[#999] mb-0.5">{label}</p>
+    <div className="bg-white text-[#0C0C0C] px-3 py-2 rounded-lg text-xs shadow-xl">
+      <p className="text-[#71757D] mb-0.5">{label}</p>
       <p className="font-semibold">{fmtFull(payload[0].value)}</p>
     </div>
   );
@@ -144,7 +144,7 @@ function PasswordGate({ onUnlock }: { onUnlock: (pw: string) => void }) {
     <div className="min-h-[60vh] flex items-center justify-center">
       <div className="w-full max-w-xs">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center size-12 rounded-full bg-[#1B1B1B] mb-4">
+          <div className="inline-flex items-center justify-center size-12 rounded-full bg-white mb-4">
             <svg className="size-5 text-white" viewBox="0 0 20 20" fill="currentColor">
               <path
                 fillRule="evenodd"
@@ -153,8 +153,8 @@ function PasswordGate({ onUnlock }: { onUnlock: (pw: string) => void }) {
               />
             </svg>
           </div>
-          <h2 className="text-lg font-bold tracking-tight">Revenue Dashboard</h2>
-          <p className="text-xs text-[#999] mt-1">Enter password to continue</p>
+          <h2 className="text-lg font-bold">Revenue Dashboard</h2>
+          <p className="text-xs text-[#71757D] mt-1">Enter password to continue</p>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -170,7 +170,7 @@ function PasswordGate({ onUnlock }: { onUnlock: (pw: string) => void }) {
             className={`w-full px-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-1 transition-colors ${
               error
                 ? "border-red-300 focus:ring-red-200 focus:border-red-400"
-                : "border-[#E5E5EA] focus:ring-[#1B1B1B]/10 focus:border-[#C5C5C5]"
+                : "border-[#2A2A2A] focus:ring-[#1B1B1B]/10 focus:border-[#C5C5C5]"
             }`}
           />
           {error && (
@@ -179,7 +179,7 @@ function PasswordGate({ onUnlock }: { onUnlock: (pw: string) => void }) {
           <button
             type="submit"
             disabled={loading || !pw.trim()}
-            className="w-full mt-3 px-4 py-3 text-sm font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#333] transition-colors disabled:opacity-40"
+            className="w-full mt-3 px-4 py-3 text-sm font-semibold bg-white text-[#0C0C0C] rounded-lg hover:bg-[#333] transition-colors disabled:opacity-40"
           >
             {loading ? "Checking..." : "Unlock"}
           </button>
@@ -237,8 +237,8 @@ export default function RevenuePage() {
       <div className="p-6 md:p-10">
         <div className="min-h-[60vh] flex items-center justify-center">
           <div className="text-center">
-            <div className="inline-flex items-center justify-center size-10 rounded-full bg-[#F3F3F5] mb-3 animate-pulse">
-              <svg className="size-5 text-[#999]" viewBox="0 0 20 20" fill="currentColor">
+            <div className="inline-flex items-center justify-center size-10 rounded-full bg-[#222222] mb-3 animate-pulse">
+              <svg className="size-5 text-[#71757D]" viewBox="0 0 20 20" fill="currentColor">
                 <path
                   fillRule="evenodd"
                   d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z"
@@ -246,7 +246,7 @@ export default function RevenuePage() {
                 />
               </svg>
             </div>
-            <p className="text-sm text-[#999]">Loading revenue data from Whop...</p>
+            <p className="text-sm text-[#71757D]">Loading revenue data from Whop...</p>
           </div>
         </div>
       </div>
@@ -261,7 +261,7 @@ export default function RevenuePage() {
             <p className="text-sm text-red-500 mb-3">{error || "No data"}</p>
             <button
               onClick={() => loadData(password)}
-              className="px-4 py-2 text-xs font-semibold border border-[#E5E5EA] rounded-lg hover:bg-[#F3F3F5] transition-colors"
+              className="px-4 py-2 text-xs font-semibold border border-[#2A2A2A] rounded-lg hover:bg-[#222222] transition-colors"
             >
               Retry
             </button>
@@ -295,12 +295,12 @@ export default function RevenuePage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Revenue</h1>
-          <p className="text-sm text-[#999] mt-1">Last 12 months via Whop</p>
+          <h1 className="text-2xl font-bold">Revenue</h1>
+          <p className="text-sm text-[#71757D] mt-1">Last 12 months via Whop</p>
         </div>
         <button
           onClick={() => loadData(password)}
-          className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium border border-[#E5E5EA] rounded-lg hover:bg-[#F3F3F5] transition-colors"
+          className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium border border-[#2A2A2A] rounded-lg hover:bg-[#222222] transition-colors"
         >
           <svg className="size-3.5" viewBox="0 0 20 20" fill="currentColor">
             <path
@@ -315,21 +315,21 @@ export default function RevenuePage() {
 
       {/* ── Stat Panels ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-        <div className="border border-[#D0D0D0] rounded-lg px-5 py-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#999] mb-1">
+        <div className="border border-[#383838] rounded-lg px-5 py-4">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#71757D] mb-1">
             Total Revenue
           </p>
-          <p className="text-2xl font-bold tracking-tight tabular-nums">
+          <p className="text-2xl font-bold tabular-nums">
             {fmt(summary.total)}
           </p>
         </div>
 
-        <div className="border border-[#D0D0D0] rounded-lg px-5 py-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#999] mb-1">
+        <div className="border border-[#383838] rounded-lg px-5 py-4">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#71757D] mb-1">
             This Month
           </p>
           <div className="flex items-baseline gap-2">
-            <p className="text-2xl font-bold tracking-tight tabular-nums">
+            <p className="text-2xl font-bold tabular-nums">
               {fmt(summary.thisMonth)}
             </p>
             {growth !== 0 && (
@@ -345,34 +345,34 @@ export default function RevenuePage() {
           </div>
         </div>
 
-        <div className="border border-[#D0D0D0] rounded-lg px-5 py-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#999] mb-1">
+        <div className="border border-[#383838] rounded-lg px-5 py-4">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#71757D] mb-1">
             Payments
           </p>
-          <p className="text-2xl font-bold tracking-tight tabular-nums">
+          <p className="text-2xl font-bold tabular-nums">
             {summary.paymentCount}
           </p>
         </div>
 
-        <div className="border border-[#D0D0D0] rounded-lg px-5 py-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#999] mb-1">
+        <div className="border border-[#383838] rounded-lg px-5 py-4">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#71757D] mb-1">
             Clients
           </p>
-          <p className="text-2xl font-bold tracking-tight tabular-nums">
+          <p className="text-2xl font-bold tabular-nums">
             {summary.clientCount}
           </p>
         </div>
       </div>
 
       {/* ── Revenue Chart ── */}
-      <div className="border border-[#E5E5EA] rounded-lg p-5 mb-8">
-        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#999] mb-6">
+      <div className="border border-[#2A2A2A] rounded-lg p-5 mb-8">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#71757D] mb-6">
           Monthly Revenue
         </h3>
         {chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={chartData} barCategoryGap="20%">
-              <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#2A2A2A" vertical={false} />
               <XAxis
                 dataKey="label"
                 tick={{ fontSize: 11, fill: "#999" }}
@@ -386,12 +386,12 @@ export default function RevenuePage() {
                 tickFormatter={(v) => `£${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`}
                 width={50}
               />
-              <Tooltip content={<ChartTooltip />} cursor={{ fill: "#F7F8FA" }} />
+              <Tooltip content={<ChartTooltip />} cursor={{ fill: "#222222" }} />
               <Bar dataKey="total" radius={[4, 4, 0, 0]} maxBarSize={40}>
                 {chartData.map((entry, i) => (
                   <Cell
                     key={i}
-                    fill={entry.total === maxMonth ? "#1B1B1B" : "#D4D4D4"}
+                    fill={entry.total === maxMonth ? "#1B1B1B" : "#383838"}
                   />
                 ))}
               </Bar>
@@ -399,7 +399,7 @@ export default function RevenuePage() {
           </ResponsiveContainer>
         ) : (
           <div className="h-[280px] flex items-center justify-center">
-            <p className="text-sm text-[#999]">No payment data yet</p>
+            <p className="text-sm text-[#71757D]">No payment data yet</p>
           </div>
         )}
       </div>
@@ -407,30 +407,30 @@ export default function RevenuePage() {
       {/* ── Bottom Grid: Clients + Recent ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Revenue by Client */}
-        <div className="border border-[#E5E5EA] rounded-lg overflow-hidden">
-          <div className="px-5 py-4 border-b border-[#F0F0F0]">
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#999]">
+        <div className="border border-[#2A2A2A] rounded-lg overflow-hidden">
+          <div className="px-5 py-4 border-b border-[#2A2A2A]">
+            <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#71757D]">
               Revenue by Client
             </h3>
           </div>
           {clients.length > 0 ? (
-            <div className="divide-y divide-[#F5F5F5]">
+            <div className="divide-y divide-[#2A2A2A]">
               {clients.slice(0, 10).map((c, i) => {
                 const pct = summary.total > 0 ? (c.total / summary.total) * 100 : 0;
                 return (
                   <div key={i} className="px-5 py-3 flex items-center gap-4">
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{c.name}</p>
-                      <div className="mt-1.5 h-1 rounded-full bg-[#F3F3F5] overflow-hidden">
+                      <div className="mt-1.5 h-1 rounded-full bg-[#222222] overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-[#1B1B1B] transition-all duration-500"
+                          className="h-full rounded-full bg-white transition-all duration-500"
                           style={{ width: `${Math.max(pct, 2)}%` }}
                         />
                       </div>
                     </div>
                     <div className="text-right shrink-0">
                       <p className="text-sm font-semibold tabular-nums">{fmtFull(c.total)}</p>
-                      <p className="text-[10px] text-[#999]">
+                      <p className="text-[10px] text-[#71757D]">
                         {c.count} payment{c.count !== 1 ? "s" : ""}
                       </p>
                     </div>
@@ -440,25 +440,25 @@ export default function RevenuePage() {
             </div>
           ) : (
             <div className="px-5 py-10 text-center">
-              <p className="text-sm text-[#999]">No client data</p>
+              <p className="text-sm text-[#71757D]">No client data</p>
             </div>
           )}
         </div>
 
         {/* Recent Payments */}
-        <div className="border border-[#E5E5EA] rounded-lg overflow-hidden">
-          <div className="px-5 py-4 border-b border-[#F0F0F0]">
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#999]">
+        <div className="border border-[#2A2A2A] rounded-lg overflow-hidden">
+          <div className="px-5 py-4 border-b border-[#2A2A2A]">
+            <h3 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#71757D]">
               Recent Payments
             </h3>
           </div>
           {recent.length > 0 ? (
-            <div className="divide-y divide-[#F5F5F5]">
+            <div className="divide-y divide-[#2A2A2A]">
               {recent.slice(0, 10).map((p) => (
                 <div key={p.id} className="px-5 py-3 flex items-center justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium truncate">{p.client}</p>
-                    <p className="text-[11px] text-[#999]">{dateLabel(p.date)}</p>
+                    <p className="text-[11px] text-[#71757D]">{dateLabel(p.date)}</p>
                   </div>
                   <p className="text-sm font-semibold tabular-nums shrink-0">
                     {fmtFull(p.amount)}
@@ -468,7 +468,7 @@ export default function RevenuePage() {
             </div>
           ) : (
             <div className="px-5 py-10 text-center">
-              <p className="text-sm text-[#999]">No payments yet</p>
+              <p className="text-sm text-[#71757D]">No payments yet</p>
             </div>
           )}
         </div>

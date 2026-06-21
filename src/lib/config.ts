@@ -80,7 +80,7 @@ export const paymentStructures = [
 export type PaymentStructure = (typeof paymentStructures)[number];
 
 export const paymentTerms = [
-  "100% Upfront — Due Upon Receipt",
+  "100% Upfront - Due Upon Receipt",
   "50% Upfront / 50% on Completion",
   "Net 7",
   "Net 14",

@@ -83,15 +83,15 @@ export default function TeamPaymentsPage() {
       <DecorativeBlocks />
       <div className="relative z-10 max-w-4xl mx-auto px-6 md:px-12 py-12 md:py-16">
         {/* Header */}
-        <div className="mb-12 pb-8 border-b border-[#EDEDEF]">
-          <div className="flex items-center justify-between mb-6 font-mono text-[10px] uppercase tracking-[0.16em] text-[#7A7A7A]">
+        <div className="mb-12 pb-8 border-b border-[#2A2A2A]">
+          <div className="flex items-center justify-between mb-6 font-mono text-[10px] uppercase tracking-[0.16em] text-[#71757D]">
             <div className="flex items-center gap-2">
               <span className="size-1.5 rounded-full bg-[#1B1B1B]" />
               Internal · For pod members · v1
             </div>
             <div>Ecom Landers · Payment structure</div>
           </div>
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-[#1B1B1B] mb-5">
+          <h1 className="text-3xl md:text-5xl font-bold text-[#E5E5EA] mb-5">
             Payment structure.
           </h1>
           <p className="text-base md:text-lg leading-relaxed text-[#4A4A4A] max-w-3xl">
@@ -111,12 +111,12 @@ export default function TeamPaymentsPage() {
           <p className="section-lede mb-6 text-sm leading-relaxed text-[#4A4A4A] max-w-2xl">
             Four tiers cover everything we build. The tier determines what the team earns per page.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[#EDEDEF] border border-[#EDEDEF] rounded-lg overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[#222222] border border-[#2A2A2A] rounded-lg overflow-hidden">
             {tiers.map((t) => (
-              <div key={t.name} className="bg-white p-6 flex flex-col gap-2">
-                <div className="text-2xl font-bold tracking-tight text-[#1B1B1B]">{t.name}</div>
-                <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#7A7A7A] mb-2">{t.tag}</div>
-                <div className="pt-3 border-t border-dashed border-[#EDEDEF] text-xs leading-relaxed text-[#4A4A4A]">
+              <div key={t.name} className="bg-[#181818] p-6 flex flex-col gap-2">
+                <div className="text-2xl font-bold text-[#E5E5EA]">{t.name}</div>
+                <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#71757D] mb-2">{t.tag}</div>
+                <div className="pt-3 border-t border-dashed border-[#2A2A2A] text-xs leading-relaxed text-[#4A4A4A]">
                   {t.examples}
                 </div>
               </div>
@@ -129,8 +129,8 @@ export default function TeamPaymentsPage() {
           <p className="mb-6 text-sm leading-relaxed text-[#4A4A4A] max-w-2xl">
             The team total splits across the four roles. Primary owns the core deliverable and earns more. Secondary handles revisions, asset prep, and stress-tests the primary&apos;s work.
           </p>
-          <div className="border border-[#EDEDEF] rounded-lg overflow-hidden">
-            <div className="grid grid-cols-[100px_repeat(4,1fr)_110px] md:grid-cols-[140px_repeat(4,1fr)_120px] gap-3 px-5 py-3 bg-[#1B1B1B] text-white font-mono text-[9px] md:text-[10px] uppercase tracking-[0.12em] font-semibold items-center">
+          <div className="border border-[#2A2A2A] rounded-lg overflow-hidden">
+            <div className="grid grid-cols-[100px_repeat(4,1fr)_110px] md:grid-cols-[140px_repeat(4,1fr)_120px] gap-3 px-5 py-3 bg-[#222222] text-[#E5E5EA] font-mono text-[9px] md:text-[10px] uppercase tracking-[0.12em] font-semibold items-center">
               <div>Tier</div>
               <div className="text-center">Primary des</div>
               <div className="text-center">Secondary des</div>
@@ -141,8 +141,8 @@ export default function TeamPaymentsPage() {
             {fees.map((f, i) => (
               <div
                 key={f.tier}
-                className={`grid grid-cols-[100px_repeat(4,1fr)_110px] md:grid-cols-[140px_repeat(4,1fr)_120px] gap-3 px-5 py-4 items-center text-sm md:text-base text-[#1B1B1B] ${
-                  i < fees.length - 1 ? "border-b border-[#EDEDEF]" : ""
+                className={`grid grid-cols-[100px_repeat(4,1fr)_110px] md:grid-cols-[140px_repeat(4,1fr)_120px] gap-3 px-5 py-4 items-center text-sm md:text-base text-[#E5E5EA] ${
+                  i < fees.length - 1 ? "border-b border-[#2A2A2A]" : ""
                 }`}
               >
                 <div className="font-semibold">{f.tier}</div>
@@ -150,7 +150,7 @@ export default function TeamPaymentsPage() {
                 <div className="text-center">£{f.secondaryDes}</div>
                 <div className="text-center">£{f.primaryDev}</div>
                 <div className="text-center">£{f.secondaryDev}</div>
-                <div className="text-right font-bold text-[#1B1B1B]">£{f.total}</div>
+                <div className="text-right font-bold text-[#E5E5EA]">£{f.total}</div>
               </div>
             ))}
           </div>
@@ -161,7 +161,7 @@ export default function TeamPaymentsPage() {
           <p className="mb-6 text-sm leading-relaxed text-[#4A4A4A] max-w-2xl">
             Clients get a volume discount on 3+ page projects. The team&apos;s per-page fee drops by 10% on those projects; the agency absorbs the rest of the discount. Both sides share the cost.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[#EDEDEF] border border-[#EDEDEF] rounded-lg overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[#222222] border border-[#2A2A2A] rounded-lg overflow-hidden">
             <RebatePane
               tag="1-2 pages — no rebate"
               big="Full rates"
@@ -184,26 +184,26 @@ export default function TeamPaymentsPage() {
           <p className="mb-6 text-sm leading-relaxed text-[#4A4A4A] max-w-2xl">
             Three project shapes with each role&apos;s take-home. The 4 Heavy pages example has the volume rebate applied.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#EDEDEF] border border-[#EDEDEF] rounded-lg overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#222222] border border-[#2A2A2A] rounded-lg overflow-hidden">
             {examples.map((ex) => (
-              <div key={ex.tag} className="bg-white p-5 flex flex-col gap-2">
-                <div className="font-mono text-[9px] uppercase tracking-[0.14em] text-[#7A7A7A]">{ex.tag}</div>
-                <div className="text-lg font-bold tracking-tight text-[#1B1B1B] mb-1">{ex.title}</div>
+              <div key={ex.tag} className="bg-[#181818] p-5 flex flex-col gap-2">
+                <div className="font-mono text-[9px] uppercase tracking-[0.14em] text-[#71757D]">{ex.tag}</div>
+                <div className="text-lg font-bold text-[#E5E5EA] mb-1">{ex.title}</div>
                 <div className="text-xs text-[#4A4A4A] mb-3 leading-relaxed">{ex.scope}</div>
-                <div className="border border-[#EDEDEF] rounded overflow-hidden">
+                <div className="border border-[#2A2A2A] rounded overflow-hidden">
                   {ex.rows.map((r, i) => (
                     <div
                       key={r.label}
                       className={`flex justify-between items-baseline px-3 py-2 text-xs ${
-                        ex.rebate ? "bg-[#FAFAFA]" : "bg-white"
-                      } ${i < ex.rows.length - 1 ? "border-b border-[#EDEDEF]" : ""}`}
+                        ex.rebate ? "bg-[#0C0C0C]" : "bg-[#181818]"
+                      } ${i < ex.rows.length - 1 ? "border-b border-[#2A2A2A]" : ""}`}
                     >
-                      <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-[#7A7A7A]">{r.label}</span>
-                      <span className="text-sm font-semibold text-[#1B1B1B]">{r.value}</span>
+                      <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-[#71757D]">{r.label}</span>
+                      <span className="text-sm font-semibold text-[#E5E5EA]">{r.value}</span>
                     </div>
                   ))}
                 </div>
-                <div className="font-mono text-[9px] uppercase tracking-[0.12em] text-[#7A7A7A] text-right mt-2">
+                <div className="font-mono text-[9px] uppercase tracking-[0.12em] text-[#71757D] text-right mt-2">
                   Team total · {ex.total}
                 </div>
               </div>
@@ -216,22 +216,22 @@ export default function TeamPaymentsPage() {
           <p className="mb-6 text-sm leading-relaxed text-[#4A4A4A] max-w-2xl">
             When a client needs a project faster than the Monday-kickoff cadence allows, it gets quoted as Rush — mid-week start, compressed timeline. A 50% surcharge is added; that surcharge goes straight to the team working the compressed hours.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[#EDEDEF] border border-[#EDEDEF] rounded-lg overflow-hidden">
-            <div className="bg-white p-6 flex flex-col gap-3">
-              <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#7A7A7A]">Standard project</div>
-              <div className="text-3xl font-bold tracking-tight text-[#1B1B1B]">
-                £250<span className="text-sm font-normal text-[#7A7A7A]">/page</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[#222222] border border-[#2A2A2A] rounded-lg overflow-hidden">
+            <div className="bg-[#181818] p-6 flex flex-col gap-3">
+              <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#71757D]">Standard project</div>
+              <div className="text-3xl font-bold text-[#E5E5EA]">
+                £250<span className="text-sm font-normal text-[#71757D]">/page</span>
               </div>
               <div className="text-xs leading-relaxed text-[#4A4A4A]">
                 Your normal per-page rate. Monday kickoff, Thursday delivery in bucket window.
               </div>
             </div>
             <div className="bg-[#1B1B1B] p-6 flex flex-col gap-3">
-              <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#A0A0A0]">Rush project — +50%</div>
-              <div className="text-3xl font-bold tracking-tight text-white">
-                £375<span className="text-sm font-normal text-[#999]">/page</span>
+              <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#71757D]">Rush project — +50%</div>
+              <div className="text-3xl font-bold text-white">
+                £375<span className="text-sm font-normal text-[#71757D]">/page</span>
               </div>
-              <div className="text-xs leading-relaxed text-[#BBB]">
+              <div className="text-xs leading-relaxed text-[#9CA3AF]">
                 Same role, same scope, half the timeline. The extra £125/page comes straight to you. Used sparingly, by exception — pod must have capacity for it.
               </div>
             </div>
@@ -246,13 +246,13 @@ export default function TeamPaymentsPage() {
           <p className="mb-6 text-sm leading-relaxed text-[#4A4A4A] max-w-2xl">
             Retainer clients are Dan&apos;s strategic clients. Any build work that lands on your pod board for a retainer client has already been scoped by Dan — you ship it, the standard per-page rate applies. Same tiers, same rebate, same model as one-off projects.
           </p>
-          <h3 className="text-lg font-bold tracking-tight text-[#1B1B1B] mb-4 mt-8">
+          <h3 className="text-lg font-bold text-[#E5E5EA] mb-4 mt-8">
             What pays, what doesn&apos;t — inside a retainer
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[#EDEDEF] border border-[#EDEDEF] rounded-lg overflow-hidden">
-            <div className="bg-white p-6">
-              <div className="font-mono text-[18px] font-bold text-[#1B1B1B] leading-none mb-3">✓ Pays</div>
-              <div className="text-base font-bold tracking-tight text-[#1B1B1B] mb-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[#222222] border border-[#2A2A2A] rounded-lg overflow-hidden">
+            <div className="bg-[#181818] p-6">
+              <div className="font-mono text-[18px] font-bold text-[#E5E5EA] leading-none mb-3">✓ Pays</div>
+              <div className="text-base font-bold text-[#E5E5EA] mb-2">
                 Build work coming from Dan&apos;s strategy
               </div>
               <ul className="space-y-1 mt-2">
@@ -262,9 +262,9 @@ export default function TeamPaymentsPage() {
                 <li className="text-xs leading-relaxed text-[#4A4A4A]">· Tier determined by page type, not by retainer status</li>
               </ul>
             </div>
-            <div className="bg-[#FAFAFA] p-6">
-              <div className="font-mono text-[18px] font-bold text-[#999] leading-none mb-3">✕ Doesn&apos;t pay</div>
-              <div className="text-base font-bold tracking-tight text-[#1B1B1B] mb-2">
+            <div className="bg-[#0C0C0C] p-6">
+              <div className="font-mono text-[18px] font-bold text-[#71757D] leading-none mb-3">✕ Doesn&apos;t pay</div>
+              <div className="text-base font-bold text-[#E5E5EA] mb-2">
                 Strategy and planning hours
               </div>
               <ul className="space-y-1 mt-2">
@@ -282,19 +282,19 @@ export default function TeamPaymentsPage() {
           <p className="mb-6 text-sm leading-relaxed text-[#4A4A4A] max-w-2xl">
             Monthly cycle. We pay on the 28th of each month — invoice us at least 48 hours before that.
           </p>
-          <div className="border border-[#EDEDEF] rounded-lg overflow-hidden">
+          <div className="border border-[#2A2A2A] rounded-lg overflow-hidden">
             <ProcessRow
               num="01"
               what="Track what you ship in Launchpad."
               when="Your pod board shows every project that's shipped that month. Use it as your reference when calculating your invoice — don't trust memory, check the board."
             />
-            <div className="border-t border-[#EDEDEF]" />
+            <div className="border-t border-[#2A2A2A]" />
             <ProcessRow
               num="02"
               what="Calculate your fees."
               when="Total up the projects shipped that month — per-page rates, rebate where it applies, rush surcharge where it applies. Double-check before submitting."
             />
-            <div className="border-t border-[#EDEDEF]" />
+            <div className="border-t border-[#2A2A2A]" />
             <ProcessRow
               num="03"
               what="Submit via the invoice form by the 26th."
@@ -307,12 +307,12 @@ export default function TeamPaymentsPage() {
               ping ops in Slack. */}
           <Link
             href="/team/invoice"
-            className="mt-5 flex items-center justify-between gap-4 p-5 rounded-lg bg-[#1B1B1B] text-white hover:bg-[#2A2A2A] transition-colors group"
+            className="mt-5 flex items-center justify-between gap-4 p-5 rounded-lg bg-[#222222] text-[#E5E5EA] hover:bg-[#2A2A2A] transition-colors group"
           >
             <div className="flex flex-col gap-1">
-              <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#A0A0A0]">Submit invoice</div>
-              <div className="text-base md:text-lg font-bold tracking-tight text-white">Open the invoice form</div>
-              <div className="text-xs text-[#BBB] mt-1">Native form · attaches your PDF and lands with finance</div>
+              <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#71757D]">Submit invoice</div>
+              <div className="text-base md:text-lg font-bold text-white">Open the invoice form</div>
+              <div className="text-xs text-[#9CA3AF] mt-1">Native form · attaches your PDF and lands with finance</div>
             </div>
             <div className="font-mono text-xs uppercase tracking-[0.14em] text-white flex items-center gap-2 group-hover:gap-3 transition-all shrink-0">
               Open
@@ -325,7 +325,7 @@ export default function TeamPaymentsPage() {
         </Section>
 
         {/* Footer */}
-        <div className="mt-16 pt-8 border-t border-[#EDEDEF] flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.16em] text-[#7A7A7A]">
+        <div className="mt-16 pt-8 border-t border-[#2A2A2A] flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.16em] text-[#71757D]">
           <div className="text-sm tracking-normal normal-case text-[#4A4A4A] font-sans max-w-md">
             Questions on a specific project&apos;s pay, ask your pod&apos;s primary or Alister.
           </div>
@@ -353,10 +353,10 @@ function Section({
   return (
     <section className="mb-16">
       <div className="flex items-baseline gap-5 mb-5">
-        <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#1B1B1B] font-semibold">{num}</div>
-        <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#7A7A7A]">{tag}</div>
+        <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#E5E5EA] font-semibold">{num}</div>
+        <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#71757D]">{tag}</div>
       </div>
-      <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-[#1B1B1B] mb-5">{title}</h2>
+      <h2 className="text-2xl md:text-3xl font-bold text-[#E5E5EA] mb-5">{title}</h2>
       {children}
     </section>
   );
@@ -374,16 +374,16 @@ function RebatePane({
   accent?: boolean;
 }) {
   // Accent pane = dark anchor (LP pattern from /offer hero pricing card)
-  const bg = accent ? "bg-[#1B1B1B]" : "bg-white";
-  const tagColor = accent ? "text-[#A0A0A0]" : "text-[#999]";
-  const bigColor = accent ? "text-white" : "text-[#1B1B1B]";
-  const rowColor = accent ? "text-white" : "text-[#1B1B1B]";
-  const arrowColor = accent ? "text-[#A0A0A0]" : "text-[#999]";
-  const divider = accent ? "border-white/10" : "border-[#EDEDEF]";
+  const bg = accent ? "bg-[#1B1B1B]" : "bg-[#181818]";
+  const tagColor = accent ? "text-[#71757D]" : "text-[#71757D]";
+  const bigColor = accent ? "text-white" : "text-[#E5E5EA]";
+  const rowColor = accent ? "text-white" : "text-[#E5E5EA]";
+  const arrowColor = accent ? "text-[#71757D]" : "text-[#71757D]";
+  const divider = accent ? "border-white/10" : "border-[#2A2A2A]";
   return (
     <div className={`p-6 flex flex-col gap-3 ${bg}`}>
       <div className={`font-mono text-[10px] uppercase tracking-[0.14em] ${tagColor}`}>{tag}</div>
-      <div className={`text-3xl font-bold tracking-tight ${bigColor}`}>{big}</div>
+      <div className={`text-3xl font-bold ${bigColor}`}>{big}</div>
       <ul className="mt-1 space-y-1.5">
         {rows.map((r) => (
           <li key={r} className={`text-xs py-1 border-b border-dashed last:border-b-0 ${rowColor} ${divider}`}>
@@ -398,9 +398,9 @@ function RebatePane({
 
 function ProcessRow({ num, what, when }: { num: string; what: string; when: string }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[60px_1fr_1fr] gap-6 px-6 py-5 items-baseline bg-white">
-      <div className="text-3xl font-bold text-[#1B1B1B] leading-none">{num}</div>
-      <div className="text-base font-semibold text-[#1B1B1B] leading-snug">{what}</div>
+    <div className="grid grid-cols-1 md:grid-cols-[60px_1fr_1fr] gap-6 px-6 py-5 items-baseline bg-[#181818]">
+      <div className="text-3xl font-bold text-[#E5E5EA] leading-none">{num}</div>
+      <div className="text-base font-semibold text-[#E5E5EA] leading-snug">{what}</div>
       <div className="text-xs text-[#4A4A4A] leading-relaxed">{when}</div>
     </div>
   );
@@ -408,7 +408,7 @@ function ProcessRow({ num, what, when }: { num: string; what: string; when: stri
 
 function Aside({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mt-5 text-sm leading-relaxed text-[#4A4A4A] py-3.5 px-5 bg-[#FAFAFA] border-l-[3px] border-[#1B1B1B]">
+    <p className="mt-5 text-sm leading-relaxed text-[#4A4A4A] py-3.5 px-5 bg-[#0C0C0C] border-l-[3px] border-[#1B1B1B]">
       {children}
     </p>
   );

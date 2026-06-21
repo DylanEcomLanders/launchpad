@@ -40,22 +40,22 @@ export function RevenueProjectorWidget({ retainer = 8000 }: { retainer?: number 
   const retainerLabel = `£${(retainer / 1000).toFixed(retainer % 1000 === 0 ? 0 : 1)}K`;
 
   return (
-    <div className="rounded-lg border border-[#E5E5EA] bg-white p-5 h-full flex flex-col">
+    <div className="rounded-lg border border-[#2A2A2A] bg-[#181818] p-5 h-full flex flex-col">
       <div className="flex items-start justify-between mb-4">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
             Live widget · Revenue Projector
           </p>
-          <h3 className="text-sm font-semibold text-[#1B1B1B] mt-1 leading-tight">
+          <h3 className="text-sm font-semibold text-[#E5E5EA] mt-1 leading-tight">
             What they&rsquo;re leaving on the table
           </h3>
-          <p className="text-[11px] text-[#666] mt-0.5">
+          <p className="text-[11px] text-[#9CA3AF] mt-0.5">
             Drag to model the prospect&rsquo;s numbers — quote it live on the call.
           </p>
         </div>
         <button
           onClick={() => setInputs(DEFAULT_CALC)}
-          className="text-[10px] text-[#999] hover:text-[#1B1B1B] flex items-center gap-1 shrink-0"
+          className="text-[10px] text-[#71757D] hover:text-[#E5E5EA] flex items-center gap-1 shrink-0"
           aria-label="Reset"
         >
           <ArrowPathIcon className="size-3" />
@@ -106,27 +106,27 @@ export function RevenueProjectorWidget({ retainer = 8000 }: { retainer?: number 
 
         {/* Output */}
         <div className="md:col-span-2 flex flex-col gap-2">
-          <div className="rounded-md border border-[#E5E5EA] bg-[#FAFAFA] p-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
+          <div className="rounded-md border border-[#2A2A2A] bg-[#0C0C0C] p-3">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
               Monthly recovered
             </p>
-            <p className="text-lg font-semibold text-[#1B1B1B] tabular-nums mt-1 leading-none">
+            <p className="text-lg font-semibold text-[#E5E5EA] tabular-nums mt-1 leading-none">
               {formatGBP(monthly)}
             </p>
           </div>
-          <div className="rounded-md border border-[#1B1B1B] bg-[#1B1B1B] text-white p-3 flex-1 flex flex-col justify-center">
+          <div className="rounded-md border border-white bg-white text-[#0C0C0C] p-3 flex-1 flex flex-col justify-center">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-white/50">
               Annual opportunity
             </p>
-            <p className="text-2xl font-semibold tracking-tight tabular-nums mt-1 leading-none">
+            <p className="text-2xl font-semibold tabular-nums mt-1 leading-none">
               {formatGBP(annual)}
             </p>
           </div>
-          <div className="rounded-md border border-[#E5E5EA] bg-white p-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
+          <div className="rounded-md border border-[#2A2A2A] bg-[#181818] p-3">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
               ROI vs {retainerLabel} retainer
             </p>
-            <p className="text-lg font-semibold text-[#1B1B1B] tabular-nums mt-1 leading-none">
+            <p className="text-lg font-semibold text-[#E5E5EA] tabular-nums mt-1 leading-none">
               {ratio > 0 ? `${ratio.toFixed(1)}×` : "—"}
             </p>
           </div>
@@ -157,8 +157,8 @@ function SliderRow({
   return (
     <div>
       <div className="flex items-baseline justify-between mb-1">
-        <span className="text-[11px] font-medium text-[#666]">{label}</span>
-        <span className="text-[12px] font-semibold text-[#1B1B1B] tabular-nums">
+        <span className="text-[11px] font-medium text-[#9CA3AF]">{label}</span>
+        <span className="text-[12px] font-semibold text-[#E5E5EA] tabular-nums">
           {format(value)}
         </span>
       </div>

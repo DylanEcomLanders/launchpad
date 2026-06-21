@@ -31,8 +31,6 @@ interface ToolkitStage {
   number: string;
   name: string;
   descriptor: string;
-  badgeBg: string;
-  badgeText: string;
   tiles: ToolkitTile[];
 }
 
@@ -41,8 +39,6 @@ const toolkitStages: ToolkitStage[] = [
     number: "01",
     name: "Pitch",
     descriptor: "Sales & prospect-facing assets",
-    badgeBg: "#EFF6FF",
-    badgeText: "#1D4ED8",
     tiles: [
       { title: "Portfolio", subtitle: "Live page library", href: "/portfolio", icon: PhotoIcon },
       { title: "Case studies", subtitle: "Results & outcomes", href: "/case-studies", icon: TrophyIcon },
@@ -55,8 +51,6 @@ const toolkitStages: ToolkitStage[] = [
     number: "02",
     name: "Onboard",
     descriptor: "From signed to kicked off",
-    badgeBg: "#ECFDF5",
-    badgeText: "#047857",
     tiles: [
       { title: "Onboarding form", subtitle: "Client intake", href: "/onboard", icon: ClipboardDocumentCheckIcon },
       { title: "Invoice generator", subtitle: "Create & send", href: "/tools/invoice-generator", icon: DocumentTextIcon },
@@ -66,8 +60,6 @@ const toolkitStages: ToolkitStage[] = [
     number: "03",
     name: "Deliver",
     descriptor: "Live engagement",
-    badgeBg: "#F5F3FF",
-    badgeText: "#6D28D9",
     tiles: [
       { title: "Feedback form", subtitle: "In-flight check-ins", href: "/tools/feedback", icon: ChatBubbleOvalLeftIcon },
     ],
@@ -95,41 +87,47 @@ export default function MissionControl() {
     weekday: "long",
     day: "numeric",
     month: "long",
-  });
+  }).toUpperCase();
+  const totalTools = toolkitStages.reduce((n, s) => n + s.tiles.length, 0);
 
   return (
-    <div className="mx-auto max-w-[1240px] px-6 pb-20 pt-8">
-      {/* ── Header ── matches Workspace Overview ── */}
-      <div className="mb-8">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
-          {dateStr}
-        </p>
-        <h1 className="mt-1 font-heading text-2xl font-semibold tracking-tight text-slate-900">
-          Mission Control
-        </h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Everything you need, organised by client stage.
+    <div className="mx-auto max-w-[1240px] px-8 pb-20 pt-10">
+      {/* ── Header ── eyebrow date · bold title + light modifier · count top-right ── */}
+      <div className="mb-10 flex items-end justify-between gap-6">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#71757D]">
+            {dateStr}
+          </p>
+          <h1 className="mt-2 text-[28px] leading-tight">
+            <span className="font-bold text-[#E5E5EA]">Toolkit</span>{" "}
+            <span className="font-normal text-[#71757D]">organised by stage</span>
+          </h1>
+        </div>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#71757D] tabular-nums">
+          {totalTools} TOOLS
         </p>
       </div>
 
-      {/* ── Toolkit ── */}
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-slate-500">
-          Toolkit
-        </h2>
-        <div className="relative">
-          <MagnifyingGlassIcon className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            value={toolkitQuery}
-            onChange={(e) => setToolkitQuery(e.target.value)}
-            placeholder="Search tools..."
-            className="w-[220px] rounded-lg border border-slate-200 bg-white py-1.5 pl-8 pr-3 text-sm outline-none focus:border-slate-400"
-          />
+      {/* ── Filter strip - labelled like Well's dropdowns ── */}
+      <div className="mb-8 flex items-end justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#71757D] mb-1.5">
+            Search
+          </p>
+          <div className="relative">
+            <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-[#71757D]" />
+            <input
+              type="text"
+              value={toolkitQuery}
+              onChange={(e) => setToolkitQuery(e.target.value)}
+              placeholder="Search tools..."
+              className="w-[280px] rounded-md border border-[#2A2A2A] bg-[#181818] py-2 pl-9 pr-3 text-sm text-[#E5E5EA] placeholder:text-[#71757D] outline-none focus:border-[#818CF8] transition-colors"
+            />
+          </div>
         </div>
       </div>
 
-      <div className="space-y-7">
+      <div className="space-y-10">
         {filteredStages.map((stage) => (
           <ToolkitStageBlock key={stage.name} stage={stage} />
         ))}
@@ -141,27 +139,27 @@ export default function MissionControl() {
 function ToolkitStageBlock({ stage }: { stage: ToolkitStage }) {
   return (
     <div>
-      {/* Stage header — soft pill badge + descriptor */}
-      <div className="mb-3 flex items-baseline gap-3">
-        <span
-          className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-          style={{ background: stage.badgeBg, color: stage.badgeText }}
-        >
-          {stage.number} · {stage.name}
+      {/* Stage header - monochrome eyebrow + name, no colored pills */}
+      <div className="mb-4 flex items-baseline gap-3">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#71757D] tabular-nums">
+          {stage.number}
         </span>
-        <span className="text-xs text-slate-400">{stage.descriptor}</span>
+        <span className="text-sm font-semibold text-[#E5E5EA]">
+          {stage.name}
+        </span>
+        <span className="text-xs text-[#71757D]">{stage.descriptor}</span>
       </div>
 
-      {/* Tile grid — auto-fit min 180px so it reflows naturally */}
+      {/* Tile grid - auto-fit min 200px so tiles breathe more than before */}
       <div
         className="grid gap-3"
-        style={{ gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}
+        style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
       >
         {stage.tiles.map((tile) => (
           <ToolkitTileLink key={tile.title} tile={tile} />
         ))}
         {stage.tiles.length === 0 && (
-          <p className="py-3 text-xs text-slate-300">No matching tools.</p>
+          <p className="py-3 text-xs text-[#4B4D52]">No matching tools.</p>
         )}
       </div>
     </div>
@@ -172,13 +170,13 @@ function ToolkitTileLink({ tile }: { tile: ToolkitTile }) {
   return (
     <Link
       href={tile.href}
-      className="flex flex-col rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-shadow hover:shadow-md"
+      className="flex flex-col rounded-lg border border-[#2A2A2A] bg-[#181818] p-4 transition-colors hover:border-[#383838] hover:bg-[#222222]"
     >
-      <tile.icon className="mb-2 size-4 text-slate-400" />
-      <p className="font-heading text-sm font-medium leading-snug text-slate-900">
+      <tile.icon className="mb-2.5 size-4 text-[#71757D] stroke-[1.5]" />
+      <p className="text-sm font-medium leading-snug text-[#E5E5EA]">
         {tile.title}
       </p>
-      <p className="mt-0.5 text-xs leading-snug text-slate-500">
+      <p className="mt-1 text-xs leading-snug text-[#71757D]">
         {tile.subtitle}
       </p>
     </Link>

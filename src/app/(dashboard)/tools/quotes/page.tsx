@@ -155,20 +155,20 @@ export default function QuotesPage() {
     <div className="mx-auto max-w-3xl px-6 pb-20 pt-8">
       {/* Header */}
       <div className="mb-8">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+        <p className="text-xs font-medium uppercase tracking-wide text-[#71757D]">
           Acquisition
         </p>
-        <h1 className="mt-1 font-heading text-2xl font-semibold tracking-tight text-slate-900">
+        <h1 className="mt-1 text-[28px] leading-tight font-bold text-[#E5E5EA]">
           Quotes
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-[#9CA3AF]">
           Build a quote and send the client a clean link to view it. No PDF.
         </p>
       </div>
 
       {/* New-link banner */}
       {newLink && (
-        <div className="mb-6 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+        <div className="mb-6 flex items-center gap-2 rounded-xl border border-emerald-700 bg-emerald-900/20 px-4 py-3">
           <span className="flex-1 truncate text-xs text-emerald-800">{newLink}</span>
           <button
             onClick={() => copyLink(newLink, "new")}
@@ -181,14 +181,14 @@ export default function QuotesPage() {
 
       {/* Builder */}
       {building ? (
-        <div className="mb-8 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+        <div className="mb-8 rounded-2xl border border-[#2A2A2A]/80 bg-[#181818] p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-slate-500">
+            <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-[#9CA3AF]">
               New quote
             </h2>
             <button
               onClick={resetBuilder}
-              className="text-xs text-slate-400 hover:text-slate-600"
+              className="text-xs text-[#71757D] hover:text-[#9CA3AF]"
             >
               Cancel
             </button>
@@ -200,7 +200,7 @@ export default function QuotesPage() {
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
                 placeholder="e.g. Harvestory"
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+                className="w-full rounded-lg border border-[#2A2A2A] px-3 py-2 text-sm outline-none focus:border-[#383838]"
               />
             </Field>
             <Field label="Intro (optional)">
@@ -209,35 +209,35 @@ export default function QuotesPage() {
                 onChange={(e) => setIntro(e.target.value)}
                 rows={2}
                 placeholder="A line or two setting up the quote."
-                className="w-full resize-none rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+                className="w-full resize-none rounded-lg border border-[#2A2A2A] px-3 py-2 text-sm outline-none focus:border-[#383838]"
               />
             </Field>
 
             {/* Line items */}
             <div>
-              <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-slate-400">
+              <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-[#71757D]">
                 Line items
               </span>
               <div className="space-y-3">
                 {lines.map((l) => (
-                  <div key={l.id} className="rounded-lg border border-slate-100 p-2">
+                  <div key={l.id} className="rounded-lg border border-[#2A2A2A] p-2">
                     <div className="flex items-center gap-2">
                       <input
                         value={l.description}
                         onChange={(e) => updateLine(l.id, { description: e.target.value })}
                         placeholder="Item (e.g. PDP redesign)"
-                        className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+                        className="flex-1 rounded-lg border border-[#2A2A2A] px-3 py-2 text-sm outline-none focus:border-[#383838]"
                       />
                       <input
                         type="number"
                         min={1}
                         value={l.qty}
                         onChange={(e) => updateLine(l.id, { qty: Number(e.target.value) })}
-                        className="w-14 rounded-lg border border-slate-200 px-2 py-2 text-center text-sm tabular-nums outline-none focus:border-slate-400"
+                        className="w-14 rounded-lg border border-[#2A2A2A] px-2 py-2 text-center text-sm tabular-nums outline-none focus:border-[#383838]"
                         title="Qty"
                       />
-                      <div className="flex items-center rounded-lg border border-slate-200">
-                        <span className="pl-2 text-sm text-slate-400">£</span>
+                      <div className="flex items-center rounded-lg border border-[#2A2A2A]">
+                        <span className="pl-2 text-sm text-[#71757D]">£</span>
                         <input
                           type="number"
                           min={0}
@@ -250,7 +250,7 @@ export default function QuotesPage() {
                       <select
                         value={l.cadence}
                         onChange={(e) => updateLine(l.id, { cadence: e.target.value as LineCadence })}
-                        className="rounded-lg border border-slate-200 bg-white px-2 py-2 text-sm outline-none focus:border-slate-400"
+                        className="rounded-lg border border-[#2A2A2A] bg-[#181818] px-2 py-2 text-sm outline-none focus:border-[#383838]"
                       >
                         <option value="one_off">One-off</option>
                         <option value="monthly">Monthly</option>
@@ -258,7 +258,7 @@ export default function QuotesPage() {
                       <button
                         onClick={() => removeLine(l.id)}
                         disabled={lines.length === 1}
-                        className="px-1 text-slate-300 hover:text-rose-500 disabled:opacity-30"
+                        className="px-1 text-[#4B4D52] hover:text-rose-500 disabled:opacity-30"
                         title="Remove line"
                       >
                         ✕
@@ -268,39 +268,39 @@ export default function QuotesPage() {
                       value={l.detail ?? ""}
                       onChange={(e) => updateLine(l.id, { detail: e.target.value })}
                       placeholder="What this delivers (optional — shown under the item)"
-                      className="mt-2 w-full rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-1.5 text-xs outline-none focus:border-slate-300"
+                      className="mt-2 w-full rounded-lg border border-[#2A2A2A] bg-[#222222]/50 px-3 py-1.5 text-xs outline-none focus:border-[#383838]"
                     />
                   </div>
                 ))}
               </div>
               <button
                 onClick={addLine}
-                className="mt-2 rounded-lg border border-dashed border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-400 hover:border-slate-300 hover:text-slate-600"
+                className="mt-2 rounded-lg border border-dashed border-[#2A2A2A] px-3 py-1.5 text-xs font-medium text-[#71757D] hover:border-[#383838] hover:text-[#9CA3AF]"
               >
                 + Add line
               </button>
             </div>
 
             {/* Live totals */}
-            <div className="rounded-lg bg-slate-50 px-4 py-3">
+            <div className="rounded-lg bg-[#222222] px-4 py-3">
               {totals.oneOff > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">One-off</span>
-                  <span className="font-semibold tabular-nums text-slate-900">
+                  <span className="text-[#9CA3AF]">One-off</span>
+                  <span className="font-semibold tabular-nums text-[#E5E5EA]">
                     {formatGBP(totals.oneOff)}
                   </span>
                 </div>
               )}
               {totals.monthly > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Monthly</span>
-                  <span className="font-semibold tabular-nums text-slate-900">
+                  <span className="text-[#9CA3AF]">Monthly</span>
+                  <span className="font-semibold tabular-nums text-[#E5E5EA]">
                     {formatGBP(totals.monthly)}/mo
                   </span>
                 </div>
               )}
               {totals.oneOff === 0 && totals.monthly === 0 && (
-                <span className="text-xs text-slate-400">Add line items to see totals.</span>
+                <span className="text-xs text-[#71757D]">Add line items to see totals.</span>
               )}
             </div>
 
@@ -316,12 +316,12 @@ export default function QuotesPage() {
                         )
                       }
                       placeholder="e.g. 30 days of support post-launch"
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+                      className="w-full rounded-lg border border-[#2A2A2A] px-3 py-2 text-sm outline-none focus:border-[#383838]"
                     />
                     <button
                       type="button"
                       onClick={() => setIncludes((prev) => prev.filter((_, idx) => idx !== i))}
-                      className="shrink-0 rounded-lg px-2 py-1 text-sm text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                      className="shrink-0 rounded-lg px-2 py-1 text-sm text-[#71757D] hover:bg-[#222222] hover:text-[#9CA3AF]"
                       aria-label="Remove item"
                     >
                       ✕
@@ -331,7 +331,7 @@ export default function QuotesPage() {
                 <button
                   type="button"
                   onClick={() => setIncludes((prev) => [...prev, ""])}
-                  className="rounded-lg border border-dashed border-slate-300 px-3 py-1.5 text-sm text-slate-500 hover:border-slate-400 hover:text-slate-700"
+                  className="rounded-lg border border-dashed border-[#383838] px-3 py-1.5 text-sm text-[#9CA3AF] hover:border-slate-400 hover:text-[#C7C9CD]"
                 >
                   + Add item
                 </button>
@@ -344,7 +344,7 @@ export default function QuotesPage() {
                 onChange={(e) => setFootnote(e.target.value)}
                 rows={2}
                 placeholder="Terms, validity, payment schedule."
-                className="w-full resize-none rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+                className="w-full resize-none rounded-lg border border-[#2A2A2A] px-3 py-2 text-sm outline-none focus:border-[#383838]"
               />
             </Field>
 
@@ -371,13 +371,13 @@ export default function QuotesPage() {
 
       {/* List */}
       <div className="mb-3 flex items-center justify-between">
-        <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-1">
+        <div className="flex gap-1 rounded-lg border border-[#2A2A2A] bg-[#181818] p-1">
           {(["active", "trash"] as const).map((v) => (
             <button
               key={v}
               onClick={() => setView(v)}
               className={`rounded-md px-3 py-1 text-xs font-medium capitalize transition-colors ${
-                view === v ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-800"
+                view === v ? "bg-white text-[#0C0C0C]" : "text-[#9CA3AF] hover:text-[#E5E5EA]"
               }`}
             >
               {v}
@@ -387,11 +387,11 @@ export default function QuotesPage() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+      <div className="overflow-hidden rounded-2xl border border-[#2A2A2A]/80 bg-[#181818] shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
         {loading ? (
-          <div className="px-5 py-10 text-center text-sm text-slate-400">Loading…</div>
+          <div className="px-5 py-10 text-center text-sm text-[#71757D]">Loading…</div>
         ) : shown.length === 0 ? (
-          <div className="px-5 py-10 text-center text-sm text-slate-400">
+          <div className="px-5 py-10 text-center text-sm text-[#71757D]">
             {view === "trash" ? "Trash is empty." : "No quotes yet."}
           </div>
         ) : (
@@ -403,7 +403,7 @@ export default function QuotesPage() {
                 <div key={q.id} className="flex items-center gap-3 px-5 py-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="truncate text-sm font-medium text-slate-800">
+                      <span className="truncate text-sm font-medium text-[#E5E5EA]">
                         {q.data.clientName}
                       </span>
                       {q.viewed_at && (
@@ -412,7 +412,7 @@ export default function QuotesPage() {
                         </span>
                       )}
                     </div>
-                    <div className="mt-0.5 text-xs text-slate-400">
+                    <div className="mt-0.5 text-xs text-[#71757D]">
                       {fmtDate(q.created_at)} ·{" "}
                       {t.oneOff > 0 && formatGBP(t.oneOff)}
                       {t.oneOff > 0 && t.monthly > 0 && " + "}
@@ -427,13 +427,13 @@ export default function QuotesPage() {
                           href={link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs font-medium text-slate-500 hover:text-slate-800"
+                          className="text-xs font-medium text-[#9CA3AF] hover:text-[#E5E5EA]"
                         >
                           View
                         </a>
                         <button
                           onClick={() => copyLink(link, q.id)}
-                          className="text-xs font-medium text-slate-500 hover:text-slate-800"
+                          className="text-xs font-medium text-[#9CA3AF] hover:text-[#E5E5EA]"
                         >
                           {copiedId === q.id ? "Copied" : "Copy"}
                         </button>
@@ -442,7 +442,7 @@ export default function QuotesPage() {
                             await trashQuote(q.id);
                             refresh();
                           }}
-                          className="text-xs text-slate-300 hover:text-rose-500"
+                          className="text-xs text-[#4B4D52] hover:text-rose-500"
                         >
                           Trash
                         </button>
@@ -454,7 +454,7 @@ export default function QuotesPage() {
                             await restoreQuote(q.id);
                             refresh();
                           }}
-                          className="text-xs font-medium text-slate-500 hover:text-slate-800"
+                          className="text-xs font-medium text-[#9CA3AF] hover:text-[#E5E5EA]"
                         >
                           Restore
                         </button>
@@ -483,7 +483,7 @@ export default function QuotesPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-slate-400">
+      <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-[#71757D]">
         {label}
       </span>
       {children}

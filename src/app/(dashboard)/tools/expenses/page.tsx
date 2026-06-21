@@ -187,10 +187,10 @@ export default function ExpensesPage() {
       <div className="relative z-10 max-w-3xl mx-auto px-6 md:px-12 py-16 md:py-24">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
+          <h1 className="text-[28px] font-bold mb-2">
             Expenses
           </h1>
-          <p className="text-[#7A7A7A] text-sm">
+          <p className="text-[#71757D] text-sm">
             Track business expenses and flag what&apos;s needed
           </p>
         </div>
@@ -211,13 +211,13 @@ export default function ExpensesPage() {
         <div className="space-y-10">
           {/* Summary Dashboard */}
           <section>
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-3">
               Summary
             </h2>
-            <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-5">
+            <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg p-5">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1">
                     Monthly Total
                   </p>
                   <p className="text-lg font-semibold tabular-nums">
@@ -225,7 +225,7 @@ export default function ExpensesPage() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1">
                     Yearly Total
                   </p>
                   <p className="text-lg font-semibold tabular-nums">
@@ -233,7 +233,7 @@ export default function ExpensesPage() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1">
                     Needed
                   </p>
                   <p className="text-lg font-semibold tabular-nums text-emerald-700">
@@ -241,7 +241,7 @@ export default function ExpensesPage() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] mb-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-1">
                     To Review
                   </p>
                   <p className={`text-lg font-semibold tabular-nums ${summary.reviewCount > 0 ? "text-[#B45309]" : ""}`}>
@@ -254,16 +254,16 @@ export default function ExpensesPage() {
 
           {/* Add Expense Form */}
           <section>
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-3">
               Add Expense
             </h2>
             <form
               onSubmit={handleSubmit}
-              className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-5 space-y-4"
+              className="bg-[#222222] border border-[#2A2A2A] rounded-lg p-5 space-y-4"
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-[#7A7A7A] mb-1">
+                  <label className="block text-xs text-[#71757D] mb-1">
                     Name *
                   </label>
                   <input
@@ -276,7 +276,7 @@ export default function ExpensesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-[#7A7A7A] mb-1">
+                  <label className="block text-xs text-[#71757D] mb-1">
                     Category
                   </label>
                   <input
@@ -297,11 +297,11 @@ export default function ExpensesPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-[#7A7A7A] mb-1">
+                  <label className="block text-xs text-[#71757D] mb-1">
                     Amount *
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#A0A0A0]">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#71757D]">
                       &pound;
                     </span>
                     <input
@@ -322,10 +322,10 @@ export default function ExpensesPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs text-[#7A7A7A] mb-1">
+                  <label className="block text-xs text-[#71757D] mb-1">
                     Frequency
                   </label>
-                  <div className="inline-flex rounded-md border border-[#E5E5EA] overflow-hidden w-full">
+                  <div className="inline-flex rounded-md border border-[#2A2A2A] overflow-hidden w-full">
                     {frequencies.map((freq) => (
                       <button
                         key={freq}
@@ -333,8 +333,8 @@ export default function ExpensesPage() {
                         onClick={() => setForm((f) => ({ ...f, frequency: freq }))}
                         className={`flex-1 px-3 py-2.5 text-xs font-medium capitalize transition-colors ${
                           form.frequency === freq
-                            ? "bg-[#1B1B1B] text-white"
-                            : "bg-white text-[#7A7A7A] hover:bg-[#F3F3F5]"
+                            ? "bg-white text-[#0C0C0C]"
+                            : "bg-[#181818] text-[#71757D] hover:bg-[#222222]"
                         }`}
                       >
                         {freq === "one-off" ? "One-off" : freq.charAt(0).toUpperCase() + freq.slice(1)}
@@ -346,10 +346,10 @@ export default function ExpensesPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-[#7A7A7A] mb-1">
+                  <label className="block text-xs text-[#71757D] mb-1">
                     Status
                   </label>
-                  <div className="inline-flex rounded-md border border-[#E5E5EA] overflow-hidden w-full">
+                  <div className="inline-flex rounded-md border border-[#2A2A2A] overflow-hidden w-full">
                     {statuses.map((s) => (
                       <button
                         key={s}
@@ -358,7 +358,7 @@ export default function ExpensesPage() {
                         className={`flex-1 px-3 py-2.5 text-xs font-medium capitalize transition-colors ${
                           form.status === s
                             ? `${statusColors[s].bg} ${statusColors[s].text}`
-                            : "bg-white text-[#7A7A7A] hover:bg-[#F3F3F5]"
+                            : "bg-[#181818] text-[#71757D] hover:bg-[#222222]"
                         }`}
                       >
                         {s}
@@ -367,7 +367,7 @@ export default function ExpensesPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs text-[#7A7A7A] mb-1">
+                  <label className="block text-xs text-[#71757D] mb-1">
                     Notes
                   </label>
                   <input
@@ -383,7 +383,7 @@ export default function ExpensesPage() {
               <button
                 type="submit"
                 disabled={submitting || !form.name.trim() || form.amount <= 0}
-                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:bg-[#F3F4F6] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {submitting ? (
                   <>
@@ -403,15 +403,15 @@ export default function ExpensesPage() {
           {/* Filters */}
           <section>
             <div className="flex flex-wrap items-center gap-3">
-              <div className="inline-flex rounded-md border border-[#E5E5EA] overflow-hidden">
+              <div className="inline-flex rounded-md border border-[#2A2A2A] overflow-hidden">
                 {(["all", ...statuses] as const).map((s) => (
                   <button
                     key={s}
                     onClick={() => setFilterStatus(s)}
                     className={`px-3 py-2 text-xs font-medium capitalize transition-colors ${
                       filterStatus === s
-                        ? "bg-[#1B1B1B] text-white"
-                        : "bg-white text-[#7A7A7A] hover:bg-[#F3F3F5]"
+                        ? "bg-white text-[#0C0C0C]"
+                        : "bg-[#181818] text-[#71757D] hover:bg-[#222222]"
                     }`}
                   >
                     {s}
@@ -422,7 +422,7 @@ export default function ExpensesPage() {
                 <select
                   value={filterCategory}
                   onChange={(e) => setFilterCategory(e.target.value)}
-                  className="px-3 py-2 bg-white border border-[#E5E5EA] rounded-md text-xs focus:outline-none focus:border-[#1B1B1B] transition-colors"
+                  className="px-3 py-2 bg-[#181818] border border-[#2A2A2A] rounded-md text-xs focus:outline-none focus:border-[#C5C5C5] transition-colors"
                 >
                   <option value="">All categories</option>
                   {uniqueCategories.map((c) => (
@@ -438,7 +438,7 @@ export default function ExpensesPage() {
                     setFilterStatus("all");
                     setFilterCategory("");
                   }}
-                  className="text-xs text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
+                  className="text-xs text-[#71757D] hover:text-[#E5E5EA] transition-colors"
                 >
                   Clear filters
                 </button>
@@ -448,46 +448,46 @@ export default function ExpensesPage() {
 
           {/* Expenses List */}
           <section>
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-3">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-3">
               Expenses ({filtered.length})
             </h2>
 
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <ArrowPathIcon className="size-5 animate-spin text-[#A0A0A0]" />
+                <ArrowPathIcon className="size-5 animate-spin text-[#71757D]" />
               </div>
             ) : filtered.length === 0 ? (
-              <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-8">
-                <p className="text-xs text-[#A0A0A0] text-center">
+              <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg p-8">
+                <p className="text-xs text-[#71757D] text-center">
                   {expenses.length === 0
                     ? "No expenses yet — add one above"
                     : "No expenses match filters"}
                 </p>
               </div>
             ) : (
-              <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg overflow-hidden">
+              <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg overflow-hidden">
                 {/* Desktop header */}
-                <div className="hidden md:grid grid-cols-[1fr_100px_90px_80px_80px_32px] gap-3 px-4 py-2.5 border-b border-[#E5E5EA] bg-[#EDEDEF]">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+                <div className="hidden md:grid grid-cols-[1fr_100px_90px_80px_80px_32px] gap-3 px-4 py-2.5 border-b border-[#2A2A2A] bg-[#222222]">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
                     Name
                   </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
                     Category
                   </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] text-right">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] text-right">
                     Amount
                   </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] text-center">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] text-center">
                     Freq
                   </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] text-center">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] text-center">
                     Status
                   </span>
                   <span />
                 </div>
 
                 {/* Rows */}
-                <div className="divide-y divide-[#E5E5EA]">
+                <div className="divide-y divide-[#2A2A2A]">
                   {filtered.map((expense) => {
                     const isCut = expense.status === "cut";
                     const sc = statusColors[expense.status];
@@ -495,7 +495,7 @@ export default function ExpensesPage() {
                     return (
                       <div
                         key={expense.id}
-                        className={`px-4 py-3 transition-colors hover:bg-white ${
+                        className={`px-4 py-3 transition-colors hover:bg-[#181818] ${
                           isCut ? "opacity-50" : ""
                         }`}
                       >
@@ -506,12 +506,12 @@ export default function ExpensesPage() {
                               {expense.name}
                             </p>
                             {expense.notes && (
-                              <p className="text-[10px] text-[#A0A0A0] truncate">
+                              <p className="text-[10px] text-[#71757D] truncate">
                                 {expense.notes}
                               </p>
                             )}
                           </div>
-                          <span className="text-xs text-[#7A7A7A] truncate">
+                          <span className="text-xs text-[#71757D] truncate">
                             {expense.category || "—"}
                           </span>
                           <div className="text-right">
@@ -519,12 +519,12 @@ export default function ExpensesPage() {
                               {formatGBP(Number(expense.amount))}
                             </span>
                             {expense.frequency === "yearly" && (
-                              <p className="text-[10px] text-[#A0A0A0] tabular-nums">
+                              <p className="text-[10px] text-[#71757D] tabular-nums">
                                 {formatGBP(Number(expense.amount) / 12)}/mo
                               </p>
                             )}
                           </div>
-                          <span className="text-xs text-[#7A7A7A] text-center capitalize">
+                          <span className="text-xs text-[#71757D] text-center capitalize">
                             {expense.frequency}
                           </span>
                           <button
@@ -536,7 +536,7 @@ export default function ExpensesPage() {
                           </button>
                           <button
                             onClick={() => handleDelete(expense.id)}
-                            className="p-1 text-[#A0A0A0] hover:text-red-500 transition-colors"
+                            className="p-1 text-[#71757D] hover:text-red-500 transition-colors"
                             title="Delete"
                           >
                             <TrashIcon className="size-3.5" />
@@ -551,20 +551,20 @@ export default function ExpensesPage() {
                                 {expense.name}
                               </p>
                               {expense.category && (
-                                <p className="text-xs text-[#7A7A7A]">
+                                <p className="text-xs text-[#71757D]">
                                   {expense.category}
                                 </p>
                               )}
                             </div>
                             <span className={`text-sm font-semibold tabular-nums shrink-0 ${isCut ? "line-through" : ""}`}>
                               {formatGBP(Number(expense.amount))}
-                              <span className="text-[10px] text-[#A0A0A0] font-normal">
+                              <span className="text-[10px] text-[#71757D] font-normal">
                                 /{expense.frequency === "yearly" ? "yr" : expense.frequency === "monthly" ? "mo" : ""}
                               </span>
                             </span>
                           </div>
                           {expense.notes && (
-                            <p className="text-[10px] text-[#A0A0A0]">
+                            <p className="text-[10px] text-[#71757D]">
                               {expense.notes}
                             </p>
                           )}
@@ -578,7 +578,7 @@ export default function ExpensesPage() {
                             </button>
                             <button
                               onClick={() => handleDelete(expense.id)}
-                              className="p-1 text-[#A0A0A0] hover:text-red-500 transition-colors"
+                              className="p-1 text-[#71757D] hover:text-red-500 transition-colors"
                             >
                               <TrashIcon className="size-3.5" />
                             </button>

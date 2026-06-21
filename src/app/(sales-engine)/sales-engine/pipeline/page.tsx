@@ -59,7 +59,7 @@ export default function PipelinePage() {
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-[#F0F0F0] shrink-0">
         <div>
-          <h1 className="text-lg font-bold tracking-tight">Pipeline</h1>
+          <h1 className="text-lg font-bold">Pipeline</h1>
           <p className="text-xs text-[#AAA]">{leads.length} lead{leads.length !== 1 ? "s" : ""}</p>
         </div>
         <button
@@ -104,7 +104,7 @@ export default function PipelinePage() {
                         onDragStart={() => setDraggedId(lead.id)}
                         onDragEnd={() => setDraggedId(null)}
                         onClick={() => { setEditLead(lead); setShowForm(true); }}
-                        className={`bg-white border border-[#E8E8E8] rounded-lg p-3 cursor-grab active:cursor-grabbing hover:shadow-sm transition-all ${
+                        className={`bg-[#181818] border border-[#2A2A2A] rounded-lg p-3 cursor-grab active:cursor-grabbing hover:shadow-sm transition-all ${
                           draggedId === lead.id ? "opacity-40" : ""
                         }`}
                       >
@@ -167,11 +167,11 @@ export default function PipelinePage() {
         </div>
       )}
 
-      {/* Edit modal — portal to body so transform parents don't break fixed positioning */}
+      {/* Edit modal - portal to body so transform parents don't break fixed positioning */}
       {showForm && editLead && (
         <ModalPortal>
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => { setShowForm(false); setEditLead(null); }}>
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-5 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-[#181818] rounded-xl shadow-xl w-full max-w-md mx-4 p-5 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold">{editLead.created_at ? "Edit Lead" : "New Lead"}</h3>
                 <button onClick={() => { setShowForm(false); setEditLead(null); }} className="text-[#AAA] hover:text-[#1A1A1A]">

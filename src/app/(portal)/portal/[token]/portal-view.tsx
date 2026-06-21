@@ -682,7 +682,7 @@ export function PortalView({
                                           </span>
                                           <div className="min-w-0">
                                             <p className="text-sm font-medium text-[#1A1A1A]">Version {v.version_number}</p>
-                                            <p className="text-[11px] text-[#AAA]">{vDate}{v.notes ? ` — ${v.notes}` : ""}</p>
+                                            <p className="text-[11px] text-[#AAA]">{vDate}{v.notes ? ` - ${v.notes}` : ""}</p>
                                           </div>
                                         </div>
                                         {v.figma_url && (

@@ -5,6 +5,9 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
   HomeIcon,
+  Cog6ToothIcon,
+  BriefcaseIcon,
+  AcademicCapIcon,
   Bars3Icon,
   XMarkIcon,
   ChevronDownIcon,
@@ -21,8 +24,27 @@ import {
   LightBulbIcon,
   LockClosedIcon,
   CalendarDaysIcon,
-} from "@heroicons/react/24/solid";
-import { LogoMark } from "@/components/logo";
+  ViewColumnsIcon,
+  PhotoIcon,
+  TrophyIcon,
+  DocumentTextIcon,
+  InboxIcon,
+  ChatBubbleOvalLeftIcon,
+  TagIcon,
+  CalculatorIcon,
+  ArrowTrendingUpIcon,
+  LinkIcon,
+  CodeBracketIcon,
+  UsersIcon,
+  ShareIcon,
+  UserPlusIcon,
+  DocumentDuplicateIcon,
+  BookmarkIcon,
+  DocumentPlusIcon,
+  CreditCardIcon,
+  BoltIcon,
+} from "@heroicons/react/24/outline";
+// LogoMark moved to dashboard top bar — sidebar no longer renders the logo.
 import { useRole } from "@/components/auth-gate";
 import { CommandPalette, type CommandItem } from "@/components/command-palette";
 
@@ -30,6 +52,7 @@ interface NavItem {
   label: string;
   href: string;
   external?: boolean;
+  icon?: React.ReactNode;
 }
 
 interface NavSection {
@@ -54,81 +77,23 @@ const teamZones = [
 ];
 
 /* Sidebar follows the agency lifecycle (top-down): pin the daily drivers
- * (Mission Control, Offer, Pods), then dropdowns for each lifecycle phase,
+ * (Mission Control, Tools, Workspace, Offer), then dropdowns for each lifecycle phase,
  * ops/finance, reference material, and a default-collapsed Shelved drawer
  * for parked tools we're not actively using.
  *
  * Shelved housekeeping: review every 3 months — promote what's back in
  * use, or kill what's truly dead. Don't let it become a graveyard. */
 const navSections: NavSection[] = [
-  {
-    title: "Acquisition",
-    icon: <RocketLaunchIcon className="size-4" />,
-    defaultOpen: true,
-    group: "lifecycle",
-    items: [
-      // Point at the dashboard/public versions, NOT the /sales-engine shell
-      // (Sales Engine is a non-accessible surface).
-      { label: "Portfolio", href: "/tools/portfolio" },
-      { label: "Case Studies", href: "/case-studies" },
-      { label: "Quotes", href: "/tools/quotes" },
-    ],
-  },
-  {
-    title: "Delivery",
-    icon: <PuzzlePieceIcon className="size-4" />,
-    defaultOpen: false,
-    group: "lifecycle",
-    items: [
-      { label: "Onboarding", href: "/tools/onboarding-inbox" },
-    ],
-  },
-  {
-    title: "Operations",
-    icon: <BookOpenIcon className="size-4" />,
-    defaultOpen: false,
-    group: "lifecycle",
-    items: [
-      { label: "Feedback", href: "/tools/feedback" },
-    ],
-  },
-  {
-    title: "Finance",
-    icon: <BanknotesIcon className="size-4" />,
-    defaultOpen: false,
-    roles: ["admin"],
-    badge: "PRIVATE",
-    group: "ops",
-    items: [
-      { label: "Money (founder)", href: "/finance" },
-      { label: "Price List", href: "/internal/pricing" },
-      { label: "Price Calculator", href: "/tools/price-calculator" },
-      { label: "Revenue", href: "/tools/revenue" },
-      { label: "Turnaround Times", href: "/internal/turnarounds" },
-      { label: "Payment Link", href: "/tools/payment-link" },
-      { label: "Dev Hours Log", href: "/tools/dev-hours" },
-    ],
-  },
-  {
-    title: "Company",
-    icon: <BuildingOffice2Icon className="size-4" />,
-    defaultOpen: false,
-    roles: ["admin"],
-    group: "ops",
-    items: [
-      { label: "Overview", href: "/company" },
-      { label: "People", href: "/company/people" },
-      { label: "Org Structure", href: "/company/structure" },
-      { label: "Hiring", href: "/company/hiring" },
-      { label: "Contracts", href: "/company/contracts" },
-    ],
-  },
+  // Delivery + Operations sections promoted to pinned items in the cluster
+  // above (Onboarding, Feedback).
 ];
 
 /* Shelved tools — listed on /shelved as a read-only catalogue. Code stays
  * in git so we can promote items back into the sidebar if needed; we just
  * don't link to them here. */
 export const shelvedItems: NavItem[] = [
+  { label: "R&D Tracker", href: "/rd" },
+  { label: "Tools (Toolkit)", href: "/" },
   { label: "Wiki (legacy)", href: "/tools/ops-wiki" },
   { label: "Audits", href: "/sales-engine/audits" },
   { label: "Social", href: "/sales-engine/social" },
@@ -153,15 +118,44 @@ export const shelvedItems: NavItem[] = [
   { label: "Referral Programme", href: "/referral-programme" },
 ];
 
+/* Mission Control — the kanban-style command surface over every client's
+ * in-flight delivery work. Master view is the landing; drill into a single
+ * client via the dropdown in the page header. */
+const missionControlItem = {
+  label: "Project Delivery",
+  href: "/kanban",
+  icon: <ViewColumnsIcon className="size-4" />,
+};
+/* Delivery KPIs — on-time / overdue / turnaround reporting off the ClickUp
+ * board. Sits next to Project Delivery in the delivery cluster. */
+const kpiItem = {
+  label: "Delivery KPIs",
+  href: "/kpi",
+  icon: <ArrowTrendingUpIcon className="size-4" />,
+};
+const onboardingItem = {
+  label: "Onboarding",
+  href: "/tools/onboarding-inbox",
+  icon: <InboxIcon className="size-4" />,
+};
+/* Retention dashboard — CSM home (client health, churn risk, renewals).
+ * Repointed from the old /tools/feedback tool, which is still reachable by URL. */
+const feedbackItem = {
+  label: "Retention",
+  href: "/retention",
+  icon: <ChatBubbleOvalLeftIcon className="size-4" />,
+};
+/* Tools — quick-access launcher for client assets + internal tooling. Used
+ * to be called Mission Control; renamed when the kanban claimed that name. */
 const homeItem = {
-  label: "Mission Control",
+  label: "Tools",
   href: "/",
   icon: <HomeIcon className="size-4" />,
 };
 /* My Work — personal landing for everyone: the deliverables assigned to the
  * signed-in person. (Replaces the old founder-only "My Week" planner.) */
 const myWorkItem = {
-  label: "My Work",
+  label: "My Tasks",
   href: "/my-work",
   icon: <CalendarDaysIcon className="size-4" />,
 };
@@ -194,20 +188,62 @@ const rdItem = {
   href: "/rd",
   icon: <LightBulbIcon className="size-4" />,
 };
+/* Finance — single pinned item replacing the old "PRIVATE" section. Lock icon
+ * signals the password gate; /finance is already wrapped in FinanceGate. All
+ * the previous section sub-items (Pricing / Calculator / Revenue / Turnarounds
+ * / Payment link / Dev hours) live as tabs inside FinanceNav. */
+const financeItem = {
+  label: "Finance",
+  href: "/finance",
+  icon: <LockClosedIcon className="size-4" />,
+};
+/* Admin — replaces the old "Company" section. Single pinned item; the
+ * previous tabs (Overview / People / Structure / Hiring / Contracts / Settings)
+ * live as tabs inside /company's layout. CompanyGate handles the password. */
+const adminItem = {
+  label: "Admin",
+  href: "/company",
+  icon: <BuildingOffice2Icon className="size-4" />,
+};
+/* Pitch — umbrella for client-facing pitch materials. Replaces the old
+ * "Acquisition" section. Lands on /tools/portfolio with a PitchNav tab strip
+ * over the top covering Offer / Portfolio / Case Studies / Quotes / Price List /
+ * Sales Deck / Cheat Sheet. */
+const pitchItem = {
+  label: "Acquisition",
+  href: "/tools/portfolio",
+  icon: <BriefcaseIcon className="size-4" />,
+};
+/* Training — knowledge / learning hub. Currently points at the wiki; future
+ * tabs could cover Cheat Sheet, Funnel Playbook, articles. */
+const trainingItem = {
+  label: "Training",
+  href: "/wiki-v2",
+  icon: <AcademicCapIcon className="size-4" />,
+};
 
 /* Toolbox — the day-to-day tools every team member needs, carried over from
  * the retired Team Hub so members work entirely inside the dashboard shell.
  * Visible to everyone (admins included). Ordered in a logical flow, paired by
  * purpose: daily work → playbook → reference assets → pay.
  * Renders as one collapsible "Toolbox" section. */
-const toolboxItems: NavItem[] = [
-  // Reference assets
-  { label: "Swipe File", href: "/team/swipe-file" },
-  { label: "Font Library", href: "/team/fonts" },
-  // Pay
-  { label: "Submit Invoice", href: "/team/invoice" },
-  { label: "Payments", href: "/team/payments" },
+/* Team — all team-facing utilities: reference assets + pay tools. */
+const teamItems: NavItem[] = [
+  { label: "Swipe File", href: "/team/swipe-file", icon: <BookmarkIcon className="size-4" /> },
+  { label: "Font Library", href: "/team/fonts", icon: <DocumentTextIcon className="size-4" /> },
+  { label: "Submit Invoice", href: "/team/invoice", icon: <DocumentPlusIcon className="size-4" /> },
+  { label: "Payments", href: "/team/payments", icon: <CreditCardIcon className="size-4" /> },
 ];
+
+/* Shortcuts — single pinned nav item between My Tasks and Project Delivery.
+ * Lands at /shortcuts, which mounts a ShortcutsNav tab strip that the
+ * dashboard layout keeps mounted across every underlying tool route, so
+ * tabbing between Payment Links / Case Studies / etc feels in-page. */
+const shortcutsItem = {
+  label: "Shortcuts",
+  href: "/shortcuts",
+  icon: <BoltIcon className="size-4" />,
+};
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -230,38 +266,8 @@ export function Sidebar() {
   const [now, setNow] = useState(() => new Date());
   const [onboardingCount, setOnboardingCount] = useState(0);
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const [pods, setPods] = useState<{ id: string; tagline: string; label: string; tile: string; bg: string; fg: string }[]>([]);
-
-  /* Pull pods client-side so we can render identity tiles in the sidebar.
-   * Each pod gets a fixed brand colour by index (P1/P2/P3) so the tiles
-   * stay stable across reloads instead of jittering with hash-derived
-   * hues. Number lives in the tile, the lead's name is the label. */
-  useEffect(() => {
-    const palette = [
-      { bg: "#FEE4D8", fg: "#C2410C" }, // warm peach
-      { bg: "#DBEAFE", fg: "#1D4ED8" }, // soft blue
-      { bg: "#DCFCE7", fg: "#15803D" }, // mint
-    ];
-    (async () => {
-      try {
-        const mod = await import("@/lib/pods-v2/data");
-        const all = mod.getPods();
-        setPods(
-          all.slice(0, 3).map((p, i) => {
-            const num = p.name.replace(/[^0-9]/g, "") || String(i + 1);
-            return {
-              id: p.id,
-              tagline: p.tagline,
-              label: `Pod ${num}`,
-              tile: num,
-              bg: palette[i % palette.length].bg,
-              fg: palette[i % palette.length].fg,
-            };
-          }),
-        );
-      } catch {}
-    })();
-  }, []);
+  // Pod identity tiles were dropped from the sidebar — Mission Control + Workspace
+  // cover pod access. Per-pod URLs (/pods-v2/[podId]) still resolve.
 
   /* Global ⌘K / Ctrl+K to open the palette anywhere in the app. */
   useEffect(() => {
@@ -278,12 +284,14 @@ export function Sidebar() {
   /* Build the searchable index: pinned items + every visible lane child
    * + shelved items (marked so they render with the Shelved badge). */
   const paletteItems: CommandItem[] = [
-    { label: homeItem.label, href: homeItem.href, group: "Pinned", icon: homeItem.icon },
+    { label: missionControlItem.label, href: missionControlItem.href, group: "Pinned", icon: missionControlItem.icon, keywords: ["kanban", "pipeline", "delivery", "board"] },
+    { label: homeItem.label, href: homeItem.href, group: "Pinned", icon: homeItem.icon, keywords: ["toolkit", "launcher"] },
     { label: myWorkItem.label, href: myWorkItem.href, group: "Pinned", icon: myWorkItem.icon, keywords: ["my tasks", "assigned"] },
     { label: workspaceItem.label, href: workspaceItem.href, group: "Pinned", icon: workspaceItem.icon, keywords: ["pods", "clients", "delivery"] },
     { label: wikiItem.label, href: wikiItem.href, group: "Pinned", icon: wikiItem.icon, keywords: ["ops wiki", "operations"] },
-    // Toolbox tools — searchable for everyone.
-    ...toolboxItems.map((i) => ({ label: i.label, href: i.href, group: "Toolbox" })),
+    { label: shortcutsItem.label, href: shortcutsItem.href, group: "Pinned", icon: shortcutsItem.icon, keywords: ["quick", "tools", "favorites"] },
+    // Team utilities — searchable for everyone.
+    ...teamItems.map((i: NavItem) => ({ label: i.label, href: i.href, group: "Team" })),
     // Admin-only entries below.
     ...(role !== "team"
       ? [
@@ -334,181 +342,111 @@ export function Sidebar() {
     return () => clearInterval(id);
   }, []);
 
+  /* Search trigger moved to the dashboard top bar — it dispatches this event
+   * when clicked so the CommandPalette state (which lives here) can open. */
+  useEffect(() => {
+    const handler = () => setPaletteOpen(true);
+    window.addEventListener("open-command-palette", handler);
+    return () => window.removeEventListener("open-command-palette", handler);
+  }, []);
+
   function isActive(href: string) {
     if (href === "/") return pathname === "/";
     return pathname === href || pathname.startsWith(href + "/");
   }
 
-  /* Top-level link (Mission Control, Offer, Pods, Agents). Pinned, not collapsible. */
+  /* Top-level link (Mission Control, Offer, Pods, Agents). Pinned, not collapsible.
+   * Uses the same exact class set as section items so the indents, gap, padding,
+   * icon size + colour all line up across the sidebar. */
   function renderTopLink(item: { label: string; href: string; icon: React.ReactNode }) {
+    const active = isActive(item.href);
     return (
       <Link
         key={item.href}
         href={item.href}
         onClick={() => setMobileOpen(false)}
-        className={`
-          relative flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] transition-all duration-150 mb-0.5
-          ${
-            isActive(item.href)
-              ? "bg-white text-[#0E0F11] font-medium"
-              : "text-[#A1A1AA] hover:bg-white/[0.06] hover:text-white"
-          }
-        `}
+        className={`flex items-center gap-3 px-2.5 py-2 rounded-md text-[14px] transition-colors ${
+          active
+            ? "bg-[#E5E5EA] text-[#0C0C0C] font-medium"
+            : "text-[#C7C9CD] hover:bg-[#222222] hover:text-white"
+        }`}
       >
-        {item.icon}
+        <span className={active ? "text-[#0C0C0C]" : "text-[#9CA3AF]"}>{item.icon}</span>
         {!collapsed && <span className="flex-1">{item.label}</span>}
       </Link>
     );
   }
 
-  /* Collapsible section with header + accordion items. */
+  /* Section — Well-style with NO text label. Whitespace separates groups.
+   * Items render with icon + label.
+   * Collapsed sidebar shows a dot indicator for the group. */
   function renderSection(section: NavSection) {
     const sectionHasActive = section.items.some((i) => !i.external && isActive(i.href));
+    if (collapsed) {
+      return (
+        <div key={section.title} className="mb-6" title={section.title}>
+            <div className="flex justify-center py-1.5">
+            <span className={`size-1.5 rounded-full ${sectionHasActive ? "bg-blue-600" : "bg-[#383838]"}`} />
+          </div>
+        </div>
+      );
+    }
     return (
-      <div key={section.title} className="mb-0.5">
-        {!collapsed ? (
-          <button
-            onClick={() => toggleSection(section.title)}
-            className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md hover:bg-white/[0.06] transition-colors group"
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-[13px] text-[#A1A1AA] group-hover:text-white transition-colors">
-                {section.title}
-              </span>
-              {sectionHasActive && !openSections[section.title] && (
-                <span className="size-1.5 rounded-full bg-white" />
-              )}
-              {section.badge && (
-                <span
-                  title={section.badge}
-                  className="flex items-center justify-center size-3.5 rounded-[3px] bg-white/[0.06] text-[#71717A]"
-                >
-                  <LockClosedIcon className="size-2.5" />
-                </span>
-              )}
-            </div>
-            <ChevronDownIcon
-              className={`size-3 text-white/30 group-hover:text-white/60 transition-all duration-200 ${
-                openSections[section.title] ? "" : "-rotate-90"
-              }`}
-            />
-          </button>
-        ) : (
-          <div className="flex justify-center py-1.5" title={section.title}>
-            <span className={`size-1.5 rounded-full ${sectionHasActive ? "bg-white" : "bg-white/20"}`} />
+      <div key={section.title} className="mb-6">
+        {section.badge && (
+          <div className="px-3 pb-1.5 flex items-center gap-1.5">
+            <LockClosedIcon className="size-2.5 text-[#71757D]" />
+            <span className="text-[10px] uppercase tracking-wider text-[#71757D]">{section.badge}</span>
           </div>
         )}
-
-        {!collapsed && openSections[section.title] && (
-          <div className="mt-0.5 mb-2 space-y-0.5">
-            {section.items.map((item) => {
-              const active = !item.external && isActive(item.href);
-              if (item.external) {
-                return (
-                  <a
-                    key={item.href}
-                    href={item.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-1.5 pl-9 pr-2.5 py-1.5 text-[13px] rounded-md transition-all duration-150 text-[#A1A1AA] hover:text-white hover:bg-white/[0.06]"
-                  >
-                    {item.label}
-                    <svg
-                      className="size-3 opacity-40 shrink-0"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5zm7.25-.75a.75.75 0 01.75-.75h3.5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0V6.31l-5.47 5.47a.75.75 0 01-1.06-1.06l5.47-5.47H12.25a.75.75 0 01-.75-.75z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </a>
-                );
-              }
+        <div className="px-3 space-y-0.5">
+          {section.items.map((item) => {
+            const active = !item.external && isActive(item.href);
+            if (item.external) {
               return (
-                <Link
+                <a
                   key={item.href}
                   href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={() => setMobileOpen(false)}
-                  className={`
-                    block pl-9 pr-2.5 py-1.5 text-[13px] rounded-md transition-all duration-150
-                    ${
-                      active
-                        ? "text-[#0E0F11] font-medium bg-white"
-                        : "text-[#A1A1AA] hover:text-white hover:bg-white/[0.06]"
-                    }
-                  `}
+                  className="flex items-center justify-between gap-3 px-2.5 py-2 text-[14px] rounded-md text-[#C7C9CD] hover:text-white hover:bg-[#222222] transition-colors"
                 >
-                  {item.label}
-                </Link>
+                  <span className="flex items-center gap-3">
+                    <span className="text-[#9CA3AF]">{item.icon}</span>
+                    <span>{item.label}</span>
+                  </span>
+                  <svg className="size-3 text-[#71757D] shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                    <path
+                      fillRule="evenodd"
+                      d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5zm7.25-.75a.75.75 0 01.75-.75h3.5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0V6.31l-5.47 5.47a.75.75 0 01-1.06-1.06l5.47-5.47H12.25a.75.75 0 01-.75-.75z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </a>
               );
-            })}
-          </div>
-        )}
+            }
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center gap-3 px-2.5 py-2 text-[14px] rounded-md transition-colors ${
+                  active
+                    ? "bg-[#E5E5EA] text-[#0C0C0C] font-medium"
+                    : "text-[#C7C9CD] hover:text-white hover:bg-[#222222]"
+                }`}
+              >
+                <span className={active ? "text-[#0C0C0C]" : "text-[#9CA3AF]"}>{item.icon}</span>
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
       </div>
     );
   }
 
-  function renderDivider() {
-    // Soft hairline so clusters read as separated without a hard line.
-    return (
-      <div className={collapsed ? "mx-2 my-2" : "mx-3 my-2.5"}>
-        <div className="h-px bg-white/[0.06]" />
-      </div>
-    );
-  }
-
-  /* Toolbox — collapsible group of member tools, styled to match the
-   * lifecycle/ops accordion sections. Open state lives in `openSections`
-   * under the "Toolbox" key (seeded open). */
-  function renderToolbox() {
-    const open = openSections["Toolbox"] !== false;
-    const hasActive = toolboxItems.some((i) => isActive(i.href));
-    return (
-      <div className="mb-0.5">
-        <button
-          onClick={() => toggleSection("Toolbox")}
-          className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md hover:bg-white/[0.06] transition-colors group"
-        >
-          <div className="flex items-center gap-2">
-            <span className="text-[13px] text-[#A1A1AA] group-hover:text-white transition-colors">
-              Toolbox
-            </span>
-            {hasActive && !open && <span className="size-1.5 rounded-full bg-white" />}
-          </div>
-          <ChevronDownIcon
-            className={`size-3 text-white/30 group-hover:text-white/60 transition-all duration-200 ${
-              open ? "" : "-rotate-90"
-            }`}
-          />
-        </button>
-        {open && (
-          <div className="mt-0.5 mb-2 space-y-0.5">
-            {toolboxItems.map((item) => {
-              const active = isActive(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMobileOpen(false)}
-                  className={`block pl-9 pr-2.5 py-1.5 text-[13px] rounded-md transition-all duration-150 ${
-                    active
-                      ? "text-[#0E0F11] font-medium bg-white"
-                      : "text-[#A1A1AA] hover:text-white hover:bg-white/[0.06]"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    );
-  }
 
   return (
     <>
@@ -521,10 +459,10 @@ export function Sidebar() {
       {/* Mobile hamburger */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-white shadow-[var(--shadow-card)] md:hidden"
+        className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-[#181818] shadow-[var(--shadow-card)] md:hidden"
         aria-label="Open menu"
       >
-        <Bars3Icon className="size-5 text-[#1B1B1B]" />
+        <Bars3Icon className="size-5 text-[#E5E5EA]" />
       </button>
 
       {/* Mobile overlay */}
@@ -541,197 +479,88 @@ export function Sidebar() {
           ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0
           fixed md:relative z-50 md:z-0
-          h-screen bg-[#0E0F11] text-white
+          h-full bg-[#0C0C0C] text-[#E5E5EA] border-r border-[#2A2A2A] font-heading
           flex flex-col
           transition-all duration-200 ease-in-out
           ${collapsed ? "md:w-16" : "md:w-56"}
           w-56
         `}
       >
-        {/* Logo area */}
-        <div className="flex items-center justify-between px-4 h-14">
-          {!collapsed && (
-            <Link href="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-              <LogoMark size={18} />
-              <span className="text-[12px] font-medium text-white tracking-tight">Launchpad</span>
-              <span className="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]" title="Live" />
-            </Link>
-          )}
-          {collapsed && (
-            <Link href="/" className="mx-auto text-white" onClick={() => setMobileOpen(false)}>
-              <LogoMark size={18} />
-            </Link>
-          )}
+        {/* Floating collapse handle — sits at the top-right of the sidebar without
+            taking a full strip. Mobile uses the close icon variant. */}
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="absolute top-3 right-3 p-1 rounded-lg md:hidden text-[#E5E5EA] z-10"
+          aria-label="Close menu"
+        >
+          <XMarkIcon className="size-[18px]" />
+        </button>
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="absolute top-3 right-3 p-1 rounded-md hover:bg-[#222222] hidden md:block transition-colors z-10"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? <ChevronRightIcon className="size-3.5 text-[#71757D]" /> : <ChevronLeftIcon className="size-3.5 text-[#71757D]" />}
+        </button>
 
-          <button
-            onClick={() => setMobileOpen(false)}
-            className="p-1 rounded-lg md:hidden text-white"
-            aria-label="Close menu"
-          >
-            <XMarkIcon className="size-[18px]" />
-          </button>
-
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="p-1.5 rounded-md hover:bg-white/[0.08] hidden md:block transition-colors"
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {collapsed ? <ChevronRightIcon className="size-3.5 text-[#A1A1AA]" /> : <ChevronLeftIcon className="size-3.5 text-[#A1A1AA]" />}
-          </button>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {/* Search trigger — opens command palette on click or ⌘K */}
-          {!collapsed && (
-            <div className="px-3 mb-1 mt-1">
-              <button
-                onClick={() => setPaletteOpen(true)}
-                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-white/[0.04] hover:bg-white/[0.08] text-[13px] text-[#A1A1AA] hover:text-white transition-colors"
-              >
-                <svg className="size-3.5 shrink-0" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75">
-                  <circle cx="9" cy="9" r="6" />
-                  <path d="m14 14 3 3" strokeLinecap="round" />
-                </svg>
-                <span className="flex-1 text-left">Search</span>
-                <kbd className="text-[10px] font-mono text-[#71717A] tracking-tight">⌘K</kbd>
-              </button>
-            </div>
-          )}
-          {collapsed && (
-            <div className="px-3 mb-1 mt-1 flex justify-center">
-              <button
-                onClick={() => setPaletteOpen(true)}
-                className="p-2 rounded-lg hover:bg-white/[0.08] transition-colors"
-                title="Search (⌘K)"
-              >
-                <svg className="size-3.5 text-[#A1A1AA]" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="9" cy="9" r="6" />
-                  <path d="m14 14 3 3" strokeLinecap="round" />
-                </svg>
-              </button>
-            </div>
-          )}
-
-          {/* Pinned daily drivers. Workspace now covers pods + clients, so
-            * there are no standalone Pods/Clients pins. Members get a lean
-            * set; admins get the acquisition/ops extras (Offer, R&D). */}
-          <div className="px-3 mb-1 mt-2 space-y-0.5">
-            {renderTopLink(homeItem)}
+        {/* Navigation. Search trigger lives in the top bar — open via window
+            event dispatched there (or ⌘K from anywhere). */}
+        <nav className="flex-1 overflow-y-auto py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {/* GROUP 1 — My Tasks alone at top (where team lands first). */}
+          <div className="px-3 space-y-0.5">
             {renderTopLink(myWorkItem)}
-            {renderTopLink(workspaceItem)}
-            {role !== "team" && renderTopLink(offerItem)}
-            {renderTopLink(wikiItem)}
-            {role !== "team" && renderTopLink(rdItem)}
           </div>
 
-          {/* Pod identity tiles — quick jump into each pod with its
-            * brand colour. Sits between the pinned cluster and the
-            * lifecycle lanes so it reads as "the pods I work in" rather
-            * than another lane. */}
-          {pods.length > 0 && !collapsed && (
-            <div className="px-3 mt-4">
-              <div className="px-2.5 mb-0.5 text-[13px] text-[#A1A1AA]">
-                Pods
-              </div>
-              <div className="space-y-0.5">
-                {pods.map((p) => {
-                  const href = `/pods-v2/${p.id}`;
-                  const active = isActive(href);
-                  return (
-                    <Link
-                      key={p.id}
-                      href={href}
-                      onClick={() => setMobileOpen(false)}
-                      className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] transition-all ${
-                        active
-                          ? "bg-white text-[#0E0F11] font-medium"
-                          : "text-[#A1A1AA] hover:bg-white/[0.06] hover:text-white"
-                      }`}
-                    >
-                      <span
-                        className="size-4 rounded-[5px] flex items-center justify-center text-[10px] font-semibold shrink-0"
-                        style={{ backgroundColor: p.bg, color: p.fg }}
-                      >
-                        {p.tile}
-                      </span>
-                      <span className="truncate">{p.label}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-          {pods.length > 0 && collapsed && (
-            <div className="mt-3 mb-1 flex flex-col items-center gap-1.5">
-              {pods.map((p) => {
-                const href = `/pods-v2/${p.id}`;
-                return (
-                  <Link
-                    key={p.id}
-                    href={href}
-                    onClick={() => setMobileOpen(false)}
-                    title={p.tagline}
-                    className="size-5 rounded-md flex items-center justify-center text-[11px] font-semibold transition-transform hover:scale-110"
-                    style={{ backgroundColor: p.bg, color: p.fg }}
-                  >
-                    {p.tile}
-                  </Link>
-                );
-              })}
-            </div>
-          )}
+          {/* GROUP 1.5 — Shortcuts: one pinned link. Lands at /shortcuts whose
+              layout owns the tab strip; the dashboard layer keeps that strip
+              mounted across every underlying tool route. */}
+          <div className="px-3 space-y-0.5 mt-6">
+            {renderTopLink(shortcutsItem)}
+          </div>
 
-          {/* Toolbox — day-to-day tools for everyone (carried from Team Hub),
-            * collapsible like the lifecycle/ops sections. */}
-          {!collapsed && (
-            <>
-              {renderDivider()}
-              <div className="px-3">{renderToolbox()}</div>
-            </>
-          )}
-
-          {/* Admin-only: lifecycle + ops accordion sections. */}
+          {/* GROUP 2 — client lifecycle: Delivery → Workspace → Onboarding → Acquisition → Retention.
+              Workspace is parked here temporarily until the data layer is
+              migrated to real Supabase pods + tasks. */}
           {role !== "team" && (
-            <>
-              {renderDivider()}
-              <div className="px-3">
-                {visibleSections.filter((s) => s.group === "lifecycle").map((section) => renderSection(section))}
-              </div>
-              {renderDivider()}
-              <div className="px-3">
-                {visibleSections.filter((s) => s.group === "ops").map((section) => renderSection(section))}
-              </div>
-            </>
+            <div className="px-3 space-y-0.5 mt-6">
+              {renderTopLink(missionControlItem)}
+              {renderTopLink(kpiItem)}
+              {renderTopLink(workspaceItem)}
+              {renderTopLink(onboardingItem)}
+              {renderTopLink(pitchItem)}
+              {renderTopLink(feedbackItem)}
+            </div>
           )}
 
-          {/* Settings (admin). Agents shelved for now. */}
-          {!collapsed && role === "admin" && renderDivider()}
-          {!collapsed && role === "admin" && (
-            <div className="px-3 mt-1">
-              <Link
-                href="/settings"
-                onClick={() => setMobileOpen(false)}
-                className={`
-                  flex items-center gap-2 px-2.5 py-1.5 text-[13px] rounded-md transition-all duration-150
-                  ${pathname === "/settings"
-                    ? "text-[#0E0F11] font-medium bg-white"
-                    : "text-[#A1A1AA] hover:text-white hover:bg-white/[0.06]"
-                  }
-                `}
-              >
-                Settings
-              </Link>
+          {/* GROUP 3 — Training: knowledge / learning. Points at the wiki for now. */}
+          <div className="px-3 space-y-0.5 mt-6">
+            {renderTopLink(trainingItem)}
+          </div>
+
+          {/* GROUP 4 — Team: all team-facing utilities (Swipe File, Font Library,
+              Submit Invoice, Payments). */}
+          {!collapsed && (
+            <div className="px-3 space-y-0.5 mt-6">
+              {teamItems.map((item) => renderTopLink({ label: item.label, href: item.href, icon: item.icon as React.ReactNode }))}
+            </div>
+          )}
+
+          {/* GROUP 5 — admin-only bottom cluster: Finance (locked) directly
+              above Admin (locked). Both wear lock icons. */}
+          {role !== "team" && (
+            <div className="px-3 space-y-0.5 mt-6">
+              {renderTopLink(financeItem)}
+              {role === "admin" && renderTopLink(adminItem)}
             </div>
           )}
         </nav>
 
-        {/* Team Timezones */}
+        {/* Team Timezones — moved up off the footer. */}
         {!collapsed && (
-          <div className="mx-3 mb-2 px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/[0.04]">
+          <div className="mx-3 mt-3 mb-3 px-3 py-2 rounded-md bg-[#0C0C0C] border border-[#2A2A2A] shrink-0">
             <div className="flex items-center gap-1.5 mb-1.5">
-              <ClockIcon className="size-3 text-[#71717A]" />
-              <span className="text-[10px] font-medium uppercase tracking-wider text-[#71717A]">
+              <ClockIcon className="size-3 text-[#71757D]" />
+              <span className="text-[10px] font-medium uppercase tracking-wider text-[#71757D]">
                 Team
               </span>
             </div>
@@ -741,10 +570,10 @@ export function Sidebar() {
                   key={z.tz}
                   className="flex items-center justify-between text-[11px]"
                 >
-                  <span className="text-[#A1A1AA]">
+                  <span className="text-[#71757D]">
                     {z.flag} {z.label}
                   </span>
-                  <span className="tabular-nums text-[#71717A]">
+                  <span className="tabular-nums text-[#71757D]">
                     {now.toLocaleTimeString("en-GB", {
                       timeZone: z.tz,
                       hour: "2-digit",
@@ -758,18 +587,19 @@ export function Sidebar() {
           </div>
         )}
         {collapsed && (
-          <div className="py-3 flex justify-center">
-            <ClockIcon className="size-3.5 text-[#71717A]" />
+          <div className="py-2 flex justify-center shrink-0">
+            <ClockIcon className="size-3.5 text-[#71757D]" />
           </div>
         )}
 
-        {/* Footer */}
+        {/* Footer — version + Shelved link, with bottom padding so it clears the
+            QuickLinks floating button. */}
         {!collapsed && (
-          <div className="px-4 py-3 flex items-center gap-2">
+          <div className="px-4 pb-4 pt-1 flex items-center gap-2 shrink-0">
             <Link
               href="/changelog"
               onClick={() => setMobileOpen(false)}
-              className="text-[11px] text-[#71717A] hover:text-white transition-colors"
+              className="text-[11px] text-[#71757D] hover:text-white transition-colors"
             >
               Launchpad v1.0.0
             </Link>
@@ -777,7 +607,7 @@ export function Sidebar() {
             <Link
               href="/shelved"
               onClick={() => setMobileOpen(false)}
-              className="text-[11px] text-[#71717A] hover:text-white transition-colors"
+              className="text-[11px] text-[#71757D] hover:text-white transition-colors"
             >
               Shelved
             </Link>

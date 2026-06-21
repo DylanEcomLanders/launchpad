@@ -15,7 +15,7 @@ export function Card({
 }) {
   return (
     <div
-      className={`rounded-xl border border-[#E5E5EA] bg-white p-5 shadow-[var(--shadow-soft)] ${className}`}
+      className={`rounded-xl border border-[#2A2A2A] bg-[#181818] p-5 shadow-[var(--shadow-soft)] ${className}`}
     >
       {children}
     </div>
@@ -31,7 +31,7 @@ export function SectionHeader({
 }) {
   return (
     <div className="mb-3 flex items-center justify-between gap-2">
-      <h2 className="text-sm font-semibold text-[#1B1B1B]">{children}</h2>
+      <h2 className="text-sm font-semibold text-[#E5E5EA]">{children}</h2>
       {right}
     </div>
   );
@@ -55,26 +55,26 @@ export function StatTile({
         ? "text-rose-700"
         : tone === "emerald"
           ? "text-emerald-700"
-          : "text-[#1B1B1B]";
+          : "text-[#E5E5EA]";
   return (
-    <div className="rounded-xl border border-[#E5E5EA] bg-white px-4 py-3 shadow-[var(--shadow-soft)]">
-      <div className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+    <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] px-4 py-3 shadow-[var(--shadow-soft)]">
+      <div className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
         {label}
       </div>
       <div className={`mt-1 text-2xl font-semibold tabular-nums ${toneCls}`}>{value}</div>
-      {hint && <div className="mt-0.5 text-[11px] text-[#A0A0A0]">{hint}</div>}
+      {hint && <div className="mt-0.5 text-[11px] text-[#71757D]">{hint}</div>}
     </div>
   );
 }
 
 const PILL_TONES: Record<string, string> = {
-  default: "bg-[#F3F3F5] text-[#7A7A7A] border-[#E5E5EA]",
+  default: "bg-[#222222] text-[#71757D] border-[#2A2A2A]",
   blue: "bg-blue-50 text-blue-700 border-blue-200",
   purple: "bg-purple-50 text-purple-700 border-purple-200",
   emerald: "bg-emerald-50 text-emerald-700 border-emerald-200",
   rose: "bg-rose-50 text-rose-700 border-rose-200",
   amber: "bg-amber-50 text-amber-800 border-amber-200",
-  muted: "bg-[#F3F3F5] text-[#A0A0A0] border-[#E5E5EA]",
+  muted: "bg-[#222222] text-[#71757D] border-[#2A2A2A]",
 };
 
 export function Pill({
@@ -116,7 +116,7 @@ export function Meter({
             ? "bg-blue-500"
             : "bg-[#1B1B1B]";
   return (
-    <div className={`h-1.5 w-full overflow-hidden rounded-full bg-[#EDEDEF] ${className}`}>
+    <div className={`h-1.5 w-full overflow-hidden rounded-full bg-[#222222] ${className}`}>
       <div className={`h-full ${fill}`} style={{ width: `${Math.max(0, Math.min(100, pct))}%` }} />
     </div>
   );

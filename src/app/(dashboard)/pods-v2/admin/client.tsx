@@ -182,7 +182,7 @@ export default function AdminClient() {
   if (loading) {
     return (
       <div className="mx-auto max-w-7xl px-6 py-12 md:px-10">
-        <div className="text-sm text-[#7A7A7A]">Loading…</div>
+        <div className="text-sm text-[#71757D]">Loading…</div>
       </div>
     );
   }
@@ -192,7 +192,7 @@ export default function AdminClient() {
       <div className="flex items-center justify-between">
         <Link
           href="/pods-v2"
-          className="inline-flex items-center gap-1 text-xs text-[#7A7A7A] hover:text-[#1B1B1B]"
+          className="inline-flex items-center gap-1 text-xs text-[#71757D] hover:text-[#E5E5EA]"
         >
           <ChevronLeftIcon className="size-3.5" />
           All pods
@@ -200,11 +200,11 @@ export default function AdminClient() {
         <div className="flex items-center gap-3">
           <Link
             href="/pods-v2/pipeline"
-            className="text-[11px] uppercase tracking-wider text-[#7A7A7A] hover:text-[#1B1B1B]"
+            className="text-[11px] uppercase tracking-wider text-[#71757D] hover:text-[#E5E5EA]"
           >
             Pipeline →
           </Link>
-          <div className="text-[11px] uppercase tracking-wider text-[#A0A0A0]">
+          <div className="text-[11px] uppercase tracking-wider text-[#71757D]">
             Admin overlay
           </div>
         </div>
@@ -212,13 +212,13 @@ export default function AdminClient() {
 
       <div className="mt-2 flex items-end justify-between gap-4">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
             Cross-pod oversight
           </p>
-          <h1 className="mt-1 text-3xl font-medium tracking-tight">
+          <h1 className="mt-1 text-3xl font-medium">
             Pods admin
           </h1>
-          <p className="mt-1 max-w-2xl text-sm text-[#7A7A7A]">
+          <p className="mt-1 max-w-2xl text-sm text-[#71757D]">
             Where the system is stressed, who&apos;s overloaded, what&apos;s
             slipping. Refreshed live from pod data.
           </p>
@@ -231,16 +231,16 @@ export default function AdminClient() {
           <Link
             key={s.pod.id}
             href={`/pods-v2/${s.pod.id}`}
-            className="group rounded-2xl border border-[#E5E5EA] bg-white p-5 shadow-[var(--shadow-soft)] transition-all hover:border-[#C5C5C5] hover:shadow-[var(--shadow-card)]"
+            className="group rounded-2xl border border-[#2A2A2A] bg-[#181818] p-5 shadow-[var(--shadow-soft)] transition-all hover:border-[#C5C5C5] hover:shadow-[var(--shadow-card)]"
           >
             <div className="flex items-baseline justify-between">
               <div>
                 <h2 className="text-xl font-medium">
-                  <span className="text-[#1B1B1B]">{s.pod.name}</span>
+                  <span className="text-[#E5E5EA]">{s.pod.name}</span>
                 </h2>
-                <p className="text-[11px] text-[#7A7A7A]">{s.pod.tagline}</p>
+                <p className="text-[11px] text-[#71757D]">{s.pod.tagline}</p>
               </div>
-              <span className="text-[11px] tabular-nums text-[#A0A0A0]">
+              <span className="text-[11px] tabular-nums text-[#71757D]">
                 {s.utilisation}% util
               </span>
             </div>
@@ -303,14 +303,14 @@ export default function AdminClient() {
                   .join(" · ")
           }
         />
-        <div className="rounded-xl border border-[#E5E5EA] bg-white p-4 shadow-[var(--shadow-soft)]">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+        <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)]">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
             Friday cutoff
           </div>
           <div className="mt-1 text-2xl font-semibold tabular-nums">
             {fridayCutoff}
           </div>
-          <div className="mt-0.5 text-[11px] text-[#7A7A7A]">
+          <div className="mt-0.5 text-[11px] text-[#71757D]">
             After 5pm Friday, kickoffs push to next-next Monday
           </div>
         </div>
@@ -318,7 +318,7 @@ export default function AdminClient() {
 
       {/* MID-WEEK DETAIL */}
       {allMidWeek.length > 0 && (
-        <div className="mt-6 rounded-xl border border-rose-200 bg-rose-50 p-4">
+        <div className="mt-6 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4">
           <div className="flex items-center gap-2 text-sm font-semibold text-rose-900">
             <ExclamationTriangleIcon className="size-4" />
             Mid-week kickoff violations
@@ -329,13 +329,13 @@ export default function AdminClient() {
               return (
                 <div
                   key={project.id}
-                  className="flex items-center justify-between gap-2 rounded-lg border border-rose-200 bg-white px-3 py-2"
+                  className="flex items-center justify-between gap-2 rounded-lg border border-rose-200 bg-[#181818] px-3 py-2"
                 >
                   <div className="min-w-0">
                     <div className="truncate text-sm font-medium">
                       {project.name}
                     </div>
-                    <div className="text-[11px] text-[#7A7A7A]">
+                    <div className="text-[11px] text-[#71757D]">
                       {pod?.name} · {client?.name ?? ","}
                     </div>
                   </div>
@@ -354,12 +354,12 @@ export default function AdminClient() {
 
       {/* REVENUE TABLE */}
       <div className="mt-10">
-        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
           Revenue per pod
         </h2>
-        <div className="mt-3 overflow-hidden rounded-xl border border-[#E5E5EA] bg-white shadow-[var(--shadow-soft)]">
+        <div className="mt-3 overflow-hidden rounded-xl border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-soft)]">
           <table className="w-full text-sm">
-            <thead className="border-b border-[#E5E5EA] bg-[#F7F8FA] text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+            <thead className="border-b border-[#2A2A2A] bg-[#0C0C0C] text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
               <tr>
                 <th className="px-4 py-2.5 text-left">Pod</th>
                 <th className="px-4 py-2.5 text-right">Active project value</th>
@@ -369,18 +369,18 @@ export default function AdminClient() {
                 <th className="px-4 py-2.5 text-right">£ / pt used</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#EDEDEF]">
+            <tbody className="divide-y divide-[#2A2A2A]">
               {podStats.map((s) => {
                 const total = s.projectValue + s.retainerMrr;
                 const perPoint =
                   s.used > 0 ? Math.round(total / s.used) : 0;
                 return (
-                  <tr key={s.pod.id} className="hover:bg-[#F7F8FA]">
+                  <tr key={s.pod.id} className="hover:bg-[#0C0C0C]">
                     <td className="px-4 py-3">
-                      <div className="font-medium text-[#1B1B1B]">
+                      <div className="font-medium text-[#E5E5EA]">
                         {s.pod.name}
                       </div>
-                      <div className="text-[11px] text-[#7A7A7A]">
+                      <div className="text-[11px] text-[#71757D]">
                         {s.pod.tagline}
                       </div>
                     </td>
@@ -406,7 +406,7 @@ export default function AdminClient() {
                         {s.utilisation}%
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-[#7A7A7A]">
+                    <td className="px-4 py-3 text-right tabular-nums text-[#71757D]">
                       {perPoint > 0 ? CURRENCY(perPoint) : ","}
                     </td>
                   </tr>
@@ -415,28 +415,28 @@ export default function AdminClient() {
             </tbody>
           </table>
         </div>
-        <p className="mt-2 text-[11px] text-[#A0A0A0]">
+        <p className="mt-2 text-[11px] text-[#71757D]">
           A pod loaded with low £/pt = bad project mix. High £/pt = leverage.
         </p>
       </div>
 
       {/* THIS WEEK SHIPPING */}
       <div className="mt-10">
-        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
           Shipping this week
         </h2>
         <div className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-3">
           {shippingThisWeekByPod.length === 0 && (
-            <div className="rounded-xl border border-dashed border-[#E5E5EA] bg-white px-4 py-6 text-center text-sm text-[#A0A0A0] lg:col-span-3">
+            <div className="rounded-xl border border-dashed border-[#2A2A2A] bg-[#181818] px-4 py-6 text-center text-sm text-[#71757D] lg:col-span-3">
               Nothing shipping this week.
             </div>
           )}
           {shippingThisWeekByPod.map(({ pod, projects: ps }) => (
             <div
               key={pod.id}
-              className="rounded-xl border border-[#E5E5EA] bg-white p-4 shadow-[var(--shadow-soft)]"
+              className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)]"
             >
-              <div className="text-sm font-medium text-[#1B1B1B]">
+              <div className="text-sm font-medium text-[#E5E5EA]">
                 {pod.name}
               </div>
               <div className="mt-2 space-y-2">
@@ -445,14 +445,14 @@ export default function AdminClient() {
                   return (
                     <div
                       key={p.id}
-                      className="rounded-lg border border-[#E5E5EA] bg-white p-3"
+                      className="rounded-lg border border-[#2A2A2A] bg-[#181818] p-3"
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div className="min-w-0">
                           <div className="truncate text-sm font-medium">
                             {p.name}
                           </div>
-                          <div className="text-[11px] text-[#7A7A7A]">
+                          <div className="text-[11px] text-[#71757D]">
                             {client?.name ?? ","}
                           </div>
                         </div>
@@ -469,7 +469,7 @@ export default function AdminClient() {
             </div>
           ))}
         </div>
-        <p className="mt-2 text-[11px] text-[#A0A0A0]">
+        <p className="mt-2 text-[11px] text-[#71757D]">
           Spot-check Thursday morning before designs go out.
         </p>
       </div>
@@ -479,15 +479,15 @@ export default function AdminClient() {
 
       {/* CROSS-POD CLIENT ROSTER */}
       <div className="mt-10">
-        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
           Client roster · all pods
         </h2>
-        <p className="mt-0.5 text-xs text-[#7A7A7A]">
+        <p className="mt-0.5 text-xs text-[#71757D]">
           Click into a client to open their engagement.
         </p>
         <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {clients.length === 0 && (
-            <div className="rounded-xl border border-dashed border-[#E5E5EA] bg-white px-4 py-6 text-center text-xs text-[#A0A0A0] md:col-span-2 lg:col-span-3 xl:col-span-4">
+            <div className="rounded-xl border border-dashed border-[#2A2A2A] bg-[#181818] px-4 py-6 text-center text-xs text-[#71757D] md:col-span-2 lg:col-span-3 xl:col-span-4">
               No clients on roster.
             </div>
           )}
@@ -497,14 +497,14 @@ export default function AdminClient() {
               <Link
                 key={c.id}
                 href={`/engagements/${c.id}`}
-                className="group rounded-xl border border-[#E5E5EA] bg-white p-4 shadow-[var(--shadow-soft)] transition-colors hover:border-[#1B1B1B]/30"
+                className="group rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)] transition-colors hover:border-white/30"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <div className="text-sm font-semibold leading-tight">
                       {c.name}
                     </div>
-                    <div className="mt-0.5 text-[11px] text-[#7A7A7A]">
+                    <div className="mt-0.5 text-[11px] text-[#71757D]">
                       {pod?.name ?? "Unassigned"}
                     </div>
                   </div>
@@ -515,8 +515,8 @@ export default function AdminClient() {
                       c.retainer_tier === "8k"
                         ? "border-emerald-200 bg-emerald-50 text-emerald-800"
                         : c.retainer_tier === "12k"
-                          ? "border-amber-200 bg-amber-50 text-amber-800"
-                          : "border-[#E5E5EA] bg-[#F3F3F5] text-[#7A7A7A]"
+                          ? "border-amber-500/30 bg-amber-500/10 text-amber-300"
+                          : "border-[#2A2A2A] bg-[#222222] text-[#71757D]"
                     }`}
                   >
                     {c.retainer_tier === "none"
@@ -530,7 +530,7 @@ export default function AdminClient() {
                   )}
                 </div>
                 {c.retainer_tier !== "none" && (
-                  <div className="mt-2 text-[11px] text-[#7A7A7A]">
+                  <div className="mt-2 text-[11px] text-[#71757D]">
                     {RETAINER_SCOPE[c.retainer_tier]}
                   </div>
                 )}
@@ -599,10 +599,10 @@ function RosterEditor({ pods, onMutate }: { pods: Pod[]; onMutate: () => void })
     <div className="mt-10">
       <div className="flex items-baseline justify-between gap-3">
         <div>
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
             Pod roster
           </h2>
-          <p className="mt-0.5 text-xs text-[#7A7A7A]">
+          <p className="mt-0.5 text-xs text-[#71757D]">
             Click a member to select, then click another to swap. Use the move
             buttons to send a member to a different pod, or change role inline.
             Avatars and task assignments follow the member.
@@ -611,7 +611,7 @@ function RosterEditor({ pods, onMutate }: { pods: Pod[]; onMutate: () => void })
         {selected && (
           <button
             onClick={() => setSelected(null)}
-            className="rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-[11px] font-medium text-[#7A7A7A] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"
+            className="rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[11px] font-medium text-[#71757D] hover:border-white hover:text-[#E5E5EA]"
           >
             Cancel selection
           </button>
@@ -622,14 +622,14 @@ function RosterEditor({ pods, onMutate }: { pods: Pod[]; onMutate: () => void })
         {pods.map((pod) => (
           <div
             key={pod.id}
-            className="rounded-xl border border-[#E5E5EA] bg-white p-4 shadow-[var(--shadow-soft)]"
+            className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-4 shadow-[var(--shadow-soft)]"
           >
             <div className="mb-2 flex items-baseline justify-between">
               <div>
-                <div className="text-sm font-semibold text-[#1B1B1B]">
+                <div className="text-sm font-semibold text-[#E5E5EA]">
                   {pod.name}
                 </div>
-                <div className="text-[11px] text-[#7A7A7A]">{pod.tagline}</div>
+                <div className="text-[11px] text-[#71757D]">{pod.tagline}</div>
               </div>
             </div>
             <div className="space-y-2">
@@ -641,8 +641,8 @@ function RosterEditor({ pods, onMutate }: { pods: Pod[]; onMutate: () => void })
                     key={m.id}
                     className={`rounded-lg border px-2.5 py-2 transition-colors ${
                       isSelected
-                        ? "border-[#1B1B1B] bg-[#1B1B1B]/[0.03]"
-                        : "border-[#EDEDEF] bg-white hover:border-[#C5C5C5]"
+                        ? "border-white bg-[#1B1B1B]/[0.03]"
+                        : "border-[#2A2A2A] bg-[#181818] hover:border-[#C5C5C5]"
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -674,7 +674,7 @@ function RosterEditor({ pods, onMutate }: { pods: Pod[]; onMutate: () => void })
                                 setRenameValue("");
                               }
                             }}
-                            className="w-full rounded-md border border-[#1B1B1B] bg-white px-1.5 py-0.5 text-xs"
+                            className="w-full rounded-md border border-white bg-[#181818] px-1.5 py-0.5 text-xs"
                           />
                         ) : (
                           <button
@@ -683,12 +683,12 @@ function RosterEditor({ pods, onMutate }: { pods: Pod[]; onMutate: () => void })
                               setRenamingId(m.id);
                               setRenameValue(m.name);
                             }}
-                            className="block w-full truncate text-left text-sm font-medium text-[#1B1B1B] hover:underline"
+                            className="block w-full truncate text-left text-sm font-medium text-[#E5E5EA] hover:underline"
                             title="Click to rename"
                           >
                             {m.name}
                             {m.is_placeholder && (
-                              <span className="ml-1.5 rounded-md border border-amber-200 bg-amber-50 px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-800">
+                              <span className="ml-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-300">
                                 Placeholder
                               </span>
                             )}
@@ -699,7 +699,7 @@ function RosterEditor({ pods, onMutate }: { pods: Pod[]; onMutate: () => void })
                           onChange={(e) =>
                             changeRole(m.id, e.target.value as PodMemberRole)
                           }
-                          className="mt-0.5 w-full rounded-md border border-transparent bg-transparent px-0 py-0 text-[11px] text-[#7A7A7A] hover:border-[#E5E5EA] focus:border-[#1B1B1B] focus:outline-none"
+                          className="mt-0.5 w-full rounded-md border border-transparent bg-transparent px-0 py-0 text-[11px] text-[#71757D] hover:border-[#2A2A2A] focus:border-white focus:outline-none"
                         >
                           {(
                             [
@@ -724,7 +724,7 @@ function RosterEditor({ pods, onMutate }: { pods: Pod[]; onMutate: () => void })
                             key={other.id}
                             type="button"
                             onClick={() => moveTo(m.id, other.id)}
-                            className="rounded-md border border-[#E5E5EA] bg-white px-1.5 py-0.5 text-[10px] font-medium text-[#7A7A7A] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"
+                            className="rounded-md border border-[#2A2A2A] bg-[#181818] px-1.5 py-0.5 text-[10px] font-medium text-[#71757D] hover:border-white hover:text-[#E5E5EA]"
                           >
                             → {other.name}
                           </button>
@@ -734,7 +734,7 @@ function RosterEditor({ pods, onMutate }: { pods: Pod[]; onMutate: () => void })
                 );
               })}
               {pod.members.length === 0 && (
-                <div className="rounded-lg border border-dashed border-[#E5E5EA] bg-white px-3 py-4 text-center text-[11px] text-[#A0A0A0]">
+                <div className="rounded-lg border border-dashed border-[#2A2A2A] bg-[#181818] px-3 py-4 text-center text-[11px] text-[#71757D]">
                   No members. Move someone in from another pod.
                 </div>
               )}
@@ -742,7 +742,7 @@ function RosterEditor({ pods, onMutate }: { pods: Pod[]; onMutate: () => void })
           </div>
         ))}
       </div>
-      <p className="mt-2 text-[11px] text-[#A0A0A0]">
+      <p className="mt-2 text-[11px] text-[#71757D]">
         Tip: to swap two secondaries by timezone, click one, then click the
         other. Roles + pods swap in one click.
       </p>
@@ -765,8 +765,8 @@ function Stat({
     tone === "alert"
       ? "bg-rose-50 text-rose-800"
       : tone === "thursday"
-        ? "bg-[#1B1B1B]/[0.05] text-[#1B1B1B]"
-        : "bg-[#F7F8FA] text-[#1B1B1B]";
+        ? "bg-[#1B1B1B]/[0.05] text-[#E5E5EA]"
+        : "bg-[#0C0C0C] text-[#E5E5EA]";
   return (
     <div className={`rounded-lg px-2 py-2 ${cls}`}>
       <div className="text-[9px] font-semibold uppercase tracking-wider opacity-70">
@@ -793,7 +793,7 @@ function AlertCard({
       ? "border-rose-200 bg-rose-50 text-rose-900"
       : tone === "amber"
         ? "border-amber-200 bg-amber-50 text-amber-900"
-        : "border-[#E5E5EA] bg-white text-[#1B1B1B]";
+        : "border-[#2A2A2A] bg-[#181818] text-[#E5E5EA]";
   return (
     <div className={`rounded-xl border p-4 ${cls} shadow-[var(--shadow-soft)]`}>
       <div className="text-[10px] font-semibold uppercase tracking-wider opacity-70">

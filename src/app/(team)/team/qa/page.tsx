@@ -37,20 +37,20 @@ export default function TeamQAPage() {
       <div className="relative z-10 max-w-3xl mx-auto px-6 md:px-12 py-12 md:py-20">
         <div className="flex items-end justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">
+            <h1 className="text-2xl md:text-3xl font-bold mb-1">
               Dev QA Checklist
             </h1>
-            <p className="text-sm text-[#7A7A7A]">
+            <p className="text-sm text-[#71757D]">
               Evergreen reference — run through before handing anything to a client. Progress saves to this browser.
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <span className="text-xs font-medium text-[#7A7A7A]">
+            <span className="text-xs font-medium text-[#71757D]">
               {totalDone} / {total}
             </span>
             <button
               onClick={reset}
-              className="text-xs font-medium text-[#A0A0A0] hover:text-[#1B1B1B] transition-colors"
+              className="text-xs font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors"
             >
               Reset
             </button>
@@ -65,21 +65,21 @@ export default function TeamQAPage() {
             return (
               <div key={section.label}>
                 <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+                  <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
                     {section.label}
                   </h2>
-                  <span className="text-[10px] text-[#BBB] tabular-nums">
+                  <span className="text-[10px] text-[#9CA3AF] tabular-nums">
                     {sectionDone}/{section.count}
                   </span>
                 </div>
-                <div className="border border-[#E5E5EA] rounded-lg bg-white divide-y divide-[#F0F0F0]">
+                <div className="border border-[#2A2A2A] rounded-lg bg-[#181818] divide-y divide-[#2A2A2A]">
                   {DEV_HANDOFF_ITEMS.slice(section.startIndex, section.startIndex + section.count).map((item, offset) => {
                     const idx = section.startIndex + offset;
                     const isChecked = !!checked[idx];
                     return (
                       <label
                         key={idx}
-                        className="flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-[#FAFAFA] transition-colors"
+                        className="flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-[#0C0C0C] transition-colors"
                       >
                         <input
                           type="checkbox"
@@ -87,7 +87,7 @@ export default function TeamQAPage() {
                           onChange={() => toggle(idx)}
                           className="mt-0.5 size-4 accent-[#1B1B1B] cursor-pointer shrink-0"
                         />
-                        <span className={`text-sm leading-relaxed ${isChecked ? "text-[#AAA] line-through" : "text-[#1A1A1A]"}`}>
+                        <span className={`text-sm leading-relaxed ${isChecked ? "text-[#9CA3AF] line-through" : "text-[#E5E5EA]"}`}>
                           {item}
                         </span>
                       </label>

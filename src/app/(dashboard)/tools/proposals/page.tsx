@@ -235,10 +235,10 @@ export default function ProposalsPage() {
       <div className="relative z-10 max-w-4xl mx-auto px-6 md:px-12 py-16 md:py-24">
         {/* Header */}
         <div className="mb-10">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">
             Proposals
           </h1>
-          <p className="text-[#7A7A7A] text-sm">
+          <p className="text-[#71757D] text-sm">
             Generate unique proposal links for clients &mdash; track views and
             conversions
           </p>
@@ -246,8 +246,8 @@ export default function ProposalsPage() {
 
         {/* Generate form */}
         {viewMode === "active" && (
-          <div className="bg-[#F3F3F5] border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg p-5 mb-8">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
+          <div className="bg-[#222222] border border-[#2A2A2A] shadow-[var(--shadow-soft)] rounded-lg p-5 mb-8">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-4">
               Generate New Proposal
             </h2>
             <form onSubmit={handleGenerate} className="flex flex-col md:flex-row gap-3">
@@ -264,14 +264,14 @@ export default function ProposalsPage() {
               </div>
               <div className="w-full md:w-32">
                 <label className={labelClass}>Pricing Tier</label>
-                <div className="inline-flex rounded-md border border-[#E5E5EA] bg-white p-0.5 w-full">
+                <div className="inline-flex rounded-md border border-[#2A2A2A] bg-[#181818] p-0.5 w-full">
                   <button
                     type="button"
                     onClick={() => setTier(1)}
                     className={`flex-1 px-3 py-2 text-sm font-medium rounded transition-colors ${
                       tier === 1
-                        ? "bg-[#1B1B1B] text-white"
-                        : "text-[#7A7A7A] hover:text-[#1B1B1B]"
+                        ? "bg-white text-[#0C0C0C]"
+                        : "text-[#71757D] hover:text-[#E5E5EA]"
                     }`}
                   >
                     Tier 1
@@ -281,8 +281,8 @@ export default function ProposalsPage() {
                     onClick={() => setTier(2)}
                     className={`flex-1 px-3 py-2 text-sm font-medium rounded transition-colors ${
                       tier === 2
-                        ? "bg-[#1B1B1B] text-white"
-                        : "text-[#7A7A7A] hover:text-[#1B1B1B]"
+                        ? "bg-white text-[#0C0C0C]"
+                        : "text-[#71757D] hover:text-[#E5E5EA]"
                     }`}
                   >
                     Tier 2
@@ -306,7 +306,7 @@ export default function ProposalsPage() {
                 <button
                   type="submit"
                   disabled={generating || !clientName.trim()}
-                  className="w-full md:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-[#1B1B1B] text-white text-sm font-medium rounded-lg hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-full md:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-white text-[#0C0C0C] text-sm font-medium rounded-lg hover:bg-[#F3F4F6] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   {generating ? (
                     <ArrowPathIcon className="size-4 animate-spin" />
@@ -354,13 +354,13 @@ export default function ProposalsPage() {
         {/* Filters bar */}
         <div className="flex items-center justify-between mb-4 gap-3">
           {/* View mode toggle */}
-          <div className="inline-flex rounded-md border border-[#E5E5EA] bg-white p-0.5">
+          <div className="inline-flex rounded-md border border-[#2A2A2A] bg-[#181818] p-0.5">
             <button
               onClick={() => setViewMode("active")}
               className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
                 viewMode === "active"
-                  ? "bg-[#1B1B1B] text-white"
-                  : "text-[#7A7A7A] hover:text-[#1B1B1B]"
+                  ? "bg-white text-[#0C0C0C]"
+                  : "text-[#71757D] hover:text-[#E5E5EA]"
               }`}
             >
               Active
@@ -369,15 +369,15 @@ export default function ProposalsPage() {
               onClick={() => setViewMode("trash")}
               className={`px-3 py-1.5 text-xs font-medium rounded transition-colors flex items-center gap-1 ${
                 viewMode === "trash"
-                  ? "bg-[#1B1B1B] text-white"
-                  : "text-[#7A7A7A] hover:text-[#1B1B1B]"
+                  ? "bg-white text-[#0C0C0C]"
+                  : "text-[#71757D] hover:text-[#E5E5EA]"
               }`}
             >
               <TrashIcon className="size-3" />
               Trash
               {trashCount > 0 && (
                 <span className={`text-[10px] rounded-full px-1.5 py-0.5 ${
-                  viewMode === "trash" ? "bg-white/20" : "bg-[#EDEDEF]"
+                  viewMode === "trash" ? "bg-[#181818]/20" : "bg-[#222222]"
                 }`}>
                   {trashCount}
                 </span>
@@ -390,14 +390,14 @@ export default function ProposalsPage() {
             <button
               onClick={() => shiftMonth(1)}
               disabled={filterMonth === "all" || availableMonths.indexOf(filterMonth) === availableMonths.length - 1}
-              className="p-1 text-[#A0A0A0] hover:text-[#1B1B1B] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="p-1 text-[#71757D] hover:text-[#E5E5EA] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeftIcon className="size-3.5" />
             </button>
             <select
               value={filterMonth}
               onChange={(e) => setFilterMonth(e.target.value)}
-              className="px-2 py-1.5 text-xs border border-[#E5E5EA] rounded-md bg-white focus:outline-none focus:border-[#1B1B1B] transition-colors"
+              className="px-2 py-1.5 text-xs border border-[#2A2A2A] rounded-md bg-[#181818] focus:outline-none focus:border-[#C5C5C5] transition-colors"
             >
               <option value="all">All months</option>
               {availableMonths.map((m) => (
@@ -409,7 +409,7 @@ export default function ProposalsPage() {
             <button
               onClick={() => shiftMonth(-1)}
               disabled={filterMonth === "all" || availableMonths.indexOf(filterMonth) === 0}
-              className="p-1 text-[#A0A0A0] hover:text-[#1B1B1B] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="p-1 text-[#71757D] hover:text-[#E5E5EA] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRightIcon className="size-3.5" />
             </button>
@@ -418,7 +418,7 @@ export default function ProposalsPage() {
 
         {/* Trash info banner */}
         {viewMode === "trash" && (
-          <div className="mb-4 px-4 py-3 bg-[#F3F3F5] border border-[#E5E5EA] rounded-md text-xs text-[#7A7A7A]">
+          <div className="mb-4 px-4 py-3 bg-[#222222] border border-[#2A2A2A] rounded-md text-xs text-[#71757D]">
             Trashed proposals are permanently deleted after 30 days.
           </div>
         )}
@@ -426,47 +426,47 @@ export default function ProposalsPage() {
         {/* Proposals table */}
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <ArrowPathIcon className="size-5 animate-spin text-[#A0A0A0]" />
+            <ArrowPathIcon className="size-5 animate-spin text-[#71757D]" />
           </div>
         ) : filteredProposals.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-sm text-[#A0A0A0]">
+            <p className="text-sm text-[#71757D]">
               {viewMode === "trash"
                 ? "Trash is empty."
                 : "No proposals yet. Generate your first one above."}
             </p>
           </div>
         ) : (
-          <div className="bg-white border border-[#E5E5EA] shadow-[var(--shadow-soft)] rounded-lg overflow-hidden">
+          <div className="bg-[#181818] border border-[#2A2A2A] shadow-[var(--shadow-soft)] rounded-lg overflow-hidden">
             {/* Desktop table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-[#F3F3F5] border-b border-[#E5E5EA]">
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+                  <tr className="bg-[#222222] border-b border-[#2A2A2A]">
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
                       Client
                     </th>
-                    <th className="text-center px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+                    <th className="text-center px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
                       Tier
                     </th>
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
                       Created
                     </th>
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
                       Expires
                     </th>
-                    <th className="text-center px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+                    <th className="text-center px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
                       Viewed
                     </th>
-                    <th className="text-center px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+                    <th className="text-center px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
                       Converted
                     </th>
-                    <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+                    <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#EDEDEF]">
+                <tbody className="divide-y divide-[#2A2A2A]">
                   {filteredProposals.map((p) => {
                     const link = `${window.location.origin}/proposal/${p.token}`;
                     const isExpired = new Date(p.expires_at) < new Date();
@@ -474,7 +474,7 @@ export default function ProposalsPage() {
                     const isTrashed = !!p.trashed_at;
 
                     return (
-                      <tr key={p.id} className="hover:bg-[#F7F8FA]">
+                      <tr key={p.id} className="hover:bg-[#0C0C0C]">
                         <td className="px-4 py-3 font-medium">
                           {p.client_name}
                         </td>
@@ -487,13 +487,13 @@ export default function ProposalsPage() {
                             T{proposalTier}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-[#7A7A7A]">
+                        <td className="px-4 py-3 text-[#71757D]">
                           {fmtDate(p.created_at)}
                         </td>
                         <td className="px-4 py-3">
                           <span
                             className={
-                              isExpired ? "text-red-500" : "text-[#7A7A7A]"
+                              isExpired ? "text-red-500" : "text-[#71757D]"
                             }
                           >
                             {fmtDate(p.expires_at)}
@@ -504,7 +504,7 @@ export default function ProposalsPage() {
                           {p.viewed ? (
                             <span className="inline-flex items-center gap-1 text-xs">
                               <EyeIcon className="size-3.5 text-amber-500" />
-                              <span className="text-[#7A7A7A]">
+                              <span className="text-[#71757D]">
                                 {p.viewed_at ? fmtDateTime(p.viewed_at) : "Yes"}
                               </span>
                             </span>
@@ -527,7 +527,7 @@ export default function ProposalsPage() {
                               <>
                                 <button
                                   onClick={() => restoreProposal(p.id)}
-                                  className="inline-flex items-center gap-1 text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors px-2 py-1 rounded hover:bg-[#EDEDEF]"
+                                  className="inline-flex items-center gap-1 text-xs font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors px-2 py-1 rounded hover:bg-[#222222]"
                                   title="Restore"
                                 >
                                   <ArrowUturnLeftIcon className="size-3.5" />
@@ -546,7 +546,7 @@ export default function ProposalsPage() {
                               <>
                                 <button
                                   onClick={() => copyLink(link, p.id)}
-                                  className="inline-flex items-center gap-1 text-xs font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors px-2 py-1 rounded hover:bg-[#EDEDEF]"
+                                  className="inline-flex items-center gap-1 text-xs font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors px-2 py-1 rounded hover:bg-[#222222]"
                                 >
                                   {copiedId === p.id ? (
                                     <>
@@ -579,7 +579,7 @@ export default function ProposalsPage() {
             </div>
 
             {/* Mobile cards */}
-            <div className="md:hidden divide-y divide-[#EDEDEF]">
+            <div className="md:hidden divide-y divide-[#2A2A2A]">
               {filteredProposals.map((p) => {
                 const link = `${window.location.origin}/proposal/${p.token}`;
                 const isExpired = new Date(p.expires_at) < new Date();
@@ -610,7 +610,7 @@ export default function ProposalsPage() {
                         {isTrashed ? (
                           <button
                             onClick={() => restoreProposal(p.id)}
-                            className="p-1.5 text-[#7A7A7A] hover:text-[#1B1B1B]"
+                            className="p-1.5 text-[#71757D] hover:text-[#E5E5EA]"
                             title="Restore"
                           >
                             <ArrowUturnLeftIcon className="size-4" />
@@ -619,7 +619,7 @@ export default function ProposalsPage() {
                           <>
                             <button
                               onClick={() => copyLink(link, p.id)}
-                              className="p-1.5 text-[#7A7A7A] hover:text-[#1B1B1B]"
+                              className="p-1.5 text-[#71757D] hover:text-[#E5E5EA]"
                             >
                               {copiedId === p.id ? (
                                 <CheckIcon className="size-4 text-emerald-500" />
@@ -638,7 +638,7 @@ export default function ProposalsPage() {
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 text-xs text-[#A0A0A0]">
+                    <div className="flex items-center gap-4 text-xs text-[#71757D]">
                       <span>Created {fmtDate(p.created_at)}</span>
                       <span className={isExpired ? "text-red-500" : ""}>
                         Expires {fmtDate(p.expires_at)}
@@ -647,7 +647,7 @@ export default function ProposalsPage() {
                     </div>
                     <div className="flex items-center gap-4 text-xs">
                       {p.viewed ? (
-                        <span className="inline-flex items-center gap-1 text-[#7A7A7A]">
+                        <span className="inline-flex items-center gap-1 text-[#71757D]">
                           <EyeIcon className="size-3 text-amber-500" />
                           Viewed{" "}
                           {p.viewed_at ? fmtDateTime(p.viewed_at) : ""}
@@ -657,7 +657,7 @@ export default function ProposalsPage() {
                       )}
                     </div>
                     {isTrashed && p.trashed_at && (
-                      <div className="text-[10px] text-[#A0A0A0]">
+                      <div className="text-[10px] text-[#71757D]">
                         Trashed {fmtDate(p.trashed_at)} &middot; auto-deletes in{" "}
                         {Math.max(0, 30 - Math.floor((Date.now() - new Date(p.trashed_at).getTime()) / 86400000))} days
                       </div>

@@ -36,7 +36,7 @@ export function TypeBadge({ type, size = "md" }: { type: RdType; size?: "sm" | "
 export function ProgressBar({ pct }: { pct: number }) {
   const clamped = Math.max(0, Math.min(100, pct));
   return (
-    <div className="h-1.5 w-full rounded-full bg-[#EDEDEF] overflow-hidden">
+    <div className="h-1.5 w-full rounded-full bg-[#222222] overflow-hidden">
       <div
         className="h-full bg-[#1B1B1B] transition-all duration-300"
         style={{ width: `${clamped}%` }}
@@ -116,14 +116,14 @@ export function ModalShell({
         onClick={onClose}
       >
         <div
-          className={`bg-white rounded-2xl w-full ${maxWidth} shadow-xl`}
+          className={`bg-[#181818] rounded-2xl w-full ${maxWidth} shadow-xl`}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="border-b border-[#EDEDEF] px-6 py-4 flex items-center justify-between">
-            <h2 className="font-semibold text-[#1B1B1B]">{title}</h2>
+          <div className="border-b border-[#2A2A2A] px-6 py-4 flex items-center justify-between">
+            <h2 className="font-semibold text-[#E5E5EA]">{title}</h2>
             <button
               onClick={onClose}
-              className="text-[#7A7A7A] hover:text-[#1B1B1B] text-xl leading-none"
+              className="text-[#71757D] hover:text-[#E5E5EA] text-xl leading-none"
               aria-label="Close"
             >
               ×
@@ -234,14 +234,14 @@ export function NewInitiativeModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+            className="px-4 py-2 text-sm font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={busy || !name.trim()}
-            className="px-4 py-2 bg-[#1B1B1B] text-white text-sm font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40"
+            className="px-4 py-2 bg-[#E5E5EA] text-[#181818] text-sm font-medium rounded-lg hover:bg-white transition-colors disabled:opacity-40"
           >
             {busy ? "Creating..." : "Create"}
           </button>
@@ -350,14 +350,14 @@ export function AddIdeaModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+            className="px-4 py-2 text-sm font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={busy || !title.trim()}
-            className="px-4 py-2 bg-[#1B1B1B] text-white text-sm font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40"
+            className="px-4 py-2 bg-[#E5E5EA] text-[#181818] text-sm font-medium rounded-lg hover:bg-white transition-colors disabled:opacity-40"
           >
             {busy ? "Adding..." : "Add idea"}
           </button>
@@ -463,7 +463,7 @@ export function PromoteIdeaModal({
             placeholder="What does done look like?"
           />
         </div>
-        <p className="text-[11px] text-[#7A7A7A] leading-relaxed">
+        <p className="text-[11px] text-[#71757D] leading-relaxed">
           The original idea will be marked as promoted and stay linked from the
           new initiative's meta.
         </p>
@@ -471,14 +471,14 @@ export function PromoteIdeaModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+            className="px-4 py-2 text-sm font-medium text-[#71757D] hover:text-[#E5E5EA] transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={busy || !name.trim()}
-            className="px-4 py-2 bg-[#1B1B1B] text-white text-sm font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40"
+            className="px-4 py-2 bg-[#E5E5EA] text-[#181818] text-sm font-medium rounded-lg hover:bg-white transition-colors disabled:opacity-40"
           >
             {busy ? "Promoting..." : "Promote"}
           </button>

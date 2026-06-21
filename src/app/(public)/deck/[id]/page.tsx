@@ -59,8 +59,8 @@ export default function DeckPage() {
       .catch(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center"><div className="animate-spin size-6 border-2 border-white/20 border-t-white rounded-full" /></div>;
-  if (!deck) return <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center text-white/50 text-sm">Deck not found</div>;
+  if (loading) return <div className="min-h-screen bg-[#080808] flex items-center justify-center"><div className="animate-spin size-6 border-2 border-white/20 border-t-white rounded-full" /></div>;
+  if (!deck) return <div className="min-h-screen bg-[#080808] flex items-center justify-center text-white/50 text-sm">Deck not found</div>;
 
   const gap = deck.monthly_traffic * (deck.benchmark_cvr / 100 - deck.current_cvr / 100) * deck.aov;
   const annual = gap * 12;
@@ -216,7 +216,7 @@ export default function DeckPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white">
+    <div className="min-h-screen bg-[#080808] text-white">
       {/* Slide */}
       <div className="h-screen flex flex-col">
         <div className="flex-1 flex items-center justify-center">

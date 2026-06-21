@@ -36,7 +36,7 @@ export function VatModePicker({ mode, onChange, clientCountry }: Props) {
 
   return (
     <div>
-      <div className="inline-flex w-full rounded-lg border border-[#E5E5EA] overflow-hidden bg-white">
+      <div className="inline-flex w-full rounded-lg border border-[#2A2A2A] overflow-hidden bg-[#181818]">
         {options.map((opt) => {
           const active = mode === opt.value;
           return (
@@ -46,8 +46,8 @@ export function VatModePicker({ mode, onChange, clientCountry }: Props) {
               onClick={() => onChange(opt.value)}
               className={`flex-1 px-3 py-2.5 text-sm font-medium transition-colors ${
                 active
-                  ? "bg-[#1B1B1B] text-white"
-                  : "bg-white text-[#1B1B1B] hover:bg-[#F7F8FA]"
+                  ? "bg-white text-[#0C0C0C]"
+                  : "bg-[#181818] text-[#E5E5EA] hover:bg-[#0C0C0C]"
               }`}
             >
               {opt.label}
@@ -55,7 +55,7 @@ export function VatModePicker({ mode, onChange, clientCountry }: Props) {
           );
         })}
       </div>
-      <p className="text-[11px] text-[#7A7A7A] mt-2">
+      <p className="text-[11px] text-[#71757D] mt-2">
         {options.find((o) => o.value === mode)?.sub}
       </p>
     </div>

@@ -20,12 +20,14 @@ import {
 } from "@heroicons/react/24/outline";
 import { PAGE_LABEL, type PageType } from "@/lib/pods-v2/types";
 
+// Dark-mode chip palette — translucent accent bg so the badge reads as a hint,
+// not a flood-coloured pill. Text is the saturated accent for legibility.
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-  pending: { label: "Pending", color: "#F59E0B", bg: "#FEF3C7" },
-  "in-progress": { label: "In Progress", color: "#3B82F6", bg: "#DBEAFE" },
-  approved: { label: "Approved", color: "#10B981", bg: "#D1FAE5" },
-  rejected: { label: "Rejected", color: "#EF4444", bg: "#FEE2E2" },
-  archived: { label: "Archived", color: "#999", bg: "#F0F0F0" },
+  pending: { label: "Pending", color: "#FBBF24", bg: "rgba(245, 158, 11, 0.15)" },
+  "in-progress": { label: "In Progress", color: "#60A5FA", bg: "rgba(59, 130, 246, 0.15)" },
+  approved: { label: "Approved", color: "#34D399", bg: "rgba(16, 185, 129, 0.15)" },
+  rejected: { label: "Rejected", color: "#F87171", bg: "rgba(239, 68, 68, 0.15)" },
+  archived: { label: "Archived", color: "#9CA3AF", bg: "rgba(156, 163, 175, 0.12)" },
 };
 
 /* Build portal-shaped scope items from a submission's PM-captured
@@ -157,21 +159,21 @@ export default function OnboardingInboxPage() {
   return (
     <div className="flex h-screen overflow-hidden">
       {/* List */}
-      <div className="w-80 shrink-0 border-r border-[#E8E8E8] flex flex-col">
-        <div className="px-5 py-4 border-b border-[#E8E8E8]">
-          <h1 className="text-sm font-bold text-[#1A1A1A]">Onboarding Inbox</h1>
-          <p className="text-[10px] text-[#AAA] mt-0.5">{pendingCount} awaiting action</p>
+      <div className="w-80 shrink-0 border-r border-[#2A2A2A] flex flex-col">
+        <div className="px-5 py-4 border-b border-[#2A2A2A]">
+          <h1 className="text-sm font-bold text-[#E5E5EA]">Onboarding Inbox</h1>
+          <p className="text-[10px] text-[#9CA3AF] mt-0.5">{pendingCount} awaiting action</p>
         </div>
 
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center py-10">
-              <div className="size-5 border-2 border-[#E8E8E8] border-t-[#1B1B1B] rounded-full animate-spin" />
+              <div className="size-5 border-2 border-[#2A2A2A] border-t-[#1B1B1B] rounded-full animate-spin" />
             </div>
           ) : activeSubmissions.length === 0 ? (
             <div className="text-center py-10 px-4">
-              <p className="text-sm text-[#999]">No submissions yet</p>
-              <p className="text-xs text-[#CCC] mt-1">Share the onboarding form with new clients</p>
+              <p className="text-sm text-[#71757D]">No submissions yet</p>
+              <p className="text-xs text-[#C7C9CD] mt-1">Share the onboarding form with new clients</p>
               <Link href="/onboard" target="_blank" className="inline-flex items-center gap-1.5 mt-3 text-xs text-blue-600 hover:underline">
                 View form <ArrowTopRightOnSquareIcon className="size-3" />
               </Link>
@@ -187,14 +189,14 @@ export default function OnboardingInboxPage() {
                 <button
                   key={sub.id}
                   onClick={() => setSelected(sub)}
-                  className={`w-full text-left px-5 py-3.5 border-b border-[#F0F0F0] transition-colors ${
-                    isSelected ? "bg-[#F5F5F5]" : "hover:bg-[#FAFAFA]"
+                  className={`w-full text-left px-5 py-3.5 border-b border-[#2A2A2A] transition-colors ${
+                    isSelected ? "bg-[#222222]" : "hover:bg-[#0C0C0C]"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-[#1A1A1A] truncate">{sub.company_name}</p>
-                      <p className="text-[11px] text-[#999] truncate mt-0.5">{sub.website_url}</p>
+                      <p className="text-sm font-medium text-[#E5E5EA] truncate">{sub.company_name}</p>
+                      <p className="text-[11px] text-[#71757D] truncate mt-0.5">{sub.website_url}</p>
                     </div>
                     <span
                       className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0"
@@ -204,10 +206,10 @@ export default function OnboardingInboxPage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-3 mt-2">
-                    <span className="text-[10px] text-[#BBB]">
+                    <span className="text-[10px] text-[#9CA3AF]">
                       {new Date(sub.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                     </span>
-                    <span className="text-[10px] text-[#BBB]">{checkCount}/5 checks</span>
+                    <span className="text-[10px] text-[#9CA3AF]">{checkCount}/5 checks</span>
                   </div>
                 </button>
               );
@@ -216,11 +218,11 @@ export default function OnboardingInboxPage() {
         </div>
 
         {/* Archive toggle + form link */}
-        <div className="px-5 py-3 border-t border-[#E8E8E8] space-y-2">
+        <div className="px-5 py-3 border-t border-[#2A2A2A] space-y-2">
           {archivedCount > 0 && (
             <button
               onClick={() => setShowArchived(!showArchived)}
-              className="w-full text-[10px] text-[#AAA] hover:text-[#1A1A1A] transition-colors"
+              className="w-full text-[10px] text-[#9CA3AF] hover:text-[#E5E5EA] transition-colors"
             >
               {showArchived ? "Hide archived" : `Show archived (${archivedCount})`}
             </button>
@@ -228,7 +230,7 @@ export default function OnboardingInboxPage() {
           <Link
             href="/onboard"
             target="_blank"
-            className="flex items-center justify-center gap-1.5 w-full py-2 text-xs font-medium text-[#777] border border-[#E8E8E8] rounded-lg hover:bg-[#FAFAFA] transition-colors"
+            className="flex items-center justify-center gap-1.5 w-full py-2 text-xs font-medium text-[#9CA3AF] border border-[#2A2A2A] rounded-lg hover:bg-[#0C0C0C] transition-colors"
           >
             <ArrowTopRightOnSquareIcon className="size-3.5" />
             Open Onboarding Form
@@ -242,7 +244,7 @@ export default function OnboardingInboxPage() {
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <ClockIcon className="size-10 text-[#E8E8E8] mx-auto mb-3" />
-              <p className="text-sm text-[#AAA]">Select a submission to review</p>
+              <p className="text-sm text-[#9CA3AF]">Select a submission to review</p>
             </div>
           </div>
         ) : (
@@ -250,11 +252,11 @@ export default function OnboardingInboxPage() {
             {/* Header */}
             <div className="flex items-start justify-between mb-6">
               <div>
-                <h2 className="text-xl font-bold text-[#1A1A1A]">{selected.company_name}</h2>
+                <h2 className="text-xl font-bold text-[#E5E5EA]">{selected.company_name}</h2>
                 <a href={selected.website_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">
                   {selected.website_url}
                 </a>
-                <p className="text-[10px] text-[#BBB] mt-1">
+                <p className="text-[10px] text-[#9CA3AF] mt-1">
                   Submitted {new Date(selected.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                 </p>
               </div>
@@ -262,7 +264,7 @@ export default function OnboardingInboxPage() {
                 {selected.status !== "archived" && (
                   <button
                     onClick={() => handleArchive(selected.id)}
-                    className="px-2.5 py-1.5 text-[10px] font-medium text-[#999] hover:text-[#1A1A1A] hover:bg-[#F5F5F5] rounded-lg transition-colors"
+                    className="px-2.5 py-1.5 text-[10px] font-medium text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#222222] rounded-lg transition-colors"
                   >
                     Archive
                   </button>
@@ -280,47 +282,47 @@ export default function OnboardingInboxPage() {
                     <button onClick={() => handleDelete(selected.id)} className="px-2.5 py-1.5 text-[10px] font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
                       Confirm
                     </button>
-                    <button onClick={() => setConfirmDelete(null)} className="px-2.5 py-1.5 text-[10px] text-[#999] hover:text-[#1A1A1A] transition-colors">
+                    <button onClick={() => setConfirmDelete(null)} className="px-2.5 py-1.5 text-[10px] text-[#71757D] hover:text-[#E5E5EA] transition-colors">
                       Cancel
                     </button>
                   </div>
                 ) : (
                   <button
                     onClick={() => setConfirmDelete(selected.id)}
-                    className="px-2.5 py-1.5 text-[10px] font-medium text-[#CCC] hover:text-red-500 rounded-lg transition-colors"
+                    className="px-2.5 py-1.5 text-[10px] font-medium text-[#C7C9CD] hover:text-red-500 rounded-lg transition-colors"
                   >
                     Delete
                   </button>
                 )}
-                <button onClick={() => setSelected(null)} className="p-1 text-[#CCC] hover:text-[#1A1A1A]">
+                <button onClick={() => setSelected(null)} className="p-1 text-[#C7C9CD] hover:text-[#E5E5EA]">
                   <XMarkIcon className="size-5" />
                 </button>
               </div>
             </div>
 
             {/* PM Checklist */}
-            <div className="mb-8 p-5 bg-[#FAFAFA] border border-[#E8E8E8] rounded-xl">
-              <p className="text-xs font-semibold text-[#1A1A1A] mb-3">PM Checklist</p>
+            <div className="mb-8 p-5 bg-[#0C0C0C] border border-[#2A2A2A] rounded-xl">
+              <p className="text-xs font-semibold text-[#E5E5EA] mb-3">PM Checklist</p>
               <div className="space-y-2">
                 {checklistItems.map((item) => {
                   const checked = selected.pm_checklist?.[item.key] || false;
                   return (
                     <div key={item.key} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                      checked ? "border-emerald-200 bg-emerald-50/50" : "border-[#E8E8E8] bg-white hover:border-[#CCC]"
+                      checked ? "border-emerald-200 bg-emerald-50/50" : "border-[#2A2A2A] bg-[#181818] hover:border-[#383838]"
                     }`}>
                       <label className="flex items-center gap-3 flex-1 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={checked}
                           onChange={() => toggleChecklist(selected.id, item.key)}
-                          className="size-4 rounded border-[#CCC] text-emerald-600 focus:ring-0"
+                          className="size-4 rounded border-[#383838] text-emerald-600 focus:ring-0"
                         />
-                        <span className={`text-sm ${checked ? "text-emerald-700" : "text-[#555]"}`}>{item.label}</span>
+                        <span className={`text-sm ${checked ? "text-emerald-700" : "text-[#C7C9CD]"}`}>{item.label}</span>
                       </label>
                       {item.hasInfo && (
                         <button
                           onClick={(e) => { e.stopPropagation(); setShowAccessInfo(!showAccessInfo); }}
-                          className="p-1 text-[#CCC] hover:text-[#1A1A1A] transition-colors shrink-0"
+                          className="p-1 text-[#C7C9CD] hover:text-[#E5E5EA] transition-colors shrink-0"
                           title="View access requirements"
                         >
                           <InformationCircleIcon className="size-4" />
@@ -370,19 +372,19 @@ export default function OnboardingInboxPage() {
                     if (selected) updateSubmission(selected.id, { pm_notes: selected.pm_notes });
                   }}
                   placeholder="Internal notes..."
-                  className="w-full text-xs px-3 py-2.5 border border-[#E8E8E8] rounded-lg focus:outline-none focus:border-[#999] placeholder:text-[#CCC] min-h-[60px] resize-y"
+                  className="w-full text-xs px-3 py-2.5 border border-[#2A2A2A] rounded-lg focus:outline-none focus:border-[#999] placeholder:text-[#C7C9CD] min-h-[60px] resize-y"
                 />
               </div>
 
               {/* Deliverables scope — captured by the PM, confirmed at assign-to-pod */}
-              <div className="mt-4 p-3 bg-white border border-[#E8E8E8] rounded-lg">
+              <div className="mt-4 p-3 bg-[#181818] border border-[#2A2A2A] rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-semibold text-[#1A1A1A]">Deliverables scope</p>
-                  <span className="text-[10px] text-[#999]">
+                  <p className="text-xs font-semibold text-[#E5E5EA]">Deliverables scope</p>
+                  <span className="text-[10px] text-[#71757D]">
                     {(selected.deliverables?.length || 0)} {(selected.deliverables?.length || 0) === 1 ? "item" : "items"}
                   </span>
                 </div>
-                <p className="text-[10px] text-[#888] mb-3">
+                <p className="text-[10px] text-[#9CA3AF] mb-3">
                   Pages to spin up when this onboarding is assigned to a pod. Multiple of the same type are fine — give each a label.
                 </p>
                 <div className="space-y-1.5">
@@ -399,7 +401,7 @@ export default function OnboardingInboxPage() {
                             return { ...prev, deliverables: next };
                           });
                         }}
-                        className="rounded-md border border-[#E8E8E8] bg-white px-2 py-1 text-[11px]"
+                        className="rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[11px]"
                       >
                         {(Object.keys(PAGE_LABEL) as PageType[]).map((p) => (
                           <option key={p} value={p}>
@@ -424,7 +426,7 @@ export default function OnboardingInboxPage() {
                           });
                         }}
                         placeholder="Variant label (e.g. Lavender oil)"
-                        className="flex-1 rounded-md border border-[#E8E8E8] bg-white px-2 py-1 text-[11px] placeholder:text-[#CCC]"
+                        className="flex-1 rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[11px] placeholder:text-[#C7C9CD]"
                       />
                       <button
                         onClick={() => {
@@ -435,7 +437,7 @@ export default function OnboardingInboxPage() {
                             return { ...prev, deliverables: next };
                           });
                         }}
-                        className="p-1 text-[#CCC] hover:text-rose-600"
+                        className="p-1 text-[#C7C9CD] hover:text-rose-600"
                         title="Remove"
                       >
                         <TrashIcon className="size-3.5" />
@@ -455,7 +457,7 @@ export default function OnboardingInboxPage() {
                       return { ...prev, deliverables: next };
                     });
                   }}
-                  className="mt-2 inline-flex items-center gap-1 rounded-md border border-dashed border-[#E8E8E8] px-2 py-1 text-[11px] text-[#666] hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
+                  className="mt-2 inline-flex items-center gap-1 rounded-md border border-dashed border-[#2A2A2A] px-2 py-1 text-[11px] text-[#9CA3AF] hover:border-[#1A1A1A] hover:text-[#E5E5EA]"
                 >
                   <PlusIcon className="size-3" />
                   Add deliverable
@@ -615,7 +617,7 @@ export default function OnboardingInboxPage() {
                             setSaving(false);
                           }}
                           disabled={saving || !hasDeliverables}
-                          className="w-full flex items-center gap-3 px-4 py-3 bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="w-full flex items-center gap-3 px-4 py-3 bg-white text-[#0C0C0C] rounded-lg hover:bg-[#F3F4F6] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                           title={hasDeliverables ? "" : "Add at least one deliverable to the scope panel above"}
                         >
                           <svg className="size-4 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
@@ -628,26 +630,26 @@ export default function OnboardingInboxPage() {
                         <button
                           onClick={handleCreateNewPortal}
                           disabled={saving}
-                          className="w-full flex items-center gap-3 px-4 py-3 bg-white border border-[#E5E5EA] text-[#1B1B1B] rounded-lg hover:bg-[#F5F5F5] transition-colors disabled:opacity-50"
+                          className="w-full flex items-center gap-3 px-4 py-3 bg-[#181818] border border-[#2A2A2A] text-[#E5E5EA] rounded-lg hover:bg-[#222222] transition-colors disabled:opacity-50"
                         >
                           <svg className="size-4 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
                           <div className="text-left">
                             <p className="text-sm font-semibold">{saving ? "Creating..." : "Create Legacy Portal"}</p>
-                            <p className="text-[10px] text-[#999]">Old client portal — kept while migration is in flight</p>
+                            <p className="text-[10px] text-[#71757D]">Old client portal — kept while migration is in flight</p>
                           </div>
                         </button>
 
-                        <div className="flex items-center gap-3 text-[10px] text-[#CCC]">
-                          <div className="flex-1 h-px bg-[#E8E8E8]" />
+                        <div className="flex items-center gap-3 text-[10px] text-[#C7C9CD]">
+                          <div className="flex-1 h-px bg-[#2A2A2A]" />
                           <span>or assign to existing</span>
-                          <div className="flex-1 h-px bg-[#E8E8E8]" />
+                          <div className="flex-1 h-px bg-[#2A2A2A]" />
                         </div>
 
                         <div className="flex gap-2">
                           <select
                             value={selectedPortalId}
                             onChange={(e) => setSelectedPortalId(e.target.value)}
-                            className="flex-1 px-3 py-2.5 bg-white border border-[#E8E8E8] rounded-lg text-xs focus:outline-none focus:border-[#1B1B1B] appearance-none"
+                            className="flex-1 px-3 py-2.5 bg-[#181818] border border-[#2A2A2A] rounded-lg text-xs focus:outline-none focus:border-[#C5C5C5] appearance-none"
                           >
                             <option value="">Select portal...</option>
                             {portals.map((p) => (
@@ -683,7 +685,7 @@ export default function OnboardingInboxPage() {
                           assigned_by: undefined,
                         });
                       }}
-                      className="text-[11px] font-medium text-[#666] hover:text-[#1B1B1B] hover:bg-[#F5F5F5] px-2 py-1 rounded"
+                      className="text-[11px] font-medium text-[#9CA3AF] hover:text-[#E5E5EA] hover:bg-[#222222] px-2 py-1 rounded"
                       title="Move back to pending"
                     >
                       ↩ Send back to pending
@@ -724,7 +726,7 @@ export default function OnboardingInboxPage() {
                             getPortals().then(setPortals).catch(() => {});
                             alert(`Pushed ${newOnes.length} deliverable${newOnes.length === 1 ? "" : "s"} to the portal.`);
                           }}
-                          className="inline-flex items-center gap-1.5 rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-[11px] font-medium text-[#1B1B1B] hover:border-[#1B1B1B]"
+                          className="inline-flex items-center gap-1.5 rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[11px] font-medium text-[#E5E5EA] hover:border-white"
                           title="Push current deliverables to the linked portal's scope"
                         >
                           ↻ Sync deliverables to portal
@@ -795,9 +797,9 @@ export default function OnboardingInboxPage() {
                 <DetailSection title="Uploaded Files">
                   <div className="space-y-1.5">
                     {selected.uploaded_files?.map((f, i) => (
-                      <a key={i} href={f.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 bg-white border border-[#E8E8E8] rounded-lg text-xs text-[#555] hover:border-[#1B1B1B] transition-colors">
+                      <a key={i} href={f.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 bg-[#181818] border border-[#2A2A2A] rounded-lg text-xs text-[#C7C9CD] hover:border-white transition-colors">
                         <span className="truncate flex-1">{f.originalName}</span>
-                        <ArrowTopRightOnSquareIcon className="size-3.5 text-[#999] shrink-0" />
+                        <ArrowTopRightOnSquareIcon className="size-3.5 text-[#71757D] shrink-0" />
                       </a>
                     ))}
                   </div>
@@ -820,7 +822,7 @@ export default function OnboardingInboxPage() {
 function DetailSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-[#BBB] mb-3">{title}</h3>
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-[#9CA3AF] mb-3">{title}</h3>
       <div className="space-y-3">{children}</div>
     </div>
   );
@@ -830,11 +832,11 @@ function DetailField({ label, value, link }: { label: string; value: string; lin
   if (!value) return null;
   return (
     <div>
-      {label && <p className="text-[11px] font-medium text-[#999] mb-0.5">{label}</p>}
+      {label && <p className="text-[11px] font-medium text-[#71757D] mb-0.5">{label}</p>}
       {link ? (
         <a href={value} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline break-all">{value}</a>
       ) : (
-        <p className="text-sm text-[#444] whitespace-pre-wrap">{value}</p>
+        <p className="text-sm text-[#C7C9CD] whitespace-pre-wrap">{value}</p>
       )}
     </div>
   );

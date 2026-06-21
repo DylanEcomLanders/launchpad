@@ -87,13 +87,13 @@ export function InvoicePdfModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden"
+        className="bg-[#181818] rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="flex items-center justify-between px-5 py-3 border-b border-[#E5E5EA]">
+        <header className="flex items-center justify-between px-5 py-3 border-b border-[#2A2A2A]">
           <div>
-            <h3 className="text-sm font-semibold text-[#1B1B1B]">{title}</h3>
-            <p className="text-[11px] text-[#7A7A7A]">{filename}</p>
+            <h3 className="text-sm font-semibold text-[#E5E5EA]">{title}</h3>
+            <p className="text-[11px] text-[#71757D]">{filename}</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -107,14 +107,14 @@ export function InvoicePdfModal({
                 window.document.body.removeChild(a);
               }}
               disabled={!url}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1B1B1B] text-white text-sm rounded-lg hover:opacity-90 disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-[#0C0C0C] text-sm rounded-lg hover:opacity-90 disabled:opacity-40"
             >
               <ArrowDownTrayIcon className="size-4" />
               Download
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-[#7A7A7A] hover:text-[#1B1B1B] rounded-lg hover:bg-[#F7F8FA]"
+              className="p-1.5 text-[#71757D] hover:text-[#E5E5EA] rounded-lg hover:bg-[#0C0C0C]"
               aria-label="Close"
             >
               <XMarkIcon className="size-5" />
@@ -122,9 +122,9 @@ export function InvoicePdfModal({
           </div>
         </header>
 
-        <div className="flex-1 bg-[#F7F8FA] overflow-hidden">
+        <div className="flex-1 bg-[#0C0C0C] overflow-hidden">
           {rendering && !url && (
-            <div className="h-full flex items-center justify-center text-sm text-[#7A7A7A]">
+            <div className="h-full flex items-center justify-center text-sm text-[#71757D]">
               <ArrowPathIcon className="size-4 animate-spin mr-2" />
               Rendering PDF...
             </div>
@@ -140,7 +140,7 @@ export function InvoicePdfModal({
             // Firefox ignores them but the preview still renders.
             <iframe
               src={`${url}#toolbar=0&navpanes=0&view=FitH`}
-              className="w-full h-full bg-white"
+              className="w-full h-full bg-[#181818]"
               title={title}
             />
           )}

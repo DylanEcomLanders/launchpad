@@ -111,27 +111,27 @@ export default function FinanceSettingsPage() {
   }
 
   if (loading || !profile) {
-    return <div className="h-48 bg-[#F7F8FA] rounded-xl animate-pulse" />;
+    return <div className="h-48 bg-[#0C0C0C] rounded-xl animate-pulse" />;
   }
 
   return (
     <div className="max-w-3xl">
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-[#1B1B1B] mb-1">Company profile</h2>
-        <p className="text-sm text-[#7A7A7A]">
+        <h2 className="text-xl font-semibold text-[#E5E5EA] mb-1">Company profile</h2>
+        <p className="text-sm text-[#71757D]">
           These details appear on every invoice you generate and feed the dashboard tax logic.
         </p>
       </div>
 
       {error && (
-        <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+        <div className="mb-6 px-4 py-3 bg-[#7F1D1D]/20 border border-[#991B1B] rounded-lg text-sm text-[#FCA5A5]">
           {error}
         </div>
       )}
 
       <div className="space-y-8">
         <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-4">
             Legal
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -184,18 +184,18 @@ export default function FinanceSettingsPage() {
         </section>
 
         <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-4">
             VAT
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className={labelClass}>VAT registered?</label>
-              <label className="inline-flex items-center gap-2 px-3 py-2.5 bg-white border border-[#E5E5EA] rounded-lg cursor-pointer">
+              <label className="inline-flex items-center gap-2 px-3 py-2.5 bg-[#181818] border border-[#2A2A2A] rounded-lg cursor-pointer">
                 <input
                   type="checkbox"
                   checked={vatRegistered}
                   onChange={(e) => setVatRegistered(e.target.checked)}
-                  className="rounded border-[#E5E5EA]"
+                  className="rounded border-[#2A2A2A]"
                 />
                 <span className="text-sm">
                   Charge VAT on UK invoices and reclaim input VAT on expenses
@@ -218,7 +218,7 @@ export default function FinanceSettingsPage() {
         </section>
 
         <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-4">
             Default payment method (pre-fill on new invoices)
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -232,7 +232,7 @@ export default function FinanceSettingsPage() {
                 <option value="online">Whop (online)</option>
                 <option value="bank_transfer">Bank transfer (Tide)</option>
               </select>
-              <p className="text-[11px] text-[#A0A0A0] mt-1">
+              <p className="text-[11px] text-[#71757D] mt-1">
                 {paymentMethod === "online"
                   ? "PDF will say payment is processed via Whop; you handle the Whop invoice separately."
                   : "Bank details below will print on every invoice."}
@@ -297,7 +297,7 @@ export default function FinanceSettingsPage() {
           </div>
         </section>
 
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#E5E5EA]">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#2A2A2A]">
           {saved && (
             <span className="inline-flex items-center gap-1.5 text-sm text-emerald-700">
               <CheckIcon className="size-4" /> Saved
@@ -306,24 +306,24 @@ export default function FinanceSettingsPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-3 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
+            className="flex items-center gap-2 px-6 py-3 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:opacity-90 disabled:opacity-40"
           >
             {saving && <ArrowPathIcon className="size-4 animate-spin" />}
             Save profile
           </button>
         </div>
 
-        <section className="pt-8 mt-8 border-t border-[#E5E5EA]">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-[#7A7A7A] mb-2">
+        <section className="pt-8 mt-8 border-t border-[#2A2A2A]">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-2">
             Legacy data
           </h3>
-          <p className="text-sm text-[#7A7A7A] mb-4">
-            Import receivable invoices from <code className="text-[#1B1B1B]">/company/invoices</code> and expenses from <code className="text-[#1B1B1B]">/tools/expenses</code> into the Finance module. Idempotent, safe to re-run.
+          <p className="text-sm text-[#71757D] mb-4">
+            Import receivable invoices from <code className="text-[#E5E5EA]">/company/invoices</code> and expenses from <code className="text-[#E5E5EA]">/tools/expenses</code> into the Finance module. Idempotent, safe to re-run.
           </p>
           <button
             onClick={runMigration}
             disabled={migrating}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-[#E5E5EA] text-[#1B1B1B] text-sm font-medium rounded-md hover:bg-[#F7F8FA] disabled:opacity-40"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#181818] border border-[#2A2A2A] text-[#E5E5EA] text-sm font-medium rounded-md hover:bg-[#0C0C0C] disabled:opacity-40"
           >
             {migrating && <ArrowPathIcon className="size-4 animate-spin" />}
             {migrating ? "Importing..." : "Import legacy data"}

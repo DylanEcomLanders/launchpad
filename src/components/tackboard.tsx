@@ -136,7 +136,7 @@ export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
   }, []);
 
   return (
-    <div className="relative h-screen overflow-hidden bg-[#0A0A0A] text-white">
+    <div className="relative h-screen overflow-hidden bg-[#080808] text-white">
       {/* Dotted pattern bg */}
       <div
         aria-hidden
@@ -155,7 +155,7 @@ export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
           </p>
           <button
             onClick={addNote}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 border border-white/20 text-white text-[11px] font-medium rounded-lg hover:bg-white/20 backdrop-blur-xl transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#181818]/10 border border-white/20 text-white text-[11px] font-medium rounded-lg hover:bg-[#181818]/20 backdrop-blur-xl transition-colors"
           >
             <PlusIcon className="size-3" />
             Add note
@@ -164,7 +164,7 @@ export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
       ) : (
         <div className="relative z-10 flex items-start justify-between px-8 pt-8 pb-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">Tackboard</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-white">Tackboard</h1>
             <p className="text-sm text-white/50 mt-1">
               {author ? (
                 <>
@@ -178,7 +178,7 @@ export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
           </div>
           <button
             onClick={addNote}
-            className="flex items-center gap-1.5 px-4 py-2 bg-white text-[#1A1A1A] text-xs font-semibold rounded-lg hover:bg-white/90 transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 bg-[#181818] text-[#E5E5EA] text-xs font-semibold rounded-lg hover:bg-[#181818]/90 transition-colors"
           >
             <PlusIcon className="size-3.5" />
             New note
@@ -240,6 +240,7 @@ export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
                   onMouseDown={(e) => e.stopPropagation()}
                   className="absolute top-1 right-1 p-1 opacity-0 group-hover:opacity-100 transition-opacity text-current/70 hover:text-current"
                   title="Delete"
+                  aria-label="Delete note"
                 >
                   <TrashIcon className="size-3" />
                 </button>
@@ -287,9 +288,9 @@ export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
       {/* Author prompt */}
       {authorPrompt && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl p-6 max-w-sm w-full">
-            <h2 className="text-lg font-bold text-[#1A1A1A] mb-1">What's your name?</h2>
-            <p className="text-xs text-[#777] mb-4">Saved to this browser — shows on notes you post.</p>
+          <div className="bg-[#181818] rounded-xl p-6 max-w-sm w-full">
+            <h2 className="text-lg font-bold text-[#E5E5EA] mb-1">What's your name?</h2>
+            <p className="text-xs text-[#9CA3AF] mb-4">Saved to this browser — shows on notes you post.</p>
             <input
               autoFocus
               defaultValue={author}
@@ -298,12 +299,12 @@ export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
                 if (e.key === "Escape") setAuthorPrompt(false);
               }}
               placeholder="e.g. Dylan"
-              className="w-full px-3 py-2 text-sm border border-[#E5E5EA] rounded-lg text-[#1A1A1A] focus:border-[#1B1B1B] outline-none"
+              className="w-full px-3 py-2 text-sm border border-[#2A2A2A] rounded-lg text-[#E5E5EA] focus:border-white outline-none"
             />
             <div className="flex items-center justify-end gap-2 mt-4">
               <button
                 onClick={() => setAuthorPrompt(false)}
-                className="text-xs font-medium text-[#777] hover:text-[#1A1A1A] px-3 py-1.5"
+                className="text-xs font-medium text-[#9CA3AF] hover:text-[#E5E5EA] px-3 py-1.5"
               >
                 Cancel
               </button>
@@ -313,7 +314,7 @@ export function Tackboard({ loginMode = false }: { loginMode?: boolean } = {}) {
                   const val = input?.value?.trim() || "";
                   if (val) saveAuthor(val);
                 }}
-                className="text-xs font-semibold text-white bg-[#1A1A1A] hover:bg-[#333] px-3 py-1.5 rounded-lg"
+                className="text-xs font-semibold bg-[#222222] text-[#E5E5EA] hover:bg-[#2A2A2A] px-3 py-1.5 rounded-lg"
               >
                 Save
               </button>

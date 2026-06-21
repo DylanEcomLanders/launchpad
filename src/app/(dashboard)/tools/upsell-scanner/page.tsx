@@ -85,10 +85,10 @@ export default function UpsellScannerPage() {
     <div className="max-w-4xl mx-auto px-6 md:px-12 py-12 md:py-16">
       {/* Header */}
       <div className="mb-10">
-        <h1 className="text-2xl font-bold tracking-tight mb-1">
+        <h1 className="text-[28px] leading-tight font-bold text-[#E5E5EA] mb-1">
           Upsell Scanner
         </h1>
-        <p className="text-sm text-[#7A7A7A]">
+        <p className="text-sm text-[#71757D]">
           Scan the last 24 hours of Slack for upsell signals
         </p>
       </div>
@@ -98,7 +98,7 @@ export default function UpsellScannerPage() {
         <button
           onClick={runScan}
           disabled={scanning}
-          className="flex items-center gap-2 px-5 py-2.5 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-5 py-2.5 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:bg-[#F3F4F6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {scanning ? (
             <>
@@ -114,7 +114,7 @@ export default function UpsellScannerPage() {
         </button>
 
         {result && !scanning && (
-          <span className="text-xs text-[#A0A0A0]">
+          <span className="text-xs text-[#71757D]">
             {result.messagesScanned} messages scanned ·{" "}
             {(result.elapsedMs / 1000).toFixed(1)}s
           </span>
@@ -123,11 +123,11 @@ export default function UpsellScannerPage() {
 
       {/* Scanning State */}
       {scanning && (
-        <div className="flex items-center gap-3 p-6 bg-[#EDEDEF] border border-[#E5E5EA] rounded-lg mb-8">
-          <ArrowPathIcon className="size-5 animate-spin text-[#7A7A7A]" />
+        <div className="flex items-center gap-3 p-6 bg-[#222222] border border-[#2A2A2A] rounded-lg mb-8">
+          <ArrowPathIcon className="size-5 animate-spin text-[#71757D]" />
           <div>
             <p className="text-sm font-medium">Scanning Slack & analysing with Claude...</p>
-            <p className="text-xs text-[#7A7A7A] mt-0.5">
+            <p className="text-xs text-[#71757D] mt-0.5">
               This usually takes 15–30 seconds
             </p>
           </div>
@@ -136,7 +136,7 @@ export default function UpsellScannerPage() {
 
       {/* Error State */}
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg mb-8">
+        <div className="p-4 bg-red-900/20 border border-red-200 rounded-lg mb-8">
           <p className="text-sm text-red-700 font-medium">Scan failed</p>
           <p className="text-xs text-red-600 mt-1">{error}</p>
         </div>
@@ -147,26 +147,26 @@ export default function UpsellScannerPage() {
         <>
           {/* Summary Bar */}
           {result.opportunities.length > 0 && (
-            <div className="flex flex-wrap items-center gap-3 p-4 bg-[#EDEDEF] border border-[#E5E5EA] rounded-lg mb-6">
+            <div className="flex flex-wrap items-center gap-3 p-4 bg-[#222222] border border-[#2A2A2A] rounded-lg mb-6">
               <span className="text-sm font-semibold">
                 {result.opportunities.length} signal
                 {result.opportunities.length !== 1 ? "s" : ""} detected
               </span>
               <span className="text-[#E5E5EA]">|</span>
               {actNow > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-900/20 text-red-700 text-xs font-semibold rounded-full">
                   <span className="size-1.5 rounded-full bg-red-500" />
                   {actNow} act now
                 </span>
               )}
               {thisWeek > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 text-amber-700 text-xs font-semibold rounded-full">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-900/20 text-amber-700 text-xs font-semibold rounded-full">
                   <span className="size-1.5 rounded-full bg-amber-500" />
                   {thisWeek} this week
                 </span>
               )}
               {monitor > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-900/20 text-blue-700 text-xs font-semibold rounded-full">
                   <span className="size-1.5 rounded-full bg-blue-500" />
                   {monitor} monitor
                 </span>
@@ -189,10 +189,10 @@ export default function UpsellScannerPage() {
             </div>
           ) : (
             <div className="text-center py-16">
-              <p className="text-lg font-medium text-[#7A7A7A] mb-1">
+              <p className="text-lg font-medium text-[#71757D] mb-1">
                 📭 No upsell signals detected
               </p>
-              <p className="text-sm text-[#A0A0A0]">
+              <p className="text-sm text-[#71757D]">
                 All quiet in the last 24 hours — check back tomorrow
               </p>
             </div>
@@ -204,7 +204,7 @@ export default function UpsellScannerPage() {
       {!result && !scanning && !error && (
         <div className="text-center py-16">
           <SignalIcon className="size-10 text-[#E5E5EA] mx-auto mb-4" />
-          <p className="text-sm text-[#A0A0A0]">
+          <p className="text-sm text-[#71757D]">
             Click &ldquo;Run Scan&rdquo; to search the last 24 hours of Slack
           </p>
         </div>
@@ -229,19 +229,19 @@ function OpportunityCard({
   const urgencyConfig = {
     act_now: {
       label: "Act Now",
-      bg: "bg-red-100",
+      bg: "bg-red-900/20",
       text: "text-red-700",
       dot: "bg-red-500",
     },
     this_week: {
       label: "This Week",
-      bg: "bg-amber-100",
+      bg: "bg-amber-900/20",
       text: "text-amber-700",
       dot: "bg-amber-500",
     },
     monitor: {
       label: "Monitor",
-      bg: "bg-blue-100",
+      bg: "bg-blue-900/20",
       text: "text-blue-700",
       dot: "bg-blue-500",
     },
@@ -257,7 +257,7 @@ function OpportunityCard({
   const s = strengthConfig[opp.signal_strength] || strengthConfig.moderate;
 
   return (
-    <div className="bg-[#EDEDEF] border border-[#E5E5EA] rounded-lg p-6">
+    <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg p-6">
       {/* Badges */}
       <div className="flex items-center gap-2 mb-4">
         <span
@@ -266,14 +266,14 @@ function OpportunityCard({
           <span className={`size-1.5 rounded-full ${u.dot}`} />
           {u.label}
         </span>
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#E5E5EA] text-[#7A7A7A] text-xs font-semibold rounded-full">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#2A2A2A] text-[#71757D] text-xs font-semibold rounded-full">
           <span className={`size-1.5 rounded-full ${s.dot}`} />
           {s.label} signal
         </span>
       </div>
 
       {/* Client Name */}
-      <h3 className="text-lg font-bold tracking-tight mb-4">
+      <h3 className="text-lg font-bold mb-4">
         {opp.client_name}
       </h3>
 
@@ -285,22 +285,22 @@ function OpportunityCard({
 
         {/* Draft Message */}
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-2">
             Ready-to-send message
           </p>
-          <div className="relative bg-white border-l-2 border-[#1B1B1B] rounded-r-md p-4">
+          <div className="relative bg-[#181818] border-l-2 border-white rounded-r-md p-4">
             <p className="text-sm text-[#3A3A3A] leading-relaxed pr-8">
               {opp.draft_message}
             </p>
             <button
               onClick={() => onCopy(opp, index)}
-              className="absolute top-3 right-3 p-1.5 rounded hover:bg-[#EDEDEF] transition-colors"
+              className="absolute top-3 right-3 p-1.5 rounded hover:bg-[#222222] transition-colors"
               title="Copy to clipboard"
             >
               {copiedId === `${index}` ? (
                 <CheckIcon className="size-3.5 text-emerald-500" />
               ) : (
-                <ClipboardDocumentIcon className="size-3.5 text-[#A0A0A0]" />
+                <ClipboardDocumentIcon className="size-3.5 text-[#71757D]" />
               )}
             </button>
           </div>
@@ -313,7 +313,7 @@ function OpportunityCard({
 function Section({ label, content }: { label: string; content: string }) {
   return (
     <div>
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A] mb-1">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D] mb-1">
         {label}
       </p>
       <p className="text-sm text-[#3A3A3A] leading-relaxed">{content}</p>

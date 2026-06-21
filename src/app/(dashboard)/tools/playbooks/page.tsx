@@ -94,7 +94,7 @@ export default function PlaybooksPage() {
       <div className="relative min-h-screen">
         <DecorativeBlocks />
         <div className="relative z-10 flex items-center justify-center py-32">
-          <ArrowPathIcon className="size-6 animate-spin text-[#A0A0A0]" />
+          <ArrowPathIcon className="size-6 animate-spin text-[#71757D]" />
         </div>
       </div>
     );
@@ -137,10 +137,10 @@ function PlaybookIndex({
       <div className="relative z-10 max-w-4xl mx-auto px-6 md:px-12 py-12 md:py-16">
         {/* Header */}
         <div className="mb-10">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
+          <h1 className="text-[28px] font-bold leading-tight mb-2">
             Playbooks
           </h1>
-          <p className="text-[#7A7A7A] text-sm">
+          <p className="text-[#71757D] text-sm">
             Interactive training for the team — learn our processes step by step
           </p>
         </div>
@@ -148,7 +148,7 @@ function PlaybookIndex({
         {/* Playbook cards by category */}
         {Object.entries(categories).map(([category, pbs]) => (
           <div key={category} className="mb-10">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A] mb-4">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#71757D] mb-4">
               {category}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -164,14 +164,14 @@ function PlaybookIndex({
                     tabIndex={0}
                     onClick={() => onOpen(pb.id)}
                     onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onOpen(pb.id); }}
-                    className="group relative bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-5 text-left transition-all duration-200 hover:border-[#C5C5C5] hover:bg-[#EBEBEB] cursor-pointer"
+                    className="group relative bg-[#222222] border border-[#2A2A2A] rounded-lg p-5 text-left transition-all duration-200 hover:border-[#C5C5C5] hover:bg-[#2A2A2A] cursor-pointer"
                   >
                     <div className="flex items-start gap-4">
                       <div
                         className={`p-2.5 rounded-md border ${
                           isComplete
                             ? "bg-emerald-50 border-emerald-200"
-                            : "bg-white border-[#E5E5EA]"
+                            : "bg-[#181818] border-[#2A2A2A]"
                         }`}
                       >
                         {isComplete ? (
@@ -182,10 +182,10 @@ function PlaybookIndex({
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="text-sm font-semibold mb-1">{pb.title}</h3>
-                        <p className="text-xs text-[#7A7A7A] leading-relaxed mb-3">
+                        <p className="text-xs text-[#71757D] leading-relaxed mb-3">
                           {pb.description}
                         </p>
-                        <div className="flex items-center gap-3 text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+                        <div className="flex items-center gap-3 text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
                           <span className="flex items-center gap-1">
                             <ClockIcon className="size-3" />
                             {pb.estimatedMinutes} min
@@ -205,10 +205,10 @@ function PlaybookIndex({
 
                         {/* Progress bar */}
                         {pbProgress && (
-                          <div className="mt-3 h-1.5 bg-[#E5E5EA] rounded-full overflow-hidden">
+                          <div className="mt-3 h-1.5 bg-[#2A2A2A] rounded-full overflow-hidden">
                             <div
                               className={`h-full rounded-full transition-all duration-500 ${
-                                isComplete ? "bg-emerald-500" : "bg-[#1B1B1B]"
+                                isComplete ? "bg-emerald-500" : "bg-[#2A2A2A] border border-[#383838]"
                               }`}
                               style={{ width: `${percent}%` }}
                             />
@@ -337,20 +337,20 @@ function PlaybookView({
             <div className="inline-flex p-4 bg-emerald-50 border border-emerald-200 rounded-full mb-6">
               <TrophyIcon className="size-10 text-emerald-600" />
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">
+            <h1 className="text-[28px] font-bold leading-tight mb-3">
               Playbook Complete!
             </h1>
-            <p className="text-[#7A7A7A] text-sm mb-2">
+            <p className="text-[#71757D] text-sm mb-2">
               You&apos;ve completed <strong>{playbook.title}</strong>
             </p>
-            <p className="text-[#A0A0A0] text-xs mb-8">
+            <p className="text-[#71757D] text-xs mb-8">
               {playbook.steps.length} steps &middot; All knowledge checks passed
             </p>
 
             <div className="flex items-center justify-center gap-4">
               <button
                 onClick={onBack}
-                className="px-6 py-2.5 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors"
+                className="px-6 py-2.5 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:bg-[#F3F4F6] transition-colors"
               >
                 Back to Playbooks
               </button>
@@ -358,7 +358,7 @@ function PlaybookView({
                 onClick={() => {
                   onReset();
                 }}
-                className="px-6 py-2.5 border border-[#E5E5EA] bg-white text-[#7A7A7A] text-sm font-medium rounded-md hover:bg-[#F3F3F5] transition-colors"
+                className="px-6 py-2.5 border border-[#2A2A2A] bg-[#181818] text-[#71757D] text-sm font-medium rounded-md hover:bg-[#222222] transition-colors"
               >
                 Retake
               </button>
@@ -379,12 +379,12 @@ function PlaybookView({
         <div className="flex items-center justify-between mb-8">
           <button
             onClick={onBack}
-            className="flex items-center gap-1.5 text-sm text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+            className="flex items-center gap-1.5 text-sm text-[#71757D] hover:text-[#E5E5EA] transition-colors"
           >
             <ArrowLeftIcon className="size-3.5" />
             All Playbooks
           </button>
-          <span className="text-xs text-[#A0A0A0]">
+          <span className="text-xs text-[#71757D]">
             Step {currentStepIndex + 1} of {playbook.steps.length}
           </span>
         </div>
@@ -392,12 +392,12 @@ function PlaybookView({
         {/* Progress bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
-            <h1 className="text-lg font-bold tracking-tight">{playbook.title}</h1>
-            <span className="text-xs font-semibold tabular-nums text-[#A0A0A0]">
+            <h1 className="text-[28px] font-bold leading-tight">{playbook.title}</h1>
+            <span className="text-xs font-semibold tabular-nums text-[#71757D]">
               {overallPercent}%
             </span>
           </div>
-          <div className="h-2 bg-[#EDEDEF] rounded-full overflow-hidden flex">
+          <div className="h-2 bg-[#222222] rounded-full overflow-hidden flex">
             {playbook.steps.map((_, i) => (
               <div
                 key={i}
@@ -407,7 +407,7 @@ function PlaybookView({
                   progress.completedSteps.includes(i)
                     ? "bg-emerald-500"
                     : i === currentStepIndex
-                    ? "bg-[#1B1B1B]"
+                    ? "bg-[#2A2A2A] border border-[#383838]"
                     : "bg-transparent"
                 }`}
               />
@@ -428,8 +428,8 @@ function PlaybookView({
                   progress.completedSteps.includes(i)
                     ? "bg-emerald-500 cursor-pointer"
                     : i === currentStepIndex
-                    ? "bg-[#1B1B1B]"
-                    : "bg-[#E5E5EA] cursor-not-allowed"
+                    ? "bg-[#2A2A2A] border border-[#383838]"
+                    : "bg-[#2A2A2A] cursor-not-allowed"
                 }`}
                 title={
                   progress.completedSteps.includes(i) || i === currentStepIndex
@@ -442,7 +442,7 @@ function PlaybookView({
         </div>
 
         {/* Step content */}
-        <div className="bg-white border border-[#E5E5EA] rounded-lg p-6 mb-6">
+        <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-6 mb-6">
           <h2 className="text-base font-bold mb-4">{step.title}</h2>
           <div className="prose prose-sm max-w-none">
             <MarkdownRenderer content={step.content} />
@@ -465,12 +465,12 @@ function PlaybookView({
                 ? "bg-emerald-50 border-emerald-200"
                 : showResult && !isCorrect
                 ? "bg-red-50 border-red-200"
-                : "bg-[#F3F3F5] border-[#E5E5EA]"
+                : "bg-[#222222] border-[#2A2A2A]"
             }`}
           >
             <div className="flex items-center gap-2 mb-4">
-              <LockClosedIcon className="size-4 text-[#7A7A7A]" />
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">
+              <LockClosedIcon className="size-4 text-[#71757D]" />
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">
                 Knowledge Check
               </h3>
             </div>
@@ -493,18 +493,18 @@ function PlaybookView({
                         ? "bg-emerald-100 border-emerald-300 font-medium"
                         : showResult && !isCorrect && i === selectedAnswer
                         ? "bg-red-100 border-red-300"
-                        : "bg-white border-[#1B1B1B] font-medium"
+                        : "bg-[#181818] border-white font-medium"
                       : showResult && isCorrect && i === step.quiz!.correctIndex
                       ? "bg-emerald-100 border-emerald-300"
-                      : "bg-white border-[#E5E5EA] hover:border-[#C5C5C5]"
+                      : "bg-[#181818] border-[#2A2A2A] hover:border-[#C5C5C5]"
                   } ${showResult && isCorrect ? "cursor-default" : "cursor-pointer"}`}
                 >
                   <span className="flex items-center gap-3">
                     <span
                       className={`w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-bold shrink-0 ${
                         selectedAnswer === i
-                          ? "bg-[#1B1B1B] border-[#1B1B1B] text-white"
-                          : "border-[#C5C5C5] text-[#A0A0A0]"
+                          ? "bg-white border-[#0C0C0C] text-[#0C0C0C]"
+                          : "border-[#C5C5C5] text-[#71757D]"
                       }`}
                     >
                       {String.fromCharCode(65 + i)}
@@ -520,7 +520,7 @@ function PlaybookView({
               <button
                 onClick={submitQuiz}
                 disabled={selectedAnswer === null}
-                className="w-full px-5 py-2.5 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="w-full px-5 py-2.5 bg-white text-[#0C0C0C] text-sm font-medium rounded-md hover:bg-[#F3F4F6] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 Check Answer
               </button>
@@ -548,7 +548,7 @@ function PlaybookView({
                     setShowResult(false);
                     setSelectedAnswer(null);
                   }}
-                  className="mt-3 px-4 py-2 bg-white border border-red-200 text-red-700 text-sm font-medium rounded-md hover:bg-red-50 transition-colors"
+                  className="mt-3 px-4 py-2 bg-[#181818] border border-red-200 text-red-700 text-sm font-medium rounded-md hover:bg-red-50 transition-colors"
                 >
                   Try Again
                 </button>
@@ -575,7 +575,7 @@ function PlaybookView({
           <button
             onClick={goPrev}
             disabled={currentStepIndex === 0}
-            className="flex items-center gap-1.5 px-4 py-2.5 text-sm text-[#7A7A7A] hover:text-[#1B1B1B] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2.5 text-sm text-[#71757D] hover:text-[#E5E5EA] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             <ChevronLeftIcon className="size-3.5" />
             Previous
@@ -586,8 +586,8 @@ function PlaybookView({
             disabled={!canProceed || (!isStepCompleted && !!step?.quiz)}
             className={`flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium rounded-md transition-colors ${
               canProceed && (isStepCompleted || !step?.quiz)
-                ? "bg-[#1B1B1B] text-white hover:bg-accent-hover"
-                : "bg-[#E5E5EA] text-[#A0A0A0] cursor-not-allowed"
+                ? "bg-white text-[#0C0C0C] hover:bg-[#F3F4F6]"
+                : "bg-[#2A2A2A] text-[#71757D] cursor-not-allowed"
             }`}
           >
             {isLastStep ? "Complete" : "Next"}

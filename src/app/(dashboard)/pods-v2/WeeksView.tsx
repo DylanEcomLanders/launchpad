@@ -144,8 +144,8 @@ function WeekRow({
 
   return (
     <div
-      className={`rounded-xl border bg-white shadow-[var(--shadow-soft)] ${
-        isThisWeek ? "border-[#1B1B1B]/30" : "border-[#E5E5EA]"
+      className={`rounded-xl border bg-[#181818] shadow-[var(--shadow-soft)] ${
+        isThisWeek ? "border-white/30" : "border-[#2A2A2A]"
       }`}
     >
       <button
@@ -154,22 +154,22 @@ function WeekRow({
       >
         <div className="flex items-center gap-3">
           {open ? (
-            <ChevronDownIcon className="size-4 text-[#A0A0A0]" />
+            <ChevronDownIcon className="size-4 text-[#71757D]" />
           ) : (
-            <ChevronRightIcon className="size-4 text-[#A0A0A0]" />
+            <ChevronRightIcon className="size-4 text-[#71757D]" />
           )}
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-[#1B1B1B]">
+              <span className="text-sm font-semibold text-[#E5E5EA]">
                 {week.label}
               </span>
               {isThisWeek && (
-                <span className="rounded bg-[#1B1B1B] px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">
+                <span className="rounded bg-[#E5E5EA] text-[#181818] px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">
                   Now
                 </span>
               )}
             </div>
-            <div className="text-[11px] text-[#7A7A7A]">
+            <div className="text-[11px] text-[#71757D]">
               w/c {formatDayMonth(week.mondayYMD)} · ships{" "}
               {formatDayMonth(week.thursdayYMD)}
             </div>
@@ -179,13 +179,13 @@ function WeekRow({
           <RowStat label="Kicking off" count={kickingOff.length} accent />
           <RowStat label="Shipping" count={shipping.length} accent />
           <RowStat label="In flight" count={midFlight.length} />
-          <span className="ml-2 text-[#A0A0A0]">{total} total</span>
+          <span className="ml-2 text-[#71757D]">{total} total</span>
         </div>
       </button>
       {open && (
-        <div className="border-t border-[#E5E5EA] px-4 pb-4 pt-3">
+        <div className="border-t border-[#2A2A2A] px-4 pb-4 pt-3">
           {total === 0 ? (
-            <div className="rounded-lg border border-dashed border-[#E5E5EA] bg-[#F7F8FA] px-3 py-6 text-center text-[11px] text-[#A0A0A0]">
+            <div className="rounded-lg border border-dashed border-[#2A2A2A] bg-[#0C0C0C] px-3 py-6 text-center text-[11px] text-[#71757D]">
               Nothing scheduled in this week
             </div>
           ) : (
@@ -236,7 +236,7 @@ function RowStat({
 }) {
   if (count === 0) {
     return (
-      <span className="rounded-md bg-[#F3F3F5] px-1.5 py-0.5 text-[10px] text-[#A0A0A0]">
+      <span className="rounded-md bg-[#222222] px-1.5 py-0.5 text-[10px] text-[#71757D]">
         {label} 0
       </span>
     );
@@ -244,7 +244,7 @@ function RowStat({
   return (
     <span
       className={`rounded-md px-1.5 py-0.5 text-[10px] font-medium ${
-        accent ? "bg-[#1B1B1B] text-white" : "bg-[#F3F3F5] text-[#1B1B1B]"
+        accent ? "bg-[#E5E5EA] text-[#181818]" : "bg-[#222222] text-[#E5E5EA]"
       }`}
     >
       {label} {count}
@@ -271,13 +271,13 @@ function Lane({
 }) {
   return (
     <div>
-      <div className="mb-2 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+      <div className="mb-2 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
         <span>{label}</span>
-        <span className="tabular-nums text-[#A0A0A0]">{projects.length}</span>
+        <span className="tabular-nums text-[#71757D]">{projects.length}</span>
       </div>
       <div className="space-y-2">
         {projects.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-[#E5E5EA] bg-[#F7F8FA] px-3 py-3 text-center text-[10px] text-[#A0A0A0]">
+          <div className="rounded-lg border border-dashed border-[#2A2A2A] bg-[#0C0C0C] px-3 py-3 text-center text-[10px] text-[#71757D]">
             {empty}
           </div>
         ) : (
@@ -321,7 +321,7 @@ function WeekCard({
         : "";
   return (
     <div
-      className={`rounded-lg border border-[#E5E5EA] bg-white p-2.5 shadow-[var(--shadow-soft)] ${accent}`}
+      className={`rounded-lg border border-[#2A2A2A] bg-[#181818] p-2.5 shadow-[var(--shadow-soft)] ${accent}`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
@@ -329,7 +329,7 @@ function WeekCard({
             {project.name}
           </div>
           {client && (
-            <div className="mt-0.5 truncate text-[11px] text-[#7A7A7A]">
+            <div className="mt-0.5 truncate text-[11px] text-[#71757D]">
               {client.name}
             </div>
           )}
@@ -338,7 +338,7 @@ function WeekCard({
       </div>
       <div className="mt-2 flex flex-wrap items-center gap-1">
         {!hidePodTag && pod && (
-          <span className="rounded-md bg-[#F3F3F5] px-1.5 py-0.5 text-[10px] font-medium text-[#1B1B1B]">
+          <span className="rounded-md bg-[#222222] px-1.5 py-0.5 text-[10px] font-medium text-[#E5E5EA]">
             {pod.name}
           </span>
         )}
@@ -357,7 +357,7 @@ function WeekCard({
             Mid-week
           </span>
         )}
-        <span className="ml-auto text-[10px] text-[#7A7A7A]">
+        <span className="ml-auto text-[10px] text-[#71757D]">
           {tone === "kickoff"
             ? `K ${formatDayMonth(project.kickoff_date)}`
             : tone === "ship"

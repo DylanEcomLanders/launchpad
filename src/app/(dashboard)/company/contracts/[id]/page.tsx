@@ -105,7 +105,7 @@ export default function ContractDetailPage() {
   if (loading) {
     return (
       <div className="max-w-3xl mx-auto px-6 md:px-10 py-12">
-        <div className="text-sm text-[#7A7A7A]">Loading agreement...</div>
+        <div className="text-sm text-[#71757D]">Loading agreement...</div>
       </div>
     );
   }
@@ -114,12 +114,12 @@ export default function ContractDetailPage() {
       <div className="max-w-3xl mx-auto px-6 md:px-10 py-12">
         <Link
           href="/company/contracts"
-          className="inline-flex items-center gap-1.5 text-[13px] text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors mb-6"
+          className="inline-flex items-center gap-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] transition-colors mb-6"
         >
           <ArrowLeftIcon className="size-4" />
           Back to contracts
         </Link>
-        <div className="text-[15px] text-[#1B1B1B]">Agreement not found.</div>
+        <div className="text-[15px] text-[#E5E5EA]">Agreement not found.</div>
       </div>
     );
   }
@@ -131,7 +131,7 @@ export default function ContractDetailPage() {
       {/* Back */}
       <Link
         href="/company/contracts"
-        className="inline-flex items-center gap-1.5 text-[13px] text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] transition-colors mb-6"
       >
         <ArrowLeftIcon className="size-4" />
         Back to contracts
@@ -146,14 +146,14 @@ export default function ContractDetailPage() {
           >
             {meta.label}
           </span>
-          <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-[#F3F3F5] text-[#1B1B1B]">
+          <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-[#222222] text-[#E5E5EA]">
             {AGREEMENT_KIND_LABEL[agreement.kind]}
           </span>
         </div>
-        <h1 className="text-2xl font-semibold text-[#1B1B1B] tracking-tight">
+        <h1 className="text-2xl font-semibold text-[#E5E5EA]">
           {agreement.person_full_name}
         </h1>
-        <div className="text-[13px] text-[#7A7A7A] mt-1">
+        <div className="text-[13px] text-[#71757D] mt-1">
           {agreement.person_job_title || "—"} ·{" "}
           {agreement.person_employment_type === "employee" ? "Employee" : "Contractor"}
         </div>
@@ -161,13 +161,13 @@ export default function ContractDetailPage() {
 
       {/* Signing URL */}
       {agreement.status !== "terminated" && (
-        <div className="mb-6 p-4 bg-white border border-[#E5E5EA] rounded-xl">
+        <div className="mb-6 p-4 bg-[#181818] border border-[#2A2A2A] rounded-xl">
           <div className={labelClass}>Signing link</div>
           <div className="flex gap-2">
             <input readOnly value={signingUrl} className={inputClass} />
             <button
               onClick={copySigningUrl}
-              className="inline-flex items-center gap-1.5 px-3 bg-[#1B1B1B] text-white text-[13px] font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors shrink-0"
+              className="inline-flex items-center gap-1.5 px-3 bg-white text-[#0C0C0C] text-[13px] font-medium rounded-lg hover:bg-[#F3F4F6] transition-colors shrink-0"
             >
               {copied ? (
                 <>
@@ -180,16 +180,16 @@ export default function ContractDetailPage() {
               )}
             </button>
           </div>
-          <p className="text-[11px] text-[#7A7A7A] mt-2 leading-relaxed">
+          <p className="text-[11px] text-[#71757D] mt-2 leading-relaxed">
             Share this URL with{" "}
-            <span className="text-[#1B1B1B] font-medium">{agreement.person_full_name}</span>{" "}
+            <span className="text-[#E5E5EA] font-medium">{agreement.person_full_name}</span>{" "}
             via Slack, email, or however you usually reach them. They open it, read,
             and sign in their browser.
           </p>
           {agreement.status === "draft" && (
             <button
               onClick={markAsSent}
-              className="inline-flex items-center gap-1.5 mt-3 text-[12px] text-[#1B1B1B] hover:underline"
+              className="inline-flex items-center gap-1.5 mt-3 text-[12px] text-[#E5E5EA] hover:underline"
             >
               <PaperAirplaneIcon className="size-3.5" />
               Mark as sent
@@ -209,7 +209,7 @@ export default function ContractDetailPage() {
           </div>
           <button
             onClick={() => setShowCounterSign(true)}
-            className="px-3 py-1.5 bg-[#1B1B1B] text-white text-[13px] font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
+            className="px-3 py-1.5 bg-white text-[#0C0C0C] text-[13px] font-medium rounded-lg hover:bg-[#F3F4F6] transition-colors"
           >
             Counter-sign now
           </button>
@@ -218,8 +218,8 @@ export default function ContractDetailPage() {
 
       {/* Counter-sign form */}
       {showCounterSign && (
-        <div className="mb-6 p-4 bg-white border border-[#1B1B1B] rounded-xl">
-          <div className="text-[13px] font-medium text-[#1B1B1B] mb-4">
+        <div className="mb-6 p-4 bg-[#181818] border border-white rounded-xl">
+          <div className="text-[13px] font-medium text-[#E5E5EA] mb-4">
             Counter-sign
           </div>
           <div className="space-y-3">
@@ -241,7 +241,7 @@ export default function ContractDetailPage() {
               />
               <button
                 onClick={() => setCounterSig("")}
-                className="text-[11px] text-[#7A7A7A] hover:underline mt-1"
+                className="text-[11px] text-[#71757D] hover:underline mt-1"
                 type="button"
               >
                 Clear signature
@@ -250,14 +250,14 @@ export default function ContractDetailPage() {
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setShowCounterSign(false)}
-                className="px-3 py-1.5 text-[13px] text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+                className="px-3 py-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={counterSign}
                 disabled={!counterName.trim() || !counterSig || submitting}
-                className="px-3 py-1.5 bg-[#1B1B1B] text-white text-[13px] font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40"
+                className="px-3 py-1.5 bg-white text-[#0C0C0C] text-[13px] font-medium rounded-lg hover:bg-[#F3F4F6] transition-colors disabled:opacity-40"
               >
                 {submitting ? "Signing..." : "Sign and finalise"}
               </button>
@@ -273,7 +273,7 @@ export default function ContractDetailPage() {
       <div className="mt-6 flex items-center justify-between gap-3">
         <Link
           href={`/company/people/${agreement.person_id}`}
-          className="text-[12px] text-[#7A7A7A] hover:text-[#1B1B1B] hover:underline transition-colors"
+          className="text-[12px] text-[#71757D] hover:text-[#E5E5EA] hover:underline transition-colors"
         >
           View person profile →
         </Link>
@@ -289,7 +289,7 @@ export default function ContractDetailPage() {
           )}
           <button
             onClick={deleteAgreement}
-            className="text-[12px] text-[#A0A0A0] hover:text-[#B22B2B] hover:underline transition-colors"
+            className="text-[12px] text-[#71757D] hover:text-[#B22B2B] hover:underline transition-colors"
           >
             Delete
           </button>
@@ -298,7 +298,7 @@ export default function ContractDetailPage() {
 
       {/* Terminate form */}
       {showTerminate && (
-        <div className="mt-4 p-4 bg-white border border-[#FCE4E4] rounded-xl">
+        <div className="mt-4 p-4 bg-[#181818] border border-[#FCE4E4] rounded-xl">
           <div className="text-[13px] font-medium text-[#B22B2B] mb-3">
             Terminate this agreement
           </div>
@@ -312,7 +312,7 @@ export default function ContractDetailPage() {
           <div className="flex justify-end gap-2 mt-3">
             <button
               onClick={() => setShowTerminate(false)}
-              className="px-3 py-1.5 text-[13px] text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+              className="px-3 py-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] transition-colors"
             >
               Cancel
             </button>

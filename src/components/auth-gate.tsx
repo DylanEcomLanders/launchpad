@@ -257,7 +257,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (checking) {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
+      <div className="min-h-screen bg-[#080808] flex items-center justify-center">
         <div className="w-5 h-5 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
       </div>
     );
@@ -279,16 +279,16 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
           <div className="relative z-20 w-full max-w-sm pointer-events-auto">
           {/* Logo / Brand */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-xl mb-5 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#181818]/10 border border-white/20 backdrop-blur-xl mb-5 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/el-logo.svg" alt="Ecom Landers" className="w-8 h-8 brightness-0 invert drop-shadow-sm" />
             </div>
-            <h1 className="text-2xl font-semibold text-white tracking-tight drop-shadow-md">Launchpad</h1>
+            <h1 className="text-2xl font-semibold text-white drop-shadow-md">Launchpad</h1>
             <p className="text-sm text-white/60 mt-1.5 drop-shadow-sm">Ecom Landers Command Centre</p>
           </div>
 
           {/* Frosted glass login card */}
-          <div className="bg-white/10 border border-white/20 rounded-2xl p-6 backdrop-blur-2xl shadow-[0_8px_60px_rgba(0,0,0,0.3)]">
+          <div className="bg-[#181818]/10 border border-white/20 rounded-2xl p-6 backdrop-blur-2xl shadow-[0_8px_60px_rgba(0,0,0,0.3)]">
             {mode === "magic" ? (
               linkSent ? (
                 <div className="text-center py-4">
@@ -317,7 +317,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                       onChange={(e) => { setEmail(e.target.value); setNotAllowed(false); }}
                       placeholder="you@ecomlanders.com"
                       autoFocus
-                      className="w-full px-4 py-3 bg-white/10 border border-white/15 focus:border-white/40 rounded-xl text-sm text-white focus:outline-none transition-all duration-200 placeholder:text-white/25 backdrop-blur-sm"
+                      className="w-full px-4 py-3 bg-[#181818]/10 border border-white/15 focus:border-white/40 rounded-xl text-sm text-white focus:outline-none transition-all duration-200 placeholder:text-white/25 backdrop-blur-sm"
                     />
                     {notAllowed && (
                       <p className="text-xs text-amber-300 mt-2 leading-relaxed">
@@ -331,7 +331,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                   <button
                     type="submit"
                     disabled={sending}
-                    className="w-full px-4 py-3 bg-white/90 text-[#1a1a1a] text-sm font-semibold rounded-xl hover:bg-white active:scale-[0.98] transition-all duration-150 shadow-[0_4px_20px_rgba(0,0,0,0.15)] disabled:opacity-60"
+                    className="w-full px-4 py-3 bg-white text-[#0C0C0C] text-sm font-semibold rounded-xl hover:bg-[#E5E5EA] active:scale-[0.98] transition-all duration-150 shadow-[0_4px_20px_rgba(0,0,0,0.15)] disabled:opacity-60"
                   >
                     {sending ? "Sending…" : "Email me a sign-in link"}
                   </button>
@@ -358,7 +358,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                       }}
                       placeholder="Enter access code"
                       autoFocus
-                      className={`w-full px-4 py-3 bg-white/10 border rounded-xl text-sm text-white focus:outline-none transition-all duration-200 placeholder:text-white/25 backdrop-blur-sm ${
+                      className={`w-full px-4 py-3 bg-[#181818]/10 border rounded-xl text-sm text-white focus:outline-none transition-all duration-200 placeholder:text-white/25 backdrop-blur-sm ${
                         error
                           ? "border-red-400/50 focus:border-red-400/70"
                           : "border-white/15 focus:border-white/40"
@@ -367,7 +367,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                     {input.length > 0 && (
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
                         {Array.from({ length: Math.min(input.length, 8) }).map((_, i) => (
-                          <div key={i} className="w-1.5 h-1.5 rounded-full bg-white/50 animate-[fadeIn_0.15s_ease-out]" />
+                          <div key={i} className="w-1.5 h-1.5 rounded-full bg-[#181818]/50 animate-[fadeIn_0.15s_ease-out]" />
                         ))}
                       </div>
                     )}
@@ -381,7 +381,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                 </div>
                 <button
                   type="submit"
-                  className="w-full px-4 py-3 bg-white/90 text-[#1a1a1a] text-sm font-semibold rounded-xl hover:bg-white active:scale-[0.98] transition-all duration-150 shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
+                  className="w-full px-4 py-3 bg-white text-[#0C0C0C] text-sm font-semibold rounded-xl hover:bg-[#E5E5EA] active:scale-[0.98] transition-all duration-150 shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
                 >
                   Continue
                 </button>

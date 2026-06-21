@@ -51,12 +51,12 @@ export default function AgentMissionControlPage() {
         {/* Header */}
         <header className="mb-8">
           <div className="flex items-baseline gap-3 mb-2">
-            <h1 className="text-2xl font-semibold tracking-tight text-[#1B1B1B]">Mission Control</h1>
+            <h1 className="text-2xl font-semibold text-[#E5E5EA]">Mission Control</h1>
             <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-600">
               v0.5
             </span>
           </div>
-          <p className="text-sm text-[#7A7A7A] max-w-xl">
+          <p className="text-sm text-[#71757D] max-w-xl">
             The Ecom Landers AI workforce. Click any NPC to brief them, review their task history, or tweak their system prompt.
           </p>
         </header>
@@ -72,14 +72,14 @@ export default function AgentMissionControlPage() {
         {/* Agent grid */}
         <section className="mb-12">
           <div className="mb-4 flex items-baseline justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">Roster</h2>
-            <span className="text-[11px] text-[#A0A0A0]">{agents.length} agents</span>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">Roster</h2>
+            <span className="text-[11px] text-[#71757D]">{agents.length} agents</span>
           </div>
 
           {loading ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-[200px] rounded-xl border border-[#E5E5EA] bg-white animate-pulse" />
+                <div key={i} className="h-[200px] rounded-xl border border-[#2A2A2A] bg-[#181818] animate-pulse" />
               ))}
             </div>
           ) : (
@@ -94,13 +94,13 @@ export default function AgentMissionControlPage() {
         {/* Recent activity */}
         <section>
           <div className="mb-4 flex items-baseline justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7A7A7A]">Recent activity</h2>
-            <span className="text-[11px] text-[#A0A0A0]">{recent.length} entries</span>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#71757D]">Recent activity</h2>
+            <span className="text-[11px] text-[#71757D]">{recent.length} entries</span>
           </div>
 
           {recent.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-[#E5E5EA] bg-white/40 p-8 text-center">
-              <p className="text-sm text-[#7A7A7A]">No tasks yet — pick an NPC and brief them.</p>
+            <div className="rounded-xl border border-dashed border-[#2A2A2A] bg-[#181818]/40 p-8 text-center">
+              <p className="text-sm text-[#71757D]">No tasks yet — pick an NPC and brief them.</p>
             </div>
           ) : (
             <ul className="space-y-2">
@@ -110,14 +110,14 @@ export default function AgentMissionControlPage() {
                 return (
                   <li
                     key={task.id}
-                    className="flex items-center gap-3 rounded-lg border border-[#E5E5EA] bg-white px-3 py-2.5 shadow-[var(--shadow-soft)]"
+                    className="flex items-center gap-3 rounded-lg border border-[#2A2A2A] bg-[#181818] px-3 py-2.5 shadow-[var(--shadow-soft)]"
                   >
                     {agent && <PixelPortrait agent={agent} size={32} static />}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <Link
                           href={`/agents/${task.agentId}`}
-                          className="text-sm font-semibold text-[#1B1B1B] hover:underline"
+                          className="text-sm font-semibold text-[#E5E5EA] hover:underline"
                         >
                           {agent?.name ?? task.agentId}
                         </Link>
@@ -128,9 +128,9 @@ export default function AgentMissionControlPage() {
                           {meta.label}
                         </span>
                       </div>
-                      <p className="truncate text-xs text-[#7A7A7A]">{task.input}</p>
+                      <p className="truncate text-xs text-[#71757D]">{task.input}</p>
                     </div>
-                    <span className="shrink-0 text-[11px] tabular-nums text-[#A0A0A0]">
+                    <span className="shrink-0 text-[11px] tabular-nums text-[#71757D]">
                       {formatRelative(task.startedAt)}
                     </span>
                   </li>
@@ -146,12 +146,12 @@ export default function AgentMissionControlPage() {
 
 function StatCard({ label, value, dot }: { label: string; value: string | number; dot: string }) {
   return (
-    <div className="rounded-xl border border-[#E5E5EA] bg-white px-4 py-3 shadow-[var(--shadow-soft)]">
-      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+    <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] px-4 py-3 shadow-[var(--shadow-soft)]">
+      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
         <span className="size-1.5 rounded-full" style={{ backgroundColor: dot }} />
         {label}
       </div>
-      <div className="mt-1 text-2xl font-semibold tabular-nums text-[#1B1B1B]">{value}</div>
+      <div className="mt-1 text-2xl font-semibold tabular-nums text-[#E5E5EA]">{value}</div>
     </div>
   );
 }

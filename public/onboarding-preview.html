@@ -3,7 +3,10 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Ecom Landers — Onboarding (Preview)</title>
+<title>Ecom Landers · Onboarding (Preview)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
 <style>
   :root {
     --bg: #FAFAFA;
@@ -24,10 +27,14 @@
 
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
+  /* Always reserve gutter for the scrollbar so the form doesn't
+   * jump horizontally when a tall slide adds vertical overflow and
+   * a short one doesn't. */
+  html { scrollbar-gutter: stable; }
   body {
     background: var(--bg);
     color: var(--ink);
-    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-size: 14px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
@@ -68,24 +75,29 @@
     color: var(--ink-4);
     font-variant-numeric: tabular-nums;
   }
+  /* Segmented progress: one short rounded dash per step, filled as
+   * the user advances. Lives in the topbar so it shares the same
+   * centred max-width as the brand + step counter row above it. */
   .progress {
-    height: 4px;
+    display: flex;
+    gap: 6px;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px 14px;
+  }
+  .progress-seg {
+    flex: 1;
+    height: 3px;
     background: var(--line-2);
-    overflow: hidden;
+    border-radius: 2px;
+    transition: background 380ms cubic-bezier(.4,0,.2,1);
   }
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent) 0%, #444 100%);
-    width: 0%;
-    transition: width 380ms cubic-bezier(.4,0,.2,1);
-    border-radius: 0 2px 2px 0;
-  }
+  .progress-seg.is-filled { background: var(--accent); }
 
   /* ── Slide layout ─────────────────────────────────── */
   main {
     flex: 1;
     display: flex;
-    align-items: stretch;
     justify-content: center;
     padding: 40px 20px 120px;
   }
@@ -94,28 +106,137 @@
     max-width: 680px;
     position: relative;
   }
-  .slide {
+
+  /* ── Right-pane showcase ──────────────────────────────
+   * A fixed full-bleed panel anchored to the right edge that fades
+   * between landing-page screenshots dropped into
+   * /public/onboarding-showcase/. The rest of the page reserves space
+   * for it via padding-right on the body (and the fixed bottom nav
+   * shrinks its right anchor by the same amount). The pane is hidden
+   * on done (terminal slide), on mobile (split makes no sense), and
+   * when no images load (handled in JS via body.no-showcase). */
+  :root { --showcase-w: 0px; }
+  .showcase {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: var(--showcase-w);
+    background: #EFEFF1; /* one step darker than --bg #FAFAFA, divides the rail visually */
+    border-left: 1px solid #E5E5E8;
+    overflow: hidden;
     display: none;
-    animation: slideIn 340ms cubic-bezier(.2,.7,.3,1);
+    z-index: 5; /* topbar sits above at z-index 10 */
   }
-  .slide.active { display: block; }
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
+  /* Tiles fade in once images finish loading (the .is-ready class is
+   * added in JS at that point). The grey panel itself stays present
+   * the whole time so the divide reads immediately on page load. */
+  .showcase-cols {
+    opacity: 0;
+    transition: opacity 700ms cubic-bezier(.2,.7,.3,1);
   }
-  /* Subtle stagger so fields/cards arrive a beat after the header.
-   * Compounds nicely with the slide-level fade-in without feeling
-   * fussy. */
+  .showcase.is-ready .showcase-cols { opacity: 1; }
+  .showcase-cols {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    width: 100%;
+    height: 100%;
+    padding: 14px;
+  }
+  .showcase-col {
+    overflow: hidden;
+    border-radius: 4px;
+  }
+  /* Each column's inner stack contains the image list duplicated so
+   * a 0 → -50% translateY loop wraps seamlessly. Columns alternate
+   * direction (up / down / up) and run at slightly different speeds
+   * to give the wall depth. */
+  .showcase-col-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    will-change: transform;
+    animation: showcase-up 80s linear infinite;
+  }
+  .showcase-col:nth-child(2) .showcase-col-inner {
+    animation-name: showcase-down;
+    animation-duration: 100s;
+  }
+  .showcase-col:nth-child(3) .showcase-col-inner {
+    animation-duration: 70s;
+  }
+  .showcase-col img {
+    width: 100%;
+    aspect-ratio: 9 / 19.5; /* iPhone 15 logical viewport (390 × 844) */
+    object-fit: cover;
+    display: block;
+    border-radius: 4px;
+    background: var(--soft);
+  }
+  @keyframes showcase-up {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-50%); }
+  }
+  @keyframes showcase-down {
+    from { transform: translateY(-50%); }
+    to   { transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .showcase-col-inner { animation: none; }
+  }
+  @media (min-width: 900px) {
+    /* Reveal the pane and reserve space everywhere it can reach (body
+     * padding for the document flow, right offset for the fixed nav).
+     * The showcase stays through the whole flow including the done
+     * slide no-showcase (no images loaded) is the only opt-out. */
+    body:not(.no-showcase) {
+      --showcase-w: min(42vw, 640px);
+      padding-right: var(--showcase-w);
+    }
+    body:not(.no-showcase) .showcase { display: block; }
+    body:not(.no-showcase) .nav { right: var(--showcase-w); }
+  }
+  .slide { display: none; }
+  /* Premium entrance: opacity-led fade with a barely-there lift so
+   * the slide settles rather than slams in. Animation lives on .active
+   * (not .slide) so the keyframes restart each time the class is
+   * toggled otherwise the entrance only plays on initial load. */
+  .slide.active {
+    display: block;
+    animation: slide-enter 560ms cubic-bezier(.16,.84,.32,1) both;
+  }
+  @keyframes slide-enter {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  /* Inner cascade across the content blocks. Each block uses the same
+   * easing but starts a beat after the previous, so the slide assembles
+   * itself in calm waves instead of one block-of-everything. */
+  .slide.active .eyebrow      { animation: slide-rise 540ms cubic-bezier(.16,.84,.32,1)  60ms both; }
+  .slide.active .slide-title  { animation: slide-rise 580ms cubic-bezier(.16,.84,.32,1) 120ms both; }
+  .slide.active .lede         { animation: slide-rise 580ms cubic-bezier(.16,.84,.32,1) 180ms both; }
   .slide.active .fields,
   .slide.active .design-grid,
   .slide.active #appsByCategory,
   .slide.active .summary,
-  .slide.active .welcome .meta {
-    animation: rise 380ms cubic-bezier(.2,.7,.3,1) 60ms both;
+  .slide.active .file-drop {
+    animation: slide-rise 620ms cubic-bezier(.16,.84,.32,1) 240ms both;
   }
-  @keyframes rise {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
+  @keyframes slide-rise {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .slide.active,
+    .slide.active .eyebrow,
+    .slide.active .slide-title,
+    .slide.active .lede,
+    .slide.active .fields,
+    .slide.active .design-grid,
+    .slide.active #appsByCategory,
+    .slide.active .summary,
+    .slide.active .file-drop { animation: none; }
   }
 
   .eyebrow {
@@ -148,6 +269,34 @@
     .row { grid-template-columns: 1fr; }
     h1.slide-title { font-size: 24px; }
   }
+  /* Make every field in a row keep its input/textarea/select bottom-
+   * aligned with its sibling, even if one has a hint and the other
+   * doesn't. The flex column + margin-top:auto on the input pushes
+   * controls to the bottom of their grid cell. */
+  .field { display: flex; flex-direction: column; }
+  .field > input,
+  .field > textarea,
+  .field > select { margin-top: auto; }
+  /* Progressive reveal: every "block" on a form slide (a standalone
+   * .field or a .row of paired fields) starts hidden and fades in
+   * once the previous required block is answered. The opacity
+   * transition is gentle so each new question lands quietly rather
+   * than popping. Hidden blocks don't accept focus, so tab order
+   * tracks what's actually visible. */
+  .fields > .field,
+  .fields > .row {
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 380ms cubic-bezier(.16,.84,.32,1),
+                transform 380ms cubic-bezier(.16,.84,.32,1);
+    pointer-events: none;
+  }
+  .fields > .field.is-revealed,
+  .fields > .row.is-revealed {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
   .field label {
     display: block;
     font-size: 13px;
@@ -165,13 +314,14 @@
     width: 100%;
     background: var(--card);
     border: 1px solid var(--line);
-    border-radius: 12px;
+    border-radius: 4px;
     padding: 12px 14px;
     font-size: 14px;
     color: var(--ink);
     font-family: inherit;
     transition: border-color 120ms, box-shadow 120ms;
   }
+  select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--ink-3) 50%), linear-gradient(135deg, var(--ink-3) 50%, transparent 50%); background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; padding-right: 36px; }
   textarea { min-height: 96px; resize: vertical; }
   input:focus, textarea:focus, select:focus {
     outline: none;
@@ -188,7 +338,7 @@
     font-weight: 500;
     background: var(--card);
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: 4px;
     color: var(--ink-2);
     cursor: pointer;
     transition: all 120ms;
@@ -213,22 +363,23 @@
   .design-card {
     background: var(--card);
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: 6px;
     overflow: hidden;
     transition: border-color 120ms, transform 120ms;
   }
   .design-card:hover { border-color: #CFCFCF; }
   .design-card.love { border-color: var(--love); box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
-  .design-card.meh { border-color: var(--meh); box-shadow: 0 0 0 3px rgba(245,158,11,0.1); }
   .design-card.avoid { border-color: var(--avoid); box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
   .design-thumb {
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 9 / 19.5; /* mobile viewport, matches the right-rail showcase */
     background: var(--soft);
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
   }
   .design-thumb svg { width: 100%; height: 100%; display: block; }
+  .design-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .design-meta {
     padding: 10px 12px 12px;
   }
@@ -250,7 +401,7 @@
     padding: 7px 0;
     font-size: 11px;
     font-weight: 600;
-    border-radius: 8px;
+    border-radius: 4px;
     border: 1px solid var(--line);
     background: var(--card);
     color: var(--ink-3);
@@ -260,8 +411,8 @@
   }
   .react-btn:hover { border-color: #BBB; color: var(--ink); }
   .react-btn.on-love { background: var(--love); border-color: var(--love); color: #fff; }
-  .react-btn.on-meh { background: var(--meh); border-color: var(--meh); color: #fff; }
   .react-btn.on-avoid { background: var(--avoid); border-color: var(--avoid); color: #fff; }
+  .react-btn svg { width: 12px; height: 12px; vertical-align: -1px; margin-right: 4px; }
 
   /* ── App picker ───────────────────────────────────── */
   .apps-search-wrap {
@@ -306,7 +457,7 @@
   .app-tile {
     background: var(--card);
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: 4px;
     padding: 12px 12px;
     display: flex;
     flex-direction: column;
@@ -351,7 +502,7 @@
     padding: 8px 10px;
     border: 1px solid var(--line);
     background: var(--card);
-    border-radius: 8px;
+    border-radius: 4px;
     font-size: 12px;
     font-weight: 600;
     color: var(--ink-3);
@@ -386,7 +537,7 @@
     gap: 4px;
     cursor: pointer;
     padding: 14px 18px;
-    border-radius: 10px;
+    border-radius: 4px;
   }
   .file-label-prim {
     font-size: 13px;
@@ -429,7 +580,7 @@
   .summary {
     background: var(--card);
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: 6px;
     padding: 4px 0;
   }
   .summary-section {
@@ -468,6 +619,19 @@
     padding: 14px 20px;
     z-index: 10;
   }
+  /* Soft fade above the nav: signals that content scrolls underneath
+   * rather than getting hard-clipped, so the user knows there's more
+   * to see on long form slides. */
+  .nav::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    height: 48px;
+    background: linear-gradient(to top, rgba(250,250,250,0.95), rgba(250,250,250,0));
+    pointer-events: none;
+  }
   .nav-inner {
     max-width: 680px;
     margin: 0 auto;
@@ -480,7 +644,7 @@
     padding: 11px 22px;
     font-size: 13px;
     font-weight: 600;
-    border-radius: 10px;
+    border-radius: 6px;
     border: 1px solid transparent;
     cursor: pointer;
     transition: all 120ms;
@@ -522,70 +686,110 @@
   }
 
   /* ── Welcome slide ─────────────────────────────────── */
-  /* Take the whole viewport below the topbar so the brand lockup +
-   * CTA sit dead-centre. Sunburst mark sits above the wordmark-style
-   * "onboarding" so the welcome reads as a branded lockup, not a
-   * generic form heading. */
+  /* Two-band layout in the left column: ecomlanders wordmark pinned
+   * to the top, CTA stack (eyebrow → two-tone title → button) anchored
+   * to the bottom. The container is locked to viewport height so the
+   * page never scrolls on this slide. The topbar + bottom nav are
+   * hidden here, and main's padding is collapsed on welcome so the
+   * 100vh sum stays exact. */
+  body.is-welcome main { padding: 40px 24px; }
+  body.is-welcome .topbar { display: none; }
   .welcome {
-    min-height: calc(100vh - 220px);
+    height: calc(100vh - 80px);
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    text-align: center;
-    padding: 40px 0;
+    gap: 48px;
+    text-align: left;
+    overflow: hidden;
   }
-  .welcome .mark {
+  .welcome-brand {
     color: var(--ink);
-    margin-bottom: 24px;
   }
-  .welcome .mark svg {
-    width: 56px;
-    height: 60px;
+  .welcome-brand svg {
+    height: 24px;
+    width: auto;
     display: block;
   }
-  .welcome h1 {
-    font-size: 72px;
-    font-weight: 600;
-    letter-spacing: -0.045em;
-    line-height: 1;
-    margin: 0 0 8px;
-    text-transform: lowercase;
+  .welcome-cta {
+    /* Stays as a sibling block; the parent's justify-content: center
+     * pulls the whole logo + CTA stack into the vertical middle. */
   }
-  .welcome .underbar {
-    width: 56px;
-    height: 2px;
-    background: var(--ink);
-    margin: 18px auto 32px;
-    border-radius: 1px;
+  .welcome-eyebrow {
+    display: inline-block;
+    font-size: 11px;
+    color: var(--ink-2);
+    margin: 0 0 20px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 5px 10px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--card);
+  }
+  .welcome-title {
+    font-size: clamp(32px, 3.4vw, 44px);
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    font-weight: 600;
+    margin: 0 0 16px;
+    text-transform: none;
+  }
+  .welcome-title-muted,
+  .welcome-title-strong { display: block; }
+  .welcome-title-muted { color: var(--ink-4); }
+  .welcome-title-strong { color: var(--ink); }
+  .welcome-sub {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink-3);
+    margin: 0 0 32px;
+    max-width: 440px;
   }
   .welcome .start-btn {
-    padding: 14px 28px;
-    font-size: 15px;
-    font-weight: 600;
+    padding: 11px 22px;
+    font-size: 14px;
+    font-weight: 500;
     background: var(--accent);
     color: #fff;
     border: 0;
-    border-radius: 12px;
+    border-radius: 6px;
     cursor: pointer;
     transition: background 120ms, transform 120ms;
     font-family: inherit;
+    letter-spacing: -0.005em;
   }
   .welcome .start-btn:hover { background: var(--accent-hover); }
   .welcome .start-btn:active { transform: translateY(1px); }
   @media (max-width: 560px) {
-    .welcome h1 { font-size: 48px; }
-    .welcome .mark svg { width: 44px; height: 48px; }
+    .welcome-brand svg { height: 22px; }
+    .welcome-title { margin-bottom: 28px; }
   }
-  /* When we're on the welcome slide, hide the bottom nav so the
-   * in-page CTA is the only call to action. The JS toggles this
-   * class on the body from update(). */
-  body.is-welcome .nav { display: none; }
+  /* Welcome + done slides hide the bottom nav: welcome has its own
+   * in-page Start CTA, done is a terminal state with no next/back.
+   * JS toggles these classes on the body from update(). The step
+   * counter is also hidden on both because they aren't real steps. */
+  body.is-welcome .nav,
+  body.is-done .nav { display: none; }
+  body.is-welcome .step-indicator,
+  body.is-done .step-indicator { visibility: hidden; }
+  /* Hide the topbar on done too the success state is terminal and
+   * a progress bar on it reads as residual noise. Pair with main's
+   * padding collapse so .done can take the full viewport and centre
+   * its content vertically. */
+  body.is-done .topbar { display: none; }
+  body.is-done main { padding: 40px 24px; }
 
   /* ── Done slide ───────────────────────────────────── */
   .done {
     text-align: center;
-    padding: 60px 0 0;
+    height: calc(100vh - 80px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
   .done .check {
     width: 64px;
@@ -622,7 +826,7 @@
     </div>
     <div class="step-indicator"><span id="stepNum">1</span> of <span id="stepTotal">12</span></div>
   </div>
-  <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress" id="progress"></div>
 </div>
 
 <main>
@@ -631,20 +835,37 @@
     <!-- 1. WELCOME -->
     <section class="slide active" data-step="1">
       <div class="welcome">
-        <div class="mark" aria-hidden="true">
-          <svg viewBox="0 0 48 51" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <div class="welcome-brand" aria-label="Ecom Landers">
+          <svg viewBox="0 0 383 51" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ecom Landers">
+            <path d="M369.634 41.899C362.258 41.899 357.006 38.8304 356.829 32.1619H362.199C362.671 35.9387 365.917 37.296 369.693 37.296C373.47 37.296 376.421 35.9387 376.421 32.634C376.421 30.1555 374.71 29.1523 371.818 28.5031L366.094 27.2048C360.31 25.8475 357.714 22.8969 357.714 18.766C357.714 13.1598 362.494 10.0321 369.634 10.0321C376.952 10.0321 381.378 13.3368 381.673 19.6512H376.657C376.126 15.8744 373.529 14.6351 369.693 14.6351C365.681 14.6351 363.497 15.9924 363.497 18.648C363.497 20.7724 364.854 22.0707 368.041 22.7789L373.824 24.0772C378.781 25.2574 382.499 27.2638 382.499 32.516C382.499 39.3025 376.362 41.899 369.634 41.899Z" fill="currentColor"/>
+            <path d="M339.625 41.3091V10.6224H345.585V17.7039H345.762C346.648 14.1041 349.539 10.2683 355.145 10.2683C355.913 10.2683 356.739 10.3273 357.447 10.5634V15.5795C356.68 15.4614 355.972 15.4024 355.204 15.4024C349.48 15.4024 345.585 19.1202 345.585 25.9657V41.3091H339.625Z" fill="currentColor"/>
+            <path d="M323.499 41.899C315.237 41.899 308.628 37.06 308.628 26.0246C308.628 14.7531 315.355 10.0321 323.263 10.0321C331.171 10.0321 337.249 14.8121 337.249 25.5525C337.249 26.6147 337.19 27.2048 337.072 27.854H314.352C314.824 34.2864 318.07 37.237 323.558 37.237C327.335 37.237 330.227 35.8797 331.525 32.2799H336.836C335.007 39.1254 329.755 41.899 323.499 41.899ZM314.411 23.369H331.584C331.466 17.9988 328.456 14.6941 323.204 14.6941C318.306 14.6941 314.942 17.5267 314.411 23.369Z" fill="currentColor"/>
+            <path d="M290.031 41.8991C283.185 41.8991 276.34 37.06 276.34 25.9656C276.34 14.8122 283.185 10.0322 290.031 10.0322C294.575 10.0322 298.47 12.0976 300.299 15.4614V0H306.259V41.309H300.299V36.4699C298.47 39.8337 294.575 41.8991 290.031 41.8991ZM291.27 36.883C295.991 36.883 300.594 33.4603 300.594 25.9656C300.594 18.471 295.991 15.0483 291.27 15.0483C286.49 15.0483 282.005 18.471 282.005 25.9656C282.005 33.4603 286.49 36.883 291.27 36.883Z" fill="currentColor"/>
+            <path d="M267.985 23.546C267.985 18.0578 265.624 15.0482 260.785 15.0482C255.946 15.0482 252.582 18.0578 252.582 23.546V41.3089H246.622V10.6222H252.582V16.7596H252.759C253.291 14.4581 256.241 10.0321 263.087 10.0321C269.106 10.0321 273.945 13.5139 273.945 22.1887V41.3089H267.985V23.546Z" fill="currentColor"/>
+            <path d="M225.664 41.899C219.94 41.899 215.396 39.3615 215.396 33.2832C215.396 27.3819 219.704 24.9624 225.192 24.3132L232.805 23.428C235.637 23.0739 236.582 22.5428 236.582 21.5986V20.7724C236.582 15.8744 234.044 14.5761 229.736 14.5761C225.31 14.5761 222.832 15.8744 222.832 19.7692V20.4774H217.107V19.2381C217.107 13.1008 221.415 10.0321 229.854 10.0321C238.529 10.0321 242.542 13.2778 242.542 20.7134V41.3089H236.936V36.3518H236.7C236.109 37.5321 233.218 41.899 225.664 41.899ZM227.14 37.237C233.631 37.237 236.582 33.2241 236.582 29.9194V26.5557C236.169 27.2048 235.401 27.6179 232.392 27.972L226.608 28.7392C222.773 29.2113 221.356 30.5686 221.356 32.9881C221.356 35.8797 223.422 37.237 227.14 37.237Z" fill="currentColor"/>
+            <path d="M207.06 41.309V0H213.02V41.309H207.06Z" fill="currentColor"/>
+            <path d="M197.257 23.546C197.257 18.0578 195.133 15.0482 190.648 15.0482C186.34 15.0482 183.33 18.0578 183.33 23.546V41.3089H177.37V23.546C177.37 18.0578 175.186 15.0482 170.76 15.0482C166.452 15.0482 163.443 18.0578 163.443 23.546V41.3089H157.482V10.6222H163.443V16.7596H163.62C164.092 14.4581 167.043 10.0321 173.121 10.0321C177.429 10.0321 181.147 12.0976 182.622 16.9956C183.33 14.5171 186.34 10.0321 192.772 10.0321C198.732 10.0321 203.217 13.5139 203.217 22.1887V41.3089H197.257V23.546Z" fill="currentColor"/>
+            <path d="M140.09 41.899C132.477 41.899 125.16 36.9419 125.16 25.9656C125.16 14.9892 132.477 10.0321 140.09 10.0321C147.762 10.0321 155.079 14.9892 155.079 25.9656C155.079 36.9419 147.762 41.899 140.09 41.899ZM140.09 36.8829C145.047 36.8829 149.414 33.5192 149.414 25.9656C149.414 18.4119 145.047 15.0482 140.09 15.0482C135.133 15.0482 130.825 18.4119 130.825 25.9656C130.825 33.5192 135.133 36.8829 140.09 36.8829Z" fill="currentColor"/>
+            <path d="M111.204 41.899C103.473 41.899 96.2144 37.119 96.2144 26.0246C96.2144 14.9302 103.473 10.0321 111.204 10.0321C116.692 10.0321 123.478 12.3926 124.6 21.5396H119.17C118.344 16.8186 114.98 15.1072 111.145 15.1072C105.538 15.1072 101.821 19.1201 101.821 26.0246C101.821 32.9291 105.538 36.8239 111.145 36.8239C115.039 36.8239 118.344 35.0535 119.17 30.2735H124.6C123.596 39.5385 116.692 41.899 111.204 41.899Z" fill="currentColor"/>
+            <path d="M81.276 41.899C73.0142 41.899 66.4048 37.06 66.4048 26.0246C66.4048 14.7531 73.1322 10.0321 81.04 10.0321C88.9477 10.0321 95.026 14.8121 95.026 25.5525C95.026 26.6147 94.967 27.2048 94.849 27.854H72.129C72.6011 34.2864 75.8468 37.237 81.335 37.237C85.1119 37.237 88.0035 35.8797 89.3018 32.2799H94.6129C92.7835 39.1254 87.5314 41.899 81.276 41.899ZM72.188 23.369H89.3608C89.2427 17.9988 86.2331 14.6941 80.981 14.6941C76.0829 14.6941 72.7192 17.5267 72.188 23.369Z" fill="currentColor"/>
             <path fillRule="evenodd" clipRule="evenodd" d="M23.2461 31.8348C23.3432 31.0595 24.4673 31.0595 24.5645 31.8348L26.8008 49.7245C26.8501 50.1207 26.5409 50.4705 26.1416 50.4706H21.6689C21.2697 50.4704 20.9604 50.1206 21.0098 49.7245L23.2461 31.8348ZM20.6992 30.7987C21.171 30.1758 22.1444 30.7379 21.8408 31.4579L14.833 48.0682C14.6777 48.4363 14.2346 48.5853 13.8887 48.3856L10.0156 46.1493C9.66994 45.9495 9.57743 45.4921 9.81836 45.1737L20.6992 30.7987ZM25.9727 31.4579C25.6692 30.7378 26.6416 30.1766 27.1133 30.7997L37.9951 45.1737C38.236 45.492 38.1434 45.9494 37.7979 46.1493L33.9248 48.3856C33.579 48.5853 33.1359 48.437 32.9805 48.0692L25.9727 31.4579ZM19.0117 28.6288C19.7318 28.325 20.294 29.2986 19.6709 29.7704L5.2959 40.6512C4.97744 40.8921 4.52002 40.7998 4.32031 40.454L2.08398 36.5809C1.88426 36.235 2.03333 35.7919 2.40137 35.6366L19.0117 28.6288ZM28.1426 29.7704C27.5193 29.2986 28.0816 28.3249 28.8018 28.6288L45.4121 35.6366C45.7801 35.7919 45.9292 36.235 45.7295 36.5809L43.4932 40.454C43.2935 40.7997 42.836 40.892 42.5176 40.6512L28.1426 29.7704ZM0.746094 23.6678L18.6348 25.9042C19.4104 26.0011 19.4104 27.1256 18.6348 27.2225L0.746094 29.4579C0.349852 29.5074 0.000218431 29.199 0 28.7997V24.327C7.17118e-08 23.9276 0.349729 23.6183 0.746094 23.6678ZM47.0674 23.6688C47.4637 23.6193 47.8135 23.9286 47.8135 24.328V28.7997C47.8135 29.1991 47.4637 29.5084 47.0674 29.4589L29.1777 27.2225C28.4027 27.1252 28.4027 26.0025 29.1777 25.9052L47.0674 23.6688ZM4.32031 12.6737C4.52004 12.3278 4.97741 12.2353 5.2959 12.4764L19.6709 23.3573C20.2936 23.8291 19.7317 24.8024 19.0117 24.4989L2.40137 17.4901C2.03341 17.3349 1.88444 16.8927 2.08398 16.5468L4.32031 12.6737ZM42.5166 12.4755C42.8351 12.2348 43.2926 12.3279 43.4922 12.6737L45.7285 16.5468C45.9279 16.8926 45.779 17.3349 45.4111 17.4901L28.8008 24.4979C28.0807 24.8017 27.5188 23.8292 28.1416 23.3573L42.5166 12.4755ZM32.9805 5.05847C33.1357 4.69044 33.5789 4.54136 33.9248 4.74109L37.7979 6.97742C38.1434 7.17717 38.2358 7.63462 37.9951 7.953L27.1143 22.328C26.6425 22.9512 25.6688 22.389 25.9727 21.6688L32.9805 5.05847ZM13.8887 4.74109C14.2345 4.54141 14.6776 4.68965 14.833 5.0575L21.8408 21.6688C22.1442 22.3888 21.1709 22.9502 20.6992 22.327L9.81836 7.953C9.57735 7.63462 9.66998 7.17725 10.0156 6.97742L13.8887 4.74109ZM26.1426 2.65613C26.5417 2.65631 26.85 3.00613 26.8008 3.40222L24.5654 21.2919C24.4685 22.0675 23.344 22.0675 23.2471 21.2919L21.0107 3.40222C20.9615 3.00608 21.2707 2.65617 21.6699 2.65613H26.1426Z" fill="currentColor"/>
           </svg>
         </div>
-        <h1>onboarding</h1>
-        <div class="underbar"></div>
-        <button type="button" class="start-btn" onclick="next()">Start &rarr;</button>
+        <div class="welcome-cta">
+          <div class="welcome-eyebrow">Onboarding</div>
+          <h1 class="welcome-title">
+            <span class="welcome-title-muted">Let's onboard</span>
+            <span class="welcome-title-strong">your brand.</span>
+          </h1>
+          <p class="welcome-sub">A 12-step brief covering your audience, goals, design, and stack. Takes about 8 minutes and you can come back to it anytime.</p>
+          <button type="button" class="start-btn" onclick="next()">Get started &rarr;</button>
+        </div>
       </div>
     </section>
 
     <!-- 2. BRAND BASICS -->
     <section class="slide" data-step="2">
-      <div class="eyebrow">Step 1 of 12</div>
+      <div class="eyebrow">Step 1 of 13 · Basics</div>
       <h1 class="slide-title">First, the basics.</h1>
       <p class="lede">Your name and email so we can reach you, plus the elevator pitch.</p>
       <div class="fields">
@@ -680,8 +901,24 @@
             <input type="text" data-key="approval_decision_maker" placeholder="e.g., Jane (Founder)" />
           </div>
           <div class="field">
-            <label>Timezone (optional)</label>
-            <input type="text" data-key="timezone" placeholder="e.g., GMT, EST" />
+            <label>Timezone</label>
+            <span class="hint">So we can align on call times.</span>
+            <select data-key="timezone">
+              <option value="">Select your timezone</option>
+              <option value="GMT">GMT &middot; London (winter)</option>
+              <option value="BST">BST &middot; London (summer)</option>
+              <option value="CET">CET &middot; Central Europe</option>
+              <option value="EET">EET &middot; Eastern Europe</option>
+              <option value="EST">EST &middot; US East</option>
+              <option value="CST">CST &middot; US Central</option>
+              <option value="MST">MST &middot; US Mountain</option>
+              <option value="PST">PST &middot; US West</option>
+              <option value="AEST">AEST &middot; Sydney</option>
+              <option value="JST">JST &middot; Tokyo</option>
+              <option value="IST">IST &middot; India</option>
+              <option value="SGT">SGT &middot; Singapore</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
         </div>
       </div>
@@ -689,9 +926,9 @@
 
     <!-- 3. CUSTOMER & COMPETITORS -->
     <section class="slide" data-step="3">
-      <div class="eyebrow">Step 2 of 12</div>
-      <h1 class="slide-title">Who buys from you, and who else are they looking at?</h1>
-      <p class="lede">The more specific you get, the more we can lean into what matters.</p>
+      <div class="eyebrow">Step 2 of 13 · Audience</div>
+      <h1 class="slide-title">Tell us more about your ICP.</h1>
+      <p class="lede">The customer, the competition, the products we'll be selling. The more specific you get, the more we can lean into what matters.</p>
       <div class="fields">
         <div class="field">
           <label>Target customer</label>
@@ -718,7 +955,7 @@
 
     <!-- 4. PROJECT SPECIFICS (NEW) -->
     <section class="slide" data-step="4">
-      <div class="eyebrow">Step 3 of 12 · Project</div>
+      <div class="eyebrow">Step 3 of 13 · Project</div>
       <h1 class="slide-title">What are we building, and for whom?</h1>
       <p class="lede">The pages, the traffic, the moving parts.</p>
       <div class="fields">
@@ -727,46 +964,29 @@
           <span class="hint">The page we're building, rebuilding, or testing.</span>
           <textarea data-key="product_url" placeholder="https://yourstore.com/products/..."></textarea>
         </div>
-        <div class="row">
-          <div class="field">
-            <label>Page type</label>
-            <span class="hint">Select all that apply.</span>
-            <div class="chips" data-chips="page_type" data-multi="1">
-              <div class="chip" data-val="PDP">PDP</div>
-              <div class="chip" data-val="Advertorial">Advertorial</div>
-              <div class="chip" data-val="Hero Lander">Hero Lander</div>
-              <div class="chip" data-val="Listicle">Listicle</div>
-              <div class="chip" data-val="Homepage">Homepage</div>
-              <div class="chip" data-val="Bundle Builder">Bundle Builder</div>
-              <div class="chip" data-val="Collection Page">Collection Page</div>
-              <div class="chip" data-val="Cart / Checkout">Cart / Checkout</div>
-              <div class="chip" data-val="Other">Other</div>
-            </div>
-          </div>
-          <div class="field">
-            <label>Traffic source</label>
-            <span class="hint">Where does cold traffic come from?</span>
-            <div class="chips" data-chips="traffic_source" data-multi="1">
-              <div class="chip" data-val="Meta (cold)">Meta (cold)</div>
-              <div class="chip" data-val="Google">Google</div>
-              <div class="chip" data-val="Email">Email</div>
-              <div class="chip" data-val="Organic">Organic</div>
-              <div class="chip" data-val="TikTok">TikTok</div>
-              <div class="chip" data-val="Mixed">Mixed</div>
-              <div class="chip" data-val="Other">Other</div>
-            </div>
+        <div class="field">
+          <label>Traffic source</label>
+          <span class="hint">Where does cold traffic come from? Select all that apply.</span>
+          <div class="chips" data-chips="traffic_source" data-multi="1">
+            <div class="chip" data-val="Meta (cold)">Meta (cold)</div>
+            <div class="chip" data-val="Google">Google</div>
+            <div class="chip" data-val="Email">Email</div>
+            <div class="chip" data-val="Organic">Organic</div>
+            <div class="chip" data-val="TikTok">TikTok</div>
+            <div class="chip" data-val="Mixed">Mixed</div>
+            <div class="chip" data-val="Other">Other</div>
           </div>
         </div>
         <div class="row">
-          <div class="field">
-            <label>Amazon ASIN(s)</label>
+          <div class="field" data-optional="1">
+            <label>Amazon ASIN(s) <span class="hint" style="display:inline; font-weight:400;">(optional)</span></label>
             <span class="hint">If you also sell on Amazon.</span>
             <input type="text" data-key="amazon_asins" placeholder="e.g., B09XYZ1234" />
           </div>
-          <div class="field">
-            <label>Meta page name</label>
-            <span class="hint">So we can find your running ads.</span>
-            <input type="text" data-key="meta_page_name" placeholder="e.g., Ecomlanders on Meta" />
+          <div class="field" data-optional="1">
+            <label>Meta Ads Library link <span class="hint" style="display:inline; font-weight:400;">(optional)</span></label>
+            <span class="hint">So we can see your running creative.</span>
+            <input type="url" data-key="meta_ads_library_url" placeholder="https://www.facebook.com/ads/library/?..." />
           </div>
         </div>
         <div class="field">
@@ -779,7 +999,7 @@
 
     <!-- 5. GOALS -->
     <section class="slide" data-step="5">
-      <div class="eyebrow">Step 4 of 12</div>
+      <div class="eyebrow">Step 4 of 13 · Goals</div>
       <h1 class="slide-title">What does winning look like?</h1>
       <p class="lede">We work backwards from the outcome. Be honest about the constraints too.</p>
       <div class="fields">
@@ -792,7 +1012,6 @@
             <div class="chip" data-val="Scale revenue">Scale revenue</div>
             <div class="chip" data-val="Lower CAC">Lower CAC</div>
             <div class="chip" data-val="Grow LTV">Grow LTV</div>
-            <div class="chip" data-val="Email/SMS capture">Email/SMS capture</div>
           </div>
         </div>
         <div class="field">
@@ -802,7 +1021,7 @@
         </div>
         <div class="field">
           <label>What does success look like in your words?</label>
-          <textarea data-key="success_definition" placeholder="e.g., If we hit 3.2% CVR on the new PDP by end of Q3 with AOV holding above $68, that's a clear win."></textarea>
+          <textarea data-key="success_definition" placeholder="e.g., If we hit 3.2% CVR on the new PDP by end of Q3 with AOV holding above £68, that's a clear win."></textarea>
         </div>
         <div class="field">
           <label>Timeline expectations</label>
@@ -814,7 +1033,7 @@
 
     <!-- 6. RISK & BOTTLENECKS (NEW) -->
     <section class="slide" data-step="6">
-      <div class="eyebrow">Step 5 of 12 · Risk</div>
+      <div class="eyebrow">Step 5 of 13 · Risk</div>
       <h1 class="slide-title">What's not working, and what could trip us up?</h1>
       <p class="lede">Be candid. The faster we know the friction, the less we waste cycles on it.</p>
       <div class="fields">
@@ -833,63 +1052,60 @@
           <span class="hint">Supplements, finance, skincare, alcohol. Anything regulated.</span>
           <textarea data-key="compliance_restrictions" placeholder="e.g., can't make health claims, no before/afters without disclaimer..."></textarea>
         </div>
-        <div class="field">
-          <label>Previous agencies or consultants</label>
+        <div class="field" data-optional="1">
+          <label>Previous agencies or consultants <span class="hint" style="display:inline; font-weight:400;">(optional)</span></label>
           <span class="hint">What worked, what didn't. We can learn from the scars.</span>
           <textarea data-key="previous_agencies" placeholder="e.g., worked with X for 6 months, design was good but no test rigour..."></textarea>
         </div>
       </div>
     </section>
 
-    <!-- 7. DESIGN VIBES -->
+    <!-- 7. DESIGN TASTE 1 of 3 -->
     <section class="slide" data-step="7">
-      <div class="eyebrow">Step 6 of 12 · Design</div>
-      <h1 class="slide-title">What vibe are you going for?</h1>
-      <p class="lede">Pick as many as feel right. Wrong answers don't exist here.</p>
-      <div class="fields">
-        <div class="field">
-          <label>Brand feel</label>
-          <div class="chips" data-chips="vibe_chips" data-multi="1">
-            <div class="chip" data-val="Minimal">Minimal</div>
-            <div class="chip" data-val="Bold & loud">Bold & loud</div>
-            <div class="chip" data-val="Premium">Premium</div>
-            <div class="chip" data-val="Luxury">Luxury</div>
-            <div class="chip" data-val="Editorial">Editorial</div>
-            <div class="chip" data-val="Playful">Playful</div>
-            <div class="chip" data-val="Bright & energetic">Bright & energetic</div>
-            <div class="chip" data-val="Dark / moody">Dark / moody</div>
-            <div class="chip" data-val="Organic / natural">Organic / natural</div>
-            <div class="chip" data-val="Tech / clinical">Tech / clinical</div>
-            <div class="chip" data-val="Retro">Retro</div>
-            <div class="chip" data-val="Conversion-first">Conversion-first</div>
-          </div>
-        </div>
-        <div class="field">
-          <label>Brands whose look you love</label>
-          <span class="hint">Names or URLs. Doesn't need to be your category.</span>
-          <textarea data-key="design_inspiration" placeholder="e.g., Aesop, Glossier, Liquid Death, Olipop..."></textarea>
+      <div class="eyebrow">Step 6 of 13 · Design</div>
+      <h1 class="slide-title">Which of these resonate? (1 of 3)</h1>
+      <p class="lede">Tap Love or Pass on each one. Trust your gut. We use this to calibrate direction faster than any brief.</p>
+      <div class="design-grid" id="designGrid1"></div>
+      <div class="fields" style="margin-top: 22px;">
+        <div class="field" data-optional="1">
+          <label>Anything specific you'd note? <span class="hint" style="display:inline; font-weight:400;">(optional)</span></label>
+          <span class="hint">Specific elements you love or hate from above.</span>
+          <textarea data-key="design_notes_1" placeholder="e.g., love the typography on #2, hate the heavy colour on #4..."></textarea>
         </div>
       </div>
     </section>
 
-    <!-- 8. DESIGN LOVE / AVOID -->
+    <!-- 8. DESIGN TASTE 2 of 3 -->
     <section class="slide" data-step="8">
-      <div class="eyebrow">Step 7 of 12 · Design</div>
-      <h1 class="slide-title">Rate these. Quickly.</h1>
-      <p class="lede">For each one, tap Love, Meh, or Avoid. This calibrates our direction faster than any brief.</p>
-      <div class="design-grid" id="designGrid"></div>
-      <div style="margin-top: 22px;">
-        <div class="field">
-          <label>Anything to add?</label>
-          <span class="hint">Specific elements you love or hate from above.</span>
-          <textarea data-key="design_notes" placeholder="e.g., love the typography on #3, hate the bright colors on #5..."></textarea>
+      <div class="eyebrow">Step 7 of 13 · Design</div>
+      <h1 class="slide-title">Which of these resonate? (2 of 3)</h1>
+      <p class="lede">Same drill. Trust your gut, keep moving.</p>
+      <div class="design-grid" id="designGrid2"></div>
+      <div class="fields" style="margin-top: 22px;">
+        <div class="field" data-optional="1">
+          <label>Anything specific you'd note? <span class="hint" style="display:inline; font-weight:400;">(optional)</span></label>
+          <textarea data-key="design_notes_2" placeholder="e.g., love the colour palette on #1..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. DESIGN TASTE 3 of 3 -->
+    <section class="slide" data-step="9">
+      <div class="eyebrow">Step 8 of 13 · Design</div>
+      <h1 class="slide-title">Which of these resonate? (3 of 3)</h1>
+      <p class="lede">Last set. Then we'll move on to voice.</p>
+      <div class="design-grid" id="designGrid3"></div>
+      <div class="fields" style="margin-top: 22px;">
+        <div class="field" data-optional="1">
+          <label>Anything specific you'd note? <span class="hint" style="display:inline; font-weight:400;">(optional)</span></label>
+          <textarea data-key="design_notes_3"></textarea>
         </div>
       </div>
     </section>
 
     <!-- 9. VOICE -->
-    <section class="slide" data-step="9">
-      <div class="eyebrow">Step 8 of 12 · Voice</div>
+    <section class="slide" data-step="10">
+      <div class="eyebrow">Step 9 of 13 · Voice</div>
       <h1 class="slide-title">How should you sound?</h1>
       <p class="lede">Voice is half the conversion lift. Pick a few that fit.</p>
       <div class="fields">
@@ -925,8 +1141,8 @@
           <span class="hint">Compliance, brand guardrails, things customers have pushed back on.</span>
           <textarea data-key="words_to_avoid" placeholder="e.g., no 'miracle', no 'cure', avoid mentioning competitor X..."></textarea>
         </div>
-        <div class="field">
-          <label>Lines you love</label>
+        <div class="field" data-optional="1">
+          <label>Lines you love <span class="hint" style="display:inline; font-weight:400;">(optional)</span></label>
           <span class="hint">Copy from any brand (yours or others) that lands.</span>
           <textarea data-key="copy_examples"></textarea>
         </div>
@@ -934,8 +1150,8 @@
     </section>
 
     <!-- 10. APP STACK PICKER -->
-    <section class="slide" data-step="10">
-      <div class="eyebrow">Step 9 of 12 · Tech</div>
+    <section class="slide" data-step="11">
+      <div class="eyebrow">Step 10 of 13 · Tech</div>
       <h1 class="slide-title">What's installed on your store?</h1>
       <p class="lede">Tap every app you're currently running. We'll go deeper on each one next.</p>
       <div class="apps-search-wrap">
@@ -946,17 +1162,17 @@
       </div>
       <div id="appsByCategory"></div>
       <div style="margin-top: 18px;">
-        <div class="field">
-          <label>Other apps not listed</label>
+        <div class="field" data-optional="1">
+          <label>Other apps not listed <span class="hint" style="display:inline; font-weight:400;">(optional)</span></label>
           <input type="text" data-key="other_apps" placeholder="App name, what it does..." />
         </div>
       </div>
     </section>
 
     <!-- 11. APP DEEP DIVE -->
-    <section class="slide" data-step="11">
-      <div class="eyebrow">Step 10 of 12 · Tech</div>
-      <h1 class="slide-title">For each app: keep, replace, or unsure?</h1>
+    <section class="slide" data-step="12">
+      <div class="eyebrow">Step 11 of 13 · Tech</div>
+      <h1 class="slide-title">For each app: keep, replace, or not sure?</h1>
       <p class="lede">We'll flag duplicates, recommend swaps, and make sure nothing critical gets broken in dev.</p>
       <div id="appDeepDive"></div>
       <div id="appDeepDiveEmpty" style="text-align: center; padding: 40px 20px; color: var(--ink-4); font-size: 13px;">
@@ -965,8 +1181,8 @@
     </section>
 
     <!-- 12. ACCESS + ASSETS -->
-    <section class="slide" data-step="12">
-      <div class="eyebrow">Step 11 of 12 · Access</div>
+    <section class="slide" data-step="13">
+      <div class="eyebrow">Step 12 of 13 · Access</div>
       <h1 class="slide-title">Access and assets.</h1>
       <p class="lede">The boring but essential stuff. Get this right and we move faster.</p>
       <div class="fields">
@@ -979,8 +1195,8 @@
           <span class="hint">GA4, Clarity, Hotjar, Intelligems, Triple Whale, etc.</span>
           <textarea data-key="analytics_software"></textarea>
         </div>
-        <div class="field">
-          <label>Existing landing pages / funnels to review</label>
+        <div class="field" data-optional="1">
+          <label>Existing landing pages / funnels to review <span class="hint" style="display:inline; font-weight:400;">(optional)</span></label>
           <span class="hint">Links to anything we should look at before designing.</span>
           <textarea data-key="existing_landing_pages" placeholder="e.g., https://yourstore.com/pages/v1-pdp"></textarea>
         </div>
@@ -989,9 +1205,9 @@
           <span class="hint">What's set up. Meta pixel, GA4, Clarity, post-purchase surveys, etc.</span>
           <textarea data-key="tracking_pixels" placeholder="e.g., Meta pixel + Conversions API live, GA4 partial, no PPS yet..."></textarea>
         </div>
-        <div class="field">
-          <label>Other integrations to know about</label>
-          <span class="hint">3PL, ERP, helpdesk, loyalty — anything we shouldn't break.</span>
+        <div class="field" data-optional="1">
+          <label>Other integrations to know about <span class="hint" style="display:inline; font-weight:400;">(optional)</span></label>
+          <span class="hint">3PL, ERP, helpdesk, loyalty. Anything we shouldn't break.</span>
           <textarea data-key="other_integrations" placeholder="e.g., ShipBob 3PL, Gorgias helpdesk, Smile.io loyalty..."></textarea>
         </div>
         <div class="field">
@@ -999,8 +1215,8 @@
           <span class="hint">Google Drive, Dropbox, Figma file, anywhere we can pull logos, fonts, photography.</span>
           <input type="url" data-key="brand_assets_link" placeholder="https://" />
         </div>
-        <div class="field">
-          <label>Upload additional assets</label>
+        <div class="field" data-optional="1">
+          <label>Upload additional assets <span class="hint" style="display:inline; font-weight:400;">(optional)</span></label>
           <span class="hint">Files we'll need that don't live in a shared drive. PDFs, images, anything.</span>
           <div class="file-drop" id="fileDropZone">
             <input type="file" id="fileInput" multiple class="file-input" />
@@ -1012,16 +1228,16 @@
           </div>
           <span class="hint" style="margin-top: 6px;">Files are listed here in the preview. The live form uploads them for real.</span>
         </div>
-        <div class="field">
-          <label>Anything else we should know?</label>
+        <div class="field" data-optional="1">
+          <label>Anything else we should know? <span class="hint" style="display:inline; font-weight:400;">(optional)</span></label>
           <textarea data-key="additional_info" placeholder="e.g., we're mid-rebrand, our checkout is broken on mobile Safari, we have a launch on the 14th..."></textarea>
         </div>
       </div>
     </section>
 
     <!-- 13. REVIEW -->
-    <section class="slide" data-step="13">
-      <div class="eyebrow">Step 12 of 12</div>
+    <section class="slide" data-step="14">
+      <div class="eyebrow">Step 13 of 13 · Review</div>
       <h1 class="slide-title">Quick review.</h1>
       <p class="lede">Skim it, edit anything by jumping back, then submit when it's ready.</p>
       <div class="summary" id="summary"></div>
@@ -1032,13 +1248,13 @@
     </section>
 
     <!-- 14. DONE -->
-    <section class="slide" data-step="14">
+    <section class="slide" data-step="15">
       <div class="done">
         <div class="check">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
         </div>
-        <h1 class="slide-title">Brief received.</h1>
-        <p class="lede">Your brief is with the team. We'll spin up a Slack channel and request store access shortly. All updates will run through there.</p>
+        <h1 class="slide-title">Thanks for submitting.</h1>
+        <p class="lede">The team will request store access and kick things off shortly. You'll hear from us in Slack with next steps.</p>
         <div style="margin-top: 30px;">
           <button class="btn btn-secondary" onclick="resetAll()">Start a new brief</button>
         </div>
@@ -1046,6 +1262,13 @@
     </section>
 
   </div>
+  <aside class="showcase" id="showcase" aria-hidden="true">
+    <div class="showcase-cols" id="showcaseCols">
+      <div class="showcase-col"><div class="showcase-col-inner"></div></div>
+      <div class="showcase-col"><div class="showcase-col-inner"></div></div>
+      <div class="showcase-col"><div class="showcase-col-inner"></div></div>
+    </div>
+  </aside>
 </main>
 
 <div class="nav">
@@ -1062,16 +1285,43 @@ const LS_KEY = 'ecomlanders-onboarding-preview';
 let state = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
 let stepIdx = 0;
 const slides = Array.from(document.querySelectorAll('.slide'));
-const TOTAL_USER_STEPS = 12;
+const TOTAL_USER_STEPS = 13;
 
+/* DESIGNS: 12 reference designs split across 3 rating slides
+ * (4 per slide). Each entry shows a generic mobile-viewport placeholder
+ * until a real screenshot is dropped into /public/onboarding-designs/
+ * named after the id (e.g. d01.png — also accepts jpg/jpeg/webp). On
+ * boot we probe each id and attach d.img when one resolves; the render
+ * then swaps the placeholder out for the image. Reorder this array to
+ * change which design lands on which slide. */
 const DESIGNS = [
-  { id: 'minimal',    name: 'Aesop-style minimal',    subtitle: 'Calm, spacious, single hero shot',    svg: minimalSVG() },
-  { id: 'bold',       name: 'Liquid Death bold',      subtitle: 'Loud type, flat colour, no apology',  svg: boldSVG() },
-  { id: 'premium',    name: 'Maison-style premium',   subtitle: 'Dark, serif italics, museum-quiet',    svg: premiumSVG() },
-  { id: 'editorial',  name: 'Magazine editorial',     subtitle: 'Long-form, columns, considered',       svg: editorialSVG() },
-  { id: 'playful',    name: 'Glossier playful',       subtitle: 'Pastel gradients, rounded, friendly',  svg: playfulSVG() },
-  { id: 'conversion', name: 'Conversion-led',         subtitle: 'Urgency badges, reviews, hard sell',   svg: conversionSVG() },
+  // Slide 1
+  { id: 'd01', name: 'Design 1',  subtitle: '' },
+  { id: 'd02', name: 'Design 2',  subtitle: '' },
+  { id: 'd03', name: 'Design 3',  subtitle: '' },
+  { id: 'd04', name: 'Design 4',  subtitle: '' },
+  // Slide 2
+  { id: 'd05', name: 'Design 5',  subtitle: '' },
+  { id: 'd06', name: 'Design 6',  subtitle: '' },
+  { id: 'd07', name: 'Design 7',  subtitle: '' },
+  { id: 'd08', name: 'Design 8',  subtitle: '' },
+  // Slide 3
+  { id: 'd09', name: 'Design 9',  subtitle: '' },
+  { id: 'd10', name: 'Design 10', subtitle: '' },
+  { id: 'd11', name: 'Design 11', subtitle: '' },
+  { id: 'd12', name: 'Design 12', subtitle: '' },
 ];
+
+// Shared placeholder rendered when no image is loaded yet. A simple
+// device-frame shape so the slot reads as "screenshot pending" rather
+// than as a finished mockup.
+function devicePlaceholderSVG() {
+  return `<svg viewBox="0 0 90 195" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+    <rect width="90" height="195" fill="#EDEDEF"/>
+    <rect x="10" y="14" width="70" height="167" rx="6" fill="#F7F8FA" stroke="#E5E5EA" stroke-width="0.5"/>
+    <circle cx="45" cy="97.5" r="3" fill="#D4D4D8"/>
+  </svg>`;
+}
 
 const APPS = [
   { id: 'klaviyo', name: 'Klaviyo', category: 'Email/SMS' },
@@ -1099,41 +1349,71 @@ const APPS = [
 ];
 
 /* ─── Render helpers ───────────────────────────────── */
-function renderDesigns() {
-  const grid = document.getElementById('designGrid');
+function renderDesigns(slot) {
+  // slot is 1, 2, or 3. Renders the 4 designs assigned to that
+  // slide. State for reactions is shared across all 3 slides.
+  const grid = document.getElementById(`designGrid${slot}`);
   if (!grid) return;
   state.design_reactions = state.design_reactions || {};
-  grid.innerHTML = DESIGNS.map(d => {
+  const designs = DESIGNS.slice((slot - 1) * 4, slot * 4);
+  // Binary reaction: Love (check) or Pass (cross). Click the same
+  // button twice to clear.
+  const checkIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+  const crossIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+  grid.innerHTML = designs.map(d => {
     const reaction = state.design_reactions[d.id];
+    // Prefer a real image if one was found at boot, else the
+    // shared device-frame placeholder.
+    const thumb = d.img
+      ? `<img src="${d.img}" alt="${d.name}">`
+      : devicePlaceholderSVG();
     return `
       <div class="design-card ${reaction || ''}" data-design="${d.id}">
-        <div class="design-thumb">${d.svg}</div>
+        <div class="design-thumb">${thumb}</div>
         <div class="design-meta">
           <div class="design-name">${d.name}</div>
-          <div class="design-subtitle">${d.subtitle}</div>
+          ${d.subtitle ? `<div class="design-subtitle">${d.subtitle}</div>` : ''}
           <div class="design-actions">
-            <button class="react-btn ${reaction === 'love' ? 'on-love' : ''}" data-react="love">Love</button>
-            <button class="react-btn ${reaction === 'meh' ? 'on-meh' : ''}" data-react="meh">Meh</button>
-            <button class="react-btn ${reaction === 'avoid' ? 'on-avoid' : ''}" data-react="avoid">Avoid</button>
+            <button class="react-btn ${reaction === 'love' ? 'on-love' : ''}" data-react="love" aria-label="Love">${checkIcon} Love</button>
+            <button class="react-btn ${reaction === 'avoid' ? 'on-avoid' : ''}" data-react="avoid" aria-label="Pass">${crossIcon} Pass</button>
           </div>
         </div>
       </div>
     `;
   }).join('');
   grid.querySelectorAll('.react-btn').forEach(btn => {
-    btn.addEventListener('click', e => {
+    btn.addEventListener('click', () => {
       const card = btn.closest('.design-card');
       const id = card.dataset.design;
       const react = btn.dataset.react;
       const current = state.design_reactions[id];
       state.design_reactions[id] = current === react ? null : react;
       save();
-      renderDesigns();
+      renderDesigns(slot);
     });
   });
 }
 
-/* App-stack search state — lives outside React-y state because it's
+/* Probe each design's expected image at boot, attaching d.img when
+ * one resolves. Matches the showcase convention: png first then jpg/
+ * webp. Failures are silent so the SVG fallback stays in place. */
+function bootDesignImages() {
+  const EXTS = ['png', 'jpg', 'jpeg', 'webp'];
+  DESIGNS.forEach(d => {
+    let i = 0;
+    const tryNext = () => {
+      if (i >= EXTS.length) return;
+      const src = `/onboarding-designs/${d.id}.${EXTS[i++]}`;
+      const img = new Image();
+      img.onload = () => { d.img = src; };
+      img.onerror = tryNext;
+      img.src = src;
+    };
+    tryNext();
+  });
+}
+
+/* App-stack search state lives outside React-y state because it's
  * purely transient UI filter, not persisted. */
 let appsSearchTerm = '';
 
@@ -1157,7 +1437,7 @@ function renderApps() {
 
   /* Group filtered apps by category, preserving the source-array
    * ordering within each group. Category labels render only when a
-   * group has at least one visible app — keeps the UI tight while
+   * group has at least one visible app, keeping the UI tight while
    * searching. */
   const groups = new Map();
   for (const app of filtered) {
@@ -1292,10 +1572,10 @@ function renderSummary() {
   };
 
   root.innerHTML = `
-    ${section('Contact', `${e('primary_contact','—')} · <span style="color:var(--ink-3)">${e('email','no email')}</span>`)}
+    ${section('Contact', `${e('primary_contact','No name yet')} · <span style="color:var(--ink-3)">${e('email','no email')}</span>`)}
     <div class="summary-section">
       <h4>Brand</h4>
-      <p>${e('company_name','—')} · <span style="color:var(--ink-3)">${e('website_url','no url')}</span></p>
+      <p>${e('company_name','No company yet')} · <span style="color:var(--ink-3)">${e('website_url','no url')}</span></p>
     </div>
     ${section('Pitch', e('brief_description'))}
     ${section('Decision maker', e('approval_decision_maker'))}
@@ -1304,8 +1584,8 @@ function renderSummary() {
     ${section('USPs', e('usps'))}
     ${section('Main products', e('main_products'))}
     ${section('Pages we are building', e('product_url'))}
-    ${section('Page types', e('page_type'), 'Nothing picked')}
     ${section('Traffic source', e('traffic_source'), 'Nothing picked')}
+    ${section('Meta Ads Library', e('meta_ads_library_url'))}
     ${section('Specific direction', e('specific_direction'))}
     ${section('Primary goal', e('primary_goal_chip'), 'Nothing picked')}
     ${section('Current metrics', e('current_metrics'))}
@@ -1315,8 +1595,6 @@ function renderSummary() {
     ${section('Common objections', e('common_objections'))}
     ${section('Compliance restrictions', e('compliance_restrictions'))}
     ${section('Previous agencies', e('previous_agencies'))}
-    ${section('Design vibe', e('vibe_chips'), 'Nothing picked')}
-    ${section('Design inspiration', e('design_inspiration'))}
     <div class="summary-section">
       <h4>Design reactions</h4>
       ${designRows.length ? `<ul class="summary-list">${designRows.map(([id,v]) => {
@@ -1324,6 +1602,9 @@ function renderSummary() {
         return `<li><strong style="color: var(--${v})">${v.toUpperCase()}</strong> ${d ? d.name : id}</li>`;
       }).join('')}</ul>` : '<p class="empty">No reactions yet</p>'}
     </div>
+    ${section('Design notes (set 1)', e('design_notes_1'))}
+    ${section('Design notes (set 2)', e('design_notes_2'))}
+    ${section('Design notes (set 3)', e('design_notes_3'))}
     ${section('Tone', e('tone_chips'), 'Nothing picked')}
     ${section('Core value props', e('core_value_props'))}
     ${section('Reviews / press', e('reviews_testimonials'))}
@@ -1423,9 +1704,13 @@ function wireInputs() {
   document.querySelectorAll('[data-key]').forEach(el => {
     const key = el.dataset.key;
     if (state[key] != null) el.value = state[key];
-    el.addEventListener('input', () => {
+    // 'input' fires on every keystroke for text inputs and on selection
+    // for <select>; both let us update reveal + gate state in real time.
+    const evt = el.tagName === 'SELECT' ? 'change' : 'input';
+    el.addEventListener(evt, () => {
       state[key] = el.value;
       save();
+      onFieldChange();
     });
   });
   document.querySelectorAll('[data-chips]').forEach(group => {
@@ -1447,23 +1732,146 @@ function wireInputs() {
         group.querySelectorAll('.chip').forEach(c => {
           c.classList.toggle('on', values.includes(c.dataset.val));
         });
+        onFieldChange();
       });
     });
   });
 }
 
+/* ─── Progressive reveal + Continue gating ────────────
+ * Each form slide reveals its .field children one at a time. The
+ * first field is visible immediately; the next fades in once the
+ * previous one is answered (or marked optional). The Continue button
+ * gates on every required field having a value. Slides without
+ * .field children (welcome, design rate, apps picker, app deep-dive,
+ * review, done) don't gate. */
+
+function isFieldAnswered(field) {
+  // Chip group inside the field (single or multi-select)
+  const chips = field.querySelector('[data-chips]');
+  if (chips) {
+    return chips.querySelectorAll('.chip.on').length > 0;
+  }
+  // File drop inside the field
+  if (field.querySelector('.file-drop')) {
+    return Array.isArray(state.uploaded_files) && state.uploaded_files.length > 0;
+  }
+  // Standard input/textarea/select
+  const input = field.querySelector('input, textarea, select');
+  if (input) {
+    return input.value && input.value.trim() !== '';
+  }
+  return true; // unknown structure: don't block
+}
+
+function blockFields(block) {
+  if (block.classList.contains('row')) return Array.from(block.querySelectorAll('.field'));
+  if (block.classList.contains('field')) return [block];
+  return [];
+}
+
+function isBlockAnswered(block) {
+  return blockFields(block).every(f => isFieldAnswered(f) || f.dataset.optional === '1');
+}
+
+function blockHasRequired(block) {
+  return blockFields(block).some(f => f.dataset.optional !== '1');
+}
+
+// True only when at least one field in the block has real user
+// content. Used to decide if a block should "shortcut" past a still-
+// blocked state (e.g. user came back from a later slide and the field
+// is already filled). Pure-optional empty blocks must NOT shortcut.
+function blockHasContent(block) {
+  return blockFields(block).some(f => isFieldAnswered(f));
+}
+
+function updateReveal(slide, opts = {}) {
+  // Walk top-level blocks of .fields. A block is a standalone .field
+  // or a .row of paired .field elements. Custom widgets (design grid,
+  // app picker, app deep-dive) manage their own visibility.
+  const blocks = Array.from(slide.querySelectorAll('.fields > .row, .fields > .field'));
+  if (blocks.length === 0) return;
+  const { scrollToNew = false } = opts;
+  let blocked = false;
+  let newlyRevealed = null;
+  for (const block of blocks) {
+    const wasRevealed = block.classList.contains('is-revealed');
+    const answered = isBlockAnswered(block);
+    // A block reveals when either the sequence isn't blocked, OR the
+    // block already has real content (returning user). A trivially-
+    // answered empty optional block does NOT count, otherwise optional
+    // rows leapfrog ahead of unfilled required ones above them.
+    const shouldShow = !blocked || blockHasContent(block);
+    block.classList.toggle('is-revealed', shouldShow);
+    if (shouldShow && !wasRevealed && !newlyRevealed) newlyRevealed = block;
+    if (!answered && blockHasRequired(block)) blocked = true;
+  }
+  // Auto-scroll the newly revealed block into view if it sits below
+  // the bottom nav. Delayed slightly so the fade-in lands first.
+  if (scrollToNew && newlyRevealed) {
+    setTimeout(() => {
+      const rect = newlyRevealed.getBoundingClientRect();
+      const safeBottom = window.innerHeight - 100; // clear of the fixed nav + fade
+      if (rect.bottom > safeBottom || rect.top < 0) {
+        newlyRevealed.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 160);
+  }
+}
+
+function updateContinueGate() {
+  const slide = slides[stepIdx];
+  if (!slide) return;
+  const nextBtn = document.getElementById('nextBtn');
+  if (!nextBtn) return;
+  // Welcome and review/done have their own CTAs skip gating.
+  // Custom-widget slides (rate designs, apps picker, app deep-dive)
+  // also skip since they don't have traditional fields.
+  const dataStep = slide.dataset.step;
+  const SKIP_GATE = new Set(['1', '7', '8', '9', '11', '12', '14', '15']);
+  if (SKIP_GATE.has(dataStep)) {
+    nextBtn.disabled = false;
+    return;
+  }
+  const fields = Array.from(slide.querySelectorAll('.fields .field'));
+  if (fields.length === 0) {
+    nextBtn.disabled = false;
+    return;
+  }
+  const allAnswered = fields
+    .filter(f => f.dataset.optional !== '1')
+    .every(isFieldAnswered);
+  nextBtn.disabled = !allAnswered;
+}
+
+function onFieldChange() {
+  const slide = slides[stepIdx];
+  if (!slide) return;
+  // Pass scrollToNew so any field that *just* appeared because of this
+  // edit gets scrolled into view. Slide navigation calls updateReveal
+  // without the flag it does its own scroll-to-top.
+  updateReveal(slide, { scrollToNew: true });
+  updateContinueGate();
+}
+
 /* ─── Navigation ───────────────────────────────────── */
 function update() {
   slides.forEach((s, i) => s.classList.toggle('active', i === stepIdx));
-  /* Welcome slide swaps the bottom nav for the in-page Start button
-   * (hidden via body.is-welcome). Toggled here so it's correct on
-   * deep-link reloads + on every nav. */
+  /* Welcome + done slides swap out the bottom nav (welcome has the
+   * in-page Start button; done is terminal). Toggled here so it's
+   * correct on deep-link reloads and on every nav. */
   document.body.classList.toggle('is-welcome', stepIdx === 0);
+  document.body.classList.toggle('is-done', stepIdx === slides.length - 1);
   const userStep = Math.max(1, Math.min(stepIdx, TOTAL_USER_STEPS));
   document.getElementById('stepNum').textContent = userStep;
   document.getElementById('stepTotal').textContent = TOTAL_USER_STEPS;
-  const pct = (stepIdx / (slides.length - 1)) * 100;
-  document.getElementById('progressFill').style.width = pct + '%';
+  // Segmented progress: welcome shows none filled, each form step
+  // fills its own segment, done fills the whole row.
+  const filled = Math.max(0, Math.min(stepIdx, TOTAL_USER_STEPS));
+  document.querySelectorAll('.progress-seg').forEach((seg, i) => {
+    seg.classList.toggle('is-filled', i < filled);
+  });
 
   document.getElementById('backBtn').style.visibility = stepIdx === 0 || stepIdx === slides.length - 1 ? 'hidden' : 'visible';
   const nextBtn = document.getElementById('nextBtn');
@@ -1479,20 +1887,57 @@ function update() {
     nextBtn.style.visibility = 'visible';
   }
 
-  // Lazy renders — data-step values shifted when we added the
+  // Lazy renders. data-step values shifted when we added the
   // Project specifics (4) and Risk & bottlenecks (6) slides.
   const step = slides[stepIdx].dataset.step;
-  if (step === '8') renderDesigns();
-  if (step === '10') renderApps();
-  if (step === '11') renderAppDeepDive();
-  if (step === '12') renderFileList();
-  if (step === '13') renderSummary();
+  if (step === '7') renderDesigns(1);
+  if (step === '8') renderDesigns(2);
+  if (step === '9') renderDesigns(3);
+  if (step === '11') renderApps();
+  if (step === '12') renderAppDeepDive();
+  if (step === '13') renderFileList();
+  if (step === '14') renderSummary();
+
+  // Apply the progressive reveal + Continue gate state for the new
+  // slide. Re-evaluating on every nav means returning to an already-
+  // answered slide shows all its fields immediately.
+  updateReveal(slides[stepIdx]);
+  updateContinueGate();
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function isCurrentSlideAdvanceable() {
+  const slide = slides[stepIdx];
+  if (!slide) return false;
+  const dataStep = slide.dataset.step;
+  // Welcome, custom-widget slides, and review/done all advance freely.
+  const SKIP_GATE = new Set(['1', '7', '8', '9', '11', '12', '14', '15']);
+  if (SKIP_GATE.has(dataStep)) return true;
+  const fields = Array.from(slide.querySelectorAll('.fields .field'));
+  if (fields.length === 0) return true;
+  return fields
+    .filter(f => f.dataset.optional !== '1')
+    .every(isFieldAnswered);
+}
+
 function next() {
-  if (stepIdx < slides.length - 1) { stepIdx++; update(); }
+  if (stepIdx >= slides.length - 1) return;
+  if (!isCurrentSlideAdvanceable()) {
+    // Surface the first unanswered required field so the user knows
+    // what's blocking them.
+    const slide = slides[stepIdx];
+    const blocker = Array.from(slide.querySelectorAll('.fields .field'))
+      .find(f => f.dataset.optional !== '1' && !isFieldAnswered(f));
+    if (blocker) {
+      blocker.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const input = blocker.querySelector('input, textarea, select');
+      if (input) setTimeout(() => input.focus(), 250);
+    }
+    return;
+  }
+  stepIdx++;
+  update();
 }
 function back() {
   if (stepIdx > 0) { stepIdx--; update(); }
@@ -1616,9 +2061,96 @@ function conversionSVG() {
   </svg>`;
 }
 
+/* ─── Right-rail showcase ─────────────────────────────
+ * Probes /public/onboarding-showcase/NN.{jpg,png,webp} for NN 01-20
+ * and distributes the loaded images across 3 vertical columns that
+ * scroll continuously (cols 1 + 3 up, col 2 down, slightly different
+ * speeds for depth). Each column's list is duplicated so a 0 → -50%
+ * translateY loop wraps seamlessly. If nothing loads we flip
+ * body.no-showcase so the form re-centres and the empty rail
+ * disappears. Static HTML can't list a directory, so this convention
+ * lets the user drop files in and have them appear without touching
+ * code. */
+function bootShowcase() {
+  const cols = document.querySelectorAll('#showcaseCols .showcase-col-inner');
+  if (!cols.length) return;
+  // .png first because that's what users export from Figma/Shopify
+  // screenshots by default most slots resolve in a single request.
+  const EXTS = ['png', 'jpg', 'jpeg', 'webp'];
+  const MAX = 12;
+
+  // Per-slot fallback: try each ext sequentially, resolve as soon as
+  // one loads. Saves ~3x the requests vs probing all exts in parallel
+  // for every slot, which is the dominant cost when most slots use
+  // the same format.
+  const probeSlot = (n) => new Promise(resolve => {
+    let i = 0;
+    const tryNext = () => {
+      if (i >= EXTS.length) return resolve(null);
+      const src = `/onboarding-showcase/${n}.${EXTS[i++]}`;
+      const img = new Image();
+      img.onload = () => resolve(src);
+      img.onerror = tryNext;
+      img.src = src;
+    };
+    tryNext();
+  });
+
+  const slots = [];
+  for (let i = 1; i <= MAX; i++) slots.push(probeSlot(String(i).padStart(2, '0')));
+
+  Promise.all(slots).then(results => {
+    const found = results.filter(Boolean);
+    if (found.length === 0) {
+      document.body.classList.add('no-showcase');
+      return;
+    }
+
+    // Round-robin into the 3 columns so they end up roughly balanced
+    // even when the source folder has only a few images.
+    const buckets = [[], [], []];
+    found.forEach((src, i) => buckets[i % 3].push(src));
+
+    cols.forEach((col, i) => {
+      const list = buckets[i].length ? buckets[i] : found; // fall back to all if a column would be empty
+      // Duplicate so translateY(-50%) lands seamlessly on the start
+      // of the second copy.
+      const html = list.concat(list)
+        .map(src => `<img src="${src}" alt="" decoding="async">`)
+        .join('');
+      col.innerHTML = html;
+    });
+
+    // Wait for every rendered tile to finish loading before fading
+    // the pane in, so the opacity ease lands on a fully-formed wall
+    // instead of catching it mid-paint. We use a complete-check +
+    // load-event fallback because img.decode() can hang indefinitely
+    // on cached images in some browsers.
+    const showcase = document.getElementById('showcase');
+    const imgs = Array.from(showcase.querySelectorAll('img'));
+    const waitFor = img => new Promise(resolve => {
+      if (img.complete && img.naturalWidth > 0) return resolve();
+      img.addEventListener('load',  () => resolve(), { once: true });
+      img.addEventListener('error', () => resolve(), { once: true });
+    });
+    Promise.all(imgs.map(waitFor))
+      .then(() => showcase.classList.add('is-ready'));
+  });
+}
+
 /* ─── Init ────────────────────────────────────────── */
+// Render the progress segments once on boot; update() just toggles
+// the .done class on each.
+(() => {
+  const root = document.getElementById('progress');
+  if (!root) return;
+  root.innerHTML = Array.from({ length: TOTAL_USER_STEPS },
+    () => '<div class="progress-seg"></div>').join('');
+})();
 wireInputs();
 update();
+bootShowcase();
+bootDesignImages();
 </script>
 </body>
 </html>

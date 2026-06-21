@@ -164,7 +164,7 @@ export default function PortfolioV2AdminPage() {
           {projects.map((p) => (
             <div
               key={p.id}
-              className="bg-white border border-[#EDEDEF] rounded-xl p-5 shadow-[var(--shadow-soft)]"
+              className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-5 shadow-[var(--shadow-soft)]"
             >
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div>
@@ -199,13 +199,13 @@ export default function PortfolioV2AdminPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => handleResync(p)}
-                  className="text-xs px-3 py-1.5 border border-[#E5E5EA] rounded-md hover:bg-[#F5F5F7]"
+                  className="text-xs px-3 py-1.5 border border-[#E5E5EA] rounded-md hover:bg-[#222222]"
                 >
                   Re-sync
                 </button>
                 <button
                   onClick={() => handleDelete(p)}
-                  className="text-xs px-3 py-1.5 border border-[#E5E5EA] rounded-md hover:bg-[#F5F5F7] text-red-600"
+                  className="text-xs px-3 py-1.5 border border-[#E5E5EA] rounded-md hover:bg-[#222222] text-red-600"
                 >
                   Delete
                 </button>
@@ -218,8 +218,8 @@ export default function PortfolioV2AdminPage() {
       {modalOpen && (
         <ModalPortal>
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
-              <div className="sticky top-0 bg-white border-b border-[#EDEDEF] px-6 py-4 flex items-center justify-between">
+            <div className="bg-[#181818] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
+              <div className="sticky top-0 bg-[#181818] border-b border-[#2A2A2A] px-6 py-4 flex items-center justify-between">
                 <h2 className="font-semibold text-[#1B1B1B]">New Portfolio Project</h2>
                 <button
                   onClick={() => setModalOpen(false)}
@@ -290,7 +290,7 @@ export default function PortfolioV2AdminPage() {
                 </div>
 
                 {progress && (
-                  <div className="text-sm text-[#1B1B1B] bg-[#F5F5F7] rounded-lg px-4 py-3">
+                  <div className="text-sm text-[#1B1B1B] bg-[#222222] rounded-lg px-4 py-3">
                     {progress}
                   </div>
                 )}
@@ -304,7 +304,7 @@ export default function PortfolioV2AdminPage() {
                   <button
                     type="button"
                     onClick={() => setModalOpen(false)}
-                    className="px-4 py-2 text-sm border border-[#E5E5EA] rounded-lg hover:bg-[#F5F5F7]"
+                    className="px-4 py-2 text-sm border border-[#E5E5EA] rounded-lg hover:bg-[#222222]"
                   >
                     Cancel
                   </button>

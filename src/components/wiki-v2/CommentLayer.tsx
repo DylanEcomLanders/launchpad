@@ -296,7 +296,7 @@ function FloatingAddButton({ rect, onClick }: { rect: DOMRect; onClick: () => vo
         onClick();
       }}
       style={{ position: "absolute", top, left, transform: "translateX(-50%)" }}
-      className="z-50 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-[#1B1B1B] text-white text-[12px] font-medium shadow-lg hover:bg-[#000] transition-colors"
+      className="z-50 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-[#222222] text-[#E5E5EA] text-[12px] font-medium shadow-lg hover:bg-[#2A2A2A] transition-colors"
     >
       <ChatBubbleLeftEllipsisIcon className="size-3.5" />
       Add comment
@@ -315,17 +315,17 @@ function SidePanel({ children, onClose }: { children: React.ReactNode; onClose: 
   }, [onClose]);
 
   return (
-    <div className="fixed right-0 top-0 bottom-0 w-[360px] bg-white border-l border-[#EDEDEF] shadow-[-8px_0_24px_rgba(0,0,0,0.04)] flex flex-col z-40 animate-slide-in-right">
-      <div className="flex items-center justify-between px-4 h-12 border-b border-[#EDEDEF]">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+    <div className="fixed right-0 top-0 bottom-0 w-[360px] bg-[#181818] border-l border-[#2A2A2A] shadow-[-8px_0_24px_rgba(0,0,0,0.04)] flex flex-col z-40 animate-slide-in-right">
+      <div className="flex items-center justify-between px-4 h-12 border-b border-[#2A2A2A]">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
           Comments
         </span>
         <button
           onClick={onClose}
-          className="p-1 rounded-md hover:bg-[#F3F3F5] transition-colors"
+          className="p-1 rounded-md hover:bg-[#222222] transition-colors"
           aria-label="Close"
         >
-          <XMarkIcon className="size-4 text-[#7A7A7A]" />
+          <XMarkIcon className="size-4 text-[#71757D]" />
         </button>
       </div>
       <div className="flex-1 overflow-y-auto">{children}</div>
@@ -354,7 +354,7 @@ function ComposeForm({
       }}
       className="p-4 space-y-3"
     >
-      <div className="rounded-md bg-[#FFF9DD] px-3 py-2 text-[12px] text-[#3A3A3A] border-l-2 border-[#E0C95F]">
+      <div className="rounded-md bg-[#2A2A1A] px-3 py-2 text-[12px] text-[#E5E5EA] border-l-2 border-[#666622]">
         <span className="line-clamp-3">&ldquo;{anchorText}&rdquo;</span>
       </div>
       <input
@@ -362,7 +362,7 @@ function ComposeForm({
         onChange={(e) => setName(e.target.value)}
         placeholder="Your name"
         required
-        className="w-full px-3 py-1.5 text-[13px] border border-[#EDEDEF] rounded-md focus:outline-none focus:border-[#1B1B1B] placeholder:text-[#A0A0A0]"
+        className="w-full px-3 py-1.5 text-[13px] border border-[#2A2A2A] rounded-md bg-[#222222] focus:outline-none focus:border-white placeholder:text-[#71757D]"
       />
       <textarea
         value={body}
@@ -371,20 +371,20 @@ function ComposeForm({
         required
         rows={5}
         autoFocus
-        className="w-full px-3 py-2 text-[13px] border border-[#EDEDEF] rounded-md focus:outline-none focus:border-[#1B1B1B] placeholder:text-[#A0A0A0] resize-none leading-relaxed"
+        className="w-full px-3 py-2 text-[13px] border border-[#2A2A2A] rounded-md bg-[#222222] focus:outline-none focus:border-white placeholder:text-[#71757D] resize-none leading-relaxed"
       />
       <div className="flex items-center gap-2 justify-end">
         <button
           type="button"
           onClick={onCancel}
-          className="px-3 py-1.5 text-[12px] text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+          className="px-3 py-1.5 text-[12px] text-[#71757D] hover:text-[#E5E5EA] transition-colors"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={!body.trim() || !name.trim()}
-          className="px-3 py-1.5 text-[12px] font-medium bg-[#1B1B1B] text-white rounded-md hover:bg-[#000] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="px-3 py-1.5 text-[12px] font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           Post
         </button>
@@ -412,7 +412,7 @@ function ThreadPanel({
 
   return (
     <div className="p-4 space-y-4">
-      <div className={`rounded-md px-3 py-2 text-[12px] border-l-2 ${resolved ? "bg-[#F3F3F5] border-[#C5C5C5] text-[#7A7A7A]" : "bg-[#FFF9DD] border-[#E0C95F] text-[#3A3A3A]"}`}>
+      <div className={`rounded-md px-3 py-2 text-[12px] border-l-2 ${resolved ? "bg-[#222222] border-[#C5C5C5] text-[#71757D]" : "bg-[#FFF9DD] border-[#E0C95F] text-[#3A3A3A]"}`}>
         <span className="line-clamp-3">&ldquo;{root.anchor_text}&rdquo;</span>
       </div>
 
@@ -425,8 +425,8 @@ function ThreadPanel({
         onClick={onToggleResolve}
         className={`w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-[12px] font-medium rounded-md border transition-colors ${
           resolved
-            ? "border-[#EDEDEF] text-[#7A7A7A] hover:text-[#1B1B1B] hover:bg-[#FAFAFB]"
-            : "border-[#EDEDEF] text-[#15803D] hover:bg-[#F0FDF4]"
+            ? "border-[#2A2A2A] text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#0C0C0C]"
+            : "border-[#2A2A2A] text-[#15803D] hover:bg-[#F0FDF4]"
         }`}
       >
         {resolved ? (
@@ -448,26 +448,26 @@ function ThreadPanel({
           onReply(replyBody, name);
           setReplyBody("");
         }}
-        className="space-y-2 pt-2 border-t border-[#EDEDEF]"
+        className="space-y-2 pt-2 border-t border-[#2A2A2A]"
       >
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Your name"
           required
-          className="w-full px-3 py-1.5 text-[12px] border border-[#EDEDEF] rounded-md focus:outline-none focus:border-[#1B1B1B] placeholder:text-[#A0A0A0]"
+          className="w-full px-3 py-1.5 text-[12px] border border-[#2A2A2A] rounded-md bg-[#222222] focus:outline-none focus:border-white placeholder:text-[#71757D]"
         />
         <textarea
           value={replyBody}
           onChange={(e) => setReplyBody(e.target.value)}
           placeholder="Reply..."
           rows={3}
-          className="w-full px-3 py-1.5 text-[12px] border border-[#EDEDEF] rounded-md focus:outline-none focus:border-[#1B1B1B] placeholder:text-[#A0A0A0] resize-none leading-relaxed"
+          className="w-full px-3 py-1.5 text-[12px] border border-[#2A2A2A] rounded-md bg-[#222222] focus:outline-none focus:border-white placeholder:text-[#71757D] resize-none leading-relaxed"
         />
         <button
           type="submit"
           disabled={!replyBody.trim() || !name.trim()}
-          className="w-full px-3 py-1.5 text-[12px] font-medium bg-[#1B1B1B] text-white rounded-md hover:bg-[#000] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="w-full px-3 py-1.5 text-[12px] font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           Reply
         </button>
@@ -479,12 +479,12 @@ function ThreadPanel({
 function CommentBubble({ comment, indented }: { comment: WikiComment; indented?: boolean }) {
   const when = relativeTime(comment.created_at);
   return (
-    <div className={indented ? "ml-4 pl-3 border-l border-[#EDEDEF]" : ""}>
+    <div className={indented ? "ml-4 pl-3 border-l border-[#2A2A2A]" : ""}>
       <div className="flex items-baseline gap-2 mb-1">
-        <span className="text-[12px] font-medium text-[#1B1B1B]">{comment.author_name}</span>
-        <span className="text-[11px] text-[#A0A0A0]">{when}</span>
+        <span className="text-[12px] font-medium text-[#E5E5EA]">{comment.author_name}</span>
+        <span className="text-[11px] text-[#71757D]">{when}</span>
       </div>
-      <p className="text-[13px] text-[#3A3A3A] leading-relaxed whitespace-pre-wrap">{comment.body}</p>
+      <p className="text-[13px] text-[#E5E5EA] leading-relaxed whitespace-pre-wrap">{comment.body}</p>
     </div>
   );
 }

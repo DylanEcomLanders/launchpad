@@ -22,7 +22,7 @@ export default async function PortfolioV2DetailPage({
   const next = idx >= 0 && idx < all.length - 1 ? all[idx + 1] : null;
 
   return (
-    <div className="min-h-screen bg-[#0A0A0B] text-white">
+    <div className="min-h-screen bg-[#080808] text-white">
       <header className="border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 md:px-10 py-6 flex items-center justify-between">
           <Link href="/portfolio-v2" className="text-white">
@@ -134,7 +134,7 @@ export default async function PortfolioV2DetailPage({
         </p>
         <Link
           href="/audit"
-          className="inline-block mt-8 px-8 py-4 bg-[#00E27A] text-[#0A0A0B] font-semibold rounded-full hover:bg-[#00E27A]/90 transition-colors"
+          className="inline-block mt-8 px-8 py-4 bg-[#00E27A] text-[#080808] font-semibold rounded-full hover:bg-[#00E27A]/90 transition-colors"
         >
           Get a FREE audit →
         </Link>

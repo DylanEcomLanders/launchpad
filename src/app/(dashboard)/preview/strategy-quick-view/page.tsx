@@ -98,27 +98,27 @@ export default function StrategyTablePreview() {
         Preview, mock data
       </div>
 
-      <div className="mb-3 text-[11px] uppercase tracking-wider text-[#A0A0A0]">
+      <div className="mb-3 text-[11px] uppercase tracking-wider text-[#71757D]">
         What drops into the existing pod detail page
       </div>
 
       {/* Just the strategy table, on its own */}
-      <section className="rounded-lg border border-[#E5E5EA] bg-white">
-        <div className="flex items-baseline justify-between border-b border-[#F0F0F0] px-4 py-3">
+      <section className="rounded-lg border border-[#2A2A2A] bg-[#181818]">
+        <div className="flex items-baseline justify-between border-b border-[#2A2A2A] px-4 py-3">
           <div className="flex items-baseline gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
               Strategy
             </span>
-            <span className="text-[13px] font-semibold text-[#1B1B1B]">
+            <span className="text-[13px] font-semibold text-[#E5E5EA]">
               In flight on this pod
             </span>
-            <span className="text-[10px] text-[#A0A0A0]">
+            <span className="text-[10px] text-[#71757D]">
               · Maya Lin · {STRATEGY_DELIVERABLES.length} deliverables
             </span>
           </div>
         </div>
 
-        <div className="divide-y divide-[#F0F0F0]">
+        <div className="divide-y divide-[#2A2A2A]">
           {sorted.map((d) => (
             <DeliverableRow key={d.id} deliverable={d} />
           ))}
@@ -126,16 +126,16 @@ export default function StrategyTablePreview() {
       </section>
 
       {/* What's wired note */}
-      <div className="mt-6 rounded-lg border border-[#E5E5EA] bg-[#FAFAFB] p-4 text-xs text-[#7A7A7A]">
-        <p className="font-semibold uppercase tracking-wider text-[#1B1B1B]">
+      <div className="mt-6 rounded-lg border border-[#2A2A2A] bg-[#0C0C0C] p-4 text-xs text-[#71757D]">
+        <p className="font-semibold uppercase tracking-wider text-[#E5E5EA]">
           The full pod page change is two things
         </p>
         <ul className="mt-1 list-disc space-y-0.5 pl-4">
           <li>
-            <span className="font-medium text-[#1B1B1B]">"strategist" added to the PodMemberRole enum.</span> Maya then appears in the existing members grid using the existing MemberRow component. No new visual treatment needed.
+            <span className="font-medium text-[#E5E5EA]">"strategist" added to the PodMemberRole enum.</span> Maya then appears in the existing members grid using the existing MemberRow component. No new visual treatment needed.
           </li>
           <li>
-            <span className="font-medium text-[#1B1B1B]">This table section</span>, added once to the pod detail page somewhere below the existing members + capacity row. Above-the-fold for the strategist, scannable for the pod.
+            <span className="font-medium text-[#E5E5EA]">This table section</span>, added once to the pod detail page somewhere below the existing members + capacity row. Above-the-fold for the strategist, scannable for the pod.
           </li>
         </ul>
         <p className="mt-3">
@@ -151,9 +151,9 @@ export default function StrategyTablePreview() {
 function DeliverableRow({ deliverable: d }: { deliverable: StrategyDeliverable }) {
   const tone =
     d.status === "blocked" ? "text-rose-700"
-      : d.status === "in_progress" ? "text-[#1B1B1B] font-semibold"
+      : d.status === "in_progress" ? "text-[#E5E5EA] font-semibold"
       : d.status === "done" ? "text-emerald-700"
-      : "text-[#7A7A7A]";
+      : "text-[#71757D]";
   const dot =
     d.status === "blocked" ? "bg-rose-500 ring-2 ring-rose-200"
       : d.status === "in_progress" ? "bg-[#1B1B1B] ring-2 ring-[#1B1B1B]/20"
@@ -161,12 +161,12 @@ function DeliverableRow({ deliverable: d }: { deliverable: StrategyDeliverable }
       : "bg-[#D5D5D8]";
 
   return (
-    <div className="flex items-baseline justify-between gap-3 px-4 py-2.5 hover:bg-[#FAFAFB]">
+    <div className="flex items-baseline justify-between gap-3 px-4 py-2.5 hover:bg-[#0C0C0C]">
       <div className="flex items-baseline gap-2 min-w-0">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0] shrink-0 w-20">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] shrink-0 w-20">
           {d.client}
         </span>
-        <span className="text-[12px] font-medium text-[#1B1B1B] truncate">
+        <span className="text-[12px] font-medium text-[#E5E5EA] truncate">
           {d.title}
         </span>
       </div>
@@ -175,7 +175,7 @@ function DeliverableRow({ deliverable: d }: { deliverable: StrategyDeliverable }
           <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
           {d.status_hint}
         </span>
-        <span className="text-[11px] text-[#7A7A7A] tabular-nums w-28 text-right">
+        <span className="text-[11px] text-[#71757D] tabular-nums w-28 text-right">
           {d.due}
         </span>
       </div>

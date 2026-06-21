@@ -87,7 +87,7 @@ export default function SocialAnalyticsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-xl font-bold tracking-tight">Social Analytics</h1>
+          <h1 className="text-xl font-bold">Social Analytics</h1>
           <p className="text-xs text-[#AAA] mt-0.5">
             {lastFetched ? `${fromCache ? "Cached · " : ""}Last scraped ${new Date(lastFetched).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}` : "Loading..."}
           </p>

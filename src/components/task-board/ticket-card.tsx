@@ -90,7 +90,7 @@ export function TicketCard({
   return (
     <div
       tabIndex={0}
-      className={`group rounded-lg border bg-white px-3 py-2.5 transition-shadow hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1A1A1A]/10 ${
+      className={`group rounded-lg border bg-[#181818] px-3 py-2.5 transition-shadow hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1A1A1A]/10 ${
         level === "critical" ? "animate-pulse-soft" : ""
       } ${dragOver ? "ring-2 ring-[#1A1A1A]/20" : ""}`}
       style={{
@@ -150,13 +150,13 @@ export function TicketCard({
       </div>
 
       {/* Title */}
-      <p className="text-[13px] leading-snug text-[#1A1A1A] mb-1">
+      <p className="text-[13px] leading-snug text-[#E5E5EA] mb-1">
         {ticket.title}
       </p>
 
       {/* Meta */}
       {(ticket.client_id || ticket.assigned_to) && (
-        <p className="text-[11px] text-[#7A7A7A] leading-snug">
+        <p className="text-[11px] text-[#71757D] leading-snug">
           {ticket.client_id && <span>{ticket.client_id}</span>}
           {ticket.client_id && ticket.assigned_to && <span> · </span>}
           {ticket.assigned_to && <span>→ {ticket.assigned_to}</span>}
@@ -165,7 +165,7 @@ export function TicketCard({
 
       {/* Notes */}
       {ticket.notes && (
-        <p className="mt-1 text-[11px] italic leading-snug text-[#888]">
+        <p className="mt-1 text-[11px] italic leading-snug text-[#9CA3AF]">
           {ticket.notes}
         </p>
       )}
@@ -179,7 +179,7 @@ export function TicketCard({
             compact
           />
           {uploading > 0 && (
-            <span className="text-[10px] text-[#7A7A7A] italic">
+            <span className="text-[10px] text-[#71757D] italic">
               Uploading…
             </span>
           )}
@@ -193,7 +193,7 @@ export function TicketCard({
             <button
               type="button"
               onClick={onStart}
-              className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold rounded border border-[#E5E5EA] text-[#1A1A1A] hover:bg-[#F3F3F5]"
+              className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold rounded border border-[#2A2A2A] text-[#E5E5EA] hover:bg-[#222222]"
               title="Start (assigns to you)"
             >
               <PlayIcon className="size-3" />
@@ -203,7 +203,7 @@ export function TicketCard({
           <button
             type="button"
             onClick={onDone}
-            className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold rounded border border-[#E5E5EA] text-[#059669] hover:bg-[#F0FDF4]"
+            className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold rounded border border-[#2A2A2A] text-[#059669] hover:bg-[#F0FDF4]"
             title="Mark done"
           >
             <CheckIcon className="size-3" />
@@ -212,7 +212,7 @@ export function TicketCard({
           <button
             type="button"
             onClick={() => setKilling(true)}
-            className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold rounded border border-[#E5E5EA] text-[#DC2626] hover:bg-[#FEF2F2]"
+            className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold rounded border border-[#2A2A2A] text-[#DC2626] hover:bg-[#FEF2F2]"
             title="Kill with reason"
           >
             <XMarkIcon className="size-3" />
@@ -222,7 +222,7 @@ export function TicketCard({
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold rounded border border-[#E5E5EA] text-[#7A7A7A] hover:text-[#1A1A1A]"
+              className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold rounded border border-[#2A2A2A] text-[#71757D] hover:text-[#E5E5EA]"
               title="Attach screenshot (drop or paste also works)"
             >
               <PaperClipIcon className="size-3" />
@@ -232,7 +232,7 @@ export function TicketCard({
             <button
               type="button"
               onClick={onPromote}
-              className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold rounded border border-[#E5E5EA] text-[#1A1A1A] hover:bg-[#F3F3F5] ml-auto"
+              className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold rounded border border-[#2A2A2A] text-[#E5E5EA] hover:bg-[#222222] ml-auto"
               title="Promote to a full task"
             >
               <ArrowUpRightIcon className="size-3" />
@@ -269,7 +269,7 @@ export function TicketCard({
               }
             }}
             placeholder="Why kill?"
-            className="flex-1 text-[11px] px-2 py-1 border border-[#E5E5EA] rounded focus:outline-none focus:border-[#999]"
+            className="flex-1 text-[11px] px-2 py-1 border border-[#2A2A2A] rounded focus:outline-none focus:border-[#999]"
           />
           <button
             type="button"
@@ -285,7 +285,7 @@ export function TicketCard({
               setKilling(false);
               setKillReason("");
             }}
-            className="px-2 py-1 text-[10px] font-semibold rounded text-[#7A7A7A] hover:text-[#1A1A1A]"
+            className="px-2 py-1 text-[10px] font-semibold rounded text-[#71757D] hover:text-[#E5E5EA]"
           >
             Cancel
           </button>

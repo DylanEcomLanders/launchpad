@@ -22,7 +22,7 @@ function LeadMagnetNodeComponent({ data: rawData, selected }: NodeProps) {
   return (
     <div
       className={`
-        min-w-[180px] max-w-[240px] rounded-xl border bg-white transition-shadow
+        min-w-[180px] max-w-[240px] rounded-xl border bg-[#181818] transition-shadow
         ${selected ? "border-[#15803D] shadow-lg" : "border-[#BBF7D0] shadow-sm hover:shadow-md"}
       `}
     >
@@ -57,17 +57,17 @@ function LeadMagnetNodeComponent({ data: rawData, selected }: NodeProps) {
 
       {/* Body */}
       <div className="px-3.5 py-3">
-        <p className="text-[13px] font-semibold text-[#1B1B1B] leading-tight">{data.label || "Lead Magnet"}</p>
-        <p className="text-[10px] text-[#777] mt-0.5 capitalize">{format}</p>
+        <p className="text-[13px] font-semibold text-[#E5E5EA] leading-tight">{data.label || "Lead Magnet"}</p>
+        <p className="text-[10px] text-[#9CA3AF] mt-0.5 capitalize">{format}</p>
         {(data as any).description && (
-          <p className="text-[11px] text-[#777] mt-1 leading-relaxed whitespace-pre-wrap">{(data as any).description}</p>
+          <p className="text-[11px] text-[#9CA3AF] mt-1 leading-relaxed whitespace-pre-wrap">{(data as any).description}</p>
         )}
 
         {/* Metrics */}
         {optInCvr != null && (
           <div className="mt-2 pt-2 border-t border-[#E6F9ED]">
-            <p className="text-[8px] text-[#AAA] uppercase tracking-wider mb-0.5">Opt-in CVR</p>
-            <p className={`text-xs font-semibold ${optInCvr >= 25 ? "text-emerald-600" : optInCvr < 10 ? "text-red-500" : "text-[#1B1B1B]"}`}>
+            <p className="text-[8px] text-[#9CA3AF] uppercase tracking-wider mb-0.5">Opt-in CVR</p>
+            <p className={`text-xs font-semibold ${optInCvr >= 25 ? "text-emerald-600" : optInCvr < 10 ? "text-red-500" : "text-[#E5E5EA]"}`}>
               {optInCvr}%
             </p>
           </div>
@@ -79,7 +79,7 @@ function LeadMagnetNodeComponent({ data: rawData, selected }: NodeProps) {
             <div className="flex-1 h-1 bg-[#E6F9ED] rounded-full overflow-hidden">
               <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${(done / total) * 100}%` }} />
             </div>
-            <span className="text-[9px] text-[#777]">{done}/{total}</span>
+            <span className="text-[9px] text-[#9CA3AF]">{done}/{total}</span>
           </div>
         )}
 

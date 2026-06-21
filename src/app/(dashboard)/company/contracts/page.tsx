@@ -86,7 +86,7 @@ export default function ContractsListPage() {
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto px-6 md:px-10 py-12">
-        <div className="text-sm text-[#7A7A7A]">Loading agreements...</div>
+        <div className="text-sm text-[#71757D]">Loading agreements...</div>
       </div>
     );
   }
@@ -100,10 +100,10 @@ export default function ContractsListPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#1B1B1B] tracking-tight">
-            Contracts &amp; NDAs
+          <h1 className="text-2xl font-semibold text-[#E5E5EA]">
+            Contracts & NDAs
           </h1>
-          <p className="text-[13px] text-[#7A7A7A] mt-1">
+          <p className="text-[13px] text-[#71757D] mt-1">
             {total} total · {awaitingCounter} awaiting your counter-sign ·{" "}
             {awaitingTeam} awaiting team member
           </p>
@@ -111,14 +111,14 @@ export default function ContractsListPage() {
         <div className="flex items-center gap-2">
           <Link
             href="/company/contracts/templates"
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E5E5EA] text-[#1B1B1B] text-[13px] font-medium rounded-lg hover:border-[#1B1B1B] transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#181818] border border-[#2A2A2A] text-[#E5E5EA] text-[13px] font-medium rounded-lg hover:border-white transition-colors"
           >
             <DocumentTextIcon className="size-4" />
             Templates
           </Link>
           <button
             onClick={() => setQuickAddOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#1B1B1B] text-white text-[13px] font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white text-[#0C0C0C] text-[13px] font-medium rounded-lg hover:bg-[#F3F4F6] transition-colors"
           >
             <PlusIcon className="size-4" />
             New agreement
@@ -127,12 +127,12 @@ export default function ContractsListPage() {
       </div>
 
       {total === 0 ? (
-        <div className="bg-[#F7F8FA] border border-dashed border-[#E5E5EA] rounded-2xl p-10 text-center">
-          <ShieldCheckIcon className="size-7 text-[#A0A0A0] mx-auto mb-3" />
-          <div className="text-[15px] font-medium text-[#1B1B1B] mb-1">
+        <div className="bg-[#0C0C0C] border border-dashed border-[#2A2A2A] rounded-2xl p-10 text-center">
+          <ShieldCheckIcon className="size-7 text-[#71757D] mx-auto mb-3" />
+          <div className="text-[15px] font-medium text-[#E5E5EA] mb-1">
             No agreements yet
           </div>
-          <div className="text-[13px] text-[#7A7A7A] mb-5 max-w-md mx-auto">
+          <div className="text-[13px] text-[#71757D] mb-5 max-w-md mx-auto">
             Click <strong>New agreement</strong> above to spin up an NDA and contract
             from just name, role, and compensation. Or convert a candidate at{" "}
             <Link href="/company/hiring" className="underline">/company/hiring</Link>{" "}
@@ -140,7 +140,7 @@ export default function ContractsListPage() {
           </div>
           <button
             onClick={() => setQuickAddOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#1B1B1B] text-white text-[13px] font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white text-[#0C0C0C] text-[13px] font-medium rounded-lg hover:bg-[#F3F4F6] transition-colors"
           >
             <PlusIcon className="size-4" />
             New agreement
@@ -160,7 +160,7 @@ export default function ContractsListPage() {
                 >
                   {meta.label}
                 </span>
-                <span className="text-[11px] text-[#A0A0A0]">{list.length}</span>
+                <span className="text-[11px] text-[#71757D]">{list.length}</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {list.map((a) => {
@@ -169,22 +169,22 @@ export default function ContractsListPage() {
                     <Link
                       key={a.id}
                       href={`/company/contracts/${a.id}`}
-                      className="block bg-white border border-[#EDEDEF] rounded-xl p-4 hover:border-[#1B1B1B]/30 hover:shadow-[var(--shadow-soft)] transition-all"
+                      className="block bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 hover:border-white/30 hover:shadow-[var(--shadow-soft)] transition-all"
                     >
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="min-w-0 flex-1">
-                          <div className="text-[14px] font-medium text-[#1B1B1B] truncate">
+                          <div className="text-[14px] font-medium text-[#E5E5EA] truncate">
                             {a.person_full_name}
                           </div>
-                          <div className="text-[11px] text-[#7A7A7A] mt-0.5">
+                          <div className="text-[11px] text-[#71757D] mt-0.5">
                             {a.person_job_title || person?.job_title || "—"}
                           </div>
                         </div>
-                        <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-[#F3F3F5] text-[#1B1B1B]">
+                        <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-[#222222] text-[#E5E5EA]">
                           {AGREEMENT_KIND_LABEL[a.kind]}
                         </span>
                       </div>
-                      <div className="text-[11px] text-[#A0A0A0]">
+                      <div className="text-[11px] text-[#71757D]">
                         Updated {fmtRel(a.updated_at)}
                       </div>
                     </Link>

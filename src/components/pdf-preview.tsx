@@ -46,15 +46,15 @@ export function PdfPreview({
   };
 
   return (
-    <div className="bg-[#EDEDEF] border border-[#E5E5EA] rounded-lg p-8">
+    <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg p-8">
       <div className="flex items-start gap-4">
-        <div className="p-2.5 bg-white rounded-md border border-[#E5E5EA]">
-          <CheckIcon className="size-5 text-[#1B1B1B]" />
+        <div className="p-2.5 bg-[#181818] rounded-md border border-[#2A2A2A]">
+          <CheckIcon className="size-5 text-[#E5E5EA]" />
         </div>
         <div className="flex-1">
           <h3 className="text-sm font-semibold mb-1">{label} Ready</h3>
-          <p className="text-xs text-[#7A7A7A] mb-1">{description}</p>
-          <p className="text-xs text-[#A0A0A0]">{details}</p>
+          <p className="text-xs text-[#71757D] mb-1">{description}</p>
+          <p className="text-xs text-[#71757D]">{details}</p>
         </div>
       </div>
 
@@ -62,7 +62,7 @@ export function PdfPreview({
         <button
           onClick={handleDownload}
           disabled={downloading}
-          className="flex items-center gap-2 px-5 py-2.5 bg-[#1B1B1B] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40"
+          className="flex items-center gap-2 px-5 py-2.5 bg-[#222222] text-[#E5E5EA] text-sm font-medium rounded-md hover:bg-[#2A2A2A] transition-colors disabled:opacity-40"
         >
           {downloading ? (
             <>

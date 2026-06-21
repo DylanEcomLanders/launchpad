@@ -385,10 +385,10 @@ export default function StrategistHomePreview() {
             {initials(STRATEGIST.name).toUpperCase()}
           </div>
           <div>
-            <h1 className="text-2xl font-medium tracking-tight text-[#1B1B1B]">
+            <h1 className="text-2xl font-medium text-[#E5E5EA]">
               Good morning, {STRATEGIST.name.split(" ")[0]}
             </h1>
-            <p className="text-sm text-[#7A7A7A]">
+            <p className="text-sm text-[#71757D]">
               {STRATEGIST.today} · 6 engagements across 3 pods · {QUEUE.length} strategy slices in flight
             </p>
           </div>
@@ -440,9 +440,9 @@ export default function StrategistHomePreview() {
           title="Cross-pod client view"
           sub="Pod-agnostic. Sorted by health. Risk first, then watch, then good. This is the strategist's client lens, distinct from the pod lens."
         />
-        <div className="overflow-hidden rounded-xl border border-[#E5E5EA] bg-white shadow-[var(--shadow-soft)]">
+        <div className="overflow-hidden rounded-xl border border-[#2A2A2A] bg-[#181818] shadow-[var(--shadow-soft)]">
           <table className="min-w-full text-sm">
-            <thead className="bg-[#FAFAFB] text-[10px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+            <thead className="bg-[#0C0C0C] text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
               <tr>
                 <th className="px-4 py-2.5 text-left">Client</th>
                 <th className="px-4 py-2.5 text-left">Pod</th>
@@ -453,7 +453,7 @@ export default function StrategistHomePreview() {
                 <th className="px-4 py-2.5"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#EDEDEF]">
+            <tbody className="divide-y divide-[#2A2A2A]">
               {[...ENGAGEMENTS]
                 .sort((a, b) => {
                   const order = { risk: 0, watch: 1, good: 2 };
@@ -492,7 +492,7 @@ export default function StrategistHomePreview() {
           {DECISIONS.map((d) => (
             <DecisionCard key={d.id} decision={d} />
           ))}
-          <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-[#C5C5C5] bg-white px-4 py-3 text-sm font-medium text-[#4A4A4A] hover:border-[#1B1B1B] hover:text-[#1B1B1B]">
+          <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-[#C5C5C5] bg-[#181818] px-4 py-3 text-sm font-medium text-[#4A4A4A] hover:border-white hover:text-[#E5E5EA]">
             <SparklesIcon className="h-4 w-4" />
             Capture a decision
           </button>
@@ -500,25 +500,25 @@ export default function StrategistHomePreview() {
       </section>
 
       {/* Footer */}
-      <div className="mt-10 rounded-lg border border-[#E5E5EA] bg-[#FAFAFB] p-4 text-xs text-[#7A7A7A]">
-        <p className="font-semibold uppercase tracking-wider text-[#1B1B1B]">
+      <div className="mt-10 rounded-lg border border-[#2A2A2A] bg-[#0C0C0C] p-4 text-xs text-[#71757D]">
+        <p className="font-semibold uppercase tracking-wider text-[#E5E5EA]">
           Workflow concepts this preview demonstrates
         </p>
         <ul className="mt-1 list-disc space-y-0.5 pl-4">
           <li>
-            <span className="font-medium text-[#1B1B1B]">Push vs pull.</span> Today section is push (system surfaces what needs you). Queue + engagements are pull (you go looking).
+            <span className="font-medium text-[#E5E5EA]">Push vs pull.</span> Today section is push (system surfaces what needs you). Queue + engagements are pull (you go looking).
           </li>
           <li>
-            <span className="font-medium text-[#1B1B1B]">State machine.</span> Strategy slice transitions: Drafting → In review → Approved → Handed off. Each transition is an explicit action with an explicit owner of the next step.
+            <span className="font-medium text-[#E5E5EA]">State machine.</span> Strategy slice transitions: Drafting → In review → Approved → Handed off. Each transition is an explicit action with an explicit owner of the next step.
           </li>
           <li>
-            <span className="font-medium text-[#1B1B1B]">Cross-pod lens.</span> Engagements table is sorted by client health, not by pod. Pod is metadata, not the primary lens.
+            <span className="font-medium text-[#E5E5EA]">Cross-pod lens.</span> Engagements table is sorted by client health, not by pod. Pod is metadata, not the primary lens.
           </li>
           <li>
-            <span className="font-medium text-[#1B1B1B]">Review cadence.</span> Engagements with overdue reviews surface as risk. This is what's missing today, reviews fall off the radar with nothing tracking them.
+            <span className="font-medium text-[#E5E5EA]">Review cadence.</span> Engagements with overdue reviews surface as risk. This is what's missing today, reviews fall off the radar with nothing tracking them.
           </li>
           <li>
-            <span className="font-medium text-[#1B1B1B]">Decision log.</span> Strategic calls captured at the moment of decision and broadcast to named recipients, instead of getting lost in DMs.
+            <span className="font-medium text-[#E5E5EA]">Decision log.</span> Strategic calls captured at the moment of decision and broadcast to named recipients, instead of getting lost in DMs.
           </li>
         </ul>
         <p className="mt-3">
@@ -542,11 +542,11 @@ function SectionHeading({
 }) {
   return (
     <div className="mb-4">
-      <div className="text-[11px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+      <div className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
         {eyebrow}
       </div>
-      <h2 className="mt-1 text-lg font-semibold text-[#1B1B1B]">{title}</h2>
-      <p className="mt-1 max-w-3xl text-[13px] text-[#7A7A7A]">{sub}</p>
+      <h2 className="mt-1 text-lg font-semibold text-[#E5E5EA]">{title}</h2>
+      <p className="mt-1 max-w-3xl text-[13px] text-[#71757D]">{sub}</p>
     </div>
   );
 }
@@ -563,9 +563,9 @@ function AttentionCard({ attention }: { attention: Attention }) {
             <span className="text-[10px] font-semibold uppercase tracking-wider text-[#4A4A4A]">
               {attention.client}
             </span>
-            <span className="text-[10px] text-[#7A7A7A]">{attention.age}</span>
+            <span className="text-[10px] text-[#71757D]">{attention.age}</span>
           </div>
-          <div className="mt-1 text-[13px] font-semibold leading-snug text-[#1B1B1B]">
+          <div className="mt-1 text-[13px] font-semibold leading-snug text-[#E5E5EA]">
             {attention.title}
           </div>
           <p className="mt-1 text-[11px] leading-snug text-[#4A4A4A]">
@@ -573,7 +573,7 @@ function AttentionCard({ attention }: { attention: Attention }) {
           </p>
         </div>
       </div>
-      <button className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-[#1B1B1B] px-2.5 py-1.5 text-[11px] font-medium text-white hover:bg-black">
+      <button className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-[#1B1B1B] px-2.5 py-1.5 text-[11px] font-medium text-white hover:bg-[#F3F4F6]">
         {attention.action_label}
         <ArrowRightIcon className="h-3 w-3" />
       </button>
@@ -584,34 +584,34 @@ function AttentionCard({ attention }: { attention: Attention }) {
 function QueueColumn({ state, items }: { state: SliceState; items: QueueItem[] }) {
   const nextLabel = STATE_NEXT_LABEL[state];
   return (
-    <div className="rounded-xl border border-[#E5E5EA] bg-[#FAFAFB] p-3">
+    <div className="rounded-xl border border-[#2A2A2A] bg-[#0C0C0C] p-3">
       <div
         className={`mb-2.5 inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${STATE_HEADER_CLASS[state]}`}
       >
         {STATE_LABEL[state]}
-        <span className="rounded bg-white/60 px-1 text-[10px]">
+        <span className="rounded bg-[#181818]/60 px-1 text-[10px]">
           {items.length}
         </span>
       </div>
 
       <div className="space-y-2">
         {items.length === 0 && (
-          <div className="rounded-md border border-dashed border-[#E5E5EA] bg-white p-2 text-center text-[10px] italic text-[#A0A0A0]">
+          <div className="rounded-md border border-dashed border-[#2A2A2A] bg-[#181818] p-2 text-center text-[10px] italic text-[#71757D]">
             Nothing here
           </div>
         )}
         {items.map((it) => (
           <div
             key={it.id}
-            className="rounded-md border border-[#E5E5EA] bg-white p-2.5 shadow-[var(--shadow-soft)]"
+            className="rounded-md border border-[#2A2A2A] bg-[#181818] p-2.5 shadow-[var(--shadow-soft)]"
           >
             <div className="flex items-baseline justify-between gap-1">
               <span className="text-[10px] font-semibold uppercase tracking-wider text-[#4A4A4A]">
                 {it.client}
               </span>
-              <span className="text-[10px] text-[#A0A0A0]">{it.age_days}d</span>
+              <span className="text-[10px] text-[#71757D]">{it.age_days}d</span>
             </div>
-            <div className="mt-1 text-[12px] font-medium leading-snug text-[#1B1B1B]">
+            <div className="mt-1 text-[12px] font-medium leading-snug text-[#E5E5EA]">
               {it.deliverable}
             </div>
             {it.waiting_on && (
@@ -620,11 +620,11 @@ function QueueColumn({ state, items }: { state: SliceState; items: QueueItem[] }
                 Waiting on {it.waiting_on}
               </div>
             )}
-            <p className="mt-1.5 text-[11px] leading-snug text-[#7A7A7A]">
+            <p className="mt-1.5 text-[11px] leading-snug text-[#71757D]">
               {it.next_action}
             </p>
             {nextLabel && (
-              <button className="mt-2 inline-flex w-full items-center justify-center gap-1 rounded border border-[#E5E5EA] bg-white px-2 py-1 text-[10px] font-medium text-[#1B1B1B] hover:border-[#1B1B1B]">
+              <button className="mt-2 inline-flex w-full items-center justify-center gap-1 rounded border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[10px] font-medium text-[#E5E5EA] hover:border-white">
                 {nextLabel}
                 <ChevronRightIcon className="h-3 w-3" />
               </button>
@@ -638,17 +638,17 @@ function QueueColumn({ state, items }: { state: SliceState; items: QueueItem[] }
 
 function EngagementRowItem({ engagement }: { engagement: EngagementRow }) {
   return (
-    <tr className="hover:bg-[#FAFAFB]">
+    <tr className="hover:bg-[#0C0C0C]">
       <td className="px-4 py-2.5">
-        <span className="font-medium text-[#1B1B1B]">{engagement.client}</span>
+        <span className="font-medium text-[#E5E5EA]">{engagement.client}</span>
       </td>
-      <td className="px-4 py-2.5 text-[12px] text-[#7A7A7A]">
+      <td className="px-4 py-2.5 text-[12px] text-[#71757D]">
         {engagement.pod}
       </td>
-      <td className="px-4 py-2.5 text-[12px] text-[#7A7A7A]">
+      <td className="px-4 py-2.5 text-[12px] text-[#71757D]">
         {engagement.retainer}
       </td>
-      <td className="px-4 py-2.5 text-[12px] text-[#7A7A7A]">
+      <td className="px-4 py-2.5 text-[12px] text-[#71757D]">
         {engagement.last_reviewed}
       </td>
       <td className="px-4 py-2.5 text-[12px] text-[#4A4A4A]">
@@ -665,7 +665,7 @@ function EngagementRowItem({ engagement }: { engagement: EngagementRow }) {
         </div>
       </td>
       <td className="px-4 py-2.5 text-right">
-        <button className="rounded p-1 text-[#7A7A7A] hover:bg-[#F3F3F5] hover:text-[#1B1B1B]">
+        <button className="rounded p-1 text-[#71757D] hover:bg-[#222222] hover:text-[#E5E5EA]">
           <ChevronRightIcon className="h-4 w-4" />
         </button>
       </td>
@@ -679,25 +679,25 @@ function WeekColumn({ day }: { day: (typeof WEEK)[number] }) {
       className={`rounded-xl border p-3 ${
         day.is_today
           ? "border-violet-300 bg-violet-50/40 shadow-[var(--shadow-soft)]"
-          : "border-[#E5E5EA] bg-white"
+          : "border-[#2A2A2A] bg-[#181818]"
       }`}
     >
       <div className="mb-2 flex items-baseline justify-between">
         <span
           className={`text-[10px] font-semibold uppercase tracking-wider ${
-            day.is_today ? "text-violet-700" : "text-[#A0A0A0]"
+            day.is_today ? "text-violet-700" : "text-[#71757D]"
           }`}
         >
           {day.day}
           {day.is_today && " · Today"}
         </span>
-        <span className="text-sm font-semibold text-[#1B1B1B]">{day.date}</span>
+        <span className="text-sm font-semibold text-[#E5E5EA]">{day.date}</span>
       </div>
       <ul className="space-y-1.5">
         {day.items.map((item, i) => (
           <li
             key={i}
-            className="rounded-md border border-[#EDEDEF] bg-white p-2 text-[11px] leading-snug text-[#4A4A4A]"
+            className="rounded-md border border-[#2A2A2A] bg-[#181818] p-2 text-[11px] leading-snug text-[#4A4A4A]"
           >
             {item}
           </li>
@@ -709,18 +709,18 @@ function WeekColumn({ day }: { day: (typeof WEEK)[number] }) {
 
 function DecisionCard({ decision }: { decision: Decision }) {
   return (
-    <div className="rounded-lg border border-[#E5E5EA] bg-white p-3.5 shadow-[var(--shadow-soft)]">
+    <div className="rounded-lg border border-[#2A2A2A] bg-[#181818] p-3.5 shadow-[var(--shadow-soft)]">
       <div className="flex items-baseline justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
             <span className="text-[10px] font-semibold uppercase tracking-wider text-violet-700">
               {decision.client}
             </span>
-            <span className="text-[10px] text-[#A0A0A0]">
+            <span className="text-[10px] text-[#71757D]">
               · {decision.decided_at}
             </span>
           </div>
-          <div className="mt-1 text-sm font-semibold text-[#1B1B1B]">
+          <div className="mt-1 text-sm font-semibold text-[#E5E5EA]">
             {decision.title}
           </div>
           <p className="mt-1 text-[12px] leading-snug text-[#4A4A4A]">
@@ -728,14 +728,14 @@ function DecisionCard({ decision }: { decision: Decision }) {
           </p>
         </div>
       </div>
-      <div className="mt-3 flex items-center gap-2 border-t border-[#EDEDEF] pt-2.5">
-        <PaperAirplaneIcon className="h-3.5 w-3.5 text-[#7A7A7A]" />
-        <span className="text-[11px] text-[#7A7A7A]">Shared with</span>
+      <div className="mt-3 flex items-center gap-2 border-t border-[#2A2A2A] pt-2.5">
+        <PaperAirplaneIcon className="h-3.5 w-3.5 text-[#71757D]" />
+        <span className="text-[11px] text-[#71757D]">Shared with</span>
         <div className="flex flex-wrap gap-1">
           {decision.shared_with.map((s) => (
             <span
               key={s}
-              className="inline-flex items-center rounded border border-[#E5E5EA] bg-[#FAFAFB] px-1.5 py-0.5 text-[10px] font-medium text-[#4A4A4A]"
+              className="inline-flex items-center rounded border border-[#2A2A2A] bg-[#0C0C0C] px-1.5 py-0.5 text-[10px] font-medium text-[#4A4A4A]"
             >
               {s}
             </span>

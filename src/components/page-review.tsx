@@ -135,8 +135,8 @@ export function PageReviewViewer({
               }}
               className={`px-3 py-1.5 text-[11px] font-medium rounded-full transition-colors ${
                 activeVersionId === v.id
-                  ? "bg-[#1B1B1B] text-white"
-                  : "bg-[#F3F3F5] text-[#7A7A7A] hover:bg-[#E5E5EA]"
+                  ? "bg-[#E5E5EA] text-[#0C0C0C]"
+                  : "bg-[#222222] text-[#71757D] hover:bg-[#2A2A2A]"
               }`}
             >
               v{v.version_number}
@@ -149,14 +149,14 @@ export function PageReviewViewer({
       )}
 
       {/* Top toolbar */}
-      <div className="flex items-center justify-between bg-white border border-[#E5E5EA] rounded-lg px-3 py-2">
+      <div className="flex items-center justify-between bg-[#181818] border border-[#2A2A2A] rounded-lg px-3 py-2">
         <div className="flex items-center gap-2">
           {/* Viewport toggle */}
-          <div className="flex bg-[#F5F5F5] rounded-md p-0.5">
+          <div className="flex bg-[#222222] rounded-md p-0.5">
             <button
               onClick={() => setViewportMode("desktop")}
               className={`p-1.5 rounded transition-colors ${
-                viewportMode === "desktop" ? "bg-white shadow-sm text-[#1B1B1B]" : "text-[#999]"
+                viewportMode === "desktop" ? "bg-[#181818] shadow-sm text-[#E5E5EA]" : "text-[#71757D]"
               }`}
             >
               <ComputerDesktopIcon className="size-4" />
@@ -164,7 +164,7 @@ export function PageReviewViewer({
             <button
               onClick={() => setViewportMode("mobile")}
               className={`p-1.5 rounded transition-colors ${
-                viewportMode === "mobile" ? "bg-white shadow-sm text-[#1B1B1B]" : "text-[#999]"
+                viewportMode === "mobile" ? "bg-[#181818] shadow-sm text-[#E5E5EA]" : "text-[#71757D]"
               }`}
             >
               <DevicePhoneMobileIcon className="size-4" />
@@ -179,8 +179,8 @@ export function PageReviewViewer({
             }}
             className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-md border transition-colors ${
               pinMode
-                ? "bg-[#1B1B1B] text-white border-[#1B1B1B]"
-                : "text-[#7A7A7A] border-[#E5E5EA] hover:bg-[#F5F5F5]"
+                ? "bg-[#222222] text-[#E5E5EA] border-[#383838]"
+                : "text-[#71757D] border-[#2A2A2A] hover:bg-[#222222]"
             }`}
           >
             <MapPinIcon className="size-3.5" />
@@ -189,7 +189,7 @@ export function PageReviewViewer({
 
           {/* Pin count */}
           {pins.length > 0 && (
-            <span className="text-[10px] text-[#AAA]">
+            <span className="text-[10px] text-[#9CA3AF]">
               {openPins.length} open{resolvedPins.length > 0 && `, ${resolvedPins.length} resolved`}
             </span>
           )}
@@ -202,13 +202,13 @@ export function PageReviewViewer({
               <>
                 <button
                   onClick={() => setShowApprovalForm(true)}
-                  className="px-3 py-1.5 text-[11px] font-medium text-emerald-600 border border-emerald-200 rounded-md hover:bg-emerald-50 transition-colors"
+                  className="px-3 py-1.5 text-[11px] font-medium text-emerald-400 border border-emerald-600/30 rounded-md hover:bg-emerald-600/10 transition-colors"
                 >
                   Approve
                 </button>
                 <button
                   onClick={() => setShowApprovalForm(true)}
-                  className="px-3 py-1.5 text-[11px] font-medium text-amber-600 border border-amber-200 rounded-md hover:bg-amber-50 transition-colors"
+                  className="px-3 py-1.5 text-[11px] font-medium text-amber-400 border border-amber-600/30 rounded-md hover:bg-amber-600/10 transition-colors"
                 >
                   Request Amends
                 </button>
@@ -220,7 +220,7 @@ export function PageReviewViewer({
                   value={approvalComment}
                   onChange={(e) => setApprovalComment(e.target.value)}
                   placeholder="Comment (optional)..."
-                  className="px-2 py-1 text-xs border border-[#E5E5EA] rounded w-48"
+                  className="px-2 py-1 text-xs border border-[#2A2A2A] rounded w-48"
                 />
                 <button
                   onClick={() => handleApproval("approved")}
@@ -236,7 +236,8 @@ export function PageReviewViewer({
                 </button>
                 <button
                   onClick={() => setShowApprovalForm(false)}
-                  className="p-1 text-[#AAA] hover:text-[#1B1B1B]"
+                  className="p-1 text-[#9CA3AF] hover:text-[#E5E5EA]"
+                  aria-label="Close approval form"
                 >
                   <XMarkIcon className="size-4" />
                 </button>
@@ -255,7 +256,7 @@ export function PageReviewViewer({
 
       {/* Status badge */}
       {review.status === "changes_requested" && (
-        <div className="px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700 font-medium">
+        <div className="px-3 py-2 bg-amber-600/15 border border-amber-600/30 rounded-lg text-xs text-amber-400 font-medium">
           Changes requested — review the pin feedback below
         </div>
       )}
@@ -263,13 +264,13 @@ export function PageReviewViewer({
       {/* Iframe with pin overlay */}
       {stagingUrl ? (
         <div
-          className={`relative border border-[#E5E5EA] rounded-lg overflow-hidden bg-white ${
+          className={`relative border border-[#2A2A2A] rounded-lg overflow-hidden bg-[#181818] ${
             viewportMode === "mobile" ? "max-w-[375px] mx-auto" : ""
           }`}
         >
           {/* Open in new tab bar */}
-          <div className="flex items-center justify-between px-3 py-1.5 bg-[#FAFAFA] border-b border-[#E5E5EA]">
-            <p className="text-[10px] text-[#AAA] truncate max-w-[60%]">{stagingUrl}</p>
+          <div className="flex items-center justify-between px-3 py-1.5 bg-[#0C0C0C] border-b border-[#2A2A2A]">
+            <p className="text-[10px] text-[#9CA3AF] truncate max-w-[60%]">{stagingUrl}</p>
             <a
               href={stagingUrl}
               target="_blank"
@@ -315,28 +316,28 @@ export function PageReviewViewer({
                     </div>
                     {/* Comment input popover */}
                     <div
-                      className="absolute top-4 left-2 bg-white border border-[#E5E5EA] rounded-lg shadow-lg p-3 w-64 z-30"
+                      className="absolute top-4 left-2 bg-[#181818] border border-[#2A2A2A] rounded-lg shadow-lg p-3 w-64 z-30"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <textarea
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
                         placeholder="Describe the issue..."
-                        className="w-full px-2 py-1.5 text-xs border border-[#E5E5EA] rounded resize-none"
+                        className="w-full px-2 py-1.5 text-xs border border-[#2A2A2A] rounded resize-none"
                         rows={3}
                         autoFocus
                       />
                       <div className="flex items-center justify-end gap-2 mt-2">
                         <button
                           onClick={() => setPendingPin(null)}
-                          className="px-2 py-1 text-[10px] text-[#7A7A7A] hover:text-[#1B1B1B]"
+                          className="px-2 py-1 text-[10px] text-[#71757D] hover:text-[#E5E5EA]"
                         >
                           Cancel
                         </button>
                         <button
                           onClick={handleSubmitPin}
                           disabled={!newComment.trim()}
-                          className="px-3 py-1 text-[10px] font-medium bg-[#1B1B1B] text-white rounded disabled:opacity-30"
+                          className="px-3 py-1 text-[10px] font-medium bg-[#222222] text-[#E5E5EA] rounded disabled:opacity-30"
                         >
                           Add Pin
                         </button>
@@ -348,13 +349,13 @@ export function PageReviewViewer({
             </>
           ) : (
             <div className="p-12 text-center">
-              <p className="text-sm text-[#7A7A7A] mb-2">Unable to load preview</p>
-              <p className="text-xs text-[#AAA] mb-3">The staging site may block iframe embedding</p>
+              <p className="text-sm text-[#71757D] mb-2">Unable to load preview</p>
+              <p className="text-xs text-[#9CA3AF] mb-3">The staging site may block iframe embedding</p>
               <a
                 href={stagingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-[#1B1B1B] border border-[#E5E5EA] rounded-lg hover:bg-[#F5F5F5]"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-[#E5E5EA] border border-[#2A2A2A] rounded-lg hover:bg-[#222222]"
               >
                 Open in new tab
               </a>
@@ -362,45 +363,45 @@ export function PageReviewViewer({
           )}
         </div>
       ) : (
-        <div className="border border-dashed border-[#E5E5EA] rounded-lg p-8 text-center">
-          <p className="text-sm text-[#7A7A7A]">No staging URL set</p>
-          <p className="text-xs text-[#AAA] mt-1">Add a staging URL to preview the page</p>
+        <div className="border border-dashed border-[#2A2A2A] rounded-lg p-8 text-center">
+          <p className="text-sm text-[#71757D]">No staging URL set</p>
+          <p className="text-xs text-[#9CA3AF] mt-1">Add a staging URL to preview the page</p>
         </div>
       )}
 
       {/* Pin list panel */}
       {pins.length > 0 && (
-        <div className="border border-[#E5E5EA] rounded-lg overflow-hidden">
-          <div className="px-4 py-2.5 bg-[#FAFAFA] border-b border-[#E5E5EA]">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#AAA]">
+        <div className="border border-[#2A2A2A] rounded-lg overflow-hidden">
+          <div className="px-4 py-2.5 bg-[#0C0C0C] border-b border-[#2A2A2A]">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF]">
               Feedback Pins ({openPins.length} open{resolvedPins.length > 0 && `, ${resolvedPins.length} resolved`})
             </p>
           </div>
-          <div className="divide-y divide-[#F0F0F0] max-h-64 overflow-y-auto">
+          <div className="divide-y divide-[#2A2A2A] max-h-64 overflow-y-auto">
             {pins
               .sort((a, b) => (a.pin_number || 0) - (b.pin_number || 0))
               .map((pin) => (
                 <div
                   key={pin.id}
-                  className={`flex items-start gap-3 px-4 py-3 hover:bg-[#FAFAFA] cursor-pointer transition-colors ${
-                    selectedPinId === pin.id ? "bg-[#F5F5F5]" : ""
+                  className={`flex items-start gap-3 px-4 py-3 hover:bg-[#0C0C0C] cursor-pointer transition-colors ${
+                    selectedPinId === pin.id ? "bg-[#222222]" : ""
                   }`}
                   onClick={() => setSelectedPinId(selectedPinId === pin.id ? null : pin.id)}
                 >
                   <span
                     className={`flex-shrink-0 size-5 rounded-full flex items-center justify-center text-[9px] font-bold ${
                       pin.resolved
-                        ? "bg-[#E5E5EA] text-[#AAA] line-through"
-                        : "bg-[#1B1B1B] text-white"
+                        ? "bg-[#2A2A2A] text-[#9CA3AF] line-through"
+                        : "bg-white text-[#0C0C0C]"
                     }`}
                   >
                     {pin.pin_number || "?"}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-xs ${pin.resolved ? "text-[#AAA] line-through" : "text-[#1B1B1B]"}`}>
+                    <p className={`text-xs ${pin.resolved ? "text-[#9CA3AF] line-through" : "text-[#E5E5EA]"}`}>
                       {pin.comment}
                     </p>
-                    <p className="text-[10px] text-[#CCC] mt-0.5">
+                    <p className="text-[10px] text-[#C7C9CD] mt-0.5">
                       {pin.submitted_by} · {new Date(pin.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                     </p>
                   </div>
@@ -412,7 +413,7 @@ export function PageReviewViewer({
                     className={`flex-shrink-0 p-1 rounded transition-colors ${
                       pin.resolved
                         ? "text-emerald-500 hover:text-emerald-600"
-                        : "text-[#CCC] hover:text-emerald-500"
+                        : "text-[#C7C9CD] hover:text-emerald-500"
                     }`}
                     title={pin.resolved ? "Unresolve" : "Resolve"}
                   >
@@ -453,8 +454,8 @@ function PinMarker({
           text-[10px] font-bold border-2 border-white shadow-md cursor-pointer transition-transform
           ${isSelected ? "scale-125" : "hover:scale-110"}
           ${pin.resolved
-            ? "bg-[#E5E5EA] text-[#AAA]"
-            : "bg-[#1B1B1B] text-white"
+            ? "bg-[#2A2A2A] text-[#9CA3AF]"
+            : "bg-white text-[#0C0C0C]"
           }
         `}
       >
@@ -462,9 +463,9 @@ function PinMarker({
       </div>
       {/* Comment tooltip on select */}
       {isSelected && (
-        <div className="absolute top-5 left-2 bg-white border border-[#E5E5EA] rounded-lg shadow-lg p-3 w-56 z-30">
-          <p className="text-xs text-[#1B1B1B] mb-1">{pin.comment}</p>
-          <p className="text-[10px] text-[#CCC]">
+        <div className="absolute top-5 left-2 bg-[#181818] border border-[#2A2A2A] rounded-lg shadow-lg p-3 w-56 z-30">
+          <p className="text-xs text-[#E5E5EA] mb-1">{pin.comment}</p>
+          <p className="text-[10px] text-[#C7C9CD]">
             {pin.submitted_by} · {new Date(pin.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
           </p>
           {pin.resolved && (

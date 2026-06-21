@@ -97,13 +97,13 @@ export function MonthGantt({ projects, clientById, podName }: MonthGanttProps) {
     : -1;
 
   return (
-    <div className="rounded-xl border border-[#E5E5EA] bg-white p-3 shadow-[var(--shadow-soft)]">
+    <div className="rounded-xl border border-[#2A2A2A] bg-[#181818] p-3 shadow-[var(--shadow-soft)]">
       <div className="flex items-center justify-between gap-3 px-1">
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-[#7A7A7A]">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-[#71757D]">
             Month view {podName && <span>· {podName}</span>}
           </div>
-          <div className="mt-0.5 text-base font-semibold tracking-tight">
+          <div className="mt-0.5 text-base font-semibold">
             {monthName}
           </div>
         </div>
@@ -116,7 +116,7 @@ export function MonthGantt({ projects, clientById, podName }: MonthGanttProps) {
                 return { year: c.year, month: m };
               })
             }
-            className="grid size-7 place-items-center rounded-md border border-[#E5E5EA] bg-white hover:bg-[#F7F8FA]"
+            className="grid size-7 place-items-center rounded-md border border-[#2A2A2A] bg-[#181818] hover:bg-[#0C0C0C]"
             aria-label="Previous month"
           >
             <ChevronLeftIcon className="size-3.5" />
@@ -128,7 +128,7 @@ export function MonthGantt({ projects, clientById, podName }: MonthGanttProps) {
                 month: todayDate.getMonth(),
               });
             }}
-            className="rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-[11px] font-medium hover:bg-[#F7F8FA]"
+            className="rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[11px] font-medium hover:bg-[#0C0C0C]"
           >
             Today
           </button>
@@ -140,7 +140,7 @@ export function MonthGantt({ projects, clientById, podName }: MonthGanttProps) {
                 return { year: c.year, month: m };
               })
             }
-            className="grid size-7 place-items-center rounded-md border border-[#E5E5EA] bg-white hover:bg-[#F7F8FA]"
+            className="grid size-7 place-items-center rounded-md border border-[#2A2A2A] bg-[#181818] hover:bg-[#0C0C0C]"
             aria-label="Next month"
           >
             <ChevronRightIcon className="size-3.5" />
@@ -347,7 +347,7 @@ export function MonthGantt({ projects, clientById, podName }: MonthGanttProps) {
       </div>
 
       {/* Legend */}
-      <div className="mt-3 flex flex-wrap items-center gap-3 px-1 text-[10px] text-[#7A7A7A]">
+      <div className="mt-3 flex flex-wrap items-center gap-3 px-1 text-[10px] text-[#71757D]">
         {(Object.entries(BAR_COLOR) as [ProjectStatus, typeof BAR_COLOR[ProjectStatus]][]).map(([status, c]) => (
           <span key={status} className="inline-flex items-center gap-1.5">
             <span
@@ -358,7 +358,7 @@ export function MonthGantt({ projects, clientById, podName }: MonthGanttProps) {
           </span>
         ))}
         <span className="inline-flex items-center gap-1.5">
-          <span className="block size-3 rounded border border-rose-500 bg-white" />
+          <span className="block size-3 rounded border border-rose-500 bg-[#181818]" />
           <span>Mid-week kickoff</span>
         </span>
       </div>

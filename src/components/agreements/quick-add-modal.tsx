@@ -198,14 +198,14 @@ export function QuickAddAgreementModal({
         onClick={onClose}
       >
         <div
-          className="bg-white rounded-2xl w-full max-w-md shadow-xl"
+          className="bg-[#181818] rounded-2xl w-full max-w-md shadow-xl"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="border-b border-[#EDEDEF] px-6 py-4 flex items-center justify-between">
-            <h2 className="font-semibold text-[#1B1B1B]">New team agreement</h2>
+          <div className="border-b border-[#2A2A2A] px-6 py-4 flex items-center justify-between">
+            <h2 className="font-semibold text-[#E5E5EA]">New team agreement</h2>
             <button
               onClick={onClose}
-              className="text-[#7A7A7A] hover:text-[#1B1B1B] text-xl leading-none"
+              className="text-[#71757D] hover:text-[#E5E5EA] text-xl leading-none"
             >
               ×
             </button>
@@ -295,8 +295,8 @@ export function QuickAddAgreementModal({
             {/* Defaults summary — what gets quietly applied behind the
                 scenes, surfaced so Dylan never wonders why a row shows
                 up with values he didn't pick. */}
-            <div className="px-3 py-2.5 bg-[#F7F8FA] border border-[#EDEDEF] rounded-lg text-[11px] text-[#7A7A7A] leading-relaxed">
-              <strong className="text-[#1B1B1B] font-medium">Defaults applied:</strong>{" "}
+            <div className="px-3 py-2.5 bg-[#0C0C0C] border border-[#2A2A2A] rounded-lg text-[11px] text-[#71757D] leading-relaxed">
+              <strong className="text-[#E5E5EA] font-medium">Defaults applied:</strong>{" "}
               contractor · start date today · generate both NDA and contract.{" "}
               {matchedPerson
                 ? "Person row is reused."
@@ -313,7 +313,7 @@ export function QuickAddAgreementModal({
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={onClose}
-                className="px-3 py-1.5 text-[13px] text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors"
+                className="px-3 py-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] transition-colors"
               >
                 Cancel
               </button>
@@ -326,7 +326,7 @@ export function QuickAddAgreementModal({
                   !compAmount ||
                   (matchedHasNda && matchedHasContract)
                 }
-                className="px-3 py-1.5 bg-[#1B1B1B] text-white text-[13px] font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40"
+                className="px-3 py-1.5 bg-[#222222] text-[#E5E5EA] text-[13px] font-medium rounded-lg hover:bg-[#2A2A2A] transition-colors disabled:opacity-40"
               >
                 {submitting ? "Creating..." : "Create and draft"}
               </button>

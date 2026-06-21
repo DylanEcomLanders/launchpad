@@ -31,16 +31,16 @@ export default function WorkspacePodsList() {
   }, [data, today]);
 
   if (data.loading || scopedMember) {
-    return <div className="h-96 animate-pulse rounded-2xl bg-slate-100" />;
+    return <div className="h-96 animate-pulse rounded-2xl bg-[#222222]" />;
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-heading text-2xl font-semibold tracking-tight text-slate-900">
+        <h1 className="font-heading text-2xl font-semibold text-[#E5E5EA]">
           Pods
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-[#9CA3AF]">
           Capacity, ownership and risk for every delivery team.
         </p>
       </div>
@@ -66,12 +66,12 @@ function PodRow({ p }: { p: PodVM }) {
           {/* Identity + mix */}
           <div>
             <div className="flex items-center gap-3">
-              <h2 className="font-heading text-lg font-semibold text-slate-900">
+              <h2 className="font-heading text-lg font-semibold text-[#E5E5EA]">
                 {p.pod.name}
               </h2>
-              <span className="text-sm text-slate-400">{p.pod.tagline}</span>
+              <span className="text-sm text-[#71757D]">{p.pod.tagline}</span>
             </div>
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#9CA3AF]">
               <Pill tone="blue">{p.retainerCount} retainer{p.retainerCount === 1 ? "" : "s"}</Pill>
               <Pill tone="neutral">{p.sprintCount} sprint{p.sprintCount === 1 ? "" : "s"}</Pill>
               <span>·</span>
@@ -118,8 +118,8 @@ function CapStat({
   return (
     <div>
       <div className="mb-1 flex items-center justify-between text-xs">
-        <span className="font-medium text-slate-600">{label}</span>
-        <span className={`tabular-nums ${over ? "font-semibold text-rose-600" : "text-slate-500"}`}>
+        <span className="font-medium text-[#9CA3AF]">{label}</span>
+        <span className={`tabular-nums ${over ? "font-semibold text-rose-600" : "text-[#9CA3AF]"}`}>
           {used % 1 === 0 ? used : used.toFixed(1)} / {total % 1 === 0 ? total : total.toFixed(0)} pts
           {showPct && total > 0 ? ` · ${Math.round((used / total) * 100)}%` : ""}
         </span>

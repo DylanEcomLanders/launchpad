@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 import { useRole } from "@/components/auth-gate";
+import { PasscodeGate } from "@/components/passcode-gate";
 import {
   ChartBarIcon,
   UserGroupIcon,
@@ -11,6 +11,7 @@ import {
   DocumentTextIcon,
   BriefcaseIcon,
   ShieldCheckIcon,
+  Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
 
 const TABS = [
@@ -20,10 +21,13 @@ const TABS = [
   { href: "/company/invoices", label: "Invoices", icon: DocumentTextIcon },
   { href: "/company/hiring", label: "Hiring", icon: BriefcaseIcon },
   { href: "/company/contracts", label: "Contracts", icon: ShieldCheckIcon },
+  // Settings lives at /settings - links out of this layout for now. Move to
+  // /company/settings later for full consolidation.
+  { href: "/settings", label: "Settings", icon: Cog6ToothIcon },
 ];
 
-const COMPANY_PASSWORD = "Football2026";
-const UNLOCK_KEY = "launchpad-company-unlocked";
+const COMPANY_PASSCODE = "Football2026";
+const STORAGE_KEY = "launchpad-company-unlocked";
 
 export default function CompanyLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -32,9 +36,9 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
   if (role !== "admin") {
     return (
       <div className="max-w-2xl mx-auto px-6 py-16 text-center">
-        <h1 className="text-xl font-semibold text-[#1B1B1B] mb-2">Admin only</h1>
-        <p className="text-sm text-[#7A7A7A]">
-          The Company module is restricted to admins.
+        <h1 className="text-xl font-semibold text-[#E5E5EA] mb-2">Admin only</h1>
+        <p className="text-sm text-[#71757D]">
+          The Admin module is restricted to admins.
         </p>
       </div>
     );
@@ -46,15 +50,19 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
   }
 
   return (
-    <CompanyGate>
+    <PasscodeGate
+      title="Admin"
+      passcode={COMPANY_PASSCODE}
+      storageKey={STORAGE_KEY}
+    >
       <div className="min-h-full">
-        <div className="border-b border-[#E5E5EA] bg-white sticky top-0 z-10">
+        <div className="bg-[#181818] sticky top-0 z-10">
           <div className="max-w-7xl mx-auto px-6 pt-6 pb-0">
-            <h1 className="text-2xl font-semibold text-[#1B1B1B] mb-1">Company</h1>
-            <p className="text-sm text-[#7A7A7A] mb-5">
-              People, structure, money out, and hiring — everything about Ecom Landers itself.
+            <h1 className="text-2xl font-semibold text-[#E5E5EA] mb-1">Admin</h1>
+            <p className="text-sm text-[#71757D] mb-5">
+              People, structure, hiring, contracts, settings - everything about running Ecom Landers itself.
             </p>
-            <nav className="flex gap-1 overflow-x-auto -mb-px">
+            <nav className="flex gap-1 overflow-x-auto pb-3">
               {TABS.map((tab) => {
                 const active = isActive(tab.href, tab.exact);
                 const Icon = tab.icon;
@@ -62,10 +70,10 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
                   <Link
                     key={tab.href}
                     href={tab.href}
-                    className={`flex items-center gap-2 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 transition-colors ${
+                    className={`flex items-center gap-2 px-3.5 py-1.5 text-sm whitespace-nowrap rounded-full transition-colors ${
                       active
-                        ? "border-[#1B1B1B] text-[#1B1B1B] font-medium"
-                        : "border-transparent text-[#7A7A7A] hover:text-[#1B1B1B]"
+                        ? "bg-white text-[#0C0C0C] font-medium"
+                        : "text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#222222]"
                     }`}
                   >
                     <Icon className="size-4" />
@@ -78,67 +86,6 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
         </div>
         <div className="max-w-7xl mx-auto px-6 py-6">{children}</div>
       </div>
-    </CompanyGate>
+    </PasscodeGate>
   );
-}
-
-function CompanyGate({ children }: { children: React.ReactNode }) {
-  const [hydrated, setHydrated] = useState(false);
-  const [unlocked, setUnlocked] = useState(false);
-  const [input, setInput] = useState("");
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    setHydrated(true);
-    if (
-      typeof window !== "undefined" &&
-      sessionStorage.getItem(UNLOCK_KEY) === "true"
-    ) {
-      setUnlocked(true);
-    }
-  }, []);
-
-  if (!hydrated) return null;
-
-  if (!unlocked) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F7F8FA] px-6">
-        <div className="bg-white rounded-2xl border border-[#EDEDEF] shadow-[var(--shadow-card)] p-8 max-w-sm w-full">
-          <p className="text-[12px] font-semibold uppercase tracking-wider mb-2 text-[#16A34A]">
-            Ecomlanders
-          </p>
-          <h2 className="text-lg font-semibold text-[#1B1B1B]">Company</h2>
-          <p className="mt-1 text-[13px] text-[#666]">
-            Enter the password to view.
-          </p>
-          <input
-            type="password"
-            value={input}
-            autoFocus
-            onChange={(e) => {
-              setInput(e.target.value);
-              setError(false);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                if (input === COMPANY_PASSWORD) {
-                  sessionStorage.setItem(UNLOCK_KEY, "true");
-                  setUnlocked(true);
-                } else {
-                  setError(true);
-                }
-              }
-            }}
-            placeholder="Password"
-            className="mt-5 w-full px-4 py-3 text-[14px] border border-[#E5E5EA] rounded-lg focus:outline-none focus:border-[#1B1B1B] transition-colors"
-          />
-          {error && (
-            <p className="mt-2 text-[12px] text-red-600">Incorrect password.</p>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  return <>{children}</>;
 }

@@ -293,24 +293,24 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
         ? isGateComplete(gate) && !!gate.dev_lead_signoff && !!gate.client_approval_confirmed && !!gate.staging_url?.trim() && (gate.testing_mode === "client-test" || !!gate.intelligems_url?.trim())
         : isGateComplete(gate);
 
-  const fieldClass = "w-full text-sm px-3 py-2.5 border border-[#E8E8E8] rounded-lg focus:outline-none focus:border-[#999] placeholder:text-[#CCC] disabled:opacity-50 disabled:bg-[#FAFAFA]";
+  const fieldClass = "w-full text-sm px-3 py-2.5 border border-[#2A2A2A] rounded-lg focus:outline-none focus:border-[#999] placeholder:text-[#C7C9CD] disabled:opacity-50 disabled:bg-[#0C0C0C]";
 
   return (
     <div>
       {/* Progress counter — lives next to the progress bar since PageHeader owns the title */}
       {config.type !== "design-brief" && (
         <div className="flex items-center justify-end mb-2">
-          <p className="text-xl font-bold text-[#1A1A1A] tabular-nums">{progress.checked}/{progress.total}</p>
-          {saving && <p className="text-[9px] text-[#CCC] ml-2">Saving...</p>}
+          <p className="text-xl font-bold text-[#E5E5EA] tabular-nums">{progress.checked}/{progress.total}</p>
+          {saving && <p className="text-[9px] text-[#C7C9CD] ml-2">Saving...</p>}
         </div>
       )}
       {config.type === "design-brief" && saving && (
-        <p className="text-[9px] text-[#CCC] text-right mb-2">Saving...</p>
+        <p className="text-[9px] text-[#C7C9CD] text-right mb-2">Saving...</p>
       )}
 
       {/* Progress bar (not for design-brief) */}
       {config.type !== "design-brief" && (
-        <div className="h-1.5 bg-[#F0F0F0] rounded-full mb-8 overflow-hidden">
+        <div className="h-1.5 bg-[#222222] rounded-full mb-8 overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-300"
             style={{
@@ -344,29 +344,29 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
           {/* File upload area */}
           {!gate.brief_file ? (
             <div>
-              <label className="text-[11px] font-medium text-[#555] block mb-2">
+              <label className="text-[11px] font-medium text-[#C7C9CD] block mb-2">
                 Design Brief Document <span className="text-red-400">*</span>
               </label>
               <label
                 className={`flex flex-col items-center justify-center gap-3 py-10 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
                   uploading
-                    ? "border-[#CCC] bg-[#FAFAFA]"
+                    ? "border-[#383838] bg-[#0C0C0C]"
                     : isSubmitted
-                      ? "border-[#E8E8E8] bg-[#FAFAFA] cursor-not-allowed"
-                      : "border-[#DDD] hover:border-[#999] hover:bg-[#FAFAFA]"
+                      ? "border-[#2A2A2A] bg-[#0C0C0C] cursor-not-allowed"
+                      : "border-[#DDD] hover:border-[#999] hover:bg-[#0C0C0C]"
                 }`}
               >
                 {uploading ? (
                   <>
-                    <div className="size-8 border-2 border-[#CCC] border-t-[#1A1A1A] rounded-full animate-spin" />
-                    <p className="text-sm text-[#777]">Uploading...</p>
+                    <div className="size-8 border-2 border-[#383838] border-t-[#1A1A1A] rounded-full animate-spin" />
+                    <p className="text-sm text-[#9CA3AF]">Uploading...</p>
                   </>
                 ) : (
                   <>
-                    <DocumentArrowUpIcon className="size-8 text-[#CCC]" />
+                    <DocumentArrowUpIcon className="size-8 text-[#C7C9CD]" />
                     <div className="text-center">
-                      <p className="text-sm font-medium text-[#777]">Click to upload brief</p>
-                      <p className="text-[11px] text-[#BBB] mt-1">Word (.doc, .docx), PDF, or text file</p>
+                      <p className="text-sm font-medium text-[#9CA3AF]">Click to upload brief</p>
+                      <p className="text-[11px] text-[#9CA3AF] mt-1">Word (.doc, .docx), PDF, or text file</p>
                     </div>
                   </>
                 )}
@@ -386,18 +386,18 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
           ) : (
             /* Uploaded file display */
             <div>
-              <label className="text-[11px] font-medium text-[#555] block mb-2">
+              <label className="text-[11px] font-medium text-[#C7C9CD] block mb-2">
                 Design Brief Document
               </label>
-              <div className="flex items-center gap-3 p-4 bg-[#FAFAFA] border border-[#E8E8E8] rounded-xl">
+              <div className="flex items-center gap-3 p-4 bg-[#0C0C0C] border border-[#2A2A2A] rounded-xl">
                 {/* File icon */}
-                <div className="size-10 rounded-lg bg-white border border-[#E8E8E8] flex items-center justify-center shrink-0">
-                  <span className="text-[10px] font-bold text-[#999]">{fileIcon(gate.brief_file.type)}</span>
+                <div className="size-10 rounded-lg bg-[#181818] border border-[#2A2A2A] flex items-center justify-center shrink-0">
+                  <span className="text-[10px] font-bold text-[#71757D]">{fileIcon(gate.brief_file.type)}</span>
                 </div>
                 {/* File info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-[#1A1A1A] truncate">{gate.brief_file.originalName}</p>
-                  <p className="text-[11px] text-[#AAA]">
+                  <p className="text-sm font-medium text-[#E5E5EA] truncate">{gate.brief_file.originalName}</p>
+                  <p className="text-[11px] text-[#9CA3AF]">
                     {formatFileSize(gate.brief_file.size)} — uploaded {new Date(gate.brief_file.uploaded_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
@@ -414,7 +414,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
                       }
                       setShowPreview(!showPreview);
                     }}
-                    className="p-2 text-[#999] hover:text-[#1A1A1A] hover:bg-white rounded-lg transition-colors"
+                    className="p-2 text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#181818] rounded-lg transition-colors"
                     title={showPreview ? "Hide preview" : "Preview"}
                   >
                     {showPreview ? <EyeSlashIcon className="size-4" /> : <EyeIcon className="size-4" />}
@@ -423,7 +423,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
                     href={gate.brief_file.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 text-[#999] hover:text-[#1A1A1A] hover:bg-white rounded-lg transition-colors"
+                    className="p-2 text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#181818] rounded-lg transition-colors"
                     title="Download"
                   >
                     <ArrowDownTrayIcon className="size-4" />
@@ -431,7 +431,8 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
                   {!isSubmitted && (
                     <button
                       onClick={handleFileDelete}
-                      className="p-2 text-[#CCC] hover:text-red-500 hover:bg-white rounded-lg transition-colors"
+                      aria-label="Delete file"
+                      className="p-2 text-[#C7C9CD] hover:text-red-500 hover:bg-[#181818] rounded-lg transition-colors"
                       title="Remove file"
                     >
                       <TrashIcon className="size-4" />
@@ -442,7 +443,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
 
               {/* Preview panel */}
               {showPreview && gate.brief_file && (
-                <div className="mt-3 border border-[#E8E8E8] rounded-xl overflow-hidden bg-white">
+                <div className="mt-3 border border-[#2A2A2A] rounded-xl overflow-hidden bg-[#181818]">
                   {gate.brief_file.type === "application/pdf" ? (
                     <iframe
                       src={gate.brief_file.url}
@@ -450,7 +451,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
                       title="Brief preview"
                     />
                   ) : gate.brief_file.type === "text/plain" ? (
-                    <pre className="p-4 text-sm text-[#444] whitespace-pre-wrap max-h-[500px] overflow-y-auto font-mono leading-relaxed">
+                    <pre className="p-4 text-sm text-[#C7C9CD] whitespace-pre-wrap max-h-[500px] overflow-y-auto font-mono leading-relaxed">
                       {textContent || "Loading..."}
                     </pre>
                   ) : (
@@ -466,7 +467,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
 
               {/* Replace file */}
               {!isSubmitted && (
-                <label className={`inline-block mt-2 text-xs text-[#999] hover:text-[#1A1A1A] cursor-pointer transition-colors ${showPreview ? "mt-3" : ""}`}>
+                <label className={`inline-block mt-2 text-xs text-[#71757D] hover:text-[#E5E5EA] cursor-pointer transition-colors ${showPreview ? "mt-3" : ""}`}>
                   Replace file
                   <input
                     ref={fileInputRef}
@@ -488,7 +489,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
 
           {/* Notes */}
           <div>
-            <label className="text-[11px] font-medium text-[#555] block mb-1.5">Notes</label>
+            <label className="text-[11px] font-medium text-[#C7C9CD] block mb-1.5">Notes</label>
             <textarea
               value={gate.notes}
               onChange={(e) => {
@@ -505,13 +506,13 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
           {/* Submit */}
           {!isSubmitted && (
             <div className="flex items-center justify-between pt-2">
-              <p className="text-[10px] text-[#AAA]">
+              <p className="text-[10px] text-[#9CA3AF]">
                 {!gate.brief_file ? "Upload a brief document to submit" : "Ready to submit"}
               </p>
               <button
                 onClick={handleSubmit}
                 disabled={!isReady}
-                className="px-5 py-2.5 text-sm font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                className="px-5 py-2.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
               >
                 Submit Brief
               </button>
@@ -527,7 +528,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
         <div className="space-y-6 mb-8">
           {/* Figma Link */}
           <div>
-            <label className="text-[11px] font-medium text-[#555] block mb-1.5">
+            <label className="text-[11px] font-medium text-[#C7C9CD] block mb-1.5">
               Figma Link <span className="text-red-400">*</span>
             </label>
             <input
@@ -542,12 +543,12 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
               placeholder="https://www.figma.com/file/..."
               className={fieldClass}
             />
-            <p className="text-[10px] text-[#BBB] mt-1">Link to the final design file</p>
+            <p className="text-[10px] text-[#9CA3AF] mt-1">Link to the final design file</p>
           </div>
 
           {/* Loom Walkthrough */}
           <div>
-            <label className="text-[11px] font-medium text-[#555] block mb-1.5">
+            <label className="text-[11px] font-medium text-[#C7C9CD] block mb-1.5">
               Loom Walkthrough <span className="text-red-400">*</span>
             </label>
             <input
@@ -562,33 +563,33 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
               placeholder="https://www.loom.com/share/..."
               className={fieldClass}
             />
-            <p className="text-[10px] text-[#BBB] mt-1">Walk the developer through the design</p>
+            <p className="text-[10px] text-[#9CA3AF] mt-1">Walk the developer through the design</p>
           </div>
 
           {/* Font Files — REQUIRED */}
           <div>
-            <label className="text-[11px] font-medium text-[#555] block mb-2">
+            <label className="text-[11px] font-medium text-[#C7C9CD] block mb-2">
               Font Files <span className="text-red-400">*</span>
             </label>
             {/* Uploaded font files list */}
             {(gate.font_files_uploads || []).length > 0 && (
               <div className="space-y-1.5 mb-3">
                 {(gate.font_files_uploads || []).map((f) => (
-                  <div key={f.filename} className="flex items-center gap-3 px-3 py-2.5 bg-[#FAFAFA] border border-[#E8E8E8] rounded-lg">
-                    <div className="size-8 rounded bg-white border border-[#E8E8E8] flex items-center justify-center shrink-0">
-                      <span className="text-[9px] font-bold text-[#999]">
+                  <div key={f.filename} className="flex items-center gap-3 px-3 py-2.5 bg-[#0C0C0C] border border-[#2A2A2A] rounded-lg">
+                    <div className="size-8 rounded bg-[#181818] border border-[#2A2A2A] flex items-center justify-center shrink-0">
+                      <span className="text-[9px] font-bold text-[#71757D]">
                         {f.originalName.split(".").pop()?.toUpperCase() || "FILE"}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-[#1A1A1A] truncate">{f.originalName}</p>
-                      <p className="text-[10px] text-[#BBB]">{formatFileSize(f.size)}</p>
+                      <p className="text-xs font-medium text-[#E5E5EA] truncate">{f.originalName}</p>
+                      <p className="text-[10px] text-[#9CA3AF]">{formatFileSize(f.size)}</p>
                     </div>
-                    <a href={f.url} target="_blank" rel="noopener noreferrer" className="p-1.5 text-[#999] hover:text-[#1A1A1A] transition-colors" title="Download">
+                    <a href={f.url} target="_blank" rel="noopener noreferrer" className="p-1.5 text-[#71757D] hover:text-[#E5E5EA] transition-colors" title="Download">
                       <ArrowDownTrayIcon className="size-3.5" />
                     </a>
                     {!isSubmitted && (
-                      <button onClick={() => handleHandoverFileDelete("font_files_uploads", f.filename)} className="p-1.5 text-[#CCC] hover:text-red-500 transition-colors" title="Remove">
+                      <button onClick={() => handleHandoverFileDelete("font_files_uploads", f.filename)} aria-label="Remove font file" className="p-1.5 text-[#C7C9CD] hover:text-red-500 transition-colors" title="Remove">
                         <TrashIcon className="size-3.5" />
                       </button>
                     )}
@@ -599,17 +600,17 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
             {/* Upload button */}
             {!isSubmitted && (
               <label className={`flex items-center justify-center gap-2 py-3 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
-                uploadingFonts ? "border-[#CCC] bg-[#FAFAFA]" : "border-[#DDD] hover:border-[#999]"
+                uploadingFonts ? "border-[#383838] bg-[#0C0C0C]" : "border-[#DDD] hover:border-[#999]"
               }`}>
                 {uploadingFonts ? (
                   <div className="flex items-center gap-2">
-                    <div className="size-4 border-2 border-[#CCC] border-t-[#1A1A1A] rounded-full animate-spin" />
-                    <span className="text-xs text-[#777]">Uploading...</span>
+                    <div className="size-4 border-2 border-[#383838] border-t-[#1A1A1A] rounded-full animate-spin" />
+                    <span className="text-xs text-[#9CA3AF]">Uploading...</span>
                   </div>
                 ) : (
                   <>
-                    <PlusIcon className="size-4 text-[#999]" />
-                    <span className="text-xs text-[#777]">Upload font files (.ttf, .otf, .woff, .woff2)</span>
+                    <PlusIcon className="size-4 text-[#71757D]" />
+                    <span className="text-xs text-[#9CA3AF]">Upload font files (.ttf, .otf, .woff, .woff2)</span>
                   </>
                 )}
                 <input
@@ -633,28 +634,28 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
 
           {/* Extra Assets — OPTIONAL */}
           <div>
-            <label className="text-[11px] font-medium text-[#555] block mb-2">
-              Extra Assets <span className="text-[10px] text-[#BBB] font-normal">(optional)</span>
+            <label className="text-[11px] font-medium text-[#C7C9CD] block mb-2">
+              Extra Assets <span className="text-[10px] text-[#9CA3AF] font-normal">(optional)</span>
             </label>
             {/* Uploaded asset files list */}
             {(gate.extra_assets_files || []).length > 0 && (
               <div className="space-y-1.5 mb-3">
                 {(gate.extra_assets_files || []).map((f) => (
-                  <div key={f.filename} className="flex items-center gap-3 px-3 py-2.5 bg-[#FAFAFA] border border-[#E8E8E8] rounded-lg">
-                    <div className="size-8 rounded bg-white border border-[#E8E8E8] flex items-center justify-center shrink-0">
-                      <span className="text-[9px] font-bold text-[#999]">
+                  <div key={f.filename} className="flex items-center gap-3 px-3 py-2.5 bg-[#0C0C0C] border border-[#2A2A2A] rounded-lg">
+                    <div className="size-8 rounded bg-[#181818] border border-[#2A2A2A] flex items-center justify-center shrink-0">
+                      <span className="text-[9px] font-bold text-[#71757D]">
                         {f.originalName.split(".").pop()?.toUpperCase() || "FILE"}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-[#1A1A1A] truncate">{f.originalName}</p>
-                      <p className="text-[10px] text-[#BBB]">{formatFileSize(f.size)}</p>
+                      <p className="text-xs font-medium text-[#E5E5EA] truncate">{f.originalName}</p>
+                      <p className="text-[10px] text-[#9CA3AF]">{formatFileSize(f.size)}</p>
                     </div>
-                    <a href={f.url} target="_blank" rel="noopener noreferrer" className="p-1.5 text-[#999] hover:text-[#1A1A1A] transition-colors" title="Download">
+                    <a href={f.url} target="_blank" rel="noopener noreferrer" className="p-1.5 text-[#71757D] hover:text-[#E5E5EA] transition-colors" title="Download">
                       <ArrowDownTrayIcon className="size-3.5" />
                     </a>
                     {!isSubmitted && (
-                      <button onClick={() => handleHandoverFileDelete("extra_assets_files", f.filename)} className="p-1.5 text-[#CCC] hover:text-red-500 transition-colors" title="Remove">
+                      <button onClick={() => handleHandoverFileDelete("extra_assets_files", f.filename)} aria-label="Remove asset file" className="p-1.5 text-[#C7C9CD] hover:text-red-500 transition-colors" title="Remove">
                         <TrashIcon className="size-3.5" />
                       </button>
                     )}
@@ -665,17 +666,17 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
             {/* Upload button */}
             {!isSubmitted && (
               <label className={`flex items-center justify-center gap-2 py-3 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
-                uploadingAssets ? "border-[#CCC] bg-[#FAFAFA]" : "border-[#DDD] hover:border-[#999]"
+                uploadingAssets ? "border-[#383838] bg-[#0C0C0C]" : "border-[#DDD] hover:border-[#999]"
               }`}>
                 {uploadingAssets ? (
                   <div className="flex items-center gap-2">
-                    <div className="size-4 border-2 border-[#CCC] border-t-[#1A1A1A] rounded-full animate-spin" />
-                    <span className="text-xs text-[#777]">Uploading...</span>
+                    <div className="size-4 border-2 border-[#383838] border-t-[#1A1A1A] rounded-full animate-spin" />
+                    <span className="text-xs text-[#9CA3AF]">Uploading...</span>
                   </div>
                 ) : (
                   <>
-                    <PlusIcon className="size-4 text-[#999]" />
-                    <span className="text-xs text-[#777]">Upload assets (videos, images, icons, etc.)</span>
+                    <PlusIcon className="size-4 text-[#71757D]" />
+                    <span className="text-xs text-[#9CA3AF]">Upload assets (videos, images, icons, etc.)</span>
                   </>
                 )}
                 <input
@@ -691,11 +692,11 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
                 />
               </label>
             )}
-            <p className="text-[10px] text-[#BBB] mt-1.5">Videos, images, icons, or any files the dev can't pull from Figma</p>
+            <p className="text-[10px] text-[#9CA3AF] mt-1.5">Videos, images, icons, or any files the dev can't pull from Figma</p>
           </div>
 
-          <div className="border-t border-[#F0F0F0] pt-4">
-            <p className="text-[11px] font-medium text-[#555] mb-3">Confirm before submitting</p>
+          <div className="border-t border-[#2A2A2A] pt-4">
+            <p className="text-[11px] font-medium text-[#C7C9CD] mb-3">Confirm before submitting</p>
           </div>
         </div>
       )}
@@ -706,11 +707,11 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
       {config.type === "categorised-checklist" && config.categories && (
         <>
           {/* Preview URLs — one or more titled preview links to submit with QA */}
-          <div className="mb-6 border border-[#E8E8E8] rounded-xl bg-white p-4">
+          <div className="mb-6 border border-[#2A2A2A] rounded-xl bg-[#181818] p-4">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <p className="text-sm font-semibold text-[#1A1A1A]">Preview URLs</p>
-                <p className="text-[11px] text-[#777] mt-0.5">Add every page you're submitting for QA. These land in the internal Slack message on submit.</p>
+                <p className="text-sm font-semibold text-[#E5E5EA]">Preview URLs</p>
+                <p className="text-[11px] text-[#9CA3AF] mt-0.5">Add every page you're submitting for QA. These land in the internal Slack message on submit.</p>
               </div>
               {!isSubmitted && (
                 <button
@@ -718,7 +719,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
                     const next = [...(gate.dev_qa_previews || []), { id: crypto.randomUUID(), title: "", url: "" }];
                     setGateLocal({ ...gate, dev_qa_previews: next });
                   }}
-                  className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-[#777] hover:text-[#1A1A1A] border border-[#E8E8E8] rounded-lg hover:border-[#999] transition-colors"
+                  className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-[#9CA3AF] hover:text-[#E5E5EA] border border-[#2A2A2A] rounded-lg hover:border-[#999] transition-colors"
                 >
                   <PlusIcon className="size-3" />
                   Add URL
@@ -762,7 +763,8 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
                           setGateLocal({ ...gate, dev_qa_previews: next });
                           saveGate({ ...gate, dev_qa_previews: next });
                         }}
-                        className="p-1.5 text-[#BBB] hover:text-red-500 transition-colors"
+                        aria-label="Remove preview URL"
+                        className="p-1.5 text-[#9CA3AF] hover:text-red-500 transition-colors"
                         title="Remove"
                       >
                         <TrashIcon className="size-3.5" />
@@ -772,7 +774,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-[#AAA] italic">No preview URLs added yet. Click <span className="font-medium">Add URL</span> above.</p>
+              <p className="text-xs text-[#9CA3AF] italic">No preview URLs added yet. Click <span className="font-medium">Add URL</span> above.</p>
             )}
           </div>
 
@@ -785,22 +787,22 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
                               const isCollapsed = collapsedCats[cat.label] ?? (catIdx !== 0);
 
               return (
-                <div key={cat.label} className={`border rounded-xl overflow-hidden transition-colors ${catComplete ? "border-emerald-200 bg-emerald-50/20" : "border-[#E8E8E8]"}`}>
+                <div key={cat.label} className={`border rounded-xl overflow-hidden transition-colors ${catComplete ? "border-emerald-200 bg-emerald-50/20" : "border-[#2A2A2A]"}`}>
                   {/* Category header */}
                   <button
                     onClick={() => setCollapsedCats(prev => ({ ...prev, [cat.label]: !isCollapsed }))}
-                    className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-[#FAFAFA] transition-colors"
+                    className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-[#0C0C0C] transition-colors"
                   >
                     <div className="flex items-center gap-2.5">
-                      <ChevronDownIcon className={`size-3.5 text-[#999] transition-transform duration-200 ${isCollapsed ? "-rotate-90" : ""}`} />
-                      <span className={`text-sm font-medium ${catComplete ? "text-emerald-700" : "text-[#1A1A1A]"}`}>
+                      <ChevronDownIcon className={`size-3.5 text-[#71757D] transition-transform duration-200 ${isCollapsed ? "-rotate-90" : ""}`} />
+                      <span className={`text-sm font-medium ${catComplete ? "text-emerald-700" : "text-[#E5E5EA]"}`}>
                         {cat.label}
                       </span>
                       {catComplete && (
                         <CheckIcon className="size-4 text-emerald-500" />
                       )}
                     </div>
-                    <span className={`text-[11px] font-medium tabular-nums ${catComplete ? "text-emerald-600" : "text-[#AAA]"}`}>
+                    <span className={`text-[11px] font-medium tabular-nums ${catComplete ? "text-emerald-600" : "text-[#9CA3AF]"}`}>
                       {catChecked}/{cat.count}
                     </span>
                   </button>
@@ -814,7 +816,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
                           <label
                             key={globalIdx}
                             className={`flex items-start gap-3 p-2.5 rounded-lg transition-colors cursor-pointer ${
-                              item.checked ? "bg-emerald-50/50" : "hover:bg-[#FAFAFA]"
+                              item.checked ? "bg-emerald-50/50" : "hover:bg-[#0C0C0C]"
                             } ${isSubmitted ? "pointer-events-none opacity-60" : ""}`}
                           >
                             <input
@@ -822,9 +824,9 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
                               checked={item.checked}
                               disabled={isSubmitted}
                               onChange={() => toggleItem(globalIdx)}
-                              className="size-4 mt-0.5 rounded border-[#CCC] text-emerald-600 focus:ring-0 focus:ring-offset-0"
+                              className="size-4 mt-0.5 rounded border-[#383838] text-emerald-600 focus:ring-0 focus:ring-offset-0"
                             />
-                            <span className={`text-sm ${item.checked ? "text-[#999] line-through" : "text-[#555]"}`}>{item.label}</span>
+                            <span className={`text-sm ${item.checked ? "text-[#71757D] line-through" : "text-[#C7C9CD]"}`}>{item.label}</span>
                           </label>
                         );
                       })}
@@ -837,7 +839,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
 
           {/* Notes */}
           <div className="mb-6">
-            <label className="text-[11px] font-medium text-[#555] block mb-1.5">Notes / Additional Context</label>
+            <label className="text-[11px] font-medium text-[#C7C9CD] block mb-1.5">Notes / Additional Context</label>
             <textarea
               value={gate.notes}
               onChange={(e) => {
@@ -854,13 +856,13 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
           {/* Submit */}
           {!isSubmitted && (
             <div className="flex items-center justify-between">
-              <p className="text-[10px] text-[#AAA]">
+              <p className="text-[10px] text-[#9CA3AF]">
                 {isReady ? "All items checked — ready to submit" : `${progress.total - progress.checked} items remaining`}
               </p>
               <button
                 onClick={handleSubmit}
                 disabled={!isReady}
-                className="px-5 py-2.5 text-sm font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                className="px-5 py-2.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
               >
                 Submit
               </button>
@@ -877,7 +879,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
           <div className="space-y-6 mb-8">
             {/* Testing mode toggle */}
             <div>
-              <label className="text-[11px] font-medium text-[#555] block mb-2">Who is testing?</label>
+              <label className="text-[11px] font-medium text-[#C7C9CD] block mb-2">Who is testing?</label>
               <div className="flex gap-2">
                 {(["we-test", "client-test"] as const).map((mode) => (
                   <button
@@ -892,7 +894,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
                     className={`flex-1 py-2.5 text-sm font-medium rounded-lg border-2 transition-colors ${
                       gate.testing_mode === mode
                         ? "border-[#2563EB] bg-[#2563EB]/5 text-[#2563EB]"
-                        : "border-[#E8E8E8] text-[#999] hover:border-[#CCC]"
+                        : "border-[#2A2A2A] text-[#71757D] hover:border-[#383838]"
                     } ${isSubmitted ? "opacity-60 pointer-events-none" : ""}`}
                   >
                     {mode === "we-test" ? "We Test" : "Client Tests"}
@@ -903,7 +905,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
 
             {/* Staging URL */}
             <div>
-              <label className="text-[11px] font-medium text-[#555] block mb-1.5">
+              <label className="text-[11px] font-medium text-[#C7C9CD] block mb-1.5">
                 Staging URL <span className="text-red-400">*</span>
               </label>
               <input
@@ -923,7 +925,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
             {/* Intelligems URL — only when we test */}
             {gate.testing_mode === "we-test" && (
               <div>
-                <label className="text-[11px] font-medium text-[#555] block mb-1.5">
+                <label className="text-[11px] font-medium text-[#C7C9CD] block mb-1.5">
                   Intelligems Test Link <span className="text-red-400">*</span>
                 </label>
                 <input
@@ -938,13 +940,13 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
                   placeholder="https://app.intelligems.io/..."
                   className={fieldClass}
                 />
-                <p className="text-[10px] text-[#BBB] mt-1">Link to the Intelligems test</p>
+                <p className="text-[10px] text-[#9CA3AF] mt-1">Link to the Intelligems test</p>
               </div>
             )}
 
             {/* Go-live date */}
             <div>
-              <label className="text-[11px] font-medium text-[#555] block mb-1.5">Go-Live Date</label>
+              <label className="text-[11px] font-medium text-[#C7C9CD] block mb-1.5">Go-Live Date</label>
               <input
                 type="date"
                 value={gate.go_live_date || ""}
@@ -960,15 +962,15 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
             </div>
 
             {/* Sign-offs */}
-            <div className="border-t border-[#F0F0F0] pt-5">
-              <p className="text-[11px] font-medium text-[#555] mb-3">Sign-offs</p>
+            <div className="border-t border-[#2A2A2A] pt-5">
+              <p className="text-[11px] font-medium text-[#C7C9CD] mb-3">Sign-offs</p>
               <div className="space-y-2">
                 {/* Dev lead sign-off */}
                 <label
                   className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-colors cursor-pointer ${
                     gate.dev_lead_signoff
                       ? "border-emerald-300 bg-emerald-50/30"
-                      : "border-[#E8E8E8] hover:border-[#CCC]"
+                      : "border-[#2A2A2A] hover:border-[#383838]"
                   } ${isSubmitted ? "pointer-events-none opacity-60" : ""}`}
                 >
                   <input
@@ -980,13 +982,13 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
                       setGateLocal(updated);
                       saveGate(updated);
                     }}
-                    className="size-5 rounded border-[#CCC] text-emerald-600 focus:ring-0"
+                    className="size-5 rounded border-[#383838] text-emerald-600 focus:ring-0"
                   />
                   <div>
-                    <p className={`text-sm font-medium ${gate.dev_lead_signoff ? "text-emerald-700" : "text-[#1A1A1A]"}`}>
+                    <p className={`text-sm font-medium ${gate.dev_lead_signoff ? "text-emerald-700" : "text-[#E5E5EA]"}`}>
                       Head of Dev Sign-Off
                     </p>
-                    <p className="text-[11px] text-[#999]">Build reviewed and approved by dev lead</p>
+                    <p className="text-[11px] text-[#71757D]">Build reviewed and approved by dev lead</p>
                   </div>
                 </label>
 
@@ -995,7 +997,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
                   className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-colors cursor-pointer ${
                     gate.client_approval_confirmed
                       ? "border-emerald-300 bg-emerald-50/30"
-                      : "border-[#E8E8E8] hover:border-[#CCC]"
+                      : "border-[#2A2A2A] hover:border-[#383838]"
                   } ${isSubmitted ? "pointer-events-none opacity-60" : ""}`}
                 >
                   <input
@@ -1007,21 +1009,21 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
                       setGateLocal(updated);
                       saveGate(updated);
                     }}
-                    className="size-5 rounded border-[#CCC] text-emerald-600 focus:ring-0"
+                    className="size-5 rounded border-[#383838] text-emerald-600 focus:ring-0"
                   />
                   <div>
-                    <p className={`text-sm font-medium ${gate.client_approval_confirmed ? "text-emerald-700" : "text-[#1A1A1A]"}`}>
+                    <p className={`text-sm font-medium ${gate.client_approval_confirmed ? "text-emerald-700" : "text-[#E5E5EA]"}`}>
                       Client Approval Confirmed
                     </p>
-                    <p className="text-[11px] text-[#999]">Written confirmation from client (Slack/email)</p>
+                    <p className="text-[11px] text-[#71757D]">Written confirmation from client (Slack/email)</p>
                   </div>
                 </label>
               </div>
             </div>
 
             {/* Pre-launch checklist header */}
-            <div className="border-t border-[#F0F0F0] pt-5">
-              <p className="text-[11px] font-medium text-[#555] mb-3">Pre-Launch Checklist</p>
+            <div className="border-t border-[#2A2A2A] pt-5">
+              <p className="text-[11px] font-medium text-[#C7C9CD] mb-3">Pre-Launch Checklist</p>
             </div>
           </div>
 
@@ -1031,7 +1033,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
               <label
                 key={i}
                 className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-                  item.checked ? "border-emerald-200 bg-emerald-50/30" : "border-[#E8E8E8] hover:border-[#CCC]"
+                  item.checked ? "border-emerald-200 bg-emerald-50/30" : "border-[#2A2A2A] hover:border-[#383838]"
                 } ${isSubmitted ? "pointer-events-none opacity-60" : ""}`}
               >
                 <input
@@ -1039,16 +1041,16 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
                   checked={item.checked}
                   disabled={isSubmitted}
                   onChange={() => toggleItem(i)}
-                  className="size-4 mt-0.5 rounded border-[#CCC] text-emerald-600 focus:ring-0 focus:ring-offset-0"
+                  className="size-4 mt-0.5 rounded border-[#383838] text-emerald-600 focus:ring-0 focus:ring-offset-0"
                 />
-                <span className={`text-sm ${item.checked ? "text-[#1A1A1A]" : "text-[#777]"}`}>{item.label}</span>
+                <span className={`text-sm ${item.checked ? "text-[#E5E5EA]" : "text-[#9CA3AF]"}`}>{item.label}</span>
               </label>
             ))}
           </div>
 
           {/* Notes */}
           <div className="mb-6">
-            <label className="text-[11px] font-medium text-[#555] block mb-1.5">Notes</label>
+            <label className="text-[11px] font-medium text-[#C7C9CD] block mb-1.5">Notes</label>
             <textarea
               value={gate.notes}
               onChange={(e) => {
@@ -1065,7 +1067,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
           {/* Submit */}
           {!isSubmitted && (
             <div className="flex items-center justify-between">
-              <p className="text-[10px] text-[#AAA]">
+              <p className="text-[10px] text-[#9CA3AF]">
                 {isReady
                   ? "All checks passed — ready to submit"
                   : !gate.testing_mode
@@ -1084,7 +1086,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
               <button
                 onClick={handleSubmit}
                 disabled={!isReady}
-                className="px-5 py-2.5 text-sm font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                className="px-5 py-2.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
               >
                 Submit
               </button>
@@ -1103,7 +1105,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
               <label
                 key={i}
                 className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-                  item.checked ? "border-emerald-200 bg-emerald-50/30" : "border-[#E8E8E8] hover:border-[#CCC]"
+                  item.checked ? "border-emerald-200 bg-emerald-50/30" : "border-[#2A2A2A] hover:border-[#383838]"
                 } ${isSubmitted ? "pointer-events-none opacity-60" : ""}`}
               >
                 <input
@@ -1111,16 +1113,16 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
                   checked={item.checked}
                   disabled={isSubmitted}
                   onChange={() => toggleItem(i)}
-                  className="size-4 mt-0.5 rounded border-[#CCC] text-emerald-600 focus:ring-0 focus:ring-offset-0"
+                  className="size-4 mt-0.5 rounded border-[#383838] text-emerald-600 focus:ring-0 focus:ring-offset-0"
                 />
-                <span className={`text-sm ${item.checked ? "text-[#1A1A1A]" : "text-[#777]"}`}>{item.label}</span>
+                <span className={`text-sm ${item.checked ? "text-[#E5E5EA]" : "text-[#9CA3AF]"}`}>{item.label}</span>
               </label>
             ))}
           </div>
 
           {/* Notes */}
           <div className="mb-6">
-            <label className="text-[11px] font-medium text-[#555] block mb-1.5">
+            <label className="text-[11px] font-medium text-[#C7C9CD] block mb-1.5">
               {config.type === "design-handoff" ? "Notes for the developer" : "Notes / Additional Context"}
             </label>
             <textarea
@@ -1139,7 +1141,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
           {/* Submit */}
           {!isSubmitted && (
             <div className="flex items-center justify-between">
-              <p className="text-[10px] text-[#AAA]">
+              <p className="text-[10px] text-[#9CA3AF]">
                 {isReady
                   ? "All items checked — ready to submit"
                   : config.type === "design-handoff" && !gate.figma_url?.trim()
@@ -1154,7 +1156,7 @@ export function GateChecklistForm({ gateKey, project, portal, onUpdate, onAfterS
               <button
                 onClick={handleSubmit}
                 disabled={!isReady}
-                className="px-5 py-2.5 text-sm font-semibold bg-[#1B1B1B] text-white rounded-lg hover:bg-[#2D2D2D] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                className="px-5 py-2.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
               >
                 Submit
               </button>

@@ -4,7 +4,7 @@
  * /company/contracts/templates. Edit the NDA + Contract templates
  * used to spin up new agreements. Each agreement snapshots the
  * template at creation, so edits here only affect *future* agreements
- * — existing signed ones stay intact.
+ * - existing signed ones stay intact.
  *
  * Tab switcher between NDA + Contract. For each kind: title, intro,
  * outro (textareas), clauses list with add/edit/delete + an only_for
@@ -13,7 +13,7 @@
  *
  * IMPORTANT: this is a legal document editor. There's a banner at the
  * top reminding Dylan to read the seeded clauses with a solicitor
- * before sending them. No validation on the text body itself — by
+ * before sending them. No validation on the text body itself - by
  * design.
  */
 
@@ -111,7 +111,7 @@ export default function TemplatesEditorPage() {
   if (loading || !current) {
     return (
       <div className="max-w-3xl mx-auto px-6 md:px-10 py-12">
-        <div className="text-sm text-[#7A7A7A]">Loading templates...</div>
+        <div className="text-sm text-[#71757D]">Loading templates...</div>
       </div>
     );
   }
@@ -121,7 +121,7 @@ export default function TemplatesEditorPage() {
       {/* Back */}
       <Link
         href="/company/contracts"
-        className="inline-flex items-center gap-1.5 text-[13px] text-[#7A7A7A] hover:text-[#1B1B1B] transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-[13px] text-[#71757D] hover:text-[#E5E5EA] transition-colors mb-6"
       >
         <ArrowLeftIcon className="size-4" />
         Back to contracts
@@ -129,17 +129,17 @@ export default function TemplatesEditorPage() {
 
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-[#1B1B1B] tracking-tight">
+        <h1 className="text-2xl font-semibold text-[#E5E5EA]">
           Agreement templates
         </h1>
-        <p className="text-[13px] text-[#7A7A7A] mt-1 max-w-lg">
+        <p className="text-[13px] text-[#71757D] mt-1 max-w-lg">
           Edits here apply to new agreements only. Already-signed documents keep
           the clauses they were signed under.
         </p>
       </div>
 
       {/* Legal disclaimer */}
-      <div className="flex items-start gap-3 px-4 py-3 mb-6 bg-[#FFF7E0] border border-[#F3D785] rounded-lg text-[13px] text-[#7A4B0A]">
+      <div className="flex items-start gap-3 px-4 py-3 mb-6 bg-[#222222] border border-[#383838] rounded-lg text-[13px] text-[#E5E5EA]">
         <ExclamationTriangleIcon className="size-4 shrink-0 mt-0.5" />
         <div>
           <strong>Have a solicitor review the seeded clauses before using these
@@ -149,7 +149,7 @@ export default function TemplatesEditorPage() {
       </div>
 
       {/* Kind tabs */}
-      <div className="inline-flex border border-[#E5E5EA] rounded-lg p-1 mb-6 bg-white">
+      <div className="inline-flex border border-[#2A2A2A] rounded-lg p-1 mb-6 bg-[#181818]">
         {(["contract", "nda"] as AgreementKind[]).map((k) => (
           <button
             key={k}
@@ -159,7 +159,7 @@ export default function TemplatesEditorPage() {
               setDirty(false);
             }}
             className={`px-3 py-1.5 text-[13px] font-medium rounded-md transition-colors ${
-              kind === k ? "bg-[#1B1B1B] text-white" : "text-[#7A7A7A] hover:text-[#1B1B1B]"
+              kind === k ? "bg-white text-[#0C0C0C]" : "text-[#71757D] hover:text-[#E5E5EA]"
             }`}
           >
             {AGREEMENT_KIND_LABEL[k]}
@@ -183,7 +183,7 @@ export default function TemplatesEditorPage() {
             className={inputClass}
             value={current.revision}
             onChange={(e) => patchRevision(e.target.value)}
-            placeholder="e.g. v1.1 – tightened IP"
+            placeholder="e.g. v1.1 - tightened IP"
           />
         </div>
       </div>
@@ -205,7 +205,7 @@ export default function TemplatesEditorPage() {
           <label className={labelClass}>Numbered clauses</label>
           <button
             onClick={addClause}
-            className="inline-flex items-center gap-1 text-[12px] text-[#1B1B1B] hover:underline"
+            className="inline-flex items-center gap-1 text-[12px] text-[#E5E5EA] hover:underline"
           >
             <PlusIcon className="size-3.5" /> Add clause
           </button>
@@ -214,10 +214,10 @@ export default function TemplatesEditorPage() {
           {current.body.clauses.map((c, idx) => (
             <div
               key={c.id}
-              className="bg-white border border-[#E5E5EA] rounded-lg p-4 shadow-[var(--shadow-soft)]"
+              className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-4 shadow-[var(--shadow-soft)]"
             >
               <div className="flex items-start justify-between gap-3 mb-3">
-                <div className="text-[11px] font-mono text-[#A0A0A0] mt-2 w-8 shrink-0">
+                <div className="text-[11px] font-mono text-[#71757D] mt-2 w-8 shrink-0">
                   {String(idx + 1).padStart(2, "0")}
                 </div>
                 <input
@@ -241,7 +241,7 @@ export default function TemplatesEditorPage() {
                 </select>
                 <button
                   onClick={() => removeClause(idx)}
-                  className="p-2 text-[#A0A0A0] hover:text-[#B22B2B] transition-colors"
+                  className="p-2 text-[#71757D] hover:text-[#B22B2B] transition-colors"
                   aria-label="Remove clause"
                 >
                   <TrashIcon className="size-4" />
@@ -269,9 +269,9 @@ export default function TemplatesEditorPage() {
 
       {/* Save bar — sticks to the bottom of the viewport so long edits don't
           require scrolling back up to commit. */}
-      <div className="fixed bottom-0 left-0 right-0 md:left-56 bg-white/95 backdrop-blur border-t border-[#E5E5EA] z-10">
+      <div className="fixed bottom-0 left-0 right-0 md:left-56 bg-[#181818]/95 backdrop-blur border-t border-[#2A2A2A] z-10">
         <div className="max-w-3xl mx-auto px-6 md:px-10 py-3 flex items-center justify-between gap-4">
-          <div className="text-[12px] text-[#7A7A7A]">
+          <div className="text-[12px] text-[#71757D]">
             {savedAt ? (
               <span className="inline-flex items-center gap-1.5 text-emerald-600">
                 <CheckIcon className="size-3.5" />
@@ -286,7 +286,7 @@ export default function TemplatesEditorPage() {
           <button
             onClick={save}
             disabled={!dirty || saving}
-            className="px-4 py-2 bg-[#1B1B1B] text-white text-sm font-medium rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40"
+            className="px-4 py-2 bg-white text-[#0C0C0C] text-sm font-medium rounded-lg hover:bg-[#F3F4F6] transition-colors disabled:opacity-40"
           >
             {saving ? "Saving..." : "Save template"}
           </button>
@@ -298,17 +298,17 @@ export default function TemplatesEditorPage() {
 
 function PlaceholderHint() {
   return (
-    <p className="text-[11px] text-[#A0A0A0] mt-1.5 leading-relaxed">
-      Use <code className="bg-[#F3F3F5] px-1 py-0.5 rounded">{"{{ placeholder }}"}</code>{" "}
+    <p className="text-[11px] text-[#71757D] mt-1.5 leading-relaxed">
+      Use <code className="bg-[#222222] px-1 py-0.5 rounded">{"{{ placeholder }}"}</code>{" "}
       to inject person data. Available:{" "}
-      <code className="bg-[#F3F3F5] px-1 py-0.5 rounded">person_full_name</code>,{" "}
-      <code className="bg-[#F3F3F5] px-1 py-0.5 rounded">person_job_title</code>,{" "}
-      <code className="bg-[#F3F3F5] px-1 py-0.5 rounded">person_employment_type</code>,{" "}
-      <code className="bg-[#F3F3F5] px-1 py-0.5 rounded">start_date</code>,{" "}
-      <code className="bg-[#F3F3F5] px-1 py-0.5 rounded">effective_date</code>,{" "}
-      <code className="bg-[#F3F3F5] px-1 py-0.5 rounded">comp_amount</code>,{" "}
-      <code className="bg-[#F3F3F5] px-1 py-0.5 rounded">comp_currency</code>,{" "}
-      <code className="bg-[#F3F3F5] px-1 py-0.5 rounded">comp_frequency</code>.
+      <code className="bg-[#222222] px-1 py-0.5 rounded">person_full_name</code>,{" "}
+      <code className="bg-[#222222] px-1 py-0.5 rounded">person_job_title</code>,{" "}
+      <code className="bg-[#222222] px-1 py-0.5 rounded">person_employment_type</code>,{" "}
+      <code className="bg-[#222222] px-1 py-0.5 rounded">start_date</code>,{" "}
+      <code className="bg-[#222222] px-1 py-0.5 rounded">effective_date</code>,{" "}
+      <code className="bg-[#222222] px-1 py-0.5 rounded">comp_amount</code>,{" "}
+      <code className="bg-[#222222] px-1 py-0.5 rounded">comp_currency</code>,{" "}
+      <code className="bg-[#222222] px-1 py-0.5 rounded">comp_frequency</code>.
     </p>
   );
 }

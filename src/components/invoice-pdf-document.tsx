@@ -27,7 +27,7 @@ const inv = StyleSheet.create({
   invoiceTitle: {
     fontSize: 24,
     fontWeight: 800,
-    color: "#0A0A0A",
+    color: "#080808",
     letterSpacing: -0.5,
   },
   /* Meta section: invoice details + client details side by side */
@@ -50,14 +50,14 @@ const inv = StyleSheet.create({
   metaValue: {
     fontSize: 10,
     fontWeight: 400,
-    color: "#0A0A0A",
+    color: "#080808",
     marginBottom: 10,
     lineHeight: 1.5,
   },
   metaValueBold: {
     fontSize: 10,
     fontWeight: 600,
-    color: "#0A0A0A",
+    color: "#080808",
     marginBottom: 10,
     lineHeight: 1.5,
   },
@@ -85,13 +85,13 @@ const inv = StyleSheet.create({
   infoValue: {
     fontSize: 10,
     fontWeight: 600,
-    color: "#0A0A0A",
+    color: "#080808",
   },
   /* Address line — tight line-height, no bottom margin */
   addressLine: {
     fontSize: 10,
     fontWeight: 400,
-    color: "#0A0A0A",
+    color: "#080808",
     lineHeight: 1.45,
   },
   metaTinyMuted: {
@@ -139,7 +139,7 @@ const inv = StyleSheet.create({
   tdText: {
     fontSize: 9.5,
     fontWeight: 400,
-    color: "#0A0A0A",
+    color: "#080808",
   },
   tdMuted: {
     fontSize: 9.5,
@@ -166,7 +166,7 @@ const inv = StyleSheet.create({
   totalsValue: {
     fontSize: 9.5,
     fontWeight: 500,
-    color: "#0A0A0A",
+    color: "#080808",
     width: 90,
     textAlign: "right",
   },
@@ -176,19 +176,19 @@ const inv = StyleSheet.create({
     width: 220,
     paddingVertical: 8,
     borderTopWidth: 1,
-    borderTopColor: "#0A0A0A",
+    borderTopColor: "#080808",
     marginTop: 4,
   },
   totalsFinalLabel: {
     fontSize: 11,
     fontWeight: 700,
-    color: "#0A0A0A",
+    color: "#080808",
     flex: 1,
   },
   totalsFinalValue: {
     fontSize: 11,
     fontWeight: 700,
-    color: "#0A0A0A",
+    color: "#080808",
     width: 90,
     textAlign: "right",
   },
@@ -212,7 +212,7 @@ const inv = StyleSheet.create({
   paymentValue: {
     fontSize: 9,
     fontWeight: 400,
-    color: "#0A0A0A",
+    color: "#080808",
   },
   notesText: {
     fontSize: 9,

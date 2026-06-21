@@ -45,7 +45,7 @@ function FunnelEdgeComponent({
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
               pointerEvents: "all",
             }}
-            className="text-[9px] font-medium text-[#999] bg-white px-1.5 py-0.5 rounded border border-[#E5E5EA]"
+            className="text-[9px] font-medium text-[#71757D] bg-[#181818] px-1.5 py-0.5 rounded border border-[#2A2A2A]"
           >
             {data.label as string}
           </div>

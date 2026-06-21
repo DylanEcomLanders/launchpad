@@ -126,7 +126,7 @@ function FormatBadge({ format, size = "sm" }: { format: PostFormat; size?: "sm" 
   return <Icon className="size-3 shrink-0 opacity-50" />;
 }
 
-// ── Calendar PIN Gate ──
+// -- Calendar PIN Gate --
 
 const CALENDAR_PINS: Record<string, Creator> = {
   "1111": "dylan",
@@ -168,10 +168,10 @@ function CalendarPinGate({ onUnlock }: { onUnlock: (creator: Creator) => void })
   return (
     <div className="min-h-[80vh] flex items-center justify-center animate-fadeInUp">
       <div className="w-full max-w-[280px] text-center">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#F3F3F5] border border-[#E5E5EA] mb-5">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#222222] border border-[#E5E5EA] mb-5">
           <LockClosedIcon className="size-6 text-[#7A7A7A]" />
         </div>
-        <h1 className="text-xl font-bold tracking-tight mb-1">Content Calendar</h1>
+        <h1 className="text-xl font-bold mb-1">Content Calendar</h1>
         <p className="text-sm text-[#999] mb-8">Enter your PIN to continue</p>
 
         {/* PIN dots */}
@@ -199,7 +199,7 @@ function CalendarPinGate({ onUnlock }: { onUnlock: (creator: Creator) => void })
             <button
               key={n}
               onClick={() => handleDigit(String(n))}
-              className="h-14 rounded-xl bg-white border border-[#E5E5EA] text-lg font-semibold text-[#1B1B1B] hover:bg-[#F7F8FA] active:bg-[#EDEDEF] transition-colors"
+              className="h-14 rounded-xl bg-[#181818] border border-[#E5E5EA] text-lg font-semibold text-[#1B1B1B] hover:bg-[#222222] active:bg-[#383838] transition-colors"
             >
               {n}
             </button>
@@ -207,13 +207,13 @@ function CalendarPinGate({ onUnlock }: { onUnlock: (creator: Creator) => void })
           <div />
           <button
             onClick={() => handleDigit("0")}
-            className="h-14 rounded-xl bg-white border border-[#E5E5EA] text-lg font-semibold text-[#1B1B1B] hover:bg-[#F7F8FA] active:bg-[#EDEDEF] transition-colors"
+            className="h-14 rounded-xl bg-[#181818] border border-[#E5E5EA] text-lg font-semibold text-[#1B1B1B] hover:bg-[#222222] active:bg-[#383838] transition-colors"
           >
             0
           </button>
           <button
             onClick={() => { setPin(p => p.slice(0, -1)); setError(false); }}
-            className="h-14 rounded-xl text-sm font-medium text-[#999] hover:text-[#1B1B1B] hover:bg-[#F7F8FA] transition-colors"
+            className="h-14 rounded-xl text-sm font-medium text-[#999] hover:text-[#1B1B1B] hover:bg-[#222222] transition-colors"
           >
             ⌫
           </button>
@@ -371,7 +371,7 @@ export default function CalendarPage() {
           : (["x", "linkedin"] as Platform[]),
     }));
 
-    // Enforce max 3 draft posts per day per creator — discard extras
+    // Enforce max 3 draft posts per day per creator - discard extras
     const keep: ContentPost[] = [];
     const draftCount: Record<string, number> = {}; // "creator|date" → count
     // Keep non-drafts first, then drafts up to 3 per day per creator (newest first)
@@ -404,7 +404,7 @@ export default function CalendarPage() {
     getVoiceProfile(activeCreator).then(setVoiceProfile);
   }, [activeCreator]);
 
-  // Filter by active creator — hooks must run before any early return
+  // Filter by active creator - hooks must run before any early return
   const creator = (activeCreator || "dylan") as Creator;
   const posts = useMemo(() => allPosts.filter(p => p.creator === creator), [allPosts, creator]);
 
@@ -475,13 +475,13 @@ export default function CalendarPage() {
       dayScores[name] = (dayScores[name] || 0) + p.analytics_score;
     });
     const sorted = Object.entries(dayScores).sort(([, a], [, b]) => b - a);
-    return sorted[0]?.[0] || "—";
+    return sorted[0]?.[0] || "-";
   }, [weekPosts]);
 
   // Top content type
   const topType = useMemo(() => {
     const sorted = Object.entries(contentMix).sort(([, a], [, b]) => b - a);
-    return sorted[0]?.[1] > 0 ? contentTypeLabels[sorted[0][0] as ContentType] : "—";
+    return sorted[0]?.[1] > 0 ? contentTypeLabels[sorted[0][0] as ContentType] : "-";
   }, [contentMix]);
 
   // Show PIN gate if not unlocked (AFTER all hooks)
@@ -491,7 +491,7 @@ export default function CalendarPage() {
 
   function openStudio(post?: ContentPost) {
     if (post) {
-      // Always default to both platforms — UI no longer lets you pick
+      // Always default to both platforms - UI no longer lets you pick
       setStudioPost({ ...post, platforms: post.platforms?.length ? post.platforms : ["x", "linkedin"] });
       setSelectedCaption(-1);
       setDraftCaptions(post.platform_captions || (post.caption ? { [post.platform]: post.caption } : {}));
@@ -615,7 +615,7 @@ export default function CalendarPage() {
     const post = allPosts.find(p => p.id === id);
     if (!post) return;
 
-    // Only drafts can be deleted freely — scheduled/posted posts are protected
+    // Only drafts can be deleted freely - scheduled/posted posts are protected
     if (post.status === "scheduled") {
       if (!confirm("This post has been scheduled. Are you sure you want to delete it?")) return;
     } else if (post.status === "saved") {
@@ -760,7 +760,7 @@ export default function CalendarPage() {
       let successCount = 0;
       let failCount = 0;
       const failedErrors: string[] = [];
-      // Track which posts had EVERY targeted platform succeed — only those
+      // Track which posts had EVERY targeted platform succeed - only those
       // get marked as scheduled, so partial failures stay re-schedulable.
       const fullySuccessfulPostIds = new Set<string>();
       // Per-post map of platform → newly created Typefully draft id
@@ -784,7 +784,7 @@ export default function CalendarPage() {
         for (const tp of targetPlats) {
           // Skip platforms that already have a live Typefully draft for this post
           if (p.typefully_draft_ids?.[tp as Platform]) {
-            console.log(`[Typefully] Skipping ${tp} for post ${p.id} — already has draft ${p.typefully_draft_ids[tp as Platform]}`);
+            console.log(`[Typefully] Skipping ${tp} for post ${p.id} - already has draft ${p.typefully_draft_ids[tp as Platform]}`);
             continue;
           }
           // Use platform-specific caption, fall back to main caption
@@ -800,7 +800,7 @@ export default function CalendarPage() {
             ...(tp === "x" && autoRetweetX ? { auto_retweet_enabled: true } : {}),
           };
 
-          // Single attempt — retries were creating duplicate drafts because
+          // Single attempt - retries were creating duplicate drafts because
           // Typefully sometimes returns a non-2xx response after the draft was
           // already created. If it fails, report it and let the user reschedule.
           let lastError = "";
@@ -848,7 +848,7 @@ export default function CalendarPage() {
         failedErrors,
       });
 
-      // Mark only fully successful posts as scheduled — partial failures
+      // Mark only fully successful posts as scheduled - partial failures
       // stay as 'saved' so the user can retry without double-scheduling.
       if (fullySuccessfulPostIds.size > 0 || Object.keys(newDraftIdsByPost).length > 0) {
         const updated = allPosts.map(p => {
@@ -977,7 +977,7 @@ export default function CalendarPage() {
         const id = String(d.id);
         if (seen.has(id) || knownIds.has(id)) continue;
         seen.add(id);
-        // Fuzzy skip — matches existing post with same caption+date
+        // Fuzzy skip - matches existing post with same caption+date
         const txtForKey = (d as any).preview || (d as any).text || "";
         const rawDateForKey = (d as any).scheduled_date || (d as any).publish_at;
         if (rawDateForKey) {
@@ -986,7 +986,7 @@ export default function CalendarPage() {
           const mm2 = String(dt2.getMonth() + 1).padStart(2, "0");
           const dd2 = String(dt2.getDate()).padStart(2, "0");
           if (knownFuzzy.has(fuzzyKey(txtForKey, `${yyyy2}-${mm2}-${dd2}`))) {
-            console.log(`[Sync] Fuzzy skip draft ${id} — matches existing post`);
+            console.log(`[Sync] Fuzzy skip draft ${id} - matches existing post`);
             continue;
           }
         }
@@ -1043,9 +1043,9 @@ export default function CalendarPage() {
         const scheduled_date = `${yyyy}-${mm}-${dd}`;
         const scheduled_time = `${hh}:${mi}`;
         // Merge into an existing imported post if same date+time+fuzzy text
-        // (Launchpad creates 1 Typefully draft per platform — we want them
+        // (Launchpad creates 1 Typefully draft per platform - we want them
         // collapsed back into a single multi-platform post on sync.)
-        // Merge purely by date+time — Launchpad only ever schedules X+LinkedIn
+        // Merge purely by date+time - Launchpad only ever schedules X+LinkedIn
         // pairs at the same slot, so matching time alone is safe and simpler.
         const mergeKey = `${scheduled_date}T${scheduled_time}`;
         const existing = imported.find(ip => `${ip.scheduled_date}T${ip.scheduled_time}` === mergeKey);
@@ -1171,7 +1171,7 @@ export default function CalendarPage() {
     setCaptionLoading(true);
     setCaptionError("");
     setCaptions([]);
-    // Do NOT wipe platformCaptions — keep other platforms' variants intact.
+    // Do NOT wipe platformCaptions - keep other platforms' variants intact.
     try {
       let imageData = overrides?.imageData || studioPost.media_data || undefined;
       if (imageData && imageData.length > 500_000) {
@@ -1236,7 +1236,7 @@ export default function CalendarPage() {
   function handleImageUploads(files: File[]) {
     const valid = files.filter(f => {
       if (f.size > 5 * 1024 * 1024) {
-        alert(`${f.name} is over 5MB — skipped`);
+        alert(`${f.name} is over 5MB - skipped`);
         return false;
       }
       return true;
@@ -1400,7 +1400,7 @@ export default function CalendarPage() {
   }
 
   async function extractPdfText(file: File): Promise<string> {
-    // Load pdfjs-dist from CDN (client-side only — avoids Vercel serverless issues)
+    // Load pdfjs-dist from CDN (client-side only - avoids Vercel serverless issues)
     const PDFJS_CDN = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs";
     const WORKER_CDN = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs";
     const pdfjsLib = await import(/* webpackIgnore: true */ PDFJS_CDN);
@@ -1651,7 +1651,7 @@ export default function CalendarPage() {
       setSelectedCaption(-1);
       adaptCaptionForPlatform(captionToAdapt, sourceP as Platform, targetPlatform);
     } else {
-      // No caption yet — just switch platform
+      // No caption yet - just switch platform
       setStudioPost(prev => ({ ...prev, platform: targetPlatform }));
       setCaptions([]);
       setSelectedCaption(-1);
@@ -1926,7 +1926,7 @@ export default function CalendarPage() {
       return false; // remove old drafts for this week
     });
 
-    // All ideas land as X posts — repurpose to other platforms later
+    // All ideas land as X posts - repurpose to other platforms later
     const newPosts: ContentPost[] = selected.map(d => ({
       id: uuid(),
       creator: creator,
@@ -2009,7 +2009,7 @@ export default function CalendarPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 animate-fadeInUp">
         <div className="flex items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Content Calendar</h1>
+            <h1 className="text-2xl font-bold">Content Calendar</h1>
             <p className="text-sm text-[#7A7A7A] mt-0.5">Plan, write, and organise content before publishing</p>
           </div>
           {/* Active creator badge + lock */}
@@ -2068,7 +2068,7 @@ export default function CalendarPage() {
           <button
             onClick={syncWithTypefully}
             disabled={syncing}
-            title="Reconcile local state with Typefully — clears stale draft refs and flips orphaned posts back to saved"
+            title="Reconcile local state with Typefully - clears stale draft refs and flips orphaned posts back to saved"
             className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-[#E5E5EA] text-[#7A7A7A] hover:bg-[#F5F5F5] transition-colors disabled:opacity-40"
           >
             {syncing ? "Syncing..." : "Sync"}
@@ -2357,7 +2357,7 @@ export default function CalendarPage() {
                       {readyCount} Ready to Post
                     </span>
                     {" "}post{readyCount !== 1 ? "s" : ""} will be scheduled to {typefullyPlatforms.size} platform{typefullyPlatforms.size !== 1 ? "s" : ""}
-                    {typefullyPlatforms.size > 1 && " — captions auto-adapted per platform"}
+                    {typefullyPlatforms.size > 1 && " - captions auto-adapted per platform"}
                   </p>
                 );
               })()}

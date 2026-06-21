@@ -128,7 +128,7 @@ function ProjectModal({ project, onClose }: { project: PortfolioProject; onClose
               <button
                 onClick={() => setMode("desktop")}
                 className={`px-3 md:px-4 py-1 text-[11px] font-semibold rounded-full transition-colors ${
-                  mode === "desktop" ? "bg-white text-[#0A0A0B]" : "text-white/70 hover:text-white"
+                  mode === "desktop" ? "bg-white text-[#080808]" : "text-white/70 hover:text-white"
                 }`}
               >
                 Desktop
@@ -136,7 +136,7 @@ function ProjectModal({ project, onClose }: { project: PortfolioProject; onClose
               <button
                 onClick={() => setMode("mobile")}
                 className={`px-3 md:px-4 py-1 text-[11px] font-semibold rounded-full transition-colors ${
-                  mode === "mobile" ? "bg-white text-[#0A0A0B]" : "text-white/70 hover:text-white"
+                  mode === "mobile" ? "bg-white text-[#080808]" : "text-white/70 hover:text-white"
                 }`}
               >
                 Mobile

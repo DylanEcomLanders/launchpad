@@ -44,7 +44,7 @@ const SOCIAL_ICONS: Record<string, string> = {
 };
 
 const OUTREACH_STATUS_LABELS: Record<OutreachStatus, { label: string; bg: string; text: string }> = {
-  not_contacted: { label: "Not Contacted", bg: "bg-[#F3F3F5]", text: "text-[#999999]" },
+  not_contacted: { label: "Not Contacted", bg: "bg-[#222222]", text: "text-[#999999]" },
   contacted: { label: "Contacted", bg: "bg-blue-50", text: "text-blue-600" },
   replied: { label: "Replied", bg: "bg-emerald-50", text: "text-emerald-600" },
 };
@@ -424,7 +424,7 @@ export default function ProspectScraperPage() {
       <div className="relative z-10 max-w-6xl mx-auto px-6 md:px-12 py-16 md:py-24">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">
             Prospect Scraper
           </h1>
           <p className="text-[#7C819B]">
@@ -434,12 +434,12 @@ export default function ProspectScraperPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center gap-1 mb-8 bg-[#F3F3F5] rounded-lg p-1 w-fit">
+        <div className="flex items-center gap-1 mb-8 bg-[#222222] rounded-lg p-1 w-fit">
           <button
             onClick={() => setTab("search")}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
               tab === "search"
-                ? "bg-white text-[#1A1A2E] shadow-sm"
+                ? "bg-[#181818] text-[#1A1A2E] shadow-sm"
                 : "text-[#7C819B] hover:text-[#1A1A2E]"
             }`}
           >
@@ -452,7 +452,7 @@ export default function ProspectScraperPage() {
             onClick={() => { setTab("saved"); loadSaved(); }}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
               tab === "saved"
-                ? "bg-white text-[#1A1A2E] shadow-sm"
+                ? "bg-[#181818] text-[#1A1A2E] shadow-sm"
                 : "text-[#7C819B] hover:text-[#1A1A2E]"
             }`}
           >
@@ -513,7 +513,7 @@ export default function ProspectScraperPage() {
             )}
 
             {/* Search Form */}
-            <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-5 space-y-4 mb-8">
+            <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg p-5 space-y-4 mb-8">
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#7C819B] mb-2">
                   Search Prompt *
@@ -540,7 +540,7 @@ export default function ProspectScraperPage() {
                   <label className="block text-xs font-semibold uppercase tracking-wider text-[#7C819B] mb-2">
                     Max Results
                   </label>
-                  <div className="inline-flex rounded-md border border-[#E5E5EA] bg-white p-0.5">
+                  <div className="inline-flex rounded-md border border-[#2A2A2A] bg-[#181818] p-0.5">
                     {maxResultsOptions.map((n) => (
                       <button
                         key={n}
@@ -563,7 +563,7 @@ export default function ProspectScraperPage() {
                 type="button"
                 onClick={handleSearch}
                 disabled={!canSearch}
-                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#1A1A2E] text-white text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-[#1A1A2E] text-white text-sm font-medium rounded-md hover:bg-[#F3F4F6] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
@@ -616,7 +616,7 @@ export default function ProspectScraperPage() {
                       className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md border transition-all duration-200 ${
                         copiedEmails
                           ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                          : "bg-white border-[#E5E5EA] text-[#7C819B] hover:border-[#C5C5C5] hover:text-[#1A1A2E] disabled:opacity-40 disabled:cursor-not-allowed"
+                          : "bg-[#181818] border-[#2A2A2A] text-[#7C819B] hover:border-[#C5C5C5] hover:text-[#1A1A2E] disabled:opacity-40 disabled:cursor-not-allowed"
                       }`}
                     >
                       {copiedEmails ? (
@@ -635,7 +635,7 @@ export default function ProspectScraperPage() {
                       type="button"
                       onClick={exportCsv}
                       disabled={selectedCount === 0}
-                      className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md bg-[#1A1A2E] text-white hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md bg-[#1A1A2E] text-white hover:bg-[#F3F4F6] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <ArrowDownTrayIcon className="size-3" />
                       Export CSV
@@ -644,11 +644,11 @@ export default function ProspectScraperPage() {
                 </div>
 
                 {/* Table */}
-                <div className="border border-[#E5E5EA] rounded-lg overflow-hidden">
+                <div className="border border-[#2A2A2A] rounded-lg overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="bg-[#F3F3F5] border-b border-[#E5E5EA]">
+                        <tr className="bg-[#222222] border-b border-[#2A2A2A]">
                           <th className="px-3 py-2.5 text-left w-8">
                             <input
                               type="checkbox"
@@ -690,7 +690,7 @@ export default function ProspectScraperPage() {
                         {prospects.map((p) => (
                           <tr
                             key={p.url}
-                            className="border-b border-[#E5E5EA] last:border-b-0 hover:bg-[#F7F8FA] transition-colors"
+                            className="border-b border-[#2A2A2A] last:border-b-0 hover:bg-[#0C0C0C] transition-colors"
                           >
                             <td className="px-3 py-3">
                               <input
@@ -761,7 +761,7 @@ export default function ProspectScraperPage() {
                                             href={link?.url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="px-1.5 py-0.5 text-[9px] font-semibold bg-[#EDEDEF] text-[#7C819B] rounded hover:bg-[#E5E5EA] transition-colors"
+                                            className="px-1.5 py-0.5 text-[9px] font-semibold bg-[#222222] text-[#7C819B] rounded hover:bg-[#2A2A2A] transition-colors"
                                             title={platform}
                                           >
                                             {SOCIAL_ICONS[platform] ||
@@ -792,7 +792,7 @@ export default function ProspectScraperPage() {
                             <td className="px-3 py-3 text-center">
                               {p.apps.length > 0 ? (
                                 <span
-                                  className="inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-semibold bg-[#EDEDEF] text-[#7C819B] rounded cursor-help"
+                                  className="inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-semibold bg-[#222222] text-[#7C819B] rounded cursor-help"
                                   title={p.apps.join(", ")}
                                 >
                                   {p.apps.length}
@@ -827,7 +827,7 @@ export default function ProspectScraperPage() {
                                 <button
                                   type="button"
                                   onClick={() => generateOutreach(p)}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-semibold rounded-md bg-[#1A1A2E] text-white hover:bg-accent-hover transition-colors"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-semibold rounded-md bg-[#1A1A2E] text-white hover:bg-[#F3F4F6] transition-colors"
                                   title="Generate outreach for this prospect"
                                 >
                                   <PaperAirplaneIcon className="size-3" />
@@ -869,11 +869,11 @@ export default function ProspectScraperPage() {
           <>
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-              <div className="bg-white border border-[#E5E5EA] rounded-lg p-3 text-center">
+              <div className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-3 text-center">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9B9FB5] mb-1">Total</p>
                 <p className="text-xl font-bold">{savedStats.total}</p>
               </div>
-              <div className="bg-[#F3F3F5] border border-[#E5E5EA] rounded-lg p-3 text-center">
+              <div className="bg-[#222222] border border-[#2A2A2A] rounded-lg p-3 text-center">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-[#9B9FB5] mb-1">Not Contacted</p>
                 <p className="text-xl font-bold text-[#999999]">{savedStats.notContacted}</p>
               </div>
@@ -897,7 +897,7 @@ export default function ProspectScraperPage() {
                 <select
                   value={filterNiche}
                   onChange={(e) => setFilterNiche(e.target.value)}
-                  className="px-3 py-1.5 text-xs border border-[#E5E5EA] rounded-md bg-white focus:outline-none focus:border-[#999999]"
+                  className="px-3 py-1.5 text-xs border border-[#2A2A2A] rounded-md bg-[#181818] focus:outline-none focus:border-[#999999]"
                 >
                   <option value="">All niches</option>
                   {niches.map((n) => (
@@ -908,7 +908,7 @@ export default function ProspectScraperPage() {
               <select
                 value={filterScore}
                 onChange={(e) => setFilterScore(e.target.value)}
-                className="px-3 py-1.5 text-xs border border-[#E5E5EA] rounded-md bg-white focus:outline-none focus:border-[#999999]"
+                className="px-3 py-1.5 text-xs border border-[#2A2A2A] rounded-md bg-[#181818] focus:outline-none focus:border-[#999999]"
               >
                 <option value="">Any score</option>
                 <option value="1">★ 1+</option>
@@ -920,7 +920,7 @@ export default function ProspectScraperPage() {
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value as OutreachStatus | "")}
-                className="px-3 py-1.5 text-xs border border-[#E5E5EA] rounded-md bg-white focus:outline-none focus:border-[#999999]"
+                className="px-3 py-1.5 text-xs border border-[#2A2A2A] rounded-md bg-[#181818] focus:outline-none focus:border-[#999999]"
               >
                 <option value="">All statuses</option>
                 <option value="not_contacted">Not Contacted</option>
@@ -948,7 +948,7 @@ export default function ProspectScraperPage() {
                 {filteredSaved.map((sp) => {
                   const statusStyle = OUTREACH_STATUS_LABELS[sp.outreach_status];
                   return (
-                    <div key={sp.id} className="bg-white border border-[#E5E5EA] rounded-lg overflow-hidden">
+                    <div key={sp.id} className="bg-[#181818] border border-[#2A2A2A] rounded-lg overflow-hidden">
                       <div className="px-5 py-4">
                         <div className="flex items-start justify-between gap-4">
                           {/* Left: brand info */}
@@ -959,7 +959,7 @@ export default function ProspectScraperPage() {
                                 {statusStyle.label}
                               </span>
                               {sp.niche && (
-                                <span className="px-2 py-0.5 text-[10px] font-medium bg-[#EDEDEF] text-[#7C819B] rounded-full">
+                                <span className="px-2 py-0.5 text-[10px] font-medium bg-[#222222] text-[#7C819B] rounded-full">
                                   {sp.niche}
                                 </span>
                               )}
@@ -1020,7 +1020,7 @@ export default function ProspectScraperPage() {
                             <select
                               value={sp.outreach_status}
                               onChange={(e) => handleStatusChange(sp.id, e.target.value as OutreachStatus)}
-                              className="px-2 py-1 text-[10px] border border-[#E5E5EA] rounded-md bg-white focus:outline-none focus:border-[#999999]"
+                              className="px-2 py-1 text-[10px] border border-[#2A2A2A] rounded-md bg-[#181818] focus:outline-none focus:border-[#999999]"
                             >
                               <option value="not_contacted">Not Contacted</option>
                               <option value="contacted">Contacted</option>
@@ -1047,7 +1047,7 @@ export default function ProspectScraperPage() {
                             </button>
                             <button
                               onClick={() => generateOutreachFromSaved(sp)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-semibold rounded-md bg-[#1A1A2E] text-white hover:bg-accent-hover transition-colors"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-semibold rounded-md bg-[#1A1A2E] text-white hover:bg-[#F3F4F6] transition-colors"
                               title="Generate outreach"
                             >
                               <PaperAirplaneIcon className="size-3" />
@@ -1072,12 +1072,12 @@ export default function ProspectScraperPage() {
                               onChange={(e) => setNotesText(e.target.value)}
                               onKeyDown={(e) => e.key === "Enter" && handleNotesSave(sp.id)}
                               placeholder="Add a note about this prospect..."
-                              className="flex-1 px-3 py-2 text-xs bg-[#F7F8FA] border border-[#E5E5EA] rounded-md focus:outline-none focus:border-[#999999]"
+                              className="flex-1 px-3 py-2 text-xs bg-[#0C0C0C] border border-[#2A2A2A] rounded-md focus:outline-none focus:border-[#999999]"
                               autoFocus
                             />
                             <button
                               onClick={() => handleNotesSave(sp.id)}
-                              className="px-3 py-2 text-xs font-medium bg-[#1A1A2E] text-white rounded-md hover:bg-[#2D2D2D] transition-colors"
+                              className="px-3 py-2 text-xs font-medium bg-[#1A1A2E] text-white rounded-md hover:bg-[#F3F4F6] transition-colors"
                             >
                               Save
                             </button>
@@ -1091,7 +1091,7 @@ export default function ProspectScraperPage() {
                             value={sp.niche}
                             onChange={(e) => handleNicheChange(sp.id, e.target.value)}
                             placeholder="Tag niche (e.g. supplements, skincare)"
-                            className="px-2 py-1 text-[10px] bg-[#F7F8FA] border border-[#E5E5EA] rounded-md focus:outline-none focus:border-[#999999] w-48"
+                            className="px-2 py-1 text-[10px] bg-[#0C0C0C] border border-[#2A2A2A] rounded-md focus:outline-none focus:border-[#999999] w-48"
                           />
                         </div>
                       </div>
@@ -1133,7 +1133,7 @@ function ScoreDots({ score }: { score: number }) {
         <div
           key={i}
           className={`size-1.5 rounded-full ${
-            i < score ? "bg-[#1A1A2E]" : "bg-[#E5E5EA]"
+            i < score ? "bg-[#1A1A2E]" : "bg-[#2A2A2A]"
           }`}
         />
       ))}

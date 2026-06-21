@@ -140,28 +140,28 @@ export default function EngagementWithStrategyPreview() {
       {/* Header (existing chrome) */}
       <header className="mb-5">
         <div className="flex items-center justify-between mb-4">
-          <button className="inline-flex items-center gap-1 text-[12px] font-medium text-[#666]">
+          <button className="inline-flex items-center gap-1 text-[12px] font-medium text-[#9CA3AF]">
             <ChevronRightIcon className="h-3 w-3 rotate-180" />
             Back to engagements
           </button>
         </div>
         <div className="flex items-baseline justify-between gap-4 flex-wrap">
           <div className="min-w-0">
-            <h1 className="text-3xl font-medium tracking-tight text-[#1B1B1B]">
+            <h1 className="text-3xl font-medium text-[#E5E5EA]">
               {ENGAGEMENT.name}
             </h1>
             <div className="flex items-baseline gap-3 mt-1">
-              <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded text-white bg-[#1B1B1B]">
+              <span className="inline-flex items-center text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded text-[#0C0C0C] bg-white">
                 CE retainer
               </span>
             </div>
           </div>
-          <div className="flex items-baseline gap-3 text-[12px] text-[#666] flex-wrap">
-            <span>Day <span className="font-semibold text-[#1B1B1B] tabular-nums">{ENGAGEMENT.cycle_day}</span>/{ENGAGEMENT.cycle_total} · W{ENGAGEMENT.cycle_week}</span>
+          <div className="flex items-baseline gap-3 text-[12px] text-[#9CA3AF] flex-wrap">
+            <span>Day <span className="font-semibold text-[#E5E5EA] tabular-nums">{ENGAGEMENT.cycle_day}</span>/{ENGAGEMENT.cycle_total} · W{ENGAGEMENT.cycle_week}</span>
             <span className="text-[#E5E5EA]">·</span>
-            <span><span className="font-semibold text-[#1B1B1B] tabular-nums">{ENGAGEMENT.retainer}</span>/mo</span>
+            <span><span className="font-semibold text-[#E5E5EA] tabular-nums">{ENGAGEMENT.retainer}</span>/mo</span>
             <span className="text-[#E5E5EA]">·</span>
-            <span>Pod <span className="font-semibold text-[#1B1B1B] tabular-nums">{ENGAGEMENT.pod_number}</span></span>
+            <span>Pod <span className="font-semibold text-[#E5E5EA] tabular-nums">{ENGAGEMENT.pod_number}</span></span>
             <span className="text-[#E5E5EA]">·</span>
             <span className="font-semibold tabular-nums">{ENGAGEMENT.done}/{ENGAGEMENT.total} · {ENGAGEMENT.pct}%</span>
           </div>
@@ -169,7 +169,7 @@ export default function EngagementWithStrategyPreview() {
       </header>
 
       {/* Metrics strip (existing) */}
-      <section className="mb-5 rounded-lg border border-[#E5E5EA] bg-white divide-y divide-[#F0F0F0]">
+      <section className="mb-5 rounded-lg border border-[#2A2A2A] bg-[#181818] divide-y divide-[#2A2A2A]">
         <MetricRow label="Conversion rate" unit="%" baseline={ENGAGEMENT.cvr.baseline} current={ENGAGEMENT.cvr.current} />
         <MetricRow label="Average order value" unit="£" unitPosition="prefix" baseline={ENGAGEMENT.aov.baseline} current={ENGAGEMENT.aov.current} />
       </section>
@@ -181,10 +181,10 @@ export default function EngagementWithStrategyPreview() {
             <button
               key={c}
               className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-[12px] ${
-                c === 2 ? "border-[#1B1B1B] bg-[#1B1B1B] text-white" : "border-[#E5E5EA] bg-white text-[#1B1B1B]"
+                c === 2 ? "border-white bg-white text-[#0C0C0C]" : "border-[#2A2A2A] bg-[#181818] text-[#E5E5EA]"
               }`}
             >
-              <span className={`size-1.5 rounded-full ${c === 1 ? "bg-[#9E9E9E]" : c === 2 ? "bg-[#00C853]" : "bg-[#E5E5EA]"}`} />
+              <span className={`size-1.5 rounded-full ${c === 1 ? "bg-[#9E9E9E]" : c === 2 ? "bg-[#00C853]" : "bg-[#2A2A2A]"}`} />
               Cycle {c}
             </button>
           ))}
@@ -212,16 +212,16 @@ export default function EngagementWithStrategyPreview() {
       </section>
 
       {/* Strategy sandbox: resources + notes per client */}
-      <section className="mb-5 rounded-lg border border-[#E5E5EA] bg-white">
-        <div className="flex items-baseline justify-between border-b border-[#F0F0F0] px-4 py-3">
+      <section className="mb-5 rounded-lg border border-[#2A2A2A] bg-[#181818]">
+        <div className="flex items-baseline justify-between border-b border-[#2A2A2A] px-4 py-3">
           <div className="flex items-baseline gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
               Strategy
             </span>
-            <span className="text-[13px] font-semibold text-[#1B1B1B]">
+            <span className="text-[13px] font-semibold text-[#E5E5EA]">
               Sandbox
             </span>
-            <span className="text-[10px] text-[#A0A0A0]">
+            <span className="text-[10px] text-[#71757D]">
               · Resources and notes for {ENGAGEMENT.name} · {ENGAGEMENT.strategist}
             </span>
           </div>
@@ -231,19 +231,19 @@ export default function EngagementWithStrategyPreview() {
           {/* Resources (left) */}
           <div className="md:col-span-3">
             <div className="mb-2 flex items-baseline justify-between">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
                 Resources
               </span>
-              <span className="text-[10px] text-[#A0A0A0]">{RESOURCES.length}</span>
+              <span className="text-[10px] text-[#71757D]">{RESOURCES.length}</span>
             </div>
 
             {/* Drop area */}
-            <div className="mb-3 rounded-md border border-dashed border-[#C5C5C5] bg-[#FAFAFB] px-3 py-2.5">
+            <div className="mb-3 rounded-md border border-dashed border-[#C5C5C5] bg-[#0C0C0C] px-3 py-2.5">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[12px] text-[#666]">
+                <span className="text-[12px] text-[#9CA3AF]">
                   Paste a Google Doc / Loom / link, or drop a file
                 </span>
-                <button className="inline-flex items-center gap-1 rounded-md bg-[#1B1B1B] px-2 py-1 text-[11px] font-medium text-white hover:bg-black">
+                <button className="inline-flex items-center gap-1 rounded-md bg-[#1B1B1B] px-2 py-1 text-[11px] font-medium text-white hover:bg-[#F3F4F6]">
                   <PlusIcon className="h-3.5 w-3.5" />
                   Add
                 </button>
@@ -261,35 +261,35 @@ export default function EngagementWithStrategyPreview() {
           {/* Notes (right) */}
           <div className="md:col-span-2">
             <div className="mb-2 flex items-baseline justify-between">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
                 Notes
               </span>
-              <span className="text-[10px] text-[#A0A0A0]">Autosaves</span>
+              <span className="text-[10px] text-[#71757D]">Autosaves</span>
             </div>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder={NOTES_PLACEHOLDER}
-              className="h-[260px] w-full resize-none rounded-md border border-[#E5E5EA] bg-[#FAFAFB] px-3 py-2 text-[12px] leading-relaxed text-[#1B1B1B] focus:border-[#1B1B1B] focus:outline-none"
+              className="h-[260px] w-full resize-none rounded-md border border-[#2A2A2A] bg-[#0C0C0C] px-3 py-2 text-[12px] leading-relaxed text-[#E5E5EA] focus:border-white focus:outline-none"
             />
           </div>
         </div>
       </section>
 
       {/* What's wired note */}
-      <div className="mt-6 rounded-lg border border-[#E5E5EA] bg-[#FAFAFB] p-4 text-xs text-[#7A7A7A]">
-        <p className="font-semibold uppercase tracking-wider text-[#1B1B1B]">
+      <div className="mt-6 rounded-lg border border-[#2A2A2A] bg-[#0C0C0C] p-4 text-xs text-[#71757D]">
+        <p className="font-semibold uppercase tracking-wider text-[#E5E5EA]">
           What's wired in
         </p>
         <ul className="mt-1 list-disc space-y-0.5 pl-4">
           <li>
-            <span className="font-medium text-[#1B1B1B]">Strategy is a third deliverable list</span> alongside Design and Development. Same task shape, same renderer.
+            <span className="font-medium text-[#E5E5EA]">Strategy is a third deliverable list</span> alongside Design and Development. Same task shape, same renderer.
           </li>
           <li>
-            <span className="font-medium text-[#1B1B1B]">One Sandbox section</span> per client: resources (links, Looms, Docs, uploaded files) on the left, notes textarea on the right.
+            <span className="font-medium text-[#E5E5EA]">One Sandbox section</span> per client: resources (links, Looms, Docs, uploaded files) on the left, notes textarea on the right.
           </li>
           <li>
-            <span className="font-medium text-[#1B1B1B]">Uploaded docs get a "Generate branded version" button</span> inline. One click renders a client-facing PDF/page using Ecom Landers branding.
+            <span className="font-medium text-[#E5E5EA]">Uploaded docs get a "Generate branded version" button</span> inline. One click renders a client-facing PDF/page using Ecom Landers branding.
           </li>
           <li>
             Notes autosave. No structure, no tags, just her scratchpad for this client.
@@ -311,9 +311,9 @@ function MetricRow({
   const fmt = (v: number) => (unitPosition === "prefix" ? `${unit}${v}` : `${v}${unit}`);
   return (
     <div className="grid grid-cols-4 items-baseline gap-3 px-4 py-2.5 text-[12px]">
-      <span className="text-[#666]">{label}</span>
-      <span className="tabular-nums text-[#666]">Baseline {fmt(baseline)}</span>
-      <span className="tabular-nums font-semibold text-[#1B1B1B]">Now {fmt(current)}</span>
+      <span className="text-[#9CA3AF]">{label}</span>
+      <span className="tabular-nums text-[#9CA3AF]">Baseline {fmt(baseline)}</span>
+      <span className="tabular-nums font-semibold text-[#E5E5EA]">Now {fmt(current)}</span>
       <span className="text-right tabular-nums font-semibold text-emerald-700">+{delta.toFixed(1)}%</span>
     </div>
   );
@@ -325,27 +325,27 @@ function DeliverableList({
   label: string; owner: string; tasks: Task[]; tone?: "strategy";
 }) {
   return (
-    <div className="rounded-lg border border-[#E5E5EA] bg-white">
-      <div className="flex items-baseline justify-between border-b border-[#F0F0F0] px-3 py-2.5">
+    <div className="rounded-lg border border-[#2A2A2A] bg-[#181818]">
+      <div className="flex items-baseline justify-between border-b border-[#2A2A2A] px-3 py-2.5">
         <div className="flex items-baseline gap-1.5">
           <span
             className={`text-[10px] font-semibold uppercase tracking-wider ${
-              tone === "strategy" ? "text-violet-700" : "text-[#999]"
+              tone === "strategy" ? "text-violet-700" : "text-[#71757D]"
             }`}
           >
             {label}
           </span>
-          <span className="text-[10px] text-[#A0A0A0]">· {owner}</span>
+          <span className="text-[10px] text-[#71757D]">· {owner}</span>
         </div>
-        <span className="text-[10px] text-[#A0A0A0] tabular-nums">{tasks.length}</span>
+        <span className="text-[10px] text-[#71757D] tabular-nums">{tasks.length}</span>
       </div>
-      <div className="divide-y divide-[#F5F5F5]">
+      <div className="divide-y divide-[#2A2A2A]">
         {tasks.map((t) => (
           <div key={t.id} className="px-3 py-2">
             <div className="flex items-baseline justify-between gap-2">
               <span
                 className={`text-[12px] leading-snug ${
-                  t.status === "done" ? "text-[#A0A0A0] line-through" : "font-medium text-[#1B1B1B]"
+                  t.status === "done" ? "text-[#71757D] line-through" : "font-medium text-[#E5E5EA]"
                 }`}
               >
                 {t.title}
@@ -355,8 +355,8 @@ function DeliverableList({
                   t.status === "done"
                     ? "text-emerald-700"
                     : t.status === "in_progress"
-                      ? "text-[#1B1B1B] font-semibold"
-                      : "text-[#7A7A7A]"
+                      ? "text-[#E5E5EA] font-semibold"
+                      : "text-[#71757D]"
                 }`}
               >
                 {t.status === "done" ? "✓" : t.status === "in_progress" ? "●" : "○"}
@@ -380,28 +380,28 @@ function ResourceRow({ resource }: { resource: Resource }) {
     resource.kind === "doc" ? "text-blue-700 bg-blue-50 border-blue-200" :
     resource.kind === "loom" ? "text-fuchsia-700 bg-fuchsia-50 border-fuchsia-200" :
     resource.kind === "link" ? "text-emerald-700 bg-emerald-50 border-emerald-200" :
-    "text-[#4A4A4A] bg-[#F3F3F5] border-[#E5E5EA]";
+    "text-[#4A4A4A] bg-[#222222] border-[#2A2A2A]";
 
   return (
-    <div className="flex items-center gap-2.5 rounded-md border border-[#EDEDEF] bg-white px-2.5 py-2">
+    <div className="flex items-center gap-2.5 rounded-md border border-[#2A2A2A] bg-[#181818] px-2.5 py-2">
       <div className={`grid h-7 w-7 shrink-0 place-items-center rounded border ${tone}`}>
         {icon}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="truncate text-[12px] font-medium text-[#1B1B1B]">
+        <div className="truncate text-[12px] font-medium text-[#E5E5EA]">
           {resource.title}
         </div>
-        <div className="text-[10px] text-[#A0A0A0]">
+        <div className="text-[10px] text-[#71757D]">
           {resource.added} · by {resource.added_by}
         </div>
       </div>
       {resource.has_branded && (
-        <button className="inline-flex items-center gap-1 rounded-md border border-[#E5E5EA] bg-white px-2 py-1 text-[10px] font-medium text-[#1B1B1B] hover:border-[#1B1B1B]">
+        <button className="inline-flex items-center gap-1 rounded-md border border-[#2A2A2A] bg-[#181818] px-2 py-1 text-[10px] font-medium text-[#E5E5EA] hover:border-white">
           <SparklesIcon className="h-3 w-3" />
           Generate branded version
         </button>
       )}
-      <button className="rounded p-1 text-[#7A7A7A] hover:bg-[#F3F3F5] hover:text-[#1B1B1B]">
+      <button className="rounded p-1 text-[#71757D] hover:bg-[#222222] hover:text-[#E5E5EA]">
         <EllipsisHorizontalIcon className="h-4 w-4" />
       </button>
     </div>

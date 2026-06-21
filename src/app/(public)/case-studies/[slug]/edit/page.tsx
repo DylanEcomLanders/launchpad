@@ -609,7 +609,7 @@ function CaseStudyEditor({ params }: { params: Promise<{ slug: string }> }) {
                       challenge: { ...prev.challenge, prose: e.target.value },
                     }))
                   }
-                  placeholder="Walk through the problem in 2–3 paragraphs"
+                  placeholder="Walk through the problem in 2-3 paragraphs"
                 />
               </div>
 

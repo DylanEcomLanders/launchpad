@@ -130,7 +130,7 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
   return (
     <div className="max-w-[1400px] mx-auto">
       {/* ── Dark hero: above-the-fold pricing focus ── */}
-      <section className="relative overflow-hidden rounded-b-2xl bg-[#0B0B0D] px-6 pb-10 pt-8 md:px-10">
+      <section className="relative overflow-hidden rounded-b-2xl bg-[#080808] px-6 pb-10 pt-8 md:px-10">
         {/* Soft radial glow backdrop */}
         <div
           aria-hidden
@@ -153,7 +153,7 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">
             Internal · Sales Hub
           </p>
-          <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight text-white md:text-4xl">
+          <h1 className="mt-2 text-[28px] leading-tight font-semibold text-[#E5E5EA]">
             Conversion Engine
           </h1>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-white/55">
@@ -171,7 +171,7 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
                   : "bg-gradient-to-b from-indigo-400/60 via-indigo-500/20 to-transparent"
               }`}
             >
-              <div className="relative rounded-2xl bg-[#141417] p-5">
+              <div className="relative rounded-2xl bg-[#181818] p-5">
                 <div className="mb-3 flex items-center justify-between">
                   <span className="text-[11px] font-semibold uppercase tracking-wider text-white/80">
                     Regular
@@ -179,14 +179,14 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
                   <span
                     className={`rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${
                       isPreviewing
-                        ? "bg-[#34D399] text-[#0B0B0D]"
+                        ? "bg-[#34D399] text-[#080808]"
                         : "bg-indigo-500/90 text-white"
                     }`}
                   >
                     {isPreviewing ? "Previewing" : "Lead with this"}
                   </span>
                 </div>
-                <p className="font-heading text-4xl font-semibold tracking-tight text-white">
+                <p className="font-heading text-4xl font-semibold text-white">
                   {activeTier.price}
                   <span className="ml-1.5 text-sm font-normal text-white/40">/mo</span>
                 </p>
@@ -202,7 +202,7 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
 
             {/* Pro — the anchor, quieter dark card */}
             <div
-              className={`relative overflow-hidden rounded-2xl border bg-[#141417]/60 p-5 transition-all ${
+              className={`relative overflow-hidden rounded-2xl border bg-[#181818]/60 p-5 transition-all ${
                 isPreviewing ? "border-[#34D399]/40" : "border-white/10"
               }`}
             >
@@ -214,7 +214,7 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
                   {isPreviewing ? "Previewing" : "Quote alongside"}
                 </span>
               </div>
-              <p className="font-heading text-4xl font-semibold tracking-tight text-white/90">
+              <p className="font-heading text-4xl font-semibold text-white/90">
                 {activeTier.anchor}
                 <span className="ml-1.5 text-sm font-normal text-white/35">/mo</span>
               </p>
@@ -239,23 +239,23 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
 
       {/* Preview action bar */}
       {isPreviewing && hydrated && (
-        <div className="mb-6 rounded-lg border border-[#00C853] bg-[#E8F5E9] p-3 flex items-center justify-between gap-3">
-          <p className="text-[12px] text-[#1B1B1B]">
+        <div className="mb-6 rounded-lg border border-[#00C853] bg-emerald-500/15 p-3 flex items-center justify-between gap-3">
+          <p className="text-[12px] text-[#E5E5EA]">
             <span className="font-semibold">Previewing</span> Step {activeTier.step} ·{" "}
             <span className="font-semibold tabular-nums">{activeTier.price}</span> floor —{" "}
-            <span className="text-[#666]">{activeTier.note}</span>
+            <span className="text-[#9CA3AF]">{activeTier.note}</span>
           </p>
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handleCancel}
-              className="inline-flex items-center gap-1 text-[11px] font-medium text-[#666] hover:text-[#1B1B1B] px-2 py-1 rounded"
+              className="inline-flex items-center gap-1 text-[11px] font-medium text-[#9CA3AF] hover:text-[#E5E5EA] px-2 py-1 rounded"
             >
               <XMarkIcon className="size-3" />
               Cancel
             </button>
             <button
               onClick={handleLockIn}
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-white bg-[#1B1B1B] hover:bg-black px-2.5 py-1 rounded"
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#181818] bg-[#E5E5EA] hover:bg-white px-2.5 py-1 rounded"
             >
               <CheckIcon className="size-3" />
               Lock in
@@ -267,13 +267,13 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
       {/* Pricing roadmap */}
       <section className="mb-8">
         <div className="flex items-baseline justify-between mb-3">
-          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
+          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
             § Pricing roadmap — floor rises with demand
           </h2>
           {hydrated && currentIdx !== 0 && (
             <button
               onClick={handleReset}
-              className="inline-flex items-center gap-1 text-[10px] font-medium text-[#999] hover:text-[#1B1B1B]"
+              className="inline-flex items-center gap-1 text-[10px] font-medium text-[#71757D] hover:text-[#E5E5EA]"
             >
               <ArrowUturnLeftIcon className="size-3" />
               Reset to default
@@ -291,14 +291,14 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
                 onClick={() => handleTileClick(i)}
                 className={`text-left rounded-lg border p-3 transition-all ${
                   isCurrent
-                    ? "border-[#1B1B1B] bg-white"
+                    ? "border-white bg-[#181818]"
                     : isPreview
-                      ? "border-[#00C853] bg-[#E8F5E9] ring-2 ring-[#00C853]/30"
-                      : "border-[#E5E5EA] bg-[#FAFAFA] hover:border-[#999] hover:bg-white"
+                      ? "border-[#00C853] bg-emerald-500/15 ring-2 ring-[#00C853]/30"
+                      : "border-[#2A2A2A] bg-[#0C0C0C] hover:border-[#999] hover:bg-[#181818]"
                 }`}
               >
                 <div className="flex items-baseline justify-between mb-1">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#999]">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D]">
                     Step {t.step}
                   </p>
                   {isCurrent && (
@@ -307,24 +307,24 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
                     </span>
                   )}
                   {isPreview && (
-                    <span className="text-[9px] font-semibold uppercase tracking-wider text-white bg-[#1B1B1B] px-1.5 py-0.5 rounded">
+                    <span className="text-[9px] font-semibold uppercase tracking-wider text-[#181818] bg-[#E5E5EA] px-1.5 py-0.5 rounded">
                       Preview
                     </span>
                   )}
                 </div>
-                <p className="text-xl font-semibold tracking-tight text-[#1B1B1B] tabular-nums">
+                <p className="text-xl font-semibold text-[#E5E5EA] tabular-nums">
                   {t.price}
-                  <span className="text-[11px] font-normal text-[#999] ml-1">/mo</span>
+                  <span className="text-[11px] font-normal text-[#71757D] ml-1">/mo</span>
                 </p>
-                <p className="text-[11px] font-medium text-[#666] mt-1">{t.retainers}</p>
-                <p className="text-[11px] leading-snug text-[#999] mt-1">{t.note}</p>
+                <p className="text-[11px] font-medium text-[#9CA3AF] mt-1">{t.retainers}</p>
+                <p className="text-[11px] leading-snug text-[#71757D] mt-1">{t.note}</p>
               </button>
             );
           })}
         </div>
-        <p className="text-[11px] text-[#999] mt-2">
+        <p className="text-[11px] text-[#71757D] mt-2">
           Click a step to preview pricing across the page. Lock it in to update the offer.
-          Currently locked: <span className="font-semibold text-[#1B1B1B]">{currentTier.price}</span>.
+          Currently locked: <span className="font-semibold text-[#E5E5EA]">{currentTier.price}</span>.
         </p>
       </section>
 
@@ -335,9 +335,9 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
             <RevenueProjectorWidget retainer={activeTier.value} />
           </div>
           <Link href="/conversion-pack" className="block h-full group">
-            <div className="relative rounded-lg overflow-hidden border border-[#1B1B1B] bg-[#0a0a0a] h-full flex flex-col hover:shadow-[var(--shadow-soft)] transition-all duration-150">
+            <div className="relative rounded-lg overflow-hidden border border-white bg-[#080808] h-full flex flex-col hover:shadow-[var(--shadow-soft)] transition-all duration-150">
               <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
-                <span className="text-[9px] font-semibold uppercase tracking-wider text-white/45 bg-white/5 backdrop-blur-sm px-1.5 py-0.5 rounded">
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-white/45 bg-[#181818]/5 backdrop-blur-sm px-1.5 py-0.5 rounded">
                   10 slides
                 </span>
                 <ArrowTopRightOnSquareIcon className="size-3.5 text-white/55 group-hover:text-white transition-colors" />
@@ -352,7 +352,7 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
                     Diagnosis · Projection · Offer · ROI
                   </p>
                 </div>
-                <span className="inline-flex items-center gap-1 bg-white text-[#0a0a0a] text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded shrink-0 group-hover:bg-[#00C853] transition-colors">
+                <span className="inline-flex items-center gap-1 bg-[#E5E5EA] text-[#181818] text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded shrink-0 group-hover:bg-[#00C853] group-hover:text-white transition-colors">
                   <PlayIcon className="size-2.5" />
                   Present
                 </span>
@@ -385,7 +385,7 @@ export default function OfferHubClient({ previewImages }: { previewImages: strin
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <section className="mb-8">
-      <h2 className="text-[10px] font-semibold uppercase tracking-wider text-[#999] mb-3">
+      <h2 className="text-[10px] font-semibold uppercase tracking-wider text-[#71757D] mb-3">
         {label}
       </h2>
       {children}
@@ -400,17 +400,17 @@ function Grid({ children }: { children: React.ReactNode }) {
 function Tile({ tile }: { tile: SectionTile }) {
   return (
     <Link key={tile.slug} href={tile.href} className="block h-full">
-      <div className="rounded-lg border border-[#E5E5EA] bg-white p-4 hover:border-[#1B1B1B] hover:shadow-[var(--shadow-soft)] transition-all duration-150 h-full flex flex-col">
+      <div className="rounded-lg border border-[#2A2A2A] bg-[#181818] p-4 hover:border-white hover:shadow-[var(--shadow-soft)] transition-all duration-150 h-full flex flex-col">
         <div className="flex items-start justify-between mb-2">
-          <span className="text-[#666]">{tile.icon}</span>
+          <span className="text-[#9CA3AF]">{tile.icon}</span>
           {tile.external ? (
-            <ArrowTopRightOnSquareIcon className="size-3.5 text-[#CCC]" />
+            <ArrowTopRightOnSquareIcon className="size-3.5 text-[#C7C9CD]" />
           ) : (
-            <ChevronRightIcon className="size-3.5 text-[#CCC]" />
+            <ChevronRightIcon className="size-3.5 text-[#C7C9CD]" />
           )}
         </div>
-        <p className="text-sm font-medium text-[#1B1B1B] leading-tight">{tile.title}</p>
-        <p className="text-[12px] leading-snug text-[#666] mt-1 flex-1">{tile.blurb}</p>
+        <p className="text-sm font-medium text-[#E5E5EA] leading-tight">{tile.title}</p>
+        <p className="text-[12px] leading-snug text-[#9CA3AF] mt-1 flex-1">{tile.blurb}</p>
       </div>
     </Link>
   );
