@@ -37,6 +37,17 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-87",
+    date: "21 June 2026",
+    version: "1.1.2",
+    title: "Kanban screenshot uploads + Revisions banner on My Tasks",
+    changes: [
+      { type: "added", text: "Test screenshots upload to the kanban-screenshots Supabase Storage bucket instead of being base64-stuffed into the data layer. Storage helper at src/lib/kanban/storage.ts handles upload + batched signed URLs (24h TTL). DB column stores the long-lived path; React state holds the signed URL for display. mockTaskToRow strips signed URLs back to paths on every write so the column never persists an expired link" },
+      { type: "added", text: "Upload button shows Uploading... and disables itself while the file is in flight - no more silent waits on slow connections" },
+      { type: "added", text: "My Tasks (/my-work) now surfaces a Revisions Needed banner at the top whenever the active member has kanban cards bounced back to them. Lists up to three card titles inline, tap-through opens /kanban. Match runs on display name (case-insensitive) since the kanban assigns by name and my-work runs on pod_member_id - the deeper integration deserves its own pass" },
+    ],
+  },
+  {
     id: "cl-86",
     date: "21 June 2026",
     version: "1.1.1",

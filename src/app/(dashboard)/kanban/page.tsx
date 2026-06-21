@@ -41,6 +41,7 @@ import {
   type TestResult,
 } from "@/lib/projects/preview-phases";
 import { useKanbanData } from "@/lib/kanban/use-kanban-data";
+import { uploadScreenshot, signScreenshotPaths } from "@/lib/kanban/storage";
 import {
   MOCK_CLIENTS,
   MOCK_PODS,
@@ -811,6 +812,33 @@ export default function KanbanPage() {
     setAddingToPhase(null);
   }
 
+  /* Add a client to the board. Slug the name into a stable id and
+   * suffix-disambiguate if it already exists. New client starts with
+   * no projects so the PM can immediately create one via Add project. */
+  function addClient(rawName: string) {
+    const name = rawName.trim();
+    if (!name) return;
+    const baseSlug =
+      name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 32) || `client-${Date.now()}`;
+    const existingIds = new Set(clients.map((c) => c.id));
+    const id = existingIds.has(baseSlug)
+      ? `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`
+      : baseSlug;
+    setClients((prev) => {
+      const next = cloneClients(prev);
+      next.push({ id, name, projects: [] });
+      return next;
+    });
+    /* Jump to the new client so the PM lands on its empty Add-project
+     * prompt instead of having to hunt through the dropdown. */
+    setClientId(id);
+    setProjectId("");
+  }
+
   function addProject(input: {
     name: string;
     type: ProjectType;
@@ -1175,6 +1203,22 @@ export default function KanbanPage() {
                 </button>
               ))}
             </div>
+
+            {/* + New client button — sits left of the selector slot. Only
+                surfaces in project view. Prompts for a name, slugs it, jumps
+                to the new client on success. */}
+            {viewMode === "project" && (
+              <button
+                onClick={() => {
+                  const name = window.prompt("Client name");
+                  if (name) addClient(name);
+                }}
+                className="shrink-0 text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white transition-colors px-3 py-2"
+                title="Add a new client"
+              >
+                + Client
+              </button>
+            )}
 
             {/* Selector slot. Reserved across all view modes for layout
                 stability; renders client options in project mode, pod
@@ -3032,15 +3076,28 @@ function DetailModal({
     secondaryDeveloper: d.secondaryDeveloper,
   });
 
-  function onFile(e: ChangeEvent<HTMLInputElement>) {
+  const [uploadingScreenshot, setUploadingScreenshot] = useState(false);
+
+  async function onFile(e: ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const data = reader.result;
-      if (typeof data === "string") onUpdate({ screenshot: data });
-    };
-    reader.readAsDataURL(f);
+    /* Reset the input so the user can re-pick the same file later. */
+    e.target.value = "";
+    setUploadingScreenshot(true);
+    try {
+      const path = await uploadScreenshot(f, d.id);
+      if (!path) {
+        alert("Screenshot upload failed - check your connection and try again.");
+        return;
+      }
+      /* Sign immediately so the in-flight render gets a working URL.
+       * mockTaskToRow strips signed URLs back to paths before writing
+       * to the DB so the column stays long-lived. */
+      const signed = await signScreenshotPaths([path]);
+      onUpdate({ screenshot: signed[path] || path });
+    } finally {
+      setUploadingScreenshot(false);
+    }
   }
 
   function submitConclude() {
@@ -4064,9 +4121,10 @@ function DetailModal({
                 ) : (
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full px-4 py-6 rounded-lg border border-dashed border-[#2A2A2A] bg-[#181818] text-sm text-[#71757D] hover:border-[#383838] hover:text-white transition-colors"
+                    disabled={uploadingScreenshot}
+                    className="w-full px-4 py-6 rounded-lg border border-dashed border-[#2A2A2A] bg-[#181818] text-sm text-[#71757D] hover:border-[#383838] hover:text-white transition-colors disabled:opacity-60 disabled:cursor-wait"
                   >
-                    Upload a screenshot
+                    {uploadingScreenshot ? "Uploading..." : "Upload a screenshot"}
                   </button>
                 )}
                 <input

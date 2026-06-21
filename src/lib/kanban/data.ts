@@ -30,6 +30,7 @@ import type {
   PreviewPhase,
   TestResult,
 } from "@/lib/projects/preview-phases";
+import { isStoragePath, signScreenshotPaths } from "./storage";
 
 // ─── Row types ──────────────────────────────────────────────────────────────
 
@@ -196,7 +197,35 @@ function mockProjectToRow(clientId: string, p: MockProject): KanbanProjectRow {
   };
 }
 
+/* Signed URLs are great for display but terrible to persist - they
+ * expire in 24h. Convert any kanban-bucket signed URL back to its
+ * path before writing so the DB only ever holds long-lived values.
+ * Anything else (legacy data: fixtures, external URLs) passes
+ * through unchanged. */
+const BUCKET_NAME = "kanban-screenshots";
+function persistScreenshotValue(v: string | undefined): string | null {
+  if (!v) return null;
+  /* match `.../kanban-screenshots/<path>?token=...` and strip the
+   * query string + bucket prefix. */
+  const idx = v.indexOf(`/${BUCKET_NAME}/`);
+  if (idx >= 0) {
+    const after = v.slice(idx + BUCKET_NAME.length + 2);
+    const q = after.indexOf("?");
+    return q >= 0 ? after.slice(0, q) : after;
+  }
+  return v;
+}
+
 function mockTaskToRow(projectId: string, d: MockDeliverable): KanbanTaskRow {
+  /* testResult.screenshot needs the same path-extraction treatment so
+   * the jsonb blob doesnt end up with an expired URL inside it. */
+  const persistedTestResult: TestResult | null = d.testResult
+    ? {
+        ...d.testResult,
+        screenshot:
+          persistScreenshotValue(d.testResult.screenshot) ?? undefined,
+      }
+    : null;
   return {
     id: d.id,
     project_id: projectId,
@@ -220,8 +249,8 @@ function mockTaskToRow(projectId: string, d: MockDeliverable): KanbanTaskRow {
     live_started_at: d.liveStartedAt ?? null,
     metrics: d.metrics ?? [],
     interim_notes: d.interimNotes ?? null,
-    screenshot_url: d.screenshot ?? null,
-    test_result: d.testResult ?? null,
+    screenshot_url: persistScreenshotValue(d.screenshot),
+    test_result: persistedTestResult,
   };
 }
 
@@ -279,10 +308,53 @@ export async function fetchKanban(): Promise<KanbanSnapshot | null> {
       clientRowToMock(r, projectsByClient.get(r.id) ?? []),
     );
 
+    /* Sign every storage-path screenshot in one batch and swap the
+     * paths for signed URLs in place. Anything already a URL (signed
+     * link, external upload, legacy data: URL on the mock fixtures) is
+     * passed through. */
+    await rewriteScreenshotsToSignedUrls(clients);
+
     return { clients, pods };
   } catch (err) {
     console.error("[kanban/data] fetchKanban threw:", err);
     return null;
+  }
+}
+
+/* Walk the tree, collect every screenshot path that lives in our
+ * bucket, sign them all in one call, and write the signed URLs back
+ * into the in-memory state. Mutates `clients` in place; the freshly
+ * constructed tree is owned by the caller. */
+async function rewriteScreenshotsToSignedUrls(
+  clients: MockClient[],
+): Promise<void> {
+  const paths: string[] = [];
+  for (const c of clients) {
+    for (const p of c.projects) {
+      for (const d of p.deliverables) {
+        if (isStoragePath(d.screenshot)) paths.push(d.screenshot as string);
+        if (isStoragePath(d.testResult?.screenshot)) {
+          paths.push(d.testResult!.screenshot as string);
+        }
+      }
+    }
+  }
+  if (paths.length === 0) return;
+  const signed = await signScreenshotPaths(paths);
+  for (const c of clients) {
+    for (const p of c.projects) {
+      for (const d of p.deliverables) {
+        if (d.screenshot && signed[d.screenshot]) {
+          d.screenshot = signed[d.screenshot];
+        }
+        if (d.testResult?.screenshot && signed[d.testResult.screenshot]) {
+          d.testResult = {
+            ...d.testResult,
+            screenshot: signed[d.testResult.screenshot],
+          };
+        }
+      }
+    }
   }
 }
 
