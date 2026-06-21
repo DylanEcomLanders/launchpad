@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-102",
+    date: "22 June 2026",
+    version: "1.8.0",
+    title: "Onboarding sequencer - first-week wow",
+    changes: [
+      { type: "added", text: "/tools/onboarding - per-client week-one checklist enforcement. Default checklist seeded from the playbook (Retention / First-week wow): pack sent, kickoff call, access collected, week-one deep dive, 30/60/90 roadmap, first test live, dedicated channel. Each item carries an owner role (CSM / Strategist / Pod / Client) and a due-offset-days target" },
+      { type: "added", text: "List view splits Active / Closed onboardings, shows day-number, completion %, owner badges, and an overdue chip when items are past their due-offset. Active row has a gradient progress bar" },
+      { type: "added", text: "Detail editor: click the checkbox to mark items done; ticking the last one auto-completes the onboarding. Items expandable inline to edit title / description / owner / due-offset. Strategist + CSM names + free-text notes section. Add / delete items per onboarding" },
+      { type: "added", text: "Migration 039 creates client_onboardings table (jsonb pattern). MANUAL PASTE required" },
+    ],
+  },
+  {
     id: "cl-101",
     date: "22 June 2026",
     version: "1.7.4",
