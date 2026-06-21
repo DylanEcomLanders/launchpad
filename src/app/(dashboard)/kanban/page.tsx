@@ -41,6 +41,7 @@ import {
   type TestResult,
 } from "@/lib/projects/preview-phases";
 import { useKanbanData } from "@/lib/kanban/use-kanban-data";
+import { uploadScreenshot, signScreenshotPaths } from "@/lib/kanban/storage";
 import {
   MOCK_CLIENTS,
   MOCK_PODS,
@@ -3032,15 +3033,28 @@ function DetailModal({
     secondaryDeveloper: d.secondaryDeveloper,
   });
 
-  function onFile(e: ChangeEvent<HTMLInputElement>) {
+  const [uploadingScreenshot, setUploadingScreenshot] = useState(false);
+
+  async function onFile(e: ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const data = reader.result;
-      if (typeof data === "string") onUpdate({ screenshot: data });
-    };
-    reader.readAsDataURL(f);
+    /* Reset the input so the user can re-pick the same file later. */
+    e.target.value = "";
+    setUploadingScreenshot(true);
+    try {
+      const path = await uploadScreenshot(f, d.id);
+      if (!path) {
+        alert("Screenshot upload failed - check your connection and try again.");
+        return;
+      }
+      /* Sign immediately so the in-flight render gets a working URL.
+       * mockTaskToRow strips signed URLs back to paths before writing
+       * to the DB so the column stays long-lived. */
+      const signed = await signScreenshotPaths([path]);
+      onUpdate({ screenshot: signed[path] || path });
+    } finally {
+      setUploadingScreenshot(false);
+    }
   }
 
   function submitConclude() {
@@ -4064,9 +4078,10 @@ function DetailModal({
                 ) : (
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full px-4 py-6 rounded-lg border border-dashed border-[#2A2A2A] bg-[#181818] text-sm text-[#71757D] hover:border-[#383838] hover:text-white transition-colors"
+                    disabled={uploadingScreenshot}
+                    className="w-full px-4 py-6 rounded-lg border border-dashed border-[#2A2A2A] bg-[#181818] text-sm text-[#71757D] hover:border-[#383838] hover:text-white transition-colors disabled:opacity-60 disabled:cursor-wait"
                   >
-                    Upload a screenshot
+                    {uploadingScreenshot ? "Uploading..." : "Upload a screenshot"}
                   </button>
                 )}
                 <input

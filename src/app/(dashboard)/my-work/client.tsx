@@ -8,8 +8,12 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import {
+  ChevronDownIcon,
+  ExclamationTriangleIcon,
+} from "@heroicons/react/24/outline";
 import { useWorkspaceData, todayYMD } from "@/lib/workspace/use-workspace-data";
+import { useKanbanData } from "@/lib/kanban/use-kanban-data";
 import { useCurrentUser } from "@/components/auth-gate";
 import {
   buildAllClientVMs,
@@ -233,6 +237,39 @@ export default function MyWorkClient() {
   // Title resolves from the auth user first (when signed in by email), then
   // the picked member's name (admin "view as"), then a neutral fallback.
   const displayName = me?.name ?? activeMember?.name ?? null;
+
+  /* Kanban "Revisions needed" surfacing. The kanban runs on its own
+   * data layer (kanban_*) and assigns by NAME, not pod_member_id - so
+   * we match against the active member's display name. The flag is
+   * set when a kanban card is bounced backward in the build flow
+   * (e.g. Internal Rev kicked it back to Design); the assignee should
+   * see it from My Tasks even though the card itself lives in
+   * /kanban. Tap-through opens /kanban. */
+  const { clients: kanbanClients } = useKanbanData();
+  const revisionCards = useMemo(() => {
+    if (!displayName) return [] as { id: string; title: string; client: string }[];
+    const needle = displayName.trim().toLowerCase();
+    const matches: { id: string; title: string; client: string }[] = [];
+    for (const c of kanbanClients) {
+      for (const p of c.projects) {
+        for (const d of p.deliverables) {
+          if (!d.revisionRequested) continue;
+          const names = [
+            d.designer,
+            d.secondaryDesigner,
+            d.developer,
+            d.secondaryDeveloper,
+          ]
+            .filter(Boolean)
+            .map((n) => n!.trim().toLowerCase());
+          if (names.includes(needle)) {
+            matches.push({ id: d.id, title: d.title, client: c.name });
+          }
+        }
+      }
+    }
+    return matches;
+  }, [kanbanClients, displayName]);
   const firstName = displayName?.split(/\s+/)[0];
   // Show the "view as" picker whenever the active member came from the picker
   // (i.e. there's no auth-resolved identity to lock it down).
@@ -288,6 +325,34 @@ export default function MyWorkClient() {
             )}
           </p>
         </div>
+
+        {revisionCards.length > 0 && (
+          <Link
+            href="/kanban"
+            className="group mb-6 flex items-start gap-3 rounded-xl border border-orange-500/30 bg-orange-500/5 px-4 py-3 transition-colors hover:border-orange-500/50 hover:bg-orange-500/10"
+          >
+            <ExclamationTriangleIcon className="size-5 text-orange-400 shrink-0 mt-0.5" />
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-[#E5E5EA]">
+                {revisionCards.length === 1
+                  ? "1 kanban card needs revisions from you"
+                  : `${revisionCards.length} kanban cards need revisions from you`}
+              </div>
+              <div className="mt-0.5 text-[12px] text-[#9CA3AF] truncate">
+                {revisionCards
+                  .slice(0, 3)
+                  .map((r) => `${r.title} - ${r.client}`)
+                  .join(" · ")}
+                {revisionCards.length > 3
+                  ? ` · +${revisionCards.length - 3} more`
+                  : ""}
+              </div>
+            </div>
+            <span className="self-center text-[11px] font-semibold uppercase tracking-wider text-orange-400 group-hover:text-orange-300 shrink-0">
+              Open kanban →
+            </span>
+          </Link>
+        )}
 
         {/* Columns */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
