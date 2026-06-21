@@ -94,12 +94,18 @@ export function useKanbanData(): UseKanbanData {
   useEffect(() => {
     let cancelled = false;
 
-    /* 1. localStorage overlay (instant paint while Supabase fetches) */
+    /* 1. localStorage overlay (instant paint while Supabase fetches).
+     * Only trust the cache when it has actual content - an empty
+     * array left over from a failed Supabase write would otherwise
+     * paint a blank board and mask the cloud data. */
     const cachedClients = lsRead<MockClient[]>(LS_CLIENTS_KEY);
     const cachedPods = lsRead<MockPod[]>(LS_PODS_KEY);
-    if (cachedClients && cachedPods) {
-      setClientsRaw(cachedClients);
-      setPodsRaw(cachedPods);
+    if (cachedClients && cachedClients.length > 0) setClientsRaw(cachedClients);
+    if (cachedPods && cachedPods.length > 0) setPodsRaw(cachedPods);
+    if (
+      (cachedClients && cachedClients.length > 0) ||
+      (cachedPods && cachedPods.length > 0)
+    ) {
       setSource("localStorage");
     }
 
