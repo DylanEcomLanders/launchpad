@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-101",
+    date: "22 June 2026",
+    version: "1.7.4",
+    title: "Report auto-generator - weekly + monthly",
+    changes: [
+      { type: "added", text: "/tools/reports - one-click generate a weekly or monthly report for any client. Auto-fills the period bounds (Mon-Sun for weekly, calendar month for monthly), pulls in-period tests + done page roadmap items, counts wins/losses/inconclusive" },
+      { type: "added", text: "Detail editor: strategist edits headline + narrative (markdown) + CR movement caveat, reviews auto-populated tests + pages lists, marks ready then sent (auto-stamps sent_at). Per-status pill tracks where the report sits" },
+      { type: "added", text: "Public output at /report-output/[slug] - branded headline panel, stats grid (Pages / Tests / Won / Lost+Inconc), what-we-learned narrative, tests list, pages list. Matches Hero Offer chrome" },
+      { type: "added", text: "Migration 038 creates reports table (jsonb pattern). MANUAL PASTE required" },
+    ],
+  },
+  {
     id: "cl-100",
     date: "22 June 2026",
     version: "1.7.3",
