@@ -37,6 +37,20 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-98",
+    date: "21 June 2026",
+    version: "1.7.1",
+    title: "Brief builders - design / dev / hypothesis as forms",
+    changes: [
+      { type: "added", text: "/tools/briefs - one tool, three kinds. Design / Dev / Hypothesis briefs as fillable forms with per-kind fields beyond the common spine (title, objective, audience, owner, deadline, references). Templates straight from Hero Offer / Execution / Roadmap & briefing" },
+      { type: "added", text: "Hypothesis briefs carry ICE scoring (impact × confidence × ease, 1-10 each) with live score readout. Default primary metric: conversion rate. Variant + control + traffic split + min runtime + success criteria as first-class fields" },
+      { type: "added", text: "Dev briefs cover testing-tool selection (Intelligems / Visually), variant logic, tracking events, QA criteria (default 'zero errors across browsers/devices'), browser/device coverage" },
+      { type: "added", text: "Design briefs carry key-message + hierarchy, must-include elements, brand constraints" },
+      { type: "added", text: "Public output at /brief-output/[slug] - doc-style branded page. Hypothesis briefs get a hero-card hypothesis line + ICE stat grid. Dev + design get the relevant kind-specific sections" },
+      { type: "added", text: "Migration 036 creates briefs table (jsonb pattern). MANUAL PASTE required" },
+    ],
+  },
+  {
     id: "cl-97",
     date: "21 June 2026",
     version: "1.7.0",
