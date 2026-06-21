@@ -37,6 +37,17 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-97",
+    date: "21 June 2026",
+    version: "1.7.0",
+    title: "Roadmap builder w/ ICE scoring",
+    changes: [
+      { type: "added", text: "/tools/roadmap - one roadmap per client, three horizon columns (First 30 / Day 30-60 / Day 60-90). Items typed (page / test / other), status-tracked (planned / in_progress / done / skipped), and ICE-scored (Impact × Confidence × Ease, 1-10 each). Within each horizon items sort by ICE descending so the highest-leverage stuff floats to the top automatically" },
+      { type: "added", text: "Item card has compact summary + inline editor: title, type, status, ICE sliders, hypothesis textarea. Quick + Add per column. Status pill + ICE chip visible at a glance" },
+      { type: "added", text: "Migration 035 creates roadmaps table (jsonb pattern - items nested). MANUAL PASTE required" },
+    ],
+  },
+  {
     id: "cl-96",
     date: "21 June 2026",
     version: "1.6.0",
