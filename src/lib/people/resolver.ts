@@ -89,25 +89,21 @@ export function teamMemberByPodMemberId(
 
 /* Kanban assigns by NAME (designer / developer string fields). This
  * helper takes a kanban assignee name and returns the canonical
- * Person record, resolving via the linked PodMember when possible
- * and falling back to name matching against Person.full_name when
- * the kanban name doesn't correspond to a PodMember (e.g. a copy
- * contractor not in a pod). */
+ * Person record by matching the name against Person.full_name
+ * (case-insensitive). Kept name-only because the kanban data layer
+ * uses its own pod shape (MockPod), not the pods-v2 PodMember
+ * structure - we don't want to leak that coupling here. */
 export function personByKanbanName(
   kanbanName: string | undefined,
   people: Person[],
-  podMembers: PodMember[],
+  /* Optional pods param accepted for API symmetry with the kanban
+   * data hook but unused; name match against Person.full_name is
+   * the authoritative path. */
+  _podMembers?: unknown,
 ): Person | null {
+  void _podMembers;
   if (!kanbanName) return null;
   const needle = kanbanName.trim().toLowerCase();
-  /* Pass 1: kanban name → PodMember.name → Person via pod_member_id. */
-  const pm = podMembers.find((m) => m.name.trim().toLowerCase() === needle);
-  if (pm) {
-    const p = personByPodMemberId(pm.id, people);
-    if (p) return p;
-  }
-  /* Pass 2: kanban name → Person.full_name directly. Catches non-pod
-   * humans (founders, ops, copy contractors). */
   return (
     people.find((p) => p.full_name.trim().toLowerCase() === needle) ?? null
   );

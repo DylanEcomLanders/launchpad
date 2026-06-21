@@ -883,7 +883,16 @@ export function swapMembers(memberAId: string, memberBId: string): void {
  * roster UI when a "TO HIRE" slot is filled or someone gets renamed. */
 export function updateMemberDetails(
   memberId: string,
-  patch: { name?: string; is_placeholder?: boolean; role?: PodMemberRole },
+  patch: {
+    name?: string;
+    is_placeholder?: boolean;
+    role?: PodMemberRole;
+    /* When set, links this slot to a canonical Person record. The
+     * Person resolver helper in src/lib/people/resolver.ts uses this
+     * to flow renames in Admin to PodMember.name everywhere. Pass
+     * empty string to clear the link. */
+    person_id?: string;
+  },
 ): void {
   const pods = getPods();
   const next = pods.map((p) => ({
@@ -895,6 +904,9 @@ export function updateMemberDetails(
             ...(patch.name !== undefined ? { name: patch.name.trim() || m.name } : {}),
             ...(patch.is_placeholder !== undefined ? { is_placeholder: patch.is_placeholder } : {}),
             ...(patch.role !== undefined ? { role: patch.role } : {}),
+            ...(patch.person_id !== undefined
+              ? { person_id: patch.person_id || undefined }
+              : {}),
           }
         : m,
     ),

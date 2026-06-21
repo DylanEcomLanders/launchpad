@@ -18,6 +18,12 @@ export interface PodMember {
   /** Optional uploaded photo. If set, replaces the generated PodAvatar
    * SVG/initial fallback. */
   avatar_url?: string;
+  /** FK into company_people. When set, the pod data loader stamps this
+   * member's name + avatar_url from the linked Person at fetch time
+   * so renames in Admin propagate everywhere PodMember is rendered.
+   * Unlinked members (e.g. placeholders, legacy seed data) keep their
+   * inline name as a fallback. */
+  person_id?: string;
   /** Out-of-office window. When today's date is inside [start, end]
    * (inclusive), the member is treated as away: avatar dims, swim
    * lane shows an "OOO until" pill, and autopair on Conversion Engine

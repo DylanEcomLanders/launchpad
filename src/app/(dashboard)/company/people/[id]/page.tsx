@@ -8,8 +8,12 @@ import {
   TrashIcon,
   PlusIcon,
   PhotoIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  LockClosedIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
-import { peopleStore, uid, nowISO, fmtDateUK, fmtMoney } from "@/lib/company/data";
+import { peopleStore, invoicesStore, uid, nowISO, fmtDateUK, fmtMoney } from "@/lib/company/data";
 import { getPods } from "@/lib/pods-v2/data";
 import type { Pod, PodMember } from "@/lib/pods-v2/types";
 import { agreementStore } from "@/lib/agreements/data";
@@ -18,17 +22,44 @@ import { AGREEMENT_STATUS_META, AGREEMENT_KIND_LABEL } from "@/lib/agreements/ty
 import { GenerateAgreementsModal } from "@/components/agreements/generate-modal";
 import {
   type Person,
+  type BonusKind,
+  type BonusPayment,
   type CompensationChange,
+  type Invoice,
+  type OnboardingTask,
   type Review,
   type Goal,
   type PersonNote,
+  type ScoringEntry,
+  type ScoringPeriod,
   DEPARTMENTS,
 } from "@/lib/company/types";
+import {
+  defaultOnboardingChecklist,
+  ONBOARDING_PERIOD_DAYS,
+} from "@/lib/company/onboarding";
+import {
+  applyCaps,
+  draftPeriodForDeliverable,
+  draftPeriodForMonth,
+  subtotals,
+} from "@/lib/company/scoring";
+import { useKanbanData } from "@/lib/kanban/use-kanban-data";
+import { personByKanbanName } from "@/lib/people/resolver";
 import { inputClass, labelClass, selectClass, textareaClass } from "@/lib/form-styles";
-import { initials, deptColor, STATUS_BADGE } from "@/lib/company/ui";
+import { initials, deptColor, STATUS_BADGE, INVOICE_STATUS_BADGE } from "@/lib/company/ui";
 import { useRole } from "@/components/auth-gate";
 
-type Tab = "overview" | "financial" | "performance" | "agreements";
+type Tab =
+  | "overview"
+  | "onboarding"
+  | "financial"
+  | "invoices"
+  | "bonuses"
+  | "scoring"
+  | "kpis"
+  | "performance"
+  | "agreements";
 
 export default function PersonProfilePage() {
   const params = useParams();
@@ -54,8 +85,42 @@ export default function PersonProfilePage() {
   async function patch(updates: Partial<Person>) {
     if (!person) return;
     const next = { ...person, ...updates, updated_at: nowISO() };
+    const renamedFrom =
+      updates.full_name && updates.full_name !== person.full_name
+        ? person.full_name
+        : null;
+    /* Detect transition into / out of "left" so we can flip the
+     * app_users.active flag accordingly. Without this, a leaver keeps
+     * their launchpad sign-in alive. */
+    const becameLeft =
+      updates.status === "left" && person.status !== "left";
+    const cameBackFromLeft =
+      person.status === "left" && updates.status && updates.status !== "left";
+
     setPerson(next);
     await peopleStore.update(id, next);
+    /* On full_name change, propagate the new name into kanban_pods +
+     * kanban_tasks + pods-v2 so renames in Admin flow through the rest
+     * of the app without admin chasing them. Fire-and-forget. */
+    if (renamedFrom && updates.full_name) {
+      const { propagatePersonRename } = await import(
+        "@/lib/people/propagate-rename"
+      );
+      propagatePersonRename(id, renamedFrom, updates.full_name).catch((err) =>
+        console.error("[person] rename propagation failed:", err),
+      );
+    }
+    if ((becameLeft || cameBackFromLeft) && next.email) {
+      const { findAppUserByEmail, setAppUserActive } = await import(
+        "@/lib/auth/app-users"
+      );
+      const user = await findAppUserByEmail(next.email);
+      if (user) {
+        setAppUserActive(user.id, !becameLeft).catch((err) =>
+          console.error("[person] app_users active toggle failed:", err),
+        );
+      }
+    }
   }
 
   async function handleDelete() {
@@ -80,10 +145,20 @@ export default function PersonProfilePage() {
 
   const status = STATUS_BADGE[person.status];
   const isAdmin = role === "admin";
+  const isOnboardingNow =
+    person.status === "onboarding" || !!person.onboarding_started_at;
+  const isContractor =
+    person.engagement_type === "contractor_retainer" ||
+    person.engagement_type === "contractor_per_page";
   const tabs: { id: Tab; label: string; visible: boolean }[] = [
     { id: "overview", label: "Overview", visible: true },
+    { id: "onboarding", label: "Onboarding", visible: isAdmin && isOnboardingNow },
     { id: "agreements", label: "Agreements", visible: isAdmin },
     { id: "financial", label: "Financial", visible: isAdmin },
+    { id: "invoices", label: "Invoices", visible: isAdmin },
+    { id: "bonuses", label: "Bonuses", visible: isAdmin },
+    { id: "scoring", label: "Scoring", visible: isAdmin && isContractor },
+    { id: "kpis", label: "KPIs", visible: isAdmin },
     { id: "performance", label: "Performance", visible: isAdmin },
   ];
 
@@ -169,6 +244,17 @@ export default function PersonProfilePage() {
       {tab === "financial" && isAdmin && (
         <FinancialTab person={person} onPatch={patch} />
       )}
+      {tab === "invoices" && isAdmin && <InvoicesTab person={person} />}
+      {tab === "bonuses" && isAdmin && (
+        <BonusesTab person={person} onPatch={patch} />
+      )}
+      {tab === "onboarding" && isAdmin && (
+        <OnboardingTab person={person} onPatch={patch} />
+      )}
+      {tab === "scoring" && isAdmin && isContractor && (
+        <ScoringTab person={person} onPatch={patch} />
+      )}
+      {tab === "kpis" && isAdmin && <KpisTab person={person} />}
       {tab === "performance" && isAdmin && (
         <PerformanceTab person={person} onPatch={patch} />
       )}
@@ -340,9 +426,13 @@ function OverviewTab({
         <FieldSelect
           label="Status"
           value={person.status}
-          options={["active", "on_leave", "notice", "left"]}
+          options={["onboarding", "active", "on_leave", "notice", "offboarding", "left"]}
           renderOption={(v) =>
-            v === "on_leave" ? "On leave" : v === "left" ? "Left" : v.charAt(0).toUpperCase() + v.slice(1)
+            v === "on_leave"
+              ? "On leave"
+              : v === "left"
+              ? "Left"
+              : v.charAt(0).toUpperCase() + v.slice(1)
           }
           onChange={(v) => onPatch({ status: v as Person["status"] })}
         />
@@ -374,24 +464,7 @@ function OverviewTab({
           value={person.phone || ""}
           onChange={(v) => onPatch({ phone: v || undefined })}
         />
-      </Section>
-
-      <Section title="Emergency contact">
-        <Field
-          label="Name"
-          value={person.emergency_contact_name || ""}
-          onChange={(v) => onPatch({ emergency_contact_name: v || undefined })}
-        />
-        <Field
-          label="Relationship"
-          value={person.emergency_contact_relationship || ""}
-          onChange={(v) => onPatch({ emergency_contact_relationship: v || undefined })}
-        />
-        <Field
-          label="Phone"
-          value={person.emergency_contact_phone || ""}
-          onChange={(v) => onPatch({ emergency_contact_phone: v || undefined })}
-        />
+        <InviteButton person={person} />
       </Section>
 
       <Section title="Notes" className="md:col-span-2">
@@ -516,6 +589,75 @@ function FinancialTab({
             placeholder="Sort code, account number, or IBAN. Stored in plaintext - admin only."
           />
         </div>
+      </Section>
+
+      {/* Engagement type + bonus structure - sits in the Financial tab
+          because it's the other half of "what do we pay this person".
+          The bonus UI flips: core_retainer shows revenue-tier inputs,
+          contractor types show a Scoring tab pointer. */}
+      <Section title="Engagement & bonuses" className="md:col-span-2">
+        <FieldSelect
+          label="Engagement type"
+          value={person.engagement_type || ""}
+          options={["", "core_retainer", "contractor_retainer", "contractor_per_page"]}
+          renderOption={(v) =>
+            !v
+              ? "Select an engagement type"
+              : v === "core_retainer"
+              ? "Core retainer (revenue-tier bonus)"
+              : v === "contractor_retainer"
+              ? "Contractor on retainer (scheme bonuses)"
+              : "Contractor per-page (scheme bonuses)"
+          }
+          onChange={(v) => onPatch({ engagement_type: (v || undefined) as Person["engagement_type"] })}
+        />
+
+        {person.engagement_type === "core_retainer" && (
+          <div className="mt-4 pt-4 border-t border-[#2A2A2A]">
+            <div className="text-[11px] uppercase tracking-wider text-[#71757D] mb-3">
+              Revenue-tier bonuses ({person.compensation_currency || "GBP"})
+            </div>
+            <p className="text-xs text-[#71757D] mb-3">
+              Paid when monthly revenue first crosses each milestone.
+              Currency follows the compensation currency above.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <Field
+                label="At 100k / month"
+                type="number"
+                value={person.bonus_tier_100k?.toString() || ""}
+                onChange={(v) => onPatch({ bonus_tier_100k: v ? parseFloat(v) : undefined })}
+              />
+              <Field
+                label="At 150k / month"
+                type="number"
+                value={person.bonus_tier_150k?.toString() || ""}
+                onChange={(v) => onPatch({ bonus_tier_150k: v ? parseFloat(v) : undefined })}
+              />
+              <Field
+                label="At 200k / month"
+                type="number"
+                value={person.bonus_tier_200k?.toString() || ""}
+                onChange={(v) => onPatch({ bonus_tier_200k: v ? parseFloat(v) : undefined })}
+              />
+            </div>
+          </div>
+        )}
+
+        {(person.engagement_type === "contractor_retainer" ||
+          person.engagement_type === "contractor_per_page") && (
+          <div className="mt-4 pt-4 border-t border-[#2A2A2A]">
+            <p className="text-xs text-[#71757D]">
+              Bonuses + deductions for this contractor are auto-computed
+              from kanban delivery data under the{" "}
+              {person.engagement_type === "contractor_retainer"
+                ? "retainer scheme (max +33% / -30% per month)"
+                : "per-page scheme (max +25% / -30% per build)"}
+              . PM reviews + locks per invoice. See the{" "}
+              <strong className="text-[#E5E5EA]">Scoring</strong> tab.
+            </p>
+          </div>
+        )}
       </Section>
 
       <Section title="Compensation history" className="md:col-span-2">
@@ -805,6 +947,1439 @@ function PerformanceTab({
   );
 }
 
+/* ─────────────── Invoices tab ─────────────── */
+
+/* Pulls the slice of company_invoices linked to this Person via
+ * linked_person_id. Read-only here - admins still create + edit
+ * invoices in /company/invoices; this view is the per-person rollup
+ * so we can see at a glance what we pay each human. */
+function InvoicesTab({ person }: { person: Person }) {
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    invoicesStore.getAll().then((all) => {
+      setInvoices(
+        all
+          .filter((i) => i.linked_person_id === person.id)
+          .sort((a, b) =>
+            (b.issue_date || "").localeCompare(a.issue_date || ""),
+          ),
+      );
+      setHydrated(true);
+    });
+  }, [person.id]);
+
+  /* GBP totals only - mixing currencies would mislead. Anything not
+   * GBP is shown in the row but skipped in the totals header. */
+  const totals = useMemo(() => {
+    let billed = 0,
+      paid = 0,
+      outstanding = 0;
+    for (const i of invoices) {
+      if (i.currency !== "GBP") continue;
+      billed += i.amount;
+      if (i.status === "paid") paid += i.amount;
+      else outstanding += i.amount;
+    }
+    return { billed, paid, outstanding };
+  }, [invoices]);
+
+  if (!hydrated) {
+    return <div className="h-32 bg-[#0C0C0C] rounded-xl animate-pulse" />;
+  }
+
+  if (invoices.length === 0) {
+    return (
+      <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-8 text-center">
+        <p className="text-sm text-[#71757D] mb-2">
+          No invoices linked to {person.preferred_name || person.full_name} yet.
+        </p>
+        <Link
+          href="/company/invoices"
+          className="text-xs text-[#E5E5EA] hover:underline"
+        >
+          Log one in Invoices
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Totals header - same three-cell summary as Financial tab */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <SummaryCard label="Total billed (GBP)" value={fmtMoney(totals.billed, "GBP")} />
+        <SummaryCard label="Paid" value={fmtMoney(totals.paid, "GBP")} tone="positive" />
+        <SummaryCard
+          label="Outstanding"
+          value={fmtMoney(totals.outstanding, "GBP")}
+          tone={totals.outstanding > 0 ? "warn" : "muted"}
+        />
+      </div>
+
+      {/* Invoice table - same shape as /company/invoices but scoped to
+          this person + cleaner (no supplier name column since theyre
+          all this person). Each row links out to the invoice detail. */}
+      <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-[#0C0C0C] text-[10px] uppercase tracking-wider text-[#71757D]">
+            <tr>
+              <th className="text-left px-4 py-3 font-semibold">Invoice</th>
+              <th className="text-left px-4 py-3 font-semibold">Issued</th>
+              <th className="text-left px-4 py-3 font-semibold">Due</th>
+              <th className="text-left px-4 py-3 font-semibold">Amount</th>
+              <th className="text-left px-4 py-3 font-semibold">Status</th>
+              <th className="text-left px-4 py-3 font-semibold">File</th>
+            </tr>
+          </thead>
+          <tbody>
+            {invoices.map((i) => {
+              const badge = INVOICE_STATUS_BADGE[i.status];
+              return (
+                <tr
+                  key={i.id}
+                  className="border-t border-[#2A2A2A] hover:bg-[#0C0C0C]"
+                >
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/company/invoices/${i.id}`}
+                      className="font-medium text-[#E5E5EA] hover:underline"
+                    >
+                      {i.invoice_number || "(no number)"}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3 text-[#71757D]">{fmtDateUK(i.issue_date)}</td>
+                  <td className="px-4 py-3 text-[#71757D]">{fmtDateUK(i.due_date)}</td>
+                  <td className="px-4 py-3 font-medium text-[#E5E5EA]">
+                    {fmtMoney(i.amount, i.currency)}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
+                      style={{ background: badge.bg, color: badge.text }}
+                    >
+                      {badge.label}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    {i.file_url ? (
+                      <a
+                        href={i.file_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[#E5E5EA] hover:underline text-xs"
+                      >
+                        {i.file_name || "Open"}
+                      </a>
+                    ) : (
+                      <span className="text-[#71757D] text-xs">No file</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="text-right">
+        <Link
+          href="/company/invoices"
+          className="text-[11px] uppercase tracking-wider text-[#71757D] hover:text-white"
+        >
+          Manage all invoices →
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function SummaryCard({
+  label,
+  value,
+  tone = "neutral",
+}: {
+  label: string;
+  value: string;
+  tone?: "neutral" | "positive" | "warn" | "muted";
+}) {
+  const valueColor =
+    tone === "positive"
+      ? "text-emerald-300"
+      : tone === "warn"
+      ? "text-amber-300"
+      : tone === "muted"
+      ? "text-[#71757D]"
+      : "text-[#E5E5EA]";
+  return (
+    <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-4">
+      <div className="text-[10px] uppercase tracking-wider text-[#71757D] mb-1">
+        {label}
+      </div>
+      <div className={`text-xl font-semibold ${valueColor}`}>{value}</div>
+    </div>
+  );
+}
+
+/* ─────────────── Onboarding tab ─────────────── */
+
+/* 30-day clock + default checklist. Seeded the first time someone
+ * lands on this tab without a checklist (status === 'onboarding' OR
+ * onboarding_started_at set). Auto-completes the period when the
+ * last task ticks, but doesn't auto-flip status to active - that's
+ * a deliberate PM call after the 30-day review. */
+function OnboardingTab({
+  person,
+  onPatch,
+}: {
+  person: Person;
+  onPatch: (u: Partial<Person>) => void;
+}) {
+  /* Seed checklist + started_at on first visit. */
+  useEffect(() => {
+    if (person.onboarding_checklist && person.onboarding_checklist.length > 0) {
+      return;
+    }
+    onPatch({
+      onboarding_checklist: defaultOnboardingChecklist(uid),
+      onboarding_started_at:
+        person.onboarding_started_at ||
+        person.start_date ||
+        new Date().toISOString().slice(0, 10),
+    });
+    /* one-shot seed, intentional empty deps */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const checklist = person.onboarding_checklist || [];
+  const startedAt =
+    person.onboarding_started_at || person.start_date || new Date().toISOString().slice(0, 10);
+
+  const totalDays = ONBOARDING_PERIOD_DAYS;
+  const daysIn = Math.max(
+    0,
+    Math.floor(
+      (Date.now() - new Date(startedAt + "T00:00:00Z").getTime()) /
+        (1000 * 60 * 60 * 24),
+    ),
+  );
+  const daysRemaining = Math.max(0, totalDays - daysIn);
+  const pctElapsed = Math.min(100, Math.round((daysIn / totalDays) * 100));
+
+  const doneCount = checklist.filter((t) => !!t.done_at).length;
+  const allDone = checklist.length > 0 && doneCount === checklist.length;
+
+  function toggleTask(taskId: string) {
+    const next = checklist.map((t) =>
+      t.id !== taskId
+        ? t
+        : {
+            ...t,
+            done_at: t.done_at
+              ? undefined
+              : new Date().toISOString().slice(0, 10),
+          },
+    );
+    const completed = next.every((t) => !!t.done_at);
+    onPatch({
+      onboarding_checklist: next,
+      onboarding_completed_at: completed
+        ? new Date().toISOString().slice(0, 10)
+        : undefined,
+    });
+  }
+
+  function dueDateFor(offset: number): string {
+    const d = new Date(startedAt + "T00:00:00Z");
+    d.setUTCDate(d.getUTCDate() + offset);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function isOverdue(t: OnboardingTask): boolean {
+    if (t.done_at) return false;
+    return new Date(dueDateFor(t.due_offset_days) + "T00:00:00Z").getTime() < Date.now();
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Clock + progress */}
+      <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-5">
+        <div className="flex items-baseline justify-between mb-3">
+          <div>
+            <div className="text-[11px] uppercase tracking-wider text-[#71757D]">
+              30-day clock
+            </div>
+            <div className="text-2xl font-semibold text-[#E5E5EA] mt-1">
+              {allDone ? (
+                <span className="text-emerald-300">Onboarding complete</span>
+              ) : daysRemaining === 0 ? (
+                <span className="text-amber-300">Day 30 reached</span>
+              ) : (
+                <>
+                  Day {Math.min(daysIn, totalDays)} of {totalDays}{" "}
+                  <span className="text-sm text-[#71757D] font-normal">
+                    ({daysRemaining} day{daysRemaining === 1 ? "" : "s"} left)
+                  </span>
+                </>
+              )}
+            </div>
+            <div className="text-xs text-[#71757D] mt-1">
+              Started {fmtDateUK(startedAt)}
+              {person.onboarding_completed_at &&
+                ` · completed ${fmtDateUK(person.onboarding_completed_at)}`}
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-[11px] uppercase tracking-wider text-[#71757D]">
+              Checklist
+            </div>
+            <div className="text-2xl font-semibold text-[#E5E5EA] mt-1 tabular-nums">
+              {doneCount} / {checklist.length}
+            </div>
+          </div>
+        </div>
+        <div className="h-2 bg-[#0C0C0C] rounded-full overflow-hidden">
+          <div
+            className="h-full bg-emerald-400/70 transition-all"
+            style={{ width: `${pctElapsed}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Status flip prompt - only show when all done + still in onboarding */}
+      {allDone && person.status === "onboarding" && (
+        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <div className="text-sm font-semibold text-[#E5E5EA]">
+              All tasks complete. Ready to flip to active?
+            </div>
+            <div className="text-xs text-[#71757D] mt-0.5">
+              Status: <strong>onboarding</strong> → <strong>active</strong>.
+              The Onboarding tab will hide afterwards.
+            </div>
+          </div>
+          <button
+            onClick={() => onPatch({ status: "active" })}
+            className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-emerald-500 text-white hover:bg-emerald-400"
+          >
+            Mark active
+          </button>
+        </div>
+      )}
+
+      {/* Checklist */}
+      <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-[#0C0C0C] text-[10px] uppercase tracking-wider text-[#71757D]">
+            <tr>
+              <th className="text-left px-4 py-3 font-semibold w-12">Done</th>
+              <th className="text-left px-4 py-3 font-semibold">Task</th>
+              <th className="text-left px-4 py-3 font-semibold">Due</th>
+              <th className="text-left px-4 py-3 font-semibold">Completed</th>
+            </tr>
+          </thead>
+          <tbody>
+            {checklist
+              .slice()
+              .sort((a, b) => a.order - b.order)
+              .map((t) => (
+                <tr
+                  key={t.id}
+                  className={`border-t border-[#2A2A2A] hover:bg-[#0C0C0C] ${
+                    t.done_at ? "opacity-60" : ""
+                  }`}
+                >
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => toggleTask(t.id)}
+                      className="size-5 rounded border border-[#2A2A2A] hover:border-[#383838] flex items-center justify-center"
+                      title={t.done_at ? "Mark not done" : "Mark done"}
+                    >
+                      {t.done_at && (
+                        <CheckCircleIcon className="size-4 text-emerald-400" />
+                      )}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div
+                      className={`text-[#E5E5EA] ${
+                        t.done_at ? "line-through" : "font-medium"
+                      }`}
+                    >
+                      {t.title}
+                    </div>
+                    {t.description && (
+                      <div className="text-xs text-[#71757D] mt-0.5">
+                        {t.description}
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={
+                        isOverdue(t) ? "text-red-400" : "text-[#71757D]"
+                      }
+                    >
+                      {fmtDateUK(dueDateFor(t.due_offset_days))}
+                    </span>
+                    {isOverdue(t) && (
+                      <div className="text-[10px] uppercase tracking-wider text-red-400 mt-0.5">
+                        Overdue
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-[#71757D]">
+                    {t.done_at ? fmtDateUK(t.done_at) : "—"}
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────── Scoring tab (contractor scheme) ─────────────── */
+
+/* Per-period scoring. PM picks a kanban deliverable (per-page) or a
+ * month (retainer), gets an auto-suggested breakdown from kanban
+ * data, can edit/add manual entries, then locks at invoice time. */
+function ScoringTab({
+  person,
+  onPatch,
+}: {
+  person: Person;
+  onPatch: (u: Partial<Person>) => void;
+}) {
+  const { clients, pods } = useKanbanData();
+  const periods = person.scoring_periods || [];
+  const isPerPage = person.engagement_type === "contractor_per_page";
+  const scheme: "per_page" | "retainer" = isPerPage ? "per_page" : "retainer";
+
+  /* Available period candidates = kanban tasks (for per-page) or
+   * months in their kanban history (for retainer) not yet scored. */
+  const candidatePeriods = useMemo(() => {
+    const scored = new Set(periods.map((p) => p.period_key));
+    if (isPerPage) {
+      const tasks: { id: string; label: string }[] = [];
+      const allPods = pods;
+      for (const c of clients) {
+        for (const p of c.projects) {
+          for (const d of p.deliverables) {
+            const launch = (d.phaseHistory || []).find(
+              (e) => e.phase === "launch-testing",
+            );
+            if (!launch) continue;
+            /* Is this person on the card? */
+            const candidates = [
+              d.designer,
+              d.secondaryDesigner,
+              d.developer,
+              d.secondaryDeveloper,
+            ];
+            const matches = candidates.some(
+              (n) => personByKanbanName(n, [person], allPods)?.id === person.id,
+            );
+            if (!matches) continue;
+            if (scored.has(d.id)) continue;
+            tasks.push({
+              id: d.id,
+              label: `${d.title} - ${c.name} (launched ${fmtDateUK(launch.enteredAt)})`,
+            });
+          }
+        }
+      }
+      return tasks;
+    } else {
+      /* Retainer: last 6 months with kanban activity for this person. */
+      const months = new Set<string>();
+      for (const c of clients) {
+        for (const p of c.projects) {
+          for (const d of p.deliverables) {
+            const candidates = [
+              d.designer,
+              d.secondaryDesigner,
+              d.developer,
+              d.secondaryDeveloper,
+            ];
+            if (
+              !candidates.some(
+                (n) => personByKanbanName(n, [person], pods)?.id === person.id,
+              )
+            )
+              continue;
+            for (const e of d.phaseHistory || []) {
+              months.add(e.enteredAt.slice(0, 7));
+            }
+          }
+        }
+      }
+      return Array.from(months)
+        .sort((a, b) => b.localeCompare(a))
+        .filter((m) => !scored.has(m))
+        .slice(0, 6)
+        .map((m) => ({ id: m, label: m }));
+    }
+  }, [clients, pods, person, periods, isPerPage]);
+
+  function addPeriod(key: string) {
+    if (isPerPage) {
+      const deliverable = clients
+        .flatMap((c) => c.projects.flatMap((p) => p.deliverables))
+        .find((d) => d.id === key);
+      if (!deliverable) return;
+      const draft = draftPeriodForDeliverable(deliverable, uid);
+      onPatch({ scoring_periods: [draft, ...periods] });
+    } else {
+      const draft = draftPeriodForMonth(person, clients, key, uid);
+      onPatch({ scoring_periods: [draft, ...periods] });
+    }
+  }
+
+  function patchPeriod(periodId: string, patch: Partial<ScoringPeriod>) {
+    onPatch({
+      scoring_periods: periods.map((p) =>
+        p.id === periodId
+          ? { ...p, ...patch, updated_at: new Date().toISOString() }
+          : p,
+      ),
+    });
+  }
+
+  function addManualEntry(periodId: string, entry: Omit<ScoringEntry, "id" | "added_at">) {
+    const period = periods.find((p) => p.id === periodId);
+    if (!period) return;
+    const newEntry: ScoringEntry = {
+      ...entry,
+      id: uid(),
+      added_at: new Date().toISOString(),
+    };
+    patchPeriod(periodId, { entries: [...period.entries, newEntry] });
+  }
+
+  function removeEntry(periodId: string, entryId: string) {
+    const period = periods.find((p) => p.id === periodId);
+    if (!period) return;
+    patchPeriod(periodId, {
+      entries: period.entries.filter((e) => e.id !== entryId),
+    });
+  }
+
+  function lockPeriod(periodId: string) {
+    const period = periods.find((p) => p.id === periodId);
+    if (!period) return;
+    const final = applyCaps(period.entries, period.scheme);
+    patchPeriod(periodId, {
+      status: "locked",
+      locked_at: new Date().toISOString(),
+      final_delta_pct: final,
+    });
+  }
+
+  function reopenPeriod(periodId: string) {
+    patchPeriod(periodId, {
+      status: "draft",
+      locked_at: undefined,
+      final_delta_pct: undefined,
+    });
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 flex items-center justify-between gap-4">
+        <div>
+          <div className="text-sm font-semibold text-[#E5E5EA]">
+            {isPerPage
+              ? "Per-page contractor scheme"
+              : "Retainer contractor scheme"}
+          </div>
+          <div className="text-xs text-[#71757D] mt-1">
+            {isPerPage
+              ? "Score per build (max +25%, max -30%). Bonuses stack: early + zero revs + test win = +25%."
+              : "Score per month (max +33%, max -30%). Retention lever carries the largest bonus (+10% renewals)."}
+          </div>
+        </div>
+        {candidatePeriods.length > 0 && (
+          <select
+            value=""
+            onChange={(e) => {
+              if (e.target.value) addPeriod(e.target.value);
+              e.target.value = "";
+            }}
+            className="text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2 hover:border-[#383838]"
+          >
+            <option value="">+ Score new {isPerPage ? "build" : "month"}</option>
+            {candidatePeriods.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      {periods.length === 0 ? (
+        <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-8 text-center">
+          <p className="text-sm text-[#71757D] mb-2">
+            No scoring periods yet.
+          </p>
+          <p className="text-xs text-[#71757D]">
+            {candidatePeriods.length === 0
+              ? "Once this person ships kanban work, they'll show up here for scoring."
+              : `Pick a ${isPerPage ? "build" : "month"} above to draft a score from the kanban + retention data.`}
+          </p>
+        </div>
+      ) : (
+        periods.map((period) => (
+          <ScoringPeriodCard
+            key={period.id}
+            period={period}
+            scheme={scheme}
+            onPatch={(patch) => patchPeriod(period.id, patch)}
+            onAddManual={(entry) => addManualEntry(period.id, entry)}
+            onRemoveEntry={(entryId) => removeEntry(period.id, entryId)}
+            onLock={() => lockPeriod(period.id)}
+            onReopen={() => reopenPeriod(period.id)}
+          />
+        ))
+      )}
+    </div>
+  );
+}
+
+function ScoringPeriodCard({
+  period,
+  scheme,
+  onPatch,
+  onAddManual,
+  onRemoveEntry,
+  onLock,
+  onReopen,
+}: {
+  period: ScoringPeriod;
+  scheme: "per_page" | "retainer";
+  onPatch: (p: Partial<ScoringPeriod>) => void;
+  onAddManual: (entry: Omit<ScoringEntry, "id" | "added_at">) => void;
+  onRemoveEntry: (entryId: string) => void;
+  onLock: () => void;
+  onReopen: () => void;
+}) {
+  const sub = subtotals(period.entries);
+  const projected = applyCaps(period.entries, period.scheme);
+  const capped = projected !== sub.net;
+  const isLocked = period.status === "locked";
+  const displayDelta = isLocked ? (period.final_delta_pct ?? 0) : projected;
+
+  return (
+    <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-hidden">
+      {/* Header */}
+      <div className="px-5 py-4 border-b border-[#2A2A2A] flex items-center justify-between">
+        <div>
+          <div className="text-[11px] uppercase tracking-wider text-[#71757D]">
+            {scheme === "per_page" ? "Build" : "Month"}
+          </div>
+          <div className="text-base font-semibold text-[#E5E5EA]">
+            {period.period_key}
+          </div>
+        </div>
+        <div className="text-right">
+          <div className="text-[11px] uppercase tracking-wider text-[#71757D]">
+            {isLocked ? "Locked" : "Projected"}
+          </div>
+          <div
+            className={`text-3xl font-semibold tabular-nums ${
+              displayDelta > 0
+                ? "text-emerald-300"
+                : displayDelta < 0
+                ? "text-red-300"
+                : "text-[#E5E5EA]"
+            }`}
+          >
+            {displayDelta > 0 ? "+" : ""}
+            {displayDelta}%
+          </div>
+          {capped && !isLocked && (
+            <div className="text-[10px] uppercase tracking-wider text-amber-300 mt-0.5">
+              Capped (raw {sub.net > 0 ? "+" : ""}
+              {sub.net}%)
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Entries */}
+      <div>
+        {period.entries.length === 0 ? (
+          <div className="px-5 py-6 text-center text-xs text-[#71757D]">
+            No entries detected. Add a manual entry below to capture
+            anything kanban can't see (renewal, no-show, complaint).
+          </div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="bg-[#0C0C0C] text-[10px] uppercase tracking-wider text-[#71757D]">
+              <tr>
+                <th className="text-left px-5 py-2 font-semibold">Lever</th>
+                <th className="text-left px-5 py-2 font-semibold">Reason</th>
+                <th className="text-left px-5 py-2 font-semibold">Source</th>
+                <th className="text-right px-5 py-2 font-semibold">Δ%</th>
+                <th className="text-right px-5 py-2 font-semibold w-12"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {period.entries.map((e) => (
+                <tr
+                  key={e.id}
+                  className="border-t border-[#2A2A2A] hover:bg-[#0C0C0C]"
+                >
+                  <td className="px-5 py-2.5 text-[#71757D] capitalize">
+                    {e.lever}
+                  </td>
+                  <td className="px-5 py-2.5 text-[#E5E5EA]">
+                    {e.label}
+                    {e.reason && (
+                      <div className="text-xs text-[#71757D] mt-0.5">
+                        {e.reason}
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-5 py-2.5 text-[#71757D] text-xs">
+                    {e.source === "manual"
+                      ? "PM manual"
+                      : e.source === "auto_kanban"
+                      ? "Auto · kanban"
+                      : "Auto · retention"}
+                  </td>
+                  <td
+                    className={`px-5 py-2.5 text-right tabular-nums font-medium ${
+                      e.delta_pct > 0
+                        ? "text-emerald-300"
+                        : "text-red-300"
+                    }`}
+                  >
+                    {e.delta_pct > 0 ? "+" : ""}
+                    {e.delta_pct}%
+                  </td>
+                  <td className="px-5 py-2.5 text-right">
+                    {!isLocked && (
+                      <button
+                        onClick={() => onRemoveEntry(e.id)}
+                        className="text-[#71757D] hover:text-red-400"
+                        title="Remove entry"
+                      >
+                        <XCircleIcon className="size-4" />
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Add manual + lock */}
+      {!isLocked && (
+        <div className="px-5 py-4 border-t border-[#2A2A2A] bg-[#0C0C0C]/50">
+          <ManualEntryForm onAdd={onAddManual} />
+        </div>
+      )}
+
+      {/* Footer actions */}
+      <div className="px-5 py-3 border-t border-[#2A2A2A] flex items-center justify-between">
+        <div className="text-xs text-[#71757D]">
+          {isLocked
+            ? `Locked ${period.locked_at ? fmtDateUK(period.locked_at.slice(0, 10)) : ""}. 5-day dispute window from lock date.`
+            : `Status: draft. Sum +${sub.bonus}% bonus / ${sub.deduction}% deduction. Lock when ready to attach to an invoice.`}
+        </div>
+        {isLocked ? (
+          <button
+            onClick={onReopen}
+            className="inline-flex items-center gap-1.5 text-xs text-[#71757D] hover:text-white"
+          >
+            Reopen
+          </button>
+        ) : (
+          <button
+            onClick={onLock}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]"
+          >
+            <LockClosedIcon className="size-3.5" />
+            Lock at invoice
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ManualEntryForm({
+  onAdd,
+}: {
+  onAdd: (entry: Omit<ScoringEntry, "id" | "added_at">) => void;
+}) {
+  const [lever, setLever] = useState<"speed" | "quality" | "retention">("retention");
+  const [label, setLabel] = useState("");
+  const [delta, setDelta] = useState("");
+  const [reason, setReason] = useState("");
+
+  function submit() {
+    const n = parseFloat(delta);
+    if (!label.trim() || isNaN(n)) return;
+    onAdd({
+      lever,
+      label: label.trim(),
+      delta_pct: n,
+      source: "manual",
+      reason: reason.trim() || undefined,
+    });
+    setLabel("");
+    setDelta("");
+    setReason("");
+  }
+
+  return (
+    <div className="flex items-end gap-2 flex-wrap">
+      <div className="grow min-w-[180px]">
+        <label className="text-[10px] uppercase tracking-wider text-[#71757D] block mb-1">
+          Reason (what happened)
+        </label>
+        <input
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+          placeholder="e.g. Client renewed, contractor went dark, complaint received"
+          className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2"
+        />
+      </div>
+      <div className="w-32">
+        <label className="text-[10px] uppercase tracking-wider text-[#71757D] block mb-1">
+          Lever
+        </label>
+        <select
+          value={lever}
+          onChange={(e) =>
+            setLever(e.target.value as "speed" | "quality" | "retention")
+          }
+          className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2"
+        >
+          <option value="speed">Speed</option>
+          <option value="quality">Quality</option>
+          <option value="retention">Retention</option>
+        </select>
+      </div>
+      <div className="w-24">
+        <label className="text-[10px] uppercase tracking-wider text-[#71757D] block mb-1">
+          Δ %
+        </label>
+        <input
+          type="number"
+          value={delta}
+          onChange={(e) => setDelta(e.target.value)}
+          placeholder="+10"
+          className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2 tabular-nums"
+        />
+      </div>
+      <button
+        onClick={submit}
+        disabled={!label.trim() || !delta}
+        className="px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-[#2A2A2A] text-[#E5E5EA] hover:bg-[#383838] disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        Add
+      </button>
+    </div>
+  );
+}
+
+/* ─────────────── KPIs tab (read-only summary) ─────────────── */
+
+/* Per-person delivery summary pulled from kanban + scoring history.
+ * Read-only by design - it's the at-a-glance "how is this person
+ * doing" view. Numbers come from the same data the Scoring tab uses
+ * so there's no source-of-truth drift. */
+function KpisTab({ person }: { person: Person }) {
+  const { clients, pods } = useKanbanData();
+
+  const stats = useMemo(() => {
+    const people = [person];
+    let delivered = 0,
+      onTime = 0,
+      late = 0,
+      stuckInRev = 0,
+      testsWon = 0,
+      testsRun = 0,
+      currentlyOverdue = 0;
+    const today = new Date().toISOString().slice(0, 10);
+
+    for (const c of clients) {
+      for (const p of c.projects) {
+        for (const d of p.deliverables) {
+          const candidates = [
+            d.designer,
+            d.secondaryDesigner,
+            d.developer,
+            d.secondaryDeveloper,
+          ];
+          if (
+            !candidates.some(
+              (n) => personByKanbanName(n, people, pods)?.id === person.id,
+            )
+          ) {
+            continue;
+          }
+          const launch = (d.phaseHistory || []).find(
+            (e) => e.phase === "launch-testing",
+          );
+          if (launch) {
+            delivered += 1;
+            if (d.dueDate) {
+              if (launch.enteredAt <= d.dueDate) onTime += 1;
+              else late += 1;
+            }
+          } else {
+            /* Still in flight - is it overdue right now? */
+            if (d.dueDate && d.dueDate < today) currentlyOverdue += 1;
+          }
+          const revs = (d.phaseHistory || []).filter(
+            (e) =>
+              e.phase === "internal-revisions" ||
+              e.phase === "external-revisions",
+          ).length;
+          if (revs >= 3) stuckInRev += 1;
+          if (d.testResult) {
+            testsRun += 1;
+            if (d.testResult.outcome === "winner") testsWon += 1;
+          }
+        }
+      }
+    }
+
+    const onTimeRate = onTime + late === 0 ? null : Math.round((onTime / (onTime + late)) * 100);
+    const winRate = testsRun === 0 ? null : Math.round((testsWon / testsRun) * 100);
+    return {
+      delivered,
+      onTime,
+      late,
+      onTimeRate,
+      stuckInRev,
+      testsRun,
+      testsWon,
+      winRate,
+      currentlyOverdue,
+    };
+  }, [clients, pods, person]);
+
+  /* Scoring history rollup. */
+  const scoringRollup = useMemo(() => {
+    const periods = (person.scoring_periods || []).filter(
+      (p) => p.status === "locked",
+    );
+    if (periods.length === 0) return null;
+    const totalBonus = periods.reduce(
+      (s, p) => s + (p.final_delta_pct ?? 0),
+      0,
+    );
+    const avg = totalBonus / periods.length;
+    return { count: periods.length, total: totalBonus, avg };
+  }, [person.scoring_periods]);
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <SummaryCard
+          label="Delivered"
+          value={String(stats.delivered)}
+        />
+        <SummaryCard
+          label="On-time rate"
+          value={stats.onTimeRate == null ? "—" : `${stats.onTimeRate}%`}
+          tone={
+            stats.onTimeRate == null
+              ? "neutral"
+              : stats.onTimeRate >= 80
+              ? "positive"
+              : stats.onTimeRate >= 60
+              ? "neutral"
+              : "warn"
+          }
+        />
+        <SummaryCard
+          label="Currently overdue"
+          value={String(stats.currentlyOverdue)}
+          tone={stats.currentlyOverdue > 0 ? "warn" : "muted"}
+        />
+        <SummaryCard
+          label="3+ rev rounds"
+          value={String(stats.stuckInRev)}
+          tone={stats.stuckInRev > 0 ? "warn" : "muted"}
+        />
+        <SummaryCard
+          label="Tests run"
+          value={String(stats.testsRun)}
+        />
+        <SummaryCard
+          label="Tests won"
+          value={String(stats.testsWon)}
+          tone="positive"
+        />
+        <SummaryCard
+          label="Win rate"
+          value={stats.winRate == null ? "—" : `${stats.winRate}%`}
+          tone={stats.winRate != null && stats.winRate >= 30 ? "positive" : "neutral"}
+        />
+        <SummaryCard
+          label="Late deliveries"
+          value={String(stats.late)}
+          tone={stats.late > 0 ? "warn" : "muted"}
+        />
+      </div>
+
+      {scoringRollup && (
+        <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-5">
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-[#71757D] mb-2">
+            <SparklesIcon className="size-4" />
+            Contractor scheme rollup
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <div className="text-xs text-[#71757D]">Periods locked</div>
+              <div className="text-2xl font-semibold text-[#E5E5EA] tabular-nums">
+                {scoringRollup.count}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-[#71757D]">Total Δ% applied</div>
+              <div
+                className={`text-2xl font-semibold tabular-nums ${
+                  scoringRollup.total > 0
+                    ? "text-emerald-300"
+                    : scoringRollup.total < 0
+                    ? "text-red-300"
+                    : "text-[#E5E5EA]"
+                }`}
+              >
+                {scoringRollup.total > 0 ? "+" : ""}
+                {scoringRollup.total.toFixed(0)}%
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-[#71757D]">Average per period</div>
+              <div
+                className={`text-2xl font-semibold tabular-nums ${
+                  scoringRollup.avg > 0
+                    ? "text-emerald-300"
+                    : scoringRollup.avg < 0
+                    ? "text-red-300"
+                    : "text-[#E5E5EA]"
+                }`}
+              >
+                {scoringRollup.avg > 0 ? "+" : ""}
+                {scoringRollup.avg.toFixed(1)}%
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─────────────── Bonuses tab (audit log) ─────────────── */
+
+/* Append-only log of every bonus paid to this human. Three kinds:
+ *   - contractor_scheme: auto-created when a Scoring period is marked
+ *     paid from Inbox (links back via scoring_period_id)
+ *   - revenue_tier: 100k / 150k / 200k milestone hits for core_retainer
+ *   - adhoc: founder discretion / project bonus / holiday
+ *
+ * Past entries can't be edited - that would muddy the audit trail. To
+ * fix a mistake, delete the row + log a corrected one (delete is
+ * intentionally light-touch, no confirm modal, since the audit gets
+ * rebuilt next time the action runs). */
+function BonusesTab({
+  person,
+  onPatch,
+}: {
+  person: Person;
+  onPatch: (u: Partial<Person>) => void;
+}) {
+  const payments = person.bonus_payments || [];
+  const sorted = [...payments].sort((a, b) =>
+    b.paid_at.localeCompare(a.paid_at),
+  );
+
+  const totals = useMemo(() => {
+    const byCurrency = new Map<string, number>();
+    for (const p of payments) {
+      byCurrency.set(p.currency, (byCurrency.get(p.currency) ?? 0) + p.amount);
+    }
+    return Array.from(byCurrency.entries());
+  }, [payments]);
+
+  function logBonus(input: Omit<BonusPayment, "id" | "created_at">) {
+    const entry: BonusPayment = {
+      ...input,
+      id: uid(),
+      created_at: new Date().toISOString(),
+    };
+    onPatch({ bonus_payments: [entry, ...payments] });
+  }
+
+  function removeBonus(id: string) {
+    onPatch({ bonus_payments: payments.filter((b) => b.id !== id) });
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Totals header */}
+      {totals.length === 0 ? (
+        <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 text-xs text-[#71757D]">
+          No bonuses logged for {person.preferred_name || person.full_name} yet.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {totals.map(([cur, total]) => (
+            <SummaryCard
+              key={cur}
+              label={`Total paid (${cur})`}
+              value={fmtMoney(total, cur)}
+              tone="positive"
+            />
+          ))}
+          <SummaryCard
+            label="Payments logged"
+            value={String(payments.length)}
+          />
+        </div>
+      )}
+
+      {/* Log entry form */}
+      <LogBonusForm currency={person.compensation_currency || "GBP"} onSubmit={logBonus} />
+
+      {/* History */}
+      {sorted.length > 0 && (
+        <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-[#2A2A2A]">
+            <h3 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold">
+              History
+            </h3>
+          </div>
+          <table className="w-full text-sm">
+            <thead className="bg-[#0C0C0C] text-[10px] uppercase tracking-wider text-[#71757D]">
+              <tr>
+                <th className="text-left px-4 py-2 font-semibold">Paid</th>
+                <th className="text-left px-4 py-2 font-semibold">Kind</th>
+                <th className="text-left px-4 py-2 font-semibold">Reason</th>
+                <th className="text-right px-4 py-2 font-semibold">Amount</th>
+                <th className="text-left px-4 py-2 font-semibold">By</th>
+                <th className="text-right px-4 py-2 font-semibold w-12"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {sorted.map((b) => {
+                const today = new Date().toISOString().slice(0, 10);
+                const scheduled = b.paid_at > today;
+                return (
+                <tr
+                  key={b.id}
+                  className="border-t border-[#2A2A2A] hover:bg-[#0C0C0C]"
+                >
+                  <td className="px-4 py-2.5 text-[#71757D] tabular-nums whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      {fmtDateUK(b.paid_at)}
+                      <span
+                        className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                          scheduled
+                            ? "bg-amber-500/15 text-amber-300"
+                            : "bg-emerald-500/15 text-emerald-300"
+                        }`}
+                      >
+                        {scheduled ? "Scheduled" : "Paid"}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-2.5">
+                    <span className="text-[10px] uppercase tracking-wider text-[#71757D]">
+                      {b.kind === "contractor_scheme"
+                        ? "Scheme"
+                        : b.kind === "revenue_tier"
+                        ? `Tier${b.tier ? ` ${b.tier}k` : ""}`
+                        : "Ad-hoc"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2.5 text-[#E5E5EA]">
+                    {b.scoring_period_id ? (
+                      <Link
+                        href={`/company/people/${person.id}?tab=scoring`}
+                        className="hover:underline"
+                      >
+                        {b.reason}
+                      </Link>
+                    ) : (
+                      b.reason
+                    )}
+                  </td>
+                  <td className="px-4 py-2.5 text-right font-medium text-emerald-300 tabular-nums whitespace-nowrap">
+                    {fmtMoney(b.amount, b.currency)}
+                  </td>
+                  <td className="px-4 py-2.5 text-[#71757D] text-xs">
+                    {b.paid_by}
+                  </td>
+                  <td className="px-4 py-2.5 text-right">
+                    <button
+                      onClick={() => removeBonus(b.id)}
+                      className="text-[#71757D] hover:text-red-400"
+                      title="Remove entry"
+                    >
+                      <XCircleIcon className="size-4" />
+                    </button>
+                  </td>
+                </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LogBonusForm({
+  currency,
+  onSubmit,
+}: {
+  currency: string;
+  onSubmit: (b: Omit<BonusPayment, "id" | "created_at">) => void;
+}) {
+  const [amount, setAmount] = useState("");
+  const [paidAt, setPaidAt] = useState(new Date().toISOString().slice(0, 10));
+  const [kind, setKind] = useState<BonusKind>("adhoc");
+  const [tier, setTier] = useState<100 | 150 | 200>(100);
+  const [reason, setReason] = useState("");
+  const [paidBy, setPaidBy] = useState("Dylan");
+
+  function submit() {
+    const n = parseFloat(amount);
+    if (isNaN(n) || n <= 0 || !reason.trim()) return;
+    onSubmit({
+      kind,
+      amount: n,
+      currency,
+      paid_at: paidAt,
+      reason: reason.trim(),
+      tier: kind === "revenue_tier" ? tier : undefined,
+      paid_by: paidBy.trim() || "admin",
+    });
+    setAmount("");
+    setReason("");
+  }
+
+  return (
+    <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-5">
+      <h3 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-4">
+        Log a bonus payment
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
+        <div className="md:col-span-1">
+          <label className="text-[10px] uppercase tracking-wider text-[#71757D] block mb-1">
+            Paid on
+          </label>
+          <input
+            type="date"
+            value={paidAt}
+            onChange={(e) => setPaidAt(e.target.value)}
+            className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2"
+          />
+        </div>
+        <div className="md:col-span-1">
+          <label className="text-[10px] uppercase tracking-wider text-[#71757D] block mb-1">
+            Kind
+          </label>
+          <select
+            value={kind}
+            onChange={(e) => setKind(e.target.value as BonusKind)}
+            className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2"
+          >
+            <option value="adhoc">Ad-hoc</option>
+            <option value="revenue_tier">Revenue tier</option>
+            <option value="contractor_scheme">Contractor scheme</option>
+          </select>
+        </div>
+        {kind === "revenue_tier" && (
+          <div className="md:col-span-1">
+            <label className="text-[10px] uppercase tracking-wider text-[#71757D] block mb-1">
+              Tier
+            </label>
+            <select
+              value={tier}
+              onChange={(e) => setTier(parseInt(e.target.value) as 100 | 150 | 200)}
+              className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2"
+            >
+              <option value={100}>100k</option>
+              <option value={150}>150k</option>
+              <option value={200}>200k</option>
+            </select>
+          </div>
+        )}
+        <div className={kind === "revenue_tier" ? "md:col-span-2" : "md:col-span-3"}>
+          <label className="text-[10px] uppercase tracking-wider text-[#71757D] block mb-1">
+            Reason
+          </label>
+          <input
+            type="text"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="What's it for?"
+            className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2"
+          />
+        </div>
+        <div className="md:col-span-1">
+          <label className="text-[10px] uppercase tracking-wider text-[#71757D] block mb-1">
+            Amount ({currency})
+          </label>
+          <input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="0.00"
+            className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2 tabular-nums"
+          />
+        </div>
+      </div>
+      <div className="flex items-center justify-between mt-3 gap-3">
+        <input
+          type="text"
+          value={paidBy}
+          onChange={(e) => setPaidBy(e.target.value)}
+          placeholder="Logged by"
+          className="text-xs bg-[#0C0C0C] text-[#71757D] border border-[#2A2A2A] rounded-md px-2 py-1.5 w-32"
+        />
+        <button
+          onClick={submit}
+          disabled={!amount || !reason.trim()}
+          className="px-4 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA] disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Log payment
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────── Invite-to-launchpad button ─────────────── */
+
+/* Lives on the Overview tab Contact section. One click POSTs to
+ * /api/admin/invite-user which (server-side, with the service role
+ * key) creates the Auth user via inviteUserByEmail and adds them to
+ * the app_users allowlist. The user gets an email with a link to
+ * /login/reset-password where they set their password. Future
+ * logins use email + password.
+ *
+ * Access control: only emails on app_users can sign in afterwards
+ * (every sign-in path pre-checks). No one outside the allowlist can
+ * create or use an account through our UI. */
+function InviteButton({ person }: { person: Person }) {
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
+    "idle",
+  );
+  const [errMsg, setErrMsg] = useState("");
+  const [alreadyInvited, setAlreadyInvited] = useState<boolean>(false);
+  const [checking, setChecking] = useState(true);
+
+  const canInvite = !!person.email?.trim() && !alreadyInvited;
+
+  /* Pre-check the allowlist on render so the button shows
+   * "Already invited" if app_users already has this email - avoids
+   * a second invite email going out by accident. */
+  useEffect(() => {
+    let cancelled = false;
+    const email = person.email?.trim();
+    if (!email) {
+      setChecking(false);
+      return;
+    }
+    import("@/lib/auth/app-users").then(({ findAppUserByEmail }) => {
+      findAppUserByEmail(email)
+        .then((u) => {
+          if (cancelled) return;
+          setAlreadyInvited(!!u);
+        })
+        .finally(() => {
+          if (!cancelled) setChecking(false);
+        });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [person.email]);
+
+  async function send() {
+    if (!canInvite) return;
+    setStatus("sending");
+    setErrMsg("");
+    try {
+      const res = await fetch("/api/admin/invite-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: person.email,
+          name: person.full_name,
+          podMemberId: person.pod_member_id ?? null,
+        }),
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as {
+          error?: string;
+        };
+        throw new Error(body.error || `Invite failed (HTTP ${res.status})`);
+      }
+      setStatus("sent");
+    } catch (err) {
+      console.error("[invite] failed:", err);
+      setErrMsg(err instanceof Error ? err.message : "Invite failed.");
+      setStatus("error");
+    }
+  }
+
+  return (
+    <div className="pt-2">
+      <button
+        onClick={send}
+        disabled={!canInvite || checking || status === "sending" || status === "sent"}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-[#2A2A2A] text-[#E5E5EA] hover:bg-[#383838] disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        {alreadyInvited
+          ? "Already invited"
+          : status === "sending"
+          ? "Sending..."
+          : status === "sent"
+          ? "Invite sent"
+          : "Invite to launchpad"}
+      </button>
+      {!person.email?.trim() && (
+        <p className="text-[11px] text-[#71757D] mt-1">
+          Add an email above to enable invites.
+        </p>
+      )}
+      {alreadyInvited && status !== "sent" && (
+        <p className="text-[11px] text-[#71757D] mt-1">
+          This email is already on the launchpad allowlist. They can sign in or use Forgot password.
+        </p>
+      )}
+      {status === "sent" && (
+        <p className="text-[11px] text-emerald-300 mt-1.5">
+          Invite emailed to {person.email}. They&apos;ll click the link to
+          set their password, then sign in with email + password.
+        </p>
+      )}
+      {status === "error" && (
+        <p className="text-[11px] text-red-300 mt-1.5">{errMsg}</p>
+      )}
+    </div>
+  );
+}
+
 /* ─────────────── Shared field primitives ─────────────── */
 
 function Section({
@@ -899,9 +2474,11 @@ function AgreementsTab({ person }: { person: Person }) {
     });
   }, [person.id]);
 
-  const hasNda = agreements.some((a) => a.kind === "nda");
+  /* One contract per person now - the master template absorbs the
+   * old NDA + Contract pair. Legacy "nda" rows still display, just
+   * can't be re-created. */
   const hasContract = agreements.some((a) => a.kind === "contract");
-  const canGenerateMore = !hasNda || !hasContract;
+  const canGenerateMore = !hasContract;
 
   function onCreated(created: Agreement[]) {
     setAgreements((prev) => [...created, ...prev]);
@@ -970,7 +2547,7 @@ function AgreementsTab({ person }: { person: Person }) {
               onClick={() => setModalOpen(true)}
               className="w-full py-3 border border-dashed border-[#2A2A2A] rounded-xl text-[13px] text-[#71757D] hover:border-white hover:text-[#E5E5EA] transition-colors"
             >
-              + Generate {!hasNda && !hasContract ? "agreements" : !hasNda ? "NDA" : "contract"}
+              + Generate contract
             </button>
           )}
         </div>

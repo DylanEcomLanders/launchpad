@@ -53,6 +53,8 @@ export function useCurrentUser() {
 function isTeamAllowedPath(pathname: string): boolean {
   return (
     pathname === "/" ||
+    pathname === "/me" ||
+    pathname.startsWith("/me/") ||
     pathname === "/my-work" ||
     pathname === "/workspace" ||
     pathname.startsWith("/workspace/") ||
@@ -69,7 +71,7 @@ function isTeamAllowedPath(pathname: string): boolean {
   );
 }
 
-type Mode = "magic" | "password";
+type Mode = "credentials" | "magic" | "password";
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const [authed, setAuthed] = useState(false);
@@ -81,12 +83,23 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const [shaking, setShaking] = useState(false);
   const [entering, setEntering] = useState(false);
 
-  // Magic-link state.
-  const [mode, setMode] = useState<Mode>("magic");
+  /* "credentials" is the new default: email + password via Supabase
+   * signInWithPassword. "magic" stays as a fallback for team members who
+   * haven't set a password yet, "password" is the shared admin access
+   * code (Dylan's existing flow). */
+  const [mode, setMode] = useState<Mode>("credentials");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [linkSent, setLinkSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [notAllowed, setNotAllowed] = useState(false);
+  const [credentialsError, setCredentialsError] = useState("");
+
+  /* Reset-password flow state. resetSent flips after we successfully
+   * email the recovery link; resetError surfaces wrong-email / network
+   * failures inline. */
+  const [resetSent, setResetSent] = useState(false);
+  const [resetError, setResetError] = useState("");
 
   /* Finalise a magic-link session: confirm the email is on the allowlist,
    * resolve the person, set role + identity + cookie. If the email isn't
@@ -175,9 +188,88 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     if (typeof window === "undefined") return;
     const path = window.location.pathname;
     if (path === "/team" || !isTeamAllowedPath(path)) {
-      window.location.replace("/my-work");
+      /* Team members land on /me - their hub with contract sign nudge
+       * + cards for tasks / invoice submission / profile. /my-work
+       * stays reachable from there. */
+      window.location.replace("/me");
     }
   }, [authed, role]);
+
+  /* Email + password sign-in. Supabase's signInWithPassword returns a
+   * session; the onAuthStateChange handler picks it up and runs the
+   * same allowlist check + role/identity setup as the magic-link path
+   * (finaliseMagicSession). We only surface error states here. */
+  const signInWithCredentials = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      const normalized = email.trim().toLowerCase();
+      if (!normalized || !password) return;
+      setCredentialsError("");
+      setNotAllowed(false);
+      setSending(true);
+      try {
+        /* Pre-check the allowlist so unrecognised emails fail with a
+         * useful message rather than a generic auth error. */
+        const allowed = await findAppUserByEmail(normalized);
+        if (!allowed) {
+          setNotAllowed(true);
+          setSending(false);
+          return;
+        }
+        const { error: pwErr } = await supabase.auth.signInWithPassword({
+          email: normalized,
+          password,
+        });
+        if (pwErr) {
+          setCredentialsError("Wrong email or password.");
+          setSending(false);
+          return;
+        }
+        /* On success the auth listener fires SIGNED_IN and finalises
+         * the session; we just clear the password from memory. */
+        setPassword("");
+      } catch (err) {
+        console.error("[auth] signInWithCredentials:", err);
+        setCredentialsError("Sign-in failed. Try again.");
+        setSending(false);
+      }
+    },
+    [email, password],
+  );
+
+  /* Forgot password - emails the user a reset link that lands on the
+   * /login/reset-password page with a recovery token. Same allowlist
+   * pre-check as sign-in so we don't email randos. */
+  const sendResetEmail = useCallback(async () => {
+    const normalized = email.trim().toLowerCase();
+    if (!normalized) {
+      setResetError("Enter your email first.");
+      return;
+    }
+    setResetError("");
+    setSending(true);
+    try {
+      const allowed = await findAppUserByEmail(normalized);
+      if (!allowed) {
+        setResetError("That email isn't on the team list.");
+        setSending(false);
+        return;
+      }
+      const { error: resetErr } = await supabase.auth.resetPasswordForEmail(
+        normalized,
+        {
+          redirectTo: window.location.origin + "/login/reset-password",
+        },
+      );
+      if (resetErr) throw resetErr;
+      setResetSent(true);
+    } catch (err) {
+      console.error("[auth] sendResetEmail:", err);
+      setResetError("Couldn't send the reset link. Try again.");
+    } finally {
+      setSending(false);
+    }
+  }, [email]);
 
   const sendMagicLink = useCallback(
     async (e: React.FormEvent) => {
@@ -238,10 +330,10 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       setRoleCookie("team");
       setEntering(true);
       setTimeout(() => {
-        // Members land on My Work unless they deep-linked to an allowed path.
+        // Members land on /me unless they deep-linked to an allowed path.
         const path = typeof window !== "undefined" ? window.location.pathname : "/";
         if (typeof window !== "undefined" && (path === "/team" || !isTeamAllowedPath(path))) {
-          window.location.replace("/my-work");
+          window.location.replace("/me");
           return;
         }
         setAuthed(true);
@@ -289,7 +381,95 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
           {/* Frosted glass login card */}
           <div className="bg-[#181818]/10 border border-white/20 rounded-2xl p-6 backdrop-blur-2xl shadow-[0_8px_60px_rgba(0,0,0,0.3)]">
-            {mode === "magic" ? (
+            {mode === "credentials" ? (
+              resetSent ? (
+                <div className="text-center py-4">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-400/20 border border-emerald-300/30 mb-4">
+                    <svg className="w-6 h-6 text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="m3 7 9 6 9-6M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7M3 7l9-4 9 4" /></svg>
+                  </div>
+                  <p className="text-sm text-white font-medium">Check your email</p>
+                  <p className="text-xs text-white/50 mt-1.5 leading-relaxed">
+                    We sent a password reset link to<br />
+                    <span className="text-white/80">{email.trim().toLowerCase()}</span>
+                  </p>
+                  <button
+                    onClick={() => { setResetSent(false); setResetError(""); }}
+                    className="text-xs text-white/40 hover:text-white/70 mt-5 transition-colors"
+                  >
+                    Back to sign in
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={signInWithCredentials} className="space-y-4">
+                  <div>
+                    <label className="block text-[11px] uppercase tracking-[0.12em] text-white/50 mb-2 font-medium">Email</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => { setEmail(e.target.value); setNotAllowed(false); setCredentialsError(""); }}
+                      placeholder="you@ecomlanders.com"
+                      autoFocus
+                      className="w-full px-4 py-3 bg-[#181818]/10 border border-white/15 focus:border-white/40 rounded-xl text-sm text-white focus:outline-none transition-all duration-200 placeholder:text-white/25 backdrop-blur-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] uppercase tracking-[0.12em] text-white/50 mb-2 font-medium">Password</label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => { setPassword(e.target.value); setCredentialsError(""); }}
+                      placeholder="••••••••"
+                      className="w-full px-4 py-3 bg-[#181818]/10 border border-white/15 focus:border-white/40 rounded-xl text-sm text-white focus:outline-none transition-all duration-200 placeholder:text-white/25 backdrop-blur-sm"
+                    />
+                    {notAllowed && (
+                      <p className="text-xs text-amber-300 mt-2 leading-relaxed">
+                        That email isn&apos;t on the team list. Ask an admin to invite you.
+                      </p>
+                    )}
+                    {credentialsError && (
+                      <p className="text-xs text-red-300 mt-2">{credentialsError}</p>
+                    )}
+                    {resetError && (
+                      <p className="text-xs text-amber-300 mt-2">{resetError}</p>
+                    )}
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={sending}
+                    className="w-full px-4 py-3 bg-white text-[#0C0C0C] text-sm font-semibold rounded-xl hover:bg-[#E5E5EA] active:scale-[0.98] transition-all duration-150 shadow-[0_4px_20px_rgba(0,0,0,0.15)] disabled:opacity-60"
+                  >
+                    {sending ? "Signing in..." : "Sign in"}
+                  </button>
+                  <div className="flex items-center justify-between gap-3">
+                    <button
+                      type="button"
+                      onClick={sendResetEmail}
+                      disabled={sending}
+                      className="text-[11px] text-white/40 hover:text-white/70 transition-colors"
+                    >
+                      Forgot password?
+                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => { setMode("magic"); setCredentialsError(""); setResetError(""); }}
+                        className="text-[11px] text-white/40 hover:text-white/70 transition-colors"
+                      >
+                        Email link
+                      </button>
+                      <span className="text-white/20">·</span>
+                      <button
+                        type="button"
+                        onClick={() => { setMode("password"); setCredentialsError(""); setResetError(""); }}
+                        className="text-[11px] text-white/40 hover:text-white/70 transition-colors"
+                      >
+                        Admin access
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              )
+            ) : mode === "magic" ? (
               linkSent ? (
                 <div className="text-center py-4">
                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-400/20 border border-emerald-300/30 mb-4">
@@ -335,13 +515,23 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                   >
                     {sending ? "Sending…" : "Email me a sign-in link"}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setMode("password")}
-                    className="w-full text-center text-[11px] text-white/40 hover:text-white/70 transition-colors"
-                  >
-                    Use access code instead
-                  </button>
+                  <div className="flex items-center justify-center gap-3 text-[11px] text-white/40">
+                    <button
+                      type="button"
+                      onClick={() => setMode("credentials")}
+                      className="hover:text-white/70 transition-colors"
+                    >
+                      Use password
+                    </button>
+                    <span className="text-white/20">·</span>
+                    <button
+                      type="button"
+                      onClick={() => setMode("password")}
+                      className="hover:text-white/70 transition-colors"
+                    >
+                      Admin access
+                    </button>
+                  </div>
                 </form>
               )
             ) : (
@@ -385,13 +575,23 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                 >
                   Continue
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setMode("magic")}
-                  className="w-full text-center text-[11px] text-white/40 hover:text-white/70 transition-colors"
-                >
-                  Sign in with email instead
-                </button>
+                <div className="flex items-center justify-center gap-3 text-[11px] text-white/40">
+                  <button
+                    type="button"
+                    onClick={() => setMode("credentials")}
+                    className="hover:text-white/70 transition-colors"
+                  >
+                    Email and password
+                  </button>
+                  <span className="text-white/20">·</span>
+                  <button
+                    type="button"
+                    onClick={() => setMode("magic")}
+                    className="hover:text-white/70 transition-colors"
+                  >
+                    Email link
+                  </button>
+                </div>
               </form>
             )}
           </div>
