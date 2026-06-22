@@ -29,9 +29,7 @@ import type { Pod } from "@/lib/pods-v2/types";
 import { personByPodMemberId } from "@/lib/people/resolver";
 import { inputClass, labelClass, selectClass } from "@/lib/form-styles";
 import { initials, deptColor, STATUS_BADGE } from "@/lib/company/ui";
-import { GenerateAgreementsModal } from "@/components/agreements/generate-modal";
-import { agreementStore } from "@/lib/agreements/data";
-import type { Agreement } from "@/lib/agreements/types";
+import { createContractDraftFromPerson } from "@/lib/agreements/data";
 import { useRouter } from "next/navigation";
 
 type View = "grid" | "table" | "byPod" | "byStatus";
@@ -47,10 +45,6 @@ export default function PeoplePanel() {
   const [typeFilter, setTypeFilter] = useState<"all" | EmploymentType>("all");
   const [statusFilter, setStatusFilter] = useState<"all" | PersonStatus>("all");
   const [showAdd, setShowAdd] = useState(false);
-  /* When the Add Person flow ticks "Generate contract", we stash the
-   * just-created Person here so the GenerateAgreementsModal pops with
-   * their details pre-filled. Cleared on close. */
-  const [contractTargetPerson, setContractTargetPerson] = useState<Person | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -126,22 +120,19 @@ export default function PeoplePanel() {
         console.error("[people] invite during add failed:", err);
       }
     }
-    /* Auto-open the contract review modal. The shared
-     * GenerateAgreementsModal handles template snapshotting + draft
-     * creation. We pass an empty `existing` array because this is a
-     * brand-new Person. */
+    /* Auto-create the contract draft inline (no modal) and route
+     * straight to the detail page. The detail page IS the preview
+     * + inline-edit surface, so an intermediate form would be
+     * redundant. Missing comp/address/etc render as readable
+     * placeholders the admin fills in via the Engagement Details
+     * panel. */
     if (options.generateContract) {
-      setContractTargetPerson(person);
-    }
-  }
-
-  function handleAgreementCreated(created: Agreement[]) {
-    const contract = created.find((a) => a.kind === "contract");
-    setContractTargetPerson(null);
-    /* Route straight into the contract detail page so admin can
-     * review clauses + share the signing link in one step. */
-    if (contract) {
-      router.push(`/company/contracts/${contract.id}`);
+      try {
+        const agreement = await createContractDraftFromPerson(person);
+        router.push(`/company/contracts/${agreement.id}`);
+      } catch (err) {
+        console.error("[people] contract draft create failed:", err);
+      }
     }
   }
 
@@ -279,19 +270,6 @@ export default function PeoplePanel() {
       )}
 
       {showAdd && <AddPersonModal onCancel={() => setShowAdd(false)} onSave={handleAdd} />}
-      {/* Contract auto-review. Opens when Add Person ticked "Generate
-       * contract draft" and the Person was created. Submission writes
-       * a draft Agreement, then we route into its detail page to
-       * share the signing link. */}
-      {contractTargetPerson && (
-        <GenerateAgreementsModal
-          open={true}
-          onClose={() => setContractTargetPerson(null)}
-          person={contractTargetPerson}
-          existing={[]}
-          onCreated={handleAgreementCreated}
-        />
-      )}
     </div>
   );
 }
