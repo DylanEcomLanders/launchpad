@@ -603,38 +603,59 @@ h1, h2, h3, h4, h5, h6 {
 
   /* ── Printable document mode ──
    * Any element wrapped in .printable-document is the ONLY thing
-   * that prints. Used by /company/contracts/[id] → Download PDF, the
-   * audit reports, and any future "save this view as PDF" flows.
+   * that prints. Used by /company/contracts/[id] → Download PDF and
+   * any future "save this view as PDF" flows.
    *
-   * Hides app chrome (header, sidebar, modals, buttons) by ditching
-   * everything else. The doc itself flips to a white-page / black-ink
-   * skin so it reads like a real legal document, not a dark dashboard
-   * panel. */
+   * Hides app chrome (header, sidebar, modals, buttons) and flips
+   * the doc to a clean white-page / black-ink skin so it reads like
+   * a real legal document, not a dark dashboard panel. The blanket
+   * "* color black + transparent bg" rule beats Tailwind's arbitrary
+   * dark utilities (bg-[#181818], text-[#E5E5EA] etc.) which is why
+   * we need the wildcard + !important.
+   *
+   * Important: the wrapper uses position:absolute with top:0/left:0/
+   * width:100% but NO bottom/inset constraint. inset:0 fixes the box
+   * to the viewport rectangle which clipped the contract to 1 page.
+   * Without a bottom bound the content flows to its natural height
+   * across as many printed pages as it needs. */
+  html, body { background: white !important; }
   body * { visibility: hidden; }
-  .printable-document, .printable-document * { visibility: visible; }
+  .printable-document, .printable-document * { visibility: visible !important; }
+  .printable-document, .printable-document * {
+    color: #111 !important;
+    background: transparent !important;
+    border-color: #d0d0d0 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
   .printable-document {
     position: absolute;
-    inset: 0;
-    background: #ffffff !important;
-    color: #111111 !important;
-    padding: 24px 32px;
+    top: 0;
+    left: 0;
     width: 100%;
-    max-width: none;
+    background: white !important;
+    padding: 0 !important;
   }
-  .printable-document h1,
-  .printable-document h2,
-  .printable-document h3,
-  .printable-document h4,
-  .printable-document p,
-  .printable-document li,
-  .printable-document div,
-  .printable-document span {
-    color: #111111 !important;
-    background: transparent !important;
+  /* Article wrapper inside RenderedDocument carries the dashboard
+   * card padding + rounded corners - reset to a clean print layout
+   * so it reads as a document, not a card. */
+  .printable-document article {
+    border-radius: 0 !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
   .printable-document a {
     color: #1d4ed8 !important;
     text-decoration: underline;
+  }
+  /* Don't break a clause across pages if it fits whole. */
+  .printable-document li,
+  .printable-document h1,
+  .printable-document h2,
+  .printable-document h3 {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
   @page {
     size: A4;
