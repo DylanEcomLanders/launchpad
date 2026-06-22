@@ -18,6 +18,7 @@ import {
   CheckIcon,
   PaperAirplaneIcon,
   XCircleIcon,
+  ArrowDownTrayIcon,
 } from "@heroicons/react/24/outline";
 import { agreementStore, nowISO } from "@/lib/agreements/data";
 import type { Agreement } from "@/lib/agreements/types";
@@ -179,6 +180,18 @@ export default function ContractDetailPage() {
                 </>
               )}
             </button>
+            {/* Download = browser print-to-PDF. The .printable-document
+             * wrapper + the @media print stylesheet (globals.css) hide
+             * the rest of the page and render just the contract on a
+             * clean A4 white page. The Save-as-PDF option in every
+             * modern browser does the rest. */}
+            <button
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-1.5 px-3 bg-[#0F0F10] ring-1 ring-white/[0.08] text-[#E5E5EA] text-[13px] font-medium rounded-lg hover:ring-white/[0.16] transition-all shrink-0"
+              title="Download PDF (Cmd+P → Save as PDF)"
+            >
+              <ArrowDownTrayIcon className="size-3.5" /> PDF
+            </button>
           </div>
           <p className="text-[11px] text-[#71757D] mt-2 leading-relaxed">
             Share this URL with{" "}
@@ -266,8 +279,12 @@ export default function ContractDetailPage() {
         </div>
       )}
 
-      {/* Rendered document */}
-      <RenderedDocument agreement={agreement} />
+      {/* Rendered document. Wrapped in .printable-document so the
+       * @media print stylesheet (globals.css) hides everything else
+       * on the page when you Cmd+P → Save as PDF. */}
+      <div className="printable-document">
+        <RenderedDocument agreement={agreement} />
+      </div>
 
       {/* Footer actions */}
       <div className="mt-6 flex items-center justify-between gap-3">

@@ -47,6 +47,9 @@ export function buildPlaceholderMap(agreement: Agreement): Record<string, string
       agreement.person_employment_type === "employee" ? "employee" : "contractor",
     start_date: fmtDate(agreement.start_date),
     effective_date: fmtDate(agreement.created_at),
+    /* Today's date in the contract preamble ("THIS AGREEMENT is dated...").
+     * Falls back to created_at if missing. */
+    agreement_date: fmtDate(agreement.created_at),
     comp_amount: agreement.comp_amount != null
       ? fmtMoney(agreement.comp_amount, agreement.comp_currency || "GBP").replace(/[£$€]/, "")
         .replace(/,/g, ",")
@@ -64,6 +67,21 @@ export function buildPlaceholderMap(agreement: Agreement): Record<string, string
         : agreement.comp_frequency === "per_invoice"
         ? "invoice"
         : agreement.comp_frequency || "month",
+    /* New Engagement Schedule placeholders. Admin can override per
+     * agreement when richer fields land on the row; for now sensible
+     * defaults keep the rendered doc readable rather than littered
+     * with raw {{ placeholders }}. */
+    contractor_company: agreement.contractor_company || "N/A (sole trader)",
+    contractor_address: agreement.contractor_address || "[to be confirmed]",
+    operating_as: agreement.operating_as || "Sole trader",
+    reporting_to: agreement.reporting_to || "Dylan Evans",
+    services_description:
+      agreement.services_description ||
+      "Conversion design, development, strategy and / or CSM work as agreed on assignment.",
+    vat_status: agreement.vat_status || "Not VAT registered",
+    restriction_months: agreement.restriction_months
+      ? String(agreement.restriction_months)
+      : "6",
   };
 }
 

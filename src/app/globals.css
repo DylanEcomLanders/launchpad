@@ -600,6 +600,46 @@ h1, h2, h3, h4, h5, h6 {
   /* Force every block onto its own page-break boundary if it asks for it. */
   .print\:break-before-page { break-before: page; }
   .print\:break-after-page { break-after: page; }
+
+  /* ── Printable document mode ──
+   * Any element wrapped in .printable-document is the ONLY thing
+   * that prints. Used by /company/contracts/[id] → Download PDF, the
+   * audit reports, and any future "save this view as PDF" flows.
+   *
+   * Hides app chrome (header, sidebar, modals, buttons) by ditching
+   * everything else. The doc itself flips to a white-page / black-ink
+   * skin so it reads like a real legal document, not a dark dashboard
+   * panel. */
+  body * { visibility: hidden; }
+  .printable-document, .printable-document * { visibility: visible; }
+  .printable-document {
+    position: absolute;
+    inset: 0;
+    background: #ffffff !important;
+    color: #111111 !important;
+    padding: 24px 32px;
+    width: 100%;
+    max-width: none;
+  }
+  .printable-document h1,
+  .printable-document h2,
+  .printable-document h3,
+  .printable-document h4,
+  .printable-document p,
+  .printable-document li,
+  .printable-document div,
+  .printable-document span {
+    color: #111111 !important;
+    background: transparent !important;
+  }
+  .printable-document a {
+    color: #1d4ed8 !important;
+    text-decoration: underline;
+  }
+  @page {
+    size: A4;
+    margin: 18mm 16mm;
+  }
 }
 
 /* Marquee scroll for logo strips */
