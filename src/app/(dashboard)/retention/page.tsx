@@ -9,8 +9,9 @@ import {
 import { notifyAlertHook } from "@/lib/retention/alert-hook";
 import { BAND_META, HealthPill, PillarDots, UpsellBadge, StatCard, renewalLabel, fmtDate, fmtAgo, fmtMoney } from "./ui";
 import { ClientDetail } from "./client-detail";
+import { LiveOpsTab } from "./live-ops-tab";
 
-type Tab = "health" | "alerts" | "renewals";
+type Tab = "health" | "alerts" | "renewals" | "live";
 type SortKey = "health" | "renewal" | "mrr" | "name";
 const BAND_RANK: Record<HealthBand, number> = { red: 0, amber: 1, green: 2 };
 
@@ -71,6 +72,7 @@ export default function RetentionPage() {
     { key: "health", label: "Health" },
     { key: "alerts", label: "Alerts", badge: alerts.length },
     { key: "renewals", label: "Renewals & upsell" },
+    { key: "live", label: "Live ops" },
   ];
 
   return (
@@ -119,6 +121,7 @@ export default function RetentionPage() {
       )}
       {tab === "alerts" && <AlertsTab alerts={alerts} onOpen={setOpenId} />}
       {tab === "renewals" && <RenewalsTab rows={renewalPipeline} onOpen={setOpenId} />}
+      {tab === "live" && <LiveOpsTab />}
 
       {openRow && data && (
         <ClientDetail

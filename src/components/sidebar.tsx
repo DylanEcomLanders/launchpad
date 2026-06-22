@@ -211,13 +211,14 @@ const adminItem = {
   href: "/company",
   icon: <BuildingOffice2Icon className="size-4" />,
 };
-/* Sales — Ajay's one-stop surface for the sales motion: pipeline +
- * outreach + comms + portfolio. Points at /pipeline today (new lead
- * kanban from the Hero Offer build); will promote to /sales once the
- * in-progress sales-dashboard branch is merged. */
+/* Sales — Ajay's one-stop surface for the sales motion. /sales is
+ * the canonical dashboard (KPIs + funnel + pipeline kanban +
+ * inbox), wired to the live leads + proposals tables via the
+ * real-source adapter. /pipeline (the lead-detail tool) is still
+ * reachable, just sub-route inside this surface. */
 const salesItem = {
   label: "Sales",
-  href: "/pipeline",
+  href: "/sales",
   icon: <RocketLaunchIcon className="size-4" />,
 };
 /* Training — knowledge / learning hub. Will land on canonical /training
