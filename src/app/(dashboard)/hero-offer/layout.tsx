@@ -23,7 +23,7 @@ import {
 type Tab = "start" | "acquisition" | "execution" | "retention";
 
 const TABS: { id: Tab; label: string; icon: typeof HomeIcon; href: string }[] = [
-  { id: "start",       label: "Start here",  icon: HomeIcon,                href: "/hero-offer" },
+  { id: "start",       label: "The Offer",   icon: HomeIcon,                href: "/hero-offer" },
   { id: "acquisition", label: "Acquisition", icon: MegaphoneIcon,           href: "/hero-offer/acquisition" },
   { id: "execution",   label: "Execution",   icon: WrenchScrewdriverIcon,   href: "/hero-offer/execution" },
   { id: "retention",   label: "Retention",   icon: HeartIcon,               href: "/hero-offer/retention" },

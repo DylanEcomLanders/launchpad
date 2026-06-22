@@ -16,7 +16,7 @@ create index if not exists proposals_updated_at_idx
 
 alter table proposals enable row level security;
 
-create policy if not exists "anon read proposals"
-  on proposals for select to anon using (true);
-create policy if not exists "anon write proposals"
-  on proposals for all   to anon using (true) with check (true);
+drop policy if exists "anon read proposals" on proposals;
+create policy "anon read proposals" on proposals for select to anon using (true);
+drop policy if exists "anon write proposals" on proposals;
+create policy "anon write proposals" on proposals for all   to anon using (true) with check (true);

@@ -15,7 +15,7 @@ create index if not exists test_wins_updated_at_idx on test_wins (updated_at des
 
 alter table test_wins enable row level security;
 
-create policy if not exists "anon read test_wins"
-  on test_wins for select to anon using (true);
-create policy if not exists "anon write test_wins"
-  on test_wins for all   to anon using (true) with check (true);
+drop policy if exists "anon read test_wins" on test_wins;
+create policy "anon read test_wins" on test_wins for select to anon using (true);
+drop policy if exists "anon write test_wins" on test_wins;
+create policy "anon write test_wins" on test_wins for all   to anon using (true) with check (true);

@@ -16,7 +16,7 @@ create index if not exists leads_updated_at_idx on leads (updated_at desc);
 
 alter table leads enable row level security;
 
-create policy if not exists "anon read leads"
-  on leads for select to anon using (true);
-create policy if not exists "anon write leads"
-  on leads for all   to anon using (true) with check (true);
+drop policy if exists "anon read leads" on leads;
+create policy "anon read leads" on leads for select to anon using (true);
+drop policy if exists "anon write leads" on leads;
+create policy "anon write leads" on leads for all   to anon using (true) with check (true);

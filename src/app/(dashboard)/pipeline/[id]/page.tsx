@@ -31,6 +31,7 @@ import { discoveryAuditsStore, emptyAudit } from "@/lib/discovery-audits/data";
 import type { DiscoveryAudit } from "@/lib/discovery-audits/types";
 import { emptyProposal, proposalsStore } from "@/lib/proposals/data";
 import type { Proposal } from "@/lib/proposals/types";
+import { AttachmentsPanel } from "@/lib/attachments/attachments-panel";
 import {
   emptySalesCall,
   leadsStore,
@@ -621,6 +622,16 @@ export default function LeadDetailPage({
             ))}
           </ul>
         )}
+      </Section>
+
+      {/* Attachments - pointers to any artefact across Launchpad (audits,
+       * proposals, briefs, reports, decks, plus external URLs). */}
+      <Section title="Attachments">
+        <AttachmentsPanel
+          parentType="lead"
+          parentId={lead.id}
+          attachedBy={lead.owner}
+        />
       </Section>
 
       {/* Notes */}

@@ -38,7 +38,37 @@ import type {
 } from "@/lib/hero-offer/types";
 import { SectionCard } from "@/lib/hero-offer/section-card";
 import { ResourceList } from "@/lib/hero-offer/resource-list";
+import { ToolCardGrid, type ToolCard } from "@/lib/hero-offer/tool-card-grid";
 import { inputClass, textareaClass } from "@/lib/form-styles";
+import {
+  DocumentMagnifyingGlassIcon,
+  DocumentTextIcon,
+  TagIcon,
+  ChatBubbleLeftRightIcon,
+  PresentationChartLineIcon,
+  DocumentDuplicateIcon,
+  TrophyIcon,
+  EnvelopeIcon,
+  CheckBadgeIcon,
+  CalculatorIcon,
+} from "@heroicons/react/24/outline";
+
+/* Every tool that lives in the Acquisition stage. live = working
+ * today; shell = scaffolded, polish later. Order: existing tools
+ * (proven flows) first, then the shells. */
+const ACQUISITION_TOOLS: ToolCard[] = [
+  { href: "/tools/discovery-audit", label: "Discovery Audit", blurb: "£1k pre-signup audit builder + public deck output.", icon: DocumentMagnifyingGlassIcon, status: "live" },
+  { href: "/tools/proposals", label: "Proposals", blurb: "Tier picker + terms + guarantee + shareable proposal page.", icon: DocumentTextIcon, status: "live" },
+  { href: "/pricing", label: "Price list", blurb: "Public-facing 3-tier pricing page with à la carte builds.", icon: TagIcon, status: "live", external: true },
+  { href: "/hero-offer/acquisition/objections", label: "Objection library", blurb: "Every objection + the response that lands. Searchable mid-call.", icon: ChatBubbleLeftRightIcon, status: "shell" },
+  { href: "/hero-offer/acquisition/sales-deck", label: "Sales deck", blurb: "Live-call deck the closer drives.", icon: PresentationChartLineIcon, status: "shell" },
+  { href: "/hero-offer/acquisition/pitch-deck", label: "Pitch deck", blurb: "Leave-behind deck for warm leads + inbox-readers.", icon: DocumentDuplicateIcon, status: "shell" },
+  { href: "/hero-offer/acquisition/proof-deck", label: "Proof deck", blurb: "Wins reel + case studies. Top-of-funnel proof.", icon: TrophyIcon, status: "shell" },
+  { href: "/hero-offer/acquisition/one-pager", label: "One-pager", blurb: "Single-page pitch. Cold-outreach attachment.", icon: DocumentTextIcon, status: "shell" },
+  { href: "/hero-offer/acquisition/outreach", label: "Cold outreach", blurb: "4-touch cadence + copy-paste email/LinkedIn templates.", icon: EnvelopeIcon, status: "shell" },
+  { href: "/hero-offer/acquisition/qualification", label: "Qualification script", blurb: "6 discovery questions + the answers we want.", icon: CheckBadgeIcon, status: "shell" },
+  { href: "/hero-offer/acquisition/tier-fit", label: "Tier-fit calculator", blurb: "Revenue + ambition in → tier + ROI math out.", icon: CalculatorIcon, status: "shell" },
+];
 
 export default function AcquisitionPage() {
   const role = useRole();
@@ -223,6 +253,16 @@ export default function AcquisitionPage() {
 
   return (
     <div className="space-y-10">
+      {/* TOOL GRID - the working surface for everything Acquisition. The
+       * playbook text below is reference; the grid is what gets clicked. */}
+      <section>
+        <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3 flex items-center gap-2">
+          <span className="size-2 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
+          Tools
+        </h2>
+        <ToolCardGrid cards={ACQUISITION_TOOLS} accent="emerald" />
+      </section>
+
       {/* GUIDANCE SECTIONS */}
       <section>
         <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3 flex items-center gap-2">

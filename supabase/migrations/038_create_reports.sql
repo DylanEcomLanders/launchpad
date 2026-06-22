@@ -15,7 +15,7 @@ create index if not exists reports_updated_at_idx on reports (updated_at desc);
 
 alter table reports enable row level security;
 
-create policy if not exists "anon read reports"
-  on reports for select to anon using (true);
-create policy if not exists "anon write reports"
-  on reports for all   to anon using (true) with check (true);
+drop policy if exists "anon read reports" on reports;
+create policy "anon read reports" on reports for select to anon using (true);
+drop policy if exists "anon write reports" on reports;
+create policy "anon write reports" on reports for all   to anon using (true) with check (true);

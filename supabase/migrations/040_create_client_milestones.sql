@@ -15,7 +15,7 @@ create index if not exists client_milestones_updated_at_idx
 
 alter table client_milestones enable row level security;
 
-create policy if not exists "anon read client_milestones"
-  on client_milestones for select to anon using (true);
-create policy if not exists "anon write client_milestones"
-  on client_milestones for all   to anon using (true) with check (true);
+drop policy if exists "anon read client_milestones" on client_milestones;
+create policy "anon read client_milestones" on client_milestones for select to anon using (true);
+drop policy if exists "anon write client_milestones" on client_milestones;
+create policy "anon write client_milestones" on client_milestones for all   to anon using (true) with check (true);

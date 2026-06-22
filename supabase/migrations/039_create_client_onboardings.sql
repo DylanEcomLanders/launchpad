@@ -15,7 +15,7 @@ create index if not exists client_onboardings_updated_at_idx
 
 alter table client_onboardings enable row level security;
 
-create policy if not exists "anon read client_onboardings"
-  on client_onboardings for select to anon using (true);
-create policy if not exists "anon write client_onboardings"
-  on client_onboardings for all   to anon using (true) with check (true);
+drop policy if exists "anon read client_onboardings" on client_onboardings;
+create policy "anon read client_onboardings" on client_onboardings for select to anon using (true);
+drop policy if exists "anon write client_onboardings" on client_onboardings;
+create policy "anon write client_onboardings" on client_onboardings for all   to anon using (true) with check (true);

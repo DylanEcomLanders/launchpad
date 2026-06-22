@@ -151,6 +151,58 @@ export default function StartHerePage() {
 
   return (
     <div className="space-y-6">
+      {/* "The Offer" brochure - what we do and why. Reads like the
+       * first 6 slides of a deck. Sits above all editable content. */}
+      <section className="bg-gradient-to-br from-emerald-500/[0.08] via-cyan-500/[0.08] to-sky-500/[0.08] rounded-2xl ring-1 ring-emerald-500/20 p-8">
+        <div className="text-[10px] uppercase tracking-[0.2em] font-semibold text-emerald-300/80 mb-4">
+          The Conversion Engine
+        </div>
+        <h2 className="text-3xl md:text-4xl font-semibold mb-3 bg-gradient-to-r from-white via-emerald-100 to-cyan-100 bg-clip-text text-transparent leading-tight">
+          We turn the traffic you already pay for into revenue.
+        </h2>
+        <p className="text-sm md:text-base text-[#9CA3AF] leading-relaxed max-w-2xl">
+          One programme. A full conversion team — design, dev, copy, CRO — embedded inside your business on a monthly system. Not consultancy, not vendor: a partnership built to compound.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-8">
+          <div className="bg-[#0F0F10]/60 rounded-xl p-4 ring-1 ring-white/[0.04]">
+            <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">Entry</div>
+            <div className="text-2xl font-semibold text-[#E5E5EA]">£5k<span className="text-sm text-[#71757D]">/mo</span></div>
+            <p className="text-[11px] text-[#9CA3AF] mt-1">2 pages + 2 tests / month</p>
+          </div>
+          <div className="bg-gradient-to-br from-emerald-500/15 to-cyan-500/15 rounded-xl p-4 ring-1 ring-emerald-500/30">
+            <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">Core</div>
+            <div className="text-2xl font-semibold text-[#E5E5EA]">£10k<span className="text-sm text-[#71757D]">/mo</span></div>
+            <p className="text-[11px] text-[#9CA3AF] mt-1">4 pages + 4 tests / month</p>
+          </div>
+          <div className="bg-[#0F0F10]/60 rounded-xl p-4 ring-1 ring-white/[0.04]">
+            <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">VIP</div>
+            <div className="text-2xl font-semibold text-[#E5E5EA]">£15k<span className="text-sm text-[#71757D]">/mo</span></div>
+            <p className="text-[11px] text-[#9CA3AF] mt-1">6 pages + 12 tests / month</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+          <div className="bg-[#0F0F10]/60 rounded-xl p-4 ring-1 ring-white/[0.04]">
+            <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">North Star</div>
+            <div className="text-sm text-[#E5E5EA] font-medium">Conversion rate.</div>
+            <p className="text-[11px] text-[#9CA3AF] mt-1">The one metric we measure ourselves on. CR up = revenue up at the same ad spend.</p>
+          </div>
+          <div className="bg-[#0F0F10]/60 rounded-xl p-4 ring-1 ring-white/[0.04]">
+            <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">The guarantee</div>
+            <div className="text-sm text-[#E5E5EA] font-medium">Measurable CR lift in 90 days, or we keep working free.</div>
+            <p className="text-[11px] text-[#9CA3AF] mt-1">You ship what we recommend. We hit the number.</p>
+          </div>
+        </div>
+
+        <div className="bg-[#0F0F10]/60 rounded-xl p-4 ring-1 ring-white/[0.04] mt-3">
+          <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">Who it&apos;s for</div>
+          <p className="text-sm text-[#E5E5EA] leading-relaxed">
+            Shopify brands at £200k/mo+ with paid traffic dependency. Founders or CMOs with conversion-rate ambition and the bandwidth to actually ship what we recommend.
+          </p>
+        </div>
+      </section>
+
       {/* Playbook-wide resources */}
       {hydrated && (isAdmin || rootResources.length > 0) && (
         <div className="bg-[#0F0F10] rounded-2xl p-5 ring-1 ring-white/[0.04]">

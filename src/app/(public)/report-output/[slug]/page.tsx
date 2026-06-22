@@ -6,7 +6,7 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { ChartPieIcon } from "@heroicons/react/24/outline";
+import { ArrowDownTrayIcon, ChartPieIcon } from "@heroicons/react/24/outline";
 import { reportsStore } from "@/lib/reports/data";
 import type { Report } from "@/lib/reports/types";
 
@@ -31,6 +31,12 @@ export default function ReportOutputPage({ params }: { params: Promise<{ slug: s
   return (
     <div className="min-h-screen bg-[#080808] text-[#E5E5EA]">
       <div className="pointer-events-none fixed inset-0 -z-10 opacity-40" style={{ backgroundImage: "radial-gradient(circle at 80% 0%, rgba(14,165,233,0.12) 0%, transparent 50%)" }} />
+      <div className="max-w-3xl mx-auto px-6 pt-6 flex justify-end print:hidden">
+        <button onClick={() => window.print()} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white/10 text-white hover:bg-white/15 ring-1 ring-white/20">
+          <ArrowDownTrayIcon className="size-3.5" />
+          Download PDF
+        </button>
+      </div>
       <div className="max-w-3xl mx-auto px-6 py-12 space-y-10">
         <header>
           <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-sky-300/80 font-semibold mb-4">

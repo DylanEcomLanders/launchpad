@@ -14,7 +14,7 @@ create index if not exists briefs_updated_at_idx on briefs (updated_at desc);
 
 alter table briefs enable row level security;
 
-create policy if not exists "anon read briefs"
-  on briefs for select to anon using (true);
-create policy if not exists "anon write briefs"
-  on briefs for all   to anon using (true) with check (true);
+drop policy if exists "anon read briefs" on briefs;
+create policy "anon read briefs" on briefs for select to anon using (true);
+drop policy if exists "anon write briefs" on briefs;
+create policy "anon write briefs" on briefs for all   to anon using (true) with check (true);

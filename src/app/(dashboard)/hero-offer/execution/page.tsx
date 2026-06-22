@@ -23,6 +23,15 @@ import {
   PencilSquareIcon,
   ArrowTopRightOnSquareIcon,
   DocumentMagnifyingGlassIcon,
+  DocumentDuplicateIcon,
+  MapIcon,
+  BeakerIcon,
+  ChartBarSquareIcon,
+  ChartPieIcon,
+  RocketLaunchIcon,
+  ArrowRightCircleIcon,
+  ClockIcon,
+  Squares2X2Icon,
 } from "@heroicons/react/24/outline";
 import { useRole } from "@/components/auth-gate";
 import {
@@ -35,7 +44,20 @@ import {
 import { seedExecutionLayers } from "@/lib/hero-offer/seed";
 import type { OfferLayer, OfferResource } from "@/lib/hero-offer/types";
 import { ResourceList } from "@/lib/hero-offer/resource-list";
+import { ToolCardGrid, type ToolCard } from "@/lib/hero-offer/tool-card-grid";
 import { inputClass, textareaClass, labelClass } from "@/lib/form-styles";
+
+const EXECUTION_TOOLS: ToolCard[] = [
+  { href: "/tools/briefs", label: "Briefs", blurb: "Design / Dev / Hypothesis briefs as fillable forms.", icon: DocumentDuplicateIcon, status: "live" },
+  { href: "/tools/roadmap", label: "Roadmap", blurb: "30/60/90 plan per client, ICE-scored.", icon: MapIcon, status: "live" },
+  { href: "/tools/tests", label: "Test tracker", blurb: "Every live test + write-up + significance.", icon: BeakerIcon, status: "live" },
+  { href: "/tools/throughput", label: "Throughput", blurb: "Per-tier pages + tests delivered this month.", icon: ChartBarSquareIcon, status: "live" },
+  { href: "/tools/reports", label: "Reports", blurb: "Weekly / monthly / QBR auto-generator.", icon: ChartPieIcon, status: "live" },
+  { href: "/hero-offer/execution/kickoff-deck", label: "Kickoff deck", blurb: "First-week presentation for new clients.", icon: RocketLaunchIcon, status: "shell" },
+  { href: "/hero-offer/execution/handoffs", label: "Hand-off checklists", blurb: "Design → Dev → QA → Client. Stops the 'I thought you had it' bugs.", icon: ArrowRightCircleIcon, status: "shell" },
+  { href: "/hero-offer/execution/standup", label: "Standup template", blurb: "Daily pod standup script. 10 minutes, one round.", icon: ClockIcon, status: "shell" },
+  { href: "/hero-offer/execution/variant-templates", label: "Variant templates", blurb: "Standard starting points the design team forks from.", icon: Squares2X2Icon, status: "shell" },
+];
 
 export default function ExecutionPage() {
   const role = useRole();
@@ -126,37 +148,28 @@ export default function ExecutionPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="text-sm text-[#9CA3AF] max-w-3xl">
-        Every layer of the conversion engine, with what&apos;s included,
-        what gets delivered, how long it takes, and the bar to hit for
-        each. This is the team&apos;s spec.
-      </div>
+    <div className="space-y-10">
+      {/* TOOL GRID - the working surface for Execution. Layer cards
+       * below stay as the spec; the grid is what gets clicked. */}
+      <section>
+        <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3 flex items-center gap-2">
+          <span className="size-2 rounded-full bg-gradient-to-br from-cyan-500 to-teal-600 shadow-[0_0_12px_rgba(6,182,212,0.6)]" />
+          Tools
+        </h2>
+        <ToolCardGrid cards={EXECUTION_TOOLS} accent="cyan" />
+      </section>
 
-      {/* Tools that operationalise this stage. Grows as Phase 3 ships
-          the roadmap builder, brief builders, test tracker, reports. */}
-      {isAdmin && (
-        <div className="bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 rounded-xl ring-1 ring-emerald-500/20 p-4 flex items-center gap-3">
-          <div className="size-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-[0_8px_24px_rgba(16,185,129,0.3)] shrink-0">
-            <DocumentMagnifyingGlassIcon className="size-4.5 text-white" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold mb-0.5">
-              Execution tools
-            </div>
-            <div className="text-sm text-[#E5E5EA]">
-              Run a paid Discovery Audit through the systemised builder.
-            </div>
-          </div>
-          <Link
-            href="/tools/discovery-audit"
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA] shrink-0"
-          >
-            Open builder
-            <ArrowTopRightOnSquareIcon className="size-3" />
-          </Link>
-        </div>
-      )}
+      {/* Layer-card section header */}
+      <section>
+        <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3 flex items-center gap-2">
+          <span className="size-2 rounded-full bg-gradient-to-br from-cyan-500 to-teal-600 shadow-[0_0_12px_rgba(6,182,212,0.6)]" />
+          Conversion engine layers
+        </h2>
+        <p className="text-sm text-[#9CA3AF] max-w-3xl mb-4">
+          Every layer of the conversion engine, with what&apos;s included,
+          what gets delivered, how long it takes, and the bar to hit for
+          each. This is the team&apos;s spec.
+        </p>
 
       <div className="space-y-3">
         {layers.length === 0 ? (
@@ -209,6 +222,7 @@ export default function ExecutionPage() {
           </button>
         )}
       </div>
+      </section>
     </div>
   );
 }

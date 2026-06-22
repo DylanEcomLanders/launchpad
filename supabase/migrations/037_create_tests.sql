@@ -14,7 +14,7 @@ create index if not exists ab_tests_updated_at_idx on ab_tests (updated_at desc)
 
 alter table ab_tests enable row level security;
 
-create policy if not exists "anon read ab_tests"
-  on ab_tests for select to anon using (true);
-create policy if not exists "anon write ab_tests"
-  on ab_tests for all   to anon using (true) with check (true);
+drop policy if exists "anon read ab_tests" on ab_tests;
+create policy "anon read ab_tests" on ab_tests for select to anon using (true);
+drop policy if exists "anon write ab_tests" on ab_tests;
+create policy "anon write ab_tests" on ab_tests for all   to anon using (true) with check (true);

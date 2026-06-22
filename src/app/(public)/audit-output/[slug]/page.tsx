@@ -16,6 +16,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
   ArrowRightIcon,
+  ArrowDownTrayIcon,
   ChartBarIcon,
   DocumentMagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
@@ -83,6 +84,17 @@ export default function AuditOutputPage({
             "radial-gradient(circle at 20% 0%, rgba(16,185,129,0.12) 0%, transparent 50%), radial-gradient(circle at 80% 100%, rgba(14,165,233,0.10) 0%, transparent 50%)",
         }}
       />
+
+      {/* Print: Download PDF button, top right. Hidden in print. */}
+      <div className="max-w-4xl mx-auto px-6 pt-6 flex justify-end print:hidden">
+        <button
+          onClick={() => window.print()}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white/10 text-white hover:bg-white/15 ring-1 ring-white/20"
+        >
+          <ArrowDownTrayIcon className="size-3.5" />
+          Download PDF
+        </button>
+      </div>
 
       <div className="max-w-4xl mx-auto px-6 py-12 space-y-12">
         {/* Cover */}

@@ -14,7 +14,7 @@ create index if not exists roadmaps_updated_at_idx on roadmaps (updated_at desc)
 
 alter table roadmaps enable row level security;
 
-create policy if not exists "anon read roadmaps"
-  on roadmaps for select to anon using (true);
-create policy if not exists "anon write roadmaps"
-  on roadmaps for all   to anon using (true) with check (true);
+drop policy if exists "anon read roadmaps" on roadmaps;
+create policy "anon read roadmaps" on roadmaps for select to anon using (true);
+drop policy if exists "anon write roadmaps" on roadmaps;
+create policy "anon write roadmaps" on roadmaps for all   to anon using (true) with check (true);

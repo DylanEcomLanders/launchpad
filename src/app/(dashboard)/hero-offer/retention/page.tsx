@@ -15,6 +15,16 @@ import {
   CheckIcon,
   XMarkIcon,
   PencilSquareIcon,
+  SparklesIcon,
+  CalendarDaysIcon,
+  ChatBubbleOvalLeftEllipsisIcon,
+  TrophyIcon,
+  AcademicCapIcon,
+  DocumentTextIcon,
+  GiftIcon,
+  ChartBarIcon,
+  FlagIcon,
+  StarIcon,
 } from "@heroicons/react/24/outline";
 import { useRole } from "@/components/auth-gate";
 import {
@@ -36,9 +46,23 @@ import type {
 } from "@/lib/hero-offer/types";
 import { SectionCard } from "@/lib/hero-offer/section-card";
 import { ResourceList } from "@/lib/hero-offer/resource-list";
+import { ToolCardGrid, type ToolCard } from "@/lib/hero-offer/tool-card-grid";
 import { inputClass, textareaClass, labelClass } from "@/lib/form-styles";
 
 const DEFAULT_DAYS = [30, 90, 180, 365];
+
+const RETENTION_TOOLS: ToolCard[] = [
+  { href: "/tools/onboarding", label: "Onboarding", blurb: "First-week wow checklist per client.", icon: SparklesIcon, status: "live" },
+  { href: "/tools/lifecycle", label: "Lifecycle milestones", blurb: "Day 30 / 90 / 180 / 365 tracking per client.", icon: CalendarDaysIcon, status: "live" },
+  { href: "/tools/cadence", label: "Cadence + at-risk", blurb: "Comms log + 3 risk signals.", icon: ChatBubbleOvalLeftEllipsisIcon, status: "live" },
+  { href: "/tools/test-wins", label: "Test wins", blurb: "Case study inbox - capture winners as they happen.", icon: TrophyIcon, status: "live" },
+  { href: "/knowledge", label: "Brain library", blurb: "Searchable test learnings across all clients.", icon: AcademicCapIcon, status: "live" },
+  { href: "/tools/proposals", label: "Renewal proposals", blurb: "+ Renewal button on signed proposals carries scope forward.", icon: DocumentTextIcon, status: "live" },
+  { href: "/hero-offer/retention/30-day-deck", label: "Day 30 deck", blurb: "First-month retro: what we shipped, what we learned.", icon: GiftIcon, status: "shell" },
+  { href: "/hero-offer/retention/90-day-deck", label: "Day 90 deck", blurb: "Renewal anchor + the case for continuing.", icon: ChartBarIcon, status: "shell" },
+  { href: "/hero-offer/retention/180-day-deck", label: "Day 180 deck", blurb: "Case study angle + referral ask.", icon: StarIcon, status: "shell" },
+  { href: "/hero-offer/retention/365-day-deck", label: "Day 365 deck", blurb: "Annual review + multi-year framing.", icon: FlagIcon, status: "shell" },
+];
 
 export default function RetentionPage() {
   const role = useRole();
@@ -204,6 +228,16 @@ export default function RetentionPage() {
 
   return (
     <div className="space-y-10">
+      {/* TOOL GRID - the working surface for Retention. Sections + the
+       * lifecycle milestones below stay as the spec. */}
+      <section>
+        <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3 flex items-center gap-2">
+          <span className="size-2 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 shadow-[0_0_12px_rgba(14,165,233,0.6)]" />
+          Tools
+        </h2>
+        <ToolCardGrid cards={RETENTION_TOOLS} accent="sky" />
+      </section>
+
       {/* GUIDANCE SECTIONS */}
       <section>
         <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3 flex items-center gap-2">
