@@ -107,9 +107,14 @@ This Agreement sets out the terms on which Team Member will perform services for
       body: `All work product produced by Team Member in connection with their engagement (including but not limited to designs, code, copy, research, test plans, and analysis) is the property of Company on creation. Team Member assigns to Company all rights, title, and interest in such work product, including all intellectual property rights, and waives any moral rights they may have in such work product to the fullest extent permitted by law.`,
     },
     {
-      id: "ct-7",
-      heading: "Confidentiality",
-      body: `Team Member's obligations regarding Company's confidential information are set out in the separate Non-Disclosure Agreement between the parties, which is incorporated into this Agreement by reference. In the event of any conflict between the two documents, the more restrictive obligation applies.`,
+      id: "ct-7a",
+      heading: "Confidential information",
+      body: `"Confidential Information" means any non-public information disclosed by Company to Team Member, in any form (verbal, written, electronic, visual), that relates to Company's business, clients, products, services, finances, employees, contractors, methods, processes, or strategy, including but not limited to: client lists and engagements; pricing, sales, and revenue figures; internal tooling and codebases; design systems, templates, and creative work in progress; conversion data and test results; operational systems and SOPs; and the existence and content of this Agreement itself.`,
+    },
+    {
+      id: "ct-7b",
+      heading: "Confidentiality obligations",
+      body: `Team Member agrees to: (a) hold all Confidential Information in strict confidence; (b) use Confidential Information solely for the purpose of performing services for Company; (c) not disclose any Confidential Information to any third party without Company's prior written consent; (d) take all reasonable precautions to prevent unauthorised disclosure or use; and (e) not copy, reproduce, or store Confidential Information except as strictly required to perform services for Company. These obligations continue during the engagement and for three (3) years after termination. Confidential Information does not include information that was lawfully in Team Member's possession before disclosure, becomes publicly available through no fault of Team Member, is lawfully received from a third party not under a duty of confidentiality, or is independently developed without reference to Confidential Information.`,
     },
     {
       id: "ct-8",

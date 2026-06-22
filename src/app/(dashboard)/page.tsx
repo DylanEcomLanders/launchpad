@@ -6,12 +6,10 @@ import {
   PhotoIcon,
   TrophyIcon,
   TagIcon,
-  PresentationChartLineIcon,
-  BookmarkIcon,
   ClipboardDocumentCheckIcon,
-  DocumentTextIcon,
   ChatBubbleOvalLeftIcon,
   MagnifyingGlassIcon,
+  CreditCardIcon,
 } from "@heroicons/react/24/outline";
 
 /* ── Toolkit ──
@@ -34,6 +32,10 @@ interface ToolkitStage {
   tiles: ToolkitTile[];
 }
 
+/* The lean Toolkit: only the 6 tools Dylan reaches for daily. Everything
+ * else was shelved 2026-06-22 - see memory/project_toolkit_shelved.md for
+ * the full list + intent to resurface later. The shelved tools all still
+ * work via direct URL + command palette (⌘K), they're just not pinned here. */
 const toolkitStages: ToolkitStage[] = [
   {
     number: "01",
@@ -43,8 +45,6 @@ const toolkitStages: ToolkitStage[] = [
       { title: "Portfolio", subtitle: "Live page library", href: "/portfolio", icon: PhotoIcon },
       { title: "Case studies", subtitle: "Results & outcomes", href: "/case-studies", icon: TrophyIcon },
       { title: "Price list", subtitle: "Client-facing, shareable", href: "/pricing", icon: TagIcon },
-      { title: "Sales deck", subtitle: "Conversion engine", href: "/conversion-pack", icon: PresentationChartLineIcon },
-      { title: "Cheat sheet", subtitle: "Conversion engine", href: "/internal/cheatsheet/conversion-engine", icon: BookmarkIcon },
     ],
   },
   {
@@ -52,8 +52,8 @@ const toolkitStages: ToolkitStage[] = [
     name: "Onboard",
     descriptor: "From signed to kicked off",
     tiles: [
+      { title: "Payment link", subtitle: "Whop checkout URL", href: "/tools/payment-link", icon: CreditCardIcon },
       { title: "Onboarding form", subtitle: "Client intake", href: "/onboard", icon: ClipboardDocumentCheckIcon },
-      { title: "Invoice generator", subtitle: "Create & send", href: "/tools/invoice-generator", icon: DocumentTextIcon },
     ],
   },
   {

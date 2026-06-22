@@ -35,7 +35,7 @@ import {
   todayISO,
 } from "@/lib/agreements/data";
 import { peopleStore, uid as personUid } from "@/lib/company/data";
-import type { Agreement, AgreementKind } from "@/lib/agreements/types";
+import type { Agreement } from "@/lib/agreements/types";
 import type { Person, PaymentFrequency } from "@/lib/company/types";
 
 interface Props {
@@ -98,7 +98,6 @@ export function QuickAddAgreementModal({
   const matchedAgreements = matchedPerson
     ? existingAgreements.filter((a) => a.person_id === matchedPerson.id)
     : [];
-  const matchedHasNda = matchedAgreements.some((a) => a.kind === "nda");
   const matchedHasContract = matchedAgreements.some((a) => a.kind === "contract");
 
   async function submit() {
@@ -145,45 +144,38 @@ export function QuickAddAgreementModal({
         await peopleStore.create(person);
       }
 
-      /* Generate whichever agreements don't already exist for this
-       * person. Most commonly that's both, but if we reused an
-       * existing person it might be one or zero. */
-      const kinds: AgreementKind[] = [];
-      if (!matchedHasNda) kinds.push("nda");
-      if (!matchedHasContract) kinds.push("contract");
-      if (kinds.length === 0) {
-        setError("This person already has both an NDA and a contract.");
+      /* Contract is the only kind we generate now. The master
+       * template covers comp + confidentiality + IP + term so one
+       * signed doc replaces the old NDA + Contract pair. */
+      if (matchedHasContract) {
+        setError("This person already has a contract.");
         setSubmitting(false);
         return;
       }
 
-      const created: Agreement[] = [];
-      for (const kind of kinds) {
-        const tpl = await ensureTemplate(kind);
-        const startDate = person.start_date || todayISO();
-        const agreement: Agreement = {
-          id: agreementUid(),
-          kind,
-          person_id: person.id,
-          person_full_name: person.full_name,
-          person_email: person.email,
-          person_employment_type: person.employment_type,
-          person_job_title: role.trim(),
-          comp_amount: kind === "contract" ? amt : undefined,
-          comp_currency: kind === "contract" ? compCurrency : undefined,
-          comp_frequency: kind === "contract" ? compFrequency : undefined,
-          start_date: kind === "contract" ? startDate : undefined,
-          template_revision: tpl.revision,
-          template_body: structuredClone(tpl.body),
-          status: "draft",
-          created_at: now,
-          updated_at: now,
-        };
-        await agreementStore.create(agreement);
-        created.push(agreement);
-      }
+      const tpl = await ensureTemplate("contract");
+      const startDate = person.start_date || todayISO();
+      const agreement: Agreement = {
+        id: agreementUid(),
+        kind: "contract",
+        person_id: person.id,
+        person_full_name: person.full_name,
+        person_email: person.email,
+        person_employment_type: person.employment_type,
+        person_job_title: role.trim(),
+        comp_amount: amt,
+        comp_currency: compCurrency,
+        comp_frequency: compFrequency,
+        start_date: startDate,
+        template_revision: tpl.revision,
+        template_body: structuredClone(tpl.body),
+        status: "draft",
+        created_at: now,
+        updated_at: now,
+      };
+      await agreementStore.create(agreement);
 
-      onCreated(created);
+      onCreated([agreement]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Generation failed");
       setSubmitting(false);
@@ -223,15 +215,7 @@ export function QuickAddAgreementModal({
               {matchedPerson && (
                 <p className="text-[11px] text-[#92591A] mt-1.5 leading-relaxed">
                   This name matches an existing team member ({matchedPerson.full_name}
-                  ). We&apos;ll generate the missing{" "}
-                  {!matchedHasNda && !matchedHasContract
-                    ? "NDA + contract"
-                    : !matchedHasNda
-                    ? "NDA"
-                    : !matchedHasContract
-                    ? "contract"
-                    : "nothing — both already exist"}{" "}
-                  for them.
+                  ). We&apos;ll {matchedHasContract ? "skip - they already have a contract" : "generate the contract for them"}.
                 </p>
               )}
             </div>
@@ -324,7 +308,7 @@ export function QuickAddAgreementModal({
                   !trimmedName ||
                   !role.trim() ||
                   !compAmount ||
-                  (matchedHasNda && matchedHasContract)
+                  matchedHasContract
                 }
                 className="px-3 py-1.5 bg-[#222222] text-[#E5E5EA] text-[13px] font-medium rounded-lg hover:bg-[#2A2A2A] transition-colors disabled:opacity-40"
               >

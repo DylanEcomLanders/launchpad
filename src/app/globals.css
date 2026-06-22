@@ -588,8 +588,46 @@ h1, h2, h3, h4, h5, h6 {
   animation: wv2-slide-in-right 180ms ease-out;
 }
 
+/* Print mode for the public output pages (/audit-output, /proposal-output,
+ * /brief-output, /report-output). Preserve background colours + gradients
+ * so the PDF matches what's seen on screen. Hide app chrome that doesn't
+ * belong on the printed page (Download PDF button, sidebar if any). */
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  /* Force every block onto its own page-break boundary if it asks for it. */
+  .print\:break-before-page { break-before: page; }
+  .print\:break-after-page { break-after: page; }
+}
+
 /* Marquee scroll for logo strips */
 @keyframes marquee {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
 }
+
+/* Hero Offer icon shimmer — diagonal light sweep across the gradient
+ * tile every ~3s. The element this rides on sets overflow:hidden so
+ * the sweep stays inside its rounded border. */
+@keyframes hero-offer-shimmer {
+  0%   { transform: translateX(-130%) skewX(-12deg); opacity: 0; }
+  20%  { opacity: 1; }
+  60%  { opacity: 1; }
+  100% { transform: translateX(130%) skewX(-12deg); opacity: 0; }
+}
+.animate-hero-offer-shimmer {
+  animation: hero-offer-shimmer 2.8s ease-in-out infinite;
+}
+
+/* Soft pulsing glow under the Hero Offer icon tile. Pairs with the
+ * shimmer for a "this surface is alive" feel. */
+@keyframes hero-offer-glow-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(6, 182, 212, 0.35); }
+  50%      { box-shadow: 0 0 14px rgba(6, 182, 212, 0.6); }
+}
+.animate-hero-offer-glow {
+  animation: hero-offer-glow-pulse 2.8s ease-in-out infinite;
+}
+

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import { StarIcon } from "@heroicons/react/24/solid";
 import {
   HomeIcon,
   Cog6ToothIcon,
@@ -118,11 +119,13 @@ export const shelvedItems: NavItem[] = [
   { label: "Referral Programme", href: "/referral-programme" },
 ];
 
-/* Mission Control — the kanban-style command surface over every client's
+/* Delivery — the kanban-style command surface over every client's
  * in-flight delivery work. Master view is the landing; drill into a single
- * client via the dropdown in the page header. */
+ * client via the dropdown in the page header. Renamed from "Project
+ * Delivery" to just "Delivery" since /workspace is now "Old Delivery"
+ * (legacy, still in use until manual data migration completes). */
 const missionControlItem = {
-  label: "Project Delivery",
+  label: "Delivery",
   href: "/kanban",
   icon: <ViewColumnsIcon className="size-4" />,
 };
@@ -164,8 +167,11 @@ const offerItem = {
   href: "/offer",
   icon: <SparklesIcon className="size-4" />,
 };
+/* Old Delivery — the previous /workspace surface, kept around until
+ * its in-flight projects are manually migrated to the Delivery kanban.
+ * Renamed from "Workspace" so its legacy status is obvious. */
 const workspaceItem = {
-  label: "Workspace",
+  label: "Old Delivery",
   href: "/workspace",
   icon: <Squares2X2Icon className="size-4" />,
 };
@@ -205,21 +211,47 @@ const adminItem = {
   href: "/company",
   icon: <BuildingOffice2Icon className="size-4" />,
 };
-/* Pitch — umbrella for client-facing pitch materials. Replaces the old
- * "Acquisition" section. Lands on /tools/portfolio with a PitchNav tab strip
- * over the top covering Offer / Portfolio / Case Studies / Quotes / Price List /
- * Sales Deck / Cheat Sheet. */
-const pitchItem = {
-  label: "Acquisition",
-  href: "/tools/portfolio",
-  icon: <BriefcaseIcon className="size-4" />,
+/* Sales — Ajay's one-stop surface for the sales motion. /sales is
+ * the canonical dashboard (KPIs + funnel + pipeline kanban +
+ * inbox), wired to the live leads + proposals tables via the
+ * real-source adapter. /pipeline (the lead-detail tool) is still
+ * reachable, just sub-route inside this surface. */
+const salesItem = {
+  label: "Sales",
+  href: "/sales",
+  icon: <RocketLaunchIcon className="size-4" />,
 };
-/* Training — knowledge / learning hub. Currently points at the wiki; future
- * tabs could cover Cheat Sheet, Funnel Playbook, articles. */
+/* Training — knowledge / learning hub. Will land on canonical /training
+ * once the surface consolidates wiki, SOPs, funnel knowledge, playbooks
+ * + brain library. Points at /wiki-v2 today as the closest existing
+ * surface so the link doesn't 404. */
 const trainingItem = {
   label: "Training",
   href: "/wiki-v2",
   icon: <AcademicCapIcon className="size-4" />,
+};
+/* Hero Offer - the conversion engine playbook house. One umbrella with
+ * Start here / Acquisition / Execution / Retention tabs inside. Sits
+ * in the Offer + Knowledge group. Visible to every role - the playbook
+ * is for everyone, edits are admin-only inside.
+ *
+ * Icon: gradient tile (emerald → cyan → sky, matching the Hero Offer
+ * page chrome) with a solid star inside. The one sidebar item that
+ * carries a hint of the colour identity of its destination - the
+ * playbook is special, the icon hints at it. */
+const heroOfferItem = {
+  label: "Hero Offer",
+  href: "/hero-offer",
+  icon: (
+    <span className="relative size-5 rounded-md bg-gradient-to-br from-emerald-400 via-cyan-400 to-sky-400 flex items-center justify-center shrink-0 overflow-hidden animate-hero-offer-glow">
+      <StarIcon className="size-3 text-white relative z-10 drop-shadow-[0_0_2px_rgba(255,255,255,0.6)]" />
+      {/* Diagonal light sweep across the tile every 2.8s */}
+      <span
+        aria-hidden
+        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/55 to-transparent animate-hero-offer-shimmer pointer-events-none"
+      />
+    </span>
+  ),
 };
 
 /* Toolbox — the day-to-day tools every team member needs, carried over from
@@ -245,14 +277,26 @@ const shortcutsItem = {
   icon: <BoltIcon className="size-4" />,
 };
 
-/* Team Tools — single pinned item replacing the old flat list of team
- * utilities. Lands on the first tool; a TeamToolsNav pill strip (mounted by
- * TeamToolsShell in the dashboard layout) rides above every /team/* route, so
- * Swipe File / Font Library / Submit Invoice / Payments tab in-page. */
+/* Team Tools — lands on the /team hub page, which is a card-grid
+ * of every team-facing surface (Pods, Task Board, Client Portals,
+ * Ops Wiki, Payments, Design Library, Swipe File, Fonts, Submit
+ * Invoice, etc). Single entry, rich internal nav. The TeamToolsNav
+ * pill strip still rides above /team/* routes for tab navigation. */
 const teamToolsItem = {
   label: "Team Tools",
-  href: teamItems[0].href,
+  href: "/team",
   icon: <PuzzlePieceIcon className="size-4" />,
+};
+
+/* Toolkit — lands on the / dashboard home, the admin utility-tool
+ * launcher (Payment Link / Invoice Generator / Dev Hours /
+ * Intelligems / Hook Generator / Scope Generator / Content DB etc).
+ * Was dropped in the 10-surface rewrite by mistake; restored here
+ * so the utility tools stay discoverable. */
+const toolkitItem = {
+  label: "Toolkit",
+  href: "/",
+  icon: <HomeIcon className="size-4" />,
 };
 
 export function Sidebar() {
@@ -291,29 +335,35 @@ export function Sidebar() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  /* Build the searchable index: pinned items + every visible lane child
-   * + shelved items (marked so they render with the Shelved badge). */
+  /* Build the searchable index: the 10 top-level surfaces + team tools +
+   * footer links. Mirrors the sidebar order top-down. */
   const paletteItems: CommandItem[] = [
-    { label: missionControlItem.label, href: missionControlItem.href, group: "Pinned", icon: missionControlItem.icon, keywords: ["kanban", "pipeline", "delivery", "board"] },
-    { label: homeItem.label, href: homeItem.href, group: "Pinned", icon: homeItem.icon, keywords: ["toolkit", "launcher"] },
     { label: myWorkItem.label, href: myWorkItem.href, group: "Pinned", icon: myWorkItem.icon, keywords: ["my tasks", "assigned"] },
-    { label: workspaceItem.label, href: workspaceItem.href, group: "Pinned", icon: workspaceItem.icon, keywords: ["pods", "clients", "delivery"] },
-    { label: wikiItem.label, href: wikiItem.href, group: "Pinned", icon: wikiItem.icon, keywords: ["ops wiki", "operations"] },
-    { label: shortcutsItem.label, href: shortcutsItem.href, group: "Pinned", icon: shortcutsItem.icon, keywords: ["quick", "tools", "favorites"] },
-    // Team utilities — searchable for everyone.
-    ...teamItems.map((i: NavItem) => ({ label: i.label, href: i.href, group: "Team" })),
-    // Admin-only entries below.
+    { label: heroOfferItem.label, href: heroOfferItem.href, group: "Pinned", icon: heroOfferItem.icon, keywords: ["conversion engine", "playbook", "offer"] },
+    { label: trainingItem.label, href: trainingItem.href, group: "Pinned", icon: trainingItem.icon, keywords: ["wiki", "sop", "knowledge", "playbook", "learning"] },
+    // Admin/CRO surfaces.
     ...(role !== "team"
       ? [
-          { label: offerItem.label, href: offerItem.href, group: "Pinned", icon: offerItem.icon },
-          { label: rdItem.label, href: rdItem.href, group: "Pinned", icon: rdItem.icon, keywords: ["research", "ideas"] },
-          ...visibleSections.flatMap((s) =>
-            s.items.map((i) => ({ label: i.label, href: i.href, group: s.title })),
-          ),
+          { label: missionControlItem.label, href: missionControlItem.href, group: "Pinned", icon: missionControlItem.icon, keywords: ["kanban", "delivery", "board", "project"] },
+          { label: workspaceItem.label, href: workspaceItem.href, group: "Pinned", icon: workspaceItem.icon, keywords: ["pods", "clients", "delivery", "legacy"] },
+          { label: kpiItem.label, href: kpiItem.href, group: "Pinned", icon: kpiItem.icon, keywords: ["metrics", "throughput", "on-time"] },
+          { label: salesItem.label, href: salesItem.href, group: "Pinned", icon: salesItem.icon, keywords: ["pipeline", "leads", "deals", "outreach"] },
+          { label: feedbackItem.label, href: feedbackItem.href, group: "Pinned", icon: feedbackItem.icon, keywords: ["retention", "csm", "client health"] },
+          { label: financeItem.label, href: financeItem.href, group: "Pinned", icon: financeItem.icon, keywords: ["invoices", "expenses", "vat"] },
         ]
       : []),
-    { label: "Changelog", href: "/changelog", group: "Pinned" },
-    ...(role === "admin" ? [{ label: "Settings", href: "/settings", group: "Pinned" }] : []),
+    ...(role === "admin"
+      ? [{ label: adminItem.label, href: adminItem.href, group: "Pinned", icon: adminItem.icon, keywords: ["company", "people", "hiring"] }]
+      : []),
+    ...(role !== "team"
+      ? [{ label: toolkitItem.label, href: toolkitItem.href, group: "Pinned", icon: toolkitItem.icon, keywords: ["tools", "launcher", "payment", "invoice", "intelligems"] }]
+      : []),
+    // Team utilities — searchable for everyone.
+    ...teamItems.map((i: NavItem) => ({ label: i.label, href: i.href, group: "Team" })),
+    // Footer / system.
+    { label: shortcutsItem.label, href: shortcutsItem.href, group: "System", icon: shortcutsItem.icon, keywords: ["quick", "tools", "favorites"] },
+    { label: "Changelog", href: "/changelog", group: "System" },
+    ...(role === "admin" ? [{ label: "Settings", href: "/settings", group: "System" }] : []),
   ];
 
   /* Accordion: opening a section closes every other one. Clicking the
@@ -516,47 +566,52 @@ export function Sidebar() {
         {/* Navigation. Search trigger lives in the top bar — open via window
             event dispatched there (or ⌘K from anywhere). */}
         <nav className="flex-1 overflow-y-auto py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {/* GROUP 1 — My Tasks alone at top (where team lands first). */}
+          {/* GROUP 1 — My Work: top for everyone. Personal surface. */}
           <div className="px-3 space-y-0.5">
             {renderTopLink(myWorkItem)}
           </div>
 
-          {/* GROUP 1.5 — Shortcuts: one pinned link. Lands at /shortcuts whose
-              layout owns the tab strip; the dashboard layer keeps that strip
-              mounted across every underlying tool route. */}
-          <div className="px-3 space-y-0.5 mt-6">
-            {renderTopLink(shortcutsItem)}
-          </div>
-
-          {/* GROUP 2 — Delivery: Project Delivery, Delivery KPIs, Workspace,
-              Onboarding. Delivery KPIs reflect the Project Delivery board;
-              Workspace stays here until its data layer is migrated. */}
+          {/* GROUP 2 — Delivery cluster: kanban (canonical) + Old Delivery
+              (legacy /workspace, until manual migration done) + KPIs (reads
+              kanban metrics). */}
           {role !== "team" && (
             <div className="px-3 space-y-0.5 mt-6">
               {renderTopLink(missionControlItem)}
-              {renderTopLink(kpiItem)}
               {renderTopLink(workspaceItem)}
-              {renderTopLink(onboardingItem)}
+              {renderTopLink(kpiItem)}
             </div>
           )}
 
-          {/* GROUP 3 — Growth + learning: Acquisition, Retention, Training.
-              Acquisition + Retention are admin/cro only; Training is for
-              everyone, so it renders for the team role too. */}
+          {/* GROUP 3 — Revenue surfaces: Sales (Ajay's home) + Retention
+              (CSM's home). Admin/CRO only - team doesn't run these. */}
+          {role !== "team" && (
+            <div className="px-3 space-y-0.5 mt-6">
+              {renderTopLink(salesItem)}
+              {renderTopLink(feedbackItem)}
+            </div>
+          )}
+
+          {/* GROUP 4 — Offer + Knowledge: Hero Offer (Conversion Engine
+              house, everyone) + Training (wiki/SOP/playbook home, everyone).
+              The two reference surfaces, tight scopes each. */}
           <div className="px-3 space-y-0.5 mt-6">
-            {role !== "team" && renderTopLink(pitchItem)}
-            {role !== "team" && renderTopLink(feedbackItem)}
+            {renderTopLink(heroOfferItem)}
             {renderTopLink(trainingItem)}
           </div>
 
-          {/* GROUP 4 — Team Tools: single item; the TeamToolsNav pill strip
-              rides above the /team/* routes (see TeamToolsShell in the layout). */}
+          {/* GROUP 5 — Hubs for sub-tools. Team Tools lands on /team
+              (card grid of team-facing surfaces). Toolkit lands on /
+              (card grid of admin utility tools: Payment Link, Invoice
+              Generator, Dev Hours, Intelligems demo, Hook Generator,
+              etc). Both keep the long tail discoverable without
+              spamming the sidebar. */}
           <div className="px-3 space-y-0.5 mt-6">
             {renderTopLink(teamToolsItem)}
+            {role !== "team" && renderTopLink(toolkitItem)}
           </div>
 
-          {/* GROUP 5 — admin-only bottom cluster: Finance (locked) directly
-              above Admin (locked). Both wear lock icons. */}
+          {/* GROUP 6 — Admin cluster: Finance (locked) above Admin
+              (locked, admin-only). Both wear lock icons. */}
           {role !== "team" && (
             <div className="px-3 space-y-0.5 mt-6">
               {renderTopLink(financeItem)}
@@ -602,16 +657,25 @@ export function Sidebar() {
           </div>
         )}
 
-        {/* Footer — version + Shelved link, with bottom padding so it clears the
-            QuickLinks floating button. */}
+        {/* Footer — version, Shortcuts, Shelved as small text links.
+            Shortcuts demoted here from a top-level pin to keep the main
+            nav at 10 surfaces flat. */}
         {!collapsed && (
-          <div className="px-4 pb-4 pt-1 flex items-center gap-2 shrink-0">
+          <div className="px-4 pb-4 pt-1 flex items-center gap-2 shrink-0 flex-wrap">
             <Link
               href="/changelog"
               onClick={() => setMobileOpen(false)}
               className="text-[11px] text-[#71757D] hover:text-white transition-colors"
             >
               Launchpad v1.0.0
+            </Link>
+            <span className="text-[10px] text-[#3F3F46]">·</span>
+            <Link
+              href="/shortcuts"
+              onClick={() => setMobileOpen(false)}
+              className="text-[11px] text-[#71757D] hover:text-white transition-colors"
+            >
+              Shortcuts
             </Link>
             <span className="text-[10px] text-[#3F3F46]">·</span>
             <Link

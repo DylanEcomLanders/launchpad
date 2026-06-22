@@ -554,6 +554,48 @@ function RosterEditor({ pods, onMutate }: { pods: Pod[]; onMutate: () => void })
   const [selected, setSelected] = useState<string | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  /* People list pulled from Admin. Used to power the per-slot Person
+   * picker so Admin/People is the source of truth for who occupies a
+   * pod slot. Lazy-loaded so this admin page doesnt pay for it on
+   * every render. */
+  const [people, setPeople] = useState<{ id: string; full_name: string }[]>([]);
+  useEffect(() => {
+    import("@/lib/company/data").then(({ peopleStore }) => {
+      peopleStore.getAll().then((all) => {
+        setPeople(
+          all
+            .filter((p) => p.status !== "left")
+            .map((p) => ({ id: p.id, full_name: p.full_name }))
+            .sort((a, b) => a.full_name.localeCompare(b.full_name)),
+        );
+      });
+    });
+  }, []);
+
+  function linkToPerson(member: PodMember, personId: string) {
+    if (personId === "") {
+      /* "TO HIRE" placeholder. */
+      updateMemberDetails(member.id, {
+        name: "TO HIRE",
+        is_placeholder: true,
+        person_id: "",
+      });
+      onMutate();
+      return;
+    }
+    if (personId === "__keep__") return;
+    const person = people.find((p) => p.id === personId);
+    if (!person) return;
+    /* Write both person_id (the bridge) AND name (the mirror used
+     * everywhere PodMember.name is read). Rename propagation in
+     * Admin keeps the mirror fresh. */
+    updateMemberDetails(member.id, {
+      name: person.full_name,
+      person_id: person.id,
+      is_placeholder: false,
+    });
+    onMutate();
+  }
 
   function handleClick(memberId: string) {
     if (!selected) {
@@ -662,20 +704,30 @@ function RosterEditor({ pods, onMutate }: { pods: Pod[]; onMutate: () => void })
                       </button>
                       <div className="min-w-0 flex-1">
                         {isRenaming ? (
-                          <input
+                          <select
                             autoFocus
-                            value={renameValue}
-                            onChange={(e) => setRenameValue(e.target.value)}
-                            onBlur={() => commitRename(m)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") commitRename(m);
-                              if (e.key === "Escape") {
-                                setRenamingId(null);
-                                setRenameValue("");
-                              }
+                            value={m.person_id || "__keep__"}
+                            onChange={(e) => {
+                              linkToPerson(m, e.target.value);
+                              setRenamingId(null);
                             }}
+                            onBlur={() => setRenamingId(null)}
                             className="w-full rounded-md border border-white bg-[#181818] px-1.5 py-0.5 text-xs"
-                          />
+                          >
+                            <option value="__keep__">
+                              {m.person_id
+                                ? "(keep linked Person)"
+                                : `(keep "${m.name}")`}
+                            </option>
+                            <option value="">TO HIRE (placeholder)</option>
+                            <optgroup label="People in Admin">
+                              {people.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                  {p.full_name}
+                                </option>
+                              ))}
+                            </optgroup>
+                          </select>
                         ) : (
                           <button
                             type="button"
@@ -684,14 +736,22 @@ function RosterEditor({ pods, onMutate }: { pods: Pod[]; onMutate: () => void })
                               setRenameValue(m.name);
                             }}
                             className="block w-full truncate text-left text-sm font-medium text-[#E5E5EA] hover:underline"
-                            title="Click to rename"
+                            title={
+                              m.person_id
+                                ? "Linked to Admin / People - click to change"
+                                : "Click to pick a Person from Admin"
+                            }
                           >
                             {m.name}
-                            {m.is_placeholder && (
+                            {m.is_placeholder ? (
                               <span className="ml-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-300">
                                 Placeholder
                               </span>
-                            )}
+                            ) : !m.person_id ? (
+                              <span className="ml-1.5 rounded-md border border-[#2A2A2A] bg-[#222222] px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-[#71757D]">
+                                Unlinked
+                              </span>
+                            ) : null}
                           </button>
                         )}
                         <select

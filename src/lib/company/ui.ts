@@ -13,9 +13,11 @@ export function deptColor(dept?: string): string {
 }
 
 export const STATUS_BADGE: Record<string, { bg: string; text: string; label: string }> = {
+  onboarding: { bg: "#E0E7FF", text: "#3730A3", label: "Onboarding" },
   active: { bg: "#D1FAE5", text: "#047857", label: "Active" },
   on_leave: { bg: "#FEF3C7", text: "#B45309", label: "On leave" },
   notice: { bg: "#FEE2E2", text: "#B91C1C", label: "Notice" },
+  offboarding: { bg: "#FFEFE0", text: "#D97746", label: "Offboarding" },
   left: { bg: "#E5E5EA", text: "#7A7A7A", label: "Left" },
 };
 

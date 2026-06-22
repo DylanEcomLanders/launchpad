@@ -26,7 +26,7 @@ import {
   nowISO,
   todayISO,
 } from "@/lib/agreements/data";
-import type { Agreement, AgreementKind } from "@/lib/agreements/types";
+import type { Agreement } from "@/lib/agreements/types";
 import type { Person, PaymentFrequency } from "@/lib/company/types";
 
 interface Props {
@@ -52,10 +52,10 @@ export function GenerateAgreementsModal({
   existing,
   onCreated,
 }: Props) {
-  const hasNda = existing.some((a) => a.kind === "nda");
+  /* Contract is the only kind we generate now - it absorbs the
+   * confidentiality / NDA clauses inline. Legacy "nda" rows still
+   * display via the read path; we just don't create new ones. */
   const hasContract = existing.some((a) => a.kind === "contract");
-
-  const [genNda, setGenNda] = useState(!hasNda);
   const [genContract, setGenContract] = useState(!hasContract);
 
   /* Contract details — defaulted from the Person row but overridable
@@ -77,7 +77,6 @@ export function GenerateAgreementsModal({
 
   useEffect(() => {
     if (open) {
-      setGenNda(!hasNda);
       setGenContract(!hasContract);
       setRole(person.job_title || "");
       setEmploymentType(person.employment_type);
@@ -90,58 +89,47 @@ export function GenerateAgreementsModal({
       setError("");
       setSubmitting(false);
     }
-  }, [open, person, hasNda, hasContract]);
+  }, [open, person, hasContract]);
 
   async function submit() {
     if (submitting) return;
-    if (!genNda && !genContract) {
-      setError("Pick at least one agreement to generate.");
+    if (!genContract || hasContract) {
+      setError("This person already has a contract.");
       return;
     }
-    if (genContract) {
-      if (!role.trim()) return setError("Role is required for the contract.");
-      const amt = Number(compAmount);
-      if (!Number.isFinite(amt) || amt <= 0) {
-        return setError("Compensation amount must be a positive number.");
-      }
-      if (!startDate) return setError("Start date is required for the contract.");
+    if (!role.trim()) return setError("Role is required for the contract.");
+    const amt = Number(compAmount);
+    if (!Number.isFinite(amt) || amt <= 0) {
+      return setError("Compensation amount must be a positive number.");
     }
+    if (!startDate) return setError("Start date is required for the contract.");
+
     setSubmitting(true);
     setError("");
     try {
-      const created: Agreement[] = [];
-      const kinds: AgreementKind[] = [];
-      if (genNda && !hasNda) kinds.push("nda");
-      if (genContract && !hasContract) kinds.push("contract");
-
-      for (const kind of kinds) {
-        const tpl = await ensureTemplate(kind);
-        const now = nowISO();
-        const agreement: Agreement = {
-          id: uid(),
-          kind,
-          person_id: person.id,
-          person_full_name: person.full_name,
-          person_email: person.email,
-          person_employment_type: employmentType,
-          person_job_title: kind === "contract" ? role.trim() : person.job_title,
-          /* Comp + start_date only persist on contracts; NDAs don't use
-           * those fields when rendering. */
-          comp_type: kind === "contract" ? person.compensation_type : undefined,
-          comp_amount: kind === "contract" ? Number(compAmount) : undefined,
-          comp_currency: kind === "contract" ? compCurrency : undefined,
-          comp_frequency: kind === "contract" ? compFrequency : undefined,
-          start_date: kind === "contract" ? startDate : undefined,
-          template_revision: tpl.revision,
-          template_body: structuredClone(tpl.body),
-          status: "draft",
-          created_at: now,
-          updated_at: now,
-        };
-        await agreementStore.create(agreement);
-        created.push(agreement);
-      }
-      onCreated(created);
+      const tpl = await ensureTemplate("contract");
+      const now = nowISO();
+      const agreement: Agreement = {
+        id: uid(),
+        kind: "contract",
+        person_id: person.id,
+        person_full_name: person.full_name,
+        person_email: person.email,
+        person_employment_type: employmentType,
+        person_job_title: role.trim(),
+        comp_type: person.compensation_type,
+        comp_amount: Number(compAmount),
+        comp_currency: compCurrency,
+        comp_frequency: compFrequency,
+        start_date: startDate,
+        template_revision: tpl.revision,
+        template_body: structuredClone(tpl.body),
+        status: "draft",
+        created_at: now,
+        updated_at: now,
+      };
+      await agreementStore.create(agreement);
+      onCreated([agreement]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Generation failed");
       setSubmitting(false);
@@ -171,39 +159,14 @@ export function GenerateAgreementsModal({
             </button>
           </div>
           <div className="p-6 space-y-5">
-            {/* Pick which agreements to generate */}
-            <div>
-              <label className={labelClass}>Generate</label>
-              <div className="space-y-2">
-                <label className={`flex items-center gap-2 ${hasNda ? "opacity-50" : ""}`}>
-                  <input
-                    type="checkbox"
-                    checked={genNda && !hasNda}
-                    disabled={hasNda}
-                    onChange={(e) => setGenNda(e.target.checked)}
-                    className="accent-[#1B1B1B]"
-                  />
-                  <span className="text-[14px] text-[#E5E5EA]">
-                    NDA{hasNda && " (already exists)"}
-                  </span>
-                </label>
-                <label className={`flex items-center gap-2 ${hasContract ? "opacity-50" : ""}`}>
-                  <input
-                    type="checkbox"
-                    checked={genContract && !hasContract}
-                    disabled={hasContract}
-                    onChange={(e) => setGenContract(e.target.checked)}
-                    className="accent-[#1B1B1B]"
-                  />
-                  <span className="text-[14px] text-[#E5E5EA]">
-                    Contract{hasContract && " (already exists)"}
-                  </span>
-                </label>
+            {hasContract && (
+              <div className="text-sm text-[#71757D] bg-[#0C0C0C] border border-[#2A2A2A] rounded-lg p-3">
+                This person already has a contract. View or edit it from the Agreements tab.
               </div>
-            </div>
+            )}
 
-            {/* Contract-specific fields, only when generating a contract */}
-            {genContract && !hasContract && (
+            {/* Contract details - the only kind we generate now */}
+            {!hasContract && (
               <div className="pt-4 border-t border-[#2A2A2A] space-y-4">
                 <div>
                   <label className={labelClass}>Role / job title</label>
@@ -301,7 +264,7 @@ export function GenerateAgreementsModal({
               </button>
               <button
                 onClick={submit}
-                disabled={submitting || (!genNda && !genContract) || (hasNda && hasContract)}
+                disabled={submitting || hasContract}
                 className="px-3 py-1.5 bg-[#222222] text-[#E5E5EA] text-[13px] font-medium rounded-lg hover:bg-[#2A2A2A] transition-colors disabled:opacity-40"
               >
                 {submitting ? "Generating..." : "Generate"}

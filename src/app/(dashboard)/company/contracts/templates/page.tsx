@@ -27,13 +27,10 @@ import {
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import { templateStore, ensureTemplate, uid, nowISO } from "@/lib/agreements/data";
-import type { AgreementKind, AgreementTemplate, Clause } from "@/lib/agreements/types";
-import { AGREEMENT_KIND_LABEL } from "@/lib/agreements/types";
+import type { AgreementTemplate, Clause } from "@/lib/agreements/types";
 import { inputClass, labelClass, selectClass, textareaClass } from "@/lib/form-styles";
 
 export default function TemplatesEditorPage() {
-  const [kind, setKind] = useState<AgreementKind>("contract");
-  const [ndaTpl, setNdaTpl] = useState<AgreementTemplate | null>(null);
   const [ctTpl, setCtTpl] = useState<AgreementTemplate | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -41,15 +38,14 @@ export default function TemplatesEditorPage() {
   const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
-    Promise.all([ensureTemplate("nda"), ensureTemplate("contract")]).then(([n, c]) => {
-      setNdaTpl(n);
+    ensureTemplate("contract").then((c) => {
       setCtTpl(c);
       setLoading(false);
     });
   }, []);
 
-  const current = kind === "nda" ? ndaTpl : ctTpl;
-  const setCurrent = kind === "nda" ? setNdaTpl : setCtTpl;
+  const current = ctTpl;
+  const setCurrent = setCtTpl;
 
   function patchBody<K extends keyof AgreementTemplate["body"]>(
     field: K,
@@ -146,25 +142,6 @@ export default function TemplatesEditorPage() {
           for any real engagement.</strong>{" "}
           They&apos;re a sensible UK micro-agency starting point, not legal advice.
         </div>
-      </div>
-
-      {/* Kind tabs */}
-      <div className="inline-flex border border-[#2A2A2A] rounded-lg p-1 mb-6 bg-[#181818]">
-        {(["contract", "nda"] as AgreementKind[]).map((k) => (
-          <button
-            key={k}
-            onClick={() => {
-              if (dirty && !confirm("You have unsaved changes. Switch tab?")) return;
-              setKind(k);
-              setDirty(false);
-            }}
-            className={`px-3 py-1.5 text-[13px] font-medium rounded-md transition-colors ${
-              kind === k ? "bg-white text-[#0C0C0C]" : "text-[#71757D] hover:text-[#E5E5EA]"
-            }`}
-          >
-            {AGREEMENT_KIND_LABEL[k]}
-          </button>
-        ))}
       </div>
 
       {/* Document title + revision */}

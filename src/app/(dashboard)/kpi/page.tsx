@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useKanbanData } from "@/lib/kanban/use-kanban-data";
 import { getDeliveryItems } from "@/lib/kpi/source";
+import { testsStore } from "@/lib/tests/data";
+import type { AbTest } from "@/lib/tests/types";
 import {
   computeSummary,
   computeOverdue,
@@ -152,6 +154,10 @@ export default function KpiPage() {
         />
       </div>
 
+      {/* Test programme stats - live tests + win rate over the same
+       * period as the delivery stats above. Reads ab_tests directly. */}
+      <TestStrip win={win} />
+
       <OverdueList
         rows={overdue}
         heading={win.isCurrent ? "Overdue right now" : `Overdue at ${win.label} close`}
@@ -165,6 +171,67 @@ export default function KpiPage() {
 }
 
 /* ── Period toggle ── */
+
+/* ── Test programme stats ──
+ * Reads ab_tests and shows: live now, called this period (W/L/I)
+ * and the cumulative win rate. Sits below the delivery strip in
+ * /kpi and gives a one-glance view of the testing engine. */
+function TestStrip({ win }: { win: { startMs: number; asOfMs: number; isCurrent: boolean } }) {
+  const [tests, setTests] = useState<AbTest[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    testsStore.getAll().then((all) => {
+      if (cancelled) return;
+      setTests(all);
+      setHydrated(true);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  const stats = useMemo(() => {
+    const live = tests.filter((t) => t.status === "live").length;
+    const inPeriod = tests.filter((t) => {
+      if (!t.outcome) return false;
+      const endIso = t.ended_at;
+      if (!endIso) return false;
+      const ts = new Date(endIso).getTime();
+      return ts >= win.startMs && ts <= win.asOfMs;
+    });
+    const won = inPeriod.filter((t) => t.outcome === "winner").length;
+    const lost = inPeriod.filter((t) => t.outcome === "loser").length;
+    const inc = inPeriod.filter((t) => t.outcome === "inconclusive").length;
+    /* Cumulative win rate: all concluded ever. */
+    const concluded = tests.filter((t) => t.outcome);
+    const allWon = concluded.filter((t) => t.outcome === "winner").length;
+    const winRate = concluded.length === 0 ? null : Math.round((allWon / concluded.length) * 100);
+    return { live, won, lost, inc, winRate };
+  }, [tests, win.startMs, win.asOfMs]);
+
+  if (!hydrated) {
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
+        {Array.from({ length: 4 }).map((_, i) => (<div key={i} className="h-20 bg-[#0C0C0C] rounded-xl animate-pulse" />))}
+      </div>
+    );
+  }
+  if (tests.length === 0) return null;
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
+      <Stat label="Tests live now" value={String(stats.live)} sub={stats.live > 0 ? "in flight" : "—"} />
+      <Stat label="Called this period" value={String(stats.won + stats.lost + stats.inc)} sub={`${stats.won}W · ${stats.lost}L · ${stats.inc}I`} />
+      <Stat label="Period winners" value={String(stats.won)} valueClass={stats.won > 0 ? "text-emerald-400" : "text-[#E5E5EA]"} sub="↑ proof deck candidates" />
+      <Stat
+        label="Cumulative win rate"
+        value={stats.winRate === null ? "–" : `${stats.winRate}%`}
+        valueClass={stats.winRate !== null ? rateColor(stats.winRate) : "text-[#71757D]"}
+        sub="all concluded tests"
+      />
+    </div>
+  );
+}
 
 function PeriodToggle({
   period,
