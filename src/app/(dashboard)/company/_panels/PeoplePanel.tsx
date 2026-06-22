@@ -525,7 +525,10 @@ function AddPersonModal({
   const [name, setName] = useState("");
   const [jobTitle, setJobTitle] = useState("");
   const [department, setDepartment] = useState<string>(DEPARTMENTS[0]);
-  const [employmentType, setEmploymentType] = useState<EmploymentType>("employee");
+  /* Contractor by default - the agency runs on contractors, not
+   * employees. Saves a click on every add. Switch to employee if
+   * onboarding a founder / full-time hire. */
+  const [employmentType, setEmploymentType] = useState<EmploymentType>("contractor");
   const [email, setEmail] = useState("");
   /* Invite default: on when email is set. The user explicitly asked
    * for the "set up new person + send invite" flow to be a single
