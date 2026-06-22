@@ -144,7 +144,7 @@ export default function InvoicesPage() {
       {!hydrated ? (
         <div className="h-48 bg-[#0C0C0C] rounded-xl animate-pulse" />
       ) : filtered.length === 0 ? (
-        <div className="bg-[#181818] border border-dashed border-[#2A2A2A] rounded-xl p-12 text-center">
+        <div className="bg-[#0F0F10] border border-dashed border-white/[0.04] rounded-xl p-12 text-center">
           <div className="text-sm text-[#71757D] mb-3">
             {invoices.length === 0
               ? "No invoices yet — upload your first one."
@@ -160,7 +160,7 @@ export default function InvoicesPage() {
           )}
         </div>
       ) : (
-        <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-x-auto shadow-[var(--shadow-soft)]">
+        <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl overflow-x-auto shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
           <table className="w-full text-sm">
             <thead className="bg-[#0C0C0C] text-[11px] uppercase tracking-wider text-[#71757D]">
               <tr>
@@ -177,7 +177,7 @@ export default function InvoicesPage() {
               {filtered.map((i) => {
                 const badge = INVOICE_STATUS_BADGE[i.status];
                 return (
-                  <tr key={i.id} className="border-t border-[#2A2A2A] hover:bg-[#0C0C0C]">
+                  <tr key={i.id} className="border-t border-white/[0.04] hover:bg-[#0C0C0C]">
                     <td className="px-4 py-3">
                       <Link
                         href={`/company/invoices/${i.id}`}
@@ -253,7 +253,7 @@ function SummaryCard({
   const color =
     accent === "red" ? "text-[#B91C1C]" : accent === "green" ? "text-[#047857]" : "text-[#E5E5EA]";
   return (
-    <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 shadow-[var(--shadow-soft)]">
+    <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-4 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
       <div className="text-[11px] uppercase tracking-wider text-[#71757D] mb-1">{label}</div>
       <div className={`text-2xl font-semibold ${color}`}>{fmtMoney(amount)}</div>
     </div>
@@ -343,7 +343,7 @@ function UploadInvoiceModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <form onSubmit={submit} className="bg-[#181818] rounded-xl shadow-xl w-full max-w-2xl p-6 my-8">
+      <form onSubmit={submit} className="bg-[#0F0F10] rounded-xl shadow-xl w-full max-w-2xl p-6 my-8">
         <h2 className="text-lg font-semibold text-[#E5E5EA] mb-4">Upload invoice</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

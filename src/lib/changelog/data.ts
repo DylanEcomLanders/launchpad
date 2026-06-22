@@ -37,6 +37,19 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-110",
+    date: "22 June 2026",
+    version: "2.1.1",
+    title: "Pod canonical model: Admin owns team composition, PersonPicker everywhere",
+    changes: [
+      { type: "added", text: "New Admin tab: Pods. /company/pods is the canonical place to define pods, slot Persons into Strategist / Designer / Developer / Copy roles. Each slot is a PersonPicker pulling from /company/people, so renames + invites propagate everywhere automatically. Top callout flags any Person not yet slotted into a pod" },
+      { type: "added", text: "PersonPicker shared component (src/components/person-picker.tsx) - universal Person dropdown with gradient avatar tile, dept-coloured initials, search, and dept filter. Becomes the source of truth for who's who across Launchpad. PersonPickerNamed wrapper handles surfaces that still store free-text display names" },
+      { type: "improved", text: "/admin chrome sweep: gradient title + pink tab pills dialled back to clean white title + subtle ring-active tab so Hero Offer keeps its visual throne. Every panel + sub-page swapped from legacy bg-[#181818] / border-[#2A2A2A] to Hero Offer chrome (bg-[#0F0F10] + border-white/[0.04] + 0_8px_32px shadow). Grey bar at the bottom of /admin surfaces fixed by stretching the wrapper to viewport-minus-header" },
+      { type: "improved", text: "Sales pipeline owner field now uses PersonPicker - new entries auto-write the canonical display name so name-match resolvers stop guessing" },
+      { type: "removed", text: "/pods-v2/admin redirects to /company/pods. One source of truth, no parallel UIs to drift" },
+    ],
+  },
+  {
     id: "cl-109",
     date: "22 June 2026",
     version: "2.1.0",

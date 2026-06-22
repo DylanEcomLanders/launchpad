@@ -31,16 +31,19 @@ import {
   UserGroupIcon,
   BriefcaseIcon,
   Cog6ToothIcon,
+  Squares2X2Icon,
 } from "@heroicons/react/24/outline";
 import InboxPanel from "./_panels/InboxPanel";
 import PeoplePanel from "./_panels/PeoplePanel";
 import HiringPanel from "./_panels/HiringPanel";
+import PodsPanel from "./_panels/PodsPanel";
 
-type Tab = "inbox" | "people" | "hiring";
+type Tab = "inbox" | "people" | "pods" | "hiring";
 
 const TABS: { id: Tab; label: string; icon: typeof InboxIcon; pathPrefix: string }[] = [
   { id: "inbox",   label: "Inbox",   icon: InboxIcon,      pathPrefix: "/company" },
   { id: "people",  label: "People",  icon: UserGroupIcon,  pathPrefix: "/company/people" },
+  { id: "pods",    label: "Pods",    icon: Squares2X2Icon, pathPrefix: "/company/pods" },
   { id: "hiring",  label: "Hiring",  icon: BriefcaseIcon,  pathPrefix: "/company/hiring" },
 ];
 
@@ -53,6 +56,7 @@ const STORAGE_KEY = "launchpad-company-unlocked";
  * to overview. */
 function tabFromPath(pathname: string): Tab {
   if (pathname.startsWith("/company/people")) return "people";
+  if (pathname.startsWith("/company/pods")) return "pods";
   if (pathname.startsWith("/company/hiring")) return "hiring";
   /* /company/contracts and /company/structure still resolve to Inbox
    * since they aren't top tabs anymore - the layout treats them as
@@ -126,8 +130,15 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
       passcode={COMPANY_PASSCODE}
       storageKey={STORAGE_KEY}
     >
-      <div className="min-h-full">
-        <div className="bg-[#181818] sticky top-0 z-10">
+      {/* min-h calc fills the visible main area (viewport - 3.5rem
+       * top header) so the dark page bg extends to the bottom even
+       * when content is short. Hero Offer is the ONE surface that
+       * wears the gradient + shimmer chrome - /admin stays clean +
+       * soft so Hero Offer keeps its visual throne. */}
+      <div className="min-h-[calc(100dvh-3.5rem)] bg-[#080808] relative">
+        {/* Header sits flush with the page bg. Plain white title,
+         * subtle active-tab tint, no gradient theatrics. */}
+        <div className="sticky top-0 z-10 bg-[#080808]/80 backdrop-blur-md">
           <div className="max-w-7xl mx-auto px-6 pt-6 pb-0">
             <h1 className="text-2xl font-semibold text-[#E5E5EA] mb-1">Admin</h1>
             <p className="text-sm text-[#71757D] mb-5">
@@ -141,10 +152,10 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
                   <button
                     key={tab.id}
                     onClick={() => pickTab(tab.id)}
-                    className={`flex items-center gap-2 px-3.5 py-1.5 text-sm whitespace-nowrap rounded-full transition-colors ${
+                    className={`flex items-center gap-2 px-3.5 py-1.5 text-sm whitespace-nowrap rounded-full transition-all ${
                       active
-                        ? "bg-white text-[#0C0C0C] font-medium"
-                        : "text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#222222]"
+                        ? "bg-white/[0.08] text-[#E5E5EA] font-medium ring-1 ring-white/[0.08]"
+                        : "text-[#71757D] hover:text-[#E5E5EA] hover:bg-white/[0.04]"
                     }`}
                   >
                     <Icon className="size-4" />
@@ -155,7 +166,7 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
               {/* Settings is outside /company so it stays a Link. */}
               <Link
                 href="/settings"
-                className="flex items-center gap-2 px-3.5 py-1.5 text-sm whitespace-nowrap rounded-full text-[#71757D] hover:text-[#E5E5EA] hover:bg-[#222222]"
+                className="flex items-center gap-2 px-3.5 py-1.5 text-sm whitespace-nowrap rounded-full text-[#71757D] hover:text-[#E5E5EA] hover:bg-white/[0.04] transition-all"
               >
                 <Cog6ToothIcon className="size-4" />
                 Settings
@@ -163,7 +174,7 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
             </nav>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="max-w-7xl mx-auto px-6 py-6 relative">
           {onDetail ? (
             children
           ) : (
@@ -182,6 +193,8 @@ function PanelFor({ tab }: { tab: Tab }) {
   switch (tab) {
     case "people":
       return <PeoplePanel />;
+    case "pods":
+      return <PodsPanel />;
     case "hiring":
       return <HiringPanel />;
     default:

@@ -508,8 +508,8 @@ export default function InboxPanel() {
       </div>
 
       {/* Section 6 - Recent activity (log) */}
-      <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#2A2A2A] flex items-center gap-2">
+      <div className="bg-[#0F0F10] ring-1 ring-white/[0.04] shadow-[0_8px_32px_rgba(0,0,0,0.35)] rounded-xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-white/[0.04] flex items-center gap-2">
           <SparklesIcon className="size-4 text-[#71757D]" />
           <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold">
             Recent activity
@@ -520,7 +520,7 @@ export default function InboxPanel() {
             No recent activity.
           </div>
         ) : (
-          <ul className="divide-y divide-[#2A2A2A]">
+          <ul className="divide-y divide-white/[0.04]">
             {activity.map((e) => (
               <li key={e.id} className="px-5 py-2.5">
                 <Link
@@ -557,8 +557,8 @@ function InboxSection({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-hidden">
-      <div className="px-5 py-4 border-b border-[#2A2A2A] flex items-center justify-between">
+    <div className="bg-[#0F0F10] ring-1 ring-white/[0.04] shadow-[0_8px_32px_rgba(0,0,0,0.35)] rounded-xl overflow-hidden">
+      <div className="px-5 py-4 border-b border-white/[0.04] flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Icon className="size-4 text-[#71757D]" />
           <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold">
@@ -572,7 +572,7 @@ function InboxSection({
       {count === 0 ? (
         <div className="px-5 py-6 text-xs text-[#71757D]">{empty}</div>
       ) : (
-        <ul className="divide-y divide-[#2A2A2A]">{children}</ul>
+        <ul className="divide-y divide-white/[0.04]">{children}</ul>
       )}
     </div>
   );

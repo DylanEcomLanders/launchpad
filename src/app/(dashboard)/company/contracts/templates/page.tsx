@@ -191,7 +191,7 @@ export default function TemplatesEditorPage() {
           {current.body.clauses.map((c, idx) => (
             <div
               key={c.id}
-              className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-4 shadow-[var(--shadow-soft)]"
+              className="bg-[#0F0F10] border border-white/[0.04] rounded-lg p-4 shadow-[0_8px_32px_rgba(0,0,0,0.35)]"
             >
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div className="text-[11px] font-mono text-[#71757D] mt-2 w-8 shrink-0">
@@ -246,7 +246,7 @@ export default function TemplatesEditorPage() {
 
       {/* Save bar — sticks to the bottom of the viewport so long edits don't
           require scrolling back up to commit. */}
-      <div className="fixed bottom-0 left-0 right-0 md:left-56 bg-[#181818]/95 backdrop-blur border-t border-[#2A2A2A] z-10">
+      <div className="fixed bottom-0 left-0 right-0 md:left-56 bg-[#0F0F10]/95 backdrop-blur border-t border-white/[0.04] z-10">
         <div className="max-w-3xl mx-auto px-6 md:px-10 py-3 flex items-center justify-between gap-4">
           <div className="text-[12px] text-[#71757D]">
             {savedAt ? (

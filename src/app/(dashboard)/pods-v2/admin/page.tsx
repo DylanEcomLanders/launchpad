@@ -1,9 +1,9 @@
-import AdminClient from "./client";
+import { redirect } from "next/navigation";
 
-export const metadata = {
-  title: "Admin · Pod Overview · Launchpad",
-};
-
+/* /pods-v2/admin was deprecated 2026-06-22. Pod assignment is now
+ * managed canonically from /company/pods (the Admin → Pods tab) so
+ * the team has one place to slot Persons into pod roles. This
+ * redirect preserves any existing bookmarks. */
 export default function PodsAdminPage() {
-  return <AdminClient />;
+  redirect("/company/pods");
 }

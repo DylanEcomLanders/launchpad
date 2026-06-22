@@ -58,6 +58,7 @@ import {
   type SalesCallOutcome,
 } from "@/lib/leads/types";
 import { inputClass, labelClass, textareaClass } from "@/lib/form-styles";
+import { PersonPickerNamed } from "@/components/person-picker";
 
 const TOUCH_KIND_ORDER: LeadTouchKind[] = [
   "outreach_sent",
@@ -414,11 +415,10 @@ export default function LeadDetailPage({
             />
           </Field>
           <Field label="Owner (closer / strategist)">
-            <input
+            <PersonPickerNamed
               value={lead.owner}
-              onChange={(e) => patch({ owner: e.target.value })}
-              className={inputClass}
-              placeholder="Dylan / Ajay / etc."
+              onChange={(name) => patch({ owner: name })}
+              placeholder="Pick a closer / strategist"
             />
           </Field>
           <Field label="Next action date">

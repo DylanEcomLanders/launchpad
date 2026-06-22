@@ -181,7 +181,7 @@ export default function PersonProfilePage() {
         </button>
       </div>
 
-      <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-6 mb-4 shadow-[var(--shadow-soft)]">
+      <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-6 mb-4 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
         <div className="flex items-start gap-4">
           <AvatarWithUpload person={person} onUpdate={patch} />
           <div className="flex-1 min-w-0">
@@ -215,7 +215,7 @@ export default function PersonProfilePage() {
         </div>
       </div>
 
-      <div className="border-b border-[#2A2A2A] mb-6">
+      <div className="border-b border-white/[0.04] mb-6">
         <div className="flex gap-1">
           {tabs
             .filter((t) => t.visible)
@@ -613,7 +613,7 @@ function FinancialTab({
         />
 
         {person.engagement_type === "core_retainer" && (
-          <div className="mt-4 pt-4 border-t border-[#2A2A2A]">
+          <div className="mt-4 pt-4 border-t border-white/[0.04]">
             <div className="text-[11px] uppercase tracking-wider text-[#71757D] mb-3">
               Revenue-tier bonuses ({person.compensation_currency || "GBP"})
             </div>
@@ -646,7 +646,7 @@ function FinancialTab({
 
         {(person.engagement_type === "contractor_retainer" ||
           person.engagement_type === "contractor_per_page") && (
-          <div className="mt-4 pt-4 border-t border-[#2A2A2A]">
+          <div className="mt-4 pt-4 border-t border-white/[0.04]">
             <p className="text-xs text-[#71757D]">
               Bonuses + deductions for this contractor are auto-computed
               from kanban delivery data under the{" "}
@@ -688,7 +688,7 @@ function FinancialTab({
             </thead>
             <tbody>
               {history.map((h) => (
-                <tr key={h.id} className="border-t border-[#2A2A2A]">
+                <tr key={h.id} className="border-t border-white/[0.04]">
                   <td className="py-2 text-[#71757D]">{fmtDateUK(h.changed_at)}</td>
                   <td className="py-2 text-[#71757D]">
                     {h.old_amount != null
@@ -794,7 +794,7 @@ function PerformanceTab({
         ) : (
           <div className="space-y-3">
             {reviews.map((r) => (
-              <div key={r.id} className="p-3 border border-[#2A2A2A] rounded-lg">
+              <div key={r.id} className="p-3 border border-white/[0.04] rounded-lg">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                   <input
                     type="date"
@@ -852,7 +852,7 @@ function PerformanceTab({
         ) : (
           <div className="space-y-3">
             {goals.map((g) => (
-              <div key={g.id} className="p-3 border border-[#2A2A2A] rounded-lg">
+              <div key={g.id} className="p-3 border border-white/[0.04] rounded-lg">
                 <input
                   placeholder="Title"
                   value={g.title}
@@ -908,7 +908,7 @@ function PerformanceTab({
         ) : (
           <div className="space-y-3">
             {notes.map((n) => (
-              <div key={n.id} className="p-3 border border-[#2A2A2A] rounded-lg">
+              <div key={n.id} className="p-3 border border-white/[0.04] rounded-lg">
                 <div className="text-[11px] text-[#71757D] mb-2">{fmtDateUK(n.created_at)}</div>
                 <input
                   placeholder="Author"
@@ -991,7 +991,7 @@ function InvoicesTab({ person }: { person: Person }) {
 
   if (invoices.length === 0) {
     return (
-      <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-8 text-center">
+      <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-8 text-center">
         <p className="text-sm text-[#71757D] mb-2">
           No invoices linked to {person.preferred_name || person.full_name} yet.
         </p>
@@ -1021,7 +1021,7 @@ function InvoicesTab({ person }: { person: Person }) {
       {/* Invoice table - same shape as /company/invoices but scoped to
           this person + cleaner (no supplier name column since theyre
           all this person). Each row links out to the invoice detail. */}
-      <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-hidden">
+      <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-[#0C0C0C] text-[10px] uppercase tracking-wider text-[#71757D]">
             <tr>
@@ -1039,7 +1039,7 @@ function InvoicesTab({ person }: { person: Person }) {
               return (
                 <tr
                   key={i.id}
-                  className="border-t border-[#2A2A2A] hover:bg-[#0C0C0C]"
+                  className="border-t border-white/[0.04] hover:bg-[#0C0C0C]"
                 >
                   <td className="px-4 py-3">
                     <Link
@@ -1113,7 +1113,7 @@ function SummaryCard({
       ? "text-[#71757D]"
       : "text-[#E5E5EA]";
   return (
-    <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-4">
+    <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-4">
       <div className="text-[10px] uppercase tracking-wider text-[#71757D] mb-1">
         {label}
       </div>
@@ -1204,7 +1204,7 @@ function OnboardingTab({
   return (
     <div className="space-y-4">
       {/* Clock + progress */}
-      <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-5">
+      <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-5">
         <div className="flex items-baseline justify-between mb-3">
           <div>
             <div className="text-[11px] uppercase tracking-wider text-[#71757D]">
@@ -1269,7 +1269,7 @@ function OnboardingTab({
       )}
 
       {/* Checklist */}
-      <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-hidden">
+      <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-[#0C0C0C] text-[10px] uppercase tracking-wider text-[#71757D]">
             <tr>
@@ -1286,14 +1286,14 @@ function OnboardingTab({
               .map((t) => (
                 <tr
                   key={t.id}
-                  className={`border-t border-[#2A2A2A] hover:bg-[#0C0C0C] ${
+                  className={`border-t border-white/[0.04] hover:bg-[#0C0C0C] ${
                     t.done_at ? "opacity-60" : ""
                   }`}
                 >
                   <td className="px-4 py-3">
                     <button
                       onClick={() => toggleTask(t.id)}
-                      className="size-5 rounded border border-[#2A2A2A] hover:border-[#383838] flex items-center justify-center"
+                      className="size-5 rounded border border-white/[0.04] hover:border-[#383838] flex items-center justify-center"
                       title={t.done_at ? "Mark not done" : "Mark done"}
                     >
                       {t.done_at && (
@@ -1488,7 +1488,7 @@ function ScoringTab({
 
   return (
     <div className="space-y-4">
-      <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 flex items-center justify-between gap-4">
+      <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-4 flex items-center justify-between gap-4">
         <div>
           <div className="text-sm font-semibold text-[#E5E5EA]">
             {isPerPage
@@ -1508,7 +1508,7 @@ function ScoringTab({
               if (e.target.value) addPeriod(e.target.value);
               e.target.value = "";
             }}
-            className="text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2 hover:border-[#383838]"
+            className="text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-white/[0.04] rounded-md px-3 py-2 hover:border-[#383838]"
           >
             <option value="">+ Score new {isPerPage ? "build" : "month"}</option>
             {candidatePeriods.map((c) => (
@@ -1521,7 +1521,7 @@ function ScoringTab({
       </div>
 
       {periods.length === 0 ? (
-        <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-8 text-center">
+        <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-8 text-center">
           <p className="text-sm text-[#71757D] mb-2">
             No scoring periods yet.
           </p>
@@ -1573,9 +1573,9 @@ function ScoringPeriodCard({
   const displayDelta = isLocked ? (period.final_delta_pct ?? 0) : projected;
 
   return (
-    <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-hidden">
+    <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-[#2A2A2A] flex items-center justify-between">
+      <div className="px-5 py-4 border-b border-white/[0.04] flex items-center justify-between">
         <div>
           <div className="text-[11px] uppercase tracking-wider text-[#71757D]">
             {scheme === "per_page" ? "Build" : "Month"}
@@ -1631,7 +1631,7 @@ function ScoringPeriodCard({
               {period.entries.map((e) => (
                 <tr
                   key={e.id}
-                  className="border-t border-[#2A2A2A] hover:bg-[#0C0C0C]"
+                  className="border-t border-white/[0.04] hover:bg-[#0C0C0C]"
                 >
                   <td className="px-5 py-2.5 text-[#71757D] capitalize">
                     {e.lever}
@@ -1681,13 +1681,13 @@ function ScoringPeriodCard({
 
       {/* Add manual + lock */}
       {!isLocked && (
-        <div className="px-5 py-4 border-t border-[#2A2A2A] bg-[#0C0C0C]/50">
+        <div className="px-5 py-4 border-t border-white/[0.04] bg-[#0C0C0C]/50">
           <ManualEntryForm onAdd={onAddManual} />
         </div>
       )}
 
       {/* Footer actions */}
-      <div className="px-5 py-3 border-t border-[#2A2A2A] flex items-center justify-between">
+      <div className="px-5 py-3 border-t border-white/[0.04] flex items-center justify-between">
         <div className="text-xs text-[#71757D]">
           {isLocked
             ? `Locked ${period.locked_at ? fmtDateUK(period.locked_at.slice(0, 10)) : ""}. 5-day dispute window from lock date.`
@@ -1749,7 +1749,7 @@ function ManualEntryForm({
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           placeholder="e.g. Client renewed, contractor went dark, complaint received"
-          className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2"
+          className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-white/[0.04] rounded-md px-3 py-2"
         />
       </div>
       <div className="w-32">
@@ -1761,7 +1761,7 @@ function ManualEntryForm({
           onChange={(e) =>
             setLever(e.target.value as "speed" | "quality" | "retention")
           }
-          className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2"
+          className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-white/[0.04] rounded-md px-3 py-2"
         >
           <option value="speed">Speed</option>
           <option value="quality">Quality</option>
@@ -1777,7 +1777,7 @@ function ManualEntryForm({
           value={delta}
           onChange={(e) => setDelta(e.target.value)}
           placeholder="+10"
-          className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2 tabular-nums"
+          className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-white/[0.04] rounded-md px-3 py-2 tabular-nums"
         />
       </div>
       <button
@@ -1935,7 +1935,7 @@ function KpisTab({ person }: { person: Person }) {
       </div>
 
       {scoringRollup && (
-        <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-5">
+        <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-5">
           <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-[#71757D] mb-2">
             <SparklesIcon className="size-4" />
             Contractor scheme rollup
@@ -2033,7 +2033,7 @@ function BonusesTab({
     <div className="space-y-4">
       {/* Totals header */}
       {totals.length === 0 ? (
-        <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 text-xs text-[#71757D]">
+        <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-4 text-xs text-[#71757D]">
           No bonuses logged for {person.preferred_name || person.full_name} yet.
         </div>
       ) : (
@@ -2058,8 +2058,8 @@ function BonusesTab({
 
       {/* History */}
       {sorted.length > 0 && (
-        <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-[#2A2A2A]">
+        <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-white/[0.04]">
             <h3 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold">
               History
             </h3>
@@ -2082,7 +2082,7 @@ function BonusesTab({
                 return (
                 <tr
                   key={b.id}
-                  className="border-t border-[#2A2A2A] hover:bg-[#0C0C0C]"
+                  className="border-t border-white/[0.04] hover:bg-[#0C0C0C]"
                 >
                   <td className="px-4 py-2.5 text-[#71757D] tabular-nums whitespace-nowrap">
                     <div className="flex items-center gap-2">
@@ -2176,7 +2176,7 @@ function LogBonusForm({
   }
 
   return (
-    <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-5">
+    <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-5">
       <h3 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-4">
         Log a bonus payment
       </h3>
@@ -2189,7 +2189,7 @@ function LogBonusForm({
             type="date"
             value={paidAt}
             onChange={(e) => setPaidAt(e.target.value)}
-            className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2"
+            className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-white/[0.04] rounded-md px-3 py-2"
           />
         </div>
         <div className="md:col-span-1">
@@ -2199,7 +2199,7 @@ function LogBonusForm({
           <select
             value={kind}
             onChange={(e) => setKind(e.target.value as BonusKind)}
-            className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2"
+            className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-white/[0.04] rounded-md px-3 py-2"
           >
             <option value="adhoc">Ad-hoc</option>
             <option value="revenue_tier">Revenue tier</option>
@@ -2214,7 +2214,7 @@ function LogBonusForm({
             <select
               value={tier}
               onChange={(e) => setTier(parseInt(e.target.value) as 100 | 150 | 200)}
-              className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2"
+              className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-white/[0.04] rounded-md px-3 py-2"
             >
               <option value={100}>100k</option>
               <option value={150}>150k</option>
@@ -2231,7 +2231,7 @@ function LogBonusForm({
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder="What's it for?"
-            className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2"
+            className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-white/[0.04] rounded-md px-3 py-2"
           />
         </div>
         <div className="md:col-span-1">
@@ -2243,7 +2243,7 @@ function LogBonusForm({
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0.00"
-            className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2 tabular-nums"
+            className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-white/[0.04] rounded-md px-3 py-2 tabular-nums"
           />
         </div>
       </div>
@@ -2253,7 +2253,7 @@ function LogBonusForm({
           value={paidBy}
           onChange={(e) => setPaidBy(e.target.value)}
           placeholder="Logged by"
-          className="text-xs bg-[#0C0C0C] text-[#71757D] border border-[#2A2A2A] rounded-md px-2 py-1.5 w-32"
+          className="text-xs bg-[#0C0C0C] text-[#71757D] border border-white/[0.04] rounded-md px-2 py-1.5 w-32"
         />
         <button
           onClick={submit}
@@ -2394,7 +2394,7 @@ function Section({
   action?: React.ReactNode;
 }) {
   return (
-    <div className={`bg-[#181818] border border-[#2A2A2A] rounded-xl p-5 shadow-[var(--shadow-soft)] ${className}`}>
+    <div className={`bg-[#0F0F10] border border-white/[0.04] rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)] ${className}`}>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D]">{title}</h3>
         {action}
@@ -2495,7 +2495,7 @@ function AgreementsTab({ person }: { person: Person }) {
   return (
     <div>
       {agreements.length === 0 ? (
-        <div className="bg-[#0C0C0C] border border-dashed border-[#2A2A2A] rounded-xl p-8 text-center">
+        <div className="bg-[#0C0C0C] border border-dashed border-white/[0.04] rounded-xl p-8 text-center">
           <p className="text-sm text-[#E5E5EA] font-medium mb-1">
             No agreements yet for {person.full_name}.
           </p>
@@ -2518,7 +2518,7 @@ function AgreementsTab({ person }: { person: Person }) {
               <Link
                 key={a.id}
                 href={`/company/contracts/${a.id}`}
-                className="flex items-center justify-between gap-3 bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 hover:border-white/30 hover:shadow-[var(--shadow-soft)] transition-all"
+                className="flex items-center justify-between gap-3 bg-[#0F0F10] border border-white/[0.04] rounded-xl p-4 hover:border-white/30 hover:shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all"
               >
                 <div className="flex items-center gap-3">
                   <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-[#222222] text-[#E5E5EA]">
@@ -2545,7 +2545,7 @@ function AgreementsTab({ person }: { person: Person }) {
           {canGenerateMore && (
             <button
               onClick={() => setModalOpen(true)}
-              className="w-full py-3 border border-dashed border-[#2A2A2A] rounded-xl text-[13px] text-[#71757D] hover:border-white hover:text-[#E5E5EA] transition-colors"
+              className="w-full py-3 border border-dashed border-white/[0.04] rounded-xl text-[13px] text-[#71757D] hover:border-white/[0.12] hover:text-[#E5E5EA] transition-colors"
             >
               + Generate contract
             </button>
