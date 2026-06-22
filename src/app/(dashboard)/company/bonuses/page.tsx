@@ -70,7 +70,7 @@ export default function GlobalBonusesPage() {
   if (!hydrated) {
     return (
       <div className="px-4 sm:px-6 py-8">
-        <div className="h-96 animate-pulse rounded-2xl bg-[#181818]" />
+        <div className="h-96 animate-pulse rounded-2xl bg-[#0F0F10]" />
       </div>
     );
   }
@@ -96,7 +96,7 @@ export default function GlobalBonusesPage() {
           <select
             value={kindFilter}
             onChange={(e) => setKindFilter(e.target.value as "all" | BonusKind)}
-            className="text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2"
+            className="text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-white/[0.04] rounded-md px-3 py-2"
           >
             <option value="all">All kinds</option>
             <option value="contractor_scheme">Contractor scheme</option>
@@ -108,7 +108,7 @@ export default function GlobalBonusesPage() {
             onChange={(e) =>
               setStatusFilter(e.target.value as "all" | "scheduled" | "paid")
             }
-            className="text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2"
+            className="text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-white/[0.04] rounded-md px-3 py-2"
           >
             <option value="all">All statuses</option>
             <option value="scheduled">Scheduled</option>
@@ -123,7 +123,7 @@ export default function GlobalBonusesPage() {
           {totals.map(([cur, t]) => (
             <div
               key={cur}
-              className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-5"
+              className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-5"
             >
               <div className="text-[10px] uppercase tracking-wider text-[#71757D] mb-2">
                 {cur}
@@ -148,7 +148,7 @@ export default function GlobalBonusesPage() {
       )}
 
       {/* Table */}
-      <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-hidden">
+      <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl overflow-hidden">
         {filtered.length === 0 ? (
           <div className="px-5 py-8 text-center text-xs text-[#71757D]">
             No bonuses match the current filters.
@@ -171,7 +171,7 @@ export default function GlobalBonusesPage() {
                 return (
                   <tr
                     key={b.id}
-                    className="border-t border-[#2A2A2A] hover:bg-[#0C0C0C]"
+                    className="border-t border-white/[0.04] hover:bg-[#0C0C0C]"
                   >
                     <td className="px-4 py-2.5 text-[#71757D] tabular-nums whitespace-nowrap">
                       {fmtDateUK(b.paid_at)}

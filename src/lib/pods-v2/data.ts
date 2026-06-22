@@ -710,6 +710,116 @@ export function updatePodSlackChannel(podId: string, channelId: string | undefin
   write(LS_PODS, next);
 }
 
+/* ── Pod admin mutations (Admin → Pods canonical surface) ───────── */
+
+/** Rename a pod + update its tagline. Empty strings clear the tagline. */
+export function updatePodIdentity(
+  podId: string,
+  name: string,
+  tagline: string,
+): void {
+  const pods = getPods();
+  const next = pods.map((p) =>
+    p.id === podId ? { ...p, name: name.trim(), tagline: tagline.trim() } : p,
+  );
+  write(LS_PODS, next);
+}
+
+/** Create a new pod with an empty member roster. */
+export function createPod(input: { name: string; tagline?: string }): Pod {
+  const id = `pod-${Math.random().toString(36).slice(2, 10)}`;
+  const pod: Pod = {
+    id,
+    name: input.name.trim() || "New pod",
+    tagline: input.tagline?.trim() || "",
+    members: [],
+    capacity_points_per_month: 40,
+  };
+  const pods = getPods();
+  write(LS_PODS, [...pods, pod]);
+  return pod;
+}
+
+/** Delete a pod. Members on the pod are dropped with it - callers
+ * that need to preserve members should moveMemberToPod first. */
+export function deletePod(podId: string): void {
+  const pods = getPods();
+  write(LS_PODS, pods.filter((p) => p.id !== podId));
+}
+
+/** Add an empty slot to a pod (placeholder member, no Person link
+ * yet). The caller then uses linkPersonToPodMember to attach a
+ * canonical Person. */
+export function addPodMember(podId: string, role: PodMemberRole): PodMember {
+  const memberId = `pm-${Math.random().toString(36).slice(2, 10)}`;
+  const member: PodMember = {
+    id: memberId,
+    name: "Unassigned",
+    role,
+    pod_id: podId,
+    is_placeholder: true,
+  };
+  const pods = getPods();
+  const next = pods.map((p) =>
+    p.id === podId ? { ...p, members: [...p.members, member] } : p,
+  );
+  write(LS_PODS, next);
+  return member;
+}
+
+/** Remove a member slot from its pod. */
+export function removePodMember(memberId: string): void {
+  const pods = getPods();
+  const next = pods.map((p) => ({
+    ...p,
+    members: p.members.filter((m) => m.id !== memberId),
+  }));
+  write(LS_PODS, next);
+}
+
+/** Link a PodMember slot to a canonical Person record. When set, the
+ * pod data layer (sync.ts hydration) stamps the slot's name +
+ * avatar from the linked Person so renames in /company/people
+ * propagate to every kanban + workspace surface. Pass undefined to
+ * unlink (leaves the slot as a placeholder). */
+export function linkPersonToPodMember(
+  memberId: string,
+  personId: string | undefined,
+  displayName?: string,
+): void {
+  const pods = getPods();
+  const next = pods.map((p) => ({
+    ...p,
+    members: p.members.map((m) =>
+      m.id === memberId
+        ? {
+            ...m,
+            person_id: personId,
+            /* Update the cached name if the caller passed a fresh one
+             * (e.g. picked a Person whose name should now display).
+             * Falls through to the existing m.name when undefined. */
+            name: displayName ?? m.name,
+            is_placeholder: !personId,
+          }
+        : m,
+    ),
+  }));
+  write(LS_PODS, next);
+}
+
+/** Change a member's role within its current pod (Strategist ↔
+ * Designer ↔ Developer ↔ Copy etc.). Keeps the Person link intact. */
+export function updateMemberRole(memberId: string, role: PodMemberRole): void {
+  const pods = getPods();
+  const next = pods.map((p) => ({
+    ...p,
+    members: p.members.map((m) =>
+      m.id === memberId ? { ...m, role } : m,
+    ),
+  }));
+  write(LS_PODS, next);
+}
+
 /* ── Member out-of-office ──────────────────────────────────────── */
 
 /** Set or clear a member's OOO window. Pass empty strings to clear. */

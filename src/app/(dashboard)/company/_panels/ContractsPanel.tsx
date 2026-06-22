@@ -111,7 +111,7 @@ export default function ContractsPanel() {
         <div className="flex items-center gap-2">
           <Link
             href="/company/contracts/templates"
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#181818] border border-[#2A2A2A] text-[#E5E5EA] text-[13px] font-medium rounded-lg hover:border-white transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#0F0F10] border border-white/[0.04] text-[#E5E5EA] text-[13px] font-medium rounded-lg hover:border-white/[0.12] transition-colors"
           >
             <DocumentTextIcon className="size-4" />
             Templates
@@ -127,7 +127,7 @@ export default function ContractsPanel() {
       </div>
 
       {total === 0 ? (
-        <div className="bg-[#0C0C0C] border border-dashed border-[#2A2A2A] rounded-2xl p-10 text-center">
+        <div className="bg-[#0C0C0C] border border-dashed border-white/[0.04] rounded-2xl p-10 text-center">
           <ShieldCheckIcon className="size-7 text-[#71757D] mx-auto mb-3" />
           <div className="text-[15px] font-medium text-[#E5E5EA] mb-1">
             No agreements yet
@@ -169,7 +169,7 @@ export default function ContractsPanel() {
                     <Link
                       key={a.id}
                       href={`/company/contracts/${a.id}`}
-                      className="block bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 hover:border-white/30 hover:shadow-[var(--shadow-soft)] transition-all"
+                      className="block bg-[#0F0F10] border border-white/[0.04] rounded-xl p-4 hover:border-white/30 hover:shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all"
                     >
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="min-w-0 flex-1">

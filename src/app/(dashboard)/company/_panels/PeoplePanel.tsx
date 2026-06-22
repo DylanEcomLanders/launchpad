@@ -9,6 +9,12 @@ import {
   ListBulletIcon,
   UsersIcon,
   TagIcon,
+  ArrowTopRightOnSquareIcon,
+  EnvelopeIcon,
+  CheckBadgeIcon,
+  UserGroupIcon,
+  SparklesIcon,
+  UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import { peopleStore, uid, nowISO, todayISO } from "@/lib/company/data";
 import {
@@ -16,6 +22,7 @@ import {
   type EmploymentType,
   type PersonStatus,
   DEPARTMENTS,
+  DEPARTMENT_COLORS,
 } from "@/lib/company/types";
 import { getPods } from "@/lib/pods-v2/data";
 import type { Pod } from "@/lib/pods-v2/types";
@@ -28,6 +35,7 @@ type View = "grid" | "table" | "byPod" | "byStatus";
 export default function PeoplePanel() {
   const [people, setPeople] = useState<Person[]>([]);
   const [pods, setPods] = useState<Pod[]>([]);
+  const [invitedEmails, setInvitedEmails] = useState<Set<string>>(new Set());
   const [hydrated, setHydrated] = useState(false);
   const [view, setView] = useState<View>("grid");
   const [query, setQuery] = useState("");
@@ -42,7 +50,26 @@ export default function PeoplePanel() {
       setHydrated(true);
     });
     setPods(getPods());
+    /* Pull every invited email once so each card can show an
+     * "Invited" / "Not invited yet" chip without a per-card query. */
+    import("@/lib/auth/app-users")
+      .then(({ listAppUsers }) => listAppUsers())
+      .then((users) => {
+        setInvitedEmails(new Set(users.map((u) => u.email.toLowerCase())));
+      })
+      .catch((err) => console.error("[people] failed to load app_users:", err));
   }, []);
+
+  /* Stats strip - computed once per hydration of the underlying data. */
+  const stats = useMemo(() => {
+    const total = people.length;
+    const active = people.filter((p) => p.status === "active").length;
+    const onboarding = people.filter((p) => p.status === "onboarding").length;
+    const awaitingInvite = people.filter(
+      (p) => p.email && !invitedEmails.has(p.email.toLowerCase()) && p.status !== "left",
+    ).length;
+    return { total, active, onboarding, awaitingInvite };
+  }, [people, invitedEmails]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -94,6 +121,16 @@ export default function PeoplePanel() {
 
   return (
     <div>
+      {/* Team stats strip - one-glance signal on the team's shape +
+       * who still needs inviting. Sits above the filters so admin
+       * sees the picture before drilling in. */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <StatTile label="Team total" value={stats.total} icon={<UserGroupIcon className="size-4 text-white" />} gradient="from-emerald-500 to-teal-600 shadow-[0_8px_24px_rgba(16,185,129,0.3)]" />
+        <StatTile label="Active" value={stats.active} icon={<CheckBadgeIcon className="size-4 text-white" />} gradient="from-cyan-500 to-teal-600 shadow-[0_8px_24px_rgba(6,182,212,0.3)]" />
+        <StatTile label="Onboarding" value={stats.onboarding} icon={<SparklesIcon className="size-4 text-white" />} gradient="from-sky-500 to-blue-600 shadow-[0_8px_24px_rgba(14,165,233,0.3)]" />
+        <StatTile label="Awaiting invite" value={stats.awaitingInvite} icon={<EnvelopeIcon className="size-4 text-white" />} gradient={stats.awaitingInvite > 0 ? "from-amber-500 to-orange-600 shadow-[0_8px_24px_rgba(245,158,11,0.3)]" : "from-zinc-500 to-zinc-600"} muted={stats.awaitingInvite === 0} />
+      </div>
+
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative w-56">
@@ -148,31 +185,31 @@ export default function PeoplePanel() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="inline-flex rounded-lg border border-[#2A2A2A] overflow-hidden">
+          <div className="inline-flex rounded-lg border border-white/[0.04] overflow-hidden">
             <button
               onClick={() => setView("grid")}
-              className={`p-2 ${view === "grid" ? "bg-white text-[#0C0C0C]" : "bg-[#181818] text-[#71757D]"}`}
+              className={`p-2 ${view === "grid" ? "bg-white text-[#0C0C0C]" : "bg-[#0F0F10] text-[#71757D]"}`}
               title="Grid view"
             >
               <Squares2X2Icon className="size-4" />
             </button>
             <button
               onClick={() => setView("table")}
-              className={`p-2 ${view === "table" ? "bg-white text-[#0C0C0C]" : "bg-[#181818] text-[#71757D]"}`}
+              className={`p-2 ${view === "table" ? "bg-white text-[#0C0C0C]" : "bg-[#0F0F10] text-[#71757D]"}`}
               title="Table view"
             >
               <ListBulletIcon className="size-4" />
             </button>
             <button
               onClick={() => setView("byPod")}
-              className={`p-2 ${view === "byPod" ? "bg-white text-[#0C0C0C]" : "bg-[#181818] text-[#71757D]"}`}
+              className={`p-2 ${view === "byPod" ? "bg-white text-[#0C0C0C]" : "bg-[#0F0F10] text-[#71757D]"}`}
               title="By pod"
             >
               <UsersIcon className="size-4" />
             </button>
             <button
               onClick={() => setView("byStatus")}
-              className={`p-2 ${view === "byStatus" ? "bg-white text-[#0C0C0C]" : "bg-[#181818] text-[#71757D]"}`}
+              className={`p-2 ${view === "byStatus" ? "bg-white text-[#0C0C0C]" : "bg-[#0F0F10] text-[#71757D]"}`}
               title="By status"
             >
               <TagIcon className="size-4" />
@@ -197,9 +234,14 @@ export default function PeoplePanel() {
       ) : filtered.length === 0 ? (
         <EmptyState onAdd={() => setShowAdd(true)} hasFilter={!!query || deptFilter !== "all" || typeFilter !== "all" || statusFilter !== "all"} />
       ) : view === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {filtered.map((p) => (
-            <PersonCard key={p.id} person={p} />
+            <PersonCard
+              key={p.id}
+              person={p}
+              pods={pods}
+              isInvited={!!p.email && invitedEmails.has(p.email.toLowerCase())}
+            />
           ))}
         </div>
       ) : view === "byPod" ? (
@@ -215,54 +257,183 @@ export default function PeoplePanel() {
   );
 }
 
-function PersonCard({ person }: { person: Person }) {
+/* StatTile - one of the 4 tiles at the top of the People panel.
+ * Mirrors the Hero Offer / Operations tile aesthetic. */
+function StatTile({
+  label,
+  value,
+  icon,
+  gradient,
+  muted,
+}: {
+  label: string;
+  value: number;
+  icon: React.ReactNode;
+  gradient: string;
+  muted?: boolean;
+}) {
+  return (
+    <div className="bg-[#0F0F10] rounded-xl p-4 ring-1 ring-white/[0.04] flex items-center gap-3">
+      <div className={`size-9 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center shrink-0`}>
+        {icon}
+      </div>
+      <div>
+        <div className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold">{label}</div>
+        <div className={`text-2xl font-semibold ${muted ? "text-[#71757D]" : "text-[#E5E5EA]"}`}>{value}</div>
+      </div>
+    </div>
+  );
+}
+
+/* Compute tenure label - "Day 14" for onboarding, "5 mo" / "Yr 2" for
+ * established staff. Empty string if we don't have enough info. */
+function tenureLabel(person: Person): string {
+  if (person.status === "onboarding" && person.onboarding_started_at) {
+    const days = Math.max(1, Math.floor((Date.now() - new Date(person.onboarding_started_at).getTime()) / 86_400_000) + 1);
+    return `Day ${days}`;
+  }
+  if (person.start_date) {
+    const days = Math.floor((Date.now() - new Date(person.start_date).getTime()) / 86_400_000);
+    if (days < 0) return `Starts ${new Date(person.start_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`;
+    if (days < 60) return `${days}d`;
+    const months = Math.floor(days / 30);
+    if (months < 12) return `${months} mo`;
+    const years = Math.floor(months / 12);
+    const remMonths = months % 12;
+    return remMonths > 0 ? `${years}yr ${remMonths}mo` : `${years} yr`;
+  }
+  return "";
+}
+
+/* Map STATUS_BADGE light tints to dark-mode palette (the source
+ * STATUS_BADGE uses pastel backgrounds designed for light cards). */
+const DARK_STATUS_TINT: Record<string, string> = {
+  onboarding: "bg-sky-500/15 text-sky-200 ring-1 ring-sky-500/30",
+  active: "bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-500/30",
+  on_leave: "bg-amber-500/15 text-amber-200 ring-1 ring-amber-500/30",
+  notice: "bg-rose-500/15 text-rose-200 ring-1 ring-rose-500/30",
+  offboarding: "bg-orange-500/15 text-orange-200 ring-1 ring-orange-500/30",
+  left: "bg-zinc-500/15 text-zinc-300 ring-1 ring-zinc-500/30",
+};
+
+function PersonCard({
+  person,
+  pods,
+  isInvited,
+}: {
+  person: Person;
+  pods: Pod[];
+  isInvited: boolean;
+}) {
   const status = STATUS_BADGE[person.status];
+  const dept = person.department;
+  const deptHex = deptColor(dept);
+  const tenure = tenureLabel(person);
+
+  /* Find the pod this person is linked to via pod_member_id. */
+  const pod = useMemo(() => {
+    if (!person.pod_member_id) return null;
+    return pods.find((pd) => pd.members?.some((m) => m.id === person.pod_member_id)) ?? null;
+  }, [person.pod_member_id, pods]);
+
+  const isLeadership = dept === "Leadership";
+  const needsInvite = !!person.email && !isInvited && person.status !== "left";
+
   return (
     <Link
       href={`/company/people/${person.id}`}
-      className="block bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 hover:border-white transition-colors shadow-[var(--shadow-soft)]"
+      className={`group block bg-[#0F0F10] rounded-2xl p-5 ring-1 ring-white/[0.04] hover:ring-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all ${isLeadership ? "ring-emerald-500/20 hover:ring-emerald-500/40" : ""}`}
     >
       <div className="flex items-start gap-3">
+        {/* Avatar tile - photo if available, else gradient initials.
+         * Department drives the colour so the team reads visually. */}
         {person.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={person.avatar_url} alt={person.full_name} className="size-12 rounded-full object-cover" />
+          <img
+            src={person.avatar_url}
+            alt={person.full_name}
+            className="size-12 rounded-xl object-cover shrink-0 ring-1 ring-white/[0.08]"
+          />
         ) : (
           <div
-            className="size-12 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0"
-            style={{ background: deptColor(person.department) }}
+            className="size-12 rounded-xl flex items-center justify-center text-white text-sm font-semibold shrink-0 shadow-[0_8px_24px_rgba(0,0,0,0.4)]"
+            style={{
+              background: `linear-gradient(135deg, ${deptHex} 0%, ${deptHex}99 100%)`,
+              boxShadow: `0 8px 24px ${deptHex}55`,
+            }}
           >
             {initials(person.full_name)}
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <div className="font-medium text-[#E5E5EA] truncate">{person.preferred_name || person.full_name}</div>
-          <div className="text-xs text-[#71757D] truncate">{person.job_title || "—"}</div>
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="text-sm font-semibold text-[#E5E5EA] truncate">
+              {person.preferred_name || person.full_name}
+            </span>
+            {isLeadership && (
+              <SparklesIcon className="size-3 text-emerald-400 shrink-0" title="Leadership" />
+            )}
+          </div>
+          <div className="text-[12px] text-[#71757D] truncate">{person.job_title || "No role set"}</div>
+          {/* Meta row: department + pod + tenure. Compact, comma-sep style. */}
+          <div className="mt-1.5 flex items-center gap-2 flex-wrap text-[11px] text-[#71757D]">
+            {dept && (
+              <span className="inline-flex items-center gap-1">
+                <span className="size-1.5 rounded-full" style={{ background: deptHex }} />
+                {dept}
+              </span>
+            )}
+            {pod && (
+              <span className="inline-flex items-center gap-1" title={`Pod: ${pod.name}`}>
+                <UserGroupIcon className="size-3" />
+                {pod.name}
+              </span>
+            )}
+            {tenure && <span>· {tenure}</span>}
+          </div>
         </div>
+        {/* Hover-reveal "open" arrow. */}
+        <ArrowTopRightOnSquareIcon className="size-3.5 text-[#71757D] opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-1" />
       </div>
-      <div className="mt-3 flex items-center justify-between">
-        <span
-          className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
-          style={{ background: status.bg, color: status.text }}
-        >
-          {status.label}
-        </span>
-        <span className="text-[11px] text-[#71757D]">
-          {person.employment_type === "employee" ? "Employee" : "Contractor"}
-        </span>
-      </div>
-      {person.department && (
-        <div className="mt-2 flex items-center gap-1.5 text-[11px] text-[#71757D]">
-          <span className="size-2 rounded-full" style={{ background: deptColor(person.department) }} />
-          {person.department}
+
+      {/* Status row + invite chip. */}
+      <div className="mt-4 flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5">
+          <span className={`text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full ${DARK_STATUS_TINT[person.status] ?? "bg-[#222] text-[#9CA3AF]"}`}>
+            {status.label}
+          </span>
+          <span className="text-[10px] uppercase tracking-wider text-[#71757D]">
+            {person.employment_type === "employee" ? "Employee" : "Contractor"}
+          </span>
         </div>
-      )}
+        {/* Invite signal: green check if invited, amber "Invite" if not.
+         * Only shows for staff with an email + not already left. */}
+        {person.email ? (
+          isInvited ? (
+            <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-500/30">
+              <CheckBadgeIcon className="size-3" />
+              Invited
+            </span>
+          ) : needsInvite ? (
+            <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-200 ring-1 ring-amber-500/30">
+              <EnvelopeIcon className="size-3" />
+              Invite
+            </span>
+          ) : null
+        ) : (
+          <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-[#71757D]">
+            <UserCircleIcon className="size-3" />
+            No email
+          </span>
+        )}
+      </div>
     </Link>
   );
 }
 
 function PeopleTable({ rows }: { rows: Person[] }) {
   return (
-    <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-hidden shadow-[var(--shadow-soft)]">
+    <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
       <table className="w-full text-sm">
         <thead className="bg-[#0C0C0C] text-[11px] uppercase tracking-wider text-[#71757D]">
           <tr>
@@ -278,7 +449,7 @@ function PeopleTable({ rows }: { rows: Person[] }) {
           {rows.map((p) => {
             const status = STATUS_BADGE[p.status];
             return (
-              <tr key={p.id} className="border-t border-[#2A2A2A] hover:bg-[#0C0C0C]">
+              <tr key={p.id} className="border-t border-white/[0.04] hover:bg-[#0C0C0C]">
                 <td className="px-4 py-3">
                   <Link href={`/company/people/${p.id}`} className="font-medium text-[#E5E5EA] hover:underline">
                     {p.preferred_name || p.full_name}
@@ -307,7 +478,7 @@ function PeopleTable({ rows }: { rows: Person[] }) {
 
 function EmptyState({ onAdd, hasFilter }: { onAdd: () => void; hasFilter: boolean }) {
   return (
-    <div className="bg-[#181818] border border-dashed border-[#2A2A2A] rounded-xl p-12 text-center">
+    <div className="bg-[#0F0F10] border border-dashed border-white/[0.04] rounded-xl p-12 text-center">
       <div className="text-sm text-[#71757D] mb-3">
         {hasFilter ? "No people match these filters." : "No people yet - add your first team member."}
       </div>
@@ -368,7 +539,7 @@ function AddPersonModal({
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
       <form
         onSubmit={submit}
-        className="bg-[#181818] rounded-xl shadow-xl w-full max-w-md p-6"
+        className="bg-[#0F0F10] rounded-xl shadow-xl w-full max-w-md p-6"
       >
         <h2 className="text-lg font-semibold text-[#E5E5EA] mb-4">Add person</h2>
         <div className="space-y-4">
@@ -499,7 +670,7 @@ function ByPodView({ people, pods }: { people: Person[]; pods: Pod[] }) {
 
   if (pods.length === 0) {
     return (
-      <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-8 text-center">
+      <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-8 text-center">
         <p className="text-sm text-[#71757D]">
           No pods configured. Set up pods in /workspace, then link each
           Person to their pod member on their Overview tab.
@@ -513,15 +684,15 @@ function ByPodView({ people, pods }: { people: Person[]; pods: Pod[] }) {
       {pods.map((pod) => (
         <div
           key={pod.id}
-          className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-hidden"
+          className="bg-[#0F0F10] border border-white/[0.04] rounded-xl overflow-hidden"
         >
-          <div className="px-5 py-4 border-b border-[#2A2A2A] flex items-center justify-between">
+          <div className="px-5 py-4 border-b border-white/[0.04] flex items-center justify-between">
             <h3 className="text-sm font-semibold text-[#E5E5EA]">{pod.name}</h3>
             <span className="text-[11px] uppercase tracking-wider text-[#71757D] tabular-nums">
               {pod.members.filter((m) => !m.is_placeholder).length} members
             </span>
           </div>
-          <ul className="divide-y divide-[#2A2A2A]">
+          <ul className="divide-y divide-white/[0.04]">
             {pod.members
               .filter((m) => !m.is_placeholder)
               .map((m) => {
@@ -565,14 +736,14 @@ function ByPodView({ people, pods }: { people: Person[]; pods: Pod[] }) {
       ))}
 
       {unassigned.length > 0 && (
-        <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-hidden md:col-span-2">
-          <div className="px-5 py-4 border-b border-[#2A2A2A] flex items-center justify-between">
+        <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl overflow-hidden md:col-span-2">
+          <div className="px-5 py-4 border-b border-white/[0.04] flex items-center justify-between">
             <h3 className="text-sm font-semibold text-[#E5E5EA]">Not on a pod</h3>
             <span className="text-[11px] uppercase tracking-wider text-[#71757D] tabular-nums">
               {unassigned.length}
             </span>
           </div>
-          <ul className="divide-y divide-[#2A2A2A]">
+          <ul className="divide-y divide-white/[0.04]">
             {unassigned.map((p) => (
               <li
                 key={p.id}
@@ -624,9 +795,9 @@ function ByStatusView({ people }: { people: Person[] }) {
         return (
           <div
             key={s}
-            className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-hidden"
+            className="bg-[#0F0F10] border border-white/[0.04] rounded-xl overflow-hidden"
           >
-            <div className="px-5 py-4 border-b border-[#2A2A2A] flex items-center justify-between">
+            <div className="px-5 py-4 border-b border-white/[0.04] flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span
                   className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded"
@@ -639,7 +810,7 @@ function ByStatusView({ people }: { people: Person[] }) {
                 {bucket.length}
               </span>
             </div>
-            <ul className="divide-y divide-[#2A2A2A]">
+            <ul className="divide-y divide-white/[0.04]">
               {bucket.map((p) => (
                 <li
                   key={p.id}

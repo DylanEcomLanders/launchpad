@@ -123,7 +123,7 @@ export default function InvoiceDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-hidden shadow-[var(--shadow-soft)]">
+        <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
           {invoice.file_url ? (
             invoice.file_url.endsWith(".pdf") || invoice.file_name?.toLowerCase().endsWith(".pdf") ? (
               <iframe src={invoice.file_url} className="w-full h-[700px]" title="Invoice preview" />
@@ -139,7 +139,7 @@ export default function InvoiceDetailPage() {
         </div>
 
         <div className="space-y-4">
-          <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-5 shadow-[var(--shadow-soft)]">
+          <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D]">Status</h3>
               <span
@@ -174,7 +174,7 @@ export default function InvoiceDetailPage() {
             </div>
           </div>
 
-          <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-5 shadow-[var(--shadow-soft)] space-y-3">
+          <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)] space-y-3">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D]">Details</h3>
             <Field
               label="Supplier"
@@ -263,14 +263,14 @@ export default function InvoiceDetailPage() {
                 className={textareaClass}
               />
             </div>
-            <div className="text-xs text-[#71757D] pt-2 border-t border-[#2A2A2A]">
+            <div className="text-xs text-[#71757D] pt-2 border-t border-white/[0.04]">
               Total: <span className="font-medium text-[#E5E5EA]">{fmtMoney(invoice.amount, invoice.currency)}</span>
               {invoice.paid_date && <> · Paid {fmtDateUK(invoice.paid_date)}</>}
             </div>
           </div>
 
           {invoice.status_history && invoice.status_history.length > 0 && (
-            <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-5 shadow-[var(--shadow-soft)]">
+            <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-3">
                 Status history
               </h3>

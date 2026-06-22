@@ -174,7 +174,7 @@ export default function HiringPanel() {
   return (
     <div>
       {/* Open roles strip */}
-      <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-4 mb-4 shadow-[var(--shadow-soft)]">
+      <div className="bg-[#0F0F10] ring-1 ring-white/[0.04] rounded-xl p-4 mb-4 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-[#71757D]">
             Open roles
@@ -202,7 +202,7 @@ export default function HiringPanel() {
                     className={`px-3 py-1.5 rounded-lg text-xs border ${
                       active
                         ? "bg-white text-[#0C0C0C] border-white"
-                        : "bg-[#181818] text-[#E5E5EA] border-[#2A2A2A] hover:border-white"
+                        : "bg-[#0F0F10] text-[#E5E5EA] ring-1 ring-white/[0.04] hover:ring-white/[0.12]"
                     }`}
                   >
                     {r.title} <span className="opacity-70">· {count}</span>
@@ -327,7 +327,7 @@ function KanbanColumn({
       className={`rounded-xl flex flex-col transition-colors ${
         over
           ? "bg-[#222222] border-2 border-dashed border-[#9CA3AF]"
-          : "bg-[#181818] border border-[#2A2A2A]"
+          : "bg-[#0F0F10] border border-white/[0.04]"
       }`}
       onDragOver={(e) => {
         e.preventDefault();
@@ -341,7 +341,7 @@ function KanbanColumn({
         if (cid) onMove(cid, id);
       }}
     >
-      <div className="px-3 py-3 border-b border-[#2A2A2A]">
+      <div className="px-3 py-3 border-b border-white/[0.04]">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <span
@@ -405,7 +405,7 @@ function CandidateCard({
         e.dataTransfer.effectAllowed = "move";
       }}
       onClick={onClick}
-      className="bg-[#181818] border border-[#2A2A2A] rounded-lg p-3 cursor-pointer hover:border-white transition-colors"
+      className="bg-[#0F0F10] ring-1 ring-white/[0.04] rounded-lg p-3 cursor-pointer hover:ring-violet-500/30 transition-all"
     >
       <div className="flex items-start justify-between gap-2 mb-1">
         <div className="font-medium text-sm text-[#E5E5EA] truncate">{candidate.full_name}</div>
@@ -474,7 +474,7 @@ function ComposeCandidateModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-      <form onSubmit={submit} className="bg-[#181818] rounded-xl shadow-xl w-full max-w-md p-6">
+      <form onSubmit={submit} className="bg-[#0F0F10] rounded-xl shadow-xl w-full max-w-md p-6">
         <h2 className="text-lg font-semibold text-[#E5E5EA] mb-4">Add candidate</h2>
         <div className="space-y-3">
           <div>
@@ -545,7 +545,7 @@ function AddRoleModal({ onCancel, onSave }: { onCancel: () => void; onSave: (r: 
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-      <form onSubmit={submit} className="bg-[#181818] rounded-xl shadow-xl w-full max-w-md p-6">
+      <form onSubmit={submit} className="bg-[#0F0F10] rounded-xl shadow-xl w-full max-w-md p-6">
         <h2 className="text-lg font-semibold text-[#E5E5EA] mb-4">Add open role</h2>
         <div className="space-y-3">
           <div>
@@ -630,10 +630,10 @@ function CandidateSidePanel({
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex justify-end" onClick={onClose}>
       <div
-        className="bg-[#181818] w-full max-w-lg h-full overflow-y-auto shadow-2xl"
+        className="bg-[#0F0F10] w-full max-w-lg h-full overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 bg-[#181818] border-b border-[#2A2A2A] px-5 py-3 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-[#0F0F10] border-b border-white/[0.04] px-5 py-3 flex items-center justify-between z-10">
           <h2 className="text-lg font-semibold text-[#E5E5EA]">{candidate.full_name}</h2>
           <button onClick={onClose} className="text-[#71757D] hover:text-[#E5E5EA]">
             <XMarkIcon className="size-5" />
@@ -743,7 +743,7 @@ function CandidateSidePanel({
               placeholder="Markdown supported."
             />
           </div>
-          <div className="text-[11px] text-[#71757D] pt-2 border-t border-[#2A2A2A]">
+          <div className="text-[11px] text-[#71757D] pt-2 border-t border-white/[0.04]">
             Added {fmtDateUK(candidate.date_added)} · Updated {fmtDateUK(candidate.updated_at)}
           </div>
 

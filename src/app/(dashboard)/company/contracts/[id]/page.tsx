@@ -161,7 +161,7 @@ export default function ContractDetailPage() {
 
       {/* Signing URL */}
       {agreement.status !== "terminated" && (
-        <div className="mb-6 p-4 bg-[#181818] border border-[#2A2A2A] rounded-xl">
+        <div className="mb-6 p-4 bg-[#0F0F10] border border-white/[0.04] rounded-xl">
           <div className={labelClass}>Signing link</div>
           <div className="flex gap-2">
             <input readOnly value={signingUrl} className={inputClass} />
@@ -218,7 +218,7 @@ export default function ContractDetailPage() {
 
       {/* Counter-sign form */}
       {showCounterSign && (
-        <div className="mb-6 p-4 bg-[#181818] border border-white rounded-xl">
+        <div className="mb-6 p-4 bg-[#0F0F10] border border-white rounded-xl">
           <div className="text-[13px] font-medium text-[#E5E5EA] mb-4">
             Counter-sign
           </div>
@@ -298,7 +298,7 @@ export default function ContractDetailPage() {
 
       {/* Terminate form */}
       {showTerminate && (
-        <div className="mt-4 p-4 bg-[#181818] border border-[#FCE4E4] rounded-xl">
+        <div className="mt-4 p-4 bg-[#0F0F10] border border-[#FCE4E4] rounded-xl">
           <div className="text-[13px] font-medium text-[#B22B2B] mb-3">
             Terminate this agreement
           </div>

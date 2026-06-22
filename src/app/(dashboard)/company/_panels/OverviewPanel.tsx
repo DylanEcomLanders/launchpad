@@ -157,7 +157,7 @@ export default function OverviewPanel() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 bg-[#181818] border border-[#2A2A2A] rounded-xl p-5 shadow-[var(--shadow-soft)]">
+        <div className="lg:col-span-2 bg-[#0F0F10] border border-white/[0.04] rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-4">
             Recent activity
           </h2>
@@ -185,7 +185,7 @@ export default function OverviewPanel() {
           )}
         </div>
 
-        <div className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-5 shadow-[var(--shadow-soft)]">
+        <div className="bg-[#0F0F10] border border-white/[0.04] rounded-xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.35)]">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-[#71757D] mb-4">
             Jump to
           </h2>
@@ -219,7 +219,7 @@ function StatCard({
   return (
     <Link
       href={href}
-      className="block bg-[#181818] border border-[#2A2A2A] rounded-xl p-5 hover:border-white transition-colors shadow-[var(--shadow-soft)]"
+      className="block bg-[#0F0F10] border border-white/[0.04] rounded-xl p-5 hover:border-white/[0.12] transition-colors shadow-[0_8px_32px_rgba(0,0,0,0.35)]"
     >
       <div className="flex items-center gap-2 text-[#71757D] mb-2">
         <Icon className="size-4" />
