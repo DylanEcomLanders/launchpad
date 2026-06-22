@@ -37,6 +37,26 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-109",
+    date: "22 June 2026",
+    version: "2.1.0",
+    title: "Tidy pass: sidebar map, dashboards flowing, attachments, Hero Offer rebuild",
+    changes: [
+      { type: "improved", text: "Sidebar rewritten to a 10-surface map: My Work (top, all roles) → Delivery (kanban) → Old Delivery (legacy /workspace, name signals it's a transition surface) → KPIs → Sales → Retention → Hero Offer (with gradient star + diagonal shimmer) → Training → Team Tools (/team hub with all 13+ team surfaces) → Toolkit (/ admin utility launcher) → Finance + Admin (locked). Shortcuts demoted to footer with Changelog + Shelved. Command palette mirrors the new structure" },
+      { type: "added", text: "Sales dashboard at /sales, promoted from /preview/sales and wired to real data. Reads leads + proposals via new useSalesData() adapter that transforms the new lead model into the dashboard's expected shapes. Pipeline kanban + funnel + KPI strip + alerts all running off live tables. Inbox uses lead.touches as message backing. MRR derived from revenue_band heuristic" },
+      { type: "added", text: "Retention dashboard gets a Live ops 4th tab pulling from client_touches + client_milestones + client_onboardings + test_wins. Surfaces active onboardings with progress bars, due/upcoming milestones (14d window), recent touches, recent test wins. Empty-state CTAs back to the source tools" },
+      { type: "added", text: "KPI dashboard gets a Tests strip below delivery stats: live tests now, called this period (W/L/I split), period winners, cumulative win rate. Reads ab_tests directly" },
+      { type: "added", text: "Hero Offer tabs reframed - Start here → The Offer (brochure-style hero: one-liner, 3 tiers, North Star, guarantee, ICP). Acquisition / Execution / Retention each get a Tools grid at the top surfacing live + shell sub-tools (11 / 9 / 10 cards each). Existing playbook content stays below as reference" },
+      { type: "added", text: "16 new Hero Offer tool shells - 8 Acquisition (objections library, sales deck, pitch deck, proof deck, one-pager, cold outreach with 4-touch cadence + copy-paste templates, qualification script with 6 discovery questions, tier-fit calculator with ROI math), 4 Execution (kickoff deck, hand-off checklists, standup template, variant design templates), 4 Retention (Day 30/90/180/365 decks with slide spines)" },
+      { type: "added", text: "Universal attachments system: polymorphic attachments table + AttachmentsPanel component + artefact registry covering audits / proposals / reports / briefs / roadmaps / tests / test-wins. Drop into any record with parent type + id; picker searches every artefact across Launchpad. Wired into /pipeline/[id] (lead detail)" },
+      { type: "added", text: "PDF download buttons on the 4 public output pages (audit, proposal, brief, report). Print stylesheet preserves backgrounds + gradients via color-adjust: exact. Browser print-to-PDF, no server-side render needed" },
+      { type: "fixed", text: "Pricing page restored to its original 568-line editorial layout (3-tier CE pricing + billing toggle + comparison matrix + à la carte builds + FAQ). My overwrite earlier was a mistake" },
+      { type: "fixed", text: "Migration syntax across 12 files: create policy if not exists isn't supported by Supabase's Postgres - replaced with drop policy if exists then create policy. Consolidated paste verified: all 12 tables (032-043) have working RLS policies" },
+      { type: "improved", text: "Toolkit (/ landing) pruned to 6 daily-use tools (Portfolio · Case studies · Price list · Payment link · Onboarding form · Feedback). 12 others shelved from THAT landing but still reachable via direct URL + ⌘K + their surface homes (Hero Offer / Retention / Toolkit's older entries). Memory note saved with re-pin heuristic" },
+      { type: "improved", text: "Archive snapshot at archive/pre-tidy-2026-06-22 + tag - any deleted route is recoverable" },
+    ],
+  },
+  {
     id: "cl-108",
     date: "22 June 2026",
     version: "2.0.0",

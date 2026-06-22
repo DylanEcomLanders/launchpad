@@ -277,14 +277,26 @@ const shortcutsItem = {
   icon: <BoltIcon className="size-4" />,
 };
 
-/* Team Tools — single pinned item replacing the old flat list of team
- * utilities. Lands on the first tool; a TeamToolsNav pill strip (mounted by
- * TeamToolsShell in the dashboard layout) rides above every /team/* route, so
- * Swipe File / Font Library / Submit Invoice / Payments tab in-page. */
+/* Team Tools — lands on the /team hub page, which is a card-grid
+ * of every team-facing surface (Pods, Task Board, Client Portals,
+ * Ops Wiki, Payments, Design Library, Swipe File, Fonts, Submit
+ * Invoice, etc). Single entry, rich internal nav. The TeamToolsNav
+ * pill strip still rides above /team/* routes for tab navigation. */
 const teamToolsItem = {
   label: "Team Tools",
-  href: teamItems[0].href,
+  href: "/team",
   icon: <PuzzlePieceIcon className="size-4" />,
+};
+
+/* Toolkit — lands on the / dashboard home, the admin utility-tool
+ * launcher (Payment Link / Invoice Generator / Dev Hours /
+ * Intelligems / Hook Generator / Scope Generator / Content DB etc).
+ * Was dropped in the 10-surface rewrite by mistake; restored here
+ * so the utility tools stay discoverable. */
+const toolkitItem = {
+  label: "Toolkit",
+  href: "/",
+  icon: <HomeIcon className="size-4" />,
 };
 
 export function Sidebar() {
@@ -342,6 +354,9 @@ export function Sidebar() {
       : []),
     ...(role === "admin"
       ? [{ label: adminItem.label, href: adminItem.href, group: "Pinned", icon: adminItem.icon, keywords: ["company", "people", "hiring"] }]
+      : []),
+    ...(role !== "team"
+      ? [{ label: toolkitItem.label, href: toolkitItem.href, group: "Pinned", icon: toolkitItem.icon, keywords: ["tools", "launcher", "payment", "invoice", "intelligems"] }]
       : []),
     // Team utilities — searchable for everyone.
     ...teamItems.map((i: NavItem) => ({ label: i.label, href: i.href, group: "Team" })),
@@ -584,12 +599,15 @@ export function Sidebar() {
             {renderTopLink(trainingItem)}
           </div>
 
-          {/* GROUP 5 — Team Tools: single collapsible-style item. The
-              TeamToolsNav pill strip rides above /team/* (see
-              TeamToolsShell) so Swipe File / Fonts / Submit Invoice /
-              Payments tab in-page. Visible to everyone. */}
+          {/* GROUP 5 — Hubs for sub-tools. Team Tools lands on /team
+              (card grid of team-facing surfaces). Toolkit lands on /
+              (card grid of admin utility tools: Payment Link, Invoice
+              Generator, Dev Hours, Intelligems demo, Hook Generator,
+              etc). Both keep the long tail discoverable without
+              spamming the sidebar. */}
           <div className="px-3 space-y-0.5 mt-6">
             {renderTopLink(teamToolsItem)}
+            {role !== "team" && renderTopLink(toolkitItem)}
           </div>
 
           {/* GROUP 6 — Admin cluster: Finance (locked) above Admin
