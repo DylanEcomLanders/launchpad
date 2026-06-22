@@ -780,7 +780,41 @@ export default function KanbanPage() {
     title: string,
     category?: string,
   ) {
-    if (!title.trim() || !activeClient || !activeProject) return;
+    /* Title can't be empty - that's a no-op, no need to nag. */
+    if (!title.trim()) return;
+    if (!activeClient) {
+      window.alert(
+        "No client selected. Add a client first via the client picker, then try again.",
+      );
+      return;
+    }
+    /* The silent fail before was: hit Enter with no project, nothing
+     * happens. Now we surface why + give the team a one-click escape. */
+    if (!activeProject) {
+      const create = window.confirm(
+        `"${activeClient.name}" has no project yet. Create a default project and add this card to it?`,
+      );
+      if (!create) return;
+      const newProjectId = `proj-${Date.now()}`;
+      setClients((prev) => {
+        const next = cloneClients(prev);
+        const c = next.find((x) => x.id === activeClient.id);
+        if (!c) return next;
+        c.projects.push({
+          id: newProjectId,
+          name: "Default project",
+          type: "build",
+          turnaroundDays: 20,
+          deliverables: [],
+        });
+        return next;
+      });
+      setProjectId(newProjectId);
+      /* Defer the deliverable add by one tick so React picks up the new
+       * project from the state update before activeProject re-derives. */
+      setTimeout(() => addDeliverable(phase, title, category), 0);
+      return;
+    }
     setClients((prev) => {
       const next = cloneClients(prev);
       const c = next.find((x) => x.id === activeClient.id);
