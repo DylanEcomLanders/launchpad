@@ -37,6 +37,20 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-111",
+    date: "23 June 2026",
+    version: "2.2.0",
+    title: "Sales dashboard fully wired: persistence, Add lead, channel API stubs",
+    changes: [
+      { type: "added", text: "Sales dashboard mutations now PERSIST. Drag-to-stage, log-touch, notes edits, send messages — everything writes to leadsStore so refresh keeps state. Toast flash on every save" },
+      { type: "added", text: "+ Add lead button in the Sales header. Quick capture modal (name, brand, URL, email, source, owner, revenue band) writes a new Lead via leadsStore.create + reloads to pick it up in the kanban" },
+      { type: "added", text: "Inbound channel webhook stubs: POST /api/sales/inbound/{whatsapp,twitter,linkedin,email}. Canonical payload, looks up Lead by email or by handle in notes/source, appends an inbound touch. Returns matched + leadId for ack" },
+      { type: "added", text: "Outbound send stub: POST /api/sales/outbound/send. Routes by channel, console-logs intent today, becomes a real router when API tokens are plugged in. Records outbound touch so the inbox reflects every send" },
+      { type: "added", text: "docs/sales-integrations.md — full howto for plugging in WhatsApp Business, Twitter X DMs, LinkedIn (via Unipile), and email (Postmark/Resend). Per-channel webhook wiring + outbound dispatch examples + security TODOs" },
+      { type: "improved", text: "Channel + LeadSource enums extended with twitter so X DMs are a first-class option in the inbox" },
+    ],
+  },
+  {
     id: "cl-110",
     date: "22 June 2026",
     version: "2.1.1",

@@ -28,6 +28,7 @@ import { MOCK_TODAY } from "@/lib/sales-dashboard/config";
 const CHANNEL_META: Record<Channel, { label: string; color: string }> = {
   email: { label: "Email", color: "#5B8DEF" },
   whatsapp: { label: "WhatsApp", color: "#25D366" },
+  twitter: { label: "X", color: "#1DA1F2" },
   instagram: { label: "Instagram", color: "#E1306C" },
   linkedin: { label: "LinkedIn", color: "#0A66C2" },
   cal_com: { label: "Cal.com", color: "#9CA3AF" },
