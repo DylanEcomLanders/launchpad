@@ -29,6 +29,10 @@ import type { Pod } from "@/lib/pods-v2/types";
 import { personByPodMemberId } from "@/lib/people/resolver";
 import { inputClass, labelClass, selectClass } from "@/lib/form-styles";
 import { initials, deptColor, STATUS_BADGE } from "@/lib/company/ui";
+import { GenerateAgreementsModal } from "@/components/agreements/generate-modal";
+import { agreementStore } from "@/lib/agreements/data";
+import type { Agreement } from "@/lib/agreements/types";
+import { useRouter } from "next/navigation";
 
 type View = "grid" | "table" | "byPod" | "byStatus";
 
@@ -43,6 +47,11 @@ export default function PeoplePanel() {
   const [typeFilter, setTypeFilter] = useState<"all" | EmploymentType>("all");
   const [statusFilter, setStatusFilter] = useState<"all" | PersonStatus>("all");
   const [showAdd, setShowAdd] = useState(false);
+  /* When the Add Person flow ticks "Generate contract", we stash the
+   * just-created Person here so the GenerateAgreementsModal pops with
+   * their details pre-filled. Cleared on close. */
+  const [contractTargetPerson, setContractTargetPerson] = useState<Person | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     peopleStore.getAll().then((rows) => {
@@ -85,7 +94,7 @@ export default function PeoplePanel() {
 
   async function handleAdd(
     person: Person,
-    options: { sendInvite: boolean },
+    options: { sendInvite: boolean; generateContract: boolean },
   ) {
     await peopleStore.create(person);
     setPeople((rows) => [person, ...rows]);
@@ -116,6 +125,23 @@ export default function PeoplePanel() {
       } catch (err) {
         console.error("[people] invite during add failed:", err);
       }
+    }
+    /* Auto-open the contract review modal. The shared
+     * GenerateAgreementsModal handles template snapshotting + draft
+     * creation. We pass an empty `existing` array because this is a
+     * brand-new Person. */
+    if (options.generateContract) {
+      setContractTargetPerson(person);
+    }
+  }
+
+  function handleAgreementCreated(created: Agreement[]) {
+    const contract = created.find((a) => a.kind === "contract");
+    setContractTargetPerson(null);
+    /* Route straight into the contract detail page so admin can
+     * review clauses + share the signing link in one step. */
+    if (contract) {
+      router.push(`/company/contracts/${contract.id}`);
     }
   }
 
@@ -253,6 +279,19 @@ export default function PeoplePanel() {
       )}
 
       {showAdd && <AddPersonModal onCancel={() => setShowAdd(false)} onSave={handleAdd} />}
+      {/* Contract auto-review. Opens when Add Person ticked "Generate
+       * contract draft" and the Person was created. Submission writes
+       * a draft Agreement, then we route into its detail page to
+       * share the signing link. */}
+      {contractTargetPerson && (
+        <GenerateAgreementsModal
+          open={true}
+          onClose={() => setContractTargetPerson(null)}
+          person={contractTargetPerson}
+          existing={[]}
+          onCreated={handleAgreementCreated}
+        />
+      )}
     </div>
   );
 }
@@ -500,7 +539,10 @@ function AddPersonModal({
   onSave,
 }: {
   onCancel: () => void;
-  onSave: (p: Person, options: { sendInvite: boolean }) => void;
+  onSave: (
+    p: Person,
+    options: { sendInvite: boolean; generateContract: boolean },
+  ) => void;
 }) {
   const [name, setName] = useState("");
   const [jobTitle, setJobTitle] = useState("");
@@ -511,6 +553,9 @@ function AddPersonModal({
    * for the "set up new person + send invite" flow to be a single
    * step, so we lean into it - just uncheck to skip. */
   const [sendInvite, setSendInvite] = useState(true);
+  /* Contract default: on. Dylan's flow is "create person → generate
+   * contract draft → review + send for signature". Skipping is rare. */
+  const [generateContract, setGenerateContract] = useState(true);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -532,7 +577,10 @@ function AddPersonModal({
     /* Only fire the invite if we actually have an email AND the box
      * is ticked. Saves a useless API roundtrip + avoids "invite sent"
      * confusion when there's nothing to invite. */
-    onSave(person, { sendInvite: sendInvite && !!trimmedEmail });
+    onSave(person, {
+      sendInvite: sendInvite && !!trimmedEmail,
+      generateContract,
+    });
   }
 
   return (
@@ -616,6 +664,25 @@ function AddPersonModal({
               <span className="font-medium">Send invite to launchpad</span>
               <span className="block text-[#71757D] text-[11px] mt-0.5">
                 They&apos;ll get an email to set their password, then sign in with email + password.
+              </span>
+            </span>
+          </label>
+          {/* Auto-generate contract: snapshots the active contract
+              template (clauses + placeholders) into a draft Agreement
+              row tied to this Person, then pops the comp/role review
+              modal so admin can fill the missing fields before sending
+              the signing link. */}
+          <label className="flex items-start gap-2 text-xs text-[#E5E5EA]">
+            <input
+              type="checkbox"
+              checked={generateContract}
+              onChange={(e) => setGenerateContract(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span>
+              <span className="font-medium">Generate contract draft</span>
+              <span className="block text-[#71757D] text-[11px] mt-0.5">
+                Opens a contract review form pre-filled with role + employment type. You confirm comp + start date, then share the signing link.
               </span>
             </span>
           </label>

@@ -40,8 +40,9 @@ const seedChangelog: ChangelogEntry[] = [
     id: "cl-110",
     date: "22 June 2026",
     version: "2.1.1",
-    title: "Pod canonical model: Admin owns team composition, PersonPicker everywhere",
+    title: "Pod canonical model + auto-contract on Person create",
     changes: [
+      { type: "added", text: "Add Person flow now has a Generate contract draft toggle (default on). After save, the GenerateAgreementsModal pops with role + employment type pre-filled, you confirm comp + start date, a draft Agreement is created, and you land on /company/contracts/[id] to share the signing link. One-step create-person + contract-ready" },
       { type: "added", text: "New Admin tab: Pods. /company/pods is the canonical place to define pods, slot Persons into Strategist / Designer / Developer / Copy roles. Each slot is a PersonPicker pulling from /company/people, so renames + invites propagate everywhere automatically. Top callout flags any Person not yet slotted into a pod" },
       { type: "added", text: "PersonPicker shared component (src/components/person-picker.tsx) - universal Person dropdown with gradient avatar tile, dept-coloured initials, search, and dept filter. Becomes the source of truth for who's who across Launchpad. PersonPickerNamed wrapper handles surfaces that still store free-text display names" },
       { type: "improved", text: "/admin chrome sweep: gradient title + pink tab pills dialled back to clean white title + subtle ring-active tab so Hero Offer keeps its visual throne. Every panel + sub-page swapped from legacy bg-[#181818] / border-[#2A2A2A] to Hero Offer chrome (bg-[#0F0F10] + border-white/[0.04] + 0_8px_32px shadow). Grey bar at the bottom of /admin surfaces fixed by stretching the wrapper to viewport-minus-header" },
