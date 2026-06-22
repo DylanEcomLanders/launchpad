@@ -81,6 +81,18 @@ export interface Agreement {
   comp_currency?: string;
   comp_frequency?: string;
   start_date?: string;
+  /* ── Engagement Schedule fields (Contractor Agreement v2026-06-22) ─
+   * Optional, all default to readable placeholders when missing so the
+   * rendered doc never shows raw {{ placeholders }}. Surface them in
+   * the GenerateAgreementsModal when richer per-contract capture is
+   * needed; for now sensible defaults keep new contracts shippable. */
+  contractor_company?: string;       // Limited company name, if any
+  contractor_address?: string;       // Postal address
+  operating_as?: string;             // "Sole trader" | "Limited company" | "Overseas"
+  reporting_to?: string;             // Manager / lead name
+  services_description?: string;     // Bullets of role-specific scope
+  vat_status?: string;               // "Not VAT registered" | "VAT no. XXX"
+  restriction_months?: number;       // Post-engagement non-compete window (default 6)
   /* ── Template snapshot ────────────────────────────────────────── */
   template_revision: string;
   template_body: TemplateBody;

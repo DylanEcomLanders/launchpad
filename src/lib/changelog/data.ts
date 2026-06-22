@@ -40,8 +40,10 @@ const seedChangelog: ChangelogEntry[] = [
     id: "cl-110",
     date: "22 June 2026",
     version: "2.1.1",
-    title: "Pod canonical model + auto-contract on Person create",
+    title: "Pod canonical, auto-contract, new contractor agreement v2, PDF download",
     changes: [
+      { type: "added", text: "New Contractor Agreement template (v2.0 - 2026-06-22). Full Master Terms (20 clauses: Definitions, Engagement, Status, Services, Substitution, Fees, Equipment, IP, Confidentiality, Data Protection, Warranties, Restrictions, Termination, Obligations on Termination, Indemnities, Insurance, Limitation, Notices, General, Governing Law) plus an Engagement Schedule. Auto-upgrades any un-edited v1.0 template on next load; custom edits stay untouched. Edit via /company/contracts/templates" },
+      { type: "added", text: "Download PDF button on contract detail (/company/contracts/[id]). Browser print-to-PDF via a print stylesheet that hides app chrome, flips to white-page / black-ink, sets A4 margins, and renders just the contract. Cmd+P → Save as PDF gives you a clean shareable copy" },
       { type: "added", text: "Add Person flow now has a Generate contract draft toggle (default on). After save, the GenerateAgreementsModal pops with role + employment type pre-filled, you confirm comp + start date, a draft Agreement is created, and you land on /company/contracts/[id] to share the signing link. One-step create-person + contract-ready" },
       { type: "added", text: "New Admin tab: Pods. /company/pods is the canonical place to define pods, slot Persons into Strategist / Designer / Developer / Copy roles. Each slot is a PersonPicker pulling from /company/people, so renames + invites propagate everywhere automatically. Top callout flags any Person not yet slotted into a pod" },
       { type: "added", text: "PersonPicker shared component (src/components/person-picker.tsx) - universal Person dropdown with gradient avatar tile, dept-coloured initials, search, and dept filter. Becomes the source of truth for who's who across Launchpad. PersonPickerNamed wrapper handles surfaces that still store free-text display names" },
