@@ -279,6 +279,13 @@ export default function ContractDetailPage() {
         </div>
       )}
 
+      {/* ── Engagement details (inline-edit base fields) ──
+       * Sits above the rendered preview. Edits patch the Agreement
+       * row + the doc below re-renders live. The 20 master clauses
+       * stay in /company/contracts/templates ("Edit master clauses"
+       * link at the footer). */}
+      <EngagementDetailsPanel agreement={agreement} onPatch={patch} />
+
       {/* Rendered document. Wrapped in .printable-document so the
        * @media print stylesheet (globals.css) hides everything else
        * on the page when you Cmd+P → Save as PDF. */}
@@ -288,12 +295,20 @@ export default function ContractDetailPage() {
 
       {/* Footer actions */}
       <div className="mt-6 flex items-center justify-between gap-3">
-        <Link
-          href={`/company/people/${agreement.person_id}`}
-          className="text-[12px] text-[#71757D] hover:text-[#E5E5EA] hover:underline transition-colors"
-        >
-          View person profile →
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            href={`/company/people/${agreement.person_id}`}
+            className="text-[12px] text-[#71757D] hover:text-[#E5E5EA] hover:underline transition-colors"
+          >
+            View person profile →
+          </Link>
+          <Link
+            href="/company/contracts/templates"
+            className="text-[12px] text-[#71757D] hover:text-[#E5E5EA] hover:underline transition-colors"
+          >
+            Edit master clauses →
+          </Link>
+        </div>
         <div className="flex items-center gap-2">
           {agreement.status === "active" && !showTerminate && (
             <button
@@ -343,6 +358,295 @@ export default function ContractDetailPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ── Engagement details panel ──
+ * Inline-edit base fields. Renders above the contract preview so
+ * changes show up live in the rendered doc below.
+ *
+ * Writes happen on blur (or change for selects) so the keystroke
+ * doesn't trigger a Supabase round-trip per character. The patch
+ * func is passed in from the parent and handles localStorage +
+ * Supabase mirror.
+ *
+ * Read-only when status is anything other than draft, because
+ * editing a contract the contractor has already signed is a
+ * different workflow (terminate + re-issue). */
+function EngagementDetailsPanel({
+  agreement,
+  onPatch,
+}: {
+  agreement: Agreement;
+  onPatch: (updates: Partial<Agreement>) => Promise<void>;
+}) {
+  const [open, setOpen] = useState(agreement.status === "draft");
+  const isDraft = agreement.status === "draft";
+
+  /* Local form state - lets the user keep typing without the parent
+   * re-rendering on every keystroke. Syncs to parent on blur. */
+  const [form, setForm] = useState({
+    person_full_name: agreement.person_full_name || "",
+    person_email: agreement.person_email || "",
+    person_job_title: agreement.person_job_title || "",
+    person_employment_type: agreement.person_employment_type,
+    start_date: agreement.start_date || "",
+    comp_amount: agreement.comp_amount?.toString() || "",
+    comp_currency: agreement.comp_currency || "GBP",
+    comp_frequency: agreement.comp_frequency || "monthly",
+    contractor_address: agreement.contractor_address || "",
+    operating_as: agreement.operating_as || "Sole trader",
+    reporting_to: agreement.reporting_to || "Dylan Evans",
+    services_description: agreement.services_description || "",
+    vat_status: agreement.vat_status || "Not VAT registered",
+    restriction_months: agreement.restriction_months?.toString() || "6",
+    contractor_company: agreement.contractor_company || "",
+  });
+
+  function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
+    setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  function commit<K extends keyof Agreement>(
+    key: K,
+    value: Agreement[K] | string | number | undefined,
+  ) {
+    if (!isDraft) return;
+    onPatch({ [key]: value } as Partial<Agreement>);
+  }
+
+  return (
+    <div className="mb-6 bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.04] shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full px-5 py-3 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors"
+      >
+        <div>
+          <div className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold">
+            Engagement details
+          </div>
+          <div className="text-[13px] text-[#E5E5EA] mt-0.5">
+            {isDraft
+              ? "Edit the base fields - the contract below updates live"
+              : "Locked: contract is past draft status"}
+          </div>
+        </div>
+        <span className="text-[#71757D] text-[18px]">{open ? "−" : "+"}</span>
+      </button>
+
+      {open && (
+        <div className="px-5 pb-5 pt-1 border-t border-white/[0.04] space-y-4">
+          {/* Identity */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Field label="Full name">
+              <input
+                disabled={!isDraft}
+                className={inputClass}
+                value={form.person_full_name}
+                onChange={(e) => set("person_full_name", e.target.value)}
+                onBlur={(e) => commit("person_full_name", e.target.value)}
+              />
+            </Field>
+            <Field label="Email">
+              <input
+                disabled={!isDraft}
+                className={inputClass}
+                value={form.person_email}
+                onChange={(e) => set("person_email", e.target.value)}
+                onBlur={(e) => commit("person_email", e.target.value || undefined)}
+                placeholder="alex@ecomlanders.com"
+              />
+            </Field>
+          </div>
+
+          {/* Role + type */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <Field label="Role / title" className="md:col-span-2">
+              <input
+                disabled={!isDraft}
+                className={inputClass}
+                value={form.person_job_title}
+                onChange={(e) => set("person_job_title", e.target.value)}
+                onBlur={(e) => commit("person_job_title", e.target.value || undefined)}
+                placeholder="Conversion Strategist"
+              />
+            </Field>
+            <Field label="Type">
+              <select
+                disabled={!isDraft}
+                className={inputClass}
+                value={form.person_employment_type}
+                onChange={(e) => {
+                  const v = e.target.value as "employee" | "contractor";
+                  set("person_employment_type", v);
+                  commit("person_employment_type", v);
+                }}
+              >
+                <option value="contractor">Contractor</option>
+                <option value="employee">Employee</option>
+              </select>
+            </Field>
+          </div>
+
+          {/* Comp + start */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Field label="Comp amount">
+              <input
+                disabled={!isDraft}
+                type="number"
+                className={inputClass}
+                value={form.comp_amount}
+                onChange={(e) => set("comp_amount", e.target.value)}
+                onBlur={(e) => commit("comp_amount", e.target.value ? Number(e.target.value) : undefined)}
+                placeholder="500"
+              />
+            </Field>
+            <Field label="Currency">
+              <select
+                disabled={!isDraft}
+                className={inputClass}
+                value={form.comp_currency}
+                onChange={(e) => {
+                  set("comp_currency", e.target.value);
+                  commit("comp_currency", e.target.value);
+                }}
+              >
+                <option value="GBP">GBP £</option>
+                <option value="USD">USD $</option>
+                <option value="EUR">EUR €</option>
+              </select>
+            </Field>
+            <Field label="Frequency">
+              <select
+                disabled={!isDraft}
+                className={inputClass}
+                value={form.comp_frequency}
+                onChange={(e) => {
+                  set("comp_frequency", e.target.value);
+                  commit("comp_frequency", e.target.value);
+                }}
+              >
+                <option value="monthly">month</option>
+                <option value="weekly">week</option>
+                <option value="per_invoice">invoice</option>
+              </select>
+            </Field>
+            <Field label="Start date">
+              <input
+                disabled={!isDraft}
+                type="date"
+                className={inputClass}
+                value={form.start_date}
+                onChange={(e) => set("start_date", e.target.value)}
+                onBlur={(e) => commit("start_date", e.target.value || undefined)}
+              />
+            </Field>
+          </div>
+
+          {/* Engagement Schedule extras */}
+          <div className="pt-2 border-t border-white/[0.04]">
+            <div className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold mb-3">
+              Engagement Schedule
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Field label="Operating as">
+                <select
+                  disabled={!isDraft}
+                  className={inputClass}
+                  value={form.operating_as}
+                  onChange={(e) => {
+                    set("operating_as", e.target.value);
+                    commit("operating_as", e.target.value);
+                  }}
+                >
+                  <option value="Sole trader">Sole trader</option>
+                  <option value="Limited company">Limited company</option>
+                  <option value="Overseas contractor">Overseas contractor</option>
+                </select>
+              </Field>
+              <Field label="Contractor company (if Ltd)">
+                <input
+                  disabled={!isDraft}
+                  className={inputClass}
+                  value={form.contractor_company}
+                  onChange={(e) => set("contractor_company", e.target.value)}
+                  onBlur={(e) => commit("contractor_company", e.target.value || undefined)}
+                  placeholder="Acme Ltd"
+                />
+              </Field>
+              <Field label="Contractor address" className="md:col-span-2">
+                <input
+                  disabled={!isDraft}
+                  className={inputClass}
+                  value={form.contractor_address}
+                  onChange={(e) => set("contractor_address", e.target.value)}
+                  onBlur={(e) => commit("contractor_address", e.target.value || undefined)}
+                  placeholder="123 Acacia Avenue, Manchester M1 1AA"
+                />
+              </Field>
+              <Field label="Reporting to">
+                <input
+                  disabled={!isDraft}
+                  className={inputClass}
+                  value={form.reporting_to}
+                  onChange={(e) => set("reporting_to", e.target.value)}
+                  onBlur={(e) => commit("reporting_to", e.target.value || undefined)}
+                />
+              </Field>
+              <Field label="VAT status">
+                <input
+                  disabled={!isDraft}
+                  className={inputClass}
+                  value={form.vat_status}
+                  onChange={(e) => set("vat_status", e.target.value)}
+                  onBlur={(e) => commit("vat_status", e.target.value || undefined)}
+                  placeholder="Not VAT registered"
+                />
+              </Field>
+              <Field label="Restriction months">
+                <input
+                  disabled={!isDraft}
+                  type="number"
+                  className={inputClass}
+                  value={form.restriction_months}
+                  onChange={(e) => set("restriction_months", e.target.value)}
+                  onBlur={(e) => commit("restriction_months", e.target.value ? Number(e.target.value) : undefined)}
+                />
+              </Field>
+              <Field label="Services description" className="md:col-span-2">
+                <textarea
+                  disabled={!isDraft}
+                  className={textareaClass}
+                  rows={3}
+                  value={form.services_description}
+                  onChange={(e) => set("services_description", e.target.value)}
+                  onBlur={(e) => commit("services_description", e.target.value || undefined)}
+                  placeholder="Conversion design, strategy, build-out for Shopify clients..."
+                />
+              </Field>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Field({
+  label,
+  className,
+  children,
+}: {
+  label: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={className}>
+      <label className={labelClass}>{label}</label>
+      {children}
     </div>
   );
 }

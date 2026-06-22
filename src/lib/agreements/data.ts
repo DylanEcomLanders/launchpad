@@ -97,3 +97,50 @@ export async function getAgreementsForPerson(personId: string): Promise<Agreemen
   const all = await agreementStore.getAll();
   return all.filter((a) => a.person_id === personId);
 }
+
+/* Create a draft contract directly from a Person, snapshotting the
+ * active template + every field the Person record knows. Empty / missing
+ * fields are left undefined on the row; the renderer fills them with
+ * readable placeholders ("—", "[to be confirmed]") so admin can spot
+ * what's missing and fill it via the inline Engagement Details panel
+ * on the contract detail page.
+ *
+ * Used by the Add Person flow: ticking "Generate contract draft" now
+ * creates the agreement inline (no extra modal), routes admin straight
+ * to the preview-edit surface. */
+export async function createContractDraftFromPerson(person: {
+  id: string;
+  full_name: string;
+  email?: string;
+  employment_type: "employee" | "contractor";
+  job_title?: string;
+  compensation_type?: string;
+  compensation_amount?: number;
+  compensation_currency?: string;
+  payment_frequency?: string;
+  start_date?: string;
+}): Promise<Agreement> {
+  const tpl = await ensureTemplate("contract");
+  const now = nowISO();
+  const agreement: Agreement = {
+    id: uid(),
+    kind: "contract",
+    person_id: person.id,
+    person_full_name: person.full_name,
+    person_email: person.email,
+    person_employment_type: person.employment_type,
+    person_job_title: person.job_title,
+    comp_type: person.compensation_type,
+    comp_amount: person.compensation_amount,
+    comp_currency: person.compensation_currency || "GBP",
+    comp_frequency: person.payment_frequency || "monthly",
+    start_date: person.start_date || todayISO(),
+    template_revision: tpl.revision,
+    template_body: structuredClone(tpl.body),
+    status: "draft",
+    created_at: now,
+    updated_at: now,
+  };
+  await agreementStore.create(agreement);
+  return agreement;
+}

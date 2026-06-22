@@ -40,8 +40,10 @@ const seedChangelog: ChangelogEntry[] = [
     id: "cl-110",
     date: "22 June 2026",
     version: "2.1.1",
-    title: "Pod canonical, auto-contract, new contractor agreement v2, PDF download",
+    title: "Contract flow streamlined: no modal, inline-edit, base + advanced split",
     changes: [
+      { type: "improved", text: "Killed the GenerateAgreementsModal pop-up. Ticking Generate contract draft on Add Person now creates the draft inline and routes straight to /company/contracts/[id]. The detail page IS the preview - no intermediate form" },
+      { type: "added", text: "Engagement details inline-edit panel on contract detail. Base fields (name, email, role, type, comp, currency, frequency, start date, address, operating as, reporting to, VAT, restriction months, services) edit in place. Rendered contract below updates live. Locks itself once the contract is past draft (signed contracts can't be edited - terminate + re-issue if needed). Edit master clauses link in the footer goes to /company/contracts/templates for the 20-clause body edits" },
       { type: "added", text: "New Contractor Agreement template (v2.0 - 2026-06-22). Full Master Terms (20 clauses: Definitions, Engagement, Status, Services, Substitution, Fees, Equipment, IP, Confidentiality, Data Protection, Warranties, Restrictions, Termination, Obligations on Termination, Indemnities, Insurance, Limitation, Notices, General, Governing Law) plus an Engagement Schedule. Auto-upgrades any un-edited v1.0 template on next load; custom edits stay untouched. Edit via /company/contracts/templates" },
       { type: "added", text: "Download PDF button on contract detail (/company/contracts/[id]). Browser print-to-PDF via a print stylesheet that hides app chrome, flips to white-page / black-ink, sets A4 margins, and renders just the contract. Cmd+P → Save as PDF gives you a clean shareable copy" },
       { type: "added", text: "Add Person flow now has a Generate contract draft toggle (default on). After save, the GenerateAgreementsModal pops with role + employment type pre-filled, you confirm comp + start date, a draft Agreement is created, and you land on /company/contracts/[id] to share the signing link. One-step create-person + contract-ready" },
