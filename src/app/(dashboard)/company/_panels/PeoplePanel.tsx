@@ -88,38 +88,14 @@ export default function PeoplePanel() {
 
   async function handleAdd(
     person: Person,
-    options: { sendInvite: boolean; generateContract: boolean },
+    options: { generateContract: boolean },
   ) {
     await peopleStore.create(person);
     setPeople((rows) => [person, ...rows]);
     setShowAdd(false);
-    /* Fire-and-forget invite. The button on the Person profile is
-     * still there for retries or for people who joined before this
-     * one-step flow existed. */
-    if (options.sendInvite && person.email) {
-      try {
-        const res = await fetch("/api/admin/invite-user", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: person.email,
-            name: person.full_name,
-            podMemberId: person.pod_member_id ?? null,
-          }),
-        });
-        if (!res.ok) {
-          const body = (await res.json().catch(() => ({}))) as {
-            error?: string;
-          };
-          console.error(
-            "[people] invite during add failed:",
-            body.error || res.status,
-          );
-        }
-      } catch (err) {
-        console.error("[people] invite during add failed:", err);
-      }
-    }
+    /* Login credentials are set manually by admin on the Person
+     * detail page (Set credentials button). The invite-by-email
+     * flow was removed - admin controls who gets access + when. */
     /* Auto-create the contract draft inline (no modal) and route
      * straight to the detail page. The detail page IS the preview
      * + inline-edit surface, so an intermediate form would be
@@ -519,7 +495,7 @@ function AddPersonModal({
   onCancel: () => void;
   onSave: (
     p: Person,
-    options: { sendInvite: boolean; generateContract: boolean },
+    options: { generateContract: boolean },
   ) => void;
 }) {
   const [name, setName] = useState("");
@@ -530,10 +506,6 @@ function AddPersonModal({
    * onboarding a founder / full-time hire. */
   const [employmentType, setEmploymentType] = useState<EmploymentType>("contractor");
   const [email, setEmail] = useState("");
-  /* Invite default: on when email is set. The user explicitly asked
-   * for the "set up new person + send invite" flow to be a single
-   * step, so we lean into it - just uncheck to skip. */
-  const [sendInvite, setSendInvite] = useState(true);
   /* Contract default: on. Dylan's flow is "create person → generate
    * contract draft → review + send for signature". Skipping is rare. */
   const [generateContract, setGenerateContract] = useState(true);
@@ -555,13 +527,7 @@ function AddPersonModal({
       created_at: now,
       updated_at: now,
     };
-    /* Only fire the invite if we actually have an email AND the box
-     * is ticked. Saves a useless API roundtrip + avoids "invite sent"
-     * confusion when there's nothing to invite. */
-    onSave(person, {
-      sendInvite: sendInvite && !!trimmedEmail,
-      generateContract,
-    });
+    onSave(person, { generateContract });
   }
 
   return (
@@ -628,26 +594,6 @@ function AddPersonModal({
               placeholder="alex@ecomlanders.com"
             />
           </div>
-          {/* One-step invite: ticked by default so admin doesnt have to
-              hop to the Person profile after saving. Greys out until an
-              email is entered. */}
-          <label
-            className={`flex items-start gap-2 text-xs ${email.trim() ? "text-[#E5E5EA]" : "text-[#71757D]"}`}
-          >
-            <input
-              type="checkbox"
-              checked={sendInvite && !!email.trim()}
-              disabled={!email.trim()}
-              onChange={(e) => setSendInvite(e.target.checked)}
-              className="mt-0.5"
-            />
-            <span>
-              <span className="font-medium">Send invite to launchpad</span>
-              <span className="block text-[#71757D] text-[11px] mt-0.5">
-                They&apos;ll get an email to set their password, then sign in with email + password.
-              </span>
-            </span>
-          </label>
           {/* Auto-generate contract: snapshots the active contract
               template (clauses + placeholders) into a draft Agreement
               row tied to this Person, then pops the comp/role review

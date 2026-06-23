@@ -120,25 +120,11 @@ export default function HiringPanel() {
     };
     await peopleStore.create(person);
     await patchCandidate(c.id, { status: "hired" });
-    /* Auto-fire the launchpad invite if the candidate had an email.
-     * Hiring → invited in one beat matches the "Add person" one-step
-     * flow on the People panel. Fire-and-forget; failures log only so
-     * the contract step keeps going. */
-    if (person.email) {
-      fetch("/api/admin/invite-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: person.email,
-          name: person.full_name,
-        }),
-      }).catch((err) =>
-        console.error("[hiring] invite on hire failed:", err),
-      );
-    }
-    /* Open the agreements modal so the contract can be generated in
-     * the same beat. The modal can be cancelled if not needed yet - the
-     * Person row is already created either way. */
+    /* Login credentials are now set manually by admin on the Person
+     * detail page (Set credentials button). The invite-by-email flow
+     * was removed - admin controls who gets access + when. Open the
+     * agreements modal so the contract can be generated in the same
+     * beat. */
     setHiredPerson(person);
   }
 
