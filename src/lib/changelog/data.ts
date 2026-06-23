@@ -37,6 +37,15 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-114",
+    date: "23 June 2026",
+    version: "2.2.3",
+    title: "Fix: /login URL 404'd",
+    changes: [
+      { type: "fixed", text: "/login (the canonical sign-in URL shared in Slack DMs) returned 404 because no route existed - AuthGate only renders the form on dashboard URLs. Now /login redirects to / which renders the sign-in form for unauthed users and the role-appropriate home for authed ones. Alister's invite link works as expected" },
+    ],
+  },
+  {
     id: "cl-113",
     date: "23 June 2026",
     version: "2.2.2",
