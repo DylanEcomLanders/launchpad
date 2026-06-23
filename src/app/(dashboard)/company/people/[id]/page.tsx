@@ -2267,35 +2267,31 @@ function LogBonusForm({
   );
 }
 
-/* ─────────────── Invite-to-launchpad button ─────────────── */
+/* ─────────────── Set login credentials button ─────────────── */
 
-/* Lives on the Overview tab Contact section. One click POSTs to
- * /api/admin/invite-user which (server-side, with the service role
- * key) creates the Auth user via inviteUserByEmail and adds them to
- * the app_users allowlist. The user gets an email with a link to
- * /login/reset-password where they set their password. Future
- * logins use email + password.
+/* Admin-direct login provisioning. One button on the Overview tab
+ * Contact section opens a modal where admin sets email + password
+ * for the team member. Hits /api/admin/set-user-credentials which
+ * creates the Supabase Auth user with email_confirm=true (no
+ * verification email) + adds them to the app_users allowlist. Admin
+ * hands credentials over via Slack DM.
+ *
+ * The previous invite-by-email flow was removed - SMTP / Supabase
+ * deliverability was unreliable + Dylan wanted full control over
+ * who gets access + when.
  *
  * Access control: only emails on app_users can sign in afterwards
- * (every sign-in path pre-checks). No one outside the allowlist can
- * create or use an account through our UI. */
+ * (every sign-in path pre-checks). */
 function InviteButton({ person }: { person: Person }) {
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
-    "idle",
-  );
-  const [errMsg, setErrMsg] = useState("");
-  const [alreadyInvited, setAlreadyInvited] = useState<boolean>(false);
-  const [checking, setChecking] = useState(true);
-  /* Credentials modal state. Opens when admin clicks "Set credentials
-   * directly" - lets Dylan skip the invite-email flow when SMTP is
-   * shaky or he wants to hand over login details by Slack DM. */
   const [showCredentials, setShowCredentials] = useState(false);
+  const [alreadyHasLogin, setAlreadyHasLogin] = useState<boolean>(false);
+  const [checking, setChecking] = useState(true);
 
-  const canInvite = !!person.email?.trim() && !alreadyInvited;
+  const canSet = !!person.email?.trim();
 
-  /* Pre-check the allowlist on render so the button shows
-   * "Already invited" if app_users already has this email - avoids
-   * a second invite email going out by accident. */
+  /* Show whether this email already has a login on Launchpad so
+   * admin knows they're updating an existing password vs creating
+   * a fresh one. The set-credentials endpoint handles both cases. */
   useEffect(() => {
     let cancelled = false;
     const email = person.email?.trim();
@@ -2307,7 +2303,7 @@ function InviteButton({ person }: { person: Person }) {
       findAppUserByEmail(email)
         .then((u) => {
           if (cancelled) return;
-          setAlreadyInvited(!!u);
+          setAlreadyHasLogin(!!u);
         })
         .finally(() => {
           if (!cancelled) setChecking(false);
@@ -2318,83 +2314,24 @@ function InviteButton({ person }: { person: Person }) {
     };
   }, [person.email]);
 
-  async function send() {
-    if (!canInvite) return;
-    setStatus("sending");
-    setErrMsg("");
-    try {
-      const res = await fetch("/api/admin/invite-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: person.email,
-          name: person.full_name,
-          podMemberId: person.pod_member_id ?? null,
-        }),
-      });
-      if (!res.ok) {
-        const body = (await res.json().catch(() => ({}))) as {
-          error?: string;
-        };
-        throw new Error(body.error || `Invite failed (HTTP ${res.status})`);
-      }
-      setStatus("sent");
-    } catch (err) {
-      console.error("[invite] failed:", err);
-      setErrMsg(err instanceof Error ? err.message : "Invite failed.");
-      setStatus("error");
-    }
-  }
-
   return (
     <div className="pt-2">
       <button
-        onClick={send}
-        disabled={!canInvite || checking || status === "sending" || status === "sent"}
+        onClick={() => setShowCredentials(true)}
+        disabled={!canSet || checking}
         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-[#2A2A2A] text-[#E5E5EA] hover:bg-[#383838] disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        {alreadyInvited
-          ? "Already invited"
-          : status === "sending"
-          ? "Sending..."
-          : status === "sent"
-          ? "Invite sent"
-          : "Invite to launchpad"}
+        {alreadyHasLogin ? "Reset login credentials" : "Set login credentials"}
       </button>
       {!person.email?.trim() && (
         <p className="text-[11px] text-[#71757D] mt-1">
-          Add an email above to enable invites.
+          Add an email above to enable login setup.
         </p>
       )}
-      {alreadyInvited && status !== "sent" && (
+      {alreadyHasLogin && (
         <p className="text-[11px] text-[#71757D] mt-1">
-          This email is already on the launchpad allowlist. They can sign in or use Forgot password.
+          {person.full_name} already has a login. Click above to reset their password.
         </p>
-      )}
-      {status === "sent" && (
-        <p className="text-[11px] text-emerald-300 mt-1.5">
-          Invite emailed to {person.email}. They&apos;ll click the link to
-          set their password, then sign in with email + password.
-        </p>
-      )}
-      {status === "error" && (
-        <p className="text-[11px] text-red-300 mt-1.5">{errMsg}</p>
-      )}
-      {/* Direct credentials fallback. Skip the email flow entirely -
-       * admin sets email + password, hands them over by Slack DM.
-       * Useful when SMTP is shaky or admin wants control. */}
-      {person.email?.trim() && (
-        <div className="mt-3 pt-3 border-t border-white/[0.04]">
-          <button
-            onClick={() => setShowCredentials(true)}
-            className="text-[11px] text-[#71757D] hover:text-[#E5E5EA] hover:underline"
-          >
-            Or set login credentials directly →
-          </button>
-          <p className="text-[10px] text-[#71757D] mt-1 leading-relaxed">
-            Skip the email round-trip. Set email + password, hand them over by Slack DM.
-          </p>
-        </div>
       )}
       {showCredentials && (
         <SetCredentialsModal

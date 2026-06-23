@@ -37,6 +37,16 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-113",
+    date: "23 June 2026",
+    version: "2.2.2",
+    title: "Stripped invite-by-email flow - admin sets credentials directly",
+    changes: [
+      { type: "removed", text: "Invite-to-launchpad email flow removed entirely. /api/admin/invite-user endpoint deleted, Send invite checkbox stripped from Add Person, Auto-invite-on-hire stripped from Hiring panel. Admin now sets credentials directly (one button on every Person profile) and hands them over via Slack DM. Full control, no SMTP dependency" },
+      { type: "improved", text: "Set login credentials button is now the primary CTA on every Person profile (was a secondary link below the broken invite flow). Already-has-login state shows Reset login credentials so resetting a forgotten password is one click" },
+    ],
+  },
+  {
     id: "cl-112",
     date: "23 June 2026",
     version: "2.2.1",
