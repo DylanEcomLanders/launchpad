@@ -126,6 +126,7 @@ export const linkedinAdapter: ChannelAdapter = {
 export const ADAPTERS: Record<Channel, ChannelAdapter | undefined> = {
   email: gmailAdapter,
   whatsapp: whatsappAdapter,
+  twitter: undefined,  // wired via /api/sales/outbound/send stub; see docs/sales-integrations.md
   instagram: instagramAdapter,
   linkedin: linkedinAdapter,
   cal_com: undefined, // intake-only; surfaced in inbox, not replied to here

@@ -27,6 +27,12 @@ import { DealModal, type DealInput } from "./DealModal";
 import { LeadDetailModal } from "./LeadDetailModal";
 import { useSalesData } from "@/lib/sales-dashboard/real-source";
 import {
+  persistStageMove,
+  persistNotes,
+  persistNewLead,
+  sendOutbound,
+} from "@/lib/sales-dashboard/persistence";
+import {
   weightedPipelineValue,
   mrrClosingThisMonth,
   dealsInNegotiation,
@@ -78,6 +84,7 @@ export default function SalesDashboardClient() {
   const [detailLeadId, setDetailLeadId] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
   const [tab, setTab] = useState<TabKey>("dashboard");
+  const [showAddLead, setShowAddLead] = useState(false);
 
   /* Seed local state once real data arrives. Re-seeds if the
    * underlying tables change between mounts (e.g. user navigates
@@ -120,6 +127,11 @@ export default function SalesDashboardClient() {
     setLeads((prev) =>
       prev.map((l) => (l.id === leadId ? { ...l, stage_id: stageId, updated_at: nowIso() } : l)),
     );
+    /* Fire-and-forget persist. UI already optimistic above; this
+     * makes the move survive a refresh. */
+    persistStageMove(leadId, stageId);
+    setFlash(`Moved to ${stage.name}`);
+    window.setTimeout(() => setFlash(null), 2000);
   }
 
   // Won-deal -> write deal + client handoff (the shared spine).
@@ -165,6 +177,11 @@ export default function SalesDashboardClient() {
     setDealLead(null);
     setFlash(`Deal recorded — ${lead.company} handed off as a client (${clients.length + 1} total).`);
     window.setTimeout(() => setFlash(null), 4000);
+    /* Persist the won-stage move on the source lead. The Proposal /
+     * Client mirror is a heavier ops handoff handled in /pipeline +
+     * /retention; here we just lock the lead's stage so the dashboard
+     * + the source pipeline view agree. */
+    persistStageMove(lead.id, wonStage.id);
   }
 
   // --- Inbox / lead edits --------------------------------------------------
@@ -191,11 +208,57 @@ export default function SalesDashboardClient() {
     setMessages((prev) => [...prev, msg]);
     // last_contact_at updates on any message logged/sent.
     setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, last_contact_at: now, updated_at: now } : l)));
-    // SLACK_HOOK: outbound logged — no Slack today (see brief). Hook later.
+    /* Route through the outbound API stub. Today it just records the
+     * touch + logs intent. When real channel APIs are plugged in
+     * (WhatsApp Business / Twitter X / LinkedIn / Postmark) the
+     * stub becomes a router and this client doesn't change. */
+    const outboundChannel = channel === "email" ? "email"
+      : channel === "linkedin" ? "linkedin"
+      : channel === "whatsapp" ? "whatsapp"
+      : channel === "twitter" ? "twitter"
+      : null;
+    if (outboundChannel) {
+      sendOutbound(leadId, outboundChannel, body, "Ajay").then((res) => {
+        if (!res.ok) {
+          setFlash(`Send failed: ${res.error}`);
+          window.setTimeout(() => setFlash(null), 4000);
+        }
+      });
+    }
   }
 
   function updateLead(leadId: string, patch: Partial<Lead>) {
     setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, ...patch, updated_at: nowIso() } : l)));
+    /* Map the round-trippable adapter fields back onto the source
+     * store. The adapter Lead is a subset of MyLead (no next_action,
+     * no path, no touches) so we only persist the fields the
+     * dashboard actually edits inline. Anything else flows via the
+     * /pipeline detail page. */
+    if (patch.notes !== undefined) persistNotes(leadId, patch.notes);
+  }
+
+  async function handleAddLead(input: {
+    full_name: string;
+    brand_name: string;
+    brand_url: string;
+    email: string;
+    source: string;
+    owner: string;
+    revenue_band: string;
+  }) {
+    try {
+      await persistNewLead(input);
+      setShowAddLead(false);
+      setFlash(`Added ${input.brand_name || input.full_name} — refreshing pipeline`);
+      window.setTimeout(() => setFlash(null), 3000);
+      /* Hard reload to re-run useSalesData() and pick up the new
+       * adapter-shape Lead. Cheaper than re-running adapt logic
+       * inline here. */
+      window.location.reload();
+    } catch (err) {
+      setFlash(`Add failed: ${err instanceof Error ? err.message : String(err)}`);
+      window.setTimeout(() => setFlash(null), 4000);
+    }
   }
 
   // Merge: combine a source conversation/lead into a target (same person who
@@ -217,6 +280,7 @@ export default function SalesDashboardClient() {
   }
   function updateNotes(leadId: string, notes: string) {
     setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, notes, updated_at: nowIso() } : l)));
+    persistNotes(leadId, notes);
   }
   function toggleTask(taskId: string) {
     setTasks((prev) =>
@@ -248,16 +312,24 @@ export default function SalesDashboardClient() {
   return (
     <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-6">
       {/* Header */}
-      <div className="flex items-baseline justify-between mb-4">
+      <div className="flex items-baseline justify-between mb-4 gap-3">
         <div>
           <h1 className="text-xl font-semibold text-[#E5E5EA]">Sales</h1>
           <p className="text-xs text-[#71757D] mt-0.5">
             Live · pipeline + proposals + comms in one view
           </p>
         </div>
-        <span className="text-[10px] text-[#71757D]">
-          {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-        </span>
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            onClick={() => setShowAddLead(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-[#0C0C0C] text-[12px] font-semibold rounded-full hover:bg-[#E5E5EA] transition-colors"
+          >
+            + Add lead
+          </button>
+          <span className="text-[10px] text-[#71757D]">
+            {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+          </span>
+        </div>
       </div>
 
       {/* Pill tabs */}
@@ -443,6 +515,152 @@ export default function SalesDashboardClient() {
       {dealLead && (
         <DealModal lead={dealLead} onClose={() => setDealLead(null)} onConfirm={recordDeal} />
       )}
+
+      {showAddLead && (
+        <AddLeadModal onCancel={() => setShowAddLead(false)} onSave={handleAddLead} />
+      )}
+    </div>
+  );
+}
+
+/* ── Add Lead modal ──
+ * Minimal create form. Captures the essentials (name, brand, email,
+ * source, owner, revenue band) and writes via persistNewLead. Page
+ * reloads on success to refresh useSalesData(). */
+function AddLeadModal({
+  onCancel,
+  onSave,
+}: {
+  onCancel: () => void;
+  onSave: (input: {
+    full_name: string;
+    brand_name: string;
+    brand_url: string;
+    email: string;
+    source: string;
+    owner: string;
+    revenue_band: string;
+  }) => void;
+}) {
+  const [fullName, setFullName] = useState("");
+  const [brandName, setBrandName] = useState("");
+  const [brandUrl, setBrandUrl] = useState("");
+  const [email, setEmail] = useState("");
+  const [source, setSource] = useState("Outbound");
+  const [owner, setOwner] = useState("Ajay");
+  const [revenueBand, setRevenueBand] = useState("");
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!fullName.trim() && !brandName.trim()) return;
+    onSave({
+      full_name: fullName,
+      brand_name: brandName,
+      brand_url: brandUrl,
+      email,
+      source,
+      owner,
+      revenue_band: revenueBand,
+    });
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <form
+        onSubmit={submit}
+        className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] w-full max-w-md p-6"
+      >
+        <h2 className="text-lg font-semibold text-[#E5E5EA] mb-1">Add lead</h2>
+        <p className="text-xs text-[#71757D] mb-5">
+          Quick capture - tweak the rest on the lead detail page.
+        </p>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">Full name</label>
+            <input
+              autoFocus
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+              placeholder="Sam Smith"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">Brand</label>
+              <input
+                value={brandName}
+                onChange={(e) => setBrandName(e.target.value)}
+                className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+                placeholder="Acme Goods"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">Brand URL</label>
+              <input
+                value={brandUrl}
+                onChange={(e) => setBrandUrl(e.target.value)}
+                className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+                placeholder="acme.com"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+              placeholder="sam@acme.com"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">Source</label>
+              <input
+                value={source}
+                onChange={(e) => setSource(e.target.value)}
+                className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+                placeholder="X DM / Referral / Apollo"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">Owner</label>
+              <input
+                value={owner}
+                onChange={(e) => setOwner(e.target.value)}
+                className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+                placeholder="Ajay"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">Monthly revenue band</label>
+            <input
+              value={revenueBand}
+              onChange={(e) => setRevenueBand(e.target.value)}
+              className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+              placeholder="£400k - £800k"
+            />
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 mt-6">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-3 py-2 text-sm text-[#71757D] hover:text-[#E5E5EA]"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-3 py-2 bg-white text-[#0C0C0C] text-sm font-semibold rounded-lg hover:bg-[#E5E5EA]"
+          >
+            Add lead
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

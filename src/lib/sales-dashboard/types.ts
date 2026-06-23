@@ -16,6 +16,7 @@ export type LeadSource =
   | "referral"
   | "outbound"
   | "whatsapp"
+  | "twitter"
   | "instagram"
   | "linkedin"
   | "manual";
@@ -25,6 +26,7 @@ export type Temperature = "hot" | "warm" | "cold" | "nurture";
 export type Channel =
   | "email"
   | "whatsapp"
+  | "twitter"
   | "instagram"
   | "linkedin"
   | "cal_com"
