@@ -2286,6 +2286,10 @@ function InviteButton({ person }: { person: Person }) {
   const [errMsg, setErrMsg] = useState("");
   const [alreadyInvited, setAlreadyInvited] = useState<boolean>(false);
   const [checking, setChecking] = useState(true);
+  /* Credentials modal state. Opens when admin clicks "Set credentials
+   * directly" - lets Dylan skip the invite-email flow when SMTP is
+   * shaky or he wants to hand over login details by Slack DM. */
+  const [showCredentials, setShowCredentials] = useState(false);
 
   const canInvite = !!person.email?.trim() && !alreadyInvited;
 
@@ -2376,8 +2380,225 @@ function InviteButton({ person }: { person: Person }) {
       {status === "error" && (
         <p className="text-[11px] text-red-300 mt-1.5">{errMsg}</p>
       )}
+      {/* Direct credentials fallback. Skip the email flow entirely -
+       * admin sets email + password, hands them over by Slack DM.
+       * Useful when SMTP is shaky or admin wants control. */}
+      {person.email?.trim() && (
+        <div className="mt-3 pt-3 border-t border-white/[0.04]">
+          <button
+            onClick={() => setShowCredentials(true)}
+            className="text-[11px] text-[#71757D] hover:text-[#E5E5EA] hover:underline"
+          >
+            Or set login credentials directly →
+          </button>
+          <p className="text-[10px] text-[#71757D] mt-1 leading-relaxed">
+            Skip the email round-trip. Set email + password, hand them over by Slack DM.
+          </p>
+        </div>
+      )}
+      {showCredentials && (
+        <SetCredentialsModal
+          person={person}
+          onClose={() => setShowCredentials(false)}
+        />
+      )}
     </div>
   );
+}
+
+/* ── Set Credentials Modal ──
+ * Admin-direct provisioning. Hits /api/admin/set-user-credentials
+ * which creates the Supabase Auth user with email + password +
+ * email_confirm=true (no verification email). On success the modal
+ * shows the credentials back to admin to copy + share with the
+ * team member via Slack/email/whatever. */
+function SetCredentialsModal({
+  person,
+  onClose,
+}: {
+  person: Person;
+  onClose: () => void;
+}) {
+  const [email, setEmail] = useState(person.email || "");
+  const [password, setPassword] = useState(generatePassword());
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [copiedField, setCopiedField] = useState<"email" | "password" | "both" | null>(null);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
+    setResult(null);
+    try {
+      const res = await fetch("/api/admin/set-user-credentials", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          password,
+          name: person.full_name,
+          podMemberId: person.pod_member_id ?? null,
+        }),
+      });
+      const body = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        mode?: "created" | "updated";
+        error?: string;
+      };
+      if (!res.ok || !body.ok) {
+        throw new Error(body.error || `HTTP ${res.status}`);
+      }
+      setResult({
+        ok: true,
+        msg:
+          body.mode === "updated"
+            ? "Password updated. Share the new credentials with them."
+            : "Login created. Share these credentials with them.",
+      });
+    } catch (err) {
+      setResult({
+        ok: false,
+        msg: err instanceof Error ? err.message : "Set credentials failed",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function copy(field: "email" | "password" | "both") {
+    let text = "";
+    if (field === "email") text = email;
+    else if (field === "password") text = password;
+    else text = `Email: ${email}\nPassword: ${password}\nSign in at: ${typeof window !== "undefined" ? window.location.origin : ""}/login`;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      window.setTimeout(() => setCopiedField(null), 1500);
+    } catch {
+      /* silent - older browser */
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <form
+        onSubmit={submit}
+        className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] w-full max-w-md p-6"
+      >
+        <h2 className="text-lg font-semibold text-[#E5E5EA] mb-1">
+          Set login credentials
+        </h2>
+        <p className="text-xs text-[#71757D] mb-5 leading-relaxed">
+          Creates the login for <span className="text-[#E5E5EA]">{person.full_name}</span> directly. They can sign in immediately - no verification email needed.
+        </p>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full h-9 px-3 bg-black/40 rounded-md text-[13px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">Password</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="flex-1 h-9 px-3 bg-black/40 rounded-md text-[13px] text-[#E5E5EA] font-mono placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+                required
+                minLength={8}
+              />
+              <button
+                type="button"
+                onClick={() => setPassword(generatePassword())}
+                className="px-2 h-9 text-[11px] text-[#71757D] hover:text-[#E5E5EA] hover:bg-white/[0.04] rounded-md transition-colors"
+                title="Generate new password"
+              >
+                ↻
+              </button>
+            </div>
+            <p className="text-[10px] text-[#71757D] mt-1">Min 8 chars. Auto-generated; edit if you prefer.</p>
+          </div>
+        </div>
+        {result && (
+          <div
+            className={`mt-4 p-3 rounded-lg text-[12px] ${
+              result.ok
+                ? "bg-emerald-500/[0.08] ring-1 ring-emerald-500/30 text-emerald-200"
+                : "bg-rose-500/[0.08] ring-1 ring-rose-500/30 text-rose-200"
+            }`}
+          >
+            {result.msg}
+            {result.ok && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => copy("email")}
+                  className="px-2 py-1 text-[11px] bg-emerald-500/[0.12] hover:bg-emerald-500/[0.2] rounded transition-colors"
+                >
+                  {copiedField === "email" ? "Copied" : "Copy email"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => copy("password")}
+                  className="px-2 py-1 text-[11px] bg-emerald-500/[0.12] hover:bg-emerald-500/[0.2] rounded transition-colors"
+                >
+                  {copiedField === "password" ? "Copied" : "Copy password"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => copy("both")}
+                  className="px-2 py-1 text-[11px] bg-emerald-500/[0.12] hover:bg-emerald-500/[0.2] rounded transition-colors"
+                >
+                  {copiedField === "both" ? "Copied" : "Copy both + link"}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+        <div className="flex justify-end gap-2 mt-6">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-3 py-2 text-sm text-[#71757D] hover:text-[#E5E5EA]"
+          >
+            {result?.ok ? "Done" : "Cancel"}
+          </button>
+          {!result?.ok && (
+            <button
+              type="submit"
+              disabled={submitting}
+              className="px-3 py-2 bg-white text-[#0C0C0C] text-sm font-semibold rounded-lg hover:bg-[#E5E5EA] disabled:opacity-50"
+            >
+              {submitting ? "Setting..." : "Set credentials"}
+            </button>
+          )}
+        </div>
+      </form>
+    </div>
+  );
+}
+
+/* Strong random password: 12 chars, mix of upper/lower/digits +
+ * 2 safe symbols. Avoids look-alike chars (0/O, 1/l) so admin can
+ * read it aloud without confusion if needed. */
+function generatePassword(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!#";
+  let out = "";
+  const arr = new Uint32Array(12);
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    crypto.getRandomValues(arr);
+    for (let i = 0; i < 12; i++) out += chars[arr[i] % chars.length];
+  } else {
+    for (let i = 0; i < 12; i++) out += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return out;
 }
 
 /* ─────────────── Shared field primitives ─────────────── */

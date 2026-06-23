@@ -37,6 +37,16 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-112",
+    date: "23 June 2026",
+    version: "2.2.1",
+    title: "Set login credentials directly (skip the email round-trip)",
+    changes: [
+      { type: "added", text: "Or set login credentials directly link on every Person profile - skips the invite email and lets admin set email + password in one shot. Auto-generates a strong password (override if you want), shows credentials back with one-click copy (email / password / both + sign-in link), team member signs in immediately with no verification email. Useful when SMTP is shaky or admin wants control" },
+      { type: "added", text: "/api/admin/set-user-credentials endpoint. Creates the Supabase Auth user with email_confirm=true (skip verification) OR updates an existing user's password if they're already in Auth. Idempotent on the app_users allowlist insert" },
+    ],
+  },
+  {
     id: "cl-111",
     date: "23 June 2026",
     version: "2.2.0",
