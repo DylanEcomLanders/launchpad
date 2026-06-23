@@ -33,6 +33,31 @@ import {
   syncClientsDiff,
   syncPodsDiff,
 } from "./data";
+import { getPods as getPodsV2 } from "@/lib/pods-v2/data";
+import type { Pod as PodV2 } from "@/lib/pods-v2/types";
+
+/* Bridge: pods-v2 (canonical, managed in /company/pods) → MockPod
+ * (legacy kanban shape). The kanban only READS pods (for the project-
+ * pod picker + autopair on deliverable add); it never writes them.
+ * So we can safely merge converted pods-v2 entries into the displayed
+ * list without round-tripping them back to the kanban_pods table.
+ *
+ * Member-role mapping: pods-v2 PodMember.role enums map onto MockPod's
+ * flat name fields. Stamps come from PodMember.name (which the pods-v2
+ * loader populates from the linked Person at fetch time, so renames in
+ * /company/people propagate everywhere). */
+function convertPodV2ToMock(podV2: PodV2): MockPod {
+  const find = (role: string) =>
+    podV2.members.find((m) => m.role === role && m.person_id)?.name;
+  return {
+    id: podV2.id,
+    name: podV2.name,
+    designer: find("primary_designer"),
+    secondaryDesigner: find("secondary_designer"),
+    developer: find("primary_dev"),
+    secondaryDeveloper: find("secondary_dev"),
+  };
+}
 
 /* Merge local cache into remote fetch. Anything in local that the
  * remote is missing is a PENDING WRITE that didn't sync yet (user
@@ -167,7 +192,15 @@ export function useKanbanData(): UseKanbanData {
     const cachedClients = lsRead<MockClient[]>(LS_CLIENTS_KEY);
     const cachedPods = lsRead<MockPod[]>(LS_PODS_KEY);
     if (cachedClients && cachedClients.length > 0) setClientsRaw(cachedClients);
-    if (cachedPods && cachedPods.length > 0) setPodsRaw(cachedPods);
+    if (cachedPods && cachedPods.length > 0) {
+      /* Bridge pods-v2 into the cached paint too so admin sees their
+       * /company/pods entries instantly, not after the Supabase round-
+       * trip completes. */
+      const podV2Mocks = getPodsV2().map(convertPodV2ToMock);
+      const cachedIds = new Set(cachedPods.map((p) => p.id));
+      const additional = podV2Mocks.filter((p) => !cachedIds.has(p.id));
+      setPodsRaw([...cachedPods, ...additional]);
+    }
     if (
       (cachedClients && cachedClients.length > 0) ||
       (cachedPods && cachedPods.length > 0)
@@ -205,9 +238,22 @@ export function useKanbanData(): UseKanbanData {
           const { merged: mergedPods, hadPending: pendingPods } =
             mergeLocalPods(remote.pods, localCachedPods);
 
+          /* Bridge in pods-v2 pods (canonical, defined in /company/pods).
+           * The kanban picker shows MockPods + pods-v2 pods merged so
+           * admin can assign any pod to a project. dedup by id - if any
+           * pods-v2 entries collide with kanban_pods ids (unlikely;
+           * different id prefixes) the kanban version wins. */
+          const podV2Mocks = getPodsV2().map(convertPodV2ToMock);
+          const mergedPodIds = new Set(mergedPods.map((p) => p.id));
+          const additionalPods = podV2Mocks.filter((p) => !mergedPodIds.has(p.id));
+          const finalPods = [...mergedPods, ...additionalPods];
+
           setClientsRaw(mergedClients);
-          setPodsRaw(mergedPods);
+          setPodsRaw(finalPods);
           lsWrite(LS_CLIENTS_KEY, mergedClients);
+          /* Only cache MockPods - the pods-v2 entries get re-bridged on
+           * every mount so they always reflect the latest /company/pods
+           * state (rename, slot Person, etc.). */
           lsWrite(LS_PODS_KEY, mergedPods);
           setSource("supabase");
 

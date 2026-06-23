@@ -37,6 +37,16 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-115",
+    date: "23 June 2026",
+    version: "2.2.4",
+    title: "Kanban pod picker reads from /company/pods (canonical)",
+    changes: [
+      { type: "added", text: "Kanban now bridges the canonical pods from /company/pods into its pod picker (both the top-level view filter + the per-project Assign pod dropdown). Slotting Persons in Admin → Pods now flows through to project assignment without any re-entry. Members' display names come from the linked Person record so renames propagate everywhere" },
+      { type: "improved", text: "Legacy MockPods (Pod 1 / Pod 2 / Pod 3) stay in the picker alongside the new canonical pods so existing kanban projects don't lose their assignments. Dedup by id (no collisions in practice; different id prefixes)" },
+    ],
+  },
+  {
     id: "cl-114",
     date: "23 June 2026",
     version: "2.2.3",
