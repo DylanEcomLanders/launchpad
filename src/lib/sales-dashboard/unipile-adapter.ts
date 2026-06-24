@@ -492,9 +492,24 @@ export async function listChats(
   }
 }
 
-/* Convert one Unipile chat record into a ChatSummary. Returns null
- * if we can't pull a stable id + attendee handle - those chats
- * would be unmanageable downstream. */
+/* Convert one Unipile chat record into a ChatSummary, aligned to
+ * their actual v1 response shape (verified live against Dylan's
+ * account 2026-06-24):
+ *
+ *   id                          chat id
+ *   name                        null for 1-on-1, set for groups
+ *   type                        0 = 1-on-1, 1 = group, 2 = broadcast
+ *   provider_id                 own-side WhatsApp JID
+ *   attendee_provider_id        sometimes present (looks like ...@lid)
+ *   attendee_public_identifier  the other party's JID (...@s.whatsapp.net)
+ *   timestamp                   ISO of last activity
+ *   unread_count                int
+ *
+ * Notably absent: no last_message_preview, no attendee_name. Unipile
+ * doesn't return them on the chat list. To get message text we'd
+ * have to call /chats/{id}/messages per chat - too expensive for the
+ * inbox list view. We surface what we have + skip group chats since
+ * those aren't leads. */
 function normaliseChatSummary(
   channel: UnipileChannel,
   c: Record<string, unknown>,
@@ -502,13 +517,21 @@ function normaliseChatSummary(
   const id = pickString(c, ["id", "chat_id"]);
   if (!id) return null;
 
-  /* Attendee handle - shape varies per channel. For WhatsApp the
-   * attendee_provider_id looks like "447xxxxx@s.whatsapp.net" or
-   * a bare number. Strip provider suffix + normalise to digits. */
+  /* Drop group chats from the inbox - WhatsApp groups (type=1) are
+   * almost always personal noise, not sales leads. Only 1-on-1
+   * conversations flow through. */
+  const type = typeof c.type === "number" ? c.type : 0;
+  if (type !== 0) return null;
+
+  /* For WhatsApp: prefer attendee_public_identifier (the other
+   * party's JID), fall back to provider_id. Strip @s.whatsapp.net
+   * + @lid suffix and keep only digits. The resulting phone (e.g.
+   * "447712345678") is what we'll match against Lead.phone. */
   const rawHandle = pickString(c, [
+    "attendee_public_identifier",
     "attendee_provider_id",
+    "provider_id",
     "attendee_id",
-    "attendee_phone",
     "attendee_email",
   ]);
   if (!rawHandle) return null;
@@ -517,36 +540,46 @@ function normaliseChatSummary(
       ? rawHandle.replace(/@.*$/, "").replace(/\D/g, "")
       : rawHandle;
 
-  const attendee_name = pickString(c, [
-    "attendee_name",
-    "name",
-    "subject",
-  ]);
+  /* Name: only meaningful for groups (which we already filtered),
+   * so for individuals fall back to a formatted phone preview. The
+   * Lead promote flow uses this as the default Lead name, so
+   * "+44 7712..." is more useful than empty. */
+  const name = pickString(c, ["name"]);
+  const attendee_name =
+    name ??
+    (channel === "whatsapp"
+      ? formatPhonePreview(attendee_handle)
+      : undefined);
 
-  /* Most-recent message preview - Unipile sometimes nests it under
-   * lastMessage / last_message / preview. Sniff defensively. */
-  const lastMessage =
-    (c.last_message && typeof c.last_message === "object"
-      ? (c.last_message as Record<string, unknown>)
-      : c.lastMessage && typeof c.lastMessage === "object"
-        ? (c.lastMessage as Record<string, unknown>)
-        : null) ?? null;
-  const last_message_preview = lastMessage
-    ? pickString(lastMessage, ["body", "text", "message", "content"])?.slice(0, 80)
-    : pickString(c, ["preview", "last_message_text"])?.slice(0, 80);
-  const last_message_at = lastMessage
-    ? pickString(lastMessage, ["timestamp", "sent_at", "created_at", "date"])
-    : pickString(c, ["last_message_at", "updated_at", "timestamp"]);
-  const isSender = lastMessage?.is_sender === true;
+  /* Use the chat's top-level timestamp - it tracks last-activity
+   * regardless of who sent. Already ISO, no parsing needed. */
+  const last_message_at = pickString(c, ["timestamp", "last_message_at"]);
 
   return {
     id,
     attendee_handle,
     attendee_name,
-    last_message_preview,
+    /* No preview available from the chat list - leave undefined.
+     * The list UI handles missing preview gracefully. */
+    last_message_preview: undefined,
     last_message_at,
-    last_message_direction: isSender ? "outbound" : "inbound",
+    last_message_direction: undefined,
   };
+}
+
+/* Format a digits-only phone as a readable preview. Tries to inject
+ * a + before the country code so the UI shows "+44 7712 345 678"
+ * style instead of a wall of digits. Best-effort - falls back to
+ * the raw string if it doesn't look like a phone. */
+function formatPhonePreview(digits: string): string {
+  if (!digits || digits.length < 7) return digits;
+  /* UK numbers come through as "447..." - re-add the leading + */
+  if (digits.startsWith("44") && digits.length >= 11) {
+    const cc = digits.slice(0, 2);
+    const rest = digits.slice(2);
+    return `+${cc} ${rest.slice(0, 4)} ${rest.slice(4, 7)} ${rest.slice(7)}`;
+  }
+  return `+${digits}`;
 }
 
 /* Convert a single Unipile chat message into our canonical shape.
