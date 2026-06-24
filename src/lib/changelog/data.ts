@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-130",
+    date: "24 June 2026",
+    version: "2.6.1",
+    title: "Unipile inbound webhook auth: URL-secret support",
+    changes: [
+      { type: "fixed", text: "Unipile's dashboard doesn't expose webhook HMAC signing - any webhook we create is unsigned. The previous adapter required X-Unipile-Signature which Unipile never sends, so inbound replies would have 401'd in production. Added URL-secret auth: append ?key=<UNIPILE_WEBHOOK_KEY> to the callback URL given to Unipile, server-side constant-time compare against the env var" },
+      { type: "added", text: "verifyUnipileUrlKey() in unipile-adapter validates the ?key= query param. Fails CLOSED in production when UNIPILE_WEBHOOK_KEY isn't set (drop messages rather than accept anything). Dev mode still accepts to keep local curl tests working" },
+      { type: "added", text: "Inbound route accepts three auth schemes (first that passes wins): Unipile URL-secret, Unipile HMAC (kept for when/if they add signing), generic SALES_INBOUND_SECRET HMAC. The 401 response now includes a hint pointing at the canonical URL-secret pattern so future debugging is straightforward" },
+      { type: "added", text: ".env.example documents UNIPILE_WEBHOOK_KEY with the openssl rand -hex 32 command and the exact callback URL pattern" },
+    ],
+  },
+  {
     id: "cl-129",
     date: "24 June 2026",
     version: "2.6.0",

@@ -195,24 +195,36 @@ export async function sendMessage(input: SendInput): Promise<SendResult> {
 
 /* ── Inbound webhook ───────────────────────────────────────────── */
 
-/* Unipile signs each webhook with HMAC SHA256 using the secret you
- * configured in their dashboard. Header name is "X-Unipile-Signature"
- * per their docs. We strip the optional "sha256=" prefix (matches
- * GitHub / Stripe / Postmark convention). */
+/* Webhook auth. Unipile's dashboard doesn't expose webhook signing
+ * (no HMAC option, no per-webhook secret) so the canonical approach
+ * is a URL-secret: append ?key=<long-random> to the callback URL and
+ * compare server-side. The URL itself becomes the bearer token -
+ * equivalent security guarantee to HMAC for this use case since
+ * the key never appears anywhere a third party would see (HTTPS
+ * encrypts the URL path + query in transit, Unipile stores it
+ * encrypted at rest).
+ *
+ * Two env vars supported, either is enough:
+ *   UNIPILE_WEBHOOK_KEY     URL-secret (recommended; matches against
+ *                           ?key=... on the callback URL)
+ *   UNIPILE_WEBHOOK_SECRET  HMAC SHA256 secret (used IF Unipile ever
+ *                           adds webhook signing later; checks
+ *                           X-Unipile-Signature header)
+ */
+export interface UnipileAuthCheck {
+  ok: boolean;
+  reason?: string;
+}
+
+/* HMAC verifier - present for future-proofing if Unipile adds
+ * webhook signing. Today it falls through to "no header" since they
+ * don't sign. */
 export function verifyUnipileSignature(
   rawBody: string,
   signatureHeader: string | null,
-): { ok: boolean; reason?: string } {
+): UnipileAuthCheck {
   const secret = process.env.UNIPILE_WEBHOOK_SECRET;
-  if (!secret) {
-    /* No webhook secret configured. Fail CLOSED in production - an
-     * unauthenticated POST would let randos inject fake leads. In
-     * dev we still accept so curl-testing keeps working. */
-    if (process.env.NODE_ENV === "production") {
-      return { ok: false, reason: "unipile_secret_not_configured" };
-    }
-    return { ok: true };
-  }
+  if (!secret) return { ok: false, reason: "no_hmac_secret_configured" };
   if (!signatureHeader) return { ok: false, reason: "missing_signature_header" };
   const provided = signatureHeader.replace(/^sha256=/i, "").trim();
   if (!/^[0-9a-f]+$/i.test(provided) || provided.length !== 64) {
@@ -227,6 +239,32 @@ export function verifyUnipileSignature(
   return timingSafeEqual(expectedBuf, providedBuf)
     ? { ok: true }
     : { ok: false, reason: "signature_mismatch" };
+}
+
+/* URL-secret verifier. Constant-time compare against UNIPILE_WEBHOOK_KEY
+ * env var. Fails CLOSED in production when the env var isn't set
+ * (means the webhook URL is unprotected - rather drop messages than
+ * accept unauthenticated ones). In dev we accept so local curl tests
+ * keep working. */
+export function verifyUnipileUrlKey(
+  providedKey: string | null,
+): UnipileAuthCheck {
+  const expected = process.env.UNIPILE_WEBHOOK_KEY;
+  if (!expected) {
+    if (process.env.NODE_ENV === "production") {
+      return { ok: false, reason: "unipile_webhook_key_not_configured" };
+    }
+    return { ok: true };
+  }
+  if (!providedKey) return { ok: false, reason: "missing_key_query_param" };
+  const expectedBuf = Buffer.from(expected, "utf8");
+  const providedBuf = Buffer.from(providedKey, "utf8");
+  if (expectedBuf.length !== providedBuf.length) {
+    return { ok: false, reason: "key_length_mismatch" };
+  }
+  return timingSafeEqual(expectedBuf, providedBuf)
+    ? { ok: true }
+    : { ok: false, reason: "key_mismatch" };
 }
 
 /* Canonical normalised inbound shape - matches what processInboundMessage

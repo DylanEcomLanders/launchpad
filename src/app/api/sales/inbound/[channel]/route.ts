@@ -30,21 +30,21 @@ import {
 } from "@/lib/sales-dashboard/verify-signature";
 import {
   verifyUnipileSignature,
+  verifyUnipileUrlKey,
   normalizeInboundPayload,
   type UnipileChannel,
 } from "@/lib/sales-dashboard/unipile-adapter";
 
 const SUPPORTED_CHANNELS: InboundChannel[] = ["whatsapp", "twitter", "linkedin", "email"];
 
-/* Webhook signature schemes by source. Unipile signs with their own
- * secret + X-Unipile-Signature header; generic adapters (a custom
- * integration, a Zapier shim) use the shared SALES_INBOUND_SECRET
- * + X-Webhook-Signature. We accept either - whichever signs the
- * payload wins. */
-function tryUnipile(rawBody: string, signatureHeader: string | null) {
-  if (!signatureHeader) return null;
-  return verifyUnipileSignature(rawBody, signatureHeader);
-}
+/* Auth schemes accepted (try in order, first that passes wins):
+ *   1. Unipile URL-secret: ?key=... matches UNIPILE_WEBHOOK_KEY env
+ *      (canonical for Unipile webhooks - they don't sign payloads,
+ *      so the URL is the bearer token)
+ *   2. Unipile HMAC: X-Unipile-Signature against UNIPILE_WEBHOOK_SECRET
+ *      (future-proof for when/if Unipile adds signing)
+ *   3. Generic HMAC: X-Webhook-Signature against SALES_INBOUND_SECRET
+ *      (custom adapters / Zapier shims) */
 
 export async function POST(
   req: Request,
@@ -63,23 +63,34 @@ export async function POST(
    * manually below. */
   const rawBody = await req.text();
 
-  /* Try the Unipile header first (the expected provider). Fall back
-   * to the generic shared-secret header so custom adapters keep
-   * working. Either must pass for the request to proceed. */
+  /* Try Unipile URL-secret first (canonical). The ?key= query param
+   * is on the URL Unipile was given when the webhook was created. */
+  const url = new URL(req.url);
+  const providedKey = url.searchParams.get("key");
+  const urlKeyVerify = verifyUnipileUrlKey(providedKey);
+
+  /* Fall back to HMAC schemes if URL-secret didn't pass. */
   const unipileSig = req.headers.get("x-unipile-signature");
   const genericSig = req.headers.get(signatureHeaderName());
 
-  const unipileVerify = tryUnipile(rawBody, unipileSig);
-  const genericVerify = !unipileVerify
-    ? verifyWebhookSignature(rawBody, genericSig)
-    : null;
+  const unipileHmacVerify =
+    !urlKeyVerify.ok && unipileSig
+      ? verifyUnipileSignature(rawBody, unipileSig)
+      : null;
+  const genericVerify =
+    !urlKeyVerify.ok && !unipileHmacVerify
+      ? verifyWebhookSignature(rawBody, genericSig)
+      : null;
 
-  const verify = unipileVerify ?? genericVerify;
+  const verify = urlKeyVerify.ok
+    ? urlKeyVerify
+    : (unipileHmacVerify ?? genericVerify);
   if (!verify || !verify.ok) {
     return NextResponse.json(
       {
-        error: "Signature verification failed",
-        reason: verify?.reason ?? "no_signature_header",
+        error: "Webhook auth failed",
+        reason: verify?.reason ?? "no_auth_provided",
+        hint: "Append ?key=<UNIPILE_WEBHOOK_KEY> to the Unipile callback URL, or sign with X-Webhook-Signature.",
       },
       { status: 401 },
     );
@@ -92,11 +103,11 @@ export async function POST(
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  /* If the request came in via Unipile, payload shape is provider-
-   * specific - normalise into our canonical { from, body, ... } here
-   * so processInboundMessage stays agnostic. Generic adapters send
-   * the canonical shape directly. */
-  const isUnipile = !!unipileSig;
+  /* If the request came in via Unipile (URL-key OR HMAC), payload
+   * shape is provider-specific - normalise into our canonical
+   * { from, body, ... } here so processInboundMessage stays agnostic.
+   * Generic adapters send the canonical shape directly. */
+  const isUnipile = urlKeyVerify.ok || !!unipileSig;
   let canonical: {
     from?: string;
     body?: string;
