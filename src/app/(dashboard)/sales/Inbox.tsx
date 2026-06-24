@@ -484,7 +484,11 @@ function ThreadPane({
   };
 
   return (
-    <div className="flex flex-col">
+    /* h-full + min-h-0 propagates the grid cell's bounded height
+     * down so the messages list (flex-1 overflow-y-auto inside)
+     * actually has something to scroll within. Without h-full the
+     * column expands to fit content and overflow never triggers. */
+    <div className="flex flex-col h-full min-h-0">
       {/* Header */}
       <div className="px-4 py-2.5 border-b border-[#222222] flex items-center gap-2 relative">
         <span className="text-sm font-semibold text-[#E5E5EA]">{lead.company}</span>

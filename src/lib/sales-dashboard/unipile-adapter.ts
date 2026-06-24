@@ -582,24 +582,60 @@ function formatPhonePreview(digits: string): string {
   return `+${digits}`;
 }
 
-/* Convert a single Unipile chat message into our canonical shape.
- * Returns null if the message isn't useable (no body, no text). */
+/* Convert a single Unipile chat message into our canonical shape,
+ * aligned to their actual messages endpoint response (verified live
+ * 2026-06-24):
+ *
+ *   text         message text, OR null for media-only messages
+ *   is_sender    1 = we sent it, 0 = they sent it (INTEGER not boolean)
+ *   is_event     1 = system event (kicked from group, etc), skip these
+ *   timestamp    ISO string
+ *   attachments  array of media attachments
+ *   id           Unipile message id
+ *
+ * Media messages with text:null are kept as touches with an
+ * "[Image]" / "[Attachment]" placeholder rather than dropped, so
+ * the thread chronology stays intact and the user knows there was
+ * a media exchange. */
 function normaliseHistoryMessage(
   channel: UnipileChannel,
   m: Record<string, unknown>,
   fallbackFrom: string,
 ): NormalisedInbound | null {
-  const body = pickString(m, ["body", "text", "message", "content"]);
+  /* Skip system events - kicks, joins, name changes etc. */
+  if (m.is_event === 1 || m.is_event === true) return null;
+
+  let body = pickString(m, ["text", "body", "message", "content"]);
+
+  /* Media-only message: text is null but there's an attachment.
+   * Surface as a placeholder so the chronology is preserved. */
+  if (!body && Array.isArray(m.attachments) && m.attachments.length > 0) {
+    const first = m.attachments[0] as Record<string, unknown>;
+    const type = typeof first.type === "string" ? first.type : "media";
+    const label =
+      type === "img"
+        ? "Image"
+        : type === "video"
+          ? "Video"
+          : type === "audio"
+            ? "Voice note"
+            : "Attachment";
+    body = `[${label}]`;
+  }
+
   if (!body) return null;
+
+  /* Unipile uses integers 1/0 for is_sender (not booleans). Defend
+   * against both shapes in case their type changes later. */
   const isSender =
+    m.is_sender === 1 ||
     m.is_sender === true ||
     m.from_self === true ||
     m.sender === "self";
+
   const external_id = pickString(m, ["id", "provider_id", "message_id"]);
   const sent_at = pickString(m, ["timestamp", "sent_at", "created_at", "date"]);
-  /* For inbound history: from is the recipient (they sent it to us).
-   * For outbound history: from = "self" semantically; we leave it as
-   * the lead's recipient so the touch attribution stays consistent. */
+
   return {
     channel,
     from: fallbackFrom,
