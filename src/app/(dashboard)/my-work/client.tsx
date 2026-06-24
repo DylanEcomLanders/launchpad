@@ -16,21 +16,52 @@ import { useWorkspaceData, todayYMD } from "@/lib/workspace/use-workspace-data";
 import { useKanbanData } from "@/lib/kanban/use-kanban-data";
 import { useCurrentUser } from "@/components/auth-gate";
 import {
-  buildAllClientVMs,
-  LANE_LABEL,
   formatDue,
   type DeadlineState,
-  type DeliverableVM,
-  type Lane,
 } from "@/lib/workspace/derive";
-import { updateTaskStatus } from "@/lib/pods-v2/data";
-import type { PodMember, TaskStatus } from "@/lib/pods-v2/types";
+import {
+  buildMyWorkIdentity,
+  classifyClientsForUser,
+  dragActionFor,
+  type ClassifiedCard,
+  type MyWorkLane,
+  type MyWorkRole,
+} from "@/lib/my-work/classify";
+import { getPods as getPodsV2 } from "@/lib/pods-v2/data";
+import type { Pod as PodV2 } from "@/lib/pods-v2/types";
+import type { PodMember } from "@/lib/pods-v2/types";
 
 const VIEW_AS_KEY = "launchpad-my-tasks-view-as";
 
-interface MyItem extends DeliverableVM {
+type TaskStatus = MyWorkLane;
+
+const ROLE_LABEL: Record<MyWorkRole, string> = {
+  senior_designer: "Designer",
+  junior_designer: "Designer (jnr)",
+  senior_developer: "Developer",
+  junior_developer: "Developer (jnr)",
+  strategist: "Strategist",
+};
+const ROLE_DOT: Record<MyWorkRole, string> = {
+  senior_designer: "#3B82F6",
+  junior_designer: "#3B82F6",
+  senior_developer: "#10B981",
+  junior_developer: "#10B981",
+  strategist: "#8B5CF6",
+};
+
+interface MyItem {
+  id: string;             // synthetic = card.id + role (one card may surface twice)
+  cardId: string;
+  classified: ClassifiedCard;
   clientId: string;
   clientName: string;
+  projectName: string;
+  title: string;
+  lane: MyWorkLane;
+  role: MyWorkRole;
+  state: DeadlineState;
+  dueDate: string;
 }
 
 // Border + tint per deadline state. Overdue red, soon amber, everything else
@@ -50,11 +81,21 @@ const COLUMNS: { key: TaskStatus; label: string; dot: string }[] = [
   { key: "done", label: "Done", dot: "#10B981" },
 ];
 
-const LANE_DOT: Record<Lane, string> = {
-  strategy: "#8B5CF6",
-  design: "#3B82F6",
-  development: "#10B981",
-};
+/* Quick deadline state from a card's dueDate. Three buckets:
+ *   overdue  - dueDate before today
+ *   soon     - within 3 days
+ *   ontrack  - anything else (incl. no dueDate)
+ * Lighter than the kanban's full status engine; my-work only needs
+ * to flag what's slipping. */
+function deriveState(dueDate: string | undefined, todayYMD: string): DeadlineState {
+  if (!dueDate) return "ontrack";
+  if (dueDate < todayYMD) return "overdue";
+  const due = new Date(dueDate);
+  const t = new Date(todayYMD);
+  const diff = (due.getTime() - t.getTime()) / (1000 * 60 * 60 * 24);
+  if (diff <= 3) return "soon";
+  return "ontrack";
+}
 
 // Sort within column: overdue first, then soon, then by due date, then title.
 const STATE_RANK: Record<DeadlineState, number> = {
@@ -124,26 +165,45 @@ export default function MyWorkClient() {
     [allMembers, memberId],
   );
 
+  /* Kanban data is the source of truth for cards. The classifier
+   * matches them to the active user by name + role and assigns a
+   * lane. */
+  const { clients: kanbanClients, setClients: setKanbanClients } = useKanbanData();
+
+  /* pods-v2 snapshot for strategist scope detection (the kanban's
+   * MockPod doesn't carry role metadata). */
+  const [podsV2, setPodsV2] = useState<PodV2[]>([]);
+  useEffect(() => {
+    setPodsV2(getPodsV2());
+  }, []);
+
+  const displayNameForClassify =
+    me?.name ??
+    activeMember?.name ??
+    null;
+
+  const identity = useMemo(
+    () => buildMyWorkIdentity(displayNameForClassify ?? undefined, podsV2),
+    [displayNameForClassify, podsV2],
+  );
+
   const items: MyItem[] = useMemo(() => {
-    if (!memberId) return [];
-    const clientVMs = buildAllClientVMs({
-      clients: data.clients,
-      projects: data.projects,
-      tasks: data.tasks,
-      tests: data.tests,
-      pods: data.pods,
-      todayYMD: today,
-    });
-    const mine: MyItem[] = [];
-    for (const c of clientVMs) {
-      for (const d of c.deliverables) {
-        if (d.ownerId === memberId) {
-          mine.push({ ...d, clientId: c.client.id, clientName: c.client.name });
-        }
-      }
-    }
-    return mine;
-  }, [memberId, data, today]);
+    if (!identity) return [];
+    const classified = classifyClientsForUser(kanbanClients, identity);
+    return classified.map((c) => ({
+      id: `${c.card.id}::${c.role}`,
+      cardId: c.card.id,
+      classified: c,
+      clientId: c.clientId,
+      clientName: c.clientName,
+      projectName: c.projectName,
+      title: c.card.title,
+      lane: c.lane,
+      role: c.role,
+      state: deriveState(c.card.dueDate, today),
+      dueDate: c.card.dueDate ?? "",
+    }));
+  }, [identity, kanbanClients, today]);
 
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<TaskStatus | null>(null);
@@ -155,7 +215,7 @@ export default function MyWorkClient() {
       done: [],
     };
     for (const it of items) {
-      (map[it.status] ?? (map[it.status] = [])).push(it);
+      map[it.lane].push(it);
     }
     for (const k of Object.keys(map) as TaskStatus[]) {
       map[k].sort((a, b) => {
@@ -169,12 +229,83 @@ export default function MyWorkClient() {
     return map;
   }, [items]);
 
-  async function moveTask(taskId: string, target: TaskStatus) {
-    const it = items.find((x) => x.id === taskId);
-    if (!it || it.status === target) return;
-    await updateTaskStatus(taskId, target);
-    data.reload();
+  /* Drag handler. Translates a my-work lane move into the kanban
+   * transition that backs it (phase move or revision-flag patch).
+   * setKanbanClients fires syncClientsDiff so the change persists to
+   * Supabase + Realtime broadcasts to other open sessions. */
+  function moveTask(itemId: string, target: TaskStatus) {
+    const it = items.find((x) => x.id === itemId);
+    if (!it || it.lane === target) return;
+    const action = dragActionFor(it.classified, target);
+    if (action.kind === "noop") {
+      if (action.reason !== "no kanban action for start") {
+        console.info("[my-work] drag no-op:", action.reason);
+      }
+      return;
+    }
+    setKanbanClients((prev) =>
+      prev.map((client) => ({
+        ...client,
+        projects: client.projects.map((p) => ({
+          ...p,
+          deliverables: p.deliverables.map((d) => {
+            if (d.id !== it.cardId) return d;
+            if (action.kind === "patch") return { ...d, ...action.patch };
+            if (action.kind === "phase_move") {
+              const enteredAt = today;
+              return {
+                ...d,
+                phase: action.phase,
+                phaseHistory: [
+                  ...(d.phaseHistory ?? []),
+                  { phase: action.phase, enteredAt },
+                ],
+                /* Clear revision_requested when moving forward so the
+                 * card doesn't carry a stale kickback flag into the
+                 * next phase. */
+                revisionRequested: false,
+              };
+            }
+            return d;
+          }),
+        })),
+      })),
+    );
   }
+
+  // Title resolves from the auth user first (when signed in by email), then
+  // the picked member's name (admin "view as"), then a neutral fallback.
+  // Computed BEFORE early returns so the revisionCards useMemo (and any
+  // other hook below) runs in a stable order across renders.
+  const displayName = me?.name ?? activeMember?.name ?? null;
+
+  /* Kanban "Revisions needed" callout - matches by display name
+   * against the four kanban assignee slots. Lives above the early
+   * returns so the hook order stays stable when memberId toggles. */
+  const revisionCards = useMemo(() => {
+    if (!displayName) return [] as { id: string; title: string; client: string }[];
+    const needle = displayName.trim().toLowerCase();
+    const matches: { id: string; title: string; client: string }[] = [];
+    for (const c of kanbanClients) {
+      for (const p of c.projects) {
+        for (const d of p.deliverables) {
+          if (!d.revisionRequested) continue;
+          const names = [
+            d.designer,
+            d.secondaryDesigner,
+            d.developer,
+            d.secondaryDeveloper,
+          ]
+            .filter(Boolean)
+            .map((n) => n!.trim().toLowerCase());
+          if (names.includes(needle)) {
+            matches.push({ id: d.id, title: d.title, client: c.name });
+          }
+        }
+      }
+    }
+    return matches;
+  }, [kanbanClients, displayName]);
 
   if (data.loading) {
     return (
@@ -231,45 +362,9 @@ export default function MyWorkClient() {
     );
   }
 
-  const open = items.filter((d) => d.status !== "done");
+  const open = items.filter((d) => d.lane !== "done");
   const overdueCount = open.filter((d) => d.state === "overdue").length;
   const soonCount = open.filter((d) => d.state === "soon").length;
-  // Title resolves from the auth user first (when signed in by email), then
-  // the picked member's name (admin "view as"), then a neutral fallback.
-  const displayName = me?.name ?? activeMember?.name ?? null;
-
-  /* Kanban "Revisions needed" surfacing. The kanban runs on its own
-   * data layer (kanban_*) and assigns by NAME, not pod_member_id - so
-   * we match against the active member's display name. The flag is
-   * set when a kanban card is bounced backward in the build flow
-   * (e.g. Internal Rev kicked it back to Design); the assignee should
-   * see it from My Tasks even though the card itself lives in
-   * /kanban. Tap-through opens /kanban. */
-  const { clients: kanbanClients } = useKanbanData();
-  const revisionCards = useMemo(() => {
-    if (!displayName) return [] as { id: string; title: string; client: string }[];
-    const needle = displayName.trim().toLowerCase();
-    const matches: { id: string; title: string; client: string }[] = [];
-    for (const c of kanbanClients) {
-      for (const p of c.projects) {
-        for (const d of p.deliverables) {
-          if (!d.revisionRequested) continue;
-          const names = [
-            d.designer,
-            d.secondaryDesigner,
-            d.developer,
-            d.secondaryDeveloper,
-          ]
-            .filter(Boolean)
-            .map((n) => n!.trim().toLowerCase());
-          if (names.includes(needle)) {
-            matches.push({ id: d.id, title: d.title, client: c.name });
-          }
-        }
-      }
-    }
-    return matches;
-  }, [kanbanClients, displayName]);
   const firstName = displayName?.split(/\s+/)[0];
   // Show the "view as" picker whenever the active member came from the picker
   // (i.e. there's no auth-resolved identity to lock it down).
@@ -419,9 +514,7 @@ export default function MyWorkClient() {
                     cards.map((d) => {
                       const style = STATE_STYLE[d.state];
                       const isDragging = draggingId === d.id;
-                      const dueLabel = d.waitingOn
-                        ? `Waiting · ${d.waitingOn}`
-                        : formatDue(d.dueDate);
+                      const dueLabel = d.dueDate ? formatDue(d.dueDate) : "No due date";
                       const dueTone =
                         d.state === "overdue"
                           ? "text-red-400"
@@ -462,7 +555,7 @@ export default function MyWorkClient() {
                           {/* Title */}
                           <p
                             className={`text-[14px] font-semibold leading-tight ${
-                              d.status === "done"
+                              d.lane === "done"
                                 ? "text-[#9CA3AF] line-through"
                                 : "text-[#E5E5EA]"
                             }`}
@@ -470,14 +563,18 @@ export default function MyWorkClient() {
                             {d.title}
                           </p>
 
-                          {/* Footer — lane + due */}
+                          {/* Footer — role + due. Role chip tells the
+                            * user which hat the card is in (senior vs
+                            * junior designer/dev, strategist) so a
+                            * card surfacing twice for cross-role users
+                            * is unambiguous. */}
                           <div className="mt-3 flex items-center justify-between gap-2 text-[11px]">
                             <span className="inline-flex items-center gap-1.5 text-[#9CA3AF]">
                               <span
                                 className="size-1.5 rounded-full"
-                                style={{ background: LANE_DOT[d.lane] }}
+                                style={{ background: ROLE_DOT[d.role] }}
                               />
-                              {LANE_LABEL[d.lane]}
+                              {ROLE_LABEL[d.role]}
                             </span>
                             <span
                               className={`tabular-nums font-medium ${dueTone}`}

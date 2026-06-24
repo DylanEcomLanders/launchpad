@@ -18,7 +18,9 @@ import {
   ArrowUturnLeftIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
+import { useCurrentUser } from "@/components/auth-gate";
 import {
   PREVIEW_PHASES,
   PREVIEW_THRESHOLDS,
@@ -48,6 +50,7 @@ import {
   type MockDeliverable,
   type MockClient,
   type MockPod,
+  type MockProject,
   type TrackedMetric,
   type OnboardingBrief,
 } from "@/lib/projects/mock-data";
@@ -134,6 +137,20 @@ const TURNAROUND_OPTIONS: TurnaroundDays[] = [15, 20, 25];
 
 type EngagementDays = 30 | 60 | 90;
 const ENGAGEMENT_OPTIONS: EngagementDays[] = [30, 60, 90];
+/* Retainer pricing tiers - the day count drives the auto-generated
+ * docs schedule (weeklies + monthlies in buildRetainerDocs) but the
+ * user-facing label is the price tier so admin sees the package
+ * client is on at a glance: Entry (£5k), Core (£10k), VIP (£15k). */
+const ENGAGEMENT_TIER_LABEL: Record<EngagementDays, string> = {
+  30: "£5k Entry",
+  60: "£10k Core",
+  90: "£15k VIP",
+};
+const ENGAGEMENT_TIER_SHORT: Record<EngagementDays, string> = {
+  30: "£5k",
+  60: "£10k",
+  90: "£15k",
+};
 
 type ProjectType = "build" | "retainer";
 
@@ -497,6 +514,53 @@ export default function KanbanPage() {
    * Supabase automatically. */
   const { clients, setClients, pods, setPods } = useKanbanData();
   const [viewMode, setViewMode] = useState<ViewMode>("project");
+  /* Quality-of-life search: filters cards across the active view by
+   * title / client name / assignee. Cleared with Esc when focused.
+   * Press / from anywhere to jump focus into it. */
+  const [searchQuery, setSearchQuery] = useState("");
+  const [mineOnly, setMineOnly] = useState(false);
+  /* Add-client modal open state. Designed in-app dialog instead of
+   * window.prompt - matches the rest of the kanban's look. */
+  const [addClientOpen, setAddClientOpen] = useState(false);
+  /* Card density. Persisted in localStorage so the choice sticks
+   * across sessions.
+   *   "cosy" - default, full card detail with breathing room
+   *   "glance" - minimal status bars so admin can scan amber/reds
+   *              across every column in one look. Killer for the
+   *              All / Pod views where you want to spot trouble. */
+  const [density, setDensity] = useState<"cosy" | "glance">("cosy");
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = localStorage.getItem("launchpad-kanban-density");
+    if (saved === "glance" || saved === "cosy") setDensity(saved);
+  }, []);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem("launchpad-kanban-density", density);
+  }, [density]);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+
+  /* Keyboard shortcuts. "/" from anywhere → focus search. Esc while
+   * the search input is focused → clear + blur. Skips if any other
+   * input/textarea is focused so it doesn't hijack normal typing. */
+  useEffect(() => {
+    function isEditableTarget(el: EventTarget | null): boolean {
+      if (!(el instanceof HTMLElement)) return false;
+      const tag = el.tagName;
+      return tag === "INPUT" || tag === "TEXTAREA" || el.isContentEditable;
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "/" && !isEditableTarget(e.target)) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      } else if (e.key === "Escape" && document.activeElement === searchInputRef.current) {
+        setSearchQuery("");
+        searchInputRef.current?.blur();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
   const [clientId, setClientId] = useState<string>(MOCK_CLIENTS[0]?.id ?? "");
   const [podId, setPodId] = useState<string>(MOCK_PODS[0]?.id ?? "");
   const [projectId, setProjectId] = useState<string>(
@@ -599,29 +663,65 @@ export default function KanbanPage() {
     return out;
   }, [clients]);
 
+  /* Current user's display name for "Mine only" matching. Falls back
+   * to the auth name; matches against designer / secondaryDesigner /
+   * developer / secondaryDeveloper free-text fields. */
+  const currentUser = useCurrentUser();
+  const meName = currentUser?.name?.trim().toLowerCase() || "";
+
   const visibleDeliverables: ContextDeliverable[] = useMemo(() => {
     // Completed tickets + concluded tests fall off the active board. Tickets
     // are completed in place via the modal; concluded tests live in Results.
     const active = (d: ContextDeliverable) => !d.testResult && !d.completedAt;
+    /* Free-text search across title + client + project + assignees.
+     * Empty query short-circuits. */
+    const q = searchQuery.trim().toLowerCase();
+    const matchesSearch = (d: ContextDeliverable) => {
+      if (!q) return true;
+      const hay = [
+        d.title,
+        d.clientName,
+        d.projectName,
+        d.category,
+        d.designer,
+        d.secondaryDesigner,
+        d.developer,
+        d.secondaryDeveloper,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return hay.includes(q);
+    };
+    const matchesMine = (d: ContextDeliverable) => {
+      if (!mineOnly || !meName) return true;
+      const all = [d.designer, d.secondaryDesigner, d.developer, d.secondaryDeveloper]
+        .filter(Boolean)
+        .map((n) => n!.trim().toLowerCase());
+      return all.includes(meName);
+    };
+    /* Base scope by view mode, then apply search + mine filters. */
+    let base: ContextDeliverable[];
     if (viewMode === "results") {
-      return allDeliverables.filter(
+      base = allDeliverables.filter(
         (d) => d.phase === "launch-testing" && d.testResult,
       );
+    } else if (viewMode === "master") {
+      base = allDeliverables.filter(active);
+    } else if (viewMode === "pod") {
+      base = allDeliverables.filter((d) => d.podId === podId && active(d));
+    } else if (!activeClient || !activeProject) {
+      base = [];
+    } else {
+      base = allDeliverables.filter(
+        (d) =>
+          d.clientId === activeClient.id &&
+          d.projectId === activeProject.id &&
+          active(d),
+      );
     }
-    if (viewMode === "master") {
-      return allDeliverables.filter(active);
-    }
-    if (viewMode === "pod") {
-      return allDeliverables.filter((d) => d.podId === podId && active(d));
-    }
-    if (!activeClient || !activeProject) return [];
-    return allDeliverables.filter(
-      (d) =>
-        d.clientId === activeClient.id &&
-        d.projectId === activeProject.id &&
-        active(d),
-    );
-  }, [allDeliverables, viewMode, activeClient, activeProject, podId]);
+    return base.filter((d) => matchesSearch(d) && matchesMine(d));
+  }, [allDeliverables, viewMode, activeClient, activeProject, podId, searchQuery, mineOnly, meName]);
 
   const cardsByPhase = useMemo(() => {
     const map: Record<PreviewPhase, ContextDeliverable[]> = {
@@ -871,6 +971,57 @@ export default function KanbanPage() {
      * prompt instead of having to hunt through the dropdown. */
     setClientId(id);
     setProjectId("");
+  }
+
+  /* Destructive: drop a project (and all its cards) from a client.
+   * Triggers a confirm via the existing confirmPrompt pattern. If
+   * the project being deleted is the active one, falls back to
+   * whichever sibling is left. */
+  async function deleteProject(clientId: string, projectId: string) {
+    const client = clients.find((c) => c.id === clientId);
+    const project = client?.projects.find((p) => p.id === projectId);
+    if (!project) return;
+    const ok = await confirmAction({
+      title: "Delete project?",
+      message: `"${project.name}" and all its cards will be deleted permanently. This can't be undone.`,
+      confirmLabel: "Delete project",
+      destructive: true,
+    });
+    if (!ok) return;
+    setClients((prev) => {
+      const next = cloneClients(prev);
+      const c = next.find((x) => x.id === clientId);
+      if (!c) return next;
+      c.projects = c.projects.filter((p) => p.id !== projectId);
+      return next;
+    });
+    if (activeProject?.id === projectId) {
+      const remaining = (client?.projects ?? []).filter((p) => p.id !== projectId);
+      setProjectId(remaining[0]?.id ?? "");
+    }
+  }
+
+  /* Destructive: drop a client (and every project + card under it). */
+  async function deleteClient(clientId: string) {
+    const client = clients.find((c) => c.id === clientId);
+    if (!client) return;
+    const totalCards = client.projects.reduce(
+      (n, p) => n + p.deliverables.length,
+      0,
+    );
+    const ok = await confirmAction({
+      title: "Delete client?",
+      message: `"${client.name}" with ${client.projects.length} project${client.projects.length === 1 ? "" : "s"} and ${totalCards} card${totalCards === 1 ? "" : "s"} will be deleted permanently. This can't be undone.`,
+      confirmLabel: "Delete client",
+      destructive: true,
+    });
+    if (!ok) return;
+    setClients((prev) => prev.filter((c) => c.id !== clientId));
+    if (activeClient?.id === clientId) {
+      const remaining = clients.filter((c) => c.id !== clientId);
+      setClientId(remaining[0]?.id ?? "");
+      setProjectId(remaining[0]?.projects[0]?.id ?? "");
+    }
   }
 
   function addProject(input: {
@@ -1187,6 +1338,11 @@ export default function KanbanPage() {
           <div className="min-w-0">
             <p className="text-[11px] font-medium uppercase tracking-wider text-[#71757D]">
               Mission Control · {viewModeLabel}
+              {headerCountLabel && (
+                <span className="text-[#4B4D52] normal-case tracking-normal">
+                  {" · "}{headerCountLabel.toLowerCase()}
+                </span>
+              )}
             </p>
             <h1 className="mt-2 text-[28px] leading-tight truncate">
               <span className="font-bold text-[#E5E5EA]">{title.bold}</span>{" "}
@@ -1194,28 +1350,75 @@ export default function KanbanPage() {
             </h1>
           </div>
 
-          {/* Right cluster. Every slot here is reserved across view modes so
-              switching between project / master / results doesnt reflow the
-              cluster horizontally. Count text gets a min-width sized to the
-              longest variant ("12 deliverables · 5 clients"). Client dropdown
-              is always mounted but visibility-hidden outside project mode. */}
+          {/* Right cluster - decluttered. Primary controls only:
+              Mine + view-mode pill + overflow menu. Search collapses
+              to an icon; Phase rules + Cosy/Glance live in the menu. */}
           <div className="flex items-center gap-2">
-            {/* Wider min-width than before because the longest variant -
-                "99 DELIVERABLES - 99 CLIENTS" - is ~250px; stops the count
-                slot from expanding the cluster and shifting the pill toggle
-                across modes. */}
-            <p className="text-[11px] font-medium uppercase tracking-wider text-[#71757D] tabular-nums shrink-0 mr-2 text-right min-w-[260px]">
-              {headerCountLabel}
-            </p>
-
             <SyncErrorToast />
-            <button
-              onClick={() => setRulesOpen(true)}
-              className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white border border-[#2A2A2A] rounded-full hover:border-[#383838] transition-colors"
-            >
-              Phase rules
-            </button>
+            {/* Search - icon-only by default to save header real estate.
+                Click or press / to expand into an input; Esc collapses. */}
+            <SearchControl
+              query={searchQuery}
+              onChange={setSearchQuery}
+              inputRef={searchInputRef}
+            />
+            {/* Mine only - filters to cards where the signed-in user is
+                listed as designer or developer (any slot). */}
+            {meName && (
+              <button
+                onClick={() => setMineOnly((v) => !v)}
+                className={`px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-full transition-colors ${
+                  mineOnly
+                    ? "bg-emerald-500/[0.15] text-emerald-200 border border-emerald-500/40"
+                    : "text-[#71757D] hover:text-white border border-[#2A2A2A] hover:border-[#383838]"
+                }`}
+                title="Show only cards assigned to you"
+              >
+                Mine
+              </button>
+            )}
 
+            {/* + New client button — moved LEFT of the view mode pill
+                so when it disappears in non-project modes, the pill +
+                overflow stay anchored to the right edge. */}
+            {viewMode === "project" && (
+              <button
+                onClick={() => setAddClientOpen(true)}
+                className="shrink-0 text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white transition-colors px-3 py-2"
+                title="Add a new client"
+              >
+                + Client
+              </button>
+            )}
+
+            {/* Client / pod selector - custom dropdown matching the
+                app's dark aesthetic (native select popover is browser-
+                styled and looks out of place). Each item shows the
+                name + a project count for clients / member count for
+                pods. */}
+            {viewMode === "project" && clients.length > 0 && (
+              <KanbanClientPicker
+                clients={clients}
+                activeId={clientId}
+                onSelect={(id) => {
+                  const c = clients.find((x) => x.id === id);
+                  setClientId(id);
+                  setProjectId(c?.projects[0]?.id ?? "");
+                }}
+                onDelete={(id) => deleteClient(id)}
+              />
+            )}
+            {viewMode === "pod" && pods.length > 0 && (
+              <KanbanPodPicker
+                pods={pods}
+                activeId={podId}
+                onSelect={(id) => setPodId(id)}
+              />
+            )}
+
+            {/* View mode pill - anchored to the right edge. Stays put
+                regardless of mode so eye-position doesn't jolt when
+                + Client + the client dropdown appear/disappear. */}
             <div className="inline-flex p-0.5 rounded-full bg-[#222222] border border-[#2A2A2A]">
               {(
                 [
@@ -1239,69 +1442,13 @@ export default function KanbanPage() {
               ))}
             </div>
 
-            {/* + New client button — sits left of the selector slot. Only
-                surfaces in project view. Prompts for a name, slugs it, jumps
-                to the new client on success. */}
-            {viewMode === "project" && (
-              <button
-                onClick={() => {
-                  const name = window.prompt("Client name");
-                  if (name) addClient(name);
-                }}
-                className="shrink-0 text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white transition-colors px-3 py-2"
-                title="Add a new client"
-              >
-                + Client
-              </button>
-            )}
-
-            {/* Selector slot. Reserved across all view modes for layout
-                stability; renders client options in project mode, pod
-                options in pod mode, invisible elsewhere. */}
-            {/* Slot stays a fixed width (180px) across every view mode so
-                switching project / pod / master / results never shifts the
-                pill toggle. The inner select fills the slot. */}
-            <div
-              className={`relative w-[180px] shrink-0 ${
-                (viewMode === "project" && clients.length > 0) ||
-                (viewMode === "pod" && pods.length > 0)
-                  ? ""
-                  : "invisible pointer-events-none"
-              }`}
-              aria-hidden={viewMode !== "project" && viewMode !== "pod"}
-            >
-              {viewMode === "pod" ? (
-                <select
-                  value={podId}
-                  onChange={(e) => setPodId(e.target.value)}
-                  className="appearance-none w-full text-sm font-medium pl-3 pr-9 py-2 bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] rounded-full focus:outline-none focus:border-[#383838]"
-                >
-                  {pods.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <select
-                  value={clientId}
-                  onChange={(e) => {
-                    const c = clients.find((x) => x.id === e.target.value);
-                    setClientId(e.target.value);
-                    setProjectId(c?.projects[0]?.id ?? "");
-                  }}
-                  className="appearance-none w-full text-sm font-medium pl-3 pr-9 py-2 bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] rounded-full focus:outline-none focus:border-[#383838]"
-                  tabIndex={viewMode === "project" ? 0 : -1}
-                >
-                  {clients.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              )}
-              <ChevronDownIcon className="size-3.5 text-[#71757D] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
+            {/* Overflow menu - tertiary controls (density, phase rules).
+                Sits at the very right edge alongside the view mode pill. */}
+            <OverflowMenu
+              density={density}
+              onSetDensity={setDensity}
+              onOpenRules={() => setRulesOpen(true)}
+            />
           </div>
         </div>
 
@@ -1316,6 +1463,7 @@ export default function KanbanPage() {
               projectId={activeProject?.id ?? ""}
               onSelectProject={(id) => setProjectId(id)}
               onAddProject={addProject}
+              onDeleteProject={(pid) => deleteProject(activeClient.id, pid)}
               deliverableCounts={Object.fromEntries(
                 activeClient.projects.map((p) => [
                   p.id,
@@ -1348,6 +1496,7 @@ export default function KanbanPage() {
                 setProjectId(c?.projects[0]?.id ?? "");
                 setViewMode("project");
               }}
+              onDeleteClient={(clientId) => deleteClient(clientId)}
             />
           )}
 
@@ -1401,10 +1550,17 @@ export default function KanbanPage() {
             onOpen={(id) => setActiveId(id)}
           />
         ) : (
+          /* Viewport-fit board: columns share one fixed height (the
+           * viewport minus the dashboard header + page chrome) so the
+           * whole board never makes the page scroll. Each column
+           * scrolls its own cards independently. min-h floor keeps it
+           * usable on short windows. */
+          <div className="h-[calc(100dvh-260px)] min-h-[420px]">
           <BoardColumns
             phases={PREVIEW_PHASES}
             cards={cardsByPhase}
             viewMode={viewMode}
+            density={density}
             activeTurnaround={
               viewMode === "project" ? activeProject?.turnaroundDays : undefined
             }
@@ -1425,10 +1581,21 @@ export default function KanbanPage() {
             onAddDeliverable={addDeliverable}
             onUpdate={updateDeliverable}
           />
+          </div>
         )}
       </div>
 
       {rulesOpen && <PhaseRulesModal onClose={() => setRulesOpen(false)} />}
+
+      {addClientOpen && (
+        <NewClientModal
+          onCancel={() => setAddClientOpen(false)}
+          onSave={(name) => {
+            addClient(name);
+            setAddClientOpen(false);
+          }}
+        />
+      )}
 
       {confirmPrompt && (
         <DarkConfirm
@@ -1499,9 +1666,10 @@ interface ClientsRowProps {
     projectCount: number;
   }[];
   onSelectClient: (clientId: string) => void;
+  onDeleteClient: (clientId: string) => void;
 }
 
-function ClientsRow({ clients, onSelectClient }: ClientsRowProps) {
+function ClientsRow({ clients, onSelectClient, onDeleteClient }: ClientsRowProps) {
   if (clients.length === 0) {
     return (
       <div className="flex items-center gap-2 mb-5">
@@ -1516,15 +1684,29 @@ function ClientsRow({ clients, onSelectClient }: ClientsRowProps) {
   return (
     <div className="flex items-center gap-1.5 mb-5 overflow-x-auto scrollbar-thin pb-1">
       {clients.map((c) => (
-        <button
+        <div
           key={c.clientId}
-          onClick={() => onSelectClient(c.clientId)}
-          className="px-3.5 py-1.5 rounded-full text-[12px] font-medium border bg-[#181818] text-[#71757D] border-[#2A2A2A] hover:text-white hover:border-[#383838] transition-colors"
-          title={`${c.clientName} - ${c.projectCount} project${c.projectCount === 1 ? "" : "s"}`}
+          className="group inline-flex items-center rounded-full border bg-[#181818] text-[#71757D] border-[#2A2A2A] hover:text-white hover:border-[#383838] transition-colors"
         >
-          <span>{c.clientName}</span>
-          <span className="ml-2 tabular-nums text-[#4B4D52]">{c.openCount}</span>
-        </button>
+          <button
+            onClick={() => onSelectClient(c.clientId)}
+            className="pl-3.5 pr-2 py-1.5 text-[12px] font-medium"
+            title={`${c.clientName} - ${c.projectCount} project${c.projectCount === 1 ? "" : "s"}`}
+          >
+            <span>{c.clientName}</span>
+            <span className="ml-2 tabular-nums text-[#4B4D52]">{c.openCount}</span>
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDeleteClient(c.clientId);
+            }}
+            className="size-6 mr-1 inline-flex items-center justify-center rounded-full text-[#4B4D52] hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"
+            title={`Delete ${c.clientName}`}
+          >
+            <XMarkIcon className="size-3" />
+          </button>
+        </div>
       ))}
     </div>
   );
@@ -1558,29 +1740,102 @@ function PodProjectsRow({ projects, onSelectProject }: PodProjectsRowProps) {
       </div>
     );
   }
+  /* Same single-tab + overflow pattern as ProjectTabsRow. First
+   * project shows as a prominent pill; the rest live in a "+N"
+   * dropdown to keep the row scannable when a pod has 10+ projects. */
+  const [first, ...rest] = projects;
   return (
-    <div className="flex items-center gap-1.5 mb-5 overflow-x-auto scrollbar-thin pb-1">
-      {projects.map((p) => (
-        <button
-          key={p.projectId}
-          onClick={() => onSelectProject(p.clientId, p.projectId)}
-          className="px-3.5 py-1.5 rounded-full text-[12px] font-medium border bg-[#181818] text-[#71757D] border-[#2A2A2A] hover:text-white hover:border-[#383838] transition-colors"
-          title={
-            p.turnaroundDays
-              ? `${p.clientName} - ${p.projectName} - ${p.turnaroundDays}d turnaround`
-              : `${p.clientName} - ${p.projectName}`
-          }
-        >
-          <span className="text-[#4B4D52] mr-1.5">{p.clientName}</span>
-          <span>{p.projectName}</span>
-          <span className="ml-2 tabular-nums text-[#4B4D52]">{p.openCount}</span>
-          {p.turnaroundDays && (
-            <span className="ml-2 text-[10px] tabular-nums uppercase tracking-wider text-[#E5E5EA]/60">
-              {p.turnaroundDays}d
-            </span>
-          )}
-        </button>
-      ))}
+    <div className="flex items-center gap-1.5 mb-5 min-w-0">
+      <button
+        onClick={() => onSelectProject(first.clientId, first.projectId)}
+        className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[12px] font-medium border bg-white text-[#0C0C0C] border-white"
+        title={`${first.clientName} · ${first.projectName}`}
+      >
+        <span className="text-[#0C0C0C]/50">{first.clientName}</span>
+        <span className="truncate max-w-[200px]">{first.projectName}</span>
+        <span className="tabular-nums text-[#0C0C0C]/50">{first.openCount}</span>
+        {first.turnaroundDays && (
+          <span className="text-[10px] uppercase tracking-wider text-[#0C0C0C]/60">
+            {first.turnaroundDays}d
+          </span>
+        )}
+      </button>
+      {rest.length > 0 && (
+        <PodProjectsOverflow projects={rest} onSelect={onSelectProject} />
+      )}
+    </div>
+  );
+}
+
+/* Dropdown of "other projects on this pod". Same visual language as
+ * ProjectOverflow but scoped to pod view + no delete (these projects
+ * are owned by clients elsewhere - delete happens from the project
+ * view, not the pod view). */
+function PodProjectsOverflow({
+  projects,
+  onSelect,
+}: {
+  projects: PodProjectsRowProps["projects"];
+  onSelect: (clientId: string, projectId: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="px-3 py-1.5 rounded-full text-[12px] font-medium border bg-[#181818] text-[#9CA3AF] border-[#2A2A2A] hover:text-white hover:border-[#383838] transition-colors"
+        title={`${projects.length} more project${projects.length === 1 ? "" : "s"} on this pod`}
+      >
+        +{projects.length}
+      </button>
+      {open && (
+        <div className="absolute left-0 top-9 z-40 w-80 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
+          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-[#71757D] font-semibold border-b border-white/[0.04]">
+            Other projects ({projects.length})
+          </div>
+          <ul className="max-h-80 overflow-y-auto py-1">
+            {projects.map((p) => (
+              <li key={p.projectId}>
+                <button
+                  onClick={() => {
+                    onSelect(p.clientId, p.projectId);
+                    setOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 hover:bg-white/[0.04] transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-[#71757D] truncate shrink-0">
+                      {p.clientName}
+                    </span>
+                    <span className="text-[12px] text-[#E5E5EA] truncate flex-1 min-w-0">
+                      {p.projectName}
+                    </span>
+                    <span className="text-[10px] text-[#71757D] tabular-nums shrink-0">
+                      {p.openCount}
+                    </span>
+                    {p.turnaroundDays && (
+                      <span className="text-[10px] uppercase tracking-wider text-[#71757D] tabular-nums shrink-0">
+                        {p.turnaroundDays}d
+                      </span>
+                    )}
+                  </div>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
@@ -1595,6 +1850,7 @@ interface ProjectTabsRowProps {
     turnaroundDays?: TurnaroundDays;
     engagementDays?: EngagementDays;
   }) => void;
+  onDeleteProject: (projectId: string) => void;
   deliverableCounts: Record<string, number>;
   pods: MockPod[];
   currentPodId: string | undefined;
@@ -1626,10 +1882,33 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
     setAddingProject(false);
   }
 
+  /* Render only the ACTIVE project tab + a "+N" overflow chip that
+   * pops a dropdown listing the rest (with per-project delete).
+   * Dramatically declutters when a client has 6+ projects. */
+  const active = props.client.projects.find((p) => p.id === props.projectId);
+  const others = props.client.projects.filter((p) => p.id !== props.projectId);
   return (
     <div className="flex items-center justify-between gap-3 mb-5">
-      <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-thin pb-1 min-w-0">
-        {props.client.projects.map((p) => {
+      <div className="flex items-center gap-1.5 min-w-0">
+        {active && (
+          <ActiveProjectTab
+            project={active}
+            count={props.deliverableCounts[active.id] ?? 0}
+            onDelete={() => props.onDeleteProject(active.id)}
+          />
+        )}
+        {others.length > 0 && (
+          <ProjectOverflow
+            projects={others}
+            counts={props.deliverableCounts}
+            onSelect={(id) => props.onSelectProject(id)}
+            onDelete={(id) => props.onDeleteProject(id)}
+          />
+        )}
+        {/* Legacy map kept gone — only the active tab + overflow render now.
+            The block below is the inline "+ New project" form that was
+            already here; preserved as the trailing add affordance. */}
+        {false && props.client.projects.map((p) => {
           const isActive = p.id === props.projectId;
           const count = props.deliverableCounts[p.id] ?? 0;
           return (
@@ -1725,14 +2004,14 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
                       key={t}
                       type="button"
                       onClick={() => setEngagementDraft(t)}
-                      className={`px-2 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider tabular-nums transition-colors ${
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider transition-colors ${
                         engagementDraft === t
                           ? "bg-teal-500 text-[#0C0C0C]"
                           : "text-[#71757D] hover:text-white"
                       }`}
-                      title={`${t}-day engagement`}
+                      title={`${ENGAGEMENT_TIER_LABEL[t]} retainer (${t}-day cadence)`}
                     >
-                      {t}d
+                      {ENGAGEMENT_TIER_SHORT[t]}
                     </button>
                   ))
                 : TURNAROUND_OPTIONS.map((t) => (
@@ -1770,21 +2049,14 @@ function ProjectTabsRow(props: ProjectTabsRowProps) {
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
-        <div className="relative">
-          <select
-            value={props.currentPodId ?? ""}
-            onChange={(e) => props.onAssignPod(e.target.value)}
-            className="appearance-none text-[12px] font-medium pl-3 pr-9 py-1.5 bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] rounded-full focus:outline-none focus:border-[#383838]"
-          >
-            <option value="">No pod</option>
-            {props.pods.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-          <ChevronDownIcon className="size-3.5 text-[#71757D] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-        </div>
+        {/* Custom-styled pod-assignment dropdown (was the native select
+         * popover which looked out of place against the rest of the
+         * dark dashboard). */}
+        <ProjectPodPicker
+          pods={props.pods}
+          currentPodId={props.currentPodId}
+          onAssign={props.onAssignPod}
+        />
 
         {props.hasBrief ? (
           <button
@@ -1811,6 +2083,7 @@ interface BoardColumnsProps {
   phases: typeof PREVIEW_PHASES;
   cards: Record<PreviewPhase, ContextDeliverable[]>;
   viewMode: ViewMode;
+  density: "cosy" | "glance";
   // Turnaround of the active project; only set in project mode (master / pod
   // / results mix projects with different turnarounds so the column header
   // falls back to the baseline expectation). Undefined treated as default 15.
@@ -1856,7 +2129,7 @@ function BoardColumns(props: BoardColumnsProps) {
   }, [addingToPhase, onSetAddingToPhase, onSetNewTitleDraft]);
 
   return (
-    <div className="grid gap-3 grid-flow-col auto-cols-[minmax(280px,1fr)] overflow-x-auto pb-4">
+    <div className="grid gap-3 grid-flow-col auto-cols-[minmax(280px,1fr)] overflow-x-auto pb-2 h-full">
       {props.phases.map((phase) => {
         const cards = props.cards[phase.value] ?? [];
         const isDropTarget =
@@ -1897,13 +2170,13 @@ function BoardColumns(props: BoardColumnsProps) {
               props.onSetDragOverCol(null);
               props.onSetDraggingId(null);
             }}
-            className={`rounded-xl flex flex-col transition-colors ${
+            className={`rounded-xl flex flex-col transition-colors h-full overflow-hidden ${
               isDropTarget
                 ? "bg-[#222222] border-2 border-dashed border-[#9CA3AF]"
                 : "bg-[#181818] border border-[#2A2A2A]"
             }`}
           >
-            <div className="px-3 py-3 border-b border-[#2A2A2A]">
+            <div className="px-3 py-3 border-b border-[#2A2A2A] shrink-0">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <span
@@ -1914,9 +2187,35 @@ function BoardColumns(props: BoardColumnsProps) {
                     {phase.label}
                   </span>
                 </div>
-                <span className="text-[11px] font-medium text-[#71757D] tabular-nums shrink-0">
-                  {cards.length}
-                </span>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="text-[11px] font-medium text-[#71757D] tabular-nums">
+                    {cards.length}
+                  </span>
+                  {/* Quick-add: only in project mode (the add input
+                   * below is gated on project mode too). Click → opens
+                   * the inline form at the bottom of THIS column. */}
+                  {props.viewMode === "project" && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        props.onSetAddingToPhase(phase.value);
+                        props.onSetNewTitleDraft("");
+                        /* Scroll the add form into view since the
+                         * column body now scrolls independently. */
+                        window.setTimeout(() => {
+                          const form = document.querySelector<HTMLElement>(
+                            `[data-add-form-phase="${phase.value}"]`,
+                          );
+                          form?.scrollIntoView({ behavior: "smooth", block: "end" });
+                        }, 50);
+                      }}
+                      className="size-5 inline-flex items-center justify-center rounded-md text-[#71757D] hover:text-[#E5E5EA] hover:bg-white/[0.06] transition-colors"
+                      title={`Add card to ${phase.label}`}
+                    >
+                      <PlusIcon className="size-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
               {/* Always render the expected line so column header heights
                   match. Not Started has no SLA; render an invisible spacer
@@ -1931,7 +2230,7 @@ function BoardColumns(props: BoardColumnsProps) {
               </p>
             </div>
 
-            <div className="p-2 space-y-2 flex-1 min-h-[60vh]">
+            <div className={`${props.density === "glance" ? "p-1 space-y-1" : "p-2 space-y-2"} flex-1 min-h-0 overflow-y-auto scrollbar-thin`}>
               {cards.length === 0 ? (
                 <p className="text-[11px] text-[#4B4D52] text-center py-6">
                   -
@@ -1942,6 +2241,7 @@ function BoardColumns(props: BoardColumnsProps) {
                     key={d.id}
                     deliverable={d}
                     viewMode={props.viewMode}
+                    density={props.density}
                     isDragging={props.draggingId === d.id}
                     onDragStart={() => props.onSetDraggingId(d.id)}
                     onDragEnd={() => {
@@ -1955,7 +2255,7 @@ function BoardColumns(props: BoardColumnsProps) {
               )}
 
               {props.viewMode === "project" && (
-                <div className="pt-1">
+                <div className="pt-1" data-add-form-phase={phase.value}>
                   {props.addingToPhase === phase.value ? (
                     phase.value === "tickets" ? (
                       // Category picker + title input, only on the Tickets
@@ -2082,6 +2382,7 @@ function BoardColumns(props: BoardColumnsProps) {
 interface CardProps {
   deliverable: ContextDeliverable;
   viewMode: ViewMode;
+  density: "cosy" | "glance";
   isDragging: boolean;
   onDragStart: () => void;
   onDragEnd: () => void;
@@ -2092,6 +2393,7 @@ interface CardProps {
 function Card({
   deliverable: d,
   viewMode,
+  density,
   isDragging,
   onDragStart,
   onDragEnd,
@@ -2162,6 +2464,50 @@ function Card({
     developer: d.developer,
     secondaryDeveloper: d.secondaryDeveloper,
   });
+
+  /* Glance mode short-circuit: cards collapse to a thin bar that
+   * preserves the status colour (the whole point - admin can scan
+   * the column for amber/reds in one look). Click to open the
+   * full card; drag still works. Falls through to the full card
+   * render below for cosy. */
+  if (density === "glance") {
+    return (
+      <div
+        draggable
+        onDragStart={(e) => {
+          e.dataTransfer.effectAllowed = "move";
+          e.dataTransfer.setData("text/plain", d.id);
+          onDragStart();
+        }}
+        onDragEnd={onDragEnd}
+        onClick={onOpen}
+        className={`flex items-center gap-2 pl-2 pr-2 py-1.5 border rounded ${style.ring} ${style.bg} cursor-grab active:cursor-grabbing hover:border-[#383838] transition-all ${
+          isDragging ? "opacity-40 scale-[0.98]" : ""
+        }`}
+        title={`${d.title}${role ? ` · ${role}` : ""}`}
+      >
+        {categoryMeta && (
+          <categoryMeta.icon className={`size-3 shrink-0 ${categoryMeta.tone}`} />
+        )}
+        <span className="text-[12px] text-[#E5E5EA] truncate flex-1 min-w-0">
+          {d.title}
+        </span>
+        {(needsConclude || needsInterim || limbo) && (
+          <span
+            className="size-1.5 rounded-full shrink-0"
+            style={{
+              background: needsConclude
+                ? "#F97066"
+                : needsInterim
+                  ? "#F5A623"
+                  : "#5B8DEF",
+            }}
+            aria-label={needsConclude ? "Conclude" : needsInterim ? "Interim due" : "Many rounds"}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -4218,6 +4564,639 @@ function SyncErrorToast() {
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-lg bg-rose-500/[0.95] text-white text-[13px] font-medium shadow-[0_20px_60px_rgba(0,0,0,0.4)] max-w-md">
       <div className="font-semibold mb-0.5">Cloud save failed</div>
       <div className="text-[12px] opacity-90 break-all">{error}</div>
+    </div>
+  );
+}
+
+/* ── Search control ──
+ * Icon-only by default - frees header real estate. Click the icon
+ * or press / to expand into an input. Esc collapses + clears. The
+ * inputRef is forwarded from the parent so the / shortcut from
+ * anywhere still focuses this even when collapsed (clicking expands
+ * it; the / handler triggers a click via expand state). */
+function SearchControl({
+  query,
+  onChange,
+  inputRef,
+}: {
+  query: string;
+  onChange: (v: string) => void;
+  inputRef: React.MutableRefObject<HTMLInputElement | null>;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  /* Auto-expand when there's a query (so / focus visibly opens it
+   * + the user typing always sees the input). */
+  useEffect(() => {
+    if (query) setExpanded(true);
+  }, [query]);
+
+  if (!expanded && !query) {
+    return (
+      <button
+        onClick={() => {
+          setExpanded(true);
+          window.setTimeout(() => inputRef.current?.focus(), 0);
+        }}
+        title="Search cards (/)"
+        className="size-7 inline-flex items-center justify-center rounded-full text-[#71757D] hover:text-white border border-[#2A2A2A] hover:border-[#383838] transition-colors"
+      >
+        <MagnifyingGlassIcon className="size-3.5" />
+      </button>
+    );
+  }
+
+  return (
+    <div className="relative">
+      <MagnifyingGlassIcon className="size-3.5 text-[#71757D] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+      <input
+        ref={inputRef}
+        value={query}
+        onChange={(e) => onChange(e.target.value)}
+        onBlur={() => {
+          if (!query) setExpanded(false);
+        }}
+        placeholder="Search cards…"
+        className="h-7 pl-7 pr-7 w-56 text-[11px] bg-[#0F0F10] border border-[#2A2A2A] rounded-full text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:border-[#383838] transition-all"
+      />
+      {query ? (
+        <button
+          onClick={() => {
+            onChange("");
+            setExpanded(false);
+          }}
+          className="absolute right-1 top-1/2 -translate-y-1/2 size-5 flex items-center justify-center text-[#71757D] hover:text-[#E5E5EA] rounded-full"
+          title="Clear (Esc)"
+        >
+          <XMarkIcon className="size-3" />
+        </button>
+      ) : (
+        <kbd className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-mono text-[#71757D]">
+          /
+        </kbd>
+      )}
+    </div>
+  );
+}
+
+/* ── Active project tab ──
+ * Single pill showing the currently-selected project. Hover →
+ * shows a delete (x) action so admin can drop the project with one
+ * click + confirm. */
+function ActiveProjectTab({
+  project: p,
+  count,
+  onDelete,
+}: {
+  project: MockProject;
+  count: number;
+  onDelete: () => void;
+}) {
+  const isRetainer = p.type === "retainer";
+  return (
+    <div
+      className={`group inline-flex items-center gap-2 pl-3.5 pr-1.5 py-1.5 rounded-full text-[12px] font-medium border ${
+        isRetainer
+          ? "bg-teal-500 text-[#0C0C0C] border-teal-500"
+          : "bg-white text-[#0C0C0C] border-white"
+      }`}
+      title={
+        isRetainer && p.engagementDays
+          ? `${ENGAGEMENT_TIER_LABEL[p.engagementDays as EngagementDays]} retainer (${p.engagementDays}-day cadence)`
+          : p.turnaroundDays
+            ? `Build · ${p.turnaroundDays}d turnaround`
+            : undefined
+      }
+    >
+      <span className="truncate max-w-[260px]">{p.name}</span>
+      <span className="tabular-nums text-[#0C0C0C]/50">{count}</span>
+      {(p.turnaroundDays || p.engagementDays) && (
+        <span className="text-[10px] uppercase tracking-wider text-[#0C0C0C]/60">
+          {p.type === "retainer" && p.engagementDays
+            ? `${ENGAGEMENT_TIER_SHORT[p.engagementDays as EngagementDays]}/mo`
+            : `${p.turnaroundDays}d`}
+        </span>
+      )}
+      <button
+        onClick={onDelete}
+        className="size-5 inline-flex items-center justify-center rounded-full text-[#0C0C0C]/60 hover:text-rose-700 hover:bg-black/[0.08] opacity-0 group-hover:opacity-100 transition-opacity"
+        title="Delete this project"
+      >
+        <XMarkIcon className="size-3" />
+      </button>
+    </div>
+  );
+}
+
+/* ── Project overflow chip ──
+ * "+N" chip that opens a dropdown listing every project on this
+ * client EXCEPT the active one. Each row = click name to switch,
+ * trash icon to delete. */
+function ProjectOverflow({
+  projects,
+  counts,
+  onSelect,
+  onDelete,
+}: {
+  projects: MockProject[];
+  counts: Record<string, number>;
+  onSelect: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="px-3 py-1.5 rounded-full text-[12px] font-medium border bg-[#181818] text-[#9CA3AF] border-[#2A2A2A] hover:text-white hover:border-[#383838] transition-colors"
+        title={`${projects.length} more project${projects.length === 1 ? "" : "s"}`}
+      >
+        +{projects.length}
+      </button>
+      {open && (
+        <div className="absolute left-0 top-9 z-40 w-72 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
+          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-[#71757D] font-semibold border-b border-white/[0.04]">
+            Other projects ({projects.length})
+          </div>
+          <ul className="max-h-80 overflow-y-auto py-1">
+            {projects.map((p) => {
+              const count = counts[p.id] ?? 0;
+              return (
+                <li key={p.id} className="group flex items-center">
+                  <button
+                    onClick={() => {
+                      onSelect(p.id);
+                      setOpen(false);
+                    }}
+                    className="flex-1 min-w-0 text-left px-3 py-2 hover:bg-white/[0.04] transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`shrink-0 size-1.5 rounded-full ${p.type === "retainer" ? "bg-teal-400" : "bg-white"}`}
+                      />
+                      <span className="text-[12px] text-[#E5E5EA] truncate">
+                        {p.name}
+                      </span>
+                      <span className="text-[10px] text-[#71757D] tabular-nums shrink-0">
+                        {count}
+                      </span>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setOpen(false);
+                      onDelete(p.id);
+                    }}
+                    className="size-7 mr-1.5 inline-flex items-center justify-center rounded text-[#71757D] hover:text-rose-400 hover:bg-rose-500/[0.06] opacity-0 group-hover:opacity-100 transition-opacity"
+                    title={`Delete ${p.name}`}
+                  >
+                    <XMarkIcon className="size-3.5" />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Project pod-assignment picker ──
+ * Custom dropdown for the "assign pod to this project" control in
+ * the project tabs row. Was a native <select> which clashed with
+ * the dark aesthetic. Includes a "No pod" option so admin can
+ * unassign. */
+function ProjectPodPicker({
+  pods,
+  currentPodId,
+  onAssign,
+}: {
+  pods: MockPod[];
+  currentPodId: string | undefined;
+  onAssign: (podId: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+  const active = pods.find((p) => p.id === currentPodId);
+
+  useEffect(() => {
+    if (!open) return;
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex items-center gap-2 pl-3 pr-2 py-1.5 text-[12px] font-medium bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] rounded-full hover:border-[#383838] transition-colors"
+      >
+        <span className="truncate max-w-[140px]">{active?.name ?? "No pod"}</span>
+        <ChevronDownIcon className="size-3.5 text-[#71757D] shrink-0" />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-9 z-40 w-56 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
+          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-[#71757D] font-semibold border-b border-white/[0.04]">
+            Assign pod
+          </div>
+          <ul className="max-h-72 overflow-y-auto py-1">
+            <li>
+              <button
+                onClick={() => {
+                  onAssign("");
+                  setOpen(false);
+                }}
+                className={`w-full text-left px-3 py-2 hover:bg-white/[0.04] transition-colors ${
+                  !currentPodId ? "bg-white/[0.04]" : ""
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {!currentPodId ? (
+                    <svg className="size-3.5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-8 8a1 1 0 01-1.42 0l-4-4a1 1 0 011.42-1.42L8 12.586l7.296-7.296a1 1 0 011.408 0z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <span className="size-3.5 shrink-0" />
+                  )}
+                  <span className="text-[13px] text-[#71757D] italic">No pod</span>
+                </div>
+              </button>
+            </li>
+            {pods.map((p) => {
+              const isActive = p.id === currentPodId;
+              return (
+                <li key={p.id}>
+                  <button
+                    onClick={() => {
+                      onAssign(p.id);
+                      setOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 hover:bg-white/[0.04] transition-colors ${
+                      isActive ? "bg-white/[0.04]" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {isActive ? (
+                        <svg className="size-3.5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-8 8a1 1 0 01-1.42 0l-4-4a1 1 0 011.42-1.42L8 12.586l7.296-7.296a1 1 0 011.408 0z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <span className="size-3.5 shrink-0" />
+                      )}
+                      <span className="text-[13px] text-[#E5E5EA] truncate">
+                        {p.name}
+                      </span>
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Client picker (header) ──
+ * Custom dropdown replacing the native <select> so the popover
+ * matches the dark app aesthetic. Active client at the top with a
+ * check; hover-trash on each row for one-click delete (confirms
+ * via the parent's DarkConfirm). */
+function KanbanClientPicker({
+  clients,
+  activeId,
+  onSelect,
+  onDelete,
+}: {
+  clients: MockClient[];
+  activeId: string;
+  onSelect: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+  const active = clients.find((c) => c.id === activeId);
+
+  useEffect(() => {
+    if (!open) return;
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative w-[180px] shrink-0">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full inline-flex items-center justify-between gap-2 pl-3 pr-3 py-2 text-sm font-medium bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] rounded-full hover:border-[#383838] transition-colors"
+      >
+        <span className="truncate">{active?.name ?? "Pick a client"}</span>
+        <ChevronDownIcon className="size-3.5 text-[#71757D] shrink-0" />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-11 z-40 w-72 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
+          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-[#71757D] font-semibold border-b border-white/[0.04]">
+            Clients ({clients.length})
+          </div>
+          <ul className="max-h-80 overflow-y-auto py-1">
+            {clients.map((c) => {
+              const isActive = c.id === activeId;
+              const projectCount = c.projects.length;
+              return (
+                <li key={c.id} className="group flex items-center gap-1 pr-1.5">
+                  <button
+                    onClick={() => {
+                      onSelect(c.id);
+                      setOpen(false);
+                    }}
+                    className={`flex-1 min-w-0 text-left pl-3 pr-2 py-2 hover:bg-white/[0.04] transition-colors ${
+                      isActive ? "bg-white/[0.04]" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {isActive ? (
+                        <svg className="size-3.5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-8 8a1 1 0 01-1.42 0l-4-4a1 1 0 011.42-1.42L8 12.586l7.296-7.296a1 1 0 011.408 0z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <span className="size-3.5 shrink-0" />
+                      )}
+                      <span className="text-[13px] text-[#E5E5EA] truncate flex-1 min-w-0">
+                        {c.name}
+                      </span>
+                      <span className="text-[10px] text-[#71757D] tabular-nums shrink-0 pl-2">
+                        {projectCount} proj
+                      </span>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setOpen(false);
+                      onDelete(c.id);
+                    }}
+                    className="size-7 shrink-0 inline-flex items-center justify-center rounded text-[#71757D] hover:text-rose-400 hover:bg-rose-500/[0.06] opacity-0 group-hover:opacity-100 transition-opacity"
+                    title={`Delete ${c.name}`}
+                  >
+                    <XMarkIcon className="size-3.5" />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Pod picker (header) ──
+ * Same pattern as the client picker but for pods. No delete -
+ * pods are managed canonically in /company/pods (the kanban only
+ * READS them). */
+function KanbanPodPicker({
+  pods,
+  activeId,
+  onSelect,
+}: {
+  pods: MockPod[];
+  activeId: string;
+  onSelect: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+  const active = pods.find((p) => p.id === activeId);
+
+  useEffect(() => {
+    if (!open) return;
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative w-[180px] shrink-0">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full inline-flex items-center justify-between gap-2 pl-3 pr-3 py-2 text-sm font-medium bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] rounded-full hover:border-[#383838] transition-colors"
+      >
+        <span className="truncate">{active?.name ?? "Pick a pod"}</span>
+        <ChevronDownIcon className="size-3.5 text-[#71757D] shrink-0" />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-11 z-40 w-72 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
+          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-[#71757D] font-semibold border-b border-white/[0.04]">
+            Pods ({pods.length})
+          </div>
+          <ul className="max-h-80 overflow-y-auto py-1">
+            {pods.map((p) => {
+              const isActive = p.id === activeId;
+              return (
+                <li key={p.id}>
+                  <button
+                    onClick={() => {
+                      onSelect(p.id);
+                      setOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 hover:bg-white/[0.04] transition-colors ${
+                      isActive ? "bg-white/[0.04]" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {isActive ? (
+                        <svg className="size-3.5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-8 8a1 1 0 01-1.42 0l-4-4a1 1 0 011.42-1.42L8 12.586l7.296-7.296a1 1 0 011.408 0z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <span className="size-3.5 shrink-0" />
+                      )}
+                      <span className="text-[13px] text-[#E5E5EA] truncate">
+                        {p.name}
+                      </span>
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── New Client modal ──
+ * Designed in-app replacement for window.prompt. Single field
+ * (Client name), Enter to submit, Esc to cancel, click backdrop to
+ * dismiss. Matches the kanban's dark aesthetic. */
+function NewClientModal({
+  onCancel,
+  onSave,
+}: {
+  onCancel: () => void;
+  onSave: (name: string) => void;
+}) {
+  const [name, setName] = useState("");
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onCancel();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onCancel]);
+
+  function submit(e?: React.FormEvent) {
+    e?.preventDefault();
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    onSave(trimmed);
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={onCancel}
+    >
+      <form
+        onSubmit={submit}
+        onClick={(e) => e.stopPropagation()}
+        className="bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] w-full max-w-md p-6"
+      >
+        <h2 className="text-lg font-semibold text-[#E5E5EA] mb-1">Add client</h2>
+        <p className="text-xs text-[#71757D] mb-5">
+          Creates a new client on the kanban. Add projects + cards once it's in.
+        </p>
+        <label className="block text-[10px] uppercase tracking-wider text-[#71757D] mb-1.5">
+          Client name
+        </label>
+        <input
+          ref={inputRef}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Acme Skincare"
+          className="w-full h-10 px-3 bg-black/40 rounded-md text-[14px] text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:ring-1 focus:ring-white/[0.12]"
+        />
+        <div className="flex justify-end gap-2 mt-6">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-3 py-2 text-sm text-[#71757D] hover:text-[#E5E5EA]"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={!name.trim()}
+            className="px-3 py-2 bg-white text-[#0C0C0C] text-sm font-semibold rounded-lg hover:bg-[#E5E5EA] disabled:opacity-40"
+          >
+            Add client
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+/* ── Overflow menu (…) ──
+ * Tertiary controls that aren't worth always-visible header room:
+ * card density (Cosy / Glance), Phase rules, room to grow. */
+function OverflowMenu({
+  density,
+  onSetDensity,
+  onOpenRules,
+}: {
+  density: "cosy" | "glance";
+  onSetDensity: (d: "cosy" | "glance") => void;
+  onOpenRules: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  /* Click-outside closes. */
+  useEffect(() => {
+    if (!open) return;
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        title="More"
+        className={`size-7 inline-flex items-center justify-center rounded-full transition-colors ${
+          open
+            ? "text-white border border-[#383838] bg-[#1A1A1A]"
+            : "text-[#71757D] hover:text-white border border-[#2A2A2A] hover:border-[#383838]"
+        }`}
+      >
+        <svg viewBox="0 0 24 24" fill="currentColor" className="size-4">
+          <circle cx="5" cy="12" r="1.5" />
+          <circle cx="12" cy="12" r="1.5" />
+          <circle cx="19" cy="12" r="1.5" />
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute right-0 top-9 z-40 w-56 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
+          <div className="p-2 border-b border-white/[0.04]">
+            <div className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold px-2 mb-2">
+              Card density
+            </div>
+            <div className="inline-flex w-full p-0.5 rounded-md bg-[#141414] ring-1 ring-white/[0.04]">
+              {(["cosy", "glance"] as const).map((d) => (
+                <button
+                  key={d}
+                  onClick={() => onSetDensity(d)}
+                  className={`flex-1 px-2 py-1 rounded text-[11px] font-semibold uppercase tracking-wider transition-colors ${
+                    density === d
+                      ? "bg-[#E5E5EA] text-[#0C0C0C]"
+                      : "text-[#71757D] hover:text-[#E5E5EA]"
+                  }`}
+                >
+                  {d === "cosy" ? "Cosy" : "Glance"}
+                </button>
+              ))}
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              setOpen(false);
+              onOpenRules();
+            }}
+            className="w-full text-left px-4 py-2.5 text-[12px] text-[#E5E5EA] hover:bg-white/[0.04] transition-colors"
+          >
+            Phase rules
+          </button>
+        </div>
+      )}
     </div>
   );
 }

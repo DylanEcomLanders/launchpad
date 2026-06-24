@@ -37,6 +37,23 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-126",
+    date: "24 June 2026",
+    version: "2.5.0",
+    title: "My Tasks rebuilt — role-aware kanban mirror, drag transitions land back on the board",
+    changes: [
+      { type: "added", text: "/my-work is now a live mirror of the kanban scoped to the active user. Designers (senior=primary, junior=secondary) see cards from design / internal-rev / external-rev; developers see development / qa / launch-testing; strategists (cro_lead of a pod) see strategy and launch-testing cards from their pod's projects. One source of truth - whatever the team does in /my-work shows up in /kanban (and vice-versa, live via Supabase Realtime)" },
+      { type: "added", text: "Drag transitions hand off through the build pipeline: Designer drags an In progress card from design to Done → kanban moves it to internal-revisions (Dylan to review). Drag after Dylan kickback → clears the revision flag (re-submits). Developer same pattern with development → qa. Drag back (Done → In progress) reverses it. Strategist drag is a no-op; tests conclude via the card modal" },
+      { type: "added", text: "Auto-flip on Dylan's kanban actions. Kick a card back from internal-revisions → designer's My Work card auto-moves Done → In progress. Same when a client kicks back from external-revisions. No refresh needed - Realtime pushes the state across" },
+      { type: "added", text: "Role chip on every My Work card so when a person wears multiple hats (e.g. senior designer on Pod 1, junior designer on Pod 2) the cards are unambiguous. Designer / Designer (jnr) / Developer / Developer (jnr) / Strategist with colour dots" },
+      { type: "improved", text: "Kanban client + pod pickers replaced with custom dark-styled dropdowns. Was the native browser <select> which looked out of place. Active selection gets a green check, project count shown per client, hover row for inline delete" },
+      { type: "improved", text: "Project pod-assignment dropdown (in the project tabs row) also swapped to a custom dark dropdown. No pod option at the top so admin can unassign" },
+      { type: "improved", text: "Retainer engagement picker shows pricing tiers (£5k Entry / £10k Core / £15k VIP) instead of 30d / 60d / 90d. Admin can now see which package the client is on at a glance. Day count still drives the auto-generated docs schedule under the hood" },
+      { type: "improved", text: "By-pod view's project chips collapsed to single active + +N overflow dropdown (same pattern as the by-project view). Stops the row sprawling when a pod has 10+ projects" },
+      { type: "fixed", text: "Client picker delete button no longer crushes the project count on hover. Added breathing room + proper flex sizing" },
+    ],
+  },
+  {
     id: "cl-125",
     date: "24 June 2026",
     version: "2.4.0",
