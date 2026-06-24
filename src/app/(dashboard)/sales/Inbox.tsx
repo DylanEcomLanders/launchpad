@@ -317,7 +317,15 @@ export function Inbox({
         {filteredConvos.map(({ lead, last, unread }) => (
           <button
             key={lead.id}
-            onClick={() => onSelectLead(lead.id)}
+            onClick={() => {
+              /* Clear any unlinked preview so the matched lead's
+               * thread can take over the middle column. Without
+               * this, the unlinked preview wins and the click
+               * looks like it did nothing. */
+              setSelectedUnlinkedId(null);
+              setPreview(null);
+              onSelectLead(lead.id);
+            }}
             className={`w-full text-left px-3 py-2.5 border-b border-[#1C1C1C] transition-colors ${
               selected?.lead.id === lead.id ? "bg-[#1C1C1C]" : "hover:bg-[#181818]"
             }`}

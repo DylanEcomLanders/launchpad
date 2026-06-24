@@ -668,11 +668,12 @@ export interface ListChatsResult {
 }
 
 /* List every chat on a given channel. Doesn't pull messages -
- * just the metadata for the inbox list view. Use fetchChatHistory
- * to pull a specific chat's messages once the user opens it. */
+ * just the metadata for the inbox list view. Paginates Unipile's
+ * cursor-based list so all chats come through, not just the first
+ * page. Capped at maxChats to avoid runaway pagination. */
 export async function listChats(
   channel: UnipileChannel,
-  limit = 200,
+  maxChats = 1000,
 ): Promise<ListChatsResult> {
   if (!isChannelLive(channel)) {
     return {
@@ -686,25 +687,43 @@ export async function listChats(
   const accountId = envAccountId(channel)!;
 
   try {
-    const res = await fetch(
-      `${dsn}/api/v1/chats?account_id=${encodeURIComponent(accountId)}&limit=${limit}`,
-      {
-        method: "GET",
-        headers: { "X-API-KEY": apiKey, Accept: "application/json" },
-      },
-    );
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      return {
-        ok: false,
-        chats: [],
-        error: `chats list failed: ${res.status} ${text.slice(0, 200)}`,
+    const items: Array<Record<string, unknown>> = [];
+    let cursor: string | undefined;
+    let pages = 0;
+    const maxPages = Math.ceil(maxChats / 100) + 2;
+
+    while (items.length < maxChats && pages < maxPages) {
+      const cursorParam = cursor
+        ? `&cursor=${encodeURIComponent(cursor)}`
+        : "";
+      const res = await fetch(
+        `${dsn}/api/v1/chats?account_id=${encodeURIComponent(accountId)}&limit=100${cursorParam}`,
+        {
+          method: "GET",
+          headers: { "X-API-KEY": apiKey, Accept: "application/json" },
+        },
+      );
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        if (items.length === 0) {
+          return {
+            ok: false,
+            chats: [],
+            error: `chats list failed: ${res.status} ${text.slice(0, 200)}`,
+          };
+        }
+        break;
+      }
+      const json = (await res.json().catch(() => ({}))) as {
+        items?: Array<Record<string, unknown>>;
+        cursor?: string;
       };
+      const page = json.items ?? [];
+      items.push(...page);
+      if (!json.cursor || page.length === 0) break;
+      cursor = json.cursor;
+      pages++;
     }
-    const json = (await res.json().catch(() => ({}))) as {
-      items?: Array<Record<string, unknown>>;
-    };
-    const items = json.items ?? [];
 
     const chats: ChatSummary[] = items
       .map((c) => normaliseChatSummary(channel, c))
