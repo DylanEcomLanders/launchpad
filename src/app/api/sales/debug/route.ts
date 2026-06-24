@@ -76,6 +76,23 @@ export async function GET(req: Request) {
       );
     }
     unipileUrl = `${dsn}/api/v1/chats/${encodeURIComponent(chatId)}/messages?limit=3`;
+  } else if (endpoint === "attendees") {
+    /* Per-chat attendees - might have richer contact info than the
+     * chat list does. Worth probing for contact names. */
+    if (!chatId) {
+      return NextResponse.json(
+        { error: "attendees endpoint requires ?chatId=..." },
+        { status: 400 },
+      );
+    }
+    unipileUrl = `${dsn}/api/v1/chats/${encodeURIComponent(chatId)}/attendees`;
+  } else if (endpoint === "users") {
+    /* Global users/contacts list for this account. If exists,
+     * gives us contact names without per-chat probing. */
+    unipileUrl = `${dsn}/api/v1/users?account_id=${encodeURIComponent(accountId)}&limit=10`;
+  } else if (endpoint === "contacts") {
+    /* Try a contacts-specific endpoint if Unipile has one. */
+    unipileUrl = `${dsn}/api/v1/contacts?account_id=${encodeURIComponent(accountId)}&limit=10`;
   } else {
     unipileUrl = `${dsn}/api/v1/chats?account_id=${encodeURIComponent(accountId)}&limit=3`;
   }
