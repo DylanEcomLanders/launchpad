@@ -37,6 +37,17 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-121",
+    date: "24 June 2026",
+    version: "2.3.3",
+    title: "Contracts nav fix + per-Person multi-agreement flow",
+    changes: [
+      { type: "added", text: "Contracts is back as a top-level Admin tab. Click Admin → Contracts → see every NDA + contract across all people with status pills. Was orphaned (the only way to reach it was People → Person → Agreement → Back to contracts which made no sense)" },
+      { type: "improved", text: "Person profile → Agreements tab redesigned. + New agreement button is always visible (no more one-contract-per-person cap). Each row gets Archive (flips to terminated, preserves audit trail) + Delete (destructive, confirms inline) actions on hover. Cleaner empty state pointing at the New agreement button" },
+      { type: "improved", text: "GenerateAgreementsModal no longer blocks a second contract. Shows existing count so admin knows they're creating a fresh one alongside. The previous one-contract guard didn't fit the real flow (role changes, project-specific agreements, NDAs alongside contracts)" },
+    ],
+  },
+  {
     id: "cl-120",
     date: "24 June 2026",
     version: "2.3.2",

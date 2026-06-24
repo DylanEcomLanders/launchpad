@@ -2632,17 +2632,48 @@ function AgreementsTab({ person }: { person: Person }) {
     });
   }, [person.id]);
 
-  /* One contract per person now - the master template absorbs the
-   * old NDA + Contract pair. Legacy "nda" rows still display, just
-   * can't be re-created. */
-  const hasContract = agreements.some((a) => a.kind === "contract");
-  const canGenerateMore = !hasContract;
-
   function onCreated(created: Agreement[]) {
     setAgreements((prev) => [...created, ...prev]);
     setModalOpen(false);
     if (created.length === 1) {
       router.push(`/company/contracts/${created[0].id}`);
+    }
+  }
+
+  async function deleteAgreement(a: Agreement) {
+    if (!window.confirm(`Delete this ${AGREEMENT_KIND_LABEL[a.kind].toLowerCase()} permanently? This can't be undone.`)) return;
+    try {
+      await agreementStore.remove(a.id);
+      setAgreements((prev) => prev.filter((x) => x.id !== a.id));
+    } catch (err) {
+      console.error("[agreements] delete failed:", err);
+      window.alert("Delete failed - check console.");
+    }
+  }
+
+  async function archiveAgreement(a: Agreement) {
+    /* "Archive" = terminate without a destructive delete. Status
+     * flips to terminated; the row stays on the timeline so the
+     * audit trail is preserved. */
+    if (!window.confirm(`Archive this ${AGREEMENT_KIND_LABEL[a.kind].toLowerCase()}? It'll be moved to Terminated status.`)) return;
+    const now = new Date().toISOString();
+    try {
+      await agreementStore.update(a.id, {
+        status: "terminated",
+        terminated_at: now,
+        terminated_reason: "Archived from Person profile",
+        updated_at: now,
+      });
+      setAgreements((prev) =>
+        prev.map((x) =>
+          x.id === a.id
+            ? { ...x, status: "terminated" as const, terminated_at: now }
+            : x,
+        ),
+      );
+    } catch (err) {
+      console.error("[agreements] archive failed:", err);
+      window.alert("Archive failed - check console.");
     }
   }
 
@@ -2652,62 +2683,94 @@ function AgreementsTab({ person }: { person: Person }) {
 
   return (
     <div>
+      {/* Header row: always-visible + New agreement button.
+       * Dylan can issue multiple contracts per person now (e.g. a
+       * second contract after a role change, a separate NDA, etc.). */}
+      <div className="flex items-center justify-between mb-4 gap-3">
+        <div>
+          <h3 className="text-[15px] font-semibold text-[#E5E5EA]">
+            Agreements ({agreements.length})
+          </h3>
+          <p className="text-[11px] text-[#71757D] mt-0.5">
+            Every contract, NDA + status for {person.full_name}. New one picks
+            from Leadership / Designer / Developer / Custom template.
+          </p>
+        </div>
+        <button
+          onClick={() => setModalOpen(true)}
+          className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-[#0C0C0C] text-[12px] font-semibold rounded-md hover:bg-[#E5E5EA]"
+        >
+          + New agreement
+        </button>
+      </div>
+
       {agreements.length === 0 ? (
-        <div className="bg-[#0C0C0C] border border-dashed border-white/[0.04] rounded-xl p-8 text-center">
+        <div className="bg-[#0F0F10] ring-1 ring-white/[0.04] rounded-2xl p-10 text-center">
           <p className="text-sm text-[#E5E5EA] font-medium mb-1">
             No agreements yet for {person.full_name}.
           </p>
-          <p className="text-xs text-[#71757D] mb-5 max-w-md mx-auto">
-            Generate an NDA, a contract, or both. Each captures a snapshot of
-            the current master template so future edits don&apos;t rewrite it.
+          <p className="text-xs text-[#71757D] max-w-md mx-auto">
+            Click <span className="text-[#E5E5EA] font-medium">+ New agreement</span> above to generate a contract. Pick the template that fits the role - the master clauses get snapshotted onto this person&apos;s contract so future template edits don&apos;t rewrite it.
           </p>
-          <button
-            onClick={() => setModalOpen(true)}
-            className="px-3.5 py-2 bg-white text-[#0C0C0C] text-sm font-medium rounded-lg hover:bg-[#F3F4F6] transition-colors"
-          >
-            Generate agreements
-          </button>
         </div>
       ) : (
         <div className="space-y-3">
           {agreements.map((a) => {
             const meta = AGREEMENT_STATUS_META[a.status];
             return (
-              <Link
+              <div
                 key={a.id}
-                href={`/company/contracts/${a.id}`}
-                className="flex items-center justify-between gap-3 bg-[#0F0F10] border border-white/[0.04] rounded-xl p-4 hover:border-white/30 hover:shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all"
+                className="flex items-center justify-between gap-3 bg-[#0F0F10] ring-1 ring-white/[0.04] rounded-xl p-4 hover:ring-white/[0.12] transition-all group"
               >
-                <div className="flex items-center gap-3">
-                  <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-[#222222] text-[#E5E5EA]">
+                <Link
+                  href={`/company/contracts/${a.id}`}
+                  className="flex items-center gap-3 flex-1 min-w-0"
+                >
+                  <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-[#222222] text-[#E5E5EA] shrink-0">
                     {AGREEMENT_KIND_LABEL[a.kind]}
                   </span>
-                  <div>
-                    <div className="text-[14px] font-medium text-[#E5E5EA]">
+                  <div className="min-w-0">
+                    <div className="text-[14px] font-medium text-[#E5E5EA] truncate">
                       {a.template_body.title}
                     </div>
-                    <div className="text-[11px] text-[#71757D] mt-0.5">
+                    <div className="text-[11px] text-[#71757D] mt-0.5 truncate">
                       {a.template_revision}
                     </div>
                   </div>
+                </Link>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span
+                    className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded"
+                    style={{ background: meta.bg, color: meta.fg }}
+                  >
+                    {meta.label}
+                  </span>
+                  {/* Per-agreement actions. Archive flips to
+                   * terminated (audit-safe). Delete is destructive
+                   * and confirms inline. Hidden until row hover so
+                   * the list stays clean. */}
+                  <div className="hidden group-hover:flex items-center gap-1">
+                    {a.status !== "terminated" && (
+                      <button
+                        onClick={() => archiveAgreement(a)}
+                        title="Archive (flips to terminated, kept for audit)"
+                        className="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#71757D] hover:text-[#E5E5EA] hover:bg-white/[0.04] rounded"
+                      >
+                        Archive
+                      </button>
+                    )}
+                    <button
+                      onClick={() => deleteAgreement(a)}
+                      title="Delete permanently"
+                      className="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#71757D] hover:text-rose-300 hover:bg-rose-500/[0.06] rounded"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
-                <span
-                  className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded shrink-0"
-                  style={{ background: meta.bg, color: meta.fg }}
-                >
-                  {meta.label}
-                </span>
-              </Link>
+              </div>
             );
           })}
-          {canGenerateMore && (
-            <button
-              onClick={() => setModalOpen(true)}
-              className="w-full py-3 border border-dashed border-white/[0.04] rounded-xl text-[13px] text-[#71757D] hover:border-white/[0.12] hover:text-[#E5E5EA] transition-colors"
-            >
-              + Generate contract
-            </button>
-          )}
         </div>
       )}
 
