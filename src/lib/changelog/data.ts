@@ -37,6 +37,16 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-123",
+    date: "24 June 2026",
+    version: "2.3.5",
+    title: "Kanban Sync to cloud button — recover data trapped in localStorage",
+    changes: [
+      { type: "added", text: "Sync to cloud button at the top of /kanban (next to Phase rules). Reads this browser's localStorage kanban cache, diffs against Supabase, upserts the delta. Surfaces a toast with the count of pushed clients/projects/tasks/pods. Safe to run multiple times - upserts are idempotent by id" },
+      { type: "fixed", text: "Diagnostic that confirmed the bug: last kanban write to Supabase was 21 June 13:38 - everything since has been trapped in per-browser localStorage caches (silent fire-and-forget sync failures). Dylan + PM each click Sync to cloud once and Supabase has everything. Next step: rip localStorage out entirely so writes go straight to Supabase + Realtime push across devices" },
+    ],
+  },
+  {
     id: "cl-122",
     date: "24 June 2026",
     version: "2.3.4",

@@ -51,7 +51,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    // Log internals server-side; return a generic message to this public endpoint.
     console.error("Funnel event tracking error:", msg);
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json({ error: "Could not record event" }, { status: 500 });
   }
 }

@@ -1,6 +1,7 @@
 import * as cheerio from "cheerio";
 import { KNOWN_APPS, REVIEW_APPS, SUBSCRIPTION_APPS, BNPL_APPS } from "@/data/known-apps";
 import type { Prospect } from "@/lib/types";
+import { assertPublicUrl } from "@/lib/security/ssrf";
 
 // ── Config ──────────────────────────────────────────────────────
 
@@ -37,6 +38,8 @@ async function fetchWithTimeout(
   opts: RequestInit = {},
   timeout = FETCH_TIMEOUT
 ): Promise<Response> {
+  // SSRF guard: block internal/private targets before fetching.
+  await assertPublicUrl(url);
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
   try {

@@ -1208,6 +1208,7 @@ export default function KanbanPage() {
               {headerCountLabel}
             </p>
 
+            <SyncToCloudButton />
             <button
               onClick={() => setRulesOpen(true)}
               className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white border border-[#2A2A2A] rounded-full hover:border-[#383838] transition-colors"
@@ -4187,5 +4188,74 @@ function DetailModal({
         </div>
       </div>
     </div>
+  );
+}
+
+/* ── Sync to cloud button ──
+ * One-shot recovery for the silent-fail bug that left writes in
+ * localStorage only since 21 June: reads localStorage, upserts the
+ * delta to Supabase. Safe to run anytime (idempotent upserts by id).
+ * Both PM + Dylan run this once and the cloud has everything. */
+function SyncToCloudButton() {
+  const [pushing, setPushing] = useState(false);
+  const [flash, setFlash] = useState<{ ok: boolean; msg: string } | null>(null);
+
+  async function push() {
+    if (pushing) return;
+    setPushing(true);
+    setFlash(null);
+    try {
+      const { pushLocalKanbanToCloud } = await import("@/lib/kanban/push-local-to-cloud");
+      const result = await pushLocalKanbanToCloud();
+      if (result.ok) {
+        const { pods, clients, projects, tasks } = result.pushed;
+        const totalPushed = pods + clients + projects + tasks;
+        if (totalPushed === 0) {
+          setFlash({ ok: true, msg: "Already in sync - cloud has everything from this browser." });
+        } else {
+          const bits = [
+            clients > 0 ? `${clients} client${clients === 1 ? "" : "s"}` : null,
+            projects > 0 ? `${projects} project${projects === 1 ? "" : "s"}` : null,
+            tasks > 0 ? `${tasks} task${tasks === 1 ? "" : "s"}` : null,
+            pods > 0 ? `${pods} pod${pods === 1 ? "" : "s"}` : null,
+          ].filter(Boolean).join(", ");
+          setFlash({ ok: true, msg: `Pushed to cloud: ${bits}.` });
+        }
+      } else {
+        setFlash({ ok: false, msg: result.error || "Push failed - check console." });
+      }
+    } catch (err) {
+      setFlash({ ok: false, msg: err instanceof Error ? err.message : "Push failed." });
+    } finally {
+      setPushing(false);
+      window.setTimeout(() => setFlash(null), 8000);
+    }
+  }
+
+  return (
+    <>
+      <button
+        onClick={push}
+        disabled={pushing}
+        title="Push this browser's local kanban data to Supabase. Safe to run multiple times."
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-emerald-200 border border-emerald-500/40 bg-emerald-500/[0.08] hover:bg-emerald-500/[0.16] rounded-full transition-colors disabled:opacity-50"
+      >
+        <svg className="size-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M10 13V5m0 0L7 8m3-3l3 3M4 13v2a2 2 0 002 2h8a2 2 0 002-2v-2" />
+        </svg>
+        {pushing ? "Syncing..." : "Sync to cloud"}
+      </button>
+      {flash && (
+        <div
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-lg text-[13px] font-medium shadow-[0_20px_60px_rgba(0,0,0,0.4)] max-w-md ${
+            flash.ok
+              ? "bg-emerald-500/[0.95] text-white"
+              : "bg-rose-500/[0.95] text-white"
+          }`}
+        >
+          {flash.msg}
+        </div>
+      )}
+    </>
   );
 }

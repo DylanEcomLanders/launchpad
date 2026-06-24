@@ -1,8 +1,14 @@
 /* ── Case Studies — Image upload ──
  * POST: upload image to Supabase Storage bucket `case-studies`, auto-compress
- *       to webp (max 2400px wide, q85). SVG and video files pass through.
+ *       to webp (max 2400px wide, q85). Video files pass through.
  *       Form fields: file (required), slug (optional, used for path prefix).
  * DELETE: { filename } removes a single object from the bucket.
+ *
+ * SECURITY: SVG is intentionally NOT allowed. SVGs can carry inline
+ * <script> and this bucket is public, so an SVG upload would be a stored
+ * XSS vector served from our own origin. Raster images are re-encoded to
+ * webp by sharp (server-set content-type), which also neutralises any
+ * embedded payload.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -11,7 +17,7 @@ import { supabase } from "@/lib/supabase";
 
 const BUCKET = "case-studies";
 
-const ALLOWED_IMAGE = ["image/png", "image/jpeg", "image/webp", "image/gif", "image/svg+xml"];
+const ALLOWED_IMAGE = ["image/png", "image/jpeg", "image/webp", "image/gif"];
 const ALLOWED_VIDEO = ["video/mp4", "video/webm", "video/quicktime"];
 const MAX_BYTES = 50 * 1024 * 1024; // 50MB ceiling — videos can be larger than images
 
@@ -33,7 +39,7 @@ export async function POST(req: NextRequest) {
     const isVideo = ALLOWED_VIDEO.includes(file.type);
     if (!isImage && !isVideo) {
       return NextResponse.json(
-        { error: "Unsupported file type. Accepts PNG, JPG, WebP, GIF, SVG, MP4, WebM, MOV." },
+        { error: "Unsupported file type. Accepts PNG, JPG, WebP, GIF, MP4, WebM, MOV." },
         { status: 400 },
       );
     }
@@ -50,8 +56,8 @@ export async function POST(req: NextRequest) {
     let width: number | undefined;
     let height: number | undefined;
 
-    // Compress images (skip GIF — preserve animation; SVG — vector; videos — bytes through)
-    if (isImage && file.type !== "image/gif" && file.type !== "image/svg+xml") {
+    // Compress images (skip GIF — preserve animation; videos — bytes through)
+    if (isImage && file.type !== "image/gif") {
       const meta = await sharp(buffer).metadata();
       let pipeline = sharp(buffer).rotate(); // strip EXIF, auto-orient
       if (meta.width && meta.width > 2400) {

@@ -23,6 +23,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { adminAuthClient } from "@/lib/auth/admin-supabase";
+import { authedRole } from "@/lib/auth/role";
 
 interface SetCredentialsBody {
   email?: string;
@@ -32,8 +33,12 @@ interface SetCredentialsBody {
 }
 
 export async function POST(req: NextRequest) {
-  const role = req.cookies.get("launchpad-role")?.value;
-  if (role !== "admin") {
+  // C1 fix: require a verified admin role. authedRole prefers the signed
+  // session cookie; the legacy unsigned cookie is only honoured while
+  // AUTH_LEGACY_COOKIE !== "off" (transition). This is the most sensitive
+  // route in the app (service-role user/password provisioning), so it
+  // should be the first to have AUTH_LEGACY_COOKIE=off enforced.
+  if (authedRole(req, ["admin"]) !== "admin") {
     return NextResponse.json({ error: "Admin only" }, { status: 403 });
   }
 

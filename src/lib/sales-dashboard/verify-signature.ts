@@ -35,12 +35,16 @@ export function verifyWebhookSignature(
   const secret = process.env.SALES_INBOUND_SECRET;
 
   if (!secret) {
-    /* No secret configured = dev / pre-integration mode. Accept all
-     * requests so curl-testing keeps working. Warn once so it's
-     * visible in production logs (no log spam). */
+    /* No secret configured. In production this is a misconfiguration:
+     * fail CLOSED so an unauthenticated caller can't inject fake leads.
+     * Outside production we accept all requests so local curl-testing
+     * keeps working, warning once so it's visible in logs. */
+    if (process.env.NODE_ENV === "production") {
+      return { ok: false, reason: "secret_not_configured" };
+    }
     if (!warnedAboutMissingSecret) {
       console.warn(
-        "[sales/inbound] SALES_INBOUND_SECRET not set - webhook auth DISABLED. Set the env var in Vercel before wiring real providers.",
+        "[sales/inbound] SALES_INBOUND_SECRET not set - webhook auth DISABLED (non-production only). Set the env var in Vercel before wiring real providers.",
       );
       warnedAboutMissingSecret = true;
     }

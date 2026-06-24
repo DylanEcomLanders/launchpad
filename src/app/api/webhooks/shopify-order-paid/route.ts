@@ -35,10 +35,12 @@ export async function POST(request: Request) {
     .digest("base64");
 
   try {
+    // Compare the decoded HMAC bytes (not the base64 strings) so the
+    // constant-time compare operates on fixed-length 32-byte buffers.
     if (
       !crypto.timingSafeEqual(
-        Buffer.from(hmacHeader),
-        Buffer.from(expectedHmac)
+        Buffer.from(hmacHeader, "base64"),
+        Buffer.from(expectedHmac, "base64")
       )
     ) {
       return NextResponse.json({ error: "Invalid HMAC" }, { status: 401 });
