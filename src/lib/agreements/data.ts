@@ -35,8 +35,10 @@ export function todayISO(): string {
  * in a way you want existing un-customised templates to pick up. */
 const STALE_REVISIONS = new Set([
   "v1.0 – seeded default",
+  "v2.0 – leadership 2026-06-22",
+  "v2.0 – contractor agreement 2026-06-22",
 ]);
-const CURRENT_LEADERSHIP_REVISION = "v2.0 – leadership 2026-06-22";
+const CURRENT_LEADERSHIP_REVISION = "v2.1 – contractor agreement 2026-06-24";
 const CURRENT_DESIGNER_REVISION = "TBC – awaiting master doc";
 const CURRENT_DEVELOPER_REVISION = "TBC – awaiting master doc";
 const CURRENT_NDA_REVISION = "v1.0 – seeded default";

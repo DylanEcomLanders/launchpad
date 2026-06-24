@@ -37,6 +37,16 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-120",
+    date: "24 June 2026",
+    version: "2.3.2",
+    title: "Leadership template v2.1 — working pattern + schedule polish",
+    changes: [
+      { type: "improved", text: "Leadership / CSM contract template updated to v2.1 from the latest master PDF Dylan shared. Added Clause 4.5 (Contractor controls own hours / pattern / location, no entitlement to paid leave, advance notice as courtesy). Engagement Schedule gains Location, Payment method, Performance and bonus rows + the time off / family leave footer. Description of Services prompt expanded to standards and expectations" },
+      { type: "improved", text: "Auto-upgrade: existing Leadership templates seeded at v2.0 get refreshed to the new body on next load. Custom edits preserved (different revision = won't flip)" },
+    ],
+  },
+  {
     id: "cl-119",
     date: "24 June 2026",
     version: "2.3.1",
