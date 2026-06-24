@@ -24,6 +24,10 @@
 import { NextResponse } from "next/server";
 import { processInboundMessage } from "@/lib/sales-dashboard/inbound";
 import type { InboundChannel } from "@/lib/sales-dashboard/inbound";
+import {
+  verifyWebhookSignature,
+  signatureHeaderName,
+} from "@/lib/sales-dashboard/verify-signature";
 
 const SUPPORTED_CHANNELS: InboundChannel[] = ["whatsapp", "twitter", "linkedin", "email"];
 
@@ -38,9 +42,23 @@ export async function POST(
       { status: 400 },
     );
   }
+
+  /* Read the raw body once - we need it for the HMAC compare AND
+   * for JSON.parse. req.json() consumes the body so we can't call
+   * both; read text + parse manually. */
+  const rawBody = await req.text();
+  const signature = req.headers.get(signatureHeaderName());
+  const verify = verifyWebhookSignature(rawBody, signature);
+  if (!verify.ok) {
+    return NextResponse.json(
+      { error: "Signature verification failed", reason: verify.reason },
+      { status: 401 },
+    );
+  }
+
   let payload: { from?: string; body?: string; external_id?: string; subject?: string };
   try {
-    payload = await req.json();
+    payload = JSON.parse(rawBody) as typeof payload;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

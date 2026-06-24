@@ -71,7 +71,7 @@ export default function SalesDashboardClient() {
    * each mutation also lands on the real store via the underlying
    * tools, but we keep optimistic local state so the UI stays
    * snappy without a refetch round-trip. */
-  const { data, loading } = useSalesData();
+  const { data, loading, refresh } = useSalesData();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [messages, setMessages] = useState<LeadMessage[]>([]);
   const [tasks, setTasks] = useState<LeadTask[]>([]);
@@ -249,12 +249,13 @@ export default function SalesDashboardClient() {
     try {
       await persistNewLead(input);
       setShowAddLead(false);
-      setFlash(`Added ${input.brand_name || input.full_name} — refreshing pipeline`);
+      /* Soft refresh - re-runs useSalesData()'s adapter against the
+       * live tables, which re-seeds the dashboard's local state via
+       * the data-watching useEffect above. No page reload, no lost
+       * scroll position, no UI flash. */
+      await refresh();
+      setFlash(`Added ${input.brand_name || input.full_name}`);
       window.setTimeout(() => setFlash(null), 3000);
-      /* Hard reload to re-run useSalesData() and pick up the new
-       * adapter-shape Lead. Cheaper than re-running adapt logic
-       * inline here. */
-      window.location.reload();
     } catch (err) {
       setFlash(`Add failed: ${err instanceof Error ? err.message : String(err)}`);
       window.setTimeout(() => setFlash(null), 4000);
