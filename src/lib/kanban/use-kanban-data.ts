@@ -2,25 +2,33 @@
 
 /* ── useKanbanData ─────────────────────────────────────────────────
  *
- * The state hook for /kanban. Plays the same role as useWorkspaceData
- * for /workspace: localStorage-cached, Supabase-mirrored, drop-in for
- * useState<MockClient[]>.
+ * The state hook for /kanban. Supabase is the only source of truth -
+ * no localStorage caching (was a source of multi-device divergence:
+ * PM added cards, Dylan couldn't see them because both browsers had
+ * their own private cache).
  *
  * On mount:
- *   1. Render from localStorage immediately (instant first paint)
+ *   1. Show a loading skeleton (no stale-cache flash)
  *   2. Fetch from Supabase
- *   3. If the cloud DB is empty, seed it with MOCK_CLIENTS + MOCK_PODS
- *   4. Overlay cloud state into React + localStorage
+ *   3. Seed the tables if empty (first-run convenience)
+ *   4. Subscribe to Realtime on every kanban_* table - any insert/
+ *      update/delete from another browser triggers a debounced
+ *      refetch so changes appear live without a page refresh
  *
  * On mutation:
- *   - setClients / setPods update React state synchronously
- *   - localStorage is updated in the same tick (so a refresh sees the
- *     change even if the cloud round-trip hasn't returned yet)
- *   - The cloud diff fires in the background, errors logged only
+ *   - setClients / setPods update React state synchronously (snappy
+ *     local feedback)
+ *   - The mutation also fires syncClientsDiff / syncPodsDiff against
+ *     Supabase. Errors throw - the caller can surface them.
+ *
+ * Pods-v2 bridge: the kanban project picker still shows BOTH legacy
+ * MockPods AND pods-v2 pods (defined canonically in /company/pods)
+ * so admin can assign either. The pods-v2 entries are derived at
+ * fetch time + never written back to kanban_pods.
  */
 
 import { useEffect, useRef, useState } from "react";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import {
   MOCK_CLIENTS,
   MOCK_PODS,
@@ -36,16 +44,15 @@ import {
 import { getPods as getPodsV2 } from "@/lib/pods-v2/data";
 import type { Pod as PodV2 } from "@/lib/pods-v2/types";
 
-/* Bridge: pods-v2 (canonical, managed in /company/pods) → MockPod
- * (legacy kanban shape). The kanban only READS pods (for the project-
- * pod picker + autopair on deliverable add); it never writes them.
- * So we can safely merge converted pods-v2 entries into the displayed
- * list without round-tripping them back to the kanban_pods table.
+/* Bridge: pods-v2 (canonical) → MockPod (legacy kanban shape).
+ * The kanban only READS pods (for the picker + autopair on
+ * deliverable add); never writes them. Safe to merge in at fetch
+ * time without round-tripping to the kanban_pods table.
  *
- * Member-role mapping: pods-v2 PodMember.role enums map onto MockPod's
- * flat name fields. Stamps come from PodMember.name (which the pods-v2
- * loader populates from the linked Person at fetch time, so renames in
- * /company/people propagate everywhere). */
+ * Member-role mapping: pods-v2 PodMember.role enums map onto
+ * MockPod's flat name fields. Stamps come from PodMember.name
+ * (already populated from the linked Person at fetch time, so
+ * renames in /company/people propagate everywhere). */
 function convertPodV2ToMock(podV2: PodV2): MockPod {
   const find = (role: string) =>
     podV2.members.find((m) => m.role === role && m.person_id)?.name;
@@ -59,98 +66,8 @@ function convertPodV2ToMock(podV2: PodV2): MockPod {
   };
 }
 
-/* Merge local cache into remote fetch. Anything in local that the
- * remote is missing is a PENDING WRITE that didn't sync yet (user
- * added → navigated away before the fire-and-forget syncClientsDiff
- * completed). Bug: previously remote blindly overwrote local, which
- * dropped pending writes on every mount.
- *
- * Strategy:
- *   - Start from remote (multi-device truth)
- *   - For each client/project/task in local that's NOT in remote,
- *     re-add it - it's a pending local write
- *   - Return the merged set + the deltas so we can re-fire a sync
- *     for the missing rows
- */
-function mergeLocalIntoRemote(
-  remoteClients: MockClient[],
-  localClients: MockClient[],
-): { merged: MockClient[]; hadPending: boolean } {
-  if (localClients.length === 0) return { merged: remoteClients, hadPending: false };
-  const remoteById = new Map(remoteClients.map((c) => [c.id, c]));
-  let hadPending = false;
-  /* Start from remote so multi-device updates always come through. */
-  const merged: MockClient[] = remoteClients.map((c) => ({ ...c, projects: c.projects.map((p) => ({ ...p, deliverables: [...p.deliverables] })) }));
-  const mergedById = new Map(merged.map((c) => [c.id, c]));
-
-  for (const localClient of localClients) {
-    const remoteClient = remoteById.get(localClient.id);
-    if (!remoteClient) {
-      /* Client missing from remote entirely - pending insert. */
-      merged.push({
-        ...localClient,
-        projects: localClient.projects.map((p) => ({ ...p, deliverables: [...p.deliverables] })),
-      });
-      hadPending = true;
-      continue;
-    }
-    /* Client exists remotely. Walk its projects + tasks for pending children. */
-    const target = mergedById.get(localClient.id)!;
-    const remoteProjectIds = new Set(remoteClient.projects.map((p) => p.id));
-    for (const localProject of localClient.projects) {
-      if (!remoteProjectIds.has(localProject.id)) {
-        target.projects.push({ ...localProject, deliverables: [...localProject.deliverables] });
-        hadPending = true;
-        continue;
-      }
-      const remoteProject = remoteClient.projects.find((p) => p.id === localProject.id)!;
-      const remoteTaskIds = new Set(remoteProject.deliverables.map((d) => d.id));
-      const targetProject = target.projects.find((p) => p.id === localProject.id)!;
-      for (const localTask of localProject.deliverables) {
-        if (!remoteTaskIds.has(localTask.id)) {
-          targetProject.deliverables.push(localTask);
-          hadPending = true;
-        }
-      }
-    }
-  }
-  return { merged, hadPending };
-}
-
-function mergeLocalPods(remote: MockPod[], local: MockPod[]): { merged: MockPod[]; hadPending: boolean } {
-  if (local.length === 0) return { merged: remote, hadPending: false };
-  const remoteIds = new Set(remote.map((p) => p.id));
-  const pending = local.filter((p) => !remoteIds.has(p.id));
-  if (pending.length === 0) return { merged: remote, hadPending: false };
-  return { merged: [...remote, ...pending], hadPending: true };
-}
-
-const LS_CLIENTS_KEY = "launchpad-kanban-clients";
-const LS_PODS_KEY = "launchpad-kanban-pods";
-
-function lsRead<T>(key: string): T | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : null;
-  } catch (err) {
-    console.error(`[kanban] lsRead(${key}) failed:`, err);
-    return null;
-  }
-}
-
-function lsWrite<T>(key: string, val: T): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(key, JSON.stringify(val));
-  } catch (err) {
-    console.error(`[kanban] lsWrite(${key}) failed:`, err);
-  }
-}
-
 /* Deep clone via JSON round-trip so callers can freely mutate the
- * returned tree without affecting the cache. The kanban page does the
- * same on its current useState initializer; we preserve that contract. */
+ * returned tree without affecting the cache. */
 function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
@@ -161,19 +78,16 @@ export interface UseKanbanData {
   pods: MockPod[];
   setPods: React.Dispatch<React.SetStateAction<MockPod[]>>;
   loading: boolean;
-  source: "mock" | "localStorage" | "supabase";
+  source: "mock" | "supabase";
 }
 
 export function useKanbanData(): UseKanbanData {
-  /* Render mock fixtures on the FIRST render to keep SSR + hydration
-   * stable (no window access). The localStorage overlay runs in the
-   * post-mount effect below, then the Supabase pull replaces both. */
-  const [clients, setClientsRaw] = useState<MockClient[]>(() => clone(MOCK_CLIENTS));
-  const [pods, setPodsRaw] = useState<MockPod[]>(() => clone(MOCK_PODS));
+  /* Initial state: empty arrays + loading=true. Mock fixtures are
+   * only used as a fallback if Supabase isn't configured at all. */
+  const [clients, setClientsRaw] = useState<MockClient[]>([]);
+  const [pods, setPodsRaw] = useState<MockPod[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [source, setSource] = useState<"mock" | "localStorage" | "supabase">(
-    "mock",
-  );
+  const [source, setSource] = useState<"mock" | "supabase">("supabase");
 
   /* Hold the latest state in refs so the diff helpers always compare
    * against what was actually committed last, not a stale closure. */
@@ -182,47 +96,28 @@ export function useKanbanData(): UseKanbanData {
   clientsRef.current = clients;
   podsRef.current = pods;
 
+  /* Debounce timer for Realtime refetches. A batch of inserts from
+   * the same browser shouldn't trigger N refetches. */
+  const refetchTimerRef = useRef<number | null>(null);
+
   useEffect(() => {
     let cancelled = false;
 
-    /* 1. localStorage overlay (instant paint while Supabase fetches).
-     * Only trust the cache when it has actual content - an empty
-     * array left over from a failed Supabase write would otherwise
-     * paint a blank board and mask the cloud data. */
-    const cachedClients = lsRead<MockClient[]>(LS_CLIENTS_KEY);
-    const cachedPods = lsRead<MockPod[]>(LS_PODS_KEY);
-    if (cachedClients && cachedClients.length > 0) setClientsRaw(cachedClients);
-    if (cachedPods && cachedPods.length > 0) {
-      /* Bridge pods-v2 into the cached paint too so admin sees their
-       * /company/pods entries instantly, not after the Supabase round-
-       * trip completes. */
-      const podV2Mocks = getPodsV2().map(convertPodV2ToMock);
-      const cachedIds = new Set(cachedPods.map((p) => p.id));
-      const additional = podV2Mocks.filter((p) => !cachedIds.has(p.id));
-      setPodsRaw([...cachedPods, ...additional]);
-    }
-    if (
-      (cachedClients && cachedClients.length > 0) ||
-      (cachedPods && cachedPods.length > 0)
-    ) {
-      setSource("localStorage");
-    }
+    async function loadFromCloud() {
+      if (!isSupabaseConfigured()) {
+        /* No Supabase = dev fallback. Use the mock fixtures so the UI
+         * has something to render. Mutations stay in memory. */
+        setClientsRaw(clone(MOCK_CLIENTS));
+        setPodsRaw(clone(MOCK_PODS));
+        setSource("mock");
+        setLoading(false);
+        return;
+      }
 
-    if (!isSupabaseConfigured()) {
-      setLoading(false);
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    /* 2. Supabase pull → seed if empty → MERGE with localStorage (preserves
-     * any pending writes that fire-and-forget syncs hadn't completed yet) →
-     * state. Critical: never blindly overwrite local with remote, otherwise
-     * a fast add-client-then-navigate sequence loses the new client. */
-    (async () => {
       try {
         let remote = await fetchKanban();
         if (cancelled) return;
+        /* Seed if the kanban tables are completely empty (first run). */
         if (remote && remote.clients.length === 0 && remote.pods.length === 0) {
           await seedFromMockFixtures();
           if (cancelled) return;
@@ -230,63 +125,62 @@ export function useKanbanData(): UseKanbanData {
         }
         if (cancelled) return;
         if (remote) {
-          /* Merge local additions that hadn't synced yet. */
-          const localCachedClients = lsRead<MockClient[]>(LS_CLIENTS_KEY) ?? [];
-          const localCachedPods = lsRead<MockPod[]>(LS_PODS_KEY) ?? [];
-          const { merged: mergedClients, hadPending: pendingClients } =
-            mergeLocalIntoRemote(remote.clients, localCachedClients);
-          const { merged: mergedPods, hadPending: pendingPods } =
-            mergeLocalPods(remote.pods, localCachedPods);
-
-          /* Bridge in pods-v2 pods (canonical, defined in /company/pods).
-           * The kanban picker shows MockPods + pods-v2 pods merged so
-           * admin can assign any pod to a project. dedup by id - if any
-           * pods-v2 entries collide with kanban_pods ids (unlikely;
-           * different id prefixes) the kanban version wins. */
+          /* Bridge pods-v2 pods into the picker list. */
           const podV2Mocks = getPodsV2().map(convertPodV2ToMock);
-          const mergedPodIds = new Set(mergedPods.map((p) => p.id));
-          const additionalPods = podV2Mocks.filter((p) => !mergedPodIds.has(p.id));
-          const finalPods = [...mergedPods, ...additionalPods];
-
-          setClientsRaw(mergedClients);
-          setPodsRaw(finalPods);
-          lsWrite(LS_CLIENTS_KEY, mergedClients);
-          /* Only cache MockPods - the pods-v2 entries get re-bridged on
-           * every mount so they always reflect the latest /company/pods
-           * state (rename, slot Person, etc.). */
-          lsWrite(LS_PODS_KEY, mergedPods);
+          const remotePodIds = new Set(remote.pods.map((p) => p.id));
+          const additionalPods = podV2Mocks.filter((p) => !remotePodIds.has(p.id));
+          setClientsRaw(remote.clients);
+          setPodsRaw([...remote.pods, ...additionalPods]);
           setSource("supabase");
-
-          /* If we found pending local writes that remote didn't have,
-           * re-fire the diff so they actually land in Supabase this time
-           * (the original fire-and-forget sync likely got dropped when
-           * the page unmounted). */
-          if (pendingClients) {
-            console.warn("[kanban] re-syncing pending local clients/projects/tasks that remote was missing");
-            syncClientsDiff(remote.clients, mergedClients).catch((err) =>
-              console.error("[kanban] pending re-sync (clients) failed:", err),
-            );
-          }
-          if (pendingPods) {
-            console.warn("[kanban] re-syncing pending local pods that remote was missing");
-            syncPodsDiff(remote.pods, mergedPods).catch((err) =>
-              console.error("[kanban] pending re-sync (pods) failed:", err),
-            );
-          }
         }
       } catch (err) {
-        console.error("[kanban] initial load failed:", err);
+        console.error("[kanban] load failed:", err);
       } finally {
         if (!cancelled) setLoading(false);
       }
-    })();
+    }
+
+    function scheduleRefetch() {
+      if (refetchTimerRef.current) window.clearTimeout(refetchTimerRef.current);
+      refetchTimerRef.current = window.setTimeout(() => {
+        if (!cancelled) loadFromCloud();
+      }, 350);
+    }
+
+    loadFromCloud();
+
+    /* Realtime subscription. When any kanban_* table changes (anyone,
+     * anywhere) → debounced refetch. Cross-device updates appear
+     * within ~500ms without a page refresh.
+     *
+     * Requires Realtime to be enabled on the project + on each table
+     * (Supabase dashboard → Database → Replication). */
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    if (isSupabaseConfigured()) {
+      channel = supabase
+        .channel("kanban-realtime")
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .on("postgres_changes" as any, { event: "*", schema: "public", table: "kanban_clients" }, scheduleRefetch)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .on("postgres_changes" as any, { event: "*", schema: "public", table: "kanban_projects" }, scheduleRefetch)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .on("postgres_changes" as any, { event: "*", schema: "public", table: "kanban_tasks" }, scheduleRefetch)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .on("postgres_changes" as any, { event: "*", schema: "public", table: "kanban_pods" }, scheduleRefetch)
+        .subscribe();
+    }
 
     return () => {
       cancelled = true;
+      if (refetchTimerRef.current) window.clearTimeout(refetchTimerRef.current);
+      if (channel) supabase.removeChannel(channel);
     };
   }, []);
 
-  /* setClients wrapper - updates state + localStorage + fires cloud diff. */
+  /* setClients wrapper - updates state + fires cloud diff. Errors
+   * are thrown by the underlying upsert functions; we surface them
+   * via console + the kanban page's own error toast (added in PR
+   * #25). Realtime will broadcast the change back to other browsers. */
   const setClients: React.Dispatch<React.SetStateAction<MockClient[]>> = (
     updater,
   ) => {
@@ -295,11 +189,19 @@ export function useKanbanData(): UseKanbanData {
         typeof updater === "function"
           ? (updater as (p: MockClient[]) => MockClient[])(prev)
           : updater;
-      lsWrite(LS_CLIENTS_KEY, next);
-      /* Fire-and-forget; surface errors to console so we catch drift. */
-      syncClientsDiff(prev, next).catch((err) =>
-        console.error("[kanban] syncClientsDiff failed:", err),
-      );
+      syncClientsDiff(prev, next).catch((err) => {
+        console.error("[kanban] syncClientsDiff failed:", err);
+        /* Surface a visible toast so writes-vanishing-silently never
+         * happens again. The kanban page mounts a global error
+         * listener for kanban-sync-error events. */
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("kanban-sync-error", {
+              detail: { message: err instanceof Error ? err.message : String(err) },
+            }),
+          );
+        }
+      });
       return next;
     });
   };
@@ -310,10 +212,16 @@ export function useKanbanData(): UseKanbanData {
         typeof updater === "function"
           ? (updater as (p: MockPod[]) => MockPod[])(prev)
           : updater;
-      lsWrite(LS_PODS_KEY, next);
-      syncPodsDiff(prev, next).catch((err) =>
-        console.error("[kanban] syncPodsDiff failed:", err),
-      );
+      syncPodsDiff(prev, next).catch((err) => {
+        console.error("[kanban] syncPodsDiff failed:", err);
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("kanban-sync-error", {
+              detail: { message: err instanceof Error ? err.message : String(err) },
+            }),
+          );
+        }
+      });
       return next;
     });
   };

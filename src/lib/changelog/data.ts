@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-125",
+    date: "24 June 2026",
+    version: "2.4.0",
+    title: "Kanban: Supabase is the only source of truth + live cross-device updates",
+    changes: [
+      { type: "improved", text: "Ripped localStorage out of useKanbanData. Supabase is now the only source of truth. Every read = cloud, every write = cloud. No more multi-device divergence (PM and Dylan can't have different views of the kanban now). Loading skeleton on mount instead of stale-cache flash" },
+      { type: "added", text: "Supabase Realtime subscription on kanban_clients / kanban_projects / kanban_tasks / kanban_pods. Any change in any browser triggers a debounced refetch within ~500ms. PM adds a card → Dylan sees it appear without refresh. Requires Realtime to be enabled on each table in Supabase dashboard → Database → Replication" },
+      { type: "added", text: "Global SyncErrorToast on /kanban. When a Supabase write throws, a red toast shows the real error at the bottom of the screen. No more silent failures - if something didn't save, you'll know" },
+      { type: "removed", text: "Sync to cloud button + push-local-to-cloud helper. They were one-shot recovery for the localStorage era; now that localStorage is gone they have no purpose" },
+    ],
+  },
+  {
     id: "cl-124",
     date: "24 June 2026",
     version: "2.3.6",

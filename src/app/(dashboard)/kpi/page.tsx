@@ -106,9 +106,7 @@ export default function KpiPage() {
               ? "syncing…"
               : source === "supabase"
                 ? "live"
-                : source === "localStorage"
-                  ? "cached"
-                  : "sample data"}
+                : "sample data"}
           </p>
         </div>
         <div className="flex flex-col items-end gap-2 shrink-0">
