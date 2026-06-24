@@ -55,9 +55,38 @@ export interface TemplateBody {
   outro: string;
 }
 
+/* Role-keyed slot - each contract template covers a different
+ * engagement shape. Multiple templates can exist per kind so admin
+ * can pick the right one per contractor (Designer hire gets the
+ * Designer template by default, Leadership gets Leadership, etc.).
+ * CSM intentionally maps onto "leadership" - same terms. */
+export type TemplateRole = "leadership" | "designer" | "developer" | "custom" | "default";
+
+export const TEMPLATE_ROLE_LABEL: Record<TemplateRole, string> = {
+  leadership: "Leadership / CSM",
+  designer: "Designer",
+  developer: "Developer",
+  custom: "Custom",
+  default: "Default",
+};
+
+/* Per-kind role ordering for the picker UI. NDA only ever has the
+ * single "default" role today. */
+export const TEMPLATE_ROLES_BY_KIND: Record<AgreementKind, TemplateRole[]> = {
+  contract: ["leadership", "designer", "developer", "custom"],
+  nda: ["default"],
+};
+
 export interface AgreementTemplate {
   id: string;
   kind: AgreementKind;
+  /* Slot this template fills. Pre-2.3 templates had no role field;
+   * the data-layer auto-upgrade fills "leadership" on the existing
+   * contract template so the migration is silent. */
+  template_role: TemplateRole;
+  /* Display name shown in the templates editor + new-contract
+   * picker. E.g. "Leadership / CSM (v2.0)", "Designer (v1.0)". */
+  name: string;
   body: TemplateBody;
   /* Free-text revision label for the admin to track edits ("v1.0 –
    * initial draft", "v1.1 – tightened IP clause", etc.). */

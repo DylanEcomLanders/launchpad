@@ -281,10 +281,16 @@ export default function ContractDetailPage() {
 
       {/* ── Engagement details (inline-edit base fields) ──
        * Sits above the rendered preview. Edits patch the Agreement
-       * row + the doc below re-renders live. The 20 master clauses
-       * stay in /company/contracts/templates ("Edit master clauses"
-       * link at the footer). */}
+       * row + the doc below re-renders live. */}
       <EngagementDetailsPanel agreement={agreement} onPatch={patch} />
+
+      {/* ── Per-contract clause editor ──
+       * The template_body was SNAPSHOTTED into this agreement at
+       * creation. Editing here only affects THIS contract - the
+       * master template at /company/contracts/templates is left
+       * alone. Use this when a specific contractor needs slightly
+       * different terms vs the template they were created from. */}
+      <ClausesEditor agreement={agreement} onPatch={patch} />
 
       {/* Rendered document. Wrapped in .printable-document so the
        * @media print stylesheet (globals.css) hides everything else
@@ -647,6 +653,163 @@ function Field({
     <div className={className}>
       <label className={labelClass}>{label}</label>
       {children}
+    </div>
+  );
+}
+
+/* ── Per-contract clauses editor ──
+ *
+ * Edits the snapshotted template_body.clauses on THIS agreement
+ * only. Doesn't touch the master template. Use when a contractor
+ * needs different terms vs the template they were created from
+ * (extra IP carve-out, different restriction window, custom comp
+ * clause, etc.).
+ *
+ * Add / edit / remove / reorder clauses. Body is plain text; the
+ * existing render pipeline preserves whitespace + placeholder
+ * substitution at display time. Edits write to template_body on
+ * blur; rendered doc below updates live.
+ *
+ * Locked when status > draft because editing a signed contract
+ * changes what the contractor agreed to. */
+function ClausesEditor({
+  agreement,
+  onPatch,
+}: {
+  agreement: Agreement;
+  onPatch: (updates: Partial<Agreement>) => Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const isDraft = agreement.status === "draft";
+  const clauses = agreement.template_body.clauses;
+
+  async function commitClauses(next: Agreement["template_body"]["clauses"]) {
+    if (!isDraft) return;
+    await onPatch({
+      template_body: { ...agreement.template_body, clauses: next },
+    });
+  }
+
+  function patchClause(idx: number, updates: { heading?: string; body?: string }) {
+    const next = clauses.map((c, i) => (i === idx ? { ...c, ...updates } : c));
+    commitClauses(next);
+  }
+
+  function addClause() {
+    const newClause = {
+      id: `cl-${Math.random().toString(36).slice(2, 10)}`,
+      heading: "New clause",
+      body: "Clause body...",
+    };
+    commitClauses([...clauses, newClause]);
+  }
+
+  function removeClause(idx: number) {
+    if (!window.confirm("Remove this clause from this contract?")) return;
+    commitClauses(clauses.filter((_, i) => i !== idx));
+  }
+
+  function moveClause(idx: number, dir: -1 | 1) {
+    const target = idx + dir;
+    if (target < 0 || target >= clauses.length) return;
+    const next = [...clauses];
+    [next[idx], next[target]] = [next[target], next[idx]];
+    commitClauses(next);
+  }
+
+  return (
+    <div className="mb-6 bg-[#0F0F10] rounded-2xl ring-1 ring-white/[0.04] shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full px-5 py-3 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors"
+      >
+        <div>
+          <div className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold">
+            Clauses ({clauses.length})
+          </div>
+          <div className="text-[13px] text-[#E5E5EA] mt-0.5">
+            {isDraft
+              ? "Edit clauses on THIS contract only - master template unchanged"
+              : "Locked: contract is past draft status"}
+          </div>
+        </div>
+        <span className="text-[#71757D] text-[18px]">{open ? "−" : "+"}</span>
+      </button>
+
+      {open && (
+        <div className="px-5 pb-5 pt-1 border-t border-white/[0.04] space-y-3">
+          {clauses.map((c, idx) => (
+            <div
+              key={c.id}
+              className="bg-black/30 rounded-lg ring-1 ring-white/[0.04] p-3"
+            >
+              <div className="flex items-start gap-2 mb-2">
+                <span className="text-[10px] font-mono text-[#71757D] pt-1.5 shrink-0 w-6 text-right">
+                  {String(idx + 1).padStart(2, "0")}
+                </span>
+                <input
+                  disabled={!isDraft}
+                  defaultValue={c.heading}
+                  onBlur={(e) => {
+                    if (e.target.value !== c.heading) {
+                      patchClause(idx, { heading: e.target.value });
+                    }
+                  }}
+                  className="flex-1 h-8 px-2 bg-transparent text-[13px] font-semibold text-[#E5E5EA] focus:outline-none focus:bg-white/[0.04] rounded"
+                />
+                {isDraft && (
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => moveClause(idx, -1)}
+                      disabled={idx === 0}
+                      title="Move up"
+                      className="px-1.5 text-[#71757D] hover:text-[#E5E5EA] disabled:opacity-30"
+                    >
+                      ↑
+                    </button>
+                    <button
+                      onClick={() => moveClause(idx, 1)}
+                      disabled={idx === clauses.length - 1}
+                      title="Move down"
+                      className="px-1.5 text-[#71757D] hover:text-[#E5E5EA] disabled:opacity-30"
+                    >
+                      ↓
+                    </button>
+                    <button
+                      onClick={() => removeClause(idx)}
+                      title="Remove clause"
+                      className="px-1.5 text-[#71757D] hover:text-rose-400"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+              </div>
+              <textarea
+                disabled={!isDraft}
+                defaultValue={c.body}
+                onBlur={(e) => {
+                  if (e.target.value !== c.body) {
+                    patchClause(idx, { body: e.target.value });
+                  }
+                }}
+                rows={Math.min(12, Math.max(3, c.body.split("\n").length))}
+                className="w-full ml-8 px-2 py-1.5 bg-transparent text-[12px] text-[#C7C9CD] leading-relaxed focus:outline-none focus:bg-white/[0.04] rounded resize-y font-mono"
+                style={{ width: "calc(100% - 2rem)" }}
+              />
+            </div>
+          ))}
+          {isDraft && (
+            <button
+              onClick={addClause}
+              className="w-full py-2 text-[12px] text-[#71757D] hover:text-[#E5E5EA] hover:bg-white/[0.04] rounded-lg ring-1 ring-dashed ring-white/[0.08] transition-colors"
+            >
+              + Add clause
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

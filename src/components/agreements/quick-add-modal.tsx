@@ -35,7 +35,9 @@ import {
   todayISO,
 } from "@/lib/agreements/data";
 import { peopleStore, uid as personUid } from "@/lib/company/data";
-import type { Agreement } from "@/lib/agreements/types";
+import type { Agreement, TemplateRole } from "@/lib/agreements/types";
+import { TEMPLATE_ROLE_LABEL, TEMPLATE_ROLES_BY_KIND } from "@/lib/agreements/types";
+import { templateRoleForDepartment } from "@/lib/agreements/data";
 import type { Person, PaymentFrequency } from "@/lib/company/types";
 
 interface Props {
@@ -69,6 +71,7 @@ export function QuickAddAgreementModal({
   const [compAmount, setCompAmount] = useState("");
   const [compCurrency, setCompCurrency] = useState<(typeof CURRENCIES)[number]>("GBP");
   const [compFrequency, setCompFrequency] = useState<PaymentFrequency>("monthly");
+  const [templateRole, setTemplateRole] = useState<TemplateRole>("leadership");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const nameRef = useRef<HTMLInputElement>(null);
@@ -80,6 +83,7 @@ export function QuickAddAgreementModal({
       setCompAmount("");
       setCompCurrency("GBP");
       setCompFrequency("monthly");
+      setTemplateRole("leadership");
       setError("");
       setSubmitting(false);
       setTimeout(() => nameRef.current?.focus(), 50);
@@ -153,7 +157,14 @@ export function QuickAddAgreementModal({
         return;
       }
 
-      const tpl = await ensureTemplate("contract");
+      /* Use the admin-picked template_role. If admin didn't change
+       * it but the matched Person has a department, override with
+       * the department's natural choice (Design → designer, etc.). */
+      const effectiveTemplateRole =
+        templateRole === "leadership" && matchedPerson?.department
+          ? templateRoleForDepartment(matchedPerson.department)
+          : templateRole;
+      const tpl = await ensureTemplate("contract", effectiveTemplateRole);
       const startDate = person.start_date || todayISO();
       const agreement: Agreement = {
         id: agreementUid(),
@@ -228,6 +239,26 @@ export function QuickAddAgreementModal({
                 onChange={(e) => setRole(e.target.value)}
                 placeholder="e.g. Senior Designer"
               />
+            </div>
+
+            <div>
+              <label className={labelClass}>Template</label>
+              <select
+                className={selectClass}
+                value={templateRole}
+                onChange={(e) => setTemplateRole(e.target.value as TemplateRole)}
+              >
+                {TEMPLATE_ROLES_BY_KIND.contract.map((r) => (
+                  <option key={r} value={r}>
+                    {TEMPLATE_ROLE_LABEL[r]}
+                  </option>
+                ))}
+              </select>
+              <p className="text-[10px] text-[#71757D] mt-1 leading-relaxed">
+                Pick the contract template. Each role has its own master
+                clauses (Leadership, Designer, Developer, Custom). Edit them
+                at <span className="text-[#E5E5EA]">Templates</span> above.
+              </p>
             </div>
 
             <div className="grid grid-cols-[1fr_auto_auto] gap-3">

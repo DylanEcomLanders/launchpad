@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-118",
+    date: "24 June 2026",
+    version: "2.3.0",
+    title: "Multi-template contracts + per-contract clause editor",
+    changes: [
+      { type: "added", text: "Three role-keyed contract templates: Leadership / CSM, Designer, Developer (each seeded from the v2.0 master so admin can edit down). Plus a Custom slot for genuinely one-off contracts. Templates editor at /company/contracts/templates now has a tab strip - pick a template, edit its clauses, save" },
+      { type: "added", text: "Contract creation flow now picks the right template automatically based on the Person's department (Design → Designer, Development → Developer, others → Leadership). Admin can override the pick in the template dropdown" },
+      { type: "added", text: "Per-contract clause editor on /company/contracts/[id]. Add / edit / remove / reorder clauses on THIS contract only - master template stays untouched. Locks once the contract is past draft. The killer feature for one-off variations (extra IP carve-out, custom restriction window, bespoke comp clause, etc.) without polluting the master" },
+      { type: "improved", text: "AgreementTemplate now has template_role + name fields. Backfill migrates pre-2.3 templates to template_role: leadership + name: Leadership / CSM. Existing in-flight contracts continue to render their snapshotted body unchanged" },
+    ],
+  },
+  {
     id: "cl-117",
     date: "23 June 2026",
     version: "2.2.6",
