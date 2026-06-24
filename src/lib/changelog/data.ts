@@ -37,6 +37,15 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-124",
+    date: "24 June 2026",
+    version: "2.3.6",
+    title: "Fix: RLS policies widened to authenticated role (kanban silent-fail root cause)",
+    changes: [
+      { type: "fixed", text: "Root-cause diagnosed for the kanban silent-fail bug: every table's RLS policy was for all to anon. Once we shipped admin-direct credentials, users got real Supabase Auth sessions and every request goes through as the authenticated role - blocked by the anon-only policy. Migration 044 widens every anon-only policy to anon, authenticated so logged-in users get the same access. Apply manually in Supabase SQL Editor (per the migration rule). After that, the kanban Sync to cloud button works for real" },
+    ],
+  },
+  {
     id: "cl-123",
     date: "24 June 2026",
     version: "2.3.5",
