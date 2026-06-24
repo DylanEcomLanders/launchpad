@@ -360,18 +360,29 @@ async function rewriteScreenshotsToSignedUrls(
 
 // ─── Writes ─────────────────────────────────────────────────────────────────
 
+/* Upserts throw on failure so callers can decide whether to surface
+ * the error vs swallow it. Existing fire-and-forget callers (setClients
+ * in use-kanban-data) wrap these in .catch(); explicit recovery callers
+ * (pushLocalKanbanToCloud) let the throw bubble up so the UI can toast
+ * the real error message. */
 export async function upsertPods(pods: MockPod[]): Promise<void> {
   if (!isSupabaseConfigured() || pods.length === 0) return;
   const rows = pods.map(mockPodToRow);
   const { error } = await supabase.from("kanban_pods").upsert(rows);
-  if (error) console.error("[kanban/data] upsertPods failed:", error);
+  if (error) {
+    console.error("[kanban/data] upsertPods failed:", error);
+    throw new Error(`upsertPods: ${error.message}`);
+  }
 }
 
 export async function upsertClients(clients: MockClient[]): Promise<void> {
   if (!isSupabaseConfigured() || clients.length === 0) return;
   const rows = clients.map(mockClientToRow);
   const { error } = await supabase.from("kanban_clients").upsert(rows);
-  if (error) console.error("[kanban/data] upsertClients failed:", error);
+  if (error) {
+    console.error("[kanban/data] upsertClients failed:", error);
+    throw new Error(`upsertClients: ${error.message}`);
+  }
 }
 
 export async function upsertProjects(
@@ -380,7 +391,10 @@ export async function upsertProjects(
   if (!isSupabaseConfigured() || rows.length === 0) return;
   const dbRows = rows.map((r) => mockProjectToRow(r.clientId, r.project));
   const { error } = await supabase.from("kanban_projects").upsert(dbRows);
-  if (error) console.error("[kanban/data] upsertProjects failed:", error);
+  if (error) {
+    console.error("[kanban/data] upsertProjects failed:", error);
+    throw new Error(`upsertProjects: ${error.message}`);
+  }
 }
 
 export async function upsertTasks(
@@ -396,7 +410,7 @@ export async function upsertTasks(
       .upsert(dbRows.slice(i, i + CHUNK));
     if (error) {
       console.error("[kanban/data] upsertTasks chunk failed:", error);
-      return;
+      throw new Error(`upsertTasks (chunk ${i}): ${error.message}`);
     }
   }
 }
