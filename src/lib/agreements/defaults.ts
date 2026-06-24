@@ -72,6 +72,32 @@ The parties wish to share confidential information in connection with Recipient'
   outro: `By signing below, Recipient acknowledges that they have read, understood, and agree to be bound by the terms of this Agreement.`,
 };
 
+/* TBC placeholder body for templates Dylan hasn't authored yet
+ * (Designer, Developer at time of writing). Renders an obvious
+ * "not ready" notice as the only clause so admin spots it before
+ * sending a contract using this template. Replaced with a real
+ * body the moment Dylan ships the master doc. */
+export const TBC_TEMPLATE_BODY: TemplateBody = {
+  title: "Contractor Agreement — TBC",
+  intro: `This template hasn't been authored yet.
+
+DO NOT use this for a real engagement. Pick the Leadership template instead, or wait until the master clauses are filled in at /company/contracts/templates.`,
+  clauses: [
+    {
+      id: "tbc-1",
+      heading: "Template not yet configured",
+      body: `This role-specific contract template is on the to-do list. Until it's authored:
+
+(a) for engagements where Leadership terms are acceptable, use the Leadership / CSM template;
+(b) for genuinely role-specific terms, contact Dylan to author the master clauses;
+(c) per-contract one-off edits remain available via the Clauses panel on the contract detail page.
+
+Edit at /company/contracts/templates → pick the relevant tab → replace this body with the master clauses for this role.`,
+    },
+  ],
+  outro: "",
+};
+
 export const DEFAULT_CONTRACT_TEMPLATE: TemplateBody = {
   title: "Contractor Agreement",
   intro: `Master Terms of Engagement, incorporating Confidentiality / Non-Disclosure.

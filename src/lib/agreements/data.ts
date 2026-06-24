@@ -7,7 +7,7 @@
 import { createStore } from "@/lib/supabase-store";
 import type { Agreement, AgreementTemplate, AgreementKind, TemplateRole } from "./types";
 import { TEMPLATE_ROLE_LABEL } from "./types";
-import { DEFAULT_NDA_TEMPLATE, DEFAULT_CONTRACT_TEMPLATE } from "./defaults";
+import { DEFAULT_NDA_TEMPLATE, DEFAULT_CONTRACT_TEMPLATE, TBC_TEMPLATE_BODY } from "./defaults";
 
 export const agreementStore = createStore<Agreement>({
   table: "company_agreements",
@@ -37,9 +37,16 @@ const STALE_REVISIONS = new Set([
   "v1.0 – seeded default",
 ]);
 const CURRENT_LEADERSHIP_REVISION = "v2.0 – leadership 2026-06-22";
-const CURRENT_DESIGNER_REVISION = "v1.0 – designer 2026-06-24";
-const CURRENT_DEVELOPER_REVISION = "v1.0 – developer 2026-06-24";
+const CURRENT_DESIGNER_REVISION = "TBC – awaiting master doc";
+const CURRENT_DEVELOPER_REVISION = "TBC – awaiting master doc";
 const CURRENT_NDA_REVISION = "v1.0 – seeded default";
+
+/* Stale revisions for Designer + Developer specifically - earlier
+ * versions seeded them with a copy of the Leadership body. Bumping
+ * here flips them to the TBC placeholder so admin spots they
+ * haven't been authored yet. */
+const STALE_DESIGNER_REVISIONS = new Set(["v1.0 – designer 2026-06-24"]);
+const STALE_DEVELOPER_REVISIONS = new Set(["v1.0 – developer 2026-06-24"]);
 
 /* Multi-template seed. Contract has THREE role-keyed templates
  * (Leadership / Designer / Developer) seeded from the master contract
@@ -50,9 +57,20 @@ function buildSeedTemplate(
   template_role: TemplateRole,
 ): AgreementTemplate {
   const now = nowISO();
+  /* Body selection:
+   *   - NDA → default NDA body
+   *   - Leadership → the v2.0 master Dylan ships
+   *   - Designer / Developer → TBC placeholder (Dylan authors the
+   *     master docs separately + Claude rebuilds them here)
+   *   - Custom → blank skeleton (admin uploads / authors per
+   *     contract via the Custom flow) */
   const body =
     kind === "nda"
       ? structuredClone(DEFAULT_NDA_TEMPLATE)
+      : template_role === "leadership"
+      ? structuredClone(DEFAULT_CONTRACT_TEMPLATE)
+      : template_role === "designer" || template_role === "developer"
+      ? structuredClone(TBC_TEMPLATE_BODY)
       : structuredClone(DEFAULT_CONTRACT_TEMPLATE);
   const revision =
     kind === "nda"
@@ -64,11 +82,19 @@ function buildSeedTemplate(
       : template_role === "developer"
       ? CURRENT_DEVELOPER_REVISION
       : "v1.0 – custom";
+  /* Name reflects readiness so admin sees "(TBC)" in the picker
+   * for un-authored templates. Removes any ambiguity about which
+   * are safe to use. */
+  const baseName = TEMPLATE_ROLE_LABEL[template_role];
+  const name =
+    template_role === "designer" || template_role === "developer"
+      ? `${baseName} (TBC)`
+      : baseName;
   return {
     id: uid(),
     kind,
     template_role,
-    name: TEMPLATE_ROLE_LABEL[template_role],
+    name,
     body,
     revision,
     created_at: now,
@@ -114,6 +140,35 @@ async function backfillAndSeed(all: AgreementTemplate[]): Promise<AgreementTempl
     };
     await templateStore.update(leadership.id, updates);
     Object.assign(leadership, updates);
+    mutated = true;
+  }
+
+  /* Designer + Developer that were seeded earlier as a copy of
+   * Leadership get auto-flipped to the TBC placeholder body +
+   * "(TBC)" name. Skips templates whose revision string is anything
+   * unfamiliar (= Dylan has authored / saved their content). */
+  const designer = all.find((t) => t.kind === "contract" && t.template_role === "designer");
+  if (designer && STALE_DESIGNER_REVISIONS.has(designer.revision)) {
+    const updates = {
+      body: structuredClone(TBC_TEMPLATE_BODY),
+      revision: CURRENT_DESIGNER_REVISION,
+      name: `${TEMPLATE_ROLE_LABEL.designer} (TBC)`,
+      updated_at: nowISO(),
+    };
+    await templateStore.update(designer.id, updates);
+    Object.assign(designer, updates);
+    mutated = true;
+  }
+  const developer = all.find((t) => t.kind === "contract" && t.template_role === "developer");
+  if (developer && STALE_DEVELOPER_REVISIONS.has(developer.revision)) {
+    const updates = {
+      body: structuredClone(TBC_TEMPLATE_BODY),
+      revision: CURRENT_DEVELOPER_REVISION,
+      name: `${TEMPLATE_ROLE_LABEL.developer} (TBC)`,
+      updated_at: nowISO(),
+    };
+    await templateStore.update(developer.id, updates);
+    Object.assign(developer, updates);
     mutated = true;
   }
 
