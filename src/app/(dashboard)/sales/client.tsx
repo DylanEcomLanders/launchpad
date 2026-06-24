@@ -25,6 +25,7 @@ import { Kanban } from "./Kanban";
 import { Inbox } from "./Inbox";
 import { DealModal, type DealInput } from "./DealModal";
 import { LeadDetailModal } from "./LeadDetailModal";
+import { ChannelStatusChip } from "./ChannelStatusChip";
 import { useSalesData } from "@/lib/sales-dashboard/real-source";
 import {
   persistStageMove,
@@ -321,6 +322,7 @@ export default function SalesDashboardClient() {
           </p>
         </div>
         <div className="flex items-center gap-3 shrink-0">
+          <ChannelStatusChip />
           <button
             onClick={() => setShowAddLead(true)}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-[#0C0C0C] text-[12px] font-semibold rounded-full hover:bg-[#E5E5EA] transition-colors"

@@ -1,25 +1,60 @@
-/* ── Outbound message send (stub today, router tomorrow) ──
+/* ── Outbound message send ──
  *
  * POST /api/sales/outbound/send
- * Body: { leadId: string, channel: "whatsapp" | "twitter" |
- *         "linkedin" | "email", body: string, by: string }
+ * Body: { leadId, channel, body, by, recipient? }
+ *   channel: "whatsapp" | "twitter" | "linkedin" | "email"
+ *   recipient: optional explicit handle/email. Falls back to
+ *     lead.email for email; lead.phone (when populated) for
+ *     WhatsApp; lead.linkedin_url for LinkedIn; lead.twitter for
+ *     Twitter. If no handle is resolvable the request errors with
+ *     422 so the UI can prompt for one.
  *
- * Today: appends an outbound touch to the Lead's log + console-logs
- * the intent. The UI feels real (touch shows in the inbox) but no
- * real message goes out.
+ * Dispatch routes through unipile-adapter:
+ *   - when UNIPILE_API_KEY + DSN + per-channel account ID set →
+ *     real send via Unipile, returns stubbed:false +
+ *     providerMessageId
+ *   - any var missing → stub-mode (logs + records the touch so the
+ *     dashboard inbox still feels real). Returns stubbed:true.
  *
- * Tomorrow: this becomes a router that dispatches to the right
- * provider client (WhatsApp Business API, Twitter X DM API,
- * LinkedIn Messaging API, Postmark / Resend). The dashboard UI
- * doesn't change - only the per-channel TODO branches below get
- * filled in. See docs/integrations.md. */
+ * Touch is always recorded regardless of provider result - the
+ * dashboard is the source of truth, Unipile is just the transport. */
 
 import { NextResponse } from "next/server";
 import { leadsStore } from "@/lib/leads/data";
 import type { LeadTouch } from "@/lib/leads/types";
+import { sendMessage, type UnipileChannel } from "@/lib/sales-dashboard/unipile-adapter";
 
 type OutboundChannel = "whatsapp" | "twitter" | "linkedin" | "email";
 const SUPPORTED: OutboundChannel[] = ["whatsapp", "twitter", "linkedin", "email"];
+
+/* Pull the per-channel handle off the Lead. Returns undefined if the
+ * lead doesn't have what we need - the caller errors out so the UI
+ * can prompt the user to add the missing field. */
+function resolveRecipient(
+  channel: OutboundChannel,
+  lead: { email?: string; brand_url?: string; notes?: string },
+): string | undefined {
+  if (channel === "email") return lead.email;
+  /* WhatsApp/Twitter/LinkedIn handles aren't first-class fields on
+   * Lead yet - parked in notes as a soft pattern (e.g. "wa:+44..."
+   * "li:profile-slug"). Sniff them out so an integration test can
+   * round-trip without schema changes. Productionising this needs
+   * dedicated fields on Lead. */
+  const notes = lead.notes ?? "";
+  if (channel === "whatsapp") {
+    const m = notes.match(/wa:\s*([+\d\s\-()]+)/i);
+    return m?.[1]?.trim();
+  }
+  if (channel === "linkedin") {
+    const m = notes.match(/li:\s*([^\s]+)/i);
+    return m?.[1]?.trim() ?? lead.brand_url;
+  }
+  if (channel === "twitter") {
+    const m = notes.match(/(?:tw|x):\s*@?([\w]+)/i);
+    return m?.[1]?.trim();
+  }
+  return undefined;
+}
 
 export async function POST(req: Request) {
   let payload: {
@@ -27,13 +62,15 @@ export async function POST(req: Request) {
     channel?: string;
     body?: string;
     by?: string;
+    recipient?: string;
+    subject?: string;
   };
   try {
     payload = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
-  const { leadId, channel, body, by } = payload;
+  const { leadId, channel, body, by, subject } = payload;
   if (!leadId || !channel || !body || !by) {
     return NextResponse.json(
       { error: "Required: { leadId, channel, body, by }" },
@@ -52,34 +89,38 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Lead not found" }, { status: 404 });
   }
 
-  /* TODO: route to real provider when API tokens are wired.
-   * Each branch lives behind a feature flag / env-var presence:
-   *   if (process.env.WHATSAPP_API_TOKEN) await whatsappSend(...)
-   * Until then, log the intent so debugging is easy. */
-  switch (channel as OutboundChannel) {
-    case "whatsapp":
-      console.info(`[sales/outbound] WhatsApp → lead ${leadId}: ${body.slice(0, 80)}`);
-      break;
-    case "twitter":
-      console.info(`[sales/outbound] Twitter X DM → lead ${leadId}: ${body.slice(0, 80)}`);
-      break;
-    case "linkedin":
-      console.info(`[sales/outbound] LinkedIn → lead ${leadId}: ${body.slice(0, 80)}`);
-      break;
-    case "email":
-      console.info(`[sales/outbound] Email → lead ${leadId}: ${body.slice(0, 80)}`);
-      break;
+  const recipient =
+    payload.recipient ?? resolveRecipient(channel as OutboundChannel, lead);
+  if (!recipient) {
+    return NextResponse.json(
+      {
+        error: `No ${channel} recipient on this lead. Add one to the lead first or pass recipient in the request body.`,
+      },
+      { status: 422 },
+    );
   }
 
-  /* Record the outbound touch regardless - the dashboard inbox
-   * reads from lead.touches so the user sees the message land. */
+  /* Dispatch via the Unipile adapter. Adapter handles the stub vs
+   * live decision based on env vars - same call shape either way. */
+  const dispatch = await sendMessage({
+    channel: channel as UnipileChannel,
+    recipient,
+    body,
+    subject,
+  });
+
+  /* Record the outbound touch regardless of dispatch result. If
+   * Unipile failed we still want the UI to show "you tried to send
+   * this" with the provider error attached. */
   const now = new Date().toISOString();
   const touch: LeadTouch = {
     id: `touch-${Math.random().toString(36).slice(2, 10)}`,
     kind: "outreach_sent",
     at: now,
-    by: `${by} via ${channel}`,
-    summary: body.slice(0, 500),
+    by: `${by} via ${channel}${dispatch.stubbed ? " (stub)" : ""}`,
+    summary: dispatch.ok
+      ? body.slice(0, 500)
+      : `${body.slice(0, 400)}\n\n[send failed: ${dispatch.error ?? "unknown"}]`,
   };
   await leadsStore.update(leadId, {
     touches: [...lead.touches, touch],
@@ -88,7 +129,15 @@ export async function POST(req: Request) {
   });
 
   return NextResponse.json(
-    { ok: true, leadId, channel, touchId: touch.id, stubbed: true },
-    { status: 200 },
+    {
+      ok: dispatch.ok,
+      leadId,
+      channel,
+      touchId: touch.id,
+      stubbed: dispatch.stubbed,
+      providerMessageId: dispatch.providerMessageId,
+      error: dispatch.error,
+    },
+    { status: dispatch.ok ? 200 : 502 },
   );
 }

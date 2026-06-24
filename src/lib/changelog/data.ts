@@ -37,6 +37,19 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-129",
+    date: "24 June 2026",
+    version: "2.6.0",
+    title: "Sales dashboard: Unipile messaging scaffold (ready for credentials)",
+    changes: [
+      { type: "added", text: "Unipile adapter wired into /sales as the single dispatch layer for Email + WhatsApp + LinkedIn + X. One vendor, one API key, one DSN; covers every channel Ajay needs including LinkedIn DMs (no real business API exists). Stub-fallback when env vars missing so dev mode keeps working until credentials are provisioned" },
+      { type: "added", text: "Outbound send route now dispatches through the adapter. Returns { stubbed: true/false, providerMessageId } so the UI knows whether a real message left or just got logged. Touch is still recorded either way" },
+      { type: "added", text: "Inbound webhook route accepts Unipile-signed payloads (X-Unipile-Signature, HMAC SHA256 against UNIPILE_WEBHOOK_SECRET) plus the existing generic SALES_INBOUND_SECRET fallback. Payload shape normalised to canonical { from, body, external_id, subject } so processInboundMessage stays channel-agnostic" },
+      { type: "added", text: "Channel status chip in the /sales header. Per-channel dot (green = live, amber = stubbed) with a tooltip listing exactly which env vars are missing. Polls /api/sales/channel-status every 30s so the chip flips green within seconds of a redeploy" },
+      { type: "added", text: ".env.example documents the full Unipile setup flow: API key, DSN, webhook secret, per-channel account IDs. Adding them to Vercel + redeploying is the only step left to switch from stubbed to live messaging" },
+    ],
+  },
+  {
     id: "cl-128",
     date: "24 June 2026",
     version: "2.5.2",

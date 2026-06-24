@@ -28,8 +28,23 @@ import {
   verifyWebhookSignature,
   signatureHeaderName,
 } from "@/lib/sales-dashboard/verify-signature";
+import {
+  verifyUnipileSignature,
+  normalizeInboundPayload,
+  type UnipileChannel,
+} from "@/lib/sales-dashboard/unipile-adapter";
 
 const SUPPORTED_CHANNELS: InboundChannel[] = ["whatsapp", "twitter", "linkedin", "email"];
+
+/* Webhook signature schemes by source. Unipile signs with their own
+ * secret + X-Unipile-Signature header; generic adapters (a custom
+ * integration, a Zapier shim) use the shared SALES_INBOUND_SECRET
+ * + X-Webhook-Signature. We accept either - whichever signs the
+ * payload wins. */
+function tryUnipile(rawBody: string, signatureHeader: string | null) {
+  if (!signatureHeader) return null;
+  return verifyUnipileSignature(rawBody, signatureHeader);
+}
 
 export async function POST(
   req: Request,
@@ -43,26 +58,68 @@ export async function POST(
     );
   }
 
-  /* Read the raw body once - we need it for the HMAC compare AND
-   * for JSON.parse. req.json() consumes the body so we can't call
-   * both; read text + parse manually. */
+  /* Read the raw body once - we need it for HMAC verification AND
+   * JSON.parse. req.json() consumes the body so we read text + parse
+   * manually below. */
   const rawBody = await req.text();
-  const signature = req.headers.get(signatureHeaderName());
-  const verify = verifyWebhookSignature(rawBody, signature);
-  if (!verify.ok) {
+
+  /* Try the Unipile header first (the expected provider). Fall back
+   * to the generic shared-secret header so custom adapters keep
+   * working. Either must pass for the request to proceed. */
+  const unipileSig = req.headers.get("x-unipile-signature");
+  const genericSig = req.headers.get(signatureHeaderName());
+
+  const unipileVerify = tryUnipile(rawBody, unipileSig);
+  const genericVerify = !unipileVerify
+    ? verifyWebhookSignature(rawBody, genericSig)
+    : null;
+
+  const verify = unipileVerify ?? genericVerify;
+  if (!verify || !verify.ok) {
     return NextResponse.json(
-      { error: "Signature verification failed", reason: verify.reason },
+      {
+        error: "Signature verification failed",
+        reason: verify?.reason ?? "no_signature_header",
+      },
       { status: 401 },
     );
   }
 
-  let payload: { from?: string; body?: string; external_id?: string; subject?: string };
+  let rawPayload: unknown;
   try {
-    payload = JSON.parse(rawBody) as typeof payload;
+    rawPayload = JSON.parse(rawBody);
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
-  if (!payload.from || !payload.body) {
+
+  /* If the request came in via Unipile, payload shape is provider-
+   * specific - normalise into our canonical { from, body, ... } here
+   * so processInboundMessage stays agnostic. Generic adapters send
+   * the canonical shape directly. */
+  const isUnipile = !!unipileSig;
+  let canonical: {
+    from?: string;
+    body?: string;
+    external_id?: string;
+    subject?: string;
+  };
+  if (isUnipile) {
+    const normalised = normalizeInboundPayload(
+      channel as UnipileChannel,
+      rawPayload,
+    );
+    if (!normalised) {
+      return NextResponse.json(
+        { error: "Unable to normalise Unipile payload - missing from/body" },
+        { status: 400 },
+      );
+    }
+    canonical = normalised;
+  } else {
+    canonical = rawPayload as typeof canonical;
+  }
+
+  if (!canonical.from || !canonical.body) {
     return NextResponse.json(
       { error: "Required: { from: string, body: string }" },
       { status: 400 },
@@ -70,10 +127,10 @@ export async function POST(
   }
   const result = await processInboundMessage({
     channel: channel as InboundChannel,
-    from: payload.from,
-    body: payload.body,
-    external_id: payload.external_id,
-    subject: payload.subject,
+    from: canonical.from,
+    body: canonical.body,
+    external_id: canonical.external_id,
+    subject: canonical.subject,
   });
   return NextResponse.json(result, { status: 200 });
 }
