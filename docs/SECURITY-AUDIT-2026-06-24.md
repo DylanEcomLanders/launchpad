@@ -26,7 +26,22 @@ Work is on branch `security/audit-remediation-2026-06-24`. Not pushed. `tsc --no
 ### Deferred from Phase 1 (needs a small schema add)
 - **M1 whop webhook idempotency**: needs a processed-event dedupe table so a replayed signed event cannot spawn duplicate portals. Small, do alongside Phase 2.
 
-### Phase 2 + 3: PLANNED, not applied (requires you present + testing in preview)
+### Phase 3 step 1: auth foundation BUILT (additive, not yet cut over)
+Net-new code on the branch. It does not change existing login behaviour until you set the env vars and the client starts using it, so deploying the branch is safe. Build + tsc green.
+- `src/lib/auth/session-cookie.ts`: mint/verify a SIGNED httpOnly session cookie (`lp_session`), HMAC-SHA256 over `role.expiry` with `AUTH_SESSION_SECRET`, constant-time verify, 8h expiry. No external dep.
+- `src/app/api/auth/gate/route.ts`: `POST` validates a submitted password against server-only `ADMIN_PASSWORD`/`CRO_PASSWORD`/`TEAM_PASSWORD` (no NEXT_PUBLIC, no hardcoded fallbacks, constant-time compare) and sets the signed cookie. `DELETE` logs out. Fails closed if `AUTH_SESSION_SECRET` is unset.
+- `src/lib/auth/role.ts`: `authedRole` now verifies the signed cookie first; the forgeable legacy `launchpad-role` cookie is honoured ONLY while `AUTH_LEGACY_COOKIE !== "off"` (transition).
+- `src/components/auth-gate.tsx`: the shared-password login now calls `/api/auth/gate` first (sets the signed cookie) and falls back to the legacy client comparison only if the gate route is not configured. Non-breaking.
+- `src/app/api/admin/set-user-credentials/route.ts` (C1 hot spot): now uses `authedRole(req, ["admin"])`.
+
+**Cutover checklist (you, in a preview session):**
+1. Set `AUTH_SESSION_SECRET` (e.g. `openssl rand -hex 32`) and `ADMIN_PASSWORD` / `CRO_PASSWORD` / `TEAM_PASSWORD` (NEW strong values) in Vercel.
+2. Deploy the branch to a preview URL; sign in with each role; confirm `lp_session` cookie is set and the app works.
+3. Confirm the signed cookie is accepted by a protected route (e.g. the admin user-provisioning screen).
+4. Set `AUTH_LEGACY_COOKIE=off`. Re-test: forging `launchpad-role=admin` should now be rejected. This closes C1.
+5. Remove the `NEXT_PUBLIC_*_PASSWORD` vars and the hardcoded fallbacks in code (C3); the client no longer needs them once the gate route is the path.
+
+### Phase 2 (remaining) + Phase 3 (remaining): PLANNED, not applied (requires you present + testing in preview)
 These are the C1/C2/C3 fixes. They are NOT safe to ship blind because they change the live login flow and lock the database that the browser currently reads directly. Doing them wrong locks everyone out of production.
 
 The hard dependency, confirmed during remediation: the client reads `app_users` in the browser during login (`findAppUserByEmail`), and most other tables are likewise read/written client-side with the anon key. So RLS lockdown (C2) and real auth (C1) are one coupled project, sequenced as:

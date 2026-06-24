@@ -306,48 +306,66 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     [email],
   );
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    if (input === ADMIN_PASSWORD) {
-      sessionStorage.setItem(STORAGE_KEY, "true");
-      sessionStorage.setItem(ROLE_KEY, "admin");
-      setRoleCookie("admin");
-      setEntering(true);
-      setTimeout(() => {
-        setAuthed(true);
-        setRole("admin");
-      }, 600);
-    } else if (input === CRO_PASSWORD) {
-      sessionStorage.setItem(STORAGE_KEY, "true");
-      sessionStorage.setItem(ROLE_KEY, "cro");
-      setRoleCookie("cro");
-      setEntering(true);
-      setTimeout(() => {
-        setAuthed(true);
-        setRole("cro");
-      }, 600);
-    } else if (input === TEAM_PASSWORD) {
-      sessionStorage.setItem(STORAGE_KEY, "true");
-      sessionStorage.setItem(ROLE_KEY, "team");
-      setRoleCookie("team");
-      setEntering(true);
-      setTimeout(() => {
+  /* Shared entry transition for a resolved gate role. Sets the legacy
+   * sessionStorage + cookie (still read during the transition window),
+   * plays the enter animation, and routes team members to /me. */
+  const enterAs = useCallback((r: UserRole) => {
+    sessionStorage.setItem(STORAGE_KEY, "true");
+    sessionStorage.setItem(ROLE_KEY, r);
+    setRoleCookie(r);
+    setEntering(true);
+    setTimeout(() => {
+      if (r === "team") {
         // Members land on /me unless they deep-linked to an allowed path.
         const path = typeof window !== "undefined" ? window.location.pathname : "/";
         if (typeof window !== "undefined" && (path === "/team" || !isTeamAllowedPath(path))) {
           window.location.replace("/me");
           return;
         }
-        setAuthed(true);
-        setRole("team");
-      }, 600);
-    } else {
+      }
+      setAuthed(true);
+      setRole(r);
+    }, 600);
+  }, []);
+
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      const candidate = input;
+      /* Primary path: validate server-side at /api/auth/gate, which sets
+       * a SIGNED httpOnly session cookie that API routes trust (C1 fix).
+       * Falls back to the legacy client comparison when the server gate
+       * isn't configured yet (AUTH_SESSION_SECRET / *_PASSWORD unset), so
+       * nothing breaks during the transition. */
+      try {
+        const res = await fetch("/api/auth/gate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password: candidate }),
+        });
+        if (res.ok) {
+          const data = (await res.json()) as { role?: UserRole };
+          if (data.role === "admin" || data.role === "cro" || data.role === "team") {
+            enterAs(data.role);
+            return;
+          }
+        }
+      } catch {
+        /* network issue — fall through to the legacy comparison */
+      }
+
+      // Legacy fallback (transition window — remove once env vars are set).
+      if (candidate === ADMIN_PASSWORD) return enterAs("admin");
+      if (candidate === CRO_PASSWORD) return enterAs("cro");
+      if (candidate === TEAM_PASSWORD) return enterAs("team");
+
       setError(true);
       setShaking(true);
       setInput("");
       setTimeout(() => setShaking(false), 500);
-    }
-  }, [input]);
+    },
+    [input, enterAs],
+  );
 
   if (checking) {
     return (
