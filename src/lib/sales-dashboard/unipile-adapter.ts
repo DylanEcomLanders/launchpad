@@ -339,38 +339,72 @@ export async function previewChat(
     };
     const rawMessages = json.items ?? [];
 
-    /* Extract attendee handle from any inbound message's
-     * chat_provider_id (the JID format ends in @s.whatsapp.net). */
+    /* Two-pass scan over all messages:
+     *   Pass 1: find Ajay's pushName by checking outbound messages
+     *           (these always carry his display name)
+     *   Pass 2: find the contact's pushName - any message where the
+     *           pushName differs from Ajay's
+     * Also pick up attendee_handle from any inbound message's
+     * chat_provider_id. */
     let attendee_handle = "";
     let attendee_name: string | undefined;
+    let ownerPushName: string | undefined;
+
+    /* Pass 1 - identify Ajay's name from any outbound message. */
+    for (const raw of rawMessages) {
+      if (raw.is_sender !== 1) continue;
+      const original = pickString(raw, ["original"]);
+      if (!original) continue;
+      try {
+        const parsed = JSON.parse(original) as { pushName?: string };
+        if (parsed.pushName) {
+          ownerPushName = parsed.pushName;
+          break;
+        }
+      } catch {
+        /* malformed - skip */
+      }
+    }
+
+    /* Pass 2 - find contact's pushName (any message with a pushName
+     * that isn't ours) AND grab attendee_handle from any inbound. */
     for (const raw of rawMessages) {
       const isInbound = raw.is_sender === 0;
-      if (!isInbound) continue;
-      const chatProviderId = pickString(raw, [
-        "chat_provider_id",
-        "sender_public_identifier",
-      ]);
-      if (chatProviderId && !attendee_handle) {
-        attendee_handle =
-          channel === "whatsapp"
-            ? chatProviderId.replace(/@.*$/, "").replace(/\D/g, "")
-            : chatProviderId;
+      if (isInbound && !attendee_handle) {
+        const chatProviderId = pickString(raw, [
+          "chat_provider_id",
+          "sender_public_identifier",
+        ]);
+        if (chatProviderId) {
+          attendee_handle =
+            channel === "whatsapp"
+              ? chatProviderId.replace(/@.*$/, "").replace(/\D/g, "")
+              : chatProviderId;
+        }
       }
-      /* pushName lives inside the message's `original` JSON string
-       * (WhatsApp metadata blob). Parse it out - that's the contact's
-       * actual display name. */
       if (!attendee_name) {
         const original = pickString(raw, ["original"]);
         if (original) {
           try {
             const parsed = JSON.parse(original) as { pushName?: string };
-            if (parsed.pushName) attendee_name = parsed.pushName;
+            if (
+              parsed.pushName &&
+              parsed.pushName !== ownerPushName
+            ) {
+              attendee_name = parsed.pushName;
+            }
           } catch {
-            /* malformed original blob - silently skip */
+            /* malformed - skip */
           }
         }
       }
       if (attendee_handle && attendee_name) break;
+    }
+
+    /* If still no name, fall back to formatted phone for WhatsApp.
+     * Better than empty string. */
+    if (!attendee_name && channel === "whatsapp" && attendee_handle) {
+      attendee_name = formatPhonePreview(attendee_handle);
     }
 
     const messages = rawMessages
