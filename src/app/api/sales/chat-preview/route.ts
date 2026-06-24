@@ -36,7 +36,10 @@ export async function GET(req: Request) {
     );
   }
 
-  const result = await previewChat(channel, chatId, 50);
+  /* maxMessages defaults to 500 - covers months of normal chat
+   * history. Pagination inside previewChat walks the Unipile cursor
+   * until it's exhausted or the cap is hit. */
+  const result = await previewChat(channel, chatId, 500);
   if (!result.ok) {
     return NextResponse.json(
       { error: result.error ?? "Preview fetch failed" },

@@ -116,7 +116,7 @@ export function Inbox({
   const [promoting, setPromoting] = useState(false);
   /* Live preview of the selected unlinked chat - fetched on click
    * from /api/sales/chat-preview. Includes the contact's actual
-   * name extracted from pushName in message metadata. */
+   * name from the attendees endpoint. */
   const [preview, setPreview] = useState<{
     chatId: string;
     attendee_name?: string;
@@ -126,10 +126,19 @@ export function Inbox({
       direction?: "inbound" | "outbound";
       sent_at?: string;
       external_id?: string;
+      attachments?: Array<{
+        id: string;
+        type: string;
+        mimetype?: string;
+      }>;
     }>;
     loading: boolean;
     error?: string;
   } | null>(null);
+
+  /* Search query - filters BOTH matched conversations + unlinked
+   * chats by name and by message body preview. Case-insensitive. */
+  const [chatSearch, setChatSearch] = useState("");
 
   async function loadPreview(chat: UnlinkedChat) {
     setPreview({
@@ -266,11 +275,46 @@ export function Inbox({
 
   const selected = convos.find((c) => c.lead.id === selectedLeadId) ?? convos[0] ?? null;
 
+  /* Case-insensitive search across matched lead names + last
+   * message bodies AND unlinked chat names. Empty query passes
+   * everything through unchanged. */
+  const search = chatSearch.trim().toLowerCase();
+  const filteredConvos = search
+    ? convos.filter((c) => {
+        if (c.lead.company.toLowerCase().includes(search)) return true;
+        if (c.lead.name.toLowerCase().includes(search)) return true;
+        if (c.last?.body.toLowerCase().includes(search)) return true;
+        return false;
+      })
+    : convos;
+  const filteredUnlinked = search
+    ? unlinked.filter((u) => {
+        const name = (u.attendee_name ?? "").toLowerCase();
+        const handle = (u.attendee_handle ?? "").toLowerCase();
+        const preview = (u.last_message_preview ?? "").toLowerCase();
+        return (
+          name.includes(search) ||
+          handle.includes(search) ||
+          preview.includes(search)
+        );
+      })
+    : unlinked;
+
   return (
     <div className="grid grid-cols-[300px_1fr_300px] h-[calc(100vh-220px)] min-h-[560px] rounded-xl border border-[#222222] overflow-hidden bg-[#141414]">
       {/* Conversation list */}
-      <div className="border-r border-[#222222] overflow-y-auto">
-        {convos.map(({ lead, last, unread }) => (
+      <div className="border-r border-[#222222] overflow-y-auto flex flex-col">
+        {/* Search bar - filters matched + unlinked together. */}
+        <div className="sticky top-0 z-10 bg-[#141414] border-b border-[#1C1C1C] p-2">
+          <input
+            type="search"
+            value={chatSearch}
+            onChange={(e) => setChatSearch(e.target.value)}
+            placeholder="Search chats and messages…"
+            className="w-full px-3 py-1.5 text-[12px] bg-[#181818] border border-[#2A2A2A] rounded-md text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:border-[#383838]"
+          />
+        </div>
+        {filteredConvos.map(({ lead, last, unread }) => (
           <button
             key={lead.id}
             onClick={() => onSelectLead(lead.id)}
@@ -340,7 +384,7 @@ export function Inbox({
               No unlinked {chatChannel} chats.
             </p>
           )}
-          {unlinked.map((chat) => (
+          {filteredUnlinked.map((chat) => (
             <button
               key={chat.id}
               onClick={() => {
@@ -444,15 +488,47 @@ export function Inbox({
                           {timeShort(m.sent_at)}
                         </div>
                       )}
-                      <div
-                        className={`rounded-lg px-3 py-2 text-[14px] leading-relaxed ${
-                          m.direction === "outbound"
-                            ? "bg-[#E5E5EA] text-[#0C0C0C]"
-                            : "bg-[#1C1C1C] text-[#E5E5EA] border border-[#2A2A2A]"
-                        }`}
-                      >
-                        {m.body}
-                      </div>
+                      {/* Image attachments render as <img> via the
+                        * proxy route. WhatsApp media URLs require
+                        * auth so we can't src them directly. */}
+                      {m.attachments
+                        ?.filter(
+                          (a) =>
+                            a.type === "img" ||
+                            (a.mimetype ?? "").startsWith("image/"),
+                        )
+                        .map((a) => (
+                          <a
+                            key={a.id}
+                            href={`/api/sales/attachment?channel=${chatChannel}&messageId=${m.external_id}&attachmentId=${a.id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="block mb-1"
+                          >
+                            <img
+                              src={`/api/sales/attachment?channel=${chatChannel}&messageId=${m.external_id}&attachmentId=${a.id}`}
+                              alt="attachment"
+                              className="rounded-lg max-w-full max-h-64 object-cover border border-[#2A2A2A]"
+                            />
+                          </a>
+                        ))}
+                      {/* Hide body when it's our [Image] placeholder
+                        * AND we already rendered the actual image. */}
+                      {!(
+                        m.body.startsWith("[") &&
+                        m.body.endsWith("]") &&
+                        (m.attachments?.length ?? 0) > 0
+                      ) && (
+                        <div
+                          className={`rounded-lg px-3 py-2 text-[14px] leading-relaxed ${
+                            m.direction === "outbound"
+                              ? "bg-[#E5E5EA] text-[#0C0C0C]"
+                              : "bg-[#1C1C1C] text-[#E5E5EA] border border-[#2A2A2A]"
+                          }`}
+                        >
+                          {m.body}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

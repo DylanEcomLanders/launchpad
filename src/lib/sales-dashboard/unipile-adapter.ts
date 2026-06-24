@@ -283,6 +283,18 @@ export interface NormalisedInbound {
    * are always inbound (someone replied to us); history backfill needs
    * both so we don't lose outbound context (our own past messages). */
   direction?: "inbound" | "outbound";
+  /* Attachment metadata for media messages. UI uses this to render
+   * a thumbnail via /api/sales/attachment proxy instead of [Image]
+   * placeholder. Empty array for text-only messages. */
+  attachments?: AttachmentMeta[];
+}
+
+export interface AttachmentMeta {
+  id: string;
+  type: string;          // "img" / "video" / "audio" / "file"
+  mimetype?: string;
+  width?: number;
+  height?: number;
 }
 
 /* ── Chat attendees (the name endpoint) ─────────────────────────
@@ -379,11 +391,15 @@ export interface ChatPreviewResult {
 
 /* Fetch a specific chat's messages by id - used when the user clicks
  * an unlinked conversation. Returns the messages PLUS the contact
- * name extracted from any inbound message's pushName. */
+ * name extracted from the attendees endpoint.
+ *
+ * Paginates Unipile's cursor-based message list so we can pull full
+ * history (not just the last batch). Stops at maxMessages OR when
+ * cursor runs out. */
 export async function previewChat(
   channel: UnipileChannel,
   chatId: string,
-  limit = 50,
+  maxMessages = 500,
 ): Promise<ChatPreviewResult> {
   if (!isChannelLive(channel)) {
     return {
@@ -397,26 +413,49 @@ export async function previewChat(
   const dsn = process.env.UNIPILE_DSN!.replace(/\/+$/, "");
 
   try {
-    const res = await fetch(
-      `${dsn}/api/v1/chats/${encodeURIComponent(chatId)}/messages?limit=${limit}`,
-      {
-        method: "GET",
-        headers: { "X-API-KEY": apiKey, Accept: "application/json" },
-      },
-    );
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      return {
-        ok: false,
-        attendee_handle: "",
-        messages: [],
-        error: `messages fetch failed: ${res.status} ${text.slice(0, 200)}`,
+    /* Paginate Unipile's cursor-based message endpoint. Each call
+     * returns up to ~50-100 messages + a cursor; we keep going
+     * until cursor runs out OR we hit maxMessages (default 500 =
+     * months of typical chat history). */
+    const rawMessages: Array<Record<string, unknown>> = [];
+    let cursor: string | undefined;
+    let pages = 0;
+    const maxPages = Math.ceil(maxMessages / 100) + 2;
+    while (rawMessages.length < maxMessages && pages < maxPages) {
+      const cursorParam = cursor
+        ? `&cursor=${encodeURIComponent(cursor)}`
+        : "";
+      const res = await fetch(
+        `${dsn}/api/v1/chats/${encodeURIComponent(chatId)}/messages?limit=100${cursorParam}`,
+        {
+          method: "GET",
+          headers: { "X-API-KEY": apiKey, Accept: "application/json" },
+        },
+      );
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        /* On a page-fetch failure, return what we have so far rather
+         * than failing the whole request. */
+        if (rawMessages.length === 0) {
+          return {
+            ok: false,
+            attendee_handle: "",
+            messages: [],
+            error: `messages fetch failed: ${res.status} ${text.slice(0, 200)}`,
+          };
+        }
+        break;
+      }
+      const json = (await res.json().catch(() => ({}))) as {
+        items?: Array<Record<string, unknown>>;
+        cursor?: string;
       };
+      const page = json.items ?? [];
+      rawMessages.push(...page);
+      if (!json.cursor || page.length === 0) break;
+      cursor = json.cursor;
+      pages++;
     }
-    const json = (await res.json().catch(() => ({}))) as {
-      items?: Array<Record<string, unknown>>;
-    };
-    const rawMessages = json.items ?? [];
 
     /* Pull the saved-contact name + phone from the dedicated
      * attendees endpoint. This reads from Ajay's WhatsApp address
@@ -827,6 +866,31 @@ function normaliseHistoryMessage(
   const external_id = pickString(m, ["id", "provider_id", "message_id"]);
   const sent_at = pickString(m, ["timestamp", "sent_at", "created_at", "date"]);
 
+  /* Extract attachment metadata so the UI can render thumbnails
+   * via /api/sales/attachment proxy. */
+  const attachments: AttachmentMeta[] = Array.isArray(m.attachments)
+    ? (m.attachments as Array<Record<string, unknown>>)
+        .map((a) => {
+          const id = pickString(a, ["id"]);
+          if (!id) return null;
+          const type =
+            (typeof a.type === "string" ? a.type : null) ?? "file";
+          const mimetype = pickString(a, ["mimetype"]);
+          const size =
+            a.size && typeof a.size === "object"
+              ? (a.size as { width?: number; height?: number })
+              : null;
+          return {
+            id,
+            type,
+            mimetype,
+            width: size?.width,
+            height: size?.height,
+          } as AttachmentMeta;
+        })
+        .filter((a): a is AttachmentMeta => a !== null)
+    : [];
+
   return {
     channel,
     from: fallbackFrom,
@@ -834,6 +898,7 @@ function normaliseHistoryMessage(
     external_id,
     sent_at,
     direction: isSender ? "outbound" : "inbound",
+    attachments,
   };
 }
 
