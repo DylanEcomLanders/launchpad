@@ -26,7 +26,9 @@ import {
   nowISO,
   todayISO,
 } from "@/lib/agreements/data";
-import type { Agreement } from "@/lib/agreements/types";
+import type { Agreement, TemplateRole } from "@/lib/agreements/types";
+import { TEMPLATE_ROLE_LABEL, TEMPLATE_ROLES_BY_KIND } from "@/lib/agreements/types";
+import { templateRoleForDepartment } from "@/lib/agreements/data";
 import type { Person, PaymentFrequency } from "@/lib/company/types";
 
 interface Props {
@@ -72,6 +74,12 @@ export function GenerateAgreementsModal({
     person.payment_frequency || DEFAULT_FREQUENCY,
   );
   const [startDate, setStartDate] = useState(person.start_date || todayISO());
+  /* Template defaults to the natural role for the Person's department
+   * (Design → designer, Development → developer, otherwise Leadership).
+   * Admin can override in the dropdown below. */
+  const [templateRole, setTemplateRole] = useState<TemplateRole>(
+    templateRoleForDepartment(person.department),
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -86,6 +94,7 @@ export function GenerateAgreementsModal({
       setCompCurrency(person.compensation_currency || "GBP");
       setCompFrequency(person.payment_frequency || DEFAULT_FREQUENCY);
       setStartDate(person.start_date || todayISO());
+      setTemplateRole(templateRoleForDepartment(person.department));
       setError("");
       setSubmitting(false);
     }
@@ -107,7 +116,7 @@ export function GenerateAgreementsModal({
     setSubmitting(true);
     setError("");
     try {
-      const tpl = await ensureTemplate("contract");
+      const tpl = await ensureTemplate("contract", templateRole);
       const now = nowISO();
       const agreement: Agreement = {
         id: uid(),
@@ -200,6 +209,25 @@ export function GenerateAgreementsModal({
                       onChange={(e) => setStartDate(e.target.value)}
                     />
                   </div>
+                </div>
+                <div>
+                  <label className={labelClass}>Contract template</label>
+                  <select
+                    className={selectClass}
+                    value={templateRole}
+                    onChange={(e) => setTemplateRole(e.target.value as TemplateRole)}
+                  >
+                    {TEMPLATE_ROLES_BY_KIND.contract.map((r) => (
+                      <option key={r} value={r}>
+                        {TEMPLATE_ROLE_LABEL[r]}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[10px] text-[#71757D] mt-1 leading-relaxed">
+                    Auto-picked from the Person&apos;s department - change if
+                    you want a different master. Edit the master clauses at
+                    /company/contracts/templates.
+                  </p>
                 </div>
                 <div className="grid grid-cols-[1fr_auto_auto] gap-3">
                   <div>

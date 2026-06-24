@@ -26,26 +26,35 @@ import {
   CheckIcon,
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
-import { templateStore, ensureTemplate, uid, nowISO } from "@/lib/agreements/data";
+import { templateStore, getTemplatesForKind, uid, nowISO } from "@/lib/agreements/data";
 import type { AgreementTemplate, Clause } from "@/lib/agreements/types";
+import { TEMPLATE_ROLE_LABEL } from "@/lib/agreements/types";
 import { inputClass, labelClass, selectClass, textareaClass } from "@/lib/form-styles";
 
 export default function TemplatesEditorPage() {
-  const [ctTpl, setCtTpl] = useState<AgreementTemplate | null>(null);
+  /* Multi-template editor. Loads every contract template and shows a
+   * top tab strip (Leadership / Designer / Developer / Custom). The
+   * editor body below operates on whichever template is active. */
+  const [templates, setTemplates] = useState<AgreementTemplate[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
-    ensureTemplate("contract").then((c) => {
-      setCtTpl(c);
+    getTemplatesForKind("contract").then((all) => {
+      setTemplates(all);
+      setActiveId(all[0]?.id ?? null);
       setLoading(false);
     });
   }, []);
 
-  const current = ctTpl;
-  const setCurrent = setCtTpl;
+  const current = templates.find((t) => t.id === activeId) || null;
+  const setCurrent = (next: AgreementTemplate | null) => {
+    if (!next) return;
+    setTemplates((prev) => prev.map((t) => (t.id === next.id ? next : t)));
+  };
 
   function patchBody<K extends keyof AgreementTemplate["body"]>(
     field: K,
@@ -129,9 +138,36 @@ export default function TemplatesEditorPage() {
           Agreement templates
         </h1>
         <p className="text-[13px] text-[#71757D] mt-1 max-w-lg">
-          Edits here apply to new agreements only. Already-signed documents keep
-          the clauses they were signed under.
+          Each role has its own template. Pick one below to edit. Edits apply to
+          NEW agreements only - already-signed documents keep the clauses they
+          were signed under.
         </p>
+      </div>
+
+      {/* Template tab strip - one tab per role. The active template
+       * loads into the editor body below. Switching tabs preserves
+       * unsaved edits on the current template since templates state
+       * is held in React. */}
+      <div className="mb-6 flex flex-wrap gap-1.5 p-1 bg-[#0F0F10] ring-1 ring-white/[0.04] rounded-lg">
+        {templates.map((t) => {
+          const active = activeId === t.id;
+          return (
+            <button
+              key={t.id}
+              onClick={() => setActiveId(t.id)}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-[12px] font-medium transition-colors ${
+                active
+                  ? "bg-white text-[#0C0C0C]"
+                  : "text-[#9CA3AF] hover:text-[#E5E5EA] hover:bg-white/[0.04]"
+              }`}
+            >
+              <span>{TEMPLATE_ROLE_LABEL[t.template_role]}</span>
+              <span className={`text-[10px] font-mono ${active ? "text-[#71757D]" : "text-[#71757D]"}`}>
+                {t.revision}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Legal disclaimer */}
