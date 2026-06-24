@@ -37,6 +37,16 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-117",
+    date: "23 June 2026",
+    version: "2.2.6",
+    title: "Sales: HMAC on inbound webhooks + soft refresh on Add Lead",
+    changes: [
+      { type: "added", text: "HMAC signature verification on /api/sales/inbound/{whatsapp,twitter,linkedin,email}. When SALES_INBOUND_SECRET env var is set, the X-Webhook-Signature header is required and checked with constant-time compare. Without the env var, requests pass through with a one-shot console warn (dev / pre-integration). Full howto in docs/sales-integrations.md including per-provider quirks for Postmark / WhatsApp / Twitter / Unipile" },
+      { type: "improved", text: "Sales Add lead no longer hard-reloads the page. Calls useSalesData().refresh() instead, which re-runs the adapter and re-seeds local state via the data-watching useEffect. No scroll-loss, no white flash" },
+    ],
+  },
+  {
     id: "cl-116",
     date: "23 June 2026",
     version: "2.2.5",

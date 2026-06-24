@@ -174,19 +174,57 @@ case "linkedin":
   break;
 ```
 
-## Security TODO before going live
+## Security: HMAC signature verification
 
-The inbound endpoints are currently unauthenticated for v1
-simplicity. Before pointing real providers at them:
+The inbound endpoints verify a shared HMAC signature when the
+`SALES_INBOUND_SECRET` env var is set. Without it (dev / pre-
+integration state), requests pass through unauthenticated and a
+warning logs once per process so it's visible in Vercel logs.
 
-- **Email**: Postmark adds a `X-Postmark-Inbound-Auth` header if
-  you set a basic-auth password. Verify it in the route handler.
-- **WhatsApp / Twitter**: verify the HMAC signature header against
-  your app secret.
-- **Unipile**: shared webhook secret in `Authorization` header.
+### Wiring it up
 
-Reject any request that fails verification before it touches
-`processInboundMessage()`.
+1. Generate a strong secret (e.g. `openssl rand -hex 32`).
+2. Set `SALES_INBOUND_SECRET` in Vercel project env vars.
+3. Each channel adapter computes `hmac_sha256(rawBody, secret)`
+   and sends the hex digest in the `X-Webhook-Signature` header.
+   The `sha256=` prefix is accepted but not required.
+
+Example (TypeScript / Node):
+
+```ts
+import { createHmac } from "node:crypto";
+
+const secret = process.env.SALES_INBOUND_SECRET!;
+const rawBody = JSON.stringify({ from: "sam@acme.com", body: "..." });
+const signature = createHmac("sha256", secret).update(rawBody).digest("hex");
+
+fetch("/api/sales/inbound/email", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "X-Webhook-Signature": `sha256=${signature}`,
+  },
+  body: rawBody,
+});
+```
+
+The route uses `timingSafeEqual` to compare so timing attacks
+can't recover the expected hash byte-by-byte.
+
+### Per-provider quirks
+
+Some providers sign with their own scheme — adapt at the adapter
+layer rather than rewriting the route:
+
+- **Postmark**: signs with a basic-auth password header
+  (`X-Postmark-Inbound-Auth`). Your adapter verifies that header,
+  THEN re-signs with our HMAC before POSTing to the inbound route.
+- **WhatsApp / Twitter X**: each has its own HMAC scheme. Same
+  pattern — verify, re-sign, forward.
+- **Unipile**: shared webhook secret in `Authorization`. Same.
+
+Keeps the route surface single-purpose + every adapter is a tiny
+self-contained translator.
 
 ## Testing the stubs without a real provider
 
