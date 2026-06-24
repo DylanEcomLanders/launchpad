@@ -495,6 +495,7 @@ export default function SalesDashboardClient() {
           onToggleTask={toggleTask}
           onAddTask={addTask}
           onMerge={mergeConversations}
+          onRefresh={refresh}
         />
       )}
       </div>

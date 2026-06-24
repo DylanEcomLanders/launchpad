@@ -402,6 +402,153 @@ export async function fetchChatHistory(
   }
 }
 
+/* ── Chat list (orphan inbox feed) ──
+ *
+ * Returns every chat for a given channel - the "Beeper feed" view.
+ * Used by /api/sales/chats to render the unmatched inbox section
+ * (chats that don't map to an existing Lead yet) and the matched
+ * section (chats whose attendee phone / handle ties to a Lead). */
+
+export interface ChatSummary {
+  /* Unipile's internal chat id - used to pull messages later. */
+  id: string;
+  /* Attendee handle - normalised to phone digits for WhatsApp,
+   * profile slug for LinkedIn, email for mail. Used to match
+   * against Lead.phone / Lead.email. */
+  attendee_handle: string;
+  /* Human-readable name from Unipile (whatsapp profile name,
+   * LinkedIn full name, etc). Used as the default Lead name on
+   * promote-to-lead. */
+  attendee_name?: string;
+  /* Preview shown in the inbox conversation list - first 80 chars
+   * of the most-recent message body. */
+  last_message_preview?: string;
+  /* ISO timestamp of the most recent message. Drives sort order. */
+  last_message_at?: string;
+  /* Direction of the most recent message - "outbound" means we
+   * sent last (waiting on them), "inbound" means they sent last
+   * (waiting on us / unread). Used for the "unread" indicator. */
+  last_message_direction?: "inbound" | "outbound";
+}
+
+export interface ListChatsResult {
+  ok: boolean;
+  chats: ChatSummary[];
+  error?: string;
+}
+
+/* List every chat on a given channel. Doesn't pull messages -
+ * just the metadata for the inbox list view. Use fetchChatHistory
+ * to pull a specific chat's messages once the user opens it. */
+export async function listChats(
+  channel: UnipileChannel,
+  limit = 200,
+): Promise<ListChatsResult> {
+  if (!isChannelLive(channel)) {
+    return {
+      ok: false,
+      chats: [],
+      error: `Channel ${channel} is not live (missing env vars)`,
+    };
+  }
+  const apiKey = process.env.UNIPILE_API_KEY!;
+  const dsn = process.env.UNIPILE_DSN!.replace(/\/+$/, "");
+  const accountId = envAccountId(channel)!;
+
+  try {
+    const res = await fetch(
+      `${dsn}/api/v1/chats?account_id=${encodeURIComponent(accountId)}&limit=${limit}`,
+      {
+        method: "GET",
+        headers: { "X-API-KEY": apiKey, Accept: "application/json" },
+      },
+    );
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      return {
+        ok: false,
+        chats: [],
+        error: `chats list failed: ${res.status} ${text.slice(0, 200)}`,
+      };
+    }
+    const json = (await res.json().catch(() => ({}))) as {
+      items?: Array<Record<string, unknown>>;
+    };
+    const items = json.items ?? [];
+
+    const chats: ChatSummary[] = items
+      .map((c) => normaliseChatSummary(channel, c))
+      .filter((c): c is ChatSummary => c !== null)
+      /* Sort newest-first so unread / recent threads bubble to the
+       * top of the inbox list, matching what users expect. */
+      .sort((a, b) =>
+        (b.last_message_at ?? "").localeCompare(a.last_message_at ?? ""),
+      );
+
+    return { ok: true, chats };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return { ok: false, chats: [], error: message };
+  }
+}
+
+/* Convert one Unipile chat record into a ChatSummary. Returns null
+ * if we can't pull a stable id + attendee handle - those chats
+ * would be unmanageable downstream. */
+function normaliseChatSummary(
+  channel: UnipileChannel,
+  c: Record<string, unknown>,
+): ChatSummary | null {
+  const id = pickString(c, ["id", "chat_id"]);
+  if (!id) return null;
+
+  /* Attendee handle - shape varies per channel. For WhatsApp the
+   * attendee_provider_id looks like "447xxxxx@s.whatsapp.net" or
+   * a bare number. Strip provider suffix + normalise to digits. */
+  const rawHandle = pickString(c, [
+    "attendee_provider_id",
+    "attendee_id",
+    "attendee_phone",
+    "attendee_email",
+  ]);
+  if (!rawHandle) return null;
+  const attendee_handle =
+    channel === "whatsapp"
+      ? rawHandle.replace(/@.*$/, "").replace(/\D/g, "")
+      : rawHandle;
+
+  const attendee_name = pickString(c, [
+    "attendee_name",
+    "name",
+    "subject",
+  ]);
+
+  /* Most-recent message preview - Unipile sometimes nests it under
+   * lastMessage / last_message / preview. Sniff defensively. */
+  const lastMessage =
+    (c.last_message && typeof c.last_message === "object"
+      ? (c.last_message as Record<string, unknown>)
+      : c.lastMessage && typeof c.lastMessage === "object"
+        ? (c.lastMessage as Record<string, unknown>)
+        : null) ?? null;
+  const last_message_preview = lastMessage
+    ? pickString(lastMessage, ["body", "text", "message", "content"])?.slice(0, 80)
+    : pickString(c, ["preview", "last_message_text"])?.slice(0, 80);
+  const last_message_at = lastMessage
+    ? pickString(lastMessage, ["timestamp", "sent_at", "created_at", "date"])
+    : pickString(c, ["last_message_at", "updated_at", "timestamp"]);
+  const isSender = lastMessage?.is_sender === true;
+
+  return {
+    id,
+    attendee_handle,
+    attendee_name,
+    last_message_preview,
+    last_message_at,
+    last_message_direction: isSender ? "outbound" : "inbound",
+  };
+}
+
 /* Convert a single Unipile chat message into our canonical shape.
  * Returns null if the message isn't useable (no body, no text). */
 function normaliseHistoryMessage(

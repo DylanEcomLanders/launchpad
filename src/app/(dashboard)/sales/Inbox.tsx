@@ -6,7 +6,7 @@
 // other channel "sends" via its adapter (mock). All mutations bubble up to
 // client.tsx.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   PaperAirplaneIcon,
   PlusIcon,
@@ -61,6 +61,21 @@ function ChannelTag({ channel }: { channel: Channel }) {
 const timeShort = (iso: string) =>
   new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 
+/* Unlinked chat - same shape the /api/sales/chats endpoint returns
+ * in the `unmatched` array. Inbox stores these client-side after
+ * the fetch, renders them in their own section, and lets the user
+ * promote them to leads. */
+interface UnlinkedChat {
+  id: string;
+  attendee_handle: string;
+  attendee_name?: string;
+  last_message_preview?: string;
+  last_message_at?: string;
+  last_message_direction?: "inbound" | "outbound";
+}
+
+type ChatChannel = "whatsapp" | "linkedin" | "email";
+
 export function Inbox({
   leads,
   messages,
@@ -73,6 +88,7 @@ export function Inbox({
   onToggleTask,
   onAddTask,
   onMerge,
+  onRefresh,
 }: {
   leads: Lead[];
   messages: LeadMessage[];
@@ -85,7 +101,88 @@ export function Inbox({
   onToggleTask: (taskId: string) => void;
   onAddTask: (leadId: string, title: string) => void;
   onMerge: (targetId: string, sourceId: string) => void;
+  onRefresh: () => Promise<void>;
 }) {
+  /* Unlinked chats panel - WhatsApp by default since that's the
+   * channel most likely to be wired live first. Changes when the
+   * user picks a different channel in the dropdown above the list.
+   * Re-fetches when the channel changes or after a promote so the
+   * promoted chat moves out of the unlinked section automatically. */
+  const [chatChannel, setChatChannel] = useState<ChatChannel>("whatsapp");
+  const [unlinked, setUnlinked] = useState<UnlinkedChat[]>([]);
+  const [chatsLoading, setChatsLoading] = useState(false);
+  const [chatsError, setChatsError] = useState<string | null>(null);
+  const [selectedUnlinkedId, setSelectedUnlinkedId] = useState<string | null>(null);
+  const [promoting, setPromoting] = useState(false);
+
+  async function fetchUnlinked() {
+    setChatsLoading(true);
+    setChatsError(null);
+    try {
+      const res = await fetch(`/api/sales/chats?channel=${chatChannel}`, {
+        cache: "no-store",
+      });
+      const json = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        unmatched?: UnlinkedChat[];
+        error?: string;
+      };
+      if (!res.ok || !json.ok) {
+        setChatsError(json.error ?? `HTTP ${res.status}`);
+        setUnlinked([]);
+      } else {
+        setUnlinked(json.unmatched ?? []);
+      }
+    } catch (err) {
+      setChatsError(err instanceof Error ? err.message : String(err));
+      setUnlinked([]);
+    } finally {
+      setChatsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchUnlinked();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatChannel]);
+
+  async function promoteChat(chat: UnlinkedChat) {
+    if (promoting) return;
+    setPromoting(true);
+    try {
+      const res = await fetch("/api/sales/promote-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channel: chatChannel,
+          attendee_handle: chat.attendee_handle,
+          attendee_name: chat.attendee_name,
+          source: `${chatChannel} inbound`,
+          owner: "Ajay",
+        }),
+      });
+      const json = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        leadId?: string;
+        error?: string;
+      };
+      if (!res.ok || !json.ok) {
+        setChatsError(json.error ?? `HTTP ${res.status}`);
+        return;
+      }
+      /* Refresh leads (so the new conversation shows in matched
+       * section) AND re-fetch unlinked (so the promoted chat drops
+       * out of it). Then select the new lead. */
+      await onRefresh();
+      await fetchUnlinked();
+      setSelectedUnlinkedId(null);
+      if (json.leadId) onSelectLead(json.leadId);
+    } catch (err) {
+      setChatsError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setPromoting(false);
+    }
+  }
   // Conversations = leads that have at least one message, newest activity first.
   const convos = leads
     .map((lead) => {
@@ -137,10 +234,136 @@ export function Inbox({
             )}
           </button>
         ))}
+
+        {/* Unlinked chats section. Pulled from Unipile - chats that
+          * don't tie to an existing Lead yet. User clicks to promote
+          * (creates the lead + backfills history). */}
+        <div className="border-t border-[#222222] mt-2">
+          <div className="px-3 py-2.5 flex items-center gap-2">
+            <span className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold">
+              Unlinked
+            </span>
+            <select
+              value={chatChannel}
+              onChange={(e) => {
+                setChatChannel(e.target.value as ChatChannel);
+                setSelectedUnlinkedId(null);
+              }}
+              className="ml-auto text-[10px] bg-[#181818] border border-[#2A2A2A] text-[#9CA3AF] rounded px-1.5 py-0.5"
+            >
+              <option value="whatsapp">WhatsApp</option>
+              <option value="linkedin">LinkedIn</option>
+              <option value="email">Email</option>
+            </select>
+            <button
+              onClick={() => fetchUnlinked()}
+              disabled={chatsLoading}
+              className="text-[10px] text-[#71757D] hover:text-[#E5E5EA] disabled:opacity-40"
+              title="Refresh"
+            >
+              {chatsLoading ? "…" : "↻"}
+            </button>
+          </div>
+          {chatsError && (
+            <p className="px-3 pb-2 text-[11px] text-rose-300">{chatsError}</p>
+          )}
+          {!chatsLoading && unlinked.length === 0 && !chatsError && (
+            <p className="px-3 pb-3 text-[11px] text-[#71757D]">
+              No unlinked {chatChannel} chats.
+            </p>
+          )}
+          {unlinked.map((chat) => (
+            <button
+              key={chat.id}
+              onClick={() => {
+                setSelectedUnlinkedId(chat.id);
+                onSelectLead("");
+              }}
+              className={`w-full text-left px-3 py-2.5 border-b border-[#1C1C1C] transition-colors ${
+                selectedUnlinkedId === chat.id
+                  ? "bg-[#1C1C1C]"
+                  : "hover:bg-[#181818]"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-[#9CA3AF] truncate">
+                  {chat.attendee_name || chat.attendee_handle}
+                </span>
+                <span className="ml-auto shrink-0 text-[9px] uppercase tracking-wider text-amber-400/80 bg-amber-500/10 px-1 py-0.5 rounded">
+                  New
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className="text-[10px] uppercase tracking-wider text-[#71757D]">
+                  {chatChannel}
+                </span>
+                {chat.last_message_at && (
+                  <span className="text-[11px] text-[#71757D] ml-auto">
+                    {timeShort(chat.last_message_at)}
+                  </span>
+                )}
+              </div>
+              {chat.last_message_preview && (
+                <p className="text-[12px] text-[#71757D] mt-1 line-clamp-1">
+                  {chat.last_message_direction === "outbound" ? "You: " : ""}
+                  {chat.last_message_preview}
+                </p>
+              )}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Thread + reply */}
-      {selected ? (
+      {/* Thread + reply OR unlinked preview */}
+      {selectedUnlinkedId ? (
+        (() => {
+          const chat = unlinked.find((c) => c.id === selectedUnlinkedId);
+          if (!chat) return null;
+          return (
+            <div className="flex flex-col items-center justify-center px-6 text-center">
+              <div className="max-w-md">
+                <p className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold mb-2">
+                  Unlinked {chatChannel}
+                </p>
+                <h3 className="text-xl font-semibold text-[#E5E5EA]">
+                  {chat.attendee_name || chat.attendee_handle}
+                </h3>
+                <p className="text-[12px] text-[#71757D] mt-1">
+                  {chat.attendee_handle}
+                </p>
+                {chat.last_message_preview && (
+                  <div className="mt-6 p-4 rounded-lg bg-[#181818] border border-[#222222] text-left">
+                    <p className="text-[10px] uppercase tracking-wider text-[#71757D] mb-1">
+                      {chat.last_message_direction === "outbound"
+                        ? "Last sent"
+                        : "Last received"}
+                      {chat.last_message_at
+                        ? ` · ${timeShort(chat.last_message_at)}`
+                        : ""}
+                    </p>
+                    <p className="text-[13px] text-[#E5E5EA] leading-relaxed">
+                      {chat.last_message_preview}
+                    </p>
+                  </div>
+                )}
+                <button
+                  onClick={() => promoteChat(chat)}
+                  disabled={promoting}
+                  className="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-white text-[#0C0C0C] text-[13px] font-semibold rounded-full hover:bg-[#E5E5EA] transition-colors disabled:opacity-50"
+                >
+                  {promoting
+                    ? "Promoting…"
+                    : "Promote to lead + pull history"}
+                </button>
+                <p className="mt-3 text-[11px] text-[#71757D]">
+                  Creates a Lead with this contact and imports the full
+                  {" "}{chatChannel} thread.
+                </p>
+              </div>
+            </div>
+          );
+        })()
+      ) : selected ? (
         <ThreadPane
           key={selected.lead.id}
           lead={selected.lead}
@@ -156,7 +379,7 @@ export function Inbox({
       )}
 
       {/* Lead context */}
-      {selected ? (
+      {selected && !selectedUnlinkedId ? (
         <ContextPane
           lead={selected.lead}
           tasks={tasks.filter((t) => t.lead_id === selected.lead.id)}

@@ -37,6 +37,20 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-132",
+    date: "24 June 2026",
+    version: "2.7.0",
+    title: "Unified Unipile inbox: unlinked chats + promote-to-lead flow",
+    changes: [
+      { type: "added", text: "Communications tab now pulls EVERY chat from Unipile (not just synced leads). New 'Unlinked' section in the conversation list shows WhatsApp/LinkedIn/Email threads with no matching Lead, ranked newest-first. Channel picker switches between them; refresh icon for manual re-pull. Matches the Beeper-style unified inbox feel without the noise of auto-creating leads" },
+      { type: "added", text: "Click an unlinked chat → middle column shows attendee name, handle, last-message preview + a Promote to lead button. One click creates the Lead with the right channel field (phone for WhatsApp, email for Email) AND pulls the full conversation history. New conversation drops into the matched section automatically; unlinked entry disappears" },
+      { type: "added", text: "listChats() in the Unipile adapter — pulls all chats with attendee handle + last-message metadata. Normalises phone numbers (strips @s.whatsapp.net suffix, digit-only compare) so WhatsApp matching works across format variations" },
+      { type: "added", text: "GET /api/sales/chats?channel=X returns { matched, unmatched } after running each chat through a per-channel matcher (phones-match for WA, email-equality for Mail, handle-fuzzy for LinkedIn). Used by the new Unlinked panel" },
+      { type: "added", text: "POST /api/sales/promote-chat creates a Lead from chat metadata and backfills history in one call. Idempotent — re-promoting the same chat returns the existing lead instead of duplicating" },
+      { type: "improved", text: "phonesMatch helper normalises across +44/044/0 prefixes and suffix-match formats so a Lead with phone '07712...' matches a Unipile chat with attendee '+447712...'" },
+    ],
+  },
+  {
     id: "cl-131",
     date: "24 June 2026",
     version: "2.6.2",
