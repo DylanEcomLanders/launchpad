@@ -7,7 +7,7 @@
 // useWorkspaceData. Replaces the old grouped-list "My Work".
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronDownIcon,
   ExclamationTriangleIcon,
@@ -81,19 +81,15 @@ const COLUMNS: { key: TaskStatus; label: string; dot: string }[] = [
   { key: "done", label: "Done", dot: "#10B981" },
 ];
 
-/* Quick deadline state from a card's dueDate. Three buckets:
- *   overdue  - dueDate before today
- *   soon     - within 3 days
- *   ontrack  - anything else (incl. no dueDate)
- * Lighter than the kanban's full status engine; my-work only needs
- * to flag what's slipping. */
+/* Tightened deadline state - matches the kanban's deadlineStatus rule:
+ *   overdue  - today > due (any day past)
+ *   soon     - today === due (day-of)
+ *   ontrack  - today < due (yesterday or earlier)
+ * No buffer - day-after-due is red. */
 function deriveState(dueDate: string | undefined, todayYMD: string): DeadlineState {
   if (!dueDate) return "ontrack";
   if (dueDate < todayYMD) return "overdue";
-  const due = new Date(dueDate);
-  const t = new Date(todayYMD);
-  const diff = (due.getTime() - t.getTime()) / (1000 * 60 * 60 * 24);
-  if (diff <= 3) return "soon";
+  if (dueDate === todayYMD) return "soon";
   return "ontrack";
 }
 
@@ -388,19 +384,12 @@ export default function MyWorkClient() {
               </span>
             </h1>
             {showPicker && (
-              <div className="mt-3 relative inline-block">
-                <select
-                  value={memberId ?? ""}
-                  onChange={(e) => pickMember(e.target.value)}
-                  className="appearance-none text-xs font-medium pl-3 pr-8 py-1.5 bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] rounded-full focus:outline-none focus:border-[#383838] cursor-pointer"
-                >
-                  {allMembers.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDownIcon className="size-3 text-[#71757D] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <div className="mt-3">
+                <ViewAsPicker
+                  members={allMembers}
+                  activeId={memberId}
+                  onPick={pickMember}
+                />
               </div>
             )}
           </div>
@@ -592,6 +581,93 @@ export default function MyWorkClient() {
           })}
         </div>
       </div>
+    </div>
+  );
+}
+
+/* Admin "view as" picker. Custom dark dropdown matching the kanban
+ * pickers - shows the active member + role, dropdown lists everyone
+ * by role for quick scanning. Replaces the native <select> which
+ * looked out of place against the rest of the app. */
+function ViewAsPicker({
+  members,
+  activeId,
+  onPick,
+}: {
+  members: PodMember[];
+  activeId: string | null;
+  onPick: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+  const active = members.find((m) => m.id === activeId);
+
+  useEffect(() => {
+    if (!open) return;
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative inline-block">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex items-center gap-2 pl-3 pr-2.5 py-1.5 text-xs font-medium bg-[#181818] text-[#E5E5EA] border border-[#2A2A2A] rounded-full hover:border-[#383838] transition-colors"
+      >
+        <span className="truncate max-w-[200px]">
+          {active?.name ?? "Pick someone"}
+        </span>
+        {active && (
+          <span className="text-[10px] uppercase tracking-wider text-[#71757D]">
+            {active.role.replace(/_/g, " ")}
+          </span>
+        )}
+        <ChevronDownIcon className="size-3 text-[#71757D] shrink-0" />
+      </button>
+      {open && (
+        <div className="absolute left-0 top-9 z-40 w-72 bg-[#0F0F10] rounded-lg ring-1 ring-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden">
+          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-[#71757D] font-semibold border-b border-white/[0.04]">
+            View as ({members.length})
+          </div>
+          <ul className="max-h-80 overflow-y-auto py-1">
+            {members.map((m) => {
+              const isActive = m.id === activeId;
+              return (
+                <li key={m.id}>
+                  <button
+                    onClick={() => {
+                      onPick(m.id);
+                      setOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 hover:bg-white/[0.04] transition-colors ${
+                      isActive ? "bg-white/[0.04]" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {isActive ? (
+                        <svg className="size-3.5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-8 8a1 1 0 01-1.42 0l-4-4a1 1 0 011.42-1.42L8 12.586l7.296-7.296a1 1 0 011.408 0z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <span className="size-3.5 shrink-0" />
+                      )}
+                      <span className="text-[13px] text-[#E5E5EA] truncate flex-1 min-w-0">
+                        {m.name}
+                      </span>
+                      <span className="text-[10px] uppercase tracking-wider text-[#71757D] shrink-0 capitalize">
+                        {m.role.replace(/_/g, " ")}
+                      </span>
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

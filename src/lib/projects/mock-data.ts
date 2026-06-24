@@ -149,6 +149,16 @@ export interface MockProject {
    *  of External Revisions into Development). Anchors Phase 2 phase
    *  deadlines (Dev / QA / Launch). Until set, Phase 2 deadlines read "TBC". */
   clientApprovedAt?: string;
+  /** Manual client-facing deadline for Phase 1 (Strategy / Design / Internal
+   *  Rev / External Rev). When set, overrides the computed per-phase due
+   *  dates for stuck/approaching/on-track on every Phase 1 card. ISO
+   *  yyyy-mm-dd. Useful when the project has an externally-imposed deadline
+   *  (campaign launch, event, client cut-off) instead of just computing
+   *  from startDate + turnaroundDays. */
+  phase1Deadline?: string;
+  /** Manual client-facing deadline for Phase 2 (Dev / QA / Launch). Same
+   *  override semantics as phase1Deadline but scoped to Phase 2 cards. */
+  phase2Deadline?: string;
   deliverables: MockDeliverable[];
 }
 

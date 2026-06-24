@@ -59,6 +59,8 @@ interface KanbanProjectRow {
   pod_id: string | null;
   start_date: string | null;
   client_approved_at: string | null;
+  phase1_deadline: string | null;
+  phase2_deadline: string | null;
 }
 
 interface KanbanTaskRow {
@@ -146,6 +148,8 @@ function projectRowToMock(
     engagementDays: r.engagement_days ?? undefined,
     startDate: r.start_date ?? undefined,
     clientApprovedAt: r.client_approved_at ?? undefined,
+    phase1Deadline: r.phase1_deadline ?? undefined,
+    phase2Deadline: r.phase2_deadline ?? undefined,
     deliverables,
   };
 }
@@ -194,6 +198,8 @@ function mockProjectToRow(clientId: string, p: MockProject): KanbanProjectRow {
     pod_id: p.podId ?? null,
     start_date: p.startDate ?? null,
     client_approved_at: p.clientApprovedAt ?? null,
+    phase1_deadline: p.phase1Deadline ?? null,
+    phase2_deadline: p.phase2Deadline ?? null,
   };
 }
 
@@ -534,7 +540,9 @@ export async function syncClientsDiff(
         pBefore.turnaroundDays !== p.turnaroundDays ||
         pBefore.engagementDays !== p.engagementDays ||
         pBefore.startDate !== p.startDate ||
-        pBefore.clientApprovedAt !== p.clientApprovedAt
+        pBefore.clientApprovedAt !== p.clientApprovedAt ||
+        pBefore.phase1Deadline !== p.phase1Deadline ||
+        pBefore.phase2Deadline !== p.phase2Deadline
       ) {
         projectChanged.push({ clientId: c.id, project: p });
       }

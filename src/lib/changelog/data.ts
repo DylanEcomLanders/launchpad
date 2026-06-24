@@ -37,6 +37,19 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-127",
+    date: "24 June 2026",
+    version: "2.5.1",
+    title: "Manual Phase 1 / Phase 2 client deadlines + tightened amber-red rule",
+    changes: [
+      { type: "added", text: "Per-project Phase 1 + Phase 2 manual client deadlines. Set them in the new Client deadlines section on any card detail panel (visible for builds AND retainers - was previously gated to builds only). When set, override the computed per-phase due dates for stuck/approaching/on-track. Phase 2 deadline also auto-fills the build schedule's Client deadline display so admin sees one truth across the card" },
+      { type: "improved", text: "Amber/red rule tightened across kanban + /my-work. Was: amber when 'soon' (3-day window), red when overdue. Now: amber on day-of-due (today === deadline), red day-after (today > deadline), green any day before. No buffer - escalation happens fast" },
+      { type: "improved", text: "/my-work view-as picker (admin only) swapped from native browser select to custom dark dropdown with role chips. Matches the kanban pickers; consistent across the app" },
+      { type: "improved", text: "Schedule anchors (Project start + Client approved) now have a small italic hint explaining they're the fallback when no manual deadlines are set. Makes the precedence clear: manual deadlines win" },
+      { type: "added", text: "Migration 045 adds phase1_deadline + phase2_deadline date columns to kanban_projects. Apply manually in Supabase SQL Editor (per project rule) before the new dates persist across refreshes" },
+    ],
+  },
+  {
     id: "cl-126",
     date: "24 June 2026",
     version: "2.5.0",

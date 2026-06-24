@@ -312,11 +312,12 @@ function phaseInternalDueDate(
   return null;
 }
 
-/** Card status driven by the dated phase deadline, not hoursInPhase.
- *  - on-track: today <= phase due
- *  - approaching: today > phase due (eating into the 3-day buffer)
- *  - stuck: today > phase due + buffer
- */
+/** Card status driven by the dated phase deadline (manual override or
+ *  computed per-phase). Tightened rule:
+ *    - on-track: today < deadline
+ *    - approaching: today === deadline (day-of)
+ *    - stuck: today > deadline (any day overdue)
+ *  No buffer - day-after-due is red. */
 function deadlineStatus(
   phase: PreviewPhase,
   project: {
@@ -324,22 +325,27 @@ function deadlineStatus(
     turnaroundDays?: 15 | 20 | 25;
     startDate?: string;
     clientApprovedAt?: string;
+    phase1Deadline?: string;
+    phase2Deadline?: string;
   },
   todayISO: string,
 ): StuckStatus | null {
-  const due = phaseInternalDueDate(phase, project);
+  /* Manual phase-bucket deadlines take precedence. Phase 1 cards
+   * (strategy / design / int-rev / ext-rev) compare to phase1Deadline;
+   * Phase 2 cards (dev / qa / launch) compare to phase2Deadline. */
+  const isPhase1 = PHASE_1_ORDER.includes(phase) || phase === "external-revisions";
+  const isPhase2 = PHASE_2_ORDER.includes(phase);
+  const manualDue = isPhase1
+    ? project.phase1Deadline
+    : isPhase2
+      ? project.phase2Deadline
+      : undefined;
+  const due = manualDue ?? phaseInternalDueDate(phase, project);
   if (!due) return null;
   const cmp = todayISO.localeCompare(due);
-  if (cmp <= 0) return "on-track";
-  const dueParts = due.split("-").map(Number);
-  const todayParts = todayISO.split("-").map(Number);
-  const dueDt = new Date(Date.UTC(dueParts[0], dueParts[1] - 1, dueParts[2]));
-  const todayDt = new Date(Date.UTC(todayParts[0], todayParts[1] - 1, todayParts[2]));
-  const overdueDays = Math.round(
-    (todayDt.getTime() - dueDt.getTime()) / (1000 * 60 * 60 * 24),
-  );
-  if (overdueDays > INTERNAL_BUFFER_DAYS - 1) return "stuck";
-  return "approaching";
+  if (cmp < 0) return "on-track";
+  if (cmp === 0) return "approaching";
+  return "stuck";
 }
 
 function formatShortDate(iso: string): string {
@@ -427,6 +433,13 @@ interface ContextDeliverable extends MockDeliverable {
   // projectStartDate; Phase 2 off projectClientApprovedAt (TBC until set).
   projectStartDate?: string;
   projectClientApprovedAt?: string;
+  // Manual client-facing deadlines per phase bucket. When set, override
+  // the computed per-phase due dates for stuck/approaching/on-track.
+  // Lets admin pin an externally-imposed deadline (campaign launch,
+  // event, client cut-off) without having to back-compute start +
+  // turnaround.
+  projectPhase1Deadline?: string;
+  projectPhase2Deadline?: string;
 }
 
 const STATUS_RANK: Record<StuckStatus, number> = {
@@ -656,6 +669,8 @@ export default function KanbanPage() {
             projectType: p.type,
             projectStartDate: p.startDate,
             projectClientApprovedAt: p.clientApprovedAt,
+            projectPhase1Deadline: p.phase1Deadline,
+            projectPhase2Deadline: p.phase2Deadline,
           });
         }
       }
@@ -1248,6 +1263,32 @@ export default function KanbanPage() {
     });
   }
 
+  // Manual client-facing Phase 1 deadline. When set, overrides the
+  // computed per-phase due dates for every Phase 1 card on the project.
+  function setProjectPhase1Deadline(projectId: string, iso: string | undefined) {
+    setClients((prev) => {
+      const next = cloneClients(prev);
+      for (const c of next) {
+        const p = c.projects.find((x) => x.id === projectId);
+        if (p) p.phase1Deadline = iso;
+      }
+      return next;
+    });
+  }
+
+  // Manual client-facing Phase 2 deadline. Same override semantics as
+  // setProjectPhase1Deadline scoped to Phase 2 cards.
+  function setProjectPhase2Deadline(projectId: string, iso: string | undefined) {
+    setClients((prev) => {
+      const next = cloneClients(prev);
+      for (const c of next) {
+        const p = c.projects.find((x) => x.id === projectId);
+        if (p) p.phase2Deadline = iso;
+      }
+      return next;
+    });
+  }
+
   // Project-level client approval reset. Wipes p.clientApprovedAt so Phase 2
   // deadlines go back to TBC. Useful when a card was dragged into Dev
   // accidentally and triggered the stamp.
@@ -1648,6 +1689,12 @@ export default function KanbanPage() {
           }
           onSetClientApproval={(iso) =>
             setClientApproval(activeDeliverable.projectId, iso)
+          }
+          onSetPhase1Deadline={(iso) =>
+            setProjectPhase1Deadline(activeDeliverable.projectId, iso)
+          }
+          onSetPhase2Deadline={(iso) =>
+            setProjectPhase2Deadline(activeDeliverable.projectId, iso)
           }
         />
       )}
@@ -2418,6 +2465,8 @@ function Card({
             turnaroundDays: d.turnaroundDays,
             startDate: d.projectStartDate,
             clientApprovedAt: d.projectClientApprovedAt,
+            phase1Deadline: d.projectPhase1Deadline,
+            phase2Deadline: d.projectPhase2Deadline,
           },
           MOCK_TODAY,
         )
@@ -3342,6 +3391,8 @@ interface DetailModalProps {
   onDelete: () => void;
   onSetProjectStartDate: (iso: string | undefined) => void;
   onSetClientApproval: (iso: string | undefined) => void;
+  onSetPhase1Deadline: (iso: string | undefined) => void;
+  onSetPhase2Deadline: (iso: string | undefined) => void;
 }
 
 function DetailModal({
@@ -3360,6 +3411,8 @@ function DetailModal({
   onDelete,
   onSetProjectStartDate,
   onSetClientApproval,
+  onSetPhase1Deadline,
+  onSetPhase2Deadline,
 }: DetailModalProps) {
   const status = statusForHoursInPhase(d.phase, d.hoursInPhase);
   const style = STUCK_STYLES[status];
@@ -3562,10 +3615,13 @@ function DetailModal({
             d.projectStartDate &&
             d.turnaroundDays &&
             (() => {
-              const clientDeadlineISO = addCalendarDays(
-                d.projectStartDate,
-                d.turnaroundDays,
-              );
+              /* Manual Phase 2 deadline IS the client deadline when set
+               * (Phase 2 = the final stretch that lands live). Falls back
+               * to the computed startDate + turnaroundDays when admin
+               * hasn't pinned one. */
+              const clientDeadlineISO =
+                d.projectPhase2Deadline ??
+                addCalendarDays(d.projectStartDate, d.turnaroundDays);
               // Find the latest Phase 2 due date - if it lands past the
               // client deadline, the schedule has slipped because external
               // rev took longer than budgeted. Warn the team.
@@ -3670,6 +3726,14 @@ function DetailModal({
                     </div>
                   )}
                   <div className="mt-3 pt-3 border-t border-[#2A2A2A] space-y-2 text-[11px]">
+                    {/* These two anchors drive the auto-computed per-phase
+                      * due dates in the schedule grid above. They're a
+                      * fallback - if Phase 1 / Phase 2 deadlines are set
+                      * directly in the Client deadlines section, those
+                      * take precedence for stuck/approaching/on-track. */}
+                    <p className="text-[10px] text-[#4B4D52] italic pb-1">
+                      Schedule anchors (used when no manual deadlines set)
+                    </p>
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-[#71757D] uppercase tracking-wider shrink-0">
                         Project start
@@ -3721,6 +3785,45 @@ function DetailModal({
                 </section>
               );
             })()}
+
+          {/* Manual client-facing deadlines per phase bucket. Shown for
+            * every project (build + retainer) so admin can pin an
+            * externally-imposed deadline (campaign launch, event,
+            * client cut-off) without depending on the build schedule's
+            * computed math. When set, override the per-phase due
+            * dates for stuck/approaching/on-track on every card in
+            * that bucket; Phase 2 also becomes the client deadline. */}
+          <section className="rounded-xl border border-[#2A2A2A] bg-[#0C0C0C] p-4">
+            <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#71757D] mb-3">
+              Client deadlines
+            </h3>
+            <div className="space-y-2 text-[11px]">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[#71757D] uppercase tracking-wider shrink-0">
+                  Phase 1 deadline
+                </span>
+                <div className="min-w-0 flex-1 max-w-[180px]">
+                  <DarkDatePicker
+                    value={d.projectPhase1Deadline}
+                    onChange={(v) => onSetPhase1Deadline(v)}
+                    placeholder="Set Phase 1 due"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[#71757D] uppercase tracking-wider shrink-0">
+                  Phase 2 deadline
+                </span>
+                <div className="min-w-0 flex-1 max-w-[180px]">
+                  <DarkDatePicker
+                    value={d.projectPhase2Deadline}
+                    onChange={(v) => onSetPhase2Deadline(v)}
+                    placeholder="Set Phase 2 due"
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
 
           {/* Internal Revisions decision bar - Approve pushes the design to
               the client (green state, External Rev), Request revisions
