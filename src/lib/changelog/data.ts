@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-122",
+    date: "24 June 2026",
+    version: "2.3.4",
+    title: "Contracts UX polish — proper white-paper render, fixed signing page, clearer list",
+    changes: [
+      { type: "improved", text: "RenderedDocument rebuilt as a real white-paper legal document: serif body (Georgia / Source Serif), Inter Tight headings, generous A4-ish padding (56px / 64px), heavier signature block typography, soft shadow. Now looks like a contract, not a dashboard card. Used everywhere - admin preview + portal signing both show the same thing" },
+      { type: "improved", text: "/agreement/[id] signing page rebuilt for white-on-light. Logo now renders dark (was invisible white-on-near-white), Inter Tight typography for the chrome, wider 940px container so the doc breathes, Sign block matches the doc width, dedicated light-mode input class (the shared one was dark and looked broken)" },
+      { type: "improved", text: "Contracts list cards now lead with the contract title (Contractor Agreement / NDA) + document icon, then For [Person] as subtitle. Was the other way round - read like a people directory rather than a contracts list" },
+      { type: "improved", text: "Admin contract detail page wider container (940px) so the 820px white-paper doc fits cleanly with breathing room" },
+    ],
+  },
+  {
     id: "cl-121",
     date: "24 June 2026",
     version: "2.3.3",
