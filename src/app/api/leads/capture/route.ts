@@ -59,7 +59,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, lead_id: lead.id });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    // Log internals server-side; return a generic message so DB/library
+    // internals aren't leaked to this public endpoint's callers.
     console.error("Lead capture error:", msg);
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json({ error: "Could not capture lead" }, { status: 500 });
   }
 }

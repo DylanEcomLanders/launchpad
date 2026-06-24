@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import * as cheerio from "cheerio";
 import { KNOWN_APPS } from "@/data/known-apps";
 import type { Finding, StoreIntelResult, PageAuditResult } from "@/lib/store-intel/types";
+import { assertPublicUrl } from "@/lib/security/ssrf";
 
 // ── Config ──────────────────────────────────────────────────────
 
@@ -725,6 +726,11 @@ export async function POST(request: Request) {
       }
 
       const normalised = normalizeUrl(pageUrl);
+      try {
+        await assertPublicUrl(normalised);
+      } catch {
+        return NextResponse.json({ error: "Invalid or disallowed URL" }, { status: 400 });
+      }
       const data = await deepCrawlPage(normalised);
 
       const anthropic = new Anthropic();
@@ -778,6 +784,11 @@ export async function POST(request: Request) {
     }
 
     const baseUrl = normalizeUrl(body.storeUrl);
+    try {
+      await assertPublicUrl(baseUrl);
+    } catch {
+      return NextResponse.json({ error: "Invalid or disallowed URL" }, { status: 400 });
+    }
     const brand = body.brandName.trim();
 
     // Collect data

@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+import DOMPurify from "isomorphic-dompurify";
 import { Logo } from "@/components/logo";
 
 interface BrandedReportProps {
@@ -19,6 +21,10 @@ function formatDate(iso: string) {
 }
 
 export function BrandedReport({ title, date, content, showHeader = true }: BrandedReportProps) {
+  /* Sanitize before render: `content` is HTML produced by mammoth from an
+   * uploaded .docx and shown on the public /portal/[token] route, so an
+   * unsanitized render is a stored-XSS vector. */
+  const safeContent = useMemo(() => DOMPurify.sanitize(content), [content]);
   return (
     <div className="bg-[#181818] rounded-xl border border-[#2A2A2A] shadow-sm overflow-hidden">
       {showHeader && (
@@ -44,7 +50,7 @@ export function BrandedReport({ title, date, content, showHeader = true }: Brand
           prose-td:px-3 prose-td:py-2 prose-td:border-b prose-td:border-[#2A2A2A]
           prose-a:text-[#E5E5EA] prose-a:underline prose-a:underline-offset-2
           prose-img:rounded-lg prose-img:border prose-img:border-[#2A2A2A]"
-        dangerouslySetInnerHTML={{ __html: content }}
+        dangerouslySetInnerHTML={{ __html: safeContent }}
       />
       <div className="px-8 py-4 border-t border-[#2A2A2A] bg-[#0C0C0C]">
         <div className="flex items-center gap-2">

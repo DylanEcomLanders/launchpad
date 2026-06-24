@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { DEFAULT_AUDIT_KNOWLEDGE } from "@/lib/cro-audit-engine/knowledge-base";
+import { assertPublicUrl } from "@/lib/security/ssrf";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || "" });
 const FIRECRAWL_KEY = process.env.FIRECRAWL_API_KEY || "";
@@ -99,6 +100,13 @@ export async function POST(req: NextRequest) {
   try {
     const { url } = await req.json();
     if (!url) return NextResponse.json({ error: "No URL provided" }, { status: 400 });
+
+    // SSRF guard: reject internal/private targets before any server-side fetch.
+    try {
+      await assertPublicUrl(url);
+    } catch {
+      return NextResponse.json({ error: "Invalid or disallowed URL" }, { status: 400 });
+    }
 
     // Step 0: PageSpeed Insights (mobile)
     let speedData: { score: number; fcp: string; lcp: string; tbt: string; cls: string; si: string } | null = null;

@@ -9,6 +9,10 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://ecomlanders.app";
 
 function verifySlackSignature(body: string, timestamp: string, signature: string): boolean {
   if (!SIGNING_SECRET) return false;
+  // Replay protection: reject missing or >5-minute-old timestamps (Slack's
+  // documented requirement) before checking the HMAC.
+  const ts = Number(timestamp);
+  if (!Number.isFinite(ts) || Math.abs(Date.now() / 1000 - ts) > 300) return false;
   const baseString = `v0:${timestamp}:${body}`;
   const hash = "v0=" + crypto.createHmac("sha256", SIGNING_SECRET).update(baseString).digest("hex");
   try {
@@ -27,7 +31,12 @@ export async function POST(req: NextRequest) {
   const timestamp = req.headers.get("x-slack-request-timestamp") || "";
   const signature = req.headers.get("x-slack-signature") || "";
 
-  if (SIGNING_SECRET && !verifySlackSignature(body, timestamp, signature)) {
+  // Fail closed: a missing signing secret in production is a misconfiguration,
+  // not a reason to skip verification.
+  if (!SIGNING_SECRET) {
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+  }
+  if (!verifySlackSignature(body, timestamp, signature)) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 

@@ -6,6 +6,29 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "10mb",
     },
   },
+  async headers() {
+    /* Baseline security headers applied to every route. Deliberately NO
+     * strict Content-Security-Policy yet: a wrong CSP breaks the live app
+     * (Supabase, web fonts, framer-motion, the service-worker register).
+     * frame-ancestors 'self' below gives clickjacking protection without
+     * the breakage risk; a full CSP should be iterated in preview later. */
+    const securityHeaders = [
+      { key: "X-Frame-Options", value: "SAMEORIGIN" },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      {
+        key: "Strict-Transport-Security",
+        value: "max-age=63072000; includeSubDomains; preload",
+      },
+      {
+        key: "Permissions-Policy",
+        value: "camera=(), microphone=(), geolocation=()",
+      },
+      // Clickjacking protection via CSP (the modern X-Frame-Options).
+      { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+    ];
+    return [{ source: "/:path*", headers: securityHeaders }];
+  },
   async redirects() {
     return [
       // Legacy tiered pricing routes — collapsed to a single /pricing page.
