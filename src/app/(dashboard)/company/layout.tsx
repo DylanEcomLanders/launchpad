@@ -32,19 +32,22 @@ import {
   BriefcaseIcon,
   Cog6ToothIcon,
   Squares2X2Icon,
+  DocumentTextIcon,
 } from "@heroicons/react/24/outline";
 import InboxPanel from "./_panels/InboxPanel";
 import PeoplePanel from "./_panels/PeoplePanel";
 import HiringPanel from "./_panels/HiringPanel";
 import PodsPanel from "./_panels/PodsPanel";
+import ContractsPanel from "./_panels/ContractsPanel";
 
-type Tab = "inbox" | "people" | "pods" | "hiring";
+type Tab = "inbox" | "people" | "pods" | "contracts" | "hiring";
 
 const TABS: { id: Tab; label: string; icon: typeof InboxIcon; pathPrefix: string }[] = [
-  { id: "inbox",   label: "Inbox",   icon: InboxIcon,      pathPrefix: "/company" },
-  { id: "people",  label: "People",  icon: UserGroupIcon,  pathPrefix: "/company/people" },
-  { id: "pods",    label: "Pods",    icon: Squares2X2Icon, pathPrefix: "/company/pods" },
-  { id: "hiring",  label: "Hiring",  icon: BriefcaseIcon,  pathPrefix: "/company/hiring" },
+  { id: "inbox",     label: "Inbox",     icon: InboxIcon,         pathPrefix: "/company" },
+  { id: "people",    label: "People",    icon: UserGroupIcon,     pathPrefix: "/company/people" },
+  { id: "pods",      label: "Pods",      icon: Squares2X2Icon,    pathPrefix: "/company/pods" },
+  { id: "contracts", label: "Contracts", icon: DocumentTextIcon,  pathPrefix: "/company/contracts" },
+  { id: "hiring",    label: "Hiring",    icon: BriefcaseIcon,     pathPrefix: "/company/hiring" },
 ];
 
 const COMPANY_PASSCODE =
@@ -57,10 +60,11 @@ const STORAGE_KEY = "launchpad-company-unlocked";
 function tabFromPath(pathname: string): Tab {
   if (pathname.startsWith("/company/people")) return "people";
   if (pathname.startsWith("/company/pods")) return "pods";
+  if (pathname.startsWith("/company/contracts")) return "contracts";
   if (pathname.startsWith("/company/hiring")) return "hiring";
-  /* /company/contracts and /company/structure still resolve to Inbox
-   * since they aren't top tabs anymore - the layout treats them as
-   * detail routes and renders {children}. */
+  /* /company/structure still resolves to Inbox since it isn't a top
+   * tab anymore - the layout treats it as a detail route and renders
+   * {children}. */
   return "inbox";
 }
 
@@ -71,7 +75,7 @@ function isDetailRoute(pathname: string): boolean {
   const trimmed = pathname.replace(/\/+$/, "");
   const detailPatterns = [
     /^\/company\/people\/[^/]+/,
-    /^\/company\/contracts(\/|$)/,  // whole contracts area now a detail route (no top tab)
+    /^\/company\/contracts\/[^/]+/,  // a specific contract or templates editor
     /^\/company\/hiring\/[^/]+/,
     /^\/company\/structure(\/|$)/,  // structure also delegated entirely
     /^\/company\/invoices/,
@@ -195,6 +199,8 @@ function PanelFor({ tab }: { tab: Tab }) {
       return <PeoplePanel />;
     case "pods":
       return <PodsPanel />;
+    case "contracts":
+      return <ContractsPanel />;
     case "hiring":
       return <HiringPanel />;
     default:
