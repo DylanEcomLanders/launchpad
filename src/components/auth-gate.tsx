@@ -44,6 +44,35 @@ export function useCurrentUser() {
   return useContext(CurrentUserContext);
 }
 
+/** Sign the current user out across every layer: Supabase auth session,
+ *  the server cookie (DELETE /api/auth/gate), sessionStorage,
+ *  the role cookie, the cached-current-user blob. Then full-reload
+ *  so AuthGate re-renders the login screen.
+ *
+ *  Made an exported helper rather than a hook because the sidebar logout
+ *  button is a one-shot fire-and-forget - no React state to manage. */
+export async function signOut(): Promise<void> {
+  try {
+    await supabase.auth.signOut();
+  } catch {
+    /* swallow - we still want to clear local state even if the
+     * remote signOut fails (e.g. offline). */
+  }
+  try {
+    await fetch("/api/auth/gate", { method: "DELETE" });
+  } catch {
+    /* same posture - cookie may already be expired. */
+  }
+  if (typeof window !== "undefined") {
+    sessionStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(ROLE_KEY);
+    document.cookie = "launchpad-role=; Path=/; Max-Age=0; SameSite=Strict";
+    cacheCurrentUser(null);
+    /* Hard reload so AuthGate remounts from scratch + login form appears. */
+    window.location.href = "/";
+  }
+}
+
 /** Members now use the same dashboard shell as admins, but only reach their
  * own surfaces: Mission Control, My Work, Workspace (their pod), Wiki, the
  * Toolbox tools (carried from the retired Team Hub, still under /team/*),

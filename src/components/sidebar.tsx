@@ -44,9 +44,10 @@ import {
   DocumentPlusIcon,
   CreditCardIcon,
   BoltIcon,
+  ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 // LogoMark moved to dashboard top bar — sidebar no longer renders the logo.
-import { useRole } from "@/components/auth-gate";
+import { useRole, useCurrentUser, signOut } from "@/components/auth-gate";
 import { CommandPalette, type CommandItem } from "@/components/command-palette";
 
 interface NavItem {
@@ -302,6 +303,7 @@ const toolkitItem = {
 export function Sidebar() {
   const pathname = usePathname();
   const role = useRole();
+  const currentUser = useCurrentUser();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   /* Accordion behaviour — at most one nav section open at a time. Initial
@@ -654,6 +656,42 @@ export function Sidebar() {
         {collapsed && (
           <div className="py-2 flex justify-center shrink-0">
             <ClockIcon className="size-3.5 text-[#71757D]" />
+          </div>
+        )}
+
+        {/* Signed-in user + sign-out. Shown above the version/shortcuts
+            footer. Name + role chip on the left, sign-out button on the
+            right. Falls back to the role label when no auth identity
+            (legacy shared-password sessions). Collapsed view gets the
+            icon-only button at the bottom. */}
+        {!collapsed && (
+          <div className="px-4 pt-3 pb-2 mt-auto border-t border-[#1A1A1A] flex items-center justify-between gap-2 shrink-0">
+            <div className="min-w-0 flex-1">
+              <div className="text-[12px] font-medium text-[#E5E5EA] truncate">
+                {currentUser?.name ?? "Shared session"}
+              </div>
+              <div className="text-[10px] uppercase tracking-wider text-[#71757D] truncate">
+                {currentUser?.email ?? `${role} role`}
+              </div>
+            </div>
+            <button
+              onClick={() => signOut()}
+              title="Sign out"
+              className="shrink-0 p-1.5 rounded-md text-[#71757D] hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
+            >
+              <ArrowRightOnRectangleIcon className="size-4" />
+            </button>
+          </div>
+        )}
+        {collapsed && (
+          <div className="py-2 flex justify-center shrink-0 mt-auto">
+            <button
+              onClick={() => signOut()}
+              title="Sign out"
+              className="p-1.5 rounded-md text-[#71757D] hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
+            >
+              <ArrowRightOnRectangleIcon className="size-4" />
+            </button>
           </div>
         )}
 

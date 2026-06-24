@@ -37,6 +37,17 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-128",
+    date: "24 June 2026",
+    version: "2.5.2",
+    title: "Sidebar logout button + signed-in user chip",
+    changes: [
+      { type: "added", text: "Sidebar footer now shows the signed-in user (name + email) with a logout icon on the right. Clicking signs out across every layer: Supabase auth session, server cookie (DELETE /api/auth/gate), sessionStorage keys, role cookie, cached current-user blob. Then hard-reloads to the login screen" },
+      { type: "added", text: "Collapsed sidebar gets an icon-only logout button at the bottom. Legacy shared-password sessions show 'Shared session · {role}' as the fallback identity" },
+      { type: "added", text: "signOut() exported from auth-gate as a reusable helper. Catches Supabase + fetch failures so local state still clears even if the remote signOut errors (offline, expired session, etc.)" },
+    ],
+  },
+  {
     id: "cl-127",
     date: "24 June 2026",
     version: "2.5.1",
