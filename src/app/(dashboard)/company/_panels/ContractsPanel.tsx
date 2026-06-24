@@ -169,18 +169,30 @@ export default function ContractsPanel() {
                     <Link
                       key={a.id}
                       href={`/company/contracts/${a.id}`}
-                      className="block bg-[#0F0F10] border border-white/[0.04] rounded-xl p-4 hover:border-white/30 hover:shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all"
+                      className="block bg-[#0F0F10] ring-1 ring-white/[0.04] rounded-xl p-4 hover:ring-white/[0.12] hover:shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all"
                     >
+                      {/* Lead with the contract title (what THIS is), then
+                       * the person (who it's for). Was the other way round
+                       * which made the page read like a people directory. */}
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="min-w-0 flex-1">
-                          <div className="text-[14px] font-medium text-[#E5E5EA] truncate">
-                            {a.person_full_name}
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <DocumentTextIcon className="size-3.5 text-[#71757D] shrink-0" />
+                            <div className="text-[13px] font-semibold text-[#E5E5EA] truncate">
+                              {a.template_body.title}
+                            </div>
                           </div>
-                          <div className="text-[11px] text-[#71757D] mt-0.5">
-                            {a.person_job_title || person?.job_title || "—"}
+                          <div className="text-[12px] text-[#9CA3AF] truncate">
+                            For{" "}
+                            <span className="text-[#E5E5EA] font-medium">
+                              {a.person_full_name}
+                            </span>{" "}
+                            <span className="text-[#71757D]">
+                              · {a.person_job_title || person?.job_title || "—"}
+                            </span>
                           </div>
                         </div>
-                        <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-[#222222] text-[#E5E5EA]">
+                        <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-[#222222] text-[#E5E5EA] shrink-0">
                           {AGREEMENT_KIND_LABEL[a.kind]}
                         </span>
                       </div>

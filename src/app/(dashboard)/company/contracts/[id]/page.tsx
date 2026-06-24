@@ -128,7 +128,7 @@ export default function ContractDetailPage() {
   const meta = AGREEMENT_STATUS_META[agreement.status];
 
   return (
-    <div className="max-w-3xl mx-auto px-6 md:px-10 py-10 pb-24">
+    <div className="max-w-[940px] mx-auto px-4 md:px-8 py-8 pb-24">
       {/* Back */}
       <Link
         href="/company/contracts"

@@ -21,7 +21,12 @@ import type { Agreement } from "@/lib/agreements/types";
 import { AGREEMENT_KIND_LABEL } from "@/lib/agreements/types";
 import { RenderedDocument } from "@/components/agreements/rendered-document";
 import { SignaturePad } from "@/components/signature-pad";
-import { inputClass } from "@/lib/form-styles";
+
+/* Light-mode input class for the signing page. The shared
+ * inputClass in /lib/form-styles is dark-mode (white-on-black for
+ * the dashboard); on a white signing page it'd look broken. */
+const lightInputClass =
+  "w-full px-3.5 py-2.5 bg-white border border-[#D5D5D5] rounded-lg text-[14px] text-[#111] placeholder:text-[#999] focus:outline-none focus:border-[#1B1B1B] focus:ring-1 focus:ring-[#1B1B1B]/20 transition-all";
 
 export default function PublicAgreementPage() {
   const params = useParams();
@@ -102,10 +107,10 @@ export default function PublicAgreementPage() {
 
   if (submitted || alreadySigned) {
     return (
-      <div className="min-h-screen bg-[#FAFAFA]">
+      <div className="min-h-screen bg-[#EAEAEA] text-[#111]">
         <Header kind={agreement.kind} />
-        <div className="max-w-3xl mx-auto px-6 md:px-10 py-10 pb-16">
-          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 mb-6 flex items-start gap-3">
+        <div className="max-w-[940px] mx-auto px-4 md:px-8 py-10 pb-20">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 mb-8 flex items-start gap-3 max-w-[820px] mx-auto">
             <CheckCircleIcon className="size-5 text-emerald-600 shrink-0 mt-0.5" />
             <div>
               <div className="text-[14px] font-medium text-emerald-900">
@@ -113,8 +118,8 @@ export default function PublicAgreementPage() {
               </div>
               <div className="text-[13px] text-emerald-800 mt-0.5 leading-relaxed">
                 Thanks {agreement.team_signed_name || agreement.person_full_name}.
-                Ecom Landers will counter-sign shortly and the final document
-                will be your reference copy.
+                Ecom Landers will counter-sign shortly and you&apos;ll have a
+                final reference copy.
               </div>
             </div>
           </div>
@@ -125,29 +130,32 @@ export default function PublicAgreementPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
+    <div className="min-h-screen bg-[#EAEAEA] text-[#111]">
       <Header kind={agreement.kind} />
-      <div className="max-w-3xl mx-auto px-6 md:px-10 py-10 pb-32">
-        {/* Pre-amble */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[#1B1B1B] tracking-tight mb-2">
+      <div className="max-w-[940px] mx-auto px-4 md:px-8 py-10 pb-32">
+        {/* Pre-amble - kept tight so the document is the hero. */}
+        <div className="mb-8 max-w-[820px] mx-auto">
+          <h1 className="text-[22px] font-semibold text-[#1B1B1B] tracking-tight mb-1.5">
             {AGREEMENT_KIND_LABEL[agreement.kind]} to sign
           </h1>
-          <p className="text-[13px] text-[#7A7A7A] leading-relaxed max-w-lg">
-            Take your time, read everything, and sign at the bottom when you&apos;re
-            ready. If anything looks off, message{" "}
+          <p className="text-[13px] text-[#5A5A5A] leading-relaxed">
+            Take your time and read it through. Sign at the bottom when
+            you&apos;re ready. If anything looks off, message{" "}
             <span className="text-[#1B1B1B] font-medium">Dylan</span> before
             signing.
           </p>
         </div>
 
-        {/* Rendered document */}
+        {/* Rendered document - the white-paper render */}
         <RenderedDocument agreement={agreement} />
 
-        {/* Sign block */}
-        <div className="mt-8 bg-white border border-[#E5E5EA] rounded-2xl p-6 shadow-[var(--shadow-soft)]">
-          <h2 className="text-[15px] font-semibold text-[#1B1B1B] mb-4">
-            Sign below
+        {/* Sign block - matches the doc width so it sits cleanly under it */}
+        <div className="mt-8 bg-white border border-[#D5D5D5] rounded-lg p-8 shadow-[0_8px_32px_rgba(0,0,0,0.08)] mx-auto" style={{ maxWidth: "820px" }}>
+          <h2
+            className="text-[16px] font-semibold text-[#111] mb-5"
+            style={{ fontFamily: '"Inter Tight", "Helvetica Neue", sans-serif' }}
+          >
+            Sign below to accept
           </h2>
 
           <label className="flex items-start gap-3 mb-5 cursor-pointer">
@@ -155,35 +163,35 @@ export default function PublicAgreementPage() {
               type="checkbox"
               checked={agreed}
               onChange={(e) => setAgreed(e.target.checked)}
-              className="mt-0.5 accent-[#1B1B1B]"
+              className="mt-0.5 accent-[#1B1B1B] size-4"
             />
-            <span className="text-[13px] text-[#444] leading-relaxed">
+            <span className="text-[13px] text-[#333] leading-relaxed">
               I have read and agree to be bound by the terms of this{" "}
               {AGREEMENT_KIND_LABEL[agreement.kind]}.
             </span>
           </label>
 
           <div className="mb-4">
-            <label className="block text-[13px] font-medium text-[#1B1B1B] mb-1.5">
+            <label className="block text-[12px] font-semibold text-[#1B1B1B] mb-2 uppercase tracking-wider">
               Your full name
             </label>
             <input
-              className={inputClass}
+              className={lightInputClass}
               value={signerName}
               onChange={(e) => setSignerName(e.target.value)}
               placeholder="First and last name"
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block text-[13px] font-medium text-[#1B1B1B] mb-1.5">
+          <div className="mb-5">
+            <label className="block text-[12px] font-semibold text-[#1B1B1B] mb-2 uppercase tracking-wider">
               Your signature
             </label>
             <SignaturePad value={signature} onChange={setSignature} label="" />
             <button
               type="button"
               onClick={() => setSignature("")}
-              className="text-[11px] text-[#7A7A7A] hover:underline mt-1"
+              className="text-[11px] text-[#7A7A7A] hover:underline mt-1.5"
             >
               Clear signature
             </button>
@@ -198,22 +206,32 @@ export default function PublicAgreementPage() {
           <button
             onClick={sign}
             disabled={submitting || !agreed || !signerName.trim() || !signature}
-            className="w-full py-3 bg-[#1B1B1B] text-white text-sm font-semibold rounded-lg hover:bg-[#2D2D2D] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full py-3.5 bg-[#1B1B1B] text-white text-[14px] font-semibold rounded-lg hover:bg-[#000] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {submitting ? "Signing..." : "Sign and submit"}
           </button>
+
+          <p className="text-[11px] text-[#7A7A7A] mt-3 text-center leading-relaxed">
+            By submitting you confirm this is your legally binding electronic
+            signature. Ecom Landers will counter-sign + send you the final
+            executed copy.
+          </p>
         </div>
       </div>
     </div>
   );
 }
 
+/* Light header. Logo gets explicit dark text colour because the
+ * shared Logo SVG uses currentColor (designed for the dark app
+ * shell) - without it the logo renders white-on-near-white and
+ * disappears. */
 function Header({ kind }: { kind: Agreement["kind"] }) {
   return (
-    <div className="bg-white border-b border-[#E5E5EA]">
-      <div className="max-w-3xl mx-auto px-6 md:px-10 py-5 flex items-center justify-between">
-        <Logo height={20} />
-        <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-[#F3F3F5] text-[#1B1B1B]">
+    <div className="bg-white border-b border-[#D5D5D5]">
+      <div className="max-w-[940px] mx-auto px-4 md:px-8 py-5 flex items-center justify-between">
+        <Logo height={22} className="text-[#1B1B1B]" />
+        <span className="inline-flex items-center px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] rounded-full bg-[#F3F3F5] text-[#1B1B1B] border border-[#E5E5EA]">
           {AGREEMENT_KIND_LABEL[kind]}
         </span>
       </div>
