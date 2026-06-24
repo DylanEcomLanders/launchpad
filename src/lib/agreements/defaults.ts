@@ -168,7 +168,9 @@ IT IS AGREED as follows.`,
 
 4.3 The Contractor will not commit the Company to any contract or liability without the Company's prior written consent.
 
-4.4 If any deliverable does not meet the standard in Clause 4.1 or the agreed requirements, the Company may reject it by written notice giving reasons, and the Contractor will promptly correct and re-deliver the work at the Contractor's own cost. The Company may withhold payment for a rejected deliverable until it has been corrected and accepted.`,
+4.4 If any deliverable does not meet the standard in Clause 4.1 or the agreed requirements, the Company may reject it by written notice giving reasons, and the Contractor will promptly correct and re-deliver the work at the Contractor's own cost. The Company may withhold payment for a rejected deliverable until it has been corrected and accepted.
+
+4.5 The Contractor controls the Contractor's own working hours, working pattern and place of work, and is free to take time off when the Contractor chooses, including on public and bank holidays. The Contractor is not entitled to paid holiday, paid leave or any payment in respect of time not worked. As a courtesy, the Contractor will give the Company reasonable advance notice of any extended period of unavailability so that delivery can be planned, and remains responsible for meeting agreed deadlines.`,
     },
     {
       id: "ct-5",
@@ -339,21 +341,26 @@ Operating as: {{ operating_as }}
 ROLE AND REPORTING
 Role / title: {{ person_job_title }}
 Reporting to: {{ reporting_to }}
+Location: Remote, the Contractor works from a location of the Contractor's choosing
 
 DATES AND TERM
 Commencement date: {{ start_date }}
 Term: Rolling engagement, continuing until terminated under Clause 13
 Notice period: 30 days' written notice either party, rising to 60 days after six months' continuous engagement
 
-SERVICES
+DESCRIPTION OF THE SERVICES
 {{ services_description }}
 
 FEES AND PAYMENT
 Fee basis: {{ comp_amount }} {{ comp_currency }} per {{ comp_frequency }}
 VAT: {{ vat_status }}
-Invoicing: Monthly, invoice submitted by the 26th
+Invoicing: Monthly. The Contractor submits a valid invoice by the 26th, addressed to the Company and itemising the Services and any VAT
 Payment terms: Paid on the 28th of each month (late or disputed invoices roll to the 28th of the following month)
-Expenses: Pre-approved, against receipts`,
+Payment method: Bank transfer to the Contractor's nominated account
+Performance and bonus: Scope and expectations are set out under Description of the Services. Any bonus is discretionary under Clause 6.4 and is not earned by meeting any target
+Expenses: Pre-approved, against receipts
+
+Time off and family leave: the Contractor sets their own schedule and takes time off as they choose, including public and bank holidays (see Clause 4.5). Discretionary ex gratia support during a period of family leave may be available under Clause 3.4.`,
     },
     /* Employee fallback - the new template is contractor-focused.
      * If an employee Person hits this template, this single clause
