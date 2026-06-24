@@ -24,6 +24,7 @@ import { leadsStore } from "@/lib/leads/data";
 import type { Lead } from "@/lib/leads/types";
 import {
   listChats,
+  fetchChatAttendees,
   type ChatSummary,
   type UnipileChannel,
 } from "@/lib/sales-dashboard/unipile-adapter";
@@ -102,6 +103,21 @@ export async function GET(req: Request) {
     );
   }
 
+  /* Enrich each chat with the contact's saved name from Unipile's
+   * attendees endpoint (which DOES expose Ajay's address-book names).
+   * Parallel-fetched to keep the response fast - 50 chats in ~1-2s
+   * on a healthy Unipile connection. */
+  const enriched = await Promise.all(
+    result.chats.map(async (chat) => {
+      const att = await fetchChatAttendees(channel, chat.id);
+      const other = att.attendees.find((a) => !a.is_self && a.name);
+      if (other?.name) {
+        return { ...chat, attendee_name: other.name };
+      }
+      return chat;
+    }),
+  );
+
   /* Match each chat against the lead store. O(chats * leads) is
    * fine for small N; if Ajay accumulates thousands of leads, index
    * by phone/email upfront here. */
@@ -109,7 +125,7 @@ export async function GET(req: Request) {
   const matched: MatchedChat[] = [];
   const unmatched: ChatSummary[] = [];
 
-  for (const chat of result.chats) {
+  for (const chat of enriched) {
     const lead = leads.find((l) => leadMatchesChat(channel, l, chat));
     if (lead) {
       matched.push({

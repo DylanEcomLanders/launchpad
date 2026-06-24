@@ -285,6 +285,85 @@ export interface NormalisedInbound {
   direction?: "inbound" | "outbound";
 }
 
+/* ── Chat attendees (the name endpoint) ─────────────────────────
+ *
+ * Unipile's /chats/{id}/attendees endpoint exposes contact info that
+ * isn't on the chat list - including the user's saved-contact name
+ * pulled from their WhatsApp address book. This is THE answer to the
+ * contact-name problem.
+ *
+ * Returns { name, phone_number, is_self } per attendee. For 1-on-1
+ * chats the non-self attendee is the contact we want. */
+
+export interface ChatAttendee {
+  name: string;
+  phone_number?: string;
+  is_self: boolean;
+}
+
+export async function fetchChatAttendees(
+  channel: UnipileChannel,
+  chatId: string,
+): Promise<{ ok: boolean; attendees: ChatAttendee[]; error?: string }> {
+  if (!isChannelLive(channel)) {
+    return { ok: false, attendees: [], error: "channel not live" };
+  }
+  const apiKey = process.env.UNIPILE_API_KEY!;
+  const dsn = process.env.UNIPILE_DSN!.replace(/\/+$/, "");
+  try {
+    const res = await fetch(
+      `${dsn}/api/v1/chats/${encodeURIComponent(chatId)}/attendees`,
+      {
+        method: "GET",
+        headers: { "X-API-KEY": apiKey, Accept: "application/json" },
+      },
+    );
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      return {
+        ok: false,
+        attendees: [],
+        error: `attendees fetch failed: ${res.status} ${text.slice(0, 200)}`,
+      };
+    }
+    const json = (await res.json().catch(() => ({}))) as {
+      items?: Array<Record<string, unknown>>;
+    };
+    const items = json.items ?? [];
+    const attendees: ChatAttendee[] = items.map((a) => {
+      const name = pickString(a, ["name"]) ?? "";
+      const specifics =
+        a.specifics && typeof a.specifics === "object"
+          ? (a.specifics as Record<string, unknown>)
+          : null;
+      const phone_number = specifics
+        ? pickString(specifics, ["phone_number"])
+        : undefined;
+      const is_self = a.is_self === 1 || a.is_self === true;
+      return { name, phone_number, is_self };
+    });
+    return { ok: true, attendees };
+  } catch (err) {
+    return {
+      ok: false,
+      attendees: [],
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
+
+/* Get the "other party" name for a 1-on-1 chat. Skips self attendee,
+ * returns the first non-self attendee's name. */
+export async function fetchContactName(
+  channel: UnipileChannel,
+  chatId: string,
+): Promise<string | undefined> {
+  const result = await fetchChatAttendees(channel, chatId);
+  if (!result.ok) return undefined;
+  const other = result.attendees.find((a) => !a.is_self && a.name);
+  return other?.name;
+}
+
 /* ── Live preview by chat id ───────────────────────────────────── */
 
 export interface ChatPreviewResult {
@@ -339,38 +418,24 @@ export async function previewChat(
     };
     const rawMessages = json.items ?? [];
 
-    /* Two-pass scan over all messages:
-     *   Pass 1: find Ajay's pushName by checking outbound messages
-     *           (these always carry his display name)
-     *   Pass 2: find the contact's pushName - any message where the
-     *           pushName differs from Ajay's
-     * Also pick up attendee_handle from any inbound message's
-     * chat_provider_id. */
+    /* Pull the saved-contact name + phone from the dedicated
+     * attendees endpoint. This reads from Ajay's WhatsApp address
+     * book - the actual name he has saved for this contact. */
+    const attendeesResult = await fetchChatAttendees(channel, chatId);
+    const other = attendeesResult.attendees.find(
+      (a) => !a.is_self && a.name,
+    );
+    let attendee_name: string | undefined = other?.name;
     let attendee_handle = "";
-    let attendee_name: string | undefined;
-    let ownerPushName: string | undefined;
-
-    /* Pass 1 - identify Ajay's name from any outbound message. */
-    for (const raw of rawMessages) {
-      if (raw.is_sender !== 1) continue;
-      const original = pickString(raw, ["original"]);
-      if (!original) continue;
-      try {
-        const parsed = JSON.parse(original) as { pushName?: string };
-        if (parsed.pushName) {
-          ownerPushName = parsed.pushName;
-          break;
-        }
-      } catch {
-        /* malformed - skip */
-      }
+    if (other?.phone_number) {
+      attendee_handle = other.phone_number.replace(/\D/g, "");
     }
 
-    /* Pass 2 - find contact's pushName (any message with a pushName
-     * that isn't ours) AND grab attendee_handle from any inbound. */
-    for (const raw of rawMessages) {
-      const isInbound = raw.is_sender === 0;
-      if (isInbound && !attendee_handle) {
+    /* Fallback - if attendees endpoint failed or returned nothing
+     * useful, sniff the handle from any inbound message. */
+    if (!attendee_handle) {
+      for (const raw of rawMessages) {
+        if (raw.is_sender !== 0) continue;
         const chatProviderId = pickString(raw, [
           "chat_provider_id",
           "sender_public_identifier",
@@ -380,29 +445,12 @@ export async function previewChat(
             channel === "whatsapp"
               ? chatProviderId.replace(/@.*$/, "").replace(/\D/g, "")
               : chatProviderId;
+          break;
         }
       }
-      if (!attendee_name) {
-        const original = pickString(raw, ["original"]);
-        if (original) {
-          try {
-            const parsed = JSON.parse(original) as { pushName?: string };
-            if (
-              parsed.pushName &&
-              parsed.pushName !== ownerPushName
-            ) {
-              attendee_name = parsed.pushName;
-            }
-          } catch {
-            /* malformed - skip */
-          }
-        }
-      }
-      if (attendee_handle && attendee_name) break;
     }
 
-    /* If still no name, fall back to formatted phone for WhatsApp.
-     * Better than empty string. */
+    /* Final fallback - format the phone if we have one. */
     if (!attendee_name && channel === "whatsapp" && attendee_handle) {
       attendee_name = formatPhonePreview(attendee_handle);
     }
