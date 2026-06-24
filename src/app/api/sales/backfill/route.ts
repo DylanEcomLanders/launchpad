@@ -128,9 +128,10 @@ export async function POST(req: Request) {
       id: `touch-${Math.random().toString(36).slice(2, 10)}`,
       kind,
       at,
-      by: `Unipile history · ${channel}`,
+      by: m.direction === "outbound" ? "Ajay" : "Contact",
       summary,
       external_id: m.external_id,
+      channel,
     });
   }
 

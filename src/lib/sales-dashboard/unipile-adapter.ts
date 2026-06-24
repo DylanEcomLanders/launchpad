@@ -285,6 +285,115 @@ export interface NormalisedInbound {
   direction?: "inbound" | "outbound";
 }
 
+/* ── Live preview by chat id ───────────────────────────────────── */
+
+export interface ChatPreviewResult {
+  ok: boolean;
+  /* Display name extracted from the most-recent inbound message's
+   * pushName field (the contact's WhatsApp profile name). Falls back
+   * to formatted handle if no inbound messages yet. */
+  attendee_name?: string;
+  attendee_handle: string;
+  messages: NormalisedInbound[];
+  error?: string;
+}
+
+/* Fetch a specific chat's messages by id - used when the user clicks
+ * an unlinked conversation. Returns the messages PLUS the contact
+ * name extracted from any inbound message's pushName. */
+export async function previewChat(
+  channel: UnipileChannel,
+  chatId: string,
+  limit = 50,
+): Promise<ChatPreviewResult> {
+  if (!isChannelLive(channel)) {
+    return {
+      ok: false,
+      attendee_handle: "",
+      messages: [],
+      error: `Channel ${channel} is not live (missing env vars)`,
+    };
+  }
+  const apiKey = process.env.UNIPILE_API_KEY!;
+  const dsn = process.env.UNIPILE_DSN!.replace(/\/+$/, "");
+
+  try {
+    const res = await fetch(
+      `${dsn}/api/v1/chats/${encodeURIComponent(chatId)}/messages?limit=${limit}`,
+      {
+        method: "GET",
+        headers: { "X-API-KEY": apiKey, Accept: "application/json" },
+      },
+    );
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      return {
+        ok: false,
+        attendee_handle: "",
+        messages: [],
+        error: `messages fetch failed: ${res.status} ${text.slice(0, 200)}`,
+      };
+    }
+    const json = (await res.json().catch(() => ({}))) as {
+      items?: Array<Record<string, unknown>>;
+    };
+    const rawMessages = json.items ?? [];
+
+    /* Extract attendee handle from any inbound message's
+     * chat_provider_id (the JID format ends in @s.whatsapp.net). */
+    let attendee_handle = "";
+    let attendee_name: string | undefined;
+    for (const raw of rawMessages) {
+      const isInbound = raw.is_sender === 0;
+      if (!isInbound) continue;
+      const chatProviderId = pickString(raw, [
+        "chat_provider_id",
+        "sender_public_identifier",
+      ]);
+      if (chatProviderId && !attendee_handle) {
+        attendee_handle =
+          channel === "whatsapp"
+            ? chatProviderId.replace(/@.*$/, "").replace(/\D/g, "")
+            : chatProviderId;
+      }
+      /* pushName lives inside the message's `original` JSON string
+       * (WhatsApp metadata blob). Parse it out - that's the contact's
+       * actual display name. */
+      if (!attendee_name) {
+        const original = pickString(raw, ["original"]);
+        if (original) {
+          try {
+            const parsed = JSON.parse(original) as { pushName?: string };
+            if (parsed.pushName) attendee_name = parsed.pushName;
+          } catch {
+            /* malformed original blob - silently skip */
+          }
+        }
+      }
+      if (attendee_handle && attendee_name) break;
+    }
+
+    const messages = rawMessages
+      .map((m) => normaliseHistoryMessage(channel, m, attendee_handle))
+      .filter((m): m is NormalisedInbound => m !== null);
+
+    return {
+      ok: true,
+      attendee_name,
+      attendee_handle,
+      messages,
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return {
+      ok: false,
+      attendee_handle: "",
+      messages: [],
+      error: message,
+    };
+  }
+}
+
 /* ── Chat history backfill ─────────────────────────────────────── */
 
 export interface BackfillResult {

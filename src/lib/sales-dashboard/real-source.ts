@@ -125,20 +125,38 @@ function adaptLead(l: MyLead, owners: Owner[]): Lead {
 }
 
 /* Each MyLead.touches[] entry becomes a LeadMessage. Direction
- * inferred from kind; channel free-text → manual fallback. */
+ * inferred from kind; channel from touch.channel (preserves real
+ * channel from Unipile backfill) → manual fallback for legacy. */
+const VALID_CHANNELS: Channel[] = [
+  "email",
+  "whatsapp",
+  "twitter",
+  "instagram",
+  "linkedin",
+  "cal_com",
+  "lander",
+  "manual",
+];
 function adaptMessages(leads: MyLead[]): LeadMessage[] {
   const out: LeadMessage[] = [];
   for (const l of leads) {
     for (const t of l.touches) {
       const isInbound = t.kind === "reply_received";
+      const channel: Channel = VALID_CHANNELS.includes(t.channel as Channel)
+        ? (t.channel as Channel)
+        : "manual";
       out.push({
         id: t.id,
         lead_id: l.id,
-        channel: "manual" as Channel,
+        channel,
         direction: isInbound ? "inbound" : "outbound",
-        subject: t.kind.replace(/_/g, " "),
+        /* No auto-subject - Unipile backfill messages don't have
+         * one. The kind ("outreach sent") was leaking through as
+         * a fake header. Manual touches with real subjects can
+         * still carry them later if we add a subject field. */
+        subject: "",
         body: t.summary,
-        external_id: null,
+        external_id: t.external_id ?? null,
         is_read: true,
         created_at: t.at,
       });

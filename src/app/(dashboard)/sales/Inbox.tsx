@@ -114,6 +114,74 @@ export function Inbox({
   const [chatsError, setChatsError] = useState<string | null>(null);
   const [selectedUnlinkedId, setSelectedUnlinkedId] = useState<string | null>(null);
   const [promoting, setPromoting] = useState(false);
+  /* Live preview of the selected unlinked chat - fetched on click
+   * from /api/sales/chat-preview. Includes the contact's actual
+   * name extracted from pushName in message metadata. */
+  const [preview, setPreview] = useState<{
+    chatId: string;
+    attendee_name?: string;
+    attendee_handle: string;
+    messages: Array<{
+      body: string;
+      direction?: "inbound" | "outbound";
+      sent_at?: string;
+      external_id?: string;
+    }>;
+    loading: boolean;
+    error?: string;
+  } | null>(null);
+
+  async function loadPreview(chat: UnlinkedChat) {
+    setPreview({
+      chatId: chat.id,
+      attendee_handle: chat.attendee_handle,
+      messages: [],
+      loading: true,
+    });
+    try {
+      const res = await fetch(
+        `/api/sales/chat-preview?channel=${chatChannel}&chatId=${encodeURIComponent(chat.id)}`,
+        { cache: "no-store" },
+      );
+      const json = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        attendee_name?: string;
+        attendee_handle?: string;
+        messages?: Array<{
+          body: string;
+          direction?: "inbound" | "outbound";
+          sent_at?: string;
+          external_id?: string;
+        }>;
+        error?: string;
+      };
+      if (!res.ok || !json.ok) {
+        setPreview({
+          chatId: chat.id,
+          attendee_handle: chat.attendee_handle,
+          messages: [],
+          loading: false,
+          error: json.error ?? `HTTP ${res.status}`,
+        });
+      } else {
+        setPreview({
+          chatId: chat.id,
+          attendee_name: json.attendee_name ?? chat.attendee_name,
+          attendee_handle: json.attendee_handle ?? chat.attendee_handle,
+          messages: json.messages ?? [],
+          loading: false,
+        });
+      }
+    } catch (err) {
+      setPreview({
+        chatId: chat.id,
+        attendee_handle: chat.attendee_handle,
+        messages: [],
+        loading: false,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
 
   async function fetchUnlinked() {
     setChatsLoading(true);
@@ -278,6 +346,7 @@ export function Inbox({
               onClick={() => {
                 setSelectedUnlinkedId(chat.id);
                 onSelectLead("");
+                loadPreview(chat);
               }}
               className={`w-full text-left px-3 py-2.5 border-b border-[#1C1C1C] transition-colors ${
                 selectedUnlinkedId === chat.id
@@ -319,46 +388,74 @@ export function Inbox({
         (() => {
           const chat = unlinked.find((c) => c.id === selectedUnlinkedId);
           if (!chat) return null;
+          const displayName =
+            preview?.attendee_name ||
+            chat.attendee_name ||
+            chat.attendee_handle;
           return (
-            <div className="flex flex-col items-center justify-center px-6 text-center">
-              <div className="max-w-md">
-                <p className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold mb-2">
-                  Unlinked {chatChannel}
-                </p>
-                <h3 className="text-xl font-semibold text-[#E5E5EA]">
-                  {chat.attendee_name || chat.attendee_handle}
-                </h3>
-                <p className="text-[12px] text-[#71757D] mt-1">
-                  {chat.attendee_handle}
-                </p>
-                {chat.last_message_preview && (
-                  <div className="mt-6 p-4 rounded-lg bg-[#181818] border border-[#222222] text-left">
-                    <p className="text-[10px] uppercase tracking-wider text-[#71757D] mb-1">
-                      {chat.last_message_direction === "outbound"
-                        ? "Last sent"
-                        : "Last received"}
-                      {chat.last_message_at
-                        ? ` · ${timeShort(chat.last_message_at)}`
-                        : ""}
-                    </p>
-                    <p className="text-[13px] text-[#E5E5EA] leading-relaxed">
-                      {chat.last_message_preview}
-                    </p>
+            <div className="flex flex-col h-full min-h-0">
+              {/* Header */}
+              <div className="px-4 py-2.5 border-b border-[#222222] flex items-center gap-2">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-[#E5E5EA] truncate">
+                    {displayName}
                   </div>
-                )}
+                  <div className="text-[11px] text-[#71757D] truncate">
+                    {chat.attendee_handle} · unlinked {chatChannel}
+                  </div>
+                </div>
                 <button
                   onClick={() => promoteChat(chat)}
                   disabled={promoting}
-                  className="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-white text-[#0C0C0C] text-[13px] font-semibold rounded-full hover:bg-[#E5E5EA] transition-colors disabled:opacity-50"
+                  className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-[#0C0C0C] text-[12px] font-semibold rounded-full hover:bg-[#E5E5EA] transition-colors disabled:opacity-50 shrink-0"
                 >
-                  {promoting
-                    ? "Promoting…"
-                    : "Promote to lead + pull history"}
+                  {promoting ? "Promoting…" : "Promote to lead"}
                 </button>
-                <p className="mt-3 text-[11px] text-[#71757D]">
-                  Creates a Lead with this contact and imports the full
-                  {" "}{chatChannel} thread.
-                </p>
+              </div>
+
+              {/* Live thread */}
+              <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+                {preview?.loading && (
+                  <p className="text-center text-[12px] text-[#71757D] py-8">
+                    Loading conversation…
+                  </p>
+                )}
+                {preview?.error && (
+                  <p className="text-center text-[12px] text-rose-300 py-8">
+                    {preview.error}
+                  </p>
+                )}
+                {preview &&
+                  !preview.loading &&
+                  !preview.error &&
+                  preview.messages.length === 0 && (
+                    <p className="text-center text-[12px] text-[#71757D] py-8">
+                      No messages in this conversation yet.
+                    </p>
+                  )}
+                {preview?.messages.map((m, idx) => (
+                  <div
+                    key={m.external_id ?? idx}
+                    className={`flex ${m.direction === "outbound" ? "justify-end" : "justify-start"}`}
+                  >
+                    <div className="max-w-[78%]">
+                      {m.sent_at && (
+                        <div className="text-[10px] text-[#71757D] mb-1 px-1">
+                          {timeShort(m.sent_at)}
+                        </div>
+                      )}
+                      <div
+                        className={`rounded-lg px-3 py-2 text-[14px] leading-relaxed ${
+                          m.direction === "outbound"
+                            ? "bg-[#E5E5EA] text-[#0C0C0C]"
+                            : "bg-[#1C1C1C] text-[#E5E5EA] border border-[#2A2A2A]"
+                        }`}
+                      >
+                        {m.body}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           );

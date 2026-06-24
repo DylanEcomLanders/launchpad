@@ -52,6 +52,10 @@ export interface LeadTouch {
    * the same historical message twice. Undefined for legacy touches
    * and manual log entries. */
   external_id?: string;
+  /* Channel the touch came in on - "whatsapp", "linkedin", "email",
+   * etc. Used by the inbox to render the correct chip. Undefined for
+   * legacy touches (rendered as "manual"). */
+  channel?: string;
 }
 
 /* ── Sales call (structured by the playbook's 4-phase script) ──

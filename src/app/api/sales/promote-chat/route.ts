@@ -132,9 +132,10 @@ export async function POST(req: Request) {
       id: `touch-${Math.random().toString(36).slice(2, 10)}`,
       kind: m.direction === "outbound" ? "outreach_sent" : "reply_received",
       at: m.sent_at ?? now,
-      by: `Unipile history · ${channel}`,
+      by: m.direction === "outbound" ? "Ajay" : "Contact",
       summary: m.body.slice(0, 500),
       external_id: m.external_id,
+      channel,
     }));
     touches.sort((a, b) => a.at.localeCompare(b.at));
     lead.touches = touches;
