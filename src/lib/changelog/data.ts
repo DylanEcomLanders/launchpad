@@ -37,6 +37,19 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-131",
+    date: "24 June 2026",
+    version: "2.6.2",
+    title: "Sync history button: backfill conversations from Unipile",
+    changes: [
+      { type: "added", text: "Sync history button in the /sales inbox header. Pulls up to 100 historical messages from Unipile for the lead's recipient on the currently-active channel (WhatsApp / LinkedIn / Email). Slots them into the thread sorted by their original timestamps so previous conversations don't just start from when the integration went live" },
+      { type: "added", text: "fetchChatHistory() in the Unipile adapter: GET /api/v1/chats?account_id=... then matches the recipient (digit-fuzzy compare for phone numbers), then GET /api/v1/chats/{id}/messages. Direction (inbound vs outbound) inferred from Unipile's is_sender flag so your own past messages don't get tagged as replies" },
+      { type: "added", text: "POST /api/sales/backfill endpoint - takes { leadId, channel }, resolves recipient from the lead, dedupes against existing touches by external_id + fingerprint (kind+summary+at), appends new touches, sorts by timestamp" },
+      { type: "added", text: "external_id field on LeadTouch as the canonical provider-side message ID. Lets repeat backfills be no-ops once the conversation is fully synced" },
+      { type: "improved", text: "Sync button is disabled in 'All' view (needs a specific channel to know what to backfill) and shows live feedback: spinning icon while syncing, then 'Imported N messages' or 'Already up to date' for 4 seconds" },
+    ],
+  },
+  {
     id: "cl-130",
     date: "24 June 2026",
     version: "2.6.1",

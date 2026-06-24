@@ -12,6 +12,7 @@ import {
   PlusIcon,
   CheckCircleIcon,
   LinkIcon,
+  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
 import { inputClass, textareaClass } from "@/lib/form-styles";
@@ -206,6 +207,53 @@ function ThreadPane({
   const [body, setBody] = useState("");
   const [mergeOpen, setMergeOpen] = useState(false);
 
+  /* Backfill flow: pulls historical messages from Unipile for the
+   * lead's recipient on the currently-active channel. Disabled when
+   * viewing "All" or a channel Unipile can't handle (Twitter is
+   * outbound-only stub, LinkedIn/email/WhatsApp work). */
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<string | null>(null);
+  const canSync =
+    activeFilter !== "all" &&
+    (activeFilter === "whatsapp" ||
+      activeFilter === "linkedin" ||
+      activeFilter === "email");
+
+  async function pullHistory() {
+    if (!canSync || syncing) return;
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      const res = await fetch("/api/sales/backfill", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leadId: lead.id, channel: activeFilter }),
+      });
+      const json = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        imported?: number;
+        alreadyHad?: number;
+        error?: string;
+      };
+      if (!res.ok || !json.ok) {
+        setSyncResult(`Failed: ${json.error ?? res.statusText}`);
+      } else {
+        setSyncResult(
+          json.imported && json.imported > 0
+            ? `Imported ${json.imported} message${json.imported === 1 ? "" : "s"}`
+            : "Already up to date",
+        );
+      }
+    } catch (err) {
+      setSyncResult(
+        `Failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    } finally {
+      setSyncing(false);
+      window.setTimeout(() => setSyncResult(null), 4000);
+    }
+  }
+
   const submit = () => {
     if (!body.trim() || !canSend) return;
     onSend(lead.id, replyChannel, body.trim());
@@ -218,7 +266,26 @@ function ThreadPane({
       <div className="px-4 py-2.5 border-b border-[#222222] flex items-center gap-2 relative">
         <span className="text-sm font-semibold text-[#E5E5EA]">{lead.company}</span>
         <span className="text-[12px] text-[#71757D]">{lead.name}</span>
-        <div className="ml-auto relative">
+        <div className="ml-auto flex items-center gap-2 relative">
+          {/* Sync history - pulls historical messages from Unipile
+            * for the channel currently being viewed. Disabled in
+            * "All" view (we need a specific channel to know what
+            * to backfill) and on channels Unipile doesn't bridge. */}
+          <button
+            onClick={pullHistory}
+            disabled={!canSync || syncing}
+            title={
+              !canSync
+                ? "Switch to a single channel (WhatsApp / LinkedIn / Email) to sync its history"
+                : syncResult ?? "Pull conversation history from this channel"
+            }
+            className="inline-flex items-center gap-1 text-[12px] text-[#9CA3AF] hover:text-[#E5E5EA] border border-[#2A2A2A] hover:border-[#3A3A3A] rounded-md px-2 py-1 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-[#9CA3AF] disabled:hover:border-[#2A2A2A]"
+          >
+            <ArrowPathIcon
+              className={`size-3.5 ${syncing ? "animate-spin" : ""}`}
+            />
+            {syncing ? "Syncing" : syncResult ? syncResult : "Sync history"}
+          </button>
           <button
             onClick={() => setMergeOpen((v) => !v)}
             className="inline-flex items-center gap-1 text-[12px] text-[#9CA3AF] hover:text-[#E5E5EA] border border-[#2A2A2A] hover:border-[#3A3A3A] rounded-md px-2 py-1 transition-colors"

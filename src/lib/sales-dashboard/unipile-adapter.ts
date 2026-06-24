@@ -275,6 +275,159 @@ export interface NormalisedInbound {
   body: string;
   external_id?: string;
   subject?: string;
+  /* Optional historical timestamp - set by fetchChatHistory so backfilled
+   * touches keep their original send time instead of "right now". Webhooks
+   * leave this undefined (live messages are always "now"). */
+  sent_at?: string;
+  /* Direction the historical message went. Webhook-delivered messages
+   * are always inbound (someone replied to us); history backfill needs
+   * both so we don't lose outbound context (our own past messages). */
+  direction?: "inbound" | "outbound";
+}
+
+/* ── Chat history backfill ─────────────────────────────────────── */
+
+export interface BackfillResult {
+  ok: boolean;
+  messages: NormalisedInbound[];
+  error?: string;
+}
+
+/* Pull conversation history for a specific recipient from Unipile.
+ * Two-step against their API:
+ *   1. GET /api/v1/chats?account_id=...  -- list chats on this account
+ *   2. Find the chat whose attendee matches the recipient (WA phone,
+ *      LinkedIn handle, etc.)
+ *   3. GET /api/v1/chats/{chat_id}/messages?limit=100  -- pull history
+ *
+ * The caller dedupes against existing touches by external_id so this
+ * is safe to re-run. */
+export async function fetchChatHistory(
+  channel: UnipileChannel,
+  recipient: string,
+  limit = 100,
+): Promise<BackfillResult> {
+  if (!isChannelLive(channel)) {
+    return {
+      ok: false,
+      messages: [],
+      error: `Channel ${channel} is not live (missing env vars)`,
+    };
+  }
+  const apiKey = process.env.UNIPILE_API_KEY!;
+  const dsn = process.env.UNIPILE_DSN!.replace(/\/+$/, "");
+  const accountId = envAccountId(channel)!;
+
+  try {
+    /* Step 1: find the chat. Unipile lists chats per account; we
+     * filter client-side by attendee match since their dashboard's
+     * filter param isn't documented uniformly across channels. */
+    const chatsRes = await fetch(
+      `${dsn}/api/v1/chats?account_id=${encodeURIComponent(accountId)}&limit=200`,
+      {
+        method: "GET",
+        headers: { "X-API-KEY": apiKey, Accept: "application/json" },
+      },
+    );
+    if (!chatsRes.ok) {
+      const text = await chatsRes.text().catch(() => "");
+      return {
+        ok: false,
+        messages: [],
+        error: `chats list failed: ${chatsRes.status} ${text.slice(0, 200)}`,
+      };
+    }
+    const chatsJson = (await chatsRes.json().catch(() => ({}))) as {
+      items?: Array<Record<string, unknown>>;
+    };
+    const chats = chatsJson.items ?? [];
+
+    /* Match the recipient to a chat. WhatsApp recipients arrive as
+     * "+447..."; Unipile sometimes stores them as "447...@s.whatsapp.net"
+     * or similar - normalise to digits-only for the compare. */
+    const recipientDigits = recipient.replace(/\D/g, "");
+    const matched = chats.find((c) => {
+      const attendeeId = String(
+        c.attendee_id ?? c.attendee_provider_id ?? c.id ?? "",
+      );
+      const attendeeName = String(c.attendee_name ?? c.name ?? "");
+      return (
+        attendeeId.replace(/\D/g, "").includes(recipientDigits) ||
+        attendeeName.replace(/\D/g, "").includes(recipientDigits)
+      );
+    });
+
+    if (!matched) {
+      return {
+        ok: true,
+        messages: [],
+        error: `No chat found for ${recipient} on ${channel}`,
+      };
+    }
+
+    /* Step 2: pull messages. */
+    const chatId = String(matched.id);
+    const msgsRes = await fetch(
+      `${dsn}/api/v1/chats/${encodeURIComponent(chatId)}/messages?limit=${limit}`,
+      {
+        method: "GET",
+        headers: { "X-API-KEY": apiKey, Accept: "application/json" },
+      },
+    );
+    if (!msgsRes.ok) {
+      const text = await msgsRes.text().catch(() => "");
+      return {
+        ok: false,
+        messages: [],
+        error: `chat messages failed: ${msgsRes.status} ${text.slice(0, 200)}`,
+      };
+    }
+    const msgsJson = (await msgsRes.json().catch(() => ({}))) as {
+      items?: Array<Record<string, unknown>>;
+    };
+    const rawMessages = msgsJson.items ?? [];
+
+    /* Normalise each message into NormalisedInbound. Sender direction
+     * is determined by Unipile's is_sender flag (true = we sent it,
+     * false = they sent it). Different channels nest things slightly
+     * differently so we sniff defensively. */
+    const messages: NormalisedInbound[] = rawMessages
+      .map((m) => normaliseHistoryMessage(channel, m, recipient))
+      .filter((m): m is NormalisedInbound => m !== null);
+
+    return { ok: true, messages };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return { ok: false, messages: [], error: message };
+  }
+}
+
+/* Convert a single Unipile chat message into our canonical shape.
+ * Returns null if the message isn't useable (no body, no text). */
+function normaliseHistoryMessage(
+  channel: UnipileChannel,
+  m: Record<string, unknown>,
+  fallbackFrom: string,
+): NormalisedInbound | null {
+  const body = pickString(m, ["body", "text", "message", "content"]);
+  if (!body) return null;
+  const isSender =
+    m.is_sender === true ||
+    m.from_self === true ||
+    m.sender === "self";
+  const external_id = pickString(m, ["id", "provider_id", "message_id"]);
+  const sent_at = pickString(m, ["timestamp", "sent_at", "created_at", "date"]);
+  /* For inbound history: from is the recipient (they sent it to us).
+   * For outbound history: from = "self" semantically; we leave it as
+   * the lead's recipient so the touch attribution stays consistent. */
+  return {
+    channel,
+    from: fallbackFrom,
+    body,
+    external_id,
+    sent_at,
+    direction: isSender ? "outbound" : "inbound",
+  };
 }
 
 /* Unipile's webhook payload nests differently per channel - email

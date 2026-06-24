@@ -46,6 +46,12 @@ export interface LeadTouch {
   at: string;                  // ISO
   by: string;                  // closer / strategist name
   summary: string;             // free-text - what happened
+  /* Provider-side message id (e.g. WhatsApp message_id from Unipile).
+   * Set when the touch came from a real channel send/receive or from
+   * history backfill. Dedup key for backfill - prevents re-importing
+   * the same historical message twice. Undefined for legacy touches
+   * and manual log entries. */
+  external_id?: string;
 }
 
 /* ── Sales call (structured by the playbook's 4-phase script) ──
