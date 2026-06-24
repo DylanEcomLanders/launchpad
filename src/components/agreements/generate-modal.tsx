@@ -217,11 +217,14 @@ export function GenerateAgreementsModal({
                     value={templateRole}
                     onChange={(e) => setTemplateRole(e.target.value as TemplateRole)}
                   >
-                    {TEMPLATE_ROLES_BY_KIND.contract.map((r) => (
-                      <option key={r} value={r}>
-                        {TEMPLATE_ROLE_LABEL[r]}
-                      </option>
-                    ))}
+                    {TEMPLATE_ROLES_BY_KIND.contract.map((r) => {
+                      const isTbc = r === "designer" || r === "developer";
+                      return (
+                        <option key={r} value={r}>
+                          {TEMPLATE_ROLE_LABEL[r]}{isTbc ? " (TBC)" : ""}
+                        </option>
+                      );
+                    })}
                   </select>
                   <p className="text-[10px] text-[#71757D] mt-1 leading-relaxed">
                     Auto-picked from the Person&apos;s department - change if

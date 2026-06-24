@@ -37,6 +37,16 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-119",
+    date: "24 June 2026",
+    version: "2.3.1",
+    title: "Designer / Developer templates marked TBC until Dylan ships master docs",
+    changes: [
+      { type: "improved", text: "Designer + Developer contract templates now seed as TBC placeholders (was: copies of Leadership). The body renders a clear DO NOT USE notice so admin spots them before sending a contract. Name shows (TBC) in the templates editor + the picker dropdown so it's obvious which templates are safe to use" },
+      { type: "improved", text: "Existing Designer / Developer rows from the previous seed auto-flip to TBC on next load (recognised via revision string). Dylan-authored edits to those templates are preserved (different revision string = won't be flipped)" },
+    ],
+  },
+  {
     id: "cl-118",
     date: "24 June 2026",
     version: "2.3.0",
