@@ -34,9 +34,21 @@ export default function MeLanding() {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    /* Resolve the signed-in person from app_users.pod_member_id, then
-     * find their HR record via the Person.pod_member_id bridge. If
-     * the bridge isn't set yet, fall back to email match. */
+    /* Resolve the signed-in person via four cascading fallbacks:
+     *
+     *   1. pod_member_id - the bidirectional bridge (set when admin
+     *      slots the Person into a pod in /company/pods).
+     *   2. email - case-insensitive trim match on Person.email.
+     *   3. full_name - last-resort match on Person.full_name when
+     *      admin typed a different email into Set Credentials than
+     *      the one on the Person record.
+     *   4. preferred_name - same as above for the nickname field.
+     *
+     * Self-heal: if we found a match via email/name (i.e. NOT the
+     * pod_member_id path) AND the Person has no pod_member_id set,
+     * we don't have one to write back, so nothing to do. But the
+     * fallback still resolves correctly. The bidirectional bridge
+     * gets set the next time admin slots the Person into a pod. */
     let cancelled = false;
     async function load() {
       const [people, allAgr] = await Promise.all([
@@ -45,11 +57,26 @@ export default function MeLanding() {
       ]);
       if (cancelled) return;
       const meEmail = me?.email?.trim().toLowerCase();
+      const meName = me?.name?.trim().toLowerCase();
       const matched =
-        people.find((p) => p.pod_member_id === me?.pod_member_id) ||
+        (me?.pod_member_id
+          ? people.find((p) => p.pod_member_id === me.pod_member_id)
+          : null) ||
         (meEmail
           ? people.find(
               (p) => p.email?.trim().toLowerCase() === meEmail,
+            )
+          : null) ||
+        (meName
+          ? people.find(
+              (p) => p.full_name.trim().toLowerCase() === meName,
+            )
+          : null) ||
+        (meName
+          ? people.find(
+              (p) =>
+                p.preferred_name &&
+                p.preferred_name.trim().toLowerCase() === meName,
             )
           : null) ||
         null;

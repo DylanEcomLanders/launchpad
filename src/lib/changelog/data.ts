@@ -37,6 +37,17 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-116",
+    date: "23 June 2026",
+    version: "2.2.5",
+    title: "Fix: /me Person resolver - bidirectional pod bridge + name fallback",
+    changes: [
+      { type: "fixed", text: "Archie hit Your account isnt linked to a team member because the /me resolver only matched on pod_member_id (which wasn't being written to the Person row) + email (which might differ from the credentials email). Added a name + preferred_name fallback so the match works even when admin used a different email for credentials vs the Person record" },
+      { type: "fixed", text: "Bug: when me.pod_member_id was undefined, the resolver did === undefined which matched the FIRST person without a pod_member_id (false positive). Now gated so the pod_member_id match only fires when me actually has one" },
+      { type: "fixed", text: "PodsPanel now writes BOTH sides of the bridge when linking a Person to a slot - PodMember.person_id (forward) AND Person.pod_member_id (reverse). Previously only the forward side was set, so /me couldn't resolve the team member from their app_users row" },
+    ],
+  },
+  {
     id: "cl-115",
     date: "23 June 2026",
     version: "2.2.4",

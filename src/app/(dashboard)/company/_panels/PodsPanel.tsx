@@ -305,17 +305,39 @@ function SlotRow({
   onChange: () => void;
 }) {
   function handleLink(personId: string | undefined) {
-    /* When linking, find the person's display name and stamp it on
-     * the member for fallback rendering during hydration. */
+    /* Bidirectional bridge. PodMember.person_id is set by
+     * linkPersonToPodMember (forward ref). Person.pod_member_id is
+     * set here on the Person row (reverse ref). Both sides need to
+     * agree so /me can resolve a logged-in team member to their
+     * Person record (and so kanban / KPI surfaces can resolve the
+     * other way). Without the reverse ref, /me showed the "your
+     * account isn't linked to a team member record" error. */
     if (personId) {
       peopleStore.getAll().then((rows) => {
         const p = rows.find((x) => x.id === personId);
         const displayName = p?.preferred_name || p?.full_name || "Unassigned";
         linkPersonToPodMember(member.id, personId, displayName);
+        if (p) {
+          peopleStore
+            .update(p.id, { pod_member_id: member.id })
+            .catch((err) =>
+              console.error("[pods] failed to set Person.pod_member_id:", err),
+            );
+        }
         onChange();
       });
     } else {
+      /* Unlinking: clear BOTH sides so a future re-link doesn't
+       * inherit a stale Person.pod_member_id pointing at this slot. */
+      const stalePersonId = member.person_id;
       linkPersonToPodMember(member.id, undefined, "Unassigned");
+      if (stalePersonId) {
+        peopleStore
+          .update(stalePersonId, { pod_member_id: undefined })
+          .catch((err) =>
+            console.error("[pods] failed to clear Person.pod_member_id:", err),
+          );
+      }
       onChange();
     }
   }
