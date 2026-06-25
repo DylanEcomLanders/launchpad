@@ -72,6 +72,30 @@ export default function ContractDetailPage() {
       // Fallback: select the input
     }
   }
+
+  /* Force-push this agreement to Supabase. Fixes the
+   * "Agreement not found" case where an old create() silently
+   * failed and the record only exists in this browser's
+   * localStorage - team members loading the signing URL would
+   * get nothing. Upsert is idempotent so re-clicking is safe. */
+  const [syncing, setSyncing] = useState(false);
+  const [synced, setSynced] = useState<string | null>(null);
+  async function syncToCloud() {
+    if (!agreement || syncing) return;
+    setSyncing(true);
+    setSynced(null);
+    try {
+      await agreementStore.upsert(agreement);
+      setSynced("Pushed to cloud - link should work now");
+    } catch (err) {
+      setSynced(
+        `Failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    } finally {
+      setSyncing(false);
+      window.setTimeout(() => setSynced(null), 4000);
+    }
+  }
   async function counterSign() {
     if (!agreement || !counterName.trim() || !counterSig || submitting) return;
     setSubmitting(true);
@@ -191,6 +215,17 @@ export default function ContractDetailPage() {
               title="Download PDF (Cmd+P → Save as PDF)"
             >
               <ArrowDownTrayIcon className="size-3.5" /> PDF
+            </button>
+            <button
+              onClick={syncToCloud}
+              disabled={syncing}
+              title={
+                synced ??
+                "Push this agreement to Supabase. Fixes 'agreement not found' on the signing link"
+              }
+              className="inline-flex items-center gap-1.5 px-3 bg-[#0F0F10] ring-1 ring-white/[0.08] text-[#E5E5EA] text-[13px] font-medium rounded-lg hover:ring-white/[0.16] transition-all shrink-0 disabled:opacity-50"
+            >
+              {syncing ? "Syncing…" : synced ? synced : "Sync to cloud"}
             </button>
           </div>
           <p className="text-[11px] text-[#71757D] mt-2 leading-relaxed">

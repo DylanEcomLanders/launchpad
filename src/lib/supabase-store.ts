@@ -61,20 +61,53 @@ export function createStore<T extends { id: string }>(opts: StoreOptions) {
 
   async function create(item: T): Promise<T> {
     if (isSupabaseConfigured()) {
-      try {
-        const { id, ...rest } = item;
-        const { error } = await supabase.from(table).insert({
-          id,
-          data: rest,
-          created_at: new Date().toISOString(),
-        });
-        if (error) throw error;
-      } catch {
-        // fall through to localStorage
+      const { id, ...rest } = item;
+      const { error } = await supabase.from(table).insert({
+        id,
+        data: rest,
+        created_at: new Date().toISOString(),
+      });
+      if (error) {
+        /* THROW on Supabase failure - the previous swallow caused
+         * silent localStorage-only writes (kanban + agreements bit
+         * us with this). Caller should surface the error to the
+         * user; we still cache locally so unsaved edits aren't lost
+         * but the caller knows it didn't reach the cloud. */
+        const all = lsLoad<T>(lsKey);
+        all.unshift(item);
+        lsSave(lsKey, all);
+        throw new Error(`supabase create on ${table} failed: ${error.message}`);
       }
     }
     const all = lsLoad<T>(lsKey);
     all.unshift(item);
+    lsSave(lsKey, all);
+    return item;
+  }
+
+  /* Upsert: insert if missing, update if exists. Same shape as
+   * create + update but always lands. Use this to heal records
+   * that exist in localStorage but never made it to Supabase
+   * (the silent-create-failure case). */
+  async function upsert(item: T): Promise<T> {
+    if (isSupabaseConfigured()) {
+      const { id, ...rest } = item;
+      const { error } = await supabase
+        .from(table)
+        .upsert(
+          {
+            id,
+            data: rest,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "id" },
+        );
+      if (error) throw new Error(`supabase upsert on ${table} failed: ${error.message}`);
+    }
+    const all = lsLoad<T>(lsKey);
+    const idx = all.findIndex((x) => x.id === item.id);
+    if (idx >= 0) all[idx] = item;
+    else all.unshift(item);
     lsSave(lsKey, all);
     return item;
   }
@@ -141,5 +174,5 @@ export function createStore<T extends { id: string }>(opts: StoreOptions) {
     }
   }
 
-  return { getAll, getById, create, update, remove, saveAll };
+  return { getAll, getById, create, upsert, update, remove, saveAll };
 }

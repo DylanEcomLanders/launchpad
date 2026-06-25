@@ -37,6 +37,18 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-133",
+    date: "25 June 2026",
+    version: "2.7.1",
+    title: "Fix: agreement signing links - Sync to cloud button + create no longer swallows errors",
+    changes: [
+      { type: "fixed", text: "Agreement signing links returning 'Agreement not found' was the same silent-write bug we hit on the kanban. createStore.create() was swallowing Supabase failures so an agreement created during an RLS hiccup only landed in the admin's localStorage. Team members loading the link from another browser/device hit a Supabase miss + got the not-found screen" },
+      { type: "added", text: "Sync to cloud button on /company/contracts/[id] next to Copy + PDF. One click upserts the current agreement to Supabase, healing localStorage-only records. Safe to re-click - idempotent" },
+      { type: "added", text: "createStore.upsert() helper added to the shared data layer. Insert if missing, update if exists, throws on Supabase failure" },
+      { type: "improved", text: "createStore.create() now THROWS on Supabase failure instead of silently swallowing. Caller still gets the row in localStorage so unsaved edits aren't lost but knows the cloud sync failed - prevents future silent-only-local writes across every store (agreements, leads, hero offer, etc.)" },
+    ],
+  },
+  {
     id: "cl-132",
     date: "24 June 2026",
     version: "2.7.0",
