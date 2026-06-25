@@ -37,6 +37,15 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-135",
+    date: "25 June 2026",
+    version: "2.7.3",
+    title: "Bump Leadership contract template to v2.2 so Companies House update lands",
+    changes: [
+      { type: "fixed", text: "Constant update in v2.7.2 didn't actually flow into rendered agreements - the template auto-upgrade only re-seeds when the revision string changes. v2.1 stayed valid in STALE_REVISIONS terms, so it kept using its frozen body with the old Strickland Cl address + [NUMBER] placeholder. Bumped to v2.2 with the current revision marked stale - existing templates detect the bump on next load + re-seed from the corrected defaults" },
+    ],
+  },
+  {
     id: "cl-134",
     date: "25 June 2026",
     version: "2.7.2",
