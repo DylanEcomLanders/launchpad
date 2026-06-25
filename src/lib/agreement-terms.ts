@@ -1,6 +1,7 @@
 export const ecomlanders = {
-  legalName: "Ecom Landers",
-  address: "2 Strickland Cl, Grappenhall, Warrington WA4 3LJ, UK",
+  legalName: "Ecom Landers Ltd",
+  companyNumber: "16308589",
+  address: "4 Station Court, Cannock, England, WS11 0EJ",
   contactEmail: "hello@ecomlanders.com",
 };
 

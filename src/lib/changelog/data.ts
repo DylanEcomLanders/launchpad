@@ -37,6 +37,15 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-134",
+    date: "25 June 2026",
+    version: "2.7.2",
+    title: "Update Ecom Landers Companies House details on agreements",
+    changes: [
+      { type: "fixed", text: "Agreement parties line was showing the old Strickland Cl Warrington address + [NUMBER] placeholder. Updated to the actual Companies House record: 4 Station Court, Cannock, England, WS11 0EJ, company number 16308589 (incorporated 11 March 2025). Affects NEW agreements only - existing ones snapshot the body at creation by design, so they keep whatever was set when they were created. For broken in-flight agreements, delete + recreate to pick up the fix" },
+    ],
+  },
+  {
     id: "cl-133",
     date: "25 June 2026",
     version: "2.7.1",
