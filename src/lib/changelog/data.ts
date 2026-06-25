@@ -37,6 +37,19 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-136",
+    date: "25 June 2026",
+    version: "2.8.0",
+    title: "Kanban: live clock + per-card due-date colour + pod auto-resolve + retainer stars + docs auto-assign",
+    changes: [
+      { type: "fixed", text: "MOCK_TODAY was hardcoded to 2026-06-17 from prototype days, so every date comparison thought today was a week ago. Swapped to a live Europe/London clock. Cards with a yesterday due-date now read RED, not grey. Knock-on: live tests, conclude-prompts, days-in-phase counters all now use real time" },
+      { type: "fixed", text: "Per-card dueDate now drives stuck/approaching/on-track for EVERY phase, not just documents + build phases. Was only honoured in narrow cases; now: today<due=green, today===due=amber, today>due=red across the whole board" },
+      { type: "fixed", text: "Pod members on cards now resolve live from /company/pods (pods-v2) instead of whatever was stamped on the deliverable at creation. Update a pod's roster in admin -> every card reflects it next render. Was previously stale because designer/developer names were frozen onto the deliverable when it was first created. Pods-v2 also now wins over legacy kanban_pods on id collisions" },
+      { type: "added", text: "Retainer priority star: any card whose project is a retainer gets a small amber star next to the category icon (full view) and next to the title (glance view). Build cards stay unmarked. Tooltip: 'Retainer (priority)'" },
+      { type: "added", text: "Documents phase always auto-assigns to Alister (primary) + Aanchal (secondary) regardless of which pod owns the project. Reports, test plans + retainer writeups all funnel to the docs team. /my-work routing picks up the override so docs land in their lanes" },
+    ],
+  },
+  {
     id: "cl-135",
     date: "25 June 2026",
     version: "2.7.3",

@@ -106,11 +106,30 @@ export interface PhaseHistoryEntry {
   enteredAt: string; // ISO yyyy-mm-dd
 }
 
-// Fixed "today" for the prototype so the mock dates always look fresh regardless
-// of when the page is rendered. Drives the "days running", "conclude soon",
-// "log interim" computations on live launch-testing cards. Swap to real
-// `new Date()` (with Europe/London timezone) when wiring to live data.
-export const MOCK_TODAY = "2026-06-17";
+// Today's date in Europe/London. Used by every date-comparison in the
+// kanban (stuck/approaching/on-track, conclude-prompt, interim-due,
+// days-in-phase) AND by stampers for new touches/timestamps.
+//
+// Was hardcoded to "2026-06-17" during the prototype phase so demo
+// dates always looked fresh - swapped to real clock 2026-06-25 once
+// real client data was flowing through.
+//
+// Evaluated once at module load. For dev server hot reload + Vercel
+// serverless cold starts that's frequent enough. If a user keeps the
+// dashboard tab open across midnight the date won't advance until
+// they refresh; acceptable trade vs threading an injected clock
+// through every helper.
+function ukTodayISO(): string {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/London",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  // en-CA gives yyyy-mm-dd directly - cleanest locale for ISO output
+  return fmt.format(new Date());
+}
+export const MOCK_TODAY = ukTodayISO();
 
 // How long can a live test run before the card starts nudging the strategist
 // to wrap it up. Default 14 days = the typical statistical-significance window
@@ -201,6 +220,17 @@ export interface RolePool {
   secondaryDeveloper?: string;  // dev tickets + bugs
 }
 
+/* Documents are always owned by the docs team (Alister primary,
+ * Aanchal secondary) regardless of which pod owns the project.
+ * Single source so both the assignee resolver + the kanban override
+ * stay in lockstep. */
+export const DOCUMENTS_TEAM_PRIMARY = "Alister";
+export const DOCUMENTS_TEAM_SECONDARY = "Aanchal";
+const DOCUMENTS_TEAM = {
+  name: DOCUMENTS_TEAM_PRIMARY,
+  isSecondary: false,
+};
+
 export function activeAssigneeFor(phase: PreviewPhase | undefined, roles: RolePool): {
   name: string;
   isSecondary: boolean;
@@ -218,9 +248,11 @@ export function activeAssigneeFor(phase: PreviewPhase | undefined, roles: RolePo
         roles.developer || roles.designer,
       );
     case "documents":
-      // Reports / test plans / retainer writeups are strategy-owned. Caller
-      // can also override the displayed name at render time if needed.
-      return primary(roles.designer);
+      // Documents are always handled by the docs team (Alister + Aanchal),
+      // not the pod's designer. Hardcoded override - reports, test plans
+      // and retainer writeups all funnel to them regardless of which pod
+      // owns the project.
+      return DOCUMENTS_TEAM;
     case "internal-revisions":
       // Internal Rev = founder/reviewer telling the PRIMARY designer to
       // make changes. Primary owns the fix.

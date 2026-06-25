@@ -125,12 +125,20 @@ export function useKanbanData(): UseKanbanData {
         }
         if (cancelled) return;
         if (remote) {
-          /* Bridge pods-v2 pods into the picker list. */
+          /* Pod resolution: pods-v2 is the canonical source for any
+           * pod whose ID exists there (admin edits in /company/pods
+           * write to pods-v2). Legacy kanban_pods only fills the
+           * gap for pods that exist ONLY in the old table.
+           *
+           * Was the other way round - kanban_pods won and pods-v2
+           * was only used for missing IDs. Result: admin updates to
+           * a pod's roster in /company/pods didn't surface on the
+           * kanban because the stale kanban_pods row shadowed them. */
           const podV2Mocks = getPodsV2().map(convertPodV2ToMock);
-          const remotePodIds = new Set(remote.pods.map((p) => p.id));
-          const additionalPods = podV2Mocks.filter((p) => !remotePodIds.has(p.id));
+          const v2Ids = new Set(podV2Mocks.map((p) => p.id));
+          const legacyOnly = remote.pods.filter((p) => !v2Ids.has(p.id));
           setClientsRaw(remote.clients);
-          setPodsRaw([...remote.pods, ...additionalPods]);
+          setPodsRaw([...podV2Mocks, ...legacyOnly]);
           setSource("supabase");
         }
       } catch (err) {

@@ -20,6 +20,7 @@ import {
   ChevronRightIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
+import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
 import { useCurrentUser } from "@/components/auth-gate";
 import {
   PREVIEW_PHASES,
@@ -37,6 +38,8 @@ import {
   revisionRoundCount,
   limboStatusFor,
   activeAssigneeFor,
+  DOCUMENTS_TEAM_PRIMARY,
+  DOCUMENTS_TEAM_SECONDARY,
   type PreviewPhase,
   type StuckStatus,
   type TestOutcome,
@@ -653,13 +656,48 @@ export default function KanbanPage() {
     activeClient?.projects.find((p) => p.id === projectId) ??
     activeClient?.projects[0];
 
+  /* Look up table: podId → pod (with current roster). Pods are
+   * keyed by id and the pods array already has v2 taking priority
+   * over the legacy kanban_pods table. */
+  const podById = useMemo(() => {
+    const m = new Map<string, (typeof pods)[number]>();
+    for (const pod of pods) m.set(pod.id, pod);
+    return m;
+  }, [pods]);
+
   const allDeliverables: ContextDeliverable[] = useMemo(() => {
     const out: ContextDeliverable[] = [];
     for (const c of clients) {
       for (const p of c.projects) {
+        /* Always pull the current pod roster fresh - card.designer /
+         * .developer were stamped at creation and go stale when the
+         * pod's roster changes in /company/pods. Auto-heals without
+         * a manual reassign. Falls back to whatever was stamped on
+         * the deliverable when the project has no pod assigned. */
+        const pod = p.podId ? podById.get(p.podId) : undefined;
         for (const d of p.deliverables) {
+          /* Documents always assign to the docs team regardless of
+           * pod roster. Overrides the pod resolve so the card chrome
+           * + /my-work routing both reflect it. */
+          const isDocs = d.phase === "documents";
+          const resolvedDesigner = isDocs
+            ? DOCUMENTS_TEAM_PRIMARY
+            : (pod?.designer ?? d.designer);
+          const resolvedSecondaryDesigner = isDocs
+            ? DOCUMENTS_TEAM_SECONDARY
+            : (pod?.secondaryDesigner ?? d.secondaryDesigner);
+          const resolvedDeveloper = isDocs
+            ? d.developer
+            : (pod?.developer ?? d.developer);
+          const resolvedSecondaryDeveloper = isDocs
+            ? d.secondaryDeveloper
+            : (pod?.secondaryDeveloper ?? d.secondaryDeveloper);
           out.push({
             ...d,
+            designer: resolvedDesigner,
+            secondaryDesigner: resolvedSecondaryDesigner,
+            developer: resolvedDeveloper,
+            secondaryDeveloper: resolvedSecondaryDeveloper,
             clientName: c.name,
             clientId: c.id,
             projectName: p.name,
@@ -676,7 +714,7 @@ export default function KanbanPage() {
       }
     }
     return out;
-  }, [clients]);
+  }, [clients, podById]);
 
   /* Current user's display name for "Mine only" matching. Falls back
    * to the auth name; matches against designer / secondaryDesigner /
@@ -2471,8 +2509,22 @@ function Card({
           MOCK_TODAY,
         )
       : null;
+  /* Per-card dueDate takes top priority - if the card has an explicit
+   * due date, the colour reflects that against today's clock per
+   * Dylan's rule: today<due=green, today===due=amber, today>due=red.
+   * Falls through to the phase-specific engine below when no dueDate
+   * is set. */
+  const cardDueStatus: StuckStatus | null = d.dueDate
+    ? (() => {
+        const cmp = MOCK_TODAY.localeCompare(d.dueDate);
+        if (cmp < 0) return "on-track";
+        if (cmp === 0) return "approaching";
+        return "stuck";
+      })()
+    : null;
   const status: StuckStatus =
-    d.phase === "tickets" && categoryMeta
+    cardDueStatus ??
+    (d.phase === "tickets" && categoryMeta
       ? ticketCategoryStatus(
           categoryMeta.value,
           d.phaseHistory?.[d.phaseHistory.length - 1]?.enteredAt,
@@ -2482,7 +2534,7 @@ function Card({
         ? documentsStatus(d.dueDate, MOCK_TODAY) ?? "on-track"
         : d.phase === "external-revisions"
           ? externalReviewStatus(d.sentToClientAt, MOCK_TODAY) ?? "on-track"
-          : dated ?? scaledStatus(d.phase, d.hoursInPhase, d.turnaroundDays);
+          : dated ?? scaledStatus(d.phase, d.hoursInPhase, d.turnaroundDays));
   const live = d.phase === "launch-testing" && d.liveStartedAt && !d.testResult;
   // Approved-internally cards stay in Internal Revisions and read GREEN so
   // the primary designer knows it's signed off and needs sending to the
@@ -2538,6 +2590,12 @@ function Card({
         {categoryMeta && (
           <categoryMeta.icon className={`size-3 shrink-0 ${categoryMeta.tone}`} />
         )}
+        {d.projectType === "retainer" && (
+          <StarSolid
+            className="size-3 shrink-0 text-amber-400"
+            title="Retainer (priority)"
+          />
+        )}
         <span className="text-[12px] text-[#E5E5EA] truncate flex-1 min-w-0">
           {d.title}
         </span>
@@ -2578,6 +2636,12 @@ function Card({
             <categoryMeta.icon
               className={`size-3.5 shrink-0 ${categoryMeta.tone}`}
               title={categoryMeta.label}
+            />
+          )}
+          {d.projectType === "retainer" && (
+            <StarSolid
+              className="size-3.5 shrink-0 text-amber-400"
+              title="Retainer (priority)"
             />
           )}
           <span className="text-[10px] font-bold uppercase tracking-wider text-[#E5E5EA] truncate">
