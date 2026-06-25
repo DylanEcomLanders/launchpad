@@ -159,6 +159,14 @@ export interface MockProject {
   /** Manual client-facing deadline for Phase 2 (Dev / QA / Launch). Same
    *  override semantics as phase1Deadline but scoped to Phase 2 cards. */
   phase2Deadline?: string;
+  /** Project-level strategy brief - URL or freeform text. Shown on
+   *  every card belonging to this project so designers + devs always
+   *  see context. Edited from any card popup; writes propagate to
+   *  every card on the project. */
+  brief?: string;
+  /** Project-level Figma URL - one design file shared across every
+   *  card on the project. */
+  figmaUrl?: string;
   deliverables: MockDeliverable[];
 }
 

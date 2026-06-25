@@ -61,6 +61,8 @@ interface KanbanProjectRow {
   client_approved_at: string | null;
   phase1_deadline: string | null;
   phase2_deadline: string | null;
+  brief: string | null;
+  figma_url: string | null;
 }
 
 interface KanbanTaskRow {
@@ -150,6 +152,8 @@ function projectRowToMock(
     clientApprovedAt: r.client_approved_at ?? undefined,
     phase1Deadline: r.phase1_deadline ?? undefined,
     phase2Deadline: r.phase2_deadline ?? undefined,
+    brief: r.brief ?? undefined,
+    figmaUrl: r.figma_url ?? undefined,
     deliverables,
   };
 }
@@ -200,6 +204,8 @@ function mockProjectToRow(clientId: string, p: MockProject): KanbanProjectRow {
     client_approved_at: p.clientApprovedAt ?? null,
     phase1_deadline: p.phase1Deadline ?? null,
     phase2_deadline: p.phase2Deadline ?? null,
+    brief: p.brief ?? null,
+    figma_url: p.figmaUrl ?? null,
   };
 }
 
@@ -542,7 +548,9 @@ export async function syncClientsDiff(
         pBefore.startDate !== p.startDate ||
         pBefore.clientApprovedAt !== p.clientApprovedAt ||
         pBefore.phase1Deadline !== p.phase1Deadline ||
-        pBefore.phase2Deadline !== p.phase2Deadline
+        pBefore.phase2Deadline !== p.phase2Deadline ||
+        pBefore.brief !== p.brief ||
+        pBefore.figmaUrl !== p.figmaUrl
       ) {
         projectChanged.push({ clientId: c.id, project: p });
       }

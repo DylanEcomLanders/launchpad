@@ -605,6 +605,28 @@ export default function KanbanPage() {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<PreviewPhase | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
+
+  /* Deep-link: /kanban?card={id} auto-opens the matching deliverable's
+   * modal. Used by /my-work to jump to a card without losing context.
+   * Runs once after data loads (so the card exists in clients[]). */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    const cardId = url.searchParams.get("card");
+    if (!cardId) return;
+    /* Wait until clients are loaded - if useKanbanData is still
+     * fetching, the activeId would set but activeDeliverable lookup
+     * would be empty. Re-check on each clients change until we find
+     * the card or the URL param is removed. */
+    const exists = clients.some((c) =>
+      c.projects.some((p) => p.deliverables.some((d) => d.id === cardId)),
+    );
+    if (!exists) return;
+    setActiveId(cardId);
+    /* Strip the query param so re-mount doesn't keep re-opening. */
+    url.searchParams.delete("card");
+    window.history.replaceState({}, "", url.toString());
+  }, [clients]);
   /* Custom dark confirm prompt. Set via the confirmAction helper which
    * returns a promise resolved when the user clicks confirm/cancel. */
   const [confirmPrompt, setConfirmPrompt] = useState<{

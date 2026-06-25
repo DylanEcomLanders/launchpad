@@ -11,9 +11,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronDownIcon,
   ExclamationTriangleIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import { useWorkspaceData, todayYMD } from "@/lib/workspace/use-workspace-data";
 import { useKanbanData } from "@/lib/kanban/use-kanban-data";
+import type { MockDeliverable, MockProject } from "@/lib/projects/mock-data";
 import { useCurrentUser } from "@/components/auth-gate";
 import {
   formatDue,
@@ -164,7 +166,7 @@ export default function MyWorkClient() {
   /* Kanban data is the source of truth for cards. The classifier
    * matches them to the active user by name + role and assigns a
    * lane. */
-  const { clients: kanbanClients, setClients: setKanbanClients } = useKanbanData();
+  const { clients: kanbanClients, setClients: setKanbanClients, pods: kanbanPods } = useKanbanData();
 
   /* pods-v2 snapshot for strategist scope detection (the kanban's
    * MockPod doesn't carry role metadata). */
@@ -185,7 +187,7 @@ export default function MyWorkClient() {
 
   const items: MyItem[] = useMemo(() => {
     if (!identity) return [];
-    const classified = classifyClientsForUser(kanbanClients, identity);
+    const classified = classifyClientsForUser(kanbanClients, identity, kanbanPods);
     return classified.map((c) => ({
       id: `${c.card.id}::${c.role}`,
       cardId: c.card.id,
@@ -199,10 +201,95 @@ export default function MyWorkClient() {
       state: deriveState(c.card.dueDate, today),
       dueDate: c.card.dueDate ?? "",
     }));
-  }, [identity, kanbanClients, today]);
+  }, [identity, kanbanClients, kanbanPods, today]);
 
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<TaskStatus | null>(null);
+  /* In-place card popup. Click any card → opens a modal showing the
+   * key context + lane-move buttons. Avoids losing /my-work to a
+   * deep-link into /kanban. */
+  const [openItemId, setOpenItemId] = useState<string | null>(null);
+  const openItem = openItemId
+    ? items.find((x) => x.id === openItemId) ?? null
+    : null;
+  /* Resolve the project for the open card so the popup can read +
+   * write project-level brief/figmaUrl. Project-level so the brief
+   * the strategist writes is visible on every card in that project
+   * (designer, dev, QA, launch). */
+  const openProject = openItem
+    ? kanbanClients
+        .find((c) => c.id === openItem.clientId)
+        ?.projects.find((p) => p.id === openItem.classified.projectId) ?? null
+    : null;
+
+  /* Search filter + done-cap. itemsByCol returns BOTH the filtered
+   * cards (for rendering) AND the unfiltered total counts (for the
+   * "X / Y" display when filtered) so the user knows how much they're
+   * hiding. */
+  const [search, setSearch] = useState("");
+
+  /* Resolve display name eagerly (before any pin/keyboard state
+   * that needs it). Title resolves from auth user first (email
+   * signin), then the picked member's name (admin "view as"), then
+   * neutral fallback. */
+  const displayName = me?.name ?? activeMember?.name ?? null;
+
+  /* Pin / star priority - per-user, localStorage-backed. Pinned
+   * cards bubble to the top of each lane. Keyed by display name so
+   * Aanchal's pins don't show up for Barnaby etc. */
+  const pinStorageKey = `mywork-pins:${(displayName ?? "anon").toLowerCase()}`;
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => new Set());
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem(pinStorageKey);
+      if (raw) setPinnedIds(new Set(JSON.parse(raw) as string[]));
+    } catch {
+      /* ignore corrupted storage */
+    }
+  }, [pinStorageKey]);
+  function togglePin(cardId: string) {
+    setPinnedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(cardId)) next.delete(cardId);
+      else next.add(cardId);
+      try {
+        window.localStorage.setItem(pinStorageKey, JSON.stringify(Array.from(next)));
+      } catch {
+        /* storage full or disabled - keep state in-memory anyway */
+      }
+      return next;
+    });
+  }
+
+  /* Group view toggle - flips from the 3-column lane kanban into a
+   * flat list grouped by client. Lets a designer see all their Brly
+   * cards together when context-switching. Persists in localStorage
+   * so the user's preference sticks across reloads. */
+  const [viewMode, setViewMode] = useState<"lanes" | "by-client">("lanes");
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem("mywork-view-mode");
+    if (stored === "by-client" || stored === "lanes") setViewMode(stored);
+  }, []);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("mywork-view-mode", viewMode);
+  }, [viewMode]);
+
+  /* Focused card id for keyboard navigation. Declared here so it's
+   * available before itemsByCol; the keyboard handler itself runs
+   * after itemsByCol is computed (further down). */
+  const [focusedItemId, setFocusedItemId] = useState<string | null>(null);
+  /* 7-day cap on the Done lane - keeps the column from growing
+   * forever. Computed as ISO yyyy-mm-dd against the deliverable's
+   * completedAt / approvedAt where available, otherwise just the
+   * card's dueDate. */
+  const doneCutoffISO = useMemo(() => {
+    const d = new Date(`${today}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() - 7);
+    return d.toISOString().slice(0, 10);
+  }, [today]);
 
   const itemsByCol = useMemo(() => {
     const map: Record<TaskStatus, MyItem[]> = {
@@ -210,11 +297,38 @@ export default function MyWorkClient() {
       in_progress: [],
       done: [],
     };
+    const totals: Record<TaskStatus, number> = {
+      todo: 0,
+      in_progress: 0,
+      done: 0,
+    };
+    const needle = search.trim().toLowerCase();
     for (const it of items) {
+      /* Done-cap: drop done cards older than 7 days from view. They
+       * still exist in the underlying kanban data, just not on
+       * /my-work. Uses completedAt > approvedAt > dueDate as the
+       * "when did this finish" signal. */
+      if (it.lane === "done") {
+        const finishedAt =
+          it.classified.card.completedAt ||
+          it.classified.card.approvedAt ||
+          it.dueDate;
+        if (finishedAt && finishedAt.slice(0, 10) < doneCutoffISO) continue;
+      }
+      totals[it.lane]++;
+      /* Search: title + client + project, case-insensitive. */
+      if (needle) {
+        const hay = `${it.title} ${it.clientName} ${it.projectName}`.toLowerCase();
+        if (!hay.includes(needle)) continue;
+      }
       map[it.lane].push(it);
     }
     for (const k of Object.keys(map) as TaskStatus[]) {
       map[k].sort((a, b) => {
+        /* Pinned items always bubble to top, regardless of state. */
+        const pa = pinnedIds.has(a.cardId) ? 0 : 1;
+        const pb = pinnedIds.has(b.cardId) ? 0 : 1;
+        if (pa !== pb) return pa - pb;
         const sa = STATE_RANK[a.state];
         const sb = STATE_RANK[b.state];
         if (sa !== sb) return sa - sb;
@@ -222,13 +336,90 @@ export default function MyWorkClient() {
         return a.title.localeCompare(b.title);
       });
     }
-    return map;
-  }, [items]);
+    return { cards: map, totals };
+  }, [items, search, doneCutoffISO, pinnedIds]);
+
+  /* Keyboard navigation - j/k move focus through visible cards
+   * (top-to-bottom column-major), enter opens the focused card,
+   * 1/2/3 move it to Todo/In progress/Done, p toggles pin.
+   * Disabled when typing in an input or when the popup is open. */
+  const flatFocusOrder = useMemo(() => {
+    const order: string[] = [];
+    for (const k of ["todo", "in_progress", "done"] as TaskStatus[]) {
+      for (const it of itemsByCol.cards[k] ?? []) order.push(it.id);
+    }
+    return order;
+  }, [itemsByCol]);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    function isTyping(t: EventTarget | null) {
+      if (!(t instanceof HTMLElement)) return false;
+      const tag = t.tagName.toLowerCase();
+      return (
+        tag === "input" ||
+        tag === "textarea" ||
+        tag === "select" ||
+        t.isContentEditable
+      );
+    }
+    function handler(e: KeyboardEvent) {
+      if (openItemId) return;
+      if (isTyping(e.target)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const order = flatFocusOrder;
+      if (order.length === 0) return;
+      const currentIdx = focusedItemId ? order.indexOf(focusedItemId) : -1;
+      if (e.key === "j") {
+        e.preventDefault();
+        const next = currentIdx < 0 ? 0 : Math.min(order.length - 1, currentIdx + 1);
+        setFocusedItemId(order[next]);
+      } else if (e.key === "k") {
+        e.preventDefault();
+        const next = currentIdx < 0 ? 0 : Math.max(0, currentIdx - 1);
+        setFocusedItemId(order[next]);
+      } else if (e.key === "Enter" && focusedItemId) {
+        e.preventDefault();
+        setOpenItemId(focusedItemId);
+      } else if (e.key === "1" && focusedItemId) {
+        e.preventDefault();
+        moveTask(focusedItemId, "todo");
+      } else if (e.key === "2" && focusedItemId) {
+        e.preventDefault();
+        moveTask(focusedItemId, "in_progress");
+      } else if (e.key === "3" && focusedItemId) {
+        e.preventDefault();
+        moveTask(focusedItemId, "done");
+      } else if (e.key === "p" && focusedItemId) {
+        e.preventDefault();
+        const cardId = items.find((x) => x.id === focusedItemId)?.cardId;
+        if (cardId) togglePin(cardId);
+      }
+    }
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openItemId, focusedItemId, flatFocusOrder, items]);
 
   /* Drag handler. Translates a my-work lane move into the kanban
    * transition that backs it (phase move or revision-flag patch).
    * setKanbanClients fires syncClientsDiff so the change persists to
    * Supabase + Realtime broadcasts to other open sessions. */
+  /* Project-level patch - merges fields onto the matching project
+   * and writes through setKanbanClients (syncs to Supabase + Realtime
+   * broadcasts). Used by the in-place popup to edit project.brief +
+   * project.figmaUrl, which then propagate to every card on the
+   * project. */
+  function patchProject(projectId: string, patch: Partial<MockProject>) {
+    setKanbanClients((prev) =>
+      prev.map((client) => ({
+        ...client,
+        projects: client.projects.map((p) =>
+          p.id === projectId ? { ...p, ...patch } : p,
+        ),
+      })),
+    );
+  }
+
   function moveTask(itemId: string, target: TaskStatus) {
     const it = items.find((x) => x.id === itemId);
     if (!it || it.lane === target) return;
@@ -268,12 +459,6 @@ export default function MyWorkClient() {
       })),
     );
   }
-
-  // Title resolves from the auth user first (when signed in by email), then
-  // the picked member's name (admin "view as"), then a neutral fallback.
-  // Computed BEFORE early returns so the revisionCards useMemo (and any
-  // other hook below) runs in a stable order across renders.
-  const displayName = me?.name ?? activeMember?.name ?? null;
 
   /* Kanban "Revisions needed" callout - matches by display name
    * against the four kanban assignee slots. Lives above the early
@@ -438,10 +623,53 @@ export default function MyWorkClient() {
           </Link>
         )}
 
-        {/* Columns */}
+        {/* Search bar + view-mode toggle. Lane counts show
+          * "filtered / total" so users see how much they're hiding.
+          * View toggle flips between 3-lane kanban and a flat list
+          * grouped by client. Keyboard shortcuts: j/k navigate,
+          * enter open, 1/2/3 move lane, p pin. */}
+        <div className="mb-4 flex items-center gap-2">
+          <div className="relative flex-1">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#71757D] pointer-events-none" />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search your tasks (title, client, project) · j/k navigate · enter open · 1/2/3 move · p pin"
+              className="w-full pl-9 pr-3 py-2 text-[13px] bg-[#181818] border border-[#2A2A2A] rounded-lg text-[#E5E5EA] placeholder:text-[#71757D] focus:outline-none focus:border-[#383838]"
+            />
+          </div>
+          <div className="flex items-center bg-[#181818] border border-[#2A2A2A] rounded-lg p-0.5 shrink-0">
+            <button
+              onClick={() => setViewMode("lanes")}
+              className={`px-3 py-1.5 text-[12px] font-medium rounded-md transition-colors ${
+                viewMode === "lanes"
+                  ? "bg-[#2A2A2A] text-[#E5E5EA]"
+                  : "text-[#71757D] hover:text-[#E5E5EA]"
+              }`}
+            >
+              Lanes
+            </button>
+            <button
+              onClick={() => setViewMode("by-client")}
+              className={`px-3 py-1.5 text-[12px] font-medium rounded-md transition-colors ${
+                viewMode === "by-client"
+                  ? "bg-[#2A2A2A] text-[#E5E5EA]"
+                  : "text-[#71757D] hover:text-[#E5E5EA]"
+              }`}
+            >
+              By client
+            </button>
+          </div>
+        </div>
+
+        {/* Columns - only in Lanes mode. By-client renders below. */}
+        {viewMode === "lanes" && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {COLUMNS.map((col) => {
-            const cards = itemsByCol[col.key] ?? [];
+            const cards = itemsByCol.cards[col.key] ?? [];
+            const total = itemsByCol.totals[col.key] ?? 0;
+            const isFiltered = search.trim().length > 0;
             const isDropTarget = dragOverCol === col.key && draggingId !== null;
             return (
               <div
@@ -488,7 +716,9 @@ export default function MyWorkClient() {
                       </span>
                     </div>
                     <span className="text-[11px] font-medium text-[#71757D] tabular-nums shrink-0">
-                      {cards.length}
+                      {isFiltered && cards.length !== total
+                        ? `${cards.length} / ${total}`
+                        : total}
                     </span>
                   </div>
                 </div>
@@ -496,8 +726,14 @@ export default function MyWorkClient() {
                 {/* Cards */}
                 <div className="p-2.5 space-y-2.5 flex-1 min-h-[60vh]">
                   {cards.length === 0 ? (
-                    <p className="text-[11px] text-[#4B4D52] text-center py-6">
-                      &mdash;
+                    <p className="text-[11px] text-[#4B4D52] text-center py-8 px-3 leading-relaxed">
+                      {isFiltered && total > 0
+                        ? `No matches for "${search.trim()}" in this lane`
+                        : col.key === "todo"
+                          ? "Nothing to start"
+                          : col.key === "in_progress"
+                            ? "Nothing in progress"
+                            : "Nothing finished in the last 7 days"}
                     </p>
                   ) : (
                     cards.map((d) => {
@@ -523,12 +759,48 @@ export default function MyWorkClient() {
                             setDraggingId(null);
                             setDragOverCol(null);
                           }}
-                          className={`p-3.5 border rounded-lg ${style.ring} ${style.bg} cursor-grab active:cursor-grabbing hover:border-[#383838] transition-all ${
+                          /* Click anywhere on the card opens an
+                           * in-place popup with title, context, and
+                           * the lane actions. Avoids losing the
+                           * /my-work view to a /kanban navigate. */
+                          onClick={() => setOpenItemId(d.id)}
+                          className={`group relative p-3.5 border rounded-lg ${style.ring} ${style.bg} cursor-pointer hover:border-[#383838] transition-all ${
                             isDragging ? "opacity-40 scale-[0.98]" : ""
+                          } ${
+                            focusedItemId === d.id
+                              ? "ring-2 ring-[#9CA3AF]/60 ring-offset-2 ring-offset-[#080808]"
+                              : ""
                           }`}
                         >
+                          {/* Hand-off / kickback dot - top-right of the
+                            * card when revisionRequested. Mirrors the
+                            * red dot on /kanban. */}
+                          {d.classified.card.revisionRequested && (
+                            <span
+                              className="absolute top-2 right-2 size-2 rounded-full bg-rose-500"
+                              title="Kicked back from internal revisions"
+                            />
+                          )}
+                          {/* Pin star - small button top-right. Pinned
+                            * cards bubble to the top of the lane. */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              togglePin(d.cardId);
+                            }}
+                            title={pinnedIds.has(d.cardId) ? "Unpin" : "Pin to top"}
+                            className={`absolute top-2 ${
+                              d.classified.card.revisionRequested ? "right-6" : "right-2"
+                            } text-[14px] leading-none transition-colors ${
+                              pinnedIds.has(d.cardId)
+                                ? "text-amber-400 hover:text-amber-300"
+                                : "text-[#4B4D52] opacity-0 group-hover:opacity-100 hover:text-[#71757D]"
+                            }`}
+                          >
+                            {pinnedIds.has(d.cardId) ? "★" : "☆"}
+                          </button>
                           {/* Header row — client name (subtle, links to workspace) */}
-                          <div className="mb-2.5">
+                          <div className="mb-2.5 pr-8">
                             <Link
                               href={`/workspace/clients/${d.clientId}`}
                               onClick={(e) => e.stopPropagation()}
@@ -580,7 +852,333 @@ export default function MyWorkClient() {
             );
           })}
         </div>
+        )}
+
+        {/* By-client grouped view - flat list, sections per client.
+          * Pinned cards bubble to the top within each client. */}
+        {viewMode === "by-client" && (
+          <div className="space-y-6">
+            {(() => {
+              const byClient = new Map<
+                string,
+                { clientName: string; clientId: string; items: MyItem[] }
+              >();
+              const ordered: MyItem[] = [];
+              for (const k of ["todo", "in_progress", "done"] as TaskStatus[]) {
+                for (const it of itemsByCol.cards[k] ?? []) ordered.push(it);
+              }
+              for (const it of ordered) {
+                const bucket = byClient.get(it.clientId) ?? {
+                  clientName: it.clientName,
+                  clientId: it.clientId,
+                  items: [],
+                };
+                bucket.items.push(it);
+                byClient.set(it.clientId, bucket);
+              }
+              const clients = Array.from(byClient.values());
+              if (clients.length === 0) {
+                return (
+                  <p className="text-center text-[12px] text-[#71757D] py-8">
+                    {search.trim()
+                      ? `No matches for "${search.trim()}"`
+                      : "No tasks yet"}
+                  </p>
+                );
+              }
+              return clients.map((c) => (
+                <div key={c.clientId}>
+                  <div className="flex items-center justify-between mb-2">
+                    <Link
+                      href={`/workspace/clients/${c.clientId}`}
+                      className="text-[11px] font-bold uppercase tracking-wider text-[#E5E5EA] hover:text-white"
+                    >
+                      {c.clientName}
+                    </Link>
+                    <span className="text-[11px] text-[#71757D] tabular-nums">
+                      {c.items.length} {c.items.length === 1 ? "task" : "tasks"}
+                    </span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {c.items.map((d) => {
+                      const dueLabel = d.dueDate ? formatDue(d.dueDate) : "—";
+                      const dueTone =
+                        d.state === "overdue"
+                          ? "text-red-400"
+                          : d.state === "soon"
+                            ? "text-amber-400"
+                            : "text-[#71757D]";
+                      const isPinned = pinnedIds.has(d.cardId);
+                      const isKickback = d.classified.card.revisionRequested;
+                      const laneLabel =
+                        d.lane === "todo"
+                          ? "Todo"
+                          : d.lane === "in_progress"
+                            ? "In progress"
+                            : "Done";
+                      return (
+                        <button
+                          key={d.id}
+                          onClick={() => setOpenItemId(d.id)}
+                          className={`w-full flex items-center gap-2.5 px-3 py-2 text-left bg-[#181818] border border-[#2A2A2A] rounded-md hover:border-[#383838] transition-colors ${
+                            d.lane === "done"
+                              ? "opacity-60"
+                              : ""
+                          }`}
+                        >
+                          {isPinned && (
+                            <span
+                              className="size-1.5 rounded-full bg-amber-400 shrink-0"
+                              title="Pinned"
+                            />
+                          )}
+                          {isKickback && (
+                            <span
+                              className="size-1.5 rounded-full bg-rose-400 shrink-0"
+                              title="Kicked back"
+                            />
+                          )}
+                          <span className="text-[12px] text-[#71757D] uppercase tracking-wider w-[80px] shrink-0">
+                            {laneLabel}
+                          </span>
+                          <span
+                            className={`text-[13px] flex-1 min-w-0 truncate ${
+                              d.lane === "done"
+                                ? "text-[#71757D] line-through"
+                                : "text-[#E5E5EA]"
+                            }`}
+                          >
+                            {d.title}
+                          </span>
+                          <span
+                            className={`text-[11px] tabular-nums shrink-0 ${dueTone}`}
+                          >
+                            {dueLabel}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ));
+            })()}
+          </div>
+        )}
       </div>
+
+      {/* Card detail popup. Click-outside or X closes. Lane-move
+        * buttons fire moveTask which routes through dragActionFor +
+        * setKanbanClients exactly like dragging would. Open-in-delivery
+        * link lets the user jump to the full kanban modal if they
+        * need the deeper actions (approve / kickback / conclude). */}
+      {openItem && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setOpenItemId(null)}
+        >
+          <div
+            className="bg-[#0F0F10] border border-[#222222] rounded-2xl w-full max-w-md p-5 shadow-[0_20px_60px_rgba(0,0,0,0.6)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="min-w-0 flex-1">
+                <Link
+                  href={`/workspace/clients/${openItem.clientId}`}
+                  className="text-[10px] font-bold uppercase tracking-wider text-[#E5E5EA] hover:text-white block truncate"
+                >
+                  {openItem.clientName}
+                </Link>
+                <p className="text-[10px] text-[#71757D] mt-0.5 truncate">
+                  {openItem.projectName}
+                </p>
+              </div>
+              <button
+                onClick={() => setOpenItemId(null)}
+                className="text-[#71757D] hover:text-white text-[18px] leading-none shrink-0"
+              >
+                ×
+              </button>
+            </div>
+            <h2 className="text-[18px] font-semibold text-[#E5E5EA] leading-snug mb-3">
+              {openItem.title}
+            </h2>
+            {/* Strategy brief + Figma link. Editable in-place - team
+              * pastes a link or types brief notes, save-on-blur
+              * writes through setKanbanClients which syncs to
+              * Supabase + broadcasts via Realtime. Both URL-style
+              * values get an "Open" button next to the input so the
+              * team can hop straight to Figma / the brief doc. */}
+            {/* Designer-first layout:
+              *   - Client brief: link to the onboarding info on the
+              *     client profile (read-only; that's where the deeper
+              *     context lives)
+              *   - Strategist brief: read-only link to the URL the
+              *     strategist dropped in on the delivery campaign.
+              *     Designers can SEE it but don't edit it - that's
+              *     the strategist's lane on /kanban.
+              *   - Figma: editable here so the designer can paste
+              *     their design link in as they spin up the work.
+              * Actions sit at the bottom + side-by-side - the briefs
+              * are the focus, not the workflow buttons. */}
+            <div className="mb-4 space-y-2.5">
+              {/* Client brief - link to client profile for the full
+                * onboarding intake. */}
+              <Link
+                href={`/workspace/clients/${openItem.clientId}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-between px-2.5 py-2 text-[12px] bg-[#181818] border border-[#2A2A2A] rounded-md text-[#E5E5EA] hover:border-[#383838] transition-colors"
+              >
+                <span>
+                  <span className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold block">
+                    Client brief
+                  </span>
+                  <span className="text-[#9CA3AF]">
+                    {openItem.clientName} · onboarding + context
+                  </span>
+                </span>
+                <span className="text-[#71757D]">Open →</span>
+              </Link>
+
+              {/* Strategist brief - read-only. Surfaces the URL the
+                * strategist set on the project. If nothing's set yet
+                * show a placeholder so the designer knows it's missing. */}
+              {openProject?.brief ? (
+                /^https?:\/\//.test(openProject.brief) ? (
+                  <a
+                    href={openProject.brief}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-between px-2.5 py-2 text-[12px] bg-[#181818] border border-[#2A2A2A] rounded-md text-[#E5E5EA] hover:border-[#383838] transition-colors"
+                  >
+                    <span>
+                      <span className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold block">
+                        Strategist brief
+                      </span>
+                      <span className="text-[#9CA3AF] truncate block max-w-[280px]">
+                        {openProject.brief.replace(/^https?:\/\//, "")}
+                      </span>
+                    </span>
+                    <span className="text-[#71757D]">Open →</span>
+                  </a>
+                ) : (
+                  <div className="px-2.5 py-2 text-[12px] bg-[#181818] border border-[#2A2A2A] rounded-md">
+                    <p className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold mb-1">
+                      Strategist brief
+                    </p>
+                    <p className="text-[#9CA3AF] whitespace-pre-wrap leading-relaxed">
+                      {openProject.brief}
+                    </p>
+                  </div>
+                )
+              ) : (
+                <div className="px-2.5 py-2 text-[12px] bg-[#181818] border border-[#2A2A2A] rounded-md text-[#4B4D52] italic">
+                  <span className="text-[10px] uppercase tracking-wider not-italic font-semibold block mb-0.5">
+                    Strategist brief
+                  </span>
+                  Not added yet
+                </div>
+              )}
+
+              {/* Figma - editable. Designer pastes their design URL
+                * as they start the work. Writes to project so every
+                * card on the project shares the same link. */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] uppercase tracking-wider text-[#71757D] font-semibold">
+                    Figma
+                  </span>
+                  {openProject?.figmaUrl && (
+                    <a
+                      href={openProject.figmaUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[10px] text-[#9CA3AF] hover:text-white"
+                    >
+                      Open →
+                    </a>
+                  )}
+                </div>
+                <input
+                  key={`figma-${openItem.classified.projectId}`}
+                  type="url"
+                  defaultValue={openProject?.figmaUrl ?? ""}
+                  onBlur={(e) =>
+                    patchProject(openItem.classified.projectId, {
+                      figmaUrl: e.target.value || undefined,
+                    })
+                  }
+                  placeholder="https://figma.com/file/…"
+                  className="w-full px-2.5 py-1.5 text-[12px] bg-[#181818] border border-[#2A2A2A] rounded-md text-[#E5E5EA] placeholder:text-[#4B4D52] focus:outline-none focus:border-[#383838]"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-2 mb-5 flex-wrap">
+              <span
+                className="inline-flex items-center gap-1.5 px-2 py-1 text-[10px] uppercase tracking-wider rounded"
+                style={{
+                  background: `${ROLE_DOT[openItem.role]}1F`,
+                  color: ROLE_DOT[openItem.role],
+                }}
+              >
+                <span
+                  className="size-1.5 rounded-full"
+                  style={{ background: ROLE_DOT[openItem.role] }}
+                />
+                {ROLE_LABEL[openItem.role]}
+              </span>
+              {openItem.dueDate && (
+                <span
+                  className={`text-[11px] tabular-nums font-medium ${
+                    openItem.state === "overdue"
+                      ? "text-rose-300"
+                      : openItem.state === "soon"
+                        ? "text-amber-400"
+                        : "text-[#71757D]"
+                  }`}
+                >
+                  Due {formatDue(openItem.dueDate)}
+                </span>
+              )}
+            </div>
+            {/* Action buttons - side-by-side at the bottom. Briefs
+              * are the focus of the popup; buttons are the quick
+              * action when the user's ready to advance the card. */}
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <button
+                onClick={() => {
+                  moveTask(
+                    openItem.id,
+                    openItem.lane === "in_progress" ? "todo" : "in_progress",
+                  );
+                  setOpenItemId(null);
+                }}
+                className="px-3 py-2 text-[12px] text-[#E5E5EA] bg-[#181818] border border-[#2A2A2A] rounded-lg hover:bg-[#222222] transition-colors font-medium"
+              >
+                {openItem.lane === "in_progress"
+                  ? "Move to Todo"
+                  : "Move to In progress"}
+              </button>
+              <button
+                onClick={() => {
+                  moveTask(openItem.id, "done");
+                  setOpenItemId(null);
+                }}
+                disabled={openItem.lane === "done"}
+                className="px-3 py-2 text-[12px] text-[#0C0C0C] bg-emerald-400 rounded-lg hover:bg-emerald-300 transition-colors font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {openItem.lane === "done" ? "Done" : "Mark as done"}
+              </button>
+            </div>
+            <Link
+              href={`/kanban?card=${encodeURIComponent(openItem.cardId)}`}
+              className="block text-center text-[11px] text-[#71757D] hover:text-white pt-2 border-t border-[#222222]"
+            >
+              Open in Project Delivery for full actions →
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

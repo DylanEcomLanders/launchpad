@@ -220,12 +220,13 @@ export interface RolePool {
   secondaryDeveloper?: string;  // dev tickets + bugs
 }
 
-/* Documents are always owned by the docs team (Alister primary,
- * Aanchal secondary) regardless of which pod owns the project.
- * Single source so both the assignee resolver + the kanban override
- * stay in lockstep. */
+/* Documents are always owned by Alister regardless of which pod owns
+ * the project. Aanchal (strategist) doesn't go in the secondary slot
+ * because she isn't a designer - if she needs visibility on docs
+ * cards too, that's a separate "docs-team can-see" concept, not the
+ * primary/secondary designer slot. */
 export const DOCUMENTS_TEAM_PRIMARY = "Alister";
-export const DOCUMENTS_TEAM_SECONDARY = "Aanchal";
+export const DOCUMENTS_TEAM_SECONDARY: string | undefined = undefined;
 const DOCUMENTS_TEAM = {
   name: DOCUMENTS_TEAM_PRIMARY,
   isSecondary: false,

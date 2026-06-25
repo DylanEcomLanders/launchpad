@@ -37,6 +37,26 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-137",
+    date: "25 June 2026",
+    version: "2.9.0",
+    title: "My Tasks: full QoL pass + popup + drag fixes + Aanchal off docs override",
+    changes: [
+      { type: "added", text: "Click any card on /my-work to open an in-place popup. Shows client brief link, strategist brief (read-only - editing is the strategist's lane on /kanban), editable Figma URL, lane action buttons (In progress / Mark as done) side-by-side, plus an Open in Project Delivery link for the full kanban modal" },
+      { type: "added", text: "Search bar above the columns. Filters by title, client name, or project name as you type. Column counts show 'filtered / total' when search is active" },
+      { type: "added", text: "Lane counts in column headers always visible. Done lane capped to the last 7 days so completed work doesn't pile forever" },
+      { type: "added", text: "Empty state per lane - 'Nothing in progress', 'Nothing to start', 'Nothing finished in the last 7 days' or a per-search no-match message. Beats the blank em-dash" },
+      { type: "added", text: "View toggle: Lanes (the 3-column kanban) or By client (flat list grouped per client with lane chips). Preference persists in localStorage" },
+      { type: "added", text: "Pin / star priority - hover any card → ☆ appears top-right. Click → ★ amber, card bubbles to top of its lane. Per-user (keyed by display name in localStorage)" },
+      { type: "added", text: "Keyboard shortcuts: j/k navigate cards, enter open popup, 1/2/3 move to Todo/In progress/Done, p toggle pin. Disabled while typing in search or popup is open" },
+      { type: "added", text: "Hand-off badge - small red dot top-right of any card where revisionRequested is true so designers spot kickbacks at a glance. Also shown in By client view" },
+      { type: "fixed", text: "Drag transitions actually do something now: designer todo→in_progress moves the card into design phase; todo→done jumps straight to internal-revisions. Same pattern for developers (→ development, → qa). Was previously a silent no-op" },
+      { type: "added", text: "Project-level brief + figmaUrl fields. Strategist sets them once, every card on the project shows them. Migration 045/046 adds the columns to kanban_projects" },
+      { type: "fixed", text: "Documents auto-assign is just Alister (primary). Aanchal isn't a designer so the secondary-designer slot was misleading - removed. She gets docs visibility separately when we wire a docs-team concept" },
+      { type: "fixed", text: "Pod members on cards resolve live from /company/pods - update a pod's roster in admin → every card reflects it next render. Plus pods-v2 wins over legacy kanban_pods on id collisions. /my-work picks this up too so designers don't see cards that aren't theirs" },
+    ],
+  },
+  {
     id: "cl-136",
     date: "25 June 2026",
     version: "2.8.0",

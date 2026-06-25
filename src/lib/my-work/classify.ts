@@ -32,8 +32,12 @@
  *   Strategist: no drag (conclude is a modal flow on the kanban card itself)
  */
 
-import type { MockClient, MockDeliverable } from "@/lib/projects/mock-data";
+import type { MockClient, MockDeliverable, MockPod } from "@/lib/projects/mock-data";
 import type { Pod as PodV2 } from "@/lib/pods-v2/types";
+import {
+  DOCUMENTS_TEAM_PRIMARY,
+  DOCUMENTS_TEAM_SECONDARY,
+} from "@/lib/projects/preview-phases";
 
 export type MyWorkLane = "todo" | "in_progress" | "done";
 
@@ -145,6 +149,32 @@ export interface ClassifiedCard {
   lane: MyWorkLane;
 }
 
+/* Resolve a card's effective assignees the same way the kanban does:
+ * pod roster takes priority over what was stamped on the deliverable
+ * at creation, and document cards always override to the docs team
+ * (Alister primary, Aanchal secondary). Keeps /my-work in lockstep
+ * with the kanban so nobody sees a card the kanban routes elsewhere. */
+function resolveCardAssignees(
+  card: MockDeliverable,
+  pod: MockPod | undefined,
+): MockDeliverable {
+  if (card.phase === "documents") {
+    return {
+      ...card,
+      designer: DOCUMENTS_TEAM_PRIMARY,
+      secondaryDesigner: DOCUMENTS_TEAM_SECONDARY,
+    };
+  }
+  if (!pod) return card;
+  return {
+    ...card,
+    designer: pod.designer ?? card.designer,
+    secondaryDesigner: pod.secondaryDesigner ?? card.secondaryDesigner,
+    developer: pod.developer ?? card.developer,
+    secondaryDeveloper: pod.secondaryDeveloper ?? card.secondaryDeveloper,
+  };
+}
+
 /* Walk every client → project → card and emit one entry per (card, role)
  * match. One card can produce multiple entries if the user is e.g. the
  * senior designer AND the strategist for the same project's launch-testing
@@ -152,11 +182,15 @@ export interface ClassifiedCard {
 export function classifyClientsForUser(
   clients: MockClient[],
   identity: MyWorkIdentity,
+  pods: MockPod[],
 ): ClassifiedCard[] {
+  const podById = new Map(pods.map((p) => [p.id, p]));
   const out: ClassifiedCard[] = [];
   for (const client of clients) {
     for (const project of client.projects) {
-      for (const card of project.deliverables) {
+      const pod = project.podId ? podById.get(project.podId) : undefined;
+      for (const rawCard of project.deliverables) {
+        const card = resolveCardAssignees(rawCard, pod);
         /* Drop tests that are concluded and not in launch-testing
          * (defensive - shouldn't happen but keeps the board clean). */
         const assignment = detectAssignmentRole(card, identity.name);
@@ -214,10 +248,41 @@ export function dragActionFor(
   const { card, role, lane } = classified;
   if (lane === toLane) return { kind: "noop", reason: "same lane" };
 
-  /* Forward (todo → in_progress) is just a hint for the user; nothing
-   * to write to the kanban (the phase already implies the state). */
+  /* Forward (todo → in_progress): advance the card into the role's
+   * primary active phase. Designer's "in_progress" is design, so
+   * dragging from todo (strategy / not-started) lands the card in
+   * design. Same for developer (→ development). Strategist's
+   * in_progress is "live test running" which can only happen via
+   * the conclude flow, so leave it as a no-op for them. */
   if (lane === "todo" && toLane === "in_progress") {
-    return { kind: "noop", reason: "no kanban action for start" };
+    if (role === "senior_designer" || role === "junior_designer") {
+      if (card.phase === "design") {
+        /* Already in design but classifier put it in todo - happens
+         * with revisionRequested edge cases. Clear the flag. */
+        return { kind: "patch", patch: { revisionRequested: false } };
+      }
+      return { kind: "phase_move", phase: "design" };
+    }
+    if (role === "senior_developer" || role === "junior_developer") {
+      if (card.phase === "development") {
+        return { kind: "patch", patch: { revisionRequested: false } };
+      }
+      return { kind: "phase_move", phase: "development" };
+    }
+    return { kind: "noop", reason: "role doesn't drag todo→in_progress" };
+  }
+
+  /* Todo → Done: skip the design/dev step and land straight in the
+   * next handoff phase. Useful when the work was done elsewhere and
+   * you're just signalling completion. */
+  if (lane === "todo" && toLane === "done") {
+    if (role === "senior_designer" || role === "junior_designer") {
+      return { kind: "phase_move", phase: "internal-revisions" };
+    }
+    if (role === "senior_developer" || role === "junior_developer") {
+      return { kind: "phase_move", phase: "qa" };
+    }
+    return { kind: "noop", reason: "role doesn't drag todo→done" };
   }
 
   /* In progress → Done: hand off to the next phase / clear flags. */
