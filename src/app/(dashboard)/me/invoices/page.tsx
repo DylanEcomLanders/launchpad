@@ -17,7 +17,6 @@ import Link from "next/link";
 import { ArrowLeftIcon, ArrowUpTrayIcon } from "@heroicons/react/24/outline";
 import { useCurrentUser } from "@/components/auth-gate";
 import {
-  invoicesStore,
   uid,
   nowISO,
   fmtDateUK,
@@ -48,14 +47,14 @@ export default function MyInvoicesPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    /* Resolve the Person server-side. Team-role users can't read
-     * company_people directly through the anon key under the current
-     * RLS posture, so the client-side getAll() returns 0 rows for
-     * them and matching always misses. The /api/me/resolve-person
-     * endpoint uses the service role to do the lookup. */
+    /* Resolve the Person + load past invoices via service-role
+     * endpoints. Team-role users can't read company_people or
+     * company_invoices through the anon key under the current RLS
+     * posture, so client-side getAll() returns 0 rows. The
+     * /api/me/* endpoints bypass RLS with the service role. */
     async function load() {
-      const allInvoices = await invoicesStore.getAll();
       let matched: Person | null = null;
+      let mine: Invoice[] = [];
       if (me) {
         try {
           const res = await fetch("/api/me/resolve-person", {
@@ -77,6 +76,23 @@ export default function MyInvoicesPage() {
           console.warn("[me/invoices] resolve-person threw", err);
         }
       }
+      if (matched) {
+        try {
+          const res = await fetch("/api/me/my-invoices", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ person_id: matched.id }),
+          });
+          if (res.ok) {
+            const json = (await res.json()) as { invoices: Invoice[] };
+            mine = json.invoices ?? [];
+          } else {
+            console.warn("[me/invoices] my-invoices failed", res.status);
+          }
+        } catch (err) {
+          console.warn("[me/invoices] my-invoices threw", err);
+        }
+      }
       if (!matched && me) {
         console.warn(
           "[me/invoices] unlinked",
@@ -84,11 +100,7 @@ export default function MyInvoicesPage() {
         );
       }
       setPerson(matched);
-      setInvoices(
-        matched
-          ? allInvoices.filter((i) => i.linked_person_id === matched!.id)
-          : [],
-      );
+      setInvoices(mine);
       setHydrated(true);
     }
     load();
@@ -144,7 +156,19 @@ export default function MyInvoicesPage() {
         created_at: now,
         updated_at: now,
       };
-      await invoicesStore.create(inv);
+      /* Route the write through the service-role endpoint so RLS on
+       * company_invoices doesn't reject the insert from a team-role
+       * session. The endpoint validates linked_person_id against
+       * company_people before writing. */
+      const res = await fetch("/api/me/submit-invoice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invoice: inv }),
+      });
+      if (!res.ok) {
+        const j = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(j.error || `submit failed (${res.status})`);
+      }
       setInvoices((rows) => [inv, ...rows]);
       setSubmitted(inv.id);
       /* Clear form for the next one. */
