@@ -2,72 +2,46 @@
 
 /* ── Hero Offer / Acquisition ──
  *
- * How to win the deal. Three blocks:
- *   - Guidance sections (pitch, outreach, anything else admin adds)
- *   - Objection library (Q&A pairs the team builds up over time)
- *   - Pricing tiers (tier name + price + what's included)
+ * Five canonical tools: Discovery Audit (reference deck), Proposals
+ * & Quotes, Pricelist (external), Pitch Deck (combined sales+pitch+
+ * proof), Qualification Script. Objection library moved to The Offer
+ * front page so it's surfaced one click sooner.
  *
- * Admin can add / edit / reorder / delete each. Team reads only.
+ * Pricing tiers panel removed - they live on The Offer front page now.
+ * Guidance sections kept for free-form playbook copy (admin-editable).
  */
 
 import { useEffect, useState, type ReactNode } from "react";
-import {
-  CheckIcon,
-  XMarkIcon,
-  PencilSquareIcon,
-} from "@heroicons/react/24/outline";
 import { useRole } from "@/components/auth-gate";
 import {
-  offerObjectionsStore,
-  offerPricingStore,
   offerResourcesStore,
   offerSectionsStore,
   nextOrder,
   nowISO,
   uid,
 } from "@/lib/hero-offer/data";
-import {
-  seedAcquisitionPricing,
-  seedAcquisitionSections,
-} from "@/lib/hero-offer/seed";
+import { seedAcquisitionSections } from "@/lib/hero-offer/seed";
 import type {
-  OfferObjection,
-  OfferPricingTier,
   OfferResource,
   OfferSection,
 } from "@/lib/hero-offer/types";
 import { SectionCard } from "@/lib/hero-offer/section-card";
 import { ResourceList } from "@/lib/hero-offer/resource-list";
 import { ToolCardGrid, type ToolCard } from "@/lib/hero-offer/tool-card-grid";
-import { inputClass, textareaClass } from "@/lib/form-styles";
 import {
   DocumentMagnifyingGlassIcon,
   DocumentTextIcon,
   TagIcon,
-  ChatBubbleLeftRightIcon,
-  PresentationChartLineIcon,
   DocumentDuplicateIcon,
-  TrophyIcon,
-  EnvelopeIcon,
   CheckBadgeIcon,
-  CalculatorIcon,
 } from "@heroicons/react/24/outline";
 
-/* Every tool that lives in the Acquisition stage. live = working
- * today; shell = scaffolded, polish later. Order: existing tools
- * (proven flows) first, then the shells. */
 const ACQUISITION_TOOLS: ToolCard[] = [
-  { href: "/tools/discovery-audit", label: "Discovery Audit", blurb: "£1k pre-signup audit builder + public deck output.", icon: DocumentMagnifyingGlassIcon, status: "live" },
-  { href: "/tools/proposals", label: "Proposals", blurb: "Tier picker + terms + guarantee + shareable proposal page.", icon: DocumentTextIcon, status: "live" },
-  { href: "/pricing", label: "Price list", blurb: "Public-facing 3-tier pricing page with à la carte builds.", icon: TagIcon, status: "live", external: true },
-  { href: "/hero-offer/acquisition/objections", label: "Objection library", blurb: "Every objection + the response that lands. Searchable mid-call.", icon: ChatBubbleLeftRightIcon, status: "shell" },
-  { href: "/hero-offer/acquisition/sales-deck", label: "Sales deck", blurb: "Live-call deck the closer drives.", icon: PresentationChartLineIcon, status: "shell" },
-  { href: "/hero-offer/acquisition/pitch-deck", label: "Pitch deck", blurb: "Leave-behind deck for warm leads + inbox-readers.", icon: DocumentDuplicateIcon, status: "shell" },
-  { href: "/hero-offer/acquisition/proof-deck", label: "Proof deck", blurb: "Wins reel + case studies. Top-of-funnel proof.", icon: TrophyIcon, status: "shell" },
-  { href: "/hero-offer/acquisition/one-pager", label: "One-pager", blurb: "Single-page pitch. Cold-outreach attachment.", icon: DocumentTextIcon, status: "shell" },
-  { href: "/hero-offer/acquisition/outreach", label: "Cold outreach", blurb: "4-touch cadence + copy-paste email/LinkedIn templates.", icon: EnvelopeIcon, status: "shell" },
-  { href: "/hero-offer/acquisition/qualification", label: "Qualification script", blurb: "6 discovery questions + the answers we want.", icon: CheckBadgeIcon, status: "shell" },
-  { href: "/hero-offer/acquisition/tier-fit", label: "Tier-fit calculator", blurb: "Revenue + ambition in → tier + ROI math out.", icon: CalculatorIcon, status: "shell" },
+  { href: "/hero-offer/acquisition/discovery-audit", label: "Discovery Audit", blurb: "What to look for on every audit. Reference deck for the team.", icon: DocumentMagnifyingGlassIcon, status: "live" },
+  { href: "/tools/proposals", label: "Proposals / Quotes", blurb: "Tier picker + terms + guarantee + shareable proposal.", icon: DocumentTextIcon, status: "live" },
+  { href: "/pricing", label: "Pricelist", blurb: "Public-facing 3-tier pricing page. The one we send out.", icon: TagIcon, status: "live", external: true },
+  { href: "/hero-offer/acquisition/pitch-deck", label: "Pitch Deck", blurb: "Sales tactics + the pitch + proof. One deck the closer drives.", icon: DocumentDuplicateIcon, status: "live" },
+  { href: "/hero-offer/acquisition/qualification", label: "Qualification Script", blurb: "The questions to ask on a cold-lead call. 8 questions.", icon: CheckBadgeIcon, status: "live" },
 ];
 
 export default function AcquisitionPage() {
@@ -75,21 +49,15 @@ export default function AcquisitionPage() {
   const isAdmin = role === "admin" || role === "cro";
 
   const [sections, setSections] = useState<OfferSection[]>([]);
-  const [objections, setObjections] = useState<OfferObjection[]>([]);
-  const [pricing, setPricing] = useState<OfferPricingTier[]>([]);
   const [resources, setResources] = useState<OfferResource[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
-  const [editingObjectionId, setEditingObjectionId] = useState<string | null>(null);
-  const [editingPricingId, setEditingPricingId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const [s, o, p, r] = await Promise.all([
+      const [s, r] = await Promise.all([
         offerSectionsStore.getAll(),
-        offerObjectionsStore.getAll(),
-        offerPricingStore.getAll(),
         offerResourcesStore.getAll(),
       ]);
       if (cancelled) return;
@@ -107,18 +75,6 @@ export default function AcquisitionPage() {
         setSections(acquisitionSections);
       }
 
-      /* Objections: don't seed - admin adds as they encounter them. */
-      setObjections(o.sort((a, b) => a.order - b.order));
-
-      const pricingRows = p.sort((a, b) => a.order - b.order);
-      if (pricingRows.length === 0 && isSeeder) {
-        const seeded = await seedAcquisitionPricing();
-        if (cancelled) return;
-        setPricing(seeded);
-      } else {
-        setPricing(pricingRows);
-      }
-
       setHydrated(true);
     }
     load();
@@ -127,7 +83,6 @@ export default function AcquisitionPage() {
     };
   }, [role]);
 
-  /* ── Section CRUD ── */
   async function addSection() {
     const row: OfferSection = {
       id: uid(),
@@ -153,56 +108,6 @@ export default function AcquisitionPage() {
     await offerSectionsStore.remove(id);
   }
 
-  /* ── Objection CRUD ── */
-  async function addObjection() {
-    const row: OfferObjection = {
-      id: uid(),
-      objection: "New objection",
-      response: "",
-      order: nextOrder(objections),
-    };
-    await offerObjectionsStore.create(row);
-    setObjections((prev) => [...prev, row]);
-    setEditingObjectionId(row.id);
-  }
-  async function patchObjection(id: string, patch: Partial<OfferObjection>) {
-    const current = objections.find((o) => o.id === id);
-    if (!current) return;
-    const next = { ...current, ...patch };
-    setObjections((prev) => prev.map((o) => (o.id === id ? next : o)));
-    await offerObjectionsStore.update(id, next);
-  }
-  async function removeObjection(id: string) {
-    setObjections((prev) => prev.filter((o) => o.id !== id));
-    await offerObjectionsStore.remove(id);
-  }
-
-  /* ── Pricing CRUD ── */
-  async function addPricing() {
-    const row: OfferPricingTier = {
-      id: uid(),
-      tier: "New tier",
-      price: "",
-      includes: [],
-      order: nextOrder(pricing),
-    };
-    await offerPricingStore.create(row);
-    setPricing((prev) => [...prev, row]);
-    setEditingPricingId(row.id);
-  }
-  async function patchPricing(id: string, patch: Partial<OfferPricingTier>) {
-    const current = pricing.find((p) => p.id === id);
-    if (!current) return;
-    const next = { ...current, ...patch };
-    setPricing((prev) => prev.map((p) => (p.id === id ? next : p)));
-    await offerPricingStore.update(id, next);
-  }
-  async function removePricing(id: string) {
-    setPricing((prev) => prev.filter((p) => p.id !== id));
-    await offerPricingStore.remove(id);
-  }
-
-  /* ── Resource CRUD ── shared across every Acquisition card. */
   async function createResource(input: Omit<OfferResource, "id">) {
     const row: OfferResource = { id: uid(), ...input };
     setResources((prev) => [...prev, row]);
@@ -219,21 +124,16 @@ export default function AcquisitionPage() {
     await offerResourcesStore.remove(id);
   }
 
-  /* Reusable helper - every card asks the same question: "what
-   * resources are attached to me?" */
-  function resourcesFor(parentType: OfferResource["parent_type"], parentId: string) {
-    return resources.filter(
-      (r) => r.parent_type === parentType && r.parent_id === parentId,
-    );
-  }
-  function resourceFooter(parentType: OfferResource["parent_type"], parentId: string, accent: "emerald" | "cyan" | "sky"): ReactNode {
+  function resourceFooter(parentType: OfferResource["parent_type"], parentId: string): ReactNode {
     return (
       <ResourceList
         parentType={parentType}
         parentId={parentId}
-        resources={resourcesFor(parentType, parentId)}
+        resources={resources.filter(
+          (r) => r.parent_type === parentType && r.parent_id === parentId,
+        )}
         isAdmin={isAdmin}
-        accent={accent}
+        accent="emerald"
         onCreate={createResource}
         onUpdate={updateResource}
         onRemove={removeResource}
@@ -253,8 +153,6 @@ export default function AcquisitionPage() {
 
   return (
     <div className="space-y-10">
-      {/* TOOL GRID - the working surface for everything Acquisition. The
-       * playbook text below is reference; the grid is what gets clicked. */}
       <section>
         <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3 flex items-center gap-2">
           <span className="size-2 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
@@ -263,21 +161,23 @@ export default function AcquisitionPage() {
         <ToolCardGrid cards={ACQUISITION_TOOLS} accent="emerald" />
       </section>
 
-      {/* GUIDANCE SECTIONS */}
       <section>
         <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3 flex items-center gap-2">
           <span className="size-2 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
-          Guidance
+          Playbook notes
         </h2>
+        <p className="text-[12px] text-[#71757D] mb-4 max-w-2xl">
+          Free-form copy for the team: pitch principles, outreach playbook, anything that doesn&apos;t belong in a tool but needs to be discoverable.
+        </p>
         <div className="space-y-3">
           {sections.length === 0 ? (
-            <EmptyState
-              copy={
-                isAdmin
-                  ? "Add the pitch script, outreach playbook, and anything else needed to win deals."
-                  : "Nothing here yet. Ask an admin to fill it in."
-              }
-            />
+            <div className="bg-[#0F0F10] rounded-2xl p-6 text-center ring-1 ring-white/[0.04]">
+              <p className="text-sm text-[#71757D]">
+                {isAdmin
+                  ? "Add the pitch principles, outreach playbook, and anything else needed to win deals."
+                  : "Nothing here yet. Ask an admin to fill it in."}
+              </p>
+            </div>
           ) : (
             sections.map((s) => (
               <SectionCard
@@ -292,7 +192,7 @@ export default function AcquisitionPage() {
                   setEditingSectionId(null);
                 }}
                 onDelete={() => removeSection(s.id)}
-                footer={resourceFooter("section", s.id, "emerald")}
+                footer={resourceFooter("section", s.id)}
               />
             ))
           )}
@@ -306,340 +206,6 @@ export default function AcquisitionPage() {
           )}
         </div>
       </section>
-
-      {/* OBJECTION LIBRARY */}
-      <section>
-        <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3 flex items-center gap-2">
-          <span className="size-2 rounded-full bg-gradient-to-br from-cyan-500 to-teal-600 shadow-[0_0_12px_rgba(6,182,212,0.6)]" />
-          Objection library
-        </h2>
-        <div className="space-y-3">
-          {objections.length === 0 ? (
-            <EmptyState
-              copy={
-                isAdmin
-                  ? "Capture every objection you hear + the response that lands. Build this up over time."
-                  : "Nothing here yet."
-              }
-            />
-          ) : (
-            objections.map((o) => (
-              <ObjectionCard
-                key={o.id}
-                objection={o}
-                isAdmin={isAdmin}
-                editing={editingObjectionId === o.id}
-                onEdit={() => setEditingObjectionId(o.id)}
-                onCancel={() => setEditingObjectionId(null)}
-                onSave={(patch) => {
-                  patchObjection(o.id, patch);
-                  setEditingObjectionId(null);
-                }}
-                onDelete={() => removeObjection(o.id)}
-                footer={resourceFooter("objection", o.id, "cyan")}
-              />
-            ))
-          )}
-          {isAdmin && (
-            <button
-              onClick={addObjection}
-              className="w-full py-3 rounded-2xl text-[13px] text-[#71757D] ring-1 ring-dashed ring-white/[0.08] hover:ring-emerald-500/40 hover:text-[#E5E5EA] hover:bg-emerald-500/[0.04] transition-all"
-            >
-              + Add objection
-            </button>
-          )}
-        </div>
-      </section>
-
-      {/* PRICING */}
-      <section>
-        <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3 flex items-center gap-2">
-          <span className="size-2 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 shadow-[0_0_12px_rgba(14,165,233,0.6)]" />
-          Pricing &amp; what&apos;s included
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {pricing.length === 0 ? (
-            <div className="md:col-span-3">
-              <EmptyState
-                copy={
-                  isAdmin
-                    ? "Add the priced tiers and what each covers."
-                    : "Pricing not published yet."
-                }
-              />
-            </div>
-          ) : (
-            pricing.map((p) => (
-              <PricingCard
-                key={p.id}
-                tier={p}
-                isAdmin={isAdmin}
-                editing={editingPricingId === p.id}
-                onEdit={() => setEditingPricingId(p.id)}
-                onCancel={() => setEditingPricingId(null)}
-                onSave={(patch) => {
-                  patchPricing(p.id, patch);
-                  setEditingPricingId(null);
-                }}
-                onDelete={() => removePricing(p.id)}
-                footer={resourceFooter("pricing", p.id, "sky")}
-              />
-            ))
-          )}
-        </div>
-        {isAdmin && (
-          <button
-            onClick={addPricing}
-            className="mt-3 w-full py-3 border border-dashed border-[#2A2A2A] rounded-xl text-[13px] text-[#71757D] hover:border-white hover:text-[#E5E5EA] transition-colors"
-          >
-            + Add pricing tier
-          </button>
-        )}
-      </section>
-    </div>
-  );
-}
-
-function EmptyState({ copy }: { copy: string }) {
-  return (
-    <div className="bg-[#0F0F10] rounded-2xl p-6 text-center ring-1 ring-white/[0.04]">
-      <p className="text-sm text-[#71757D]">{copy}</p>
-    </div>
-  );
-}
-
-/* ─── ObjectionCard ─── */
-function ObjectionCard({
-  objection,
-  isAdmin,
-  editing,
-  onEdit,
-  onCancel,
-  onSave,
-  onDelete,
-  footer,
-}: {
-  objection: OfferObjection;
-  isAdmin: boolean;
-  editing: boolean;
-  onEdit: () => void;
-  onCancel: () => void;
-  onSave: (patch: Partial<OfferObjection>) => void;
-  onDelete: () => void;
-  footer?: ReactNode;
-}) {
-  const [qDraft, setQDraft] = useState(objection.objection);
-  const [aDraft, setADraft] = useState(objection.response);
-  useEffect(() => {
-    if (editing) {
-      setQDraft(objection.objection);
-      setADraft(objection.response);
-    }
-  }, [editing, objection.objection, objection.response]);
-
-  if (editing) {
-    return (
-      <div className="bg-[#0F0F10] rounded-2xl p-5 space-y-3 ring-1 ring-cyan-500/30 shadow-[0_8px_32px_rgba(6,182,212,0.12)]">
-        <input
-          value={qDraft}
-          onChange={(e) => setQDraft(e.target.value)}
-          placeholder="What they say"
-          className={inputClass}
-          autoFocus
-        />
-        <textarea
-          value={aDraft}
-          onChange={(e) => setADraft(e.target.value)}
-          placeholder="How we respond"
-          rows={4}
-          className={textareaClass}
-        />
-        <div className="flex items-center justify-between">
-          <button
-            onClick={onDelete}
-            className="text-[11px] uppercase tracking-wider text-[#71757D] hover:text-rose-400"
-          >
-            Delete
-          </button>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onCancel}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white"
-            >
-              <XMarkIcon className="size-3.5" />
-              Cancel
-            </button>
-            <button
-              onClick={() =>
-                onSave({
-                  objection: qDraft.trim() || "Untitled",
-                  response: aDraft,
-                })
-              }
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]"
-            >
-              <CheckIcon className="size-3.5" />
-              Save
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-[#0F0F10] rounded-2xl p-5 group ring-1 ring-white/[0.04] hover:ring-cyan-500/30 shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all">
-      <div className="flex items-start justify-between gap-3 mb-2">
-        <div className="font-semibold text-[#E5E5EA] text-sm">
-          &ldquo;{objection.objection}&rdquo;
-        </div>
-        {isAdmin && (
-          <button
-            onClick={onEdit}
-            className="opacity-0 group-hover:opacity-100 transition-opacity text-[#71757D] hover:text-[#E5E5EA] shrink-0"
-            title="Edit objection"
-          >
-            <PencilSquareIcon className="size-4" />
-          </button>
-        )}
-      </div>
-      <p className="text-sm text-[#9CA3AF] whitespace-pre-wrap">
-        {objection.response || (
-          <span className="italic text-[#71757D]">No response yet.</span>
-        )}
-      </p>
-      {footer}
-    </div>
-  );
-}
-
-/* ─── PricingCard ─── */
-function PricingCard({
-  tier,
-  isAdmin,
-  editing,
-  onEdit,
-  onCancel,
-  onSave,
-  onDelete,
-  footer,
-}: {
-  tier: OfferPricingTier;
-  isAdmin: boolean;
-  editing: boolean;
-  onEdit: () => void;
-  onCancel: () => void;
-  onSave: (patch: Partial<OfferPricingTier>) => void;
-  onDelete: () => void;
-  footer?: ReactNode;
-}) {
-  const [tierDraft, setTierDraft] = useState(tier.tier);
-  const [priceDraft, setPriceDraft] = useState(tier.price);
-  /* Includes is stored as string[] but edited as a newline-separated
-   * textarea - one bullet per line - because the team will mostly
-   * paste from notes. */
-  const [includesDraft, setIncludesDraft] = useState(tier.includes.join("\n"));
-  useEffect(() => {
-    if (editing) {
-      setTierDraft(tier.tier);
-      setPriceDraft(tier.price);
-      setIncludesDraft(tier.includes.join("\n"));
-    }
-  }, [editing, tier.tier, tier.price, tier.includes]);
-
-  if (editing) {
-    return (
-      <div className="bg-[#0F0F10] rounded-2xl p-5 space-y-3 md:col-span-3 ring-1 ring-sky-500/30 shadow-[0_8px_32px_rgba(14,165,233,0.12)]">
-        <div className="grid grid-cols-2 gap-3">
-          <input
-            value={tierDraft}
-            onChange={(e) => setTierDraft(e.target.value)}
-            placeholder="Tier name (Entry, Core, VIP)"
-            className={inputClass}
-            autoFocus
-          />
-          <input
-            value={priceDraft}
-            onChange={(e) => setPriceDraft(e.target.value)}
-            placeholder="Price (£8k / month, from £5,000)"
-            className={inputClass}
-          />
-        </div>
-        <textarea
-          value={includesDraft}
-          onChange={(e) => setIncludesDraft(e.target.value)}
-          placeholder="One bullet per line of what this tier includes"
-          rows={6}
-          className={textareaClass}
-        />
-        <div className="flex items-center justify-between">
-          <button
-            onClick={onDelete}
-            className="text-[11px] uppercase tracking-wider text-[#71757D] hover:text-rose-400"
-          >
-            Delete
-          </button>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onCancel}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white"
-            >
-              <XMarkIcon className="size-3.5" />
-              Cancel
-            </button>
-            <button
-              onClick={() =>
-                onSave({
-                  tier: tierDraft.trim() || "Untitled",
-                  price: priceDraft.trim(),
-                  includes: includesDraft
-                    .split("\n")
-                    .map((s) => s.trim())
-                    .filter(Boolean),
-                })
-              }
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]"
-            >
-              <CheckIcon className="size-3.5" />
-              Save
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-[#0F0F10] rounded-2xl p-5 group ring-1 ring-white/[0.04] hover:ring-sky-500/30 shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all">
-      <div className="flex items-start justify-between gap-3 mb-2">
-        <div>
-          <div className="text-[11px] uppercase tracking-wider text-[#71757D]">
-            {tier.tier}
-          </div>
-          <div className="text-2xl font-semibold bg-gradient-to-br from-sky-300 to-blue-200 bg-clip-text text-transparent mt-1">
-            {tier.price || "—"}
-          </div>
-        </div>
-        {isAdmin && (
-          <button
-            onClick={onEdit}
-            className="opacity-0 group-hover:opacity-100 transition-opacity text-[#71757D] hover:text-[#E5E5EA]"
-            title="Edit tier"
-          >
-            <PencilSquareIcon className="size-4" />
-          </button>
-        )}
-      </div>
-      {tier.includes.length > 0 ? (
-        <ul className="text-sm text-[#9CA3AF] space-y-1 list-disc list-inside mt-3">
-          {tier.includes.map((line, i) => (
-            <li key={i}>{line}</li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-xs text-[#71757D] italic mt-3">Nothing listed yet.</p>
-      )}
-      {footer}
     </div>
   );
 }

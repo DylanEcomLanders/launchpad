@@ -346,6 +346,7 @@ export function Sidebar() {
     // Admin/CRO surfaces.
     ...(role !== "team"
       ? [
+          { label: onboardingItem.label, href: onboardingItem.href, group: "Pinned", icon: onboardingItem.icon, keywords: ["onboarding", "inbox", "new clients", "intake"] },
           { label: missionControlItem.label, href: missionControlItem.href, group: "Pinned", icon: missionControlItem.icon, keywords: ["kanban", "delivery", "board", "project"] },
           { label: workspaceItem.label, href: workspaceItem.href, group: "Pinned", icon: workspaceItem.icon, keywords: ["pods", "clients", "delivery", "legacy"] },
           { label: kpiItem.label, href: kpiItem.href, group: "Pinned", icon: kpiItem.icon, keywords: ["metrics", "throughput", "on-time"] },
@@ -573,11 +574,13 @@ export function Sidebar() {
             {renderTopLink(myWorkItem)}
           </div>
 
-          {/* GROUP 2 — Delivery cluster: kanban (canonical) + Old Delivery
-              (legacy /workspace, until manual migration done) + KPIs (reads
-              kanban metrics). */}
+          {/* GROUP 2 — Delivery cluster: Onboarding inbox (lands above
+              Delivery so new clients are surfaced before in-flight work)
+              + kanban (canonical) + Old Delivery (legacy /workspace,
+              until manual migration done) + KPIs (reads kanban metrics). */}
           {role !== "team" && (
             <div className="px-3 space-y-0.5 mt-6">
+              {renderTopLink(onboardingItem)}
               {renderTopLink(missionControlItem)}
               {renderTopLink(workspaceItem)}
               {renderTopLink(kpiItem)}

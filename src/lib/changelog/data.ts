@@ -37,6 +37,22 @@ const ROADMAP_KEY = "launchpad-roadmap";
 
 const seedChangelog: ChangelogEntry[] = [
   {
+    id: "cl-138",
+    date: "26 June 2026",
+    version: "3.0.0",
+    title: "Hero Offer rebuild + editorial deck system + Onboarding back in sidebar",
+    changes: [
+      { type: "added", text: "Hero Offer front page (/hero-offer) restructured to mirror /pricing: 3 tier cards (Entry/Core/VIP), North Star + Guarantee + Who-it's-for, 3 stage links, 5-card playbook guide (what it is, how it's organised, who maintains, how to use day to day, glossary). Objection Library moved inline at the bottom" },
+      { type: "added", text: "Acquisition slimmed to 5 canonical tools: Discovery Audit (new reference deck of what to look for in audits), Proposals/Quotes, Pricelist (external to /pricing), Pitch Deck (combined sales+pitch+proof), Qualification Script (rewritten as 8 cold-call questions with green/red flag answers across context/fit/readiness)" },
+      { type: "added", text: "Execution slimmed to 3 tools: Briefs (links to /tools/briefs), Roadmap (NEW: tier-switcher £5k/£10k/£15k, client name + month inputs, presentable HTML), Kickoff Deck (rebuilt: brand/date/tier/pod inputs, shareable present-mode URL)" },
+      { type: "added", text: "Retention slimmed to 3 tools: Monthly Report Deck (NEW: week 1-4 + month overview + wins/lessons/next month), Renewal Proposals (links out), Milestone Deck (NEW: one deck with Day 30/90/180/365 picker, adapts content to chosen milestone)" },
+      { type: "added", text: "Editorial deck system: shared <SlideDeck>, <SlideCover> (black hero with badge + REF/DATE meta + preparedFor/preparedBy), <SlideBody> (white pages with ecomlanders mark + page x/y + mono footer). Matches the Ecom Landers proposal PDF style. Inter Tight headings + Articulat CF body throughout" },
+      { type: "added", text: "Present mode on every deck (?present=1 or click Present button): fullscreen, arrow-key nav, slide indicator dots, share link copies the customised URL" },
+      { type: "removed", text: "13 dead Hero Offer routes: sales-deck, proof-deck, one-pager, outreach, tier-fit, separate objections page, handoffs, standup, variant-templates, the 4 separate Day 30/90/180/365 decks (merged into one Milestone Deck)" },
+      { type: "added", text: "Onboarding back in the sidebar, sitting above Delivery in the Delivery cluster. Also surfaced in ⌘K command palette" },
+    ],
+  },
+  {
     id: "cl-137",
     date: "25 June 2026",
     version: "2.9.0",

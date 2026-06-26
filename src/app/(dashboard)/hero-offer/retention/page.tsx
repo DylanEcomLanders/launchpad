@@ -2,66 +2,36 @@
 
 /* ── Hero Offer / Retention ──
  *
- * How to make it last. One card per lifecycle milestone (Day 30,
- * 90, 180, 365 to start; the day field is free so the team can add
- * more touchpoints). Each card has a title + markdown body
- * describing the plays at that point.
+ * Three canonical tools: Monthly Report Deck (combines what was
+ * Reports + Lifecycle), Renewal Proposals (links to /tools/proposals),
+ * Milestone Deck (one deck, pick the day - 30/90/180/365). Onboarding
+ * lives in Execution as the Kickoff Deck. Cadence + test wins + brain
+ * library live elsewhere on purpose.
  */
 
 import { useEffect, useState, type ReactNode } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import {
-  CheckIcon,
-  XMarkIcon,
-  PencilSquareIcon,
-  SparklesIcon,
-  CalendarDaysIcon,
-  ChatBubbleOvalLeftEllipsisIcon,
-  TrophyIcon,
-  AcademicCapIcon,
-  DocumentTextIcon,
-  GiftIcon,
-  ChartBarIcon,
-  FlagIcon,
-  StarIcon,
-} from "@heroicons/react/24/outline";
 import { useRole } from "@/components/auth-gate";
 import {
-  offerMilestonesStore,
   offerResourcesStore,
   offerSectionsStore,
   nextOrder,
   nowISO,
   uid,
 } from "@/lib/hero-offer/data";
-import {
-  seedRetentionMilestones,
-  seedRetentionSections,
-} from "@/lib/hero-offer/seed";
-import type {
-  OfferMilestone,
-  OfferResource,
-  OfferSection,
-} from "@/lib/hero-offer/types";
+import type { OfferResource, OfferSection } from "@/lib/hero-offer/types";
 import { SectionCard } from "@/lib/hero-offer/section-card";
 import { ResourceList } from "@/lib/hero-offer/resource-list";
 import { ToolCardGrid, type ToolCard } from "@/lib/hero-offer/tool-card-grid";
-import { inputClass, textareaClass, labelClass } from "@/lib/form-styles";
-
-const DEFAULT_DAYS = [30, 90, 180, 365];
+import {
+  ChartPieIcon,
+  FlagIcon,
+  DocumentTextIcon,
+} from "@heroicons/react/24/outline";
 
 const RETENTION_TOOLS: ToolCard[] = [
-  { href: "/tools/onboarding", label: "Onboarding", blurb: "First-week wow checklist per client.", icon: SparklesIcon, status: "live" },
-  { href: "/tools/lifecycle", label: "Lifecycle milestones", blurb: "Day 30 / 90 / 180 / 365 tracking per client.", icon: CalendarDaysIcon, status: "live" },
-  { href: "/tools/cadence", label: "Cadence + at-risk", blurb: "Comms log + 3 risk signals.", icon: ChatBubbleOvalLeftEllipsisIcon, status: "live" },
-  { href: "/tools/test-wins", label: "Test wins", blurb: "Case study inbox - capture winners as they happen.", icon: TrophyIcon, status: "live" },
-  { href: "/knowledge", label: "Brain library", blurb: "Searchable test learnings across all clients.", icon: AcademicCapIcon, status: "live" },
-  { href: "/tools/proposals", label: "Renewal proposals", blurb: "+ Renewal button on signed proposals carries scope forward.", icon: DocumentTextIcon, status: "live" },
-  { href: "/hero-offer/retention/30-day-deck", label: "Day 30 deck", blurb: "First-month retro: what we shipped, what we learned.", icon: GiftIcon, status: "shell" },
-  { href: "/hero-offer/retention/90-day-deck", label: "Day 90 deck", blurb: "Renewal anchor + the case for continuing.", icon: ChartBarIcon, status: "shell" },
-  { href: "/hero-offer/retention/180-day-deck", label: "Day 180 deck", blurb: "Case study angle + referral ask.", icon: StarIcon, status: "shell" },
-  { href: "/hero-offer/retention/365-day-deck", label: "Day 365 deck", blurb: "Annual review + multi-year framing.", icon: FlagIcon, status: "shell" },
+  { href: "/hero-offer/retention/monthly-report", label: "Monthly Report Deck", blurb: "Week 1-4 + month overview + results + pages shipped + next month plan. Shareable HTML.", icon: ChartPieIcon, status: "live" },
+  { href: "/tools/proposals", label: "Renewal Proposals", blurb: "+ Renewal button on signed proposals carries scope forward into the next term.", icon: DocumentTextIcon, status: "live" },
+  { href: "/hero-offer/retention/milestone-deck", label: "Milestone Deck", blurb: "Day 30 / 90 / 180 / 365 in one deck. Pick the day, customise, present.", icon: FlagIcon, status: "live" },
 ];
 
 export default function RetentionPage() {
@@ -69,55 +39,32 @@ export default function RetentionPage() {
   const isAdmin = role === "admin" || role === "cro";
 
   const [sections, setSections] = useState<OfferSection[]>([]);
-  const [milestones, setMilestones] = useState<OfferMilestone[]>([]);
   const [resources, setResources] = useState<OfferResource[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
-  const [editingMilestoneId, setEditingMilestoneId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const [s, m, r] = await Promise.all([
+      const [s, r] = await Promise.all([
         offerSectionsStore.getAll(),
-        offerMilestonesStore.getAll(),
         offerResourcesStore.getAll(),
       ]);
       if (cancelled) return;
       setResources(r);
-      const isSeeder = role === "admin" || role === "cro";
-
-      const retentionSections = s
-        .filter((r) => r.stage === "retention")
-        .sort((a, b) => a.order - b.order);
-      if (retentionSections.length === 0 && isSeeder) {
-        const seeded = await seedRetentionSections();
-        if (cancelled) return;
-        setSections(seeded);
-      } else {
-        setSections(retentionSections);
-      }
-
-      const milestoneRows = m.sort(
-        (a, b) => a.day - b.day || a.order - b.order,
+      setSections(
+        s
+          .filter((row) => row.stage === "retention")
+          .sort((a, b) => a.order - b.order),
       );
-      if (milestoneRows.length === 0 && isSeeder) {
-        const seeded = await seedRetentionMilestones();
-        if (cancelled) return;
-        setMilestones(seeded);
-      } else {
-        setMilestones(milestoneRows);
-      }
-
       setHydrated(true);
     }
     load();
     return () => {
       cancelled = true;
     };
-  }, [role]);
+  }, []);
 
-  /* ── Section CRUD ── */
   async function addSection() {
     const row: OfferSection = {
       id: uid(),
@@ -143,38 +90,6 @@ export default function RetentionPage() {
     await offerSectionsStore.remove(id);
   }
 
-  /* ── Milestone CRUD ── */
-  async function addMilestone(day: number) {
-    const row: OfferMilestone = {
-      id: uid(),
-      day,
-      title: `Day ${day}`,
-      body: "",
-      order: nextOrder(milestones),
-    };
-    await offerMilestonesStore.create(row);
-    setMilestones((prev) =>
-      [...prev, row].sort((a, b) => a.day - b.day || a.order - b.order),
-    );
-    setEditingMilestoneId(row.id);
-  }
-  async function patchMilestone(id: string, patch: Partial<OfferMilestone>) {
-    const current = milestones.find((m) => m.id === id);
-    if (!current) return;
-    const next = { ...current, ...patch };
-    setMilestones((prev) =>
-      prev
-        .map((m) => (m.id === id ? next : m))
-        .sort((a, b) => a.day - b.day || a.order - b.order),
-    );
-    await offerMilestonesStore.update(id, next);
-  }
-  async function removeMilestone(id: string) {
-    setMilestones((prev) => prev.filter((m) => m.id !== id));
-    await offerMilestonesStore.remove(id);
-  }
-
-  /* ── Resource CRUD ── */
   async function createResource(input: Omit<OfferResource, "id">) {
     const row: OfferResource = { id: uid(), ...input };
     setResources((prev) => [...prev, row]);
@@ -191,10 +106,7 @@ export default function RetentionPage() {
     await offerResourcesStore.remove(id);
   }
 
-  function resourceFooter(
-    parentType: OfferResource["parent_type"],
-    parentId: string,
-  ): ReactNode {
+  function resourceFooter(parentType: OfferResource["parent_type"], parentId: string): ReactNode {
     return (
       <ResourceList
         parentType={parentType}
@@ -214,22 +126,15 @@ export default function RetentionPage() {
   if (!hydrated) {
     return (
       <div className="space-y-3">
-        {Array.from({ length: 4 }).map((_, i) => (
+        {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="h-32 bg-[#0C0C0C] rounded-xl animate-pulse" />
         ))}
       </div>
     );
   }
 
-  /* Which of the default days have no milestone yet - admin can
-   * one-click add them. */
-  const existingDays = new Set(milestones.map((m) => m.day));
-  const missingDefaultDays = DEFAULT_DAYS.filter((d) => !existingDays.has(d));
-
   return (
     <div className="space-y-10">
-      {/* TOOL GRID - the working surface for Retention. Sections + the
-       * lifecycle milestones below stay as the spec. */}
       <section>
         <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3 flex items-center gap-2">
           <span className="size-2 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 shadow-[0_0_12px_rgba(14,165,233,0.6)]" />
@@ -238,12 +143,14 @@ export default function RetentionPage() {
         <ToolCardGrid cards={RETENTION_TOOLS} accent="sky" />
       </section>
 
-      {/* GUIDANCE SECTIONS */}
       <section>
         <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3 flex items-center gap-2">
           <span className="size-2 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 shadow-[0_0_12px_rgba(14,165,233,0.6)]" />
-          Guidance
+          Playbook notes
         </h2>
+        <p className="text-[12px] text-[#71757D] mb-4 max-w-2xl">
+          Free-form copy for the CSM team: retention principles, comms cadence, expansion levers, anything that doesn&apos;t belong in a tool.
+        </p>
         <div className="space-y-3">
           {sections.length === 0 ? (
             <div className="bg-[#0F0F10] rounded-2xl p-6 text-center ring-1 ring-white/[0.04]">
@@ -281,222 +188,6 @@ export default function RetentionPage() {
           )}
         </div>
       </section>
-
-      {/* LIFECYCLE MILESTONES */}
-      <section>
-        <h2 className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3 flex items-center gap-2">
-          <span className="size-2 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 shadow-[0_0_12px_rgba(14,165,233,0.6)]" />
-          Lifecycle milestones
-        </h2>
-        <div className="space-y-3">
-          {milestones.length === 0 ? (
-            <div className="bg-[#0F0F10] rounded-2xl p-8 text-center ring-1 ring-white/[0.04]">
-              <p className="text-sm text-[#71757D] mb-4">
-                {isAdmin
-                  ? "Start with the four standard milestones, then layer in more touchpoints."
-                  : "No milestones yet."}
-              </p>
-              {isAdmin && (
-                <div className="flex items-center justify-center gap-2 flex-wrap">
-                  {DEFAULT_DAYS.map((d) => (
-                    <button
-                      key={d}
-                      onClick={() => addMilestone(d)}
-                      className="px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-gradient-to-r from-sky-500/15 to-blue-500/15 ring-1 ring-sky-500/30 text-sky-200 hover:from-sky-500/25 hover:to-blue-500/25"
-                    >
-                      + Day {d}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : (
-            milestones.map((m) => (
-              <MilestoneCard
-                key={m.id}
-                milestone={m}
-                isAdmin={isAdmin}
-                editing={editingMilestoneId === m.id}
-                onEdit={() => setEditingMilestoneId(m.id)}
-                onCancel={() => setEditingMilestoneId(null)}
-                onSave={(patch) => {
-                  patchMilestone(m.id, patch);
-                  setEditingMilestoneId(null);
-                }}
-                onDelete={() => removeMilestone(m.id)}
-                footer={resourceFooter("milestone", m.id)}
-              />
-            ))
-          )}
-          {isAdmin && milestones.length > 0 && (
-            <div className="flex items-center gap-2 flex-wrap">
-              {missingDefaultDays.map((d) => (
-                <button
-                  key={d}
-                  onClick={() => addMilestone(d)}
-                  className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-[#222222] text-[#71757D] hover:bg-[#2A2A2A] hover:text-[#E5E5EA]"
-                >
-                  + Day {d}
-                </button>
-              ))}
-              <button
-                onClick={() => {
-                  const input = window.prompt("Day number for new milestone (e.g. 45, 120, 730)");
-                  if (!input) return;
-                  const n = parseInt(input, 10);
-                  if (Number.isFinite(n) && n > 0) addMilestone(n);
-                }}
-                className="px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-[#222222] text-[#71757D] hover:bg-[#2A2A2A] hover:text-[#E5E5EA]"
-              >
-                + Custom day
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
-    </div>
-  );
-}
-
-/* ─── MilestoneCard ─── */
-function MilestoneCard({
-  milestone,
-  isAdmin,
-  editing,
-  onEdit,
-  onCancel,
-  onSave,
-  onDelete,
-  footer,
-}: {
-  milestone: OfferMilestone;
-  isAdmin: boolean;
-  editing: boolean;
-  onEdit: () => void;
-  onCancel: () => void;
-  onSave: (patch: Partial<OfferMilestone>) => void;
-  onDelete: () => void;
-  footer?: ReactNode;
-}) {
-  const [dayDraft, setDayDraft] = useState(String(milestone.day));
-  const [titleDraft, setTitleDraft] = useState(milestone.title);
-  const [bodyDraft, setBodyDraft] = useState(milestone.body);
-
-  useEffect(() => {
-    if (editing) {
-      setDayDraft(String(milestone.day));
-      setTitleDraft(milestone.title);
-      setBodyDraft(milestone.body);
-    }
-  }, [editing, milestone]);
-
-  if (editing) {
-    return (
-      <div className="bg-[#0F0F10] rounded-2xl p-5 space-y-3 ring-1 ring-sky-500/30 shadow-[0_8px_32px_rgba(14,165,233,0.12)]">
-        <div className="grid grid-cols-[120px_1fr] gap-3">
-          <div>
-            <label className={labelClass}>Day</label>
-            <input
-              type="number"
-              value={dayDraft}
-              onChange={(e) => setDayDraft(e.target.value)}
-              className={inputClass}
-              autoFocus
-            />
-          </div>
-          <div>
-            <label className={labelClass}>Title</label>
-            <input
-              value={titleDraft}
-              onChange={(e) => setTitleDraft(e.target.value)}
-              className={inputClass}
-              placeholder="e.g. Renewal kickoff call"
-            />
-          </div>
-        </div>
-        <div>
-          <label className={labelClass}>Body (markdown)</label>
-          <textarea
-            value={bodyDraft}
-            onChange={(e) => setBodyDraft(e.target.value)}
-            rows={8}
-            className={`${textareaClass} font-mono text-[13px]`}
-            placeholder="What happens at this point. Plays, comms, deliverables."
-          />
-        </div>
-        <div className="flex items-center justify-between">
-          <button
-            onClick={onDelete}
-            className="text-[11px] uppercase tracking-wider text-[#71757D] hover:text-rose-400"
-          >
-            Delete milestone
-          </button>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onCancel}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white"
-            >
-              <XMarkIcon className="size-3.5" />
-              Cancel
-            </button>
-            <button
-              onClick={() => {
-                const n = parseInt(dayDraft, 10);
-                onSave({
-                  day: Number.isFinite(n) && n > 0 ? n : milestone.day,
-                  title: titleDraft.trim() || `Day ${milestone.day}`,
-                  body: bodyDraft,
-                });
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]"
-            >
-              <CheckIcon className="size-3.5" />
-              Save
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-[#0F0F10] rounded-2xl p-5 group ring-1 ring-white/[0.04] hover:ring-sky-500/30 shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all">
-      <div className="flex items-start gap-4">
-        <div className="shrink-0 size-14 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 flex flex-col items-center justify-center text-center shadow-[0_8px_24px_rgba(14,165,233,0.3)]">
-          <div className="text-lg font-bold text-white leading-none">
-            {milestone.day}
-          </div>
-          <div className="text-[9px] uppercase tracking-wider text-white/70 mt-0.5">
-            Day
-          </div>
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-3 mb-2">
-            <h3 className="text-lg font-semibold text-[#E5E5EA]">
-              {milestone.title}
-            </h3>
-            {isAdmin && (
-              <button
-                onClick={onEdit}
-                className="opacity-0 group-hover:opacity-100 transition-opacity text-[#71757D] hover:text-[#E5E5EA] shrink-0"
-                title="Edit milestone"
-              >
-                <PencilSquareIcon className="size-4" />
-              </button>
-            )}
-          </div>
-          {milestone.body.trim() ? (
-            <div className="prose prose-invert prose-sm max-w-none prose-p:text-[#9CA3AF] prose-li:text-[#9CA3AF] prose-strong:text-[#E5E5EA]">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {milestone.body}
-              </ReactMarkdown>
-            </div>
-          ) : (
-            <p className="text-xs text-[#71757D] italic">Not filled in.</p>
-          )}
-          {footer}
-        </div>
-      </div>
     </div>
   );
 }

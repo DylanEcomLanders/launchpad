@@ -1,42 +1,121 @@
 "use client";
 
-/* ── Hero Offer / Start here ──
+/* ── Hero Offer / The Offer ──
  *
- * The index. Explains what the playbook is, how it's organised, and
- * links into each stage. One editable intro section + a stage grid.
+ * Front page. Mirrors the public /pricing surface so the team and
+ * the founder see the same shape:
+ *   - 3 tier cards across the top (Entry / Core / VIP)
+ *   - North Star + Guarantee + Who-it's-for (3 cards under tiers)
+ *   - Playbook guide cards (what it is, how it's organised, who
+ *     maintains, how to use day to day, glossary)
+ *   - Objection library at the bottom (Q&A)
+ *   - Stage links (Acquisition / Execution / Retention)
+ *
+ * Editable: objections are admin-CRUD inline. Tier cards + guide cards
+ * are static for now; promote to editable later if needed.
  */
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
+  CheckIcon,
+  PencilSquareIcon,
+  XMarkIcon,
   MegaphoneIcon,
   WrenchScrewdriverIcon,
   HeartIcon,
   SparklesIcon,
   ArrowTopRightOnSquareIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import { useRole } from "@/components/auth-gate";
 import {
-  offerSectionsStore,
-  offerResourcesStore,
-  uid,
-  nowISO,
+  offerObjectionsStore,
   nextOrder,
+  uid,
 } from "@/lib/hero-offer/data";
-import { seedStartHere } from "@/lib/hero-offer/seed";
-import { SectionCard } from "@/lib/hero-offer/section-card";
-import { ResourceList } from "@/lib/hero-offer/resource-list";
-import type { OfferResource, OfferSection } from "@/lib/hero-offer/types";
+import type { OfferObjection } from "@/lib/hero-offer/types";
+import { inputClass, textareaClass } from "@/lib/form-styles";
 
-/* Each stage owns one slice of the gradient palette so the eye can
- * read "where am I" without parsing the label. Quiet at rest, vivid
- * on the icon tile. */
+/* ── Tier definitions ───────────────────────────────────────────
+ * Mirror /pricing exactly. Single source of truth lives in the
+ * public pricing page; this is the internal-facing mirror so the
+ * team sees what the prospect sees. */
+const TIERS = [
+  {
+    name: "Entry",
+    monthly: 5000,
+    blurb: "The Conversion Engine at a starter cadence.",
+    features: [
+      "2 page builds per month",
+      "2 A/B tests per month",
+      "Biweekly strategy calls",
+      "Biweekly reports on results",
+    ],
+    featured: false,
+  },
+  {
+    name: "Core",
+    monthly: 10000,
+    badge: "Most chosen",
+    blurb: "Full Conversion Engine on a weekly rhythm.",
+    features: [
+      "4 page builds per month",
+      "4 A/B tests per month",
+      "Weekly strategy calls (optional)",
+      "Weekly reports on results",
+    ],
+    featured: true,
+  },
+  {
+    name: "VIP",
+    monthly: 15000,
+    blurb: "Maximum velocity, aggressive test programme.",
+    features: [
+      "6 page builds per month",
+      "12 A/B tests per month",
+      "Weekly strategy calls",
+      "Priority turnaround",
+      "Quarterly brand-strategy calls",
+    ],
+    featured: false,
+  },
+];
+
+const PLAYBOOK_GUIDE = [
+  {
+    eyebrow: "What this playbook is",
+    title: "The conversion engine, fully documented.",
+    body: "Three stages (Acquisition · Execution · Retention) covering how we win the deal, how we wow on delivery, and how we make it last. Every tool the team needs to run the offer lives in here.",
+  },
+  {
+    eyebrow: "How it's organised",
+    title: "Stages → Tools → Decks.",
+    body: "Each stage has a small set of canonical tools. Each tool is either a working surface (briefs, roadmap, kickoff) or a presentable deck (pitch, milestone, monthly report). One source of truth, no scattered Google Docs.",
+  },
+  {
+    eyebrow: "Who maintains each section",
+    title: "Founder owns the offer, leads own their stage.",
+    body: "Dylan owns The Offer + Acquisition copy. Strategist owns Execution (briefs, roadmap). CSM owns Retention (reports, milestones). Anyone with admin can edit; the page badges show who last touched what.",
+  },
+  {
+    eyebrow: "How to use it day to day",
+    title: "Open the tool you need, ship.",
+    body: "Sales call? Open Pitch Deck + Qualification Script. Kicking off a new client? Generate the Kickoff Deck. Monthly review? Open Monthly Report. Day 30/90/180/365 check-in? Generate the Milestone Deck. Don't reinvent: every workflow already has a home here.",
+  },
+  {
+    eyebrow: "Glossary",
+    title: "The terms we use.",
+    body: "CR = conversion rate. North Star = the one metric (CR). Hero Offer = the conversion partnership we sell. Pod = the delivery team (strategist + designer + dev + QA). Engagement = an active client retainer. Test = an A/B experiment in market.",
+  },
+];
+
 const STAGES = [
   {
     href: "/hero-offer/acquisition",
     icon: MegaphoneIcon,
     label: "Acquisition",
-    sub: "How to win the deal: pitch, outreach, objections, pricing.",
+    sub: "Win the deal: discovery audit, proposals, pitch deck, qualification.",
     gradient: "from-emerald-500 to-teal-600",
     glow: "rgba(16,185,129,0.18)",
   },
@@ -44,7 +123,7 @@ const STAGES = [
     href: "/hero-offer/execution",
     icon: WrenchScrewdriverIcon,
     label: "Execution",
-    sub: "How to wow on delivery: the conversion engine, layer by layer.",
+    sub: "Wow on delivery: briefs, monthly roadmap, kickoff deck.",
     gradient: "from-cyan-500 to-teal-600",
     glow: "rgba(6,182,212,0.18)",
   },
@@ -52,230 +131,224 @@ const STAGES = [
     href: "/hero-offer/retention",
     icon: HeartIcon,
     label: "Retention",
-    sub: "How to make it last: Day 30 / 90 / 180 / 365 lifecycle.",
+    sub: "Make it last: monthly reports, milestone decks, renewals.",
     gradient: "from-sky-500 to-blue-600",
     glow: "rgba(14,165,233,0.18)",
   },
 ];
 
-export default function StartHerePage() {
+function fmtK(n: number) {
+  const k = n / 1000;
+  return `£${Number.isInteger(k) ? k : k.toFixed(1)}k`;
+}
+
+export default function TheOfferPage() {
   const role = useRole();
   const isAdmin = role === "admin" || role === "cro";
 
-  const [sections, setSections] = useState<OfferSection[]>([]);
-  const [resources, setResources] = useState<OfferResource[]>([]);
+  const [objections, setObjections] = useState<OfferObjection[]>([]);
   const [hydrated, setHydrated] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingObjectionId, setEditingObjectionId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const [rows, res] = await Promise.all([
-        offerSectionsStore.getAll(),
-        offerResourcesStore.getAll(),
-      ]);
+      const o = await offerObjectionsStore.getAll();
       if (cancelled) return;
-      const slice = rows
-        .filter((r) => r.stage === "start")
-        .sort((a, b) => a.order - b.order);
-      /* First-visit seed: pre-create the scaffold sections so the page
-       * isn't a blank "+ Add section" prompt. Only admin seeds; team
-       * members read whatever's there. */
-      if (slice.length === 0 && (role === "admin" || role === "cro")) {
-        const seeded = await seedStartHere();
-        if (cancelled) return;
-        setSections(seeded);
-      } else {
-        setSections(slice);
-      }
-      setResources(res);
+      setObjections(o.sort((a, b) => a.order - b.order));
       setHydrated(true);
     }
     load();
     return () => {
       cancelled = true;
     };
-  }, [role]);
+  }, []);
 
-  /* ── Resource CRUD ── shared across the page; ResourceList filters
-   * its own slice by (parent_type, parent_id). */
-  async function createResource(input: Omit<OfferResource, "id">) {
-    const row: OfferResource = { id: uid(), ...input };
-    setResources((prev) => [...prev, row]);
-    await offerResourcesStore.create(row);
-  }
-  async function updateResource(id: string, patch: Partial<OfferResource>) {
-    setResources((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, ...patch } : r)),
-    );
-    await offerResourcesStore.update(id, patch);
-  }
-  async function removeResource(id: string) {
-    setResources((prev) => prev.filter((r) => r.id !== id));
-    await offerResourcesStore.remove(id);
-  }
-
-  async function addSection() {
-    const row: OfferSection = {
+  async function addObjection() {
+    const row: OfferObjection = {
       id: uid(),
-      stage: "start",
-      title: "New section",
-      body: "",
-      order: nextOrder(sections),
-      updated_at: nowISO(),
+      objection: "New objection",
+      response: "",
+      order: nextOrder(objections),
     };
-    await offerSectionsStore.create(row);
-    setSections((prev) => [...prev, row]);
-    setEditingId(row.id);
+    await offerObjectionsStore.create(row);
+    setObjections((prev) => [...prev, row]);
+    setEditingObjectionId(row.id);
   }
-
-  async function patchSection(id: string, patch: Partial<OfferSection>) {
-    const current = sections.find((s) => s.id === id);
+  async function patchObjection(id: string, patch: Partial<OfferObjection>) {
+    const current = objections.find((o) => o.id === id);
     if (!current) return;
-    const next = { ...current, ...patch, updated_at: nowISO() };
-    setSections((prev) => prev.map((s) => (s.id === id ? next : s)));
-    await offerSectionsStore.update(id, next);
+    const next = { ...current, ...patch };
+    setObjections((prev) => prev.map((o) => (o.id === id ? next : o)));
+    await offerObjectionsStore.update(id, next);
   }
-
-  async function removeSection(id: string) {
-    setSections((prev) => prev.filter((s) => s.id !== id));
-    await offerSectionsStore.remove(id);
+  async function removeObjection(id: string) {
+    setObjections((prev) => prev.filter((o) => o.id !== id));
+    await offerObjectionsStore.remove(id);
   }
-
-  /* Resources attached at "root" sit above the index so playbook-wide
-   * artefacts (the whole playbook as a PDF, the agency wiki) read as
-   * top-level, not buried in a section. Empty unless admin adds. */
-  const rootResources = resources.filter(
-    (r) => r.parent_type === "root" && r.parent_id === "root",
-  );
 
   return (
-    <div className="space-y-6">
-      {/* "The Offer" brochure - what we do and why. Reads like the
-       * first 6 slides of a deck. Sits above all editable content. */}
-      <section className="bg-gradient-to-br from-emerald-500/[0.08] via-cyan-500/[0.08] to-sky-500/[0.08] rounded-2xl ring-1 ring-emerald-500/20 p-8">
-        <div className="text-[10px] uppercase tracking-[0.2em] font-semibold text-emerald-300/80 mb-4">
+    <div className="space-y-10">
+      {/* ── Hero ────────────────────────────────────────────────── */}
+      <section className="pt-2">
+        <div className="text-[10px] uppercase tracking-[0.3em] font-mono text-[#71757D] mb-4">
           The Conversion Engine
         </div>
-        <h2 className="text-3xl md:text-4xl font-semibold mb-3 bg-gradient-to-r from-white via-emerald-100 to-cyan-100 bg-clip-text text-transparent leading-tight">
+        <h2 className="text-3xl md:text-5xl font-semibold tracking-[-0.02em] leading-[1.05] mb-4 bg-gradient-to-r from-white via-emerald-100 to-cyan-100 bg-clip-text text-transparent">
           We turn the traffic you already pay for into revenue.
         </h2>
         <p className="text-sm md:text-base text-[#9CA3AF] leading-relaxed max-w-2xl">
-          One programme. A full conversion team — design, dev, copy, CRO — embedded inside your business on a monthly system. Not consultancy, not vendor: a partnership built to compound.
+          One programme. A full conversion team (design, dev, copy, CRO) embedded inside your business on a monthly system. Not consultancy, not vendor: a partnership built to compound.
         </p>
+      </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-8">
-          <div className="bg-[#0F0F10]/60 rounded-xl p-4 ring-1 ring-white/[0.04]">
-            <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">Entry</div>
-            <div className="text-2xl font-semibold text-[#E5E5EA]">£5k<span className="text-sm text-[#71757D]">/mo</span></div>
-            <p className="text-[11px] text-[#9CA3AF] mt-1">2 pages + 2 tests / month</p>
-          </div>
-          <div className="bg-gradient-to-br from-emerald-500/15 to-cyan-500/15 rounded-xl p-4 ring-1 ring-emerald-500/30">
-            <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">Core</div>
-            <div className="text-2xl font-semibold text-[#E5E5EA]">£10k<span className="text-sm text-[#71757D]">/mo</span></div>
-            <p className="text-[11px] text-[#9CA3AF] mt-1">4 pages + 4 tests / month</p>
-          </div>
-          <div className="bg-[#0F0F10]/60 rounded-xl p-4 ring-1 ring-white/[0.04]">
-            <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">VIP</div>
-            <div className="text-2xl font-semibold text-[#E5E5EA]">£15k<span className="text-sm text-[#71757D]">/mo</span></div>
-            <p className="text-[11px] text-[#9CA3AF] mt-1">6 pages + 12 tests / month</p>
-          </div>
+      {/* ── Tier cards (mirrors /pricing) ──────────────────────── */}
+      <section>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 items-stretch">
+          {TIERS.map((tier) => {
+            const featured = tier.featured;
+            return (
+              <div
+                key={tier.name}
+                className={
+                  featured
+                    ? "rounded-3xl bg-[#FAFAF7] text-[#1A1A17] p-7 md:p-8 shadow-xl shadow-black/30"
+                    : "rounded-3xl ring-1 ring-white/[0.08] bg-white/[0.025] p-7 md:p-8"
+                }
+              >
+                <div className="flex items-center justify-between gap-2 mb-6">
+                  <h3 className={`text-lg font-semibold ${featured ? "" : "text-white/85"}`}>
+                    {tier.name}
+                  </h3>
+                  {featured && tier.badge && (
+                    <span className="font-mono text-[9px] font-medium uppercase tracking-[0.18em] px-2.5 py-1 rounded-full bg-[#1A1A17] text-[#FAFAF7]">
+                      {tier.badge}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className={`text-5xl font-semibold tracking-[-0.03em] tabular-nums ${featured ? "" : "text-white/90"}`}>
+                    {fmtK(tier.monthly)}
+                  </span>
+                  <span className={`text-sm ${featured ? "text-[#1A1A17]/45" : "text-white/40"}`}>
+                    /mo
+                  </span>
+                </div>
+                <p className={`text-sm leading-relaxed mt-4 mb-6 ${featured ? "text-[#1A1A17]/60" : "text-white/50"}`}>
+                  {tier.blurb}
+                </p>
+                <div className={`h-px mb-6 ${featured ? "bg-[#1A1A17]/10" : "bg-white/10"}`} />
+                <ul className="space-y-3">
+                  {tier.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2.5">
+                      <CheckIcon className={`size-3.5 mt-0.5 shrink-0 ${featured ? "text-[#1A1A17]" : "text-white/35"}`} />
+                      <span className={`text-sm leading-snug ${featured ? "" : "text-white/70"}`}>
+                        {f}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
         </div>
+        <p className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-white/35 mt-6 text-center">
+          90-day initial commitment · 10% off when paid up front
+        </p>
+      </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-          <div className="bg-[#0F0F10]/60 rounded-xl p-4 ring-1 ring-white/[0.04]">
-            <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">North Star</div>
-            <div className="text-sm text-[#E5E5EA] font-medium">Conversion rate.</div>
-            <p className="text-[11px] text-[#9CA3AF] mt-1">The one metric we measure ourselves on. CR up = revenue up at the same ad spend.</p>
+      {/* ── North Star · Guarantee · Who it's for ──────────────── */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="rounded-2xl bg-[#0F0F10] ring-1 ring-white/[0.04] p-5">
+          <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">
+            North Star
           </div>
-          <div className="bg-[#0F0F10]/60 rounded-xl p-4 ring-1 ring-white/[0.04]">
-            <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">The guarantee</div>
-            <div className="text-sm text-[#E5E5EA] font-medium">Measurable CR lift in 90 days, or we keep working free.</div>
-            <p className="text-[11px] text-[#9CA3AF] mt-1">You ship what we recommend. We hit the number.</p>
-          </div>
+          <div className="text-base font-semibold text-[#E5E5EA] mb-1">Conversion rate.</div>
+          <p className="text-[12px] text-[#9CA3AF] leading-relaxed">
+            The one metric we measure ourselves on. CR up = revenue up at the same ad spend.
+          </p>
         </div>
-
-        <div className="bg-[#0F0F10]/60 rounded-xl p-4 ring-1 ring-white/[0.04] mt-3">
-          <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">Who it&apos;s for</div>
-          <p className="text-sm text-[#E5E5EA] leading-relaxed">
-            Shopify brands at £200k/mo+ with paid traffic dependency. Founders or CMOs with conversion-rate ambition and the bandwidth to actually ship what we recommend.
+        <div className="rounded-2xl bg-gradient-to-br from-emerald-500/10 via-cyan-500/10 to-sky-500/10 ring-1 ring-emerald-500/20 p-5">
+          <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">
+            The guarantee
+          </div>
+          <div className="text-base font-semibold text-[#E5E5EA] mb-1">
+            Measurable CR lift in 90 days, or we keep working free.
+          </div>
+          <p className="text-[12px] text-[#9CA3AF] leading-relaxed">
+            You ship what we recommend. We hit the number.
+          </p>
+        </div>
+        <div className="rounded-2xl bg-[#0F0F10] ring-1 ring-white/[0.04] p-5">
+          <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">
+            Who it&apos;s for
+          </div>
+          <div className="text-base font-semibold text-[#E5E5EA] mb-1">
+            Shopify brands at £200k/mo+
+          </div>
+          <p className="text-[12px] text-[#9CA3AF] leading-relaxed">
+            Paid-traffic dependent. Founders or CMOs with conversion ambition and the bandwidth to ship what we recommend.
           </p>
         </div>
       </section>
 
-      {/* Playbook-wide resources */}
-      {hydrated && (isAdmin || rootResources.length > 0) && (
-        <div className="bg-[#0F0F10] rounded-2xl p-5 ring-1 ring-white/[0.04]">
-          <ResourceList
-            parentType="root"
-            parentId="root"
-            resources={rootResources}
-            isAdmin={isAdmin}
-            accent="emerald"
-            embedded={false}
-            onCreate={createResource}
-            onUpdate={updateResource}
-            onRemove={removeResource}
-          />
+      {/* ── Stage links ────────────────────────────────────────── */}
+      <section>
+        <div className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3">
+          Jump to a stage
         </div>
-      )}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {STAGES.map((s) => {
+            const Icon = s.icon;
+            return (
+              <Link
+                key={s.href}
+                href={s.href}
+                className="group block bg-[#0F0F10] rounded-2xl p-5 ring-1 ring-white/[0.04] hover:ring-white/[0.12] transition-all"
+                style={{ ["--glow" as string]: s.glow }}
+              >
+                <div
+                  className={`size-10 rounded-xl bg-gradient-to-br ${s.gradient} flex items-center justify-center shadow-[0_8px_24px_var(--glow)] mb-4 transition-transform group-hover:scale-105`}
+                >
+                  <Icon className="size-5 text-white" />
+                </div>
+                <div className="text-[11px] uppercase tracking-wider font-semibold text-[#71757D] mb-1">
+                  {s.label}
+                </div>
+                <p className="text-sm text-[#E5E5EA] leading-relaxed">{s.sub}</p>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
 
-      {/* Editable intro sections */}
-      <div className="space-y-3">
-        {!hydrated ? (
-          <div className="h-32 bg-[#0C0C0C] rounded-xl animate-pulse" />
-        ) : sections.length === 0 ? (
-          <div className="bg-[#0F0F10] rounded-2xl p-6 text-center ring-1 ring-white/[0.04]">
-            <p className="text-sm text-[#71757D]">
-              Nothing on the index yet. {isAdmin ? "Add a welcome section below." : "Ask an admin to fill this in."}
-            </p>
-          </div>
-        ) : (
-          sections.map((s) => (
-            <SectionCard
-              key={s.id}
-              section={s}
-              isAdmin={isAdmin}
-              editing={editingId === s.id}
-              onEdit={() => setEditingId(s.id)}
-              onCancel={() => setEditingId(null)}
-              onSave={(patch) => {
-                patchSection(s.id, patch);
-                setEditingId(null);
-              }}
-              onDelete={() => removeSection(s.id)}
-              footer={
-                <ResourceList
-                  parentType="section"
-                  parentId={s.id}
-                  resources={resources.filter(
-                    (r) =>
-                      r.parent_type === "section" && r.parent_id === s.id,
-                  )}
-                  isAdmin={isAdmin}
-                  accent="emerald"
-                  onCreate={createResource}
-                  onUpdate={updateResource}
-                  onRemove={removeResource}
-                />
-              }
-            />
-          ))
-        )}
-        {isAdmin && hydrated && (
-          <button
-            onClick={addSection}
-            className="w-full py-3 rounded-2xl text-[13px] text-[#71757D] ring-1 ring-dashed ring-white/[0.08] hover:ring-emerald-500/40 hover:text-[#E5E5EA] hover:bg-emerald-500/[0.04] transition-all"
-          >
-            + Add section
-          </button>
-        )}
-      </div>
+      {/* ── Playbook guide ─────────────────────────────────────── */}
+      <section>
+        <div className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold mb-3">
+          How the playbook works
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {PLAYBOOK_GUIDE.map((g) => (
+            <div
+              key={g.eyebrow}
+              className="rounded-2xl bg-[#0F0F10] ring-1 ring-white/[0.04] p-5"
+            >
+              <div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-300 mb-2">
+                {g.eyebrow}
+              </div>
+              <div className="text-base font-semibold text-[#E5E5EA] mb-1.5">{g.title}</div>
+              <p className="text-[13px] text-[#9CA3AF] leading-relaxed">{g.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
-      {/* Operations hub link - takes admin straight into the
-          tools that operationalise this playbook. Admin only. */}
-      {isAdmin && hydrated && (
-        <Link href="/operations" className="block bg-gradient-to-br from-emerald-500/10 via-cyan-500/10 to-sky-500/10 rounded-2xl p-5 ring-1 ring-emerald-500/20 hover:ring-emerald-500/40 transition-all group">
+      {/* ── Operations hub (admin) ─────────────────────────────── */}
+      {isAdmin && (
+        <Link
+          href="/operations"
+          className="block bg-gradient-to-br from-emerald-500/10 via-cyan-500/10 to-sky-500/10 rounded-2xl p-5 ring-1 ring-emerald-500/20 hover:ring-emerald-500/40 transition-all group"
+        >
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-xl bg-gradient-to-br from-emerald-500 via-cyan-500 to-sky-500 flex items-center justify-center shadow-[0_8px_24px_rgba(6,182,212,0.3)] shrink-0">
               <SparklesIcon className="size-5 text-white" />
@@ -285,7 +358,7 @@ export default function StartHerePage() {
                 Operations
               </div>
               <div className="text-sm text-[#E5E5EA]">
-                Every tool the playbook turns into. Pipeline · Discovery · Roadmap · Briefs · Tests · Reports · Onboarding · Lifecycle · Cadence · Brain library.
+                Every operational tool the playbook turns into: pipeline, briefs, tests, reports, onboarding, lifecycle, cadence, brain library.
               </div>
             </div>
             <ArrowTopRightOnSquareIcon className="size-4 text-[#71757D] group-hover:text-emerald-300 transition-colors shrink-0" />
@@ -293,32 +366,162 @@ export default function StartHerePage() {
         </Link>
       )}
 
-      {/* Stage links - each gets its own slice of the palette so the
-          three stages read as a sequence, not three identical cards. */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
-        {STAGES.map((s) => {
-          const Icon = s.icon;
-          return (
-            <Link
-              key={s.href}
-              href={s.href}
-              className="group block bg-[#0F0F10] rounded-2xl p-5 ring-1 ring-white/[0.04] hover:ring-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all"
-              style={{ ["--glow" as string]: s.glow }}
+      {/* ── Objection library ──────────────────────────────────── */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <ChatBubbleLeftRightIcon className="size-4 text-cyan-400" />
+            <div className="text-[11px] uppercase tracking-wider text-[#71757D] font-semibold">
+              Objection library
+            </div>
+          </div>
+          {isAdmin && (
+            <button
+              onClick={addObjection}
+              className="text-[11px] uppercase tracking-wider font-semibold text-[#71757D] hover:text-cyan-300 transition-colors"
             >
-              <div
-                className={`size-10 rounded-xl bg-gradient-to-br ${s.gradient} flex items-center justify-center shadow-[0_8px_24px_var(--glow)] mb-4 transition-transform group-hover:scale-105`}
-              >
-                <Icon className="size-5 text-white" />
-              </div>
-              <div className="text-[11px] uppercase tracking-wider font-semibold text-[#71757D] mb-1">
-                {s.label}
-              </div>
-              <p className="text-sm text-[#E5E5EA] leading-relaxed">{s.sub}</p>
-            </Link>
-          );
-        })}
-      </div>
+              + Add objection
+            </button>
+          )}
+        </div>
+        <p className="text-[12px] text-[#71757D] mb-4 max-w-2xl">
+          Every objection we hear + the response that lands. Build this up over time. Searchable mid-call.
+        </p>
+        {!hydrated ? (
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-20 bg-[#0C0C0C] rounded-xl animate-pulse" />
+            ))}
+          </div>
+        ) : objections.length === 0 ? (
+          <div className="bg-[#0F0F10] rounded-2xl p-6 text-center ring-1 ring-white/[0.04]">
+            <p className="text-sm text-[#71757D]">
+              {isAdmin
+                ? "Capture every objection you hear and the response that lands. Click + Add objection above."
+                : "Nothing here yet."}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {objections.map((o) => (
+              <ObjectionCard
+                key={o.id}
+                objection={o}
+                isAdmin={isAdmin}
+                editing={editingObjectionId === o.id}
+                onEdit={() => setEditingObjectionId(o.id)}
+                onCancel={() => setEditingObjectionId(null)}
+                onSave={(patch) => {
+                  patchObjection(o.id, patch);
+                  setEditingObjectionId(null);
+                }}
+                onDelete={() => removeObjection(o.id)}
+              />
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
 
+function ObjectionCard({
+  objection,
+  isAdmin,
+  editing,
+  onEdit,
+  onCancel,
+  onSave,
+  onDelete,
+}: {
+  objection: OfferObjection;
+  isAdmin: boolean;
+  editing: boolean;
+  onEdit: () => void;
+  onCancel: () => void;
+  onSave: (patch: Partial<OfferObjection>) => void;
+  onDelete: () => void;
+}) {
+  const [qDraft, setQDraft] = useState(objection.objection);
+  const [aDraft, setADraft] = useState(objection.response);
+  useEffect(() => {
+    if (editing) {
+      setQDraft(objection.objection);
+      setADraft(objection.response);
+    }
+  }, [editing, objection.objection, objection.response]);
+
+  if (editing) {
+    return (
+      <div className="bg-[#0F0F10] rounded-2xl p-5 space-y-3 ring-1 ring-cyan-500/30">
+        <input
+          value={qDraft}
+          onChange={(e) => setQDraft(e.target.value)}
+          placeholder="What they say"
+          className={inputClass}
+          autoFocus
+        />
+        <textarea
+          value={aDraft}
+          onChange={(e) => setADraft(e.target.value)}
+          placeholder="How we respond"
+          rows={4}
+          className={textareaClass}
+        />
+        <div className="flex items-center justify-between">
+          <button
+            onClick={onDelete}
+            className="text-[11px] uppercase tracking-wider text-[#71757D] hover:text-rose-400"
+          >
+            Delete
+          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onCancel}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider text-[#71757D] hover:text-white"
+            >
+              <XMarkIcon className="size-3.5" />
+              Cancel
+            </button>
+            <button
+              onClick={() =>
+                onSave({
+                  objection: qDraft.trim() || "Untitled",
+                  response: aDraft,
+                })
+              }
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA]"
+            >
+              <CheckIcon className="size-3.5" />
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-[#0F0F10] rounded-2xl p-5 group ring-1 ring-white/[0.04] hover:ring-cyan-500/30 transition-all">
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <div className="font-semibold text-[#E5E5EA] text-sm">
+          &ldquo;{objection.objection}&rdquo;
+        </div>
+        {isAdmin && (
+          <button
+            onClick={onEdit}
+            className="opacity-0 group-hover:opacity-100 transition-opacity text-[#71757D] hover:text-[#E5E5EA] shrink-0"
+            title="Edit objection"
+          >
+            <PencilSquareIcon className="size-4" />
+          </button>
+        )}
+      </div>
+      <p className="text-sm text-[#9CA3AF] whitespace-pre-wrap">
+        {objection.response || (
+          <span className="italic text-[#71757D]">No response yet.</span>
+        )}
+      </p>
+    </div>
+  );
+}
