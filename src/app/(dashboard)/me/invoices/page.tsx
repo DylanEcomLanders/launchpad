@@ -54,6 +54,10 @@ export default function MyInvoicesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState<string | null>(null);
   const [error, setError] = useState("");
+  /* Diagnostic dump from the server resolver. Surfaced on the
+   * unlinked screen so we can see exactly what the matcher looked at
+   * vs what it looked for. Only set when the lookup failed. */
+  const [diagnostic, setDiagnostic] = useState<string>("");
 
   useEffect(() => {
     /* Resolve the Person + load past invoices via service-role
@@ -75,14 +79,19 @@ export default function MyInvoicesPage() {
               pod_member_id: me.pod_member_id,
             }),
           });
+          const json = await res.json().catch(() => ({}));
           if (res.ok) {
-            const json = (await res.json()) as { person: Person | null };
-            matched = json.person ?? null;
+            matched = (json as { person: Person | null }).person ?? null;
+            if (!matched) {
+              setDiagnostic(JSON.stringify((json as { diagnostic?: unknown }).diagnostic ?? {}, null, 2));
+            }
           } else {
-            console.warn("[me/invoices] resolve-person failed", res.status);
+            console.warn("[me/invoices] resolve-person failed", res.status, json);
+            setDiagnostic(`HTTP ${res.status}: ${JSON.stringify(json, null, 2)}`);
           }
         } catch (err) {
           console.warn("[me/invoices] resolve-person threw", err);
+          setDiagnostic(`Network: ${err instanceof Error ? err.message : String(err)}`);
         }
       }
       if (matched) {
@@ -245,6 +254,16 @@ export default function MyInvoicesPage() {
             <p className="text-[11px] text-[#4A4A4A] mt-3">
               Signed in as: {me.name || "(no name)"} · {me.email || "(no email)"}
             </p>
+          )}
+          {diagnostic && (
+            <details className="mt-6 text-left max-w-xl mx-auto">
+              <summary className="text-[11px] text-[#71757D] cursor-pointer hover:text-[#E5E5EA]">
+                Diagnostic (share with admin)
+              </summary>
+              <pre className="mt-2 text-[10px] text-[#9CA3AF] bg-[#0C0C0C] border border-[#2A2A2A] rounded-md p-3 overflow-auto whitespace-pre-wrap break-all">
+                {diagnostic}
+              </pre>
+            </details>
           )}
           <Link
             href="/me"

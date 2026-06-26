@@ -61,7 +61,10 @@ export async function POST(req: NextRequest) {
     .from("company_people")
     .select("id,data");
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message, stage: "select_company_people" },
+      { status: 500 },
+    );
   }
 
   type Row = { id: string; data: PersonData };
@@ -78,8 +81,25 @@ export async function POST(req: NextRequest) {
     : undefined;
 
   const matched = byPod ?? byEmail ?? byName;
+
+  /* Diagnostic: when no match, return a snapshot so the UI can show
+   * exactly what we looked at vs what we looked for. Stops the
+   * back-and-forth where we keep guessing why a match failed.
+   * Sample is the first 5 rows' normalised email/name/pod. */
+  const diagnostic = {
+    query: { email: email || null, name: name || null, pod },
+    peopleCount: rows.length,
+    sample: rows.slice(0, 5).map((r) => ({
+      id: r.id,
+      email: r.data?.email?.trim().toLowerCase() || null,
+      name: r.data?.full_name?.trim().toLowerCase() || null,
+      pod_member_id: r.data?.pod_member_id ?? null,
+    })),
+    matchedBy: byPod ? "pod" : byEmail ? "email" : byName ? "name" : null,
+  };
+
   if (!matched) {
-    return NextResponse.json({ person: null });
+    return NextResponse.json({ person: null, diagnostic });
   }
 
   return NextResponse.json({
@@ -88,5 +108,6 @@ export async function POST(req: NextRequest) {
       full_name: matched.data.full_name ?? "",
       email: matched.data.email ?? "",
     },
+    diagnostic,
   });
 }
