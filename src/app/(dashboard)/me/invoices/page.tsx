@@ -58,6 +58,9 @@ export default function MyInvoicesPage() {
    * unlinked screen so we can see exactly what the matcher looked at
    * vs what it looked for. Only set when the lookup failed. */
   const [diagnostic, setDiagnostic] = useState<string>("");
+  /* Per-row deleting state so the right button shows the spinner
+   * label while the request is in flight. */
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     /* Resolve the Person + load past invoices via service-role
@@ -162,6 +165,28 @@ export default function MyInvoicesPage() {
 
   function removeFile() {
     setFile(null);
+  }
+
+  async function deleteInvoice(invoiceId: string) {
+    if (!person) return;
+    if (!confirm("Delete this invoice? It also removes from finance.")) return;
+    setDeletingId(invoiceId);
+    try {
+      const res = await fetch("/api/me/delete-invoice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invoice_id: invoiceId, person_id: person.id }),
+      });
+      if (!res.ok) {
+        const j = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(j.error || `Delete failed (${res.status})`);
+      }
+      setInvoices((rows) => rows.filter((r) => r.id !== invoiceId));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Delete failed");
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   async function submit(e: React.FormEvent) {
@@ -453,11 +478,17 @@ export default function MyInvoicesPage() {
                     <th className="text-left px-4 py-3 font-semibold">Issued</th>
                     <th className="text-left px-4 py-3 font-semibold">Amount</th>
                     <th className="text-left px-4 py-3 font-semibold">Status</th>
+                    <th className="text-right px-4 py-3 font-semibold w-[1%]"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {invoices.map((i) => {
                     const badge = INVOICE_STATUS_BADGE[i.status];
+                    /* Delete is blocked once an invoice has been paid
+                     * (or moved past pending) - protects the audit
+                     * trail in /finance. Pending submissions are still
+                     * the user's to mistake-correct. */
+                    const canDelete = i.status === "pending";
                     return (
                       <tr
                         key={i.id}
@@ -479,6 +510,18 @@ export default function MyInvoicesPage() {
                           >
                             {badge.label}
                           </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {canDelete && person && (
+                            <button
+                              onClick={() => deleteInvoice(i.id)}
+                              disabled={deletingId === i.id}
+                              className="text-[11px] text-[#71757D] hover:text-rose-400 disabled:opacity-50"
+                              title="Delete invoice"
+                            >
+                              {deletingId === i.id ? "Deleting..." : "Delete"}
+                            </button>
+                          )}
                         </td>
                       </tr>
                     );

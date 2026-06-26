@@ -107,6 +107,24 @@ export async function DELETE(req: NextRequest, ctx: RouteParams) {
     const sb = financeServerClient();
     const { error } = await sb.from(table).delete().eq("id", id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    /* When admin deletes a finance_expenses row, also delete the
+     * matching company_invoices row so the team member's view on
+     * /me/invoices doesn't keep showing a deleted submission. The
+     * cross-reference is the shared id (we write both sides with the
+     * same id in /api/me/submit-invoice). Best-effort; a missing
+     * mirror is fine (legacy /team/invoice rows never had one). */
+    if (table === "finance_expenses") {
+      const { error: mirrorErr } = await sb
+        .from("company_invoices")
+        .delete()
+        .eq("id", id);
+      if (mirrorErr) {
+        console.warn(
+          "[finance/store/finance_expenses DELETE] company_invoices mirror cleanup failed:",
+          mirrorErr.message,
+        );
+      }
+    }
     return NextResponse.json({ ok: true });
   } catch (err) {
     return configError(err);
