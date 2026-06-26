@@ -18,7 +18,6 @@ import { ArrowLeftIcon, ArrowUpTrayIcon } from "@heroicons/react/24/outline";
 import { useCurrentUser } from "@/components/auth-gate";
 import {
   invoicesStore,
-  peopleStore,
   uid,
   nowISO,
   fmtDateUK,
@@ -49,53 +48,50 @@ export default function MyInvoicesPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    Promise.all([peopleStore.getAll(), invoicesStore.getAll()]).then(
-      ([allPeople, allInvoices]) => {
-        const meEmail = me?.email?.trim().toLowerCase();
-        const meName = me?.name?.trim().toLowerCase();
-        const mePod = me?.pod_member_id || null;
-        /* Match order: strongest signal first.
-         *   1. pod_member_id (only if signed-in user has one)
-         *   2. email (both sides trim+lowercase)
-         *   3. full_name (case-insensitive, last resort - covers cases
-         *      where AppUser.email is missing or the Person row's email
-         *      field lags behind /company/people edits).
-         * NB: pod match is gated on a non-null AppUser pod_member_id so
-         * we don't accidentally match every Person whose pod_member_id
-         * is also null. */
-        const matched =
-          (mePod
-            ? allPeople.find((p) => p.pod_member_id === mePod)
-            : null) ||
-          (meEmail
-            ? allPeople.find(
-                (p) => p.email?.trim().toLowerCase() === meEmail,
-              )
-            : null) ||
-          (meName
-            ? allPeople.find(
-                (p) => p.full_name.trim().toLowerCase() === meName,
-              )
-            : null) ||
-          null;
-        if (!matched && me) {
-          /* One-liner so the user (or admin) can paste console output
-           * when reporting the unlinked screen. Lets us see which side
-           * is empty without a back-and-forth. */
-          console.warn(
-            "[me/invoices] unlinked",
-            { email: me.email, name: me.name, pod: mePod, peopleCount: allPeople.length },
-          );
+    /* Resolve the Person server-side. Team-role users can't read
+     * company_people directly through the anon key under the current
+     * RLS posture, so the client-side getAll() returns 0 rows for
+     * them and matching always misses. The /api/me/resolve-person
+     * endpoint uses the service role to do the lookup. */
+    async function load() {
+      const allInvoices = await invoicesStore.getAll();
+      let matched: Person | null = null;
+      if (me) {
+        try {
+          const res = await fetch("/api/me/resolve-person", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: me.email,
+              name: me.name,
+              pod_member_id: me.pod_member_id,
+            }),
+          });
+          if (res.ok) {
+            const json = (await res.json()) as { person: Person | null };
+            matched = json.person ?? null;
+          } else {
+            console.warn("[me/invoices] resolve-person failed", res.status);
+          }
+        } catch (err) {
+          console.warn("[me/invoices] resolve-person threw", err);
         }
-        setPerson(matched);
-        setInvoices(
-          matched
-            ? allInvoices.filter((i) => i.linked_person_id === matched.id)
-            : [],
+      }
+      if (!matched && me) {
+        console.warn(
+          "[me/invoices] unlinked",
+          { email: me.email, name: me.name, pod: me.pod_member_id ?? null },
         );
-        setHydrated(true);
-      },
-    );
+      }
+      setPerson(matched);
+      setInvoices(
+        matched
+          ? allInvoices.filter((i) => i.linked_person_id === matched!.id)
+          : [],
+      );
+      setHydrated(true);
+    }
+    load();
   }, [me]);
 
   const totals = useMemo(() => {
