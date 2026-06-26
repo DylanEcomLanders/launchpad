@@ -302,11 +302,11 @@ export default function TeamPaymentsPage() {
             />
           </div>
 
-          {/* Invoice form CTA — now native at /team/invoice. Submissions
-              land directly in finance_expenses as 'due' contractor rows and
-              ping ops in Slack. */}
+          {/* Invoice form CTA — now /me/invoices, the unified flow that
+              ties the submission to the signed-in Person + lists past
+              submissions. */}
           <Link
-            href="/team/invoice"
+            href="/me/invoices"
             className="mt-5 flex items-center justify-between gap-4 p-5 rounded-lg bg-[#222222] text-[#E5E5EA] hover:bg-[#2A2A2A] transition-colors group"
           >
             <div className="flex flex-col gap-1">

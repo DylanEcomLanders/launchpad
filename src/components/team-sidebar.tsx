@@ -54,7 +54,7 @@ const navItems: NavItem[] = [
      * from /team/payments. Submissions create finance_expenses rows
      * (contractor, due) via /api/team-invoice/submit. */
     label: "Submit invoice",
-    href: "/team/invoice",
+    href: "/me/invoices",
     icon: <DocumentTextIcon className="size-4" />,
   },
 ];

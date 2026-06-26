@@ -12,9 +12,14 @@
  * Person get a friendly "ask an admin to link your account" message.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeftIcon, ArrowUpTrayIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowLeftIcon,
+  ArrowUpTrayIcon,
+  DocumentArrowUpIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 import { useCurrentUser } from "@/components/auth-gate";
 import {
   uid,
@@ -40,8 +45,12 @@ export default function MyInvoicesPage() {
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState("GBP");
   const [notes, setNotes] = useState("");
-  const [fileUrl, setFileUrl] = useState("");
-  const [fileName, setFileName] = useState("");
+  /* Real PDF upload: the file lives in the finance-documents storage
+   * bucket via /api/team-invoice/upload. We store the signed URL +
+   * storage path on the invoice so finance can re-sign on demand. */
+  const [file, setFile] = useState<{ url: string; path: string; filename: string; size: number; type: string } | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -119,6 +128,33 @@ export default function MyInvoicesPage() {
     return { billed, paid, outstanding };
   }, [invoices]);
 
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setUploading(true);
+    setError("");
+    try {
+      const fd = new FormData();
+      fd.append("file", f);
+      const res = await fetch("/api/team-invoice/upload", { method: "POST", body: fd });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.error || "Upload failed");
+      }
+      const data = await res.json();
+      setFile(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  function removeFile() {
+    setFile(null);
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!person) {
@@ -132,6 +168,10 @@ export default function MyInvoicesPage() {
     }
     if (!issueDate) {
       setError("Issue date is required.");
+      return;
+    }
+    if (!file) {
+      setError("Attach your invoice PDF before submitting.");
       return;
     }
     setError("");
@@ -149,8 +189,8 @@ export default function MyInvoicesPage() {
         currency,
         category: "contractor",
         status: "pending",
-        file_url: fileUrl.trim() || undefined,
-        file_name: fileName.trim() || undefined,
+        file_url: file.url,
+        file_name: file.filename,
         notes: notes.trim() || undefined,
         status_history: [],
         created_at: now,
@@ -176,8 +216,7 @@ export default function MyInvoicesPage() {
       setDueDate("");
       setAmount("");
       setNotes("");
-      setFileUrl("");
-      setFileName("");
+      setFile(null);
       setTimeout(() => setSubmitted(null), 4000);
     } catch (err) {
       console.error("[me/invoices] submit failed:", err);
@@ -305,26 +344,52 @@ export default function MyInvoicesPage() {
             </FieldL>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-3">
-            <FieldL label="File link (Google Drive / Dropbox / Notion / etc.)">
-              <input
-                type="url"
-                value={fileUrl}
-                onChange={(e) => setFileUrl(e.target.value)}
-                placeholder="https://..."
-                className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2"
-              />
-            </FieldL>
-            <FieldL label="File name (optional)">
-              <input
-                type="text"
-                value={fileName}
-                onChange={(e) => setFileName(e.target.value)}
-                placeholder="invoice.pdf"
-                className="w-full text-sm bg-[#0C0C0C] text-[#E5E5EA] border border-[#2A2A2A] rounded-md px-3 py-2"
-              />
-            </FieldL>
-          </div>
+          <FieldL label="Invoice PDF">
+            {file ? (
+              <div className="flex items-center justify-between gap-3 px-3 py-2.5 bg-[#0C0C0C] border border-[#2A2A2A] rounded-md">
+                <div className="flex items-center gap-2 min-w-0">
+                  <DocumentArrowUpIcon className="size-4 text-[#71757D] shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-sm text-[#E5E5EA] truncate">{file.filename}</div>
+                    <div className="text-[11px] text-[#71757D]">
+                      {fmtSize(file.size)} · uploaded
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={removeFile}
+                  className="text-[#71757D] hover:text-rose-400 p-1"
+                  aria-label="Remove file"
+                >
+                  <XMarkIcon className="size-4" />
+                </button>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center gap-2 py-6 border-2 border-dashed border-[#2A2A2A] rounded-md cursor-pointer hover:border-[#999] bg-[#0C0C0C] transition-colors">
+                {uploading ? (
+                  <div className="flex items-center gap-2 text-[#71757D] text-sm">
+                    <div className="size-4 border-2 border-[#2A2A2A] border-t-[#E5E5EA] rounded-full animate-spin" />
+                    Uploading...
+                  </div>
+                ) : (
+                  <>
+                    <DocumentArrowUpIcon className="size-5 text-[#71757D]" />
+                    <span className="text-sm text-[#71757D]">Click to upload or drop your invoice</span>
+                    <span className="text-[11px] text-[#71757D]">PDF, PNG, JPG, or WebP · up to 25 MB</span>
+                  </>
+                )}
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="application/pdf,image/png,image/jpeg,image/webp"
+                  onChange={handleFile}
+                  disabled={uploading}
+                  className="hidden"
+                />
+              </label>
+            )}
+          </FieldL>
 
           <FieldL label="Notes (optional)">
             <textarea
@@ -346,8 +411,8 @@ export default function MyInvoicesPage() {
           <div className="flex items-center justify-end">
             <button
               type="submit"
-              disabled={submitting}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA] disabled:opacity-60"
+              disabled={submitting || uploading || !file}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[11px] font-semibold uppercase tracking-wider bg-white text-[#0C0C0C] hover:bg-[#E5E5EA] disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <ArrowUpTrayIcon className="size-3.5" />
               {submitting ? "Submitting..." : "Submit invoice"}
@@ -407,6 +472,12 @@ export default function MyInvoicesPage() {
       </div>
     </div>
   );
+}
+
+function fmtSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
 function FieldL({

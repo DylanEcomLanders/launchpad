@@ -15,7 +15,7 @@ export interface TeamToolTab {
 export const TEAM_TOOL_TABS: TeamToolTab[] = [
   { href: "/team/swipe-file", label: "Swipe File" },
   { href: "/team/fonts", label: "Font Library" },
-  { href: "/team/invoice", label: "Submit Invoice" },
+  { href: "/me/invoices", label: "Submit Invoice" },
   { href: "/team/payments", label: "Payments" },
 ];
 

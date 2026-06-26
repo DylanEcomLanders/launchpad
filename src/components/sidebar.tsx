@@ -264,7 +264,7 @@ const heroOfferItem = {
 const teamItems: NavItem[] = [
   { label: "Swipe File", href: "/team/swipe-file", icon: <BookmarkIcon className="size-4" /> },
   { label: "Font Library", href: "/team/fonts", icon: <DocumentTextIcon className="size-4" /> },
-  { label: "Submit Invoice", href: "/team/invoice", icon: <DocumentPlusIcon className="size-4" /> },
+  { label: "Submit Invoice", href: "/me/invoices", icon: <DocumentPlusIcon className="size-4" /> },
   { label: "Payments", href: "/team/payments", icon: <CreditCardIcon className="size-4" /> },
 ];
 
