@@ -300,6 +300,15 @@ const toolkitItem = {
   icon: <HomeIcon className="size-4" />,
 };
 
+/* Submit Invoice — top-level shortcut so contractors don't have to
+ * dig through Team Tools to find the form. Lands on /me/invoices
+ * (real PDF upload + tied to their Person + past submissions). */
+const submitInvoiceItem = {
+  label: "Submit Invoice",
+  href: "/me/invoices",
+  icon: <DocumentPlusIcon className="size-4" />,
+};
+
 export function Sidebar() {
   const pathname = usePathname();
   const role = useRole();
@@ -343,6 +352,7 @@ export function Sidebar() {
     { label: myWorkItem.label, href: myWorkItem.href, group: "Pinned", icon: myWorkItem.icon, keywords: ["my tasks", "assigned"] },
     { label: heroOfferItem.label, href: heroOfferItem.href, group: "Pinned", icon: heroOfferItem.icon, keywords: ["conversion engine", "playbook", "offer"] },
     { label: trainingItem.label, href: trainingItem.href, group: "Pinned", icon: trainingItem.icon, keywords: ["wiki", "sop", "knowledge", "playbook", "learning"] },
+    { label: submitInvoiceItem.label, href: submitInvoiceItem.href, group: "Pinned", icon: submitInvoiceItem.icon, keywords: ["invoice", "expenses", "submit", "pay"] },
     // Admin/CRO surfaces.
     ...(role !== "team"
       ? [
@@ -612,6 +622,7 @@ export function Sidebar() {
               spamming the sidebar. */}
           <div className="px-3 space-y-0.5 mt-6">
             {renderTopLink(teamToolsItem)}
+            {renderTopLink(submitInvoiceItem)}
             {role !== "team" && renderTopLink(toolkitItem)}
           </div>
 
