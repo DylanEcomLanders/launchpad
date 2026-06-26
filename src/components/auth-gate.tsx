@@ -498,23 +498,13 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                     >
                       Forgot password?
                     </button>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => { setMode("magic"); setCredentialsError(""); setResetError(""); }}
-                        className="text-[11px] text-white/40 hover:text-white/70 transition-colors"
-                      >
-                        Email link
-                      </button>
-                      <span className="text-white/20">·</span>
-                      <button
-                        type="button"
-                        onClick={() => { setMode("password"); setCredentialsError(""); setResetError(""); }}
-                        className="text-[11px] text-white/40 hover:text-white/70 transition-colors"
-                      >
-                        Admin access
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => { setMode("password"); setCredentialsError(""); setResetError(""); }}
+                      className="text-[11px] text-white/40 hover:text-white/70 transition-colors"
+                    >
+                      Admin access
+                    </button>
                   </div>
                 </form>
               )
@@ -624,21 +614,13 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                 >
                   Continue
                 </button>
-                <div className="flex items-center justify-center gap-3 text-[11px] text-white/40">
+                <div className="flex items-center justify-center text-[11px] text-white/40">
                   <button
                     type="button"
                     onClick={() => setMode("credentials")}
                     className="hover:text-white/70 transition-colors"
                   >
                     Email and password
-                  </button>
-                  <span className="text-white/20">·</span>
-                  <button
-                    type="button"
-                    onClick={() => setMode("magic")}
-                    className="hover:text-white/70 transition-colors"
-                  >
-                    Email link
                   </button>
                 </div>
               </form>
