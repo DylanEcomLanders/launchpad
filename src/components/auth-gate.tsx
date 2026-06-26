@@ -81,7 +81,10 @@ export async function signOut(): Promise<void> {
  * not listed here, so a member hitting one is redirected to /my-work. */
 function isTeamAllowedPath(pathname: string): boolean {
   return (
-    pathname === "/" ||
+    /* "/" used to be allowed here so team had something to land on,
+     * but it's the admin Toolkit (Payment Link / Invoice Generator /
+     * Dev Hours / Intelligems / etc) - admin-only by intent. Team
+     * lands on /me instead via the redirect below. */
     pathname === "/me" ||
     pathname.startsWith("/me/") ||
     pathname === "/hero-offer" ||
