@@ -52,14 +52,41 @@ export default function MyInvoicesPage() {
     Promise.all([peopleStore.getAll(), invoicesStore.getAll()]).then(
       ([allPeople, allInvoices]) => {
         const meEmail = me?.email?.trim().toLowerCase();
+        const meName = me?.name?.trim().toLowerCase();
+        const mePod = me?.pod_member_id || null;
+        /* Match order: strongest signal first.
+         *   1. pod_member_id (only if signed-in user has one)
+         *   2. email (both sides trim+lowercase)
+         *   3. full_name (case-insensitive, last resort - covers cases
+         *      where AppUser.email is missing or the Person row's email
+         *      field lags behind /company/people edits).
+         * NB: pod match is gated on a non-null AppUser pod_member_id so
+         * we don't accidentally match every Person whose pod_member_id
+         * is also null. */
         const matched =
-          allPeople.find((p) => p.pod_member_id === me?.pod_member_id) ||
+          (mePod
+            ? allPeople.find((p) => p.pod_member_id === mePod)
+            : null) ||
           (meEmail
             ? allPeople.find(
                 (p) => p.email?.trim().toLowerCase() === meEmail,
               )
             : null) ||
+          (meName
+            ? allPeople.find(
+                (p) => p.full_name.trim().toLowerCase() === meName,
+              )
+            : null) ||
           null;
+        if (!matched && me) {
+          /* One-liner so the user (or admin) can paste console output
+           * when reporting the unlinked screen. Lets us see which side
+           * is empty without a back-and-forth. */
+          console.warn(
+            "[me/invoices] unlinked",
+            { email: me.email, name: me.name, pod: mePod, peopleCount: allPeople.length },
+          );
+        }
         setPerson(matched);
         setInvoices(
           matched
@@ -153,9 +180,13 @@ export default function MyInvoicesPage() {
       <div className="min-h-screen bg-[#080808] text-[#E5E5EA]">
         <div className="mx-auto max-w-2xl px-6 py-12 text-center">
           <p className="text-sm text-[#71757D]">
-            Your account isn&apos;t linked to a team record yet. Ask an admin
-            to link your email so submitted invoices route to you.
+            We couldn&apos;t link your account to a team record yet. Try a hard refresh (Cmd+Shift+R). If it persists, ask an admin to check your name + email match on /company/people.
           </p>
+          {me && (
+            <p className="text-[11px] text-[#4A4A4A] mt-3">
+              Signed in as: {me.name || "(no name)"} · {me.email || "(no email)"}
+            </p>
+          )}
           <Link
             href="/me"
             className="inline-block mt-4 text-xs text-[#E5E5EA] hover:underline"
