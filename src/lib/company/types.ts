@@ -269,6 +269,11 @@ export interface Invoice {
   status: InvoiceStatus;
   file_url?: string;
   file_name?: string;
+  /* Storage path in the finance-documents bucket. Required for the
+   * /api/finance/sign on-click flow that admins use to open the PDF
+   * (it re-signs a fresh URL each time so leaked links expire after
+   * 15min). Without this, the admin's click silently no-ops. */
+  file_path?: string;
   notes?: string;
   status_history?: InvoiceStatusChange[];
   created_at: string;

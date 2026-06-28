@@ -115,7 +115,19 @@ export default function ExpenseDetailPage() {
   }
 
   async function openDoc() {
-    if (!expense?.file_path) return;
+    if (!expense) return;
+    /* Prefer file_path (re-signs a fresh 15min URL on demand). Fall
+     * back to file_url for legacy rows that were saved without a
+     * file_path - those URLs may have expired by now, but at least
+     * the click does something instead of silently failing. */
+    if (!expense.file_path) {
+      if (expense.file_url) {
+        window.open(expense.file_url, "_blank", "noopener");
+      } else {
+        setError("No file attached to this expense.");
+      }
+      return;
+    }
     setOpeningDoc(true);
     try {
       const res = await fetch("/api/finance/sign", {

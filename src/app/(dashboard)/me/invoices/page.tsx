@@ -225,6 +225,7 @@ export default function MyInvoicesPage() {
         status: "pending",
         file_url: file.url,
         file_name: file.filename,
+        file_path: file.path,
         notes: notes.trim() || undefined,
         status_history: [],
         created_at: now,

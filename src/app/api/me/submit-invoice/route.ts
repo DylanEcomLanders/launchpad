@@ -125,6 +125,7 @@ export async function POST(req: NextRequest) {
 
     file_url: inv.file_url,
     file_name: inv.file_name,
+    file_path: inv.file_path,
 
     /* Cross-reference back to the company_invoices row so future
      * tooling can hop between the two surfaces without guessing. */
